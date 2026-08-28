@@ -5,7 +5,7 @@
 
 ## Scopo
 
-Questo è l'unico documento ufficiale dell'architettura di NosAi. Consolida architettura, responsabilità, comunicazioni, autorità, prestazioni e ciclo dei dati.
+Questo è l'unico documento ufficiale dell'architettura di NosAi. Consolida architettura, responsabilità, comunicazioni, autorità, prestazioni, ciclo dei dati e sicurezza del trasporto.
 
 ## 1. Mappa generale
 
@@ -49,8 +49,6 @@ Il percorso principale è:
 
 I blocchi sincroni di valutazione devono utilizzare un timeout fail-fast configurabile, con valore predefinito di 200 ms per blocco escluso il Planner. Un timeout deve produrre un evento runtime e attivare il percorso di Recovery/Watchdog previsto dalla policy, evitando attese indefinite.
 
-Il modulo `nosai.runtime.timeouts` fornisce `run_with_timeout()` e `RuntimeTimeout` per rendere questo comportamento testabile.
-
 ## 3. Autorità dei componenti
 
 | Componente | Responsabilità | Esecuzione diretta | Cambio strategia |
@@ -90,7 +88,7 @@ Il Watchdog supporta le modalità:
 
 Il watchdog hardware può osservare temperatura CPU/GPU e I/O quando disponibili. La soglia termica predefinita è 80 °C. La gestione hardware deve rimanere osservabile e non deve assumere come garantite prestazioni non misurate.
 
-Le tecniche di ottimizzazione che dipendono da privilegi del sistema operativo, pinning della memoria fisica o impostazioni specifiche del kernel devono essere implementate come adapter opzionali e validate per piattaforma; non vengono dichiarate automaticamente disponibili su tutti i sistemi.
+Le tecniche di ottimizzazione che dipendono da privilegi del sistema operativo, pinning della memoria fisica o impostazioni specifiche del kernel devono essere implementate come adapter opzionali e validate per piattaforma.
 
 ## 6. Context Slimming e VRAM
 
@@ -106,19 +104,19 @@ Gli iscritti restano osservatori e non acquisiscono autorità di esecuzione.
 
 Per i flussi ad alta frequenza verso Control Center/Eye AI View è stato aggiunto `proto/nosai_network_v1.proto` con sintassi Protobuf v3.
 
-Il contratto definisce:
+Il contratto definisce `EntityType`, `Vector2D`, `NetworkPacket`, `EntityState` e `UIFrameUpdate`. La generazione dei binding C++ e TypeScript/JavaScript viene mantenuta separata finché la toolchain Protobuf non è formalizzata.
 
-- `EntityType`;
-- `Vector2D`;
-- `NetworkPacket`;
-- `EntityState`;
-- `UIFrameUpdate`.
+## 9. Trasporto sicuro Noise e chiavi effimere
 
-Il contratto è versionabile e adatto alla generazione di binding C++ e TypeScript/JavaScript. La generazione dei binding viene mantenuta separata dal codice sorgente finché la toolchain Protobuf non è formalizzata nel progetto.
+Le specifiche allegate v1.8 e v1.9 definiscono rispettivamente un'architettura Noise con pattern `Noise_KK_25519_ChaChaPoly_SHA256`, chiavi statiche X25519 e un'estensione `Noise_IK_25519_ChaChaPoly_SHA256` con chiave client effimera. fileciteturn88file0L2-L4 fileciteturn88file1L4-L5
 
-## 9. Comunicazione LAN e nonce
+Nel repository è stato aggiunto `nosai/security/ephemeral_session.py`, che implementa X25519 + HKDF-SHA256 + ChaCha20-Poly1305 per il nucleo di una sessione effimera. Questo componente **non viene dichiarato un'implementazione completa del Noise IK/KK**: il vero handshake Noise richiede una libreria Noise validata, macchina a stati completa e test di interoperabilità.
 
-Il protocollo di bring-up ora usa messaggi con nonce crittograficamente casuale e validazione della versione. Il nonce protegge l'identificazione del messaggio, ma **da solo non equivale a mTLS**: l'autenticazione reciproca del trasporto deve essere aggiunta mediante una implementazione TLS/Noise validata prima dell'uso produttivo.
+Le chiavi private non devono essere committate. Il prologo previsto dalle specifiche è `NOS_AI_PROTOCOL_V1`. fileciteturn88file0L2-L4
+
+## 10. Comunicazione LAN e nonce
+
+Il protocollo di bring-up usa messaggi con nonce crittograficamente casuale e validazione della versione. Il nonce protegge l'identificazione del messaggio, ma da solo non equivale a mTLS o Noise. L'autenticazione reciproca del trasporto deve essere aggiunta mediante una implementazione validata.
 
 Il protocollo previsto è:
 
@@ -126,15 +124,21 @@ Il protocollo previsto è:
 
 La sessione deve inoltre validare sequenza, identità del dispositivo, autorizzazione e TTL.
 
-## 10. WorldState
+## 11. Stress test crittografico
+
+`tests/stress_test_cifratura.py` importa la metodologia della specifica v1.9: 1000 operazioni asincrone con misurazione del tempo totale, throughput e latenza media. fileciteturn88file1L2-L4
+
+I risultati dipendono dall'ambiente di esecuzione e non costituiscono una garanzia di 1000 macro/s.
+
+## 12. WorldState
 
 `WorldStateStore` mantiene osservazioni versionate, identificativo dell'osservazione, sorgente, confidenza e collegamento allo stato precedente.
 
-## 11. Simulazione e Tactical Ranking
+## 13. Simulazione e Tactical Ranking
 
 Questi moduli producono risultati previsti, candidati, punteggi, rischio, confidenza, ricompensa attesa ed evidenza. Non eseguono direttamente azioni.
 
-## 12. Guard, Trust e Safety
+## 14. Guard, Trust e Safety
 
 Il percorso di autorizzazione rimane:
 
@@ -144,21 +148,21 @@ I livelli Trust sono:
 
 `OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
 
-## 13. Executor, Verifier e Adapter
+## 15. Executor, Verifier e Adapter
 
-Executor è l'unico confine tecnico di esecuzione delle primitive autorizzate. Un eventuale Live Game Adapter deve limitarsi a tradurre primitive standardizzate, senza introdurre logica decisionale.
+Executor è il confine tecnico di esecuzione delle primitive autorizzate. Un eventuale Live Game Adapter deve limitarsi a tradurre primitive standardizzate, senza introdurre logica decisionale.
 
 Verifier confronta risultato e nuova osservazione. Un risultato non verificato non diventa automaticamente successo o conoscenza verificata.
 
-## 14. Memoria ed evidenza
+## 16. Memoria ed evidenza
 
 Le evidenze verificate devono essere persistite in modalità append-only. Un'esperienza già verificata non deve essere sovrascritta da un'esecuzione successiva fallita.
 
-## 15. Provider e instradamento
+## 17. Provider e instradamento
 
 Provider Router deve favorire il local-first quando il profilo hardware e la policy lo consentono. Il caching locale dello stato può ridurre la latenza del percorso sincrono. Le decisioni di instradamento devono tenere conto di risorse, latenza, temperatura, carico e complessità.
 
-## 16. Pipeline di percezione
+## 18. Pipeline di percezione
 
 Pipeline prevista:
 
@@ -176,25 +180,25 @@ DXGI Direct Capture
 
 I componenti live devono essere considerati produttivi solo dopo validazione indipendente.
 
-## 17. Stress test e saturazione controllata
+## 19. Stress test e saturazione controllata
 
 Il test di carico deve misurare entità simultanee, pacchetti/sec, latenza IPC, packet drop rate e race conditions. La metodologia di riferimento considera scenari da 50 a 350 entità.
 
-Sopra la soglia operativa configurata, il sistema può entrare in **Saturazione Controllata**, dando priorità ai dati essenziali per lo stato operativo e degradando i flussi non critici. La soglia deve essere configurabile e validata con benchmark reali; i valori del documento allegato sono obiettivi di test, non prestazioni garantite.
+Sopra la soglia operativa configurata, il sistema può entrare in **Saturazione Controllata**, dando priorità ai dati essenziali per lo stato operativo e degradando i flussi non critici. La soglia deve essere configurabile e validata con benchmark reali.
 
-## 18. Relogging e riconnessione
+## 20. Riconnessione
 
 La riconnessione deve essere gestita come macchina a stati con timeout, numero massimo di tentativi, riallineamento del WorldState e arresto sicuro in caso di fallimento persistente.
 
-Non viene implementato un meccanismo finalizzato a eludere sistemi anti-cheat o a simulare deliberatamente il comportamento umano per aggirare controlli. I ritardi di riconnessione devono essere definiti da affidabilità, rate limiting e policy di servizio.
+Non viene implementato un meccanismo finalizzato a eludere sistemi anti-cheat o a simulare deliberatamente il comportamento umano per aggirare controlli.
 
-## 19. Control Center / Eye AI View
+## 21. Control Center / Eye AI View
 
 Il Control Center locale è il piano di osservazione e controllo del sistema. Deve poter mostrare stato runtime, WorldState, simulazioni, ranking, piani, autorizzazioni, eventi, Recovery, Watchdog, risorse hardware, provider, rete e metriche.
 
 Il formato Protobuf può essere utilizzato per i flussi ad alta frequenza, mentre contratti più leggibili possono restare disponibili per configurazione, debug e API amministrative.
 
-## 20. Matrice di rischio
+## 22. Matrice di rischio
 
 | Rischio | Mitigazione |
 |---|---|
@@ -206,8 +210,9 @@ Il formato Protobuf può essere utilizzato per i flussi ad alta frequenza, mentr
 | Sovraccarico hardware | Watchdog + modalità degradata/Cooling |
 | Evidenza corrotta | persistenza append-only |
 | Adapter con logica nascosta | separazione Executor/Adapter |
+| Compromissione chiavi | chiavi effimere + gestione segreti + lifecycle |
 
-## 21. Ciclo dati
+## 23. Ciclo dati
 
 ### Osservazione
 `percezione → semantica → validazione → WorldStateStore → versione`
@@ -221,15 +226,26 @@ Il formato Protobuf può essere utilizzato per i flussi ad alta frequenza, mentr
 ### Recupero
 `fallimento → Context Slimming → Recovery → backoff/replan → nuova valutazione`
 
-## 22. Stato della produzione
+### Comunicazione sicura
+`identità → handshake → derivazione sessione → AEAD → messaggi → chiusura → distruzione/rimozione chiavi effimere`
+
+## 24. Stato della produzione
 
 Implementato nel core: EventBus bounded, Context Slimming, Recovery adattivo con circuit breaker, Watchdog runtime/hardware, timeout fail-fast e contratto Protobuf v3.
 
+Implementato come nucleo crittografico: X25519, HKDF-SHA256, ChaCha20-Poly1305 e sessione con chiave effimera.
+
 Parzialmente implementato/fondazione: protocollo LAN con nonce, Control Center, provider routing e hardware telemetry.
 
-Da validare prima della produzione: TLS/Noise completo, binding Protobuf generati, persistenza append-only definitiva, adapter di gioco live, pipeline percezione produttiva, benchmark IPC/latency e integrazione hardware specifica.
+Da validare prima della produzione: handshake Noise IK/KK completo, binding Protobuf generati, persistenza append-only definitiva, adapter di gioco live, pipeline percezione produttiva, benchmark IPC/latency e integrazione hardware specifica.
 
-## 23. Lingua e governance
+## 25. Documentazione correlata
+
+- `docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md` — specifica importata v1.8/v1.9 e stato dell'implementazione.
+- `tests/test_ephemeral_session.py` — test della sessione effimera.
+- `tests/stress_test_cifratura.py` — stress test asincrono.
+
+## 26. Lingua e governance
 
 La documentazione ufficiale è italiana. Codice, identificatori, API, protocolli e nomi tecnici obbligatori possono rimanere in inglese.
 
