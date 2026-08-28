@@ -12,6 +12,9 @@ dependencies = []
 [project.optional-dependencies]
 test = ["pytest>=8"]
 
+[project.scripts]
+nosai-dashboard = "nosai.dashboard.server:serve"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
