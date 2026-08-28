@@ -24,6 +24,10 @@ This is the implementation ledger for `volobolo99/NosAiProject`. Version remains
 - Closed-loop observation/replanning runtime.
 - Typed runtime EventBus with stable event/run/session/task correlation metadata.
 - Versioned WorldState observation store with provenance, confidence and state history.
+- VRAM-aware context slimming with normalized deterministic exception signatures and bounded error history.
+- Adaptive RecoveryController with retry/replan/degraded-replan/cooling strategy selection and compact recovery context.
+- RuntimeWatchdog adaptive operating modes: NORMAL, DEGRADED, RECOVERY, COOLING and STOPPED.
+- Hardware watchdog with CPU/GPU thermal and optional I/O-rate monitoring plus Cooling Phase signal.
 - Final architecture/communication model documented in `docs/ARCHITECTURE.md` and `docs/FINAL_SYSTEM_ARCHITECTURE.md`.
 
 ## 🟡 Foundations — not production-complete
@@ -77,31 +81,18 @@ This is the implementation ledger for `volobolo99/NosAiProject`. Version remains
 ## Current integration path
 
 ```text
-Perception
-  ↓ PerceptionWorldAdapter + observation provenance
-WorldStateStore → WorldState(vN)
-  ↓
-Party / Pet / Partner
-  ↓
-Simulation → Prediction
-  ↓
-Tactical Ranking → score/confidence/risk/evidence
-  ↓
-Orchestrator
-  ↓
-Agent Planner / Runtime
-  ↓
-Guard AI → Trust Boundary → Safety Gate
-  ↓
-Executor / Game Adapter
-  ↓
-Verifier + fresh observation
-  ↓
-WorldStateStore → WorldState(vN+1)
-  ├─ success → checkpoint → next cycle
-  └─ failure → bounded Recovery → Replan
+Perception → WorldState → Party/Pet/Partner → Simulation → Tactical Ranking
+→ Orchestrator → Agent Planner/Runtime → Guard/Trust/Safety
+→ Executor/Game Adapter → Verifier + fresh observation → WorldState(vN+1)
+                                  │
+                                  └─ failure → RecoveryController
+                                               ├─ compact context (VRAMContextSlimmer)
+                                               ├─ retry / replan
+                                               ├─ degraded mode
+                                               └─ cooling mode
 
-Cross-cutting EventBus: lifecycle / policy / provider / resource / action / safety / memory / evaluation / replay facts.
+Hardware → HardwareWatchdog → runtime cooling/degraded signal
+EventBus spans lifecycle, policy, provider, resource, action, safety, memory, evaluation and recovery facts.
 ```
 
 ## Architectural decisions locked for 1.0 Beta
@@ -112,26 +103,27 @@ Cross-cutting EventBus: lifecycle / policy / provider / resource / action / safe
 4. WorldState is the canonical current-state source; event/trace data records history and provenance.
 5. Perception never directly controls execution.
 6. Tactical Ranking and Orchestrator do not bypass safety.
-7. Execution-affecting decisions must pass Guard/Trust/Safety.
+7. Execution-affecting decisions use the configured Guard/Trust/Safety path.
 8. Decision Providers never receive execution privileges.
 9. Local-first routing is default; cloud escalation is policy-controlled.
 10. Runtime resources and Trust authorization are deterministic.
-11. Recovery and Watchdog can reduce execution but cannot grant privileges.
+11. Recovery and Watchdog are adaptive runtime controllers and may change strategy/mode according to policy and observed conditions.
 12. Closed-loop verification requires a fresh observation.
 13. Unverified outcomes are not success.
 14. Production game integrations remain behind explicit gates.
 15. Critical path remains deterministic; telemetry/memory/evaluation may be event-driven.
 16. Versioned state, evidence and trace preserve provenance.
-17. EventBus is observational: subscribers never gain execution authority.
+17. EventBus remains observational and does not itself grant execution authority.
 
 ## Recommended next implementation order
 
-1. Durable EventBus persistence + replay runner.
-2. PredictionEvaluator and prediction-vs-actual metrics.
-3. Evidence-aware Tactical Ranking + verified-knowledge lifecycle.
-4. Production Guard AI + PC/phone Play Guard integration.
-5. Authenticated LAN transport and deterministic reconnect/disconnect.
-6. SQLite persistence and durable session recovery.
-7. Hardware discovery/benchmark and automatic runtime profiles.
-8. Local `llama.cpp` provider and policy-controlled cloud fallback.
-9. Production perception/game adapters and final integration gate.
+1. Integrate adaptive RecoveryController and hardware watchdog signals into the production Agent Runtime control loop.
+2. Durable EventBus persistence + replay runner.
+3. PredictionEvaluator and prediction-vs-actual metrics.
+4. Evidence-aware Tactical Ranking + verified-knowledge lifecycle.
+5. Production Guard AI + PC/phone Play Guard integration.
+6. Authenticated LAN transport and deterministic reconnect/disconnect.
+7. SQLite persistence and durable session recovery.
+8. Hardware discovery/benchmark and automatic runtime profiles.
+9. Local `llama.cpp` provider and policy-controlled cloud fallback.
+10. Production perception/game adapters and final integration gate.
