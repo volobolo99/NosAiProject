@@ -1,15 +1,23 @@
-using NosAi.Runtime;
-
-Console.WriteLine("NosAi Runtime 1.0 Beta");
-Console.WriteLine("Creator: Volodymyr Ryzhuk");
-Console.WriteLine("Runtime foundation initialized. Live game execution is disabled by default.");
-
-var runtime = new NosAiRuntime();
-Console.WriteLine(runtime.Status);
+using NosAi.Runtime.Adapters;
+using NosAi.Runtime.Humanizer;
+using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime;
 
-public sealed class NosAiRuntime
+public static class Program
 {
-    public string Status => "READY_FOR_BRINGUP";
+    public static void Main(string[] args)
+    {
+        // Composition root: runtime starts in safe mode until an explicit
+        // production configuration authorizes live execution.
+        var safetyPolicy = RuntimeSafetyPolicy.SafeDefault;
+        var inputBackend = new Win32InputBackend();
+        var humanizer = new DeterministicHumanizer(inputBackend);
+
+        Console.WriteLine("NosAi Runtime 1.0 Beta");
+        Console.WriteLine($"Live input: {safetyPolicy.LiveInputEnabled}");
+        Console.WriteLine($"Packet injection: {safetyPolicy.PacketInjectionEnabled}");
+        Console.WriteLine("Runtime composition initialized in safe mode.");
+    }
 }
