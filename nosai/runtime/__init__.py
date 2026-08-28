@@ -18,7 +18,8 @@ from .tools import ToolRegistry, ToolSpec
 from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile
 from .session_protocol import MessageType, SessionMessage, SequenceGuard
 from .evaluation import AgentTrace, EvaluationRecorder, EvaluationScore
-from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig
+from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig, RankedActionPlanner, plan_from_ranked_actions
+from .orchestrator_bridge import OrchestratorRuntimePlanner, run_orchestrated_tick
 
 __all__ = [
     "AgentRuntime", "RuntimeDecision", "AgentPlan", "DecisionProvider", "ExecutionMode",
@@ -30,5 +31,6 @@ __all__ = [
     "RuntimeWatchdog", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler",
     "HardwareSnapshot", "RuntimeProfile", "MessageType", "SessionMessage", "SequenceGuard",
     "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge",
-    "RuntimeIntegrationConfig",
+    "RuntimeIntegrationConfig", "RankedActionPlanner", "plan_from_ranked_actions",
+    "OrchestratorRuntimePlanner", "run_orchestrated_tick",
 ]
