@@ -23,11 +23,21 @@ This document is the current implementation ledger for `volobolo99/NosAiProject`
 - Perception → WorldState adapter.
 - Tests for the above integration layers.
 - Project metadata documenting version and creator.
+- Agent Runtime Platform foundation.
+- SessionManager with checkpoint/stop/resume lifecycle.
+- Bounded Agent MemoryBus and runtime decision/verification events.
+- ProviderRegistry and deterministic local-first ProviderRouter.
+- Privacy/locality-aware RoutingPolicy with cloud denied by default for local-only/sensitive contexts.
+- Deterministic ResourceManager abstraction and resource gating.
+- ExecutionPolicy primitives for execution mode and trust-tier policy.
+- AgentRuntime facade routing DecisionProvider output through Guard AI and Safety Gate.
+- Runtime tests covering local-first routing, cloud rejection and safety-gated provider output.
 
 ## 🟡 Implemented foundations — not production-complete
 
 These components have architectural foundations/contracts but are **not** to be reported as production-ready implementations:
 
+- Guard AI runtime and Trust Tier 1–4 model (current enforcement foundation is limited and requires completion).
 - DXGI Direct Capture.
 - Lock-free Triple Buffer.
 - Production YOLO detector.
@@ -35,15 +45,18 @@ These components have architectural foundations/contracts but are **not** to be 
 - Production 2D Kalman tracking.
 - Full game-specific semantic mapping.
 - Live game/client adapter.
+- Hardware-specific resource discovery/probing.
+- Durable SQLite memory.
 
 ## 🔴 Not yet implemented
 
 ### Runtime / decision architecture
 
-- Guard AI runtime and Trust Tier 1–4 enforcement.
-- Minimal PC Play AI + PC Play Guard + phone Guard AI bring-up.
-- Authenticated local session, HELLO/CAPABILITIES/HEARTBEAT/STATUS and deterministic reconnect/disconnect.
-- Provider Registry and fallback policy.
+- Full Guard AI Trust Tier 1–4 policy enforcement and watchdog/recovery runtime.
+- Minimal PC Play AI + PC Play Guard + phone Guard AI production bring-up.
+- Authenticated local session, HELLO/CAPABILITIES/HEARTBEAT/STATUS and deterministic reconnect/disconnect production protocol.
+- Full planner/executor/verifier agent loop.
+- Tool Registry and production permission enforcement.
 - Full Play AI HBT + Utility AI runtime.
 - Humanizer Adapter production implementation.
 
@@ -54,7 +67,6 @@ These components have architectural foundations/contracts but are **not** to be 
 - Beta-Binomial evidence updates.
 - Strategy lifecycle and mastery persistence.
 - Knowledge Base persistence and evidence lifecycle.
-- SQLite persistent memory.
 
 ### Perception / telemetry
 
@@ -73,35 +85,41 @@ These components have architectural foundations/contracts but are **not** to be 
 - Simulation-first action adapter.
 - Controlled live game adapter.
 - Local `llama.cpp` provider.
-- Target-hardware benchmark.
+- Cloud provider adapters.
+- Target-hardware benchmark and automatic runtime profiles.
 - Full runtime integration and release gate.
 
 ## Current integration path
 
 ```text
-Perception
-  ↓
-PerceptionWorldAdapter
-  ↓
-WorldState / WorldModel
-  ↓
-Partner + Pet coordination
-  ↓
-Candidate Actions
-  ↓
-Simulation / Lookahead
-  ↓
-Tactical Ranking
-  ↓
+Session / Scheduler / Resource / Policy
+              │
+              ▼
+Provider Router → Decision Provider (decision only)
+              │
+              ▼
+Perception → PerceptionWorldAdapter → WorldState / WorldModel
+              │
+              ▼
+Party + Pet + Partner coordination
+              │
+              ▼
+Candidate Actions → Simulation / Lookahead → Tactical Ranking
+              │
+              ▼
 Orchestrator
-  ↓
-Guard AI (pending)
-  ↓
+              │
+              ▼
+Guard AI / Trust Tier
+              │
+              ▼
 Safety Gate
-  ↓
-Play AI / Humanizer / Adapter (pending)
-  ↓
-Telemetry + Memory / Knowledge (pending)
+              │
+              ▼
+Play AI / Humanizer / Game Adapter (pending)
+              │
+              ▼
+Verification → Telemetry / Memory / Knowledge
 ```
 
 ## Architectural decisions locked for 1.0 Beta
@@ -119,14 +137,18 @@ Telemetry + Memory / Knowledge (pending)
 11. Localhost/LAN communication is the default for initial bring-up.
 12. Specialist integrations remain explicit placeholders until their production implementation is actually present.
 13. Perception foundations must be completed and validated before depending on live client capture.
+14. Decision Providers are model-agnostic and never receive execution privileges.
+15. Local-first routing is the default; cloud escalation is policy-controlled.
+16. Runtime resource selection must remain deterministic and testable without specific hardware.
+17. Runtime sessions and memory are observable and resumable; durable persistence remains a separate gate.
 
-## Recommended implementation order
+## Recommended next implementation order
 
-1. Minimal Guard AI + Play Guard bring-up contracts/runtime.
-2. Guard AI integration into Orchestrator/Safety Gate.
-3. Telemetry + persistent memory foundations.
-4. Production perception backends: DXGI, triple buffer, YOLO/OCR and Kalman.
-5. Game boundary: read-only probe → simulation adapter → controlled live adapter.
-6. Progression Engine V2 + Knowledge Base.
-7. Local LLM provider + hardware benchmark.
+1. Complete Guard AI Trust Tier 1–4 + Play Guard + phone Guard AI bring-up.
+2. Add full Planner → Simulation → Guard → Executor → Verifier loop without live game I/O.
+3. Add authenticated session protocol and deterministic reconnect/disconnect.
+4. Add production telemetry and SQLite persistence.
+5. Add hardware discovery/benchmark and automatic runtime profiles.
+6. Add local `llama.cpp` DecisionProvider and provider fallback adapters.
+7. Complete production perception and game-boundary adapters.
 8. Full CI/integration/benchmark/release gate.
