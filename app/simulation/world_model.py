@@ -109,4 +109,8 @@ class WorldModel:
             for skill in monster.skills:
                 if skill not in self.skills:
                     errors.append(f"monster:{monster.id}:unknown-skill:{skill}")
+        for objective in self.objectives.values():
+            for target in objective.target_ids:
+                if target not in self.monsters and target not in self.maps:
+                    errors.append(f"objective:{objective.id}:unknown-target:{target}")
         return tuple(errors)
