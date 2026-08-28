@@ -18,6 +18,7 @@ from .tools import ToolRegistry, ToolSpec
 from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile
 from .session_protocol import MessageType, SessionMessage, SequenceGuard
 from .evaluation import AgentTrace, EvaluationRecorder, EvaluationScore
+from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig
 
 __all__ = [
     "AgentRuntime", "RuntimeDecision", "AgentPlan", "DecisionProvider", "ExecutionMode",
@@ -28,5 +29,6 @@ __all__ = [
     "LoopResult", "RecoveryPolicy", "StepTrace", "RecoveryController", "RecoveryEvent",
     "RuntimeWatchdog", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler",
     "HardwareSnapshot", "RuntimeProfile", "MessageType", "SessionMessage", "SequenceGuard",
-    "AgentTrace", "EvaluationRecorder", "EvaluationScore",
+    "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge",
+    "RuntimeIntegrationConfig",
 ]
