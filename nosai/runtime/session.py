@@ -1,8 +1,11 @@
-"""Persistent-in-process agent session and checkpoint state."""
+"""Resumable in-process agent sessions and deterministic lifecycle state."""
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
+
+
+TERMINAL_STATUSES = {"STOPPED", "FAILED", "COMPLETED"}
 
 
 @dataclass
@@ -24,6 +27,19 @@ class AgentSession:
         self.updated_at = datetime.now(timezone.utc).isoformat()
         self.events.append({"type": "STATUS", "status": status, "at": self.updated_at})
 
+    def start(self) -> None:
+        self.transition("RUNNING")
+
+    def pause(self) -> None:
+        self.transition("PAUSED")
+
+    def complete(self) -> None:
+        self.transition("COMPLETED")
+
+    def fail(self, reason: str) -> None:
+        self.checkpoint(failure_reason=reason)
+        self.transition("FAILED")
+
 
 class SessionManager:
     def __init__(self) -> None:
@@ -44,5 +60,7 @@ class SessionManager:
 
     def resume(self, session_id: str) -> AgentSession:
         session = self.get(session_id)
+        if session.status == "COMPLETED":
+            return session
         session.transition("RESUMED")
         return session
