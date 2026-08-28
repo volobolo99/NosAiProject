@@ -4,10 +4,11 @@ from .pipeline import PerceptionPipeline, VisionBackend, OCRBackend, TrackingBac
 from .vision import ROI, HSVRange, ROIVision
 from .tracking import Track, CentroidTracker
 from .game_state import EvaluatedGameState, GameStateEvaluator
+from .world_adapter import PerceptionWorldAdapter
 
 __all__ = [
     "Frame", "BoundingBox", "OCRResult", "TrackedEntity", "PerceptionSnapshot",
     "PerceptionPipeline", "VisionBackend", "OCRBackend", "TrackingBackend",
     "ROI", "HSVRange", "ROIVision", "Track", "CentroidTracker",
-    "EvaluatedGameState", "GameStateEvaluator",
+    "EvaluatedGameState", "GameStateEvaluator", "PerceptionWorldAdapter",
 ]
