@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package nosai.network.v1;
+
+enum EntityType {
+  ENTITY_TYPE_UNSPECIFIED = 0;
+  ENTITY_TYPE_PLAYER = 1;
+  ENTITY_TYPE_MONSTER = 2;
+  ENTITY_TYPE_NPC = 3;
+  ENTITY_TYPE_PET = 4;
+}
+
+message Vector2D {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message NetworkPacket {
+  uint64 timestamp_ms = 1;
+  string opcode = 2;
+  bytes payload_raw = 3;
+  bool is_encrypted = 4;
+}
+
+message EntityState {
+  uint32 id = 1;
+  EntityType type = 2;
+  string name = 3;
+  Vector2D position = 4;
+  uint32 hp_current = 5;
+  uint32 hp_max = 6;
+  repeated uint32 active_buffs = 7;
+}
+
+message UIFrameUpdate {
+  uint64 frame_id = 1;
+  uint64 processing_time_us = 2;
+  EntityState local_player = 3;
+  repeated EntityState visible_entities = 4;
+  repeated NetworkPacket recent_packets = 5;
+}
