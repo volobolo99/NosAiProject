@@ -1,68 +1,107 @@
-# NosAi — Architettura e modello di comunicazione
+# NosAi — Architettura completa e modello di comunicazione
 
 **Versione:** 1.0 Beta  
 **Creatore:** Volodymyr Ryzhuk
 
+## Scopo
+
+Questo è l'unico documento ufficiale dell'architettura di NosAi. Consolida architettura, responsabilità, comunicazioni, autorità e ciclo dei dati.
+
 ## 1. Principio architetturale
 
-NosAi è un runtime deterministico basato su contratti. I modelli linguistici sono fornitori di decisioni: producono dati, ma non eseguono direttamente strumenti, I/O, autorizzazioni o decisioni di sicurezza. `WorldState` è la fonte canonica dello stato corrente; EventBus e trace registrano come il sistema è arrivato allo stato osservato.
+NosAi è un runtime deterministico basato su contratti. I modelli linguistici sono fornitori di decisioni: producono dati, ma non eseguono direttamente strumenti, I/O o decisioni di sicurezza. `WorldState` è la fonte canonica dello stato corrente; EventBus e trace registrano come il sistema è arrivato allo stato osservato.
 
-## 2. Sistema completo
+## 2. Mappa generale
 
 ```text
 SESSIONE / SCHEDULER
         │
-PIANO DI CONTROLLO RUNTIME
-Policy • Trust • Risorse • Provider Router • Memoria • Strumenti • Watchdog • Valutazione
+RISORSE ── POLICY ── PROVIDER ROUTER ── MEMORIA ── STRUMENTI
         │
-BUS EVENTI / TRACE  ← osservazionale
+        ▼
+CONTROLLO RUNTIME
         │
+        ├──────── WATCHDOG
+        ├──────── RECOVERY CONTROLLER
+        └──────── VALUTAZIONE
+        │
+        ▼
+EVENTBUS / TRACE
+        │
+        ▼
 PERCEZIONE
         │
 PerceptionWorldAdapter
         │
+        ▼
 WORLDSTATE STORE → WorldState(vN) + provenienza
         │
-Party / Pet / Partner
+        ├── Party
+        ├── Pet
+        └── Partner
         │
-Simulazione → PredictedOutcome
+        ▼
+SIMULAZIONE → PredictedOutcome
         │
-Tactical Ranking → punteggio/confidenza/rischio/evidenza
+        ▼
+TACTICAL RANKING → punteggio / confidenza / rischio / evidenza
         │
-Orchestrator
+        ▼
+ORCHESTRATOR
         │
-Agent Planner / Loop
+        ▼
+AGENT PLANNER / LOOP
         │
-GuardDecisionContext
+        ▼
+GUARD / TRUST / SAFETY
         │
-Guard AI / Policy
+        ▼
+EXECUTOR / GAME ADAPTER
         │
-Trust Boundary
+        ▼
+RISULTATO
         │
-Safety Gate
+        ▼
+VERIFIER
         │
-Play AI / Executor / Game Adapter
+        ▼
+NUOVA OSSERVAZIONE
         │
-Risultato azione
+        ▼
+WORLDSTATE vN+1
         │
-Verifier + nuova osservazione
-        │
-WorldState(vN+1)
-   ├─ PASS → checkpoint → ciclo successivo
-   └─ FAIL → recupero adattivo → ripianificazione → nuovo ranking
+        ├── successo → checkpoint → ciclo successivo
+        └── fallimento → Recovery → nuova strategia → nuova valutazione
 ```
 
 ## 3. Percorso critico
 
-Il percorso critico deve essere deterministico e ordinato:
+Il percorso principale è:
 
 `Observe → WorldState → Simulation → Ranking → Orchestrator → Plan → Guard → Trust → Safety → Execute → Verify → Re-observe`.
 
-Il recupero è parte del ciclo: un errore può produrre retry, nuovo piano, modalità degradata o cooling in base a policy, contesto e stato runtime.
+Il recupero fa parte del ciclo e può produrre retry, replan, modalità degradata o Cooling.
 
-## 4. Bus eventi e trace
+## 4. Autorità dei componenti
 
-EventBus è trasversale e osservazionale. Gli eventi identificano evento, sessione, esecuzione, attività, genitore, timestamp, sorgente, tipo e versione dello schema. La persistenza durevole e il replay deterministico sono traguardi successivi.
+| Componente | Decide | Esegue | Può cambiare strategia |
+|---|---|---|---|
+| Percezione | fatti osservati | no | no |
+| WorldState | rappresentazione dello stato | no | no |
+| Simulazione | risultati previsti | no | no |
+| Tactical Ranking | ordine dei candidati | no | no |
+| Decision Provider | dati decisionali | no | sì, come proposta |
+| Planner | piano | no | sì |
+| Guard | valutazione | no | sì, nella valutazione |
+| Trust | livello autorizzativo | no | secondo policy |
+| Safety | autorizzazione finale | no | secondo policy |
+| Executor | nessuna decisione strategica | sì | no |
+| Verifier | verifica | no | no |
+| Recovery | recupero e nuova strategia | no | **sì** |
+| Watchdog | gestione dello stato runtime | no | **sì** |
+| EventBus | registrazione | no | no |
+
+Recovery e Watchdog sono quindi controller attivi del runtime. La loro capacità di cambiare strategia o modalità non sostituisce i contratti di autorizzazione delle azioni protette.
 
 ## 5. WorldState
 
@@ -72,79 +111,146 @@ Esempio:
 
 `WorldState v41 → azione prevista → risultato osservato → WorldState v42`.
 
-## 6. Decisione e pianificazione
+## 6. Simulazione e Tactical Ranking
 
-Simulazione e Tactical Ranking non eseguono azioni. Producono candidati, punteggi, confidenza, rischio, ricompensa attesa ed evidenza. L'Orchestrator trasforma i risultati in piani runtime. Il piano rimane un dato finché non attraversa il percorso di autorizzazione configurato.
+Simulazione e Tactical Ranking non eseguono azioni. Producono risultati previsti, candidati, punteggi, confidenza, rischio, ricompensa attesa ed evidenza. L'Orchestrator utilizza questi risultati per costruire piani runtime.
 
-## 7. Guard, Trust e Safety
+## 7. Orchestrator e Planner
 
-Guard valuta il contesto completo. Trust fornisce il livello di autorizzazione applicabile. Safety costituisce il confine finale di autorizzazione per le azioni protette.
+L'Orchestrator coordina i moduli e il ciclo operativo. Il Planner trasforma obiettivi e stato in un piano. Un piano è un dato finché non attraversa il percorso di autorizzazione configurato.
 
-Livelli Trust: `OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
+## 8. Guard, Trust e Safety
 
-## 8. Esecuzione e verifica
+Guard valuta il contesto operativo. Trust determina il livello autorizzativo secondo policy. Safety costituisce il confine finale per le azioni protette.
 
-Executor/Game Adapter è il confine di esecuzione. Riceve un'azione già autorizzata e non output grezzo di un modello. Verifier riceve risultato e nuova osservazione. Un risultato non verificato non viene considerato automaticamente riuscito.
+Livelli Trust:
 
-## 9. RecoveryController e Watchdog
+`OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
 
-### RecoveryController
+## 9. Executor e Verifier
 
-Recovery è un controller runtime attivo. Può:
+Executor/Game Adapter costituisce il confine tecnico di esecuzione. Riceve un'azione già autorizzata e non output grezzo di un modello. Verifier confronta risultato e nuova osservazione. Un risultato non verificato non viene considerato automaticamente riuscito.
+
+## 10. RecoveryController adattivo
+
+Recovery può:
 
 - analizzare il contesto del fallimento;
-- comprimere lo storico tramite `VRAMContextSlimmer`;
-- riprovare un'azione;
-- richiedere o produrre un nuovo piano;
-- selezionare una strategia degradata;
+- comprimere lo storico con `VRAMContextSlimmer`;
+- eseguire retry;
+- creare o richiedere un nuovo piano;
+- cambiare strategia;
+- selezionare una modalità degradata;
+- modificare il budget operativo secondo policy;
 - entrare in Cooling;
 - cambiare modalità runtime;
-- riprendere l'esecuzione quando le condizioni lo consentono;
-- adattare budget e strategia secondo policy e condizioni osservate.
+- riprendere l'esecuzione quando le condizioni lo consentono.
 
-### Watchdog
+Ciclo:
 
-Il Watchdog controlla condizioni runtime e hardware e supporta le modalità:
+`fallimento → contesto compatto → strategia Recovery → nuova simulazione/ranking → nuovo ciclo`.
+
+## 11. Watchdog adattivo
+
+Il Watchdog gestisce le modalità:
 
 `NORMAL → DEGRADED → RECOVERY → COOLING → STOPPED`.
 
-Il watchdog hardware può monitorare temperatura CPU/GPU e, quando disponibile, frequenza di I/O. La soglia termica predefinita è 80 °C.
+Il watchdog hardware può utilizzare telemetria CPU/GPU e I/O opzionale. La soglia termica predefinita è 80 °C. Il Watchdog può modificare modalità runtime e gestione delle risorse in funzione delle condizioni osservate.
 
-Recovery e Watchdog **non sono vincolati alla sola riduzione o al blocco dell'esecuzione**. Possono adattare strategia e modalità runtime. Le azioni che richiedono autorizzazione continuano comunque a passare dai confini Guard/Trust/Safety configurati.
+## 12. Context Slimming e VRAM
 
-## 10. Memoria ed evidenza
+`VRAMContextSlimmer` riduce il costo del contesto diagnostico conservando firme deterministiche degli errori e un numero limitato di errori recenti. La normalizzazione evita che indirizzi di memoria e numeri di riga variabili producano firme inutilmente diverse.
+
+## 13. EventBus e Trace
+
+Gli eventi devono conservare identificativi di correlazione, timestamp, sorgente, tipo, versione dello schema e payload strutturato. EventBus serve audit, telemetria, memoria, evidenza, valutazione e replay. Gli iscritti non acquisiscono autorità di esecuzione.
+
+## 14. Memoria ed evidenza
 
 La memoria distingue esperienza grezza, osservazioni, episodi, ipotesi e conoscenza verificata. Provenienza, confidenza ed eventi di supporto devono essere conservati per le evidenze.
 
-## 11. Provider e hardware
+## 15. Provider e hardware
 
 Provider Router utilizza telemetria hardware e policy per scegliere il provider. Le variabili possono includere VRAM/RAM, utilizzo GPU, temperatura, latenza, energia, complessità e prestazioni recenti. L'escalation cloud deve rispettare la policy locale.
 
-## 12. Comunicazione PC/telefono
+## 16. Comunicazione PC/telefono
 
 Il bring-up locale/LAN utilizza messaggi tipizzati e protezione da sequenze/replay. Il ciclo previsto è:
 
 `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
 
-## 13. Pipeline di percezione
+Contratti principali:
+
+- `SessionMessage`
+- `ResourceSnapshot`
+- `RuntimeEvent`
+- `PerceptionWorldUpdate`
+- `WorldState`
+- `SimulationResult`
+- contratto di ranking
+- `AgentPlan`
+- `GuardDecisionContext`
+- contratto Safety
+- risultato Executor
+- risultato Verifier
+- comando Recovery
+
+## 17. Pipeline di percezione
 
 Pipeline produttiva prevista:
 
-`DXGI Direct Capture → Triple Buffer lock-free → HSV multi-ROI → YOLO → OCR glyph-hash con fallback/cache AI-OCR → filtro Kalman 2D temporale → Game State Evaluator → WorldState semantico immutabile`.
+```text
+DXGI Direct Capture
+      ↓
+Triple Buffer lock-free
+      ↓
+HSV multi-ROI
+      ↓
+YOLO
+      ↓
+OCR glyph-hash
+      ↓
+AI-OCR fallback/cache
+      ↓
+Kalman 2D temporale
+      ↓
+Game State Evaluator
+      ↓
+WorldState semantico immutabile
+```
 
 I backend produttivi devono essere validati indipendentemente prima dell'uso live.
 
-## 14. Matrice di comunicazione
+## 18. Ciclo dati
+
+### Osservazione
+
+`percezione grezza → semantica → validazione → WorldStateStore → versione`
+
+### Decisione
+
+`WorldState + obiettivo → simulazione → ranking → orchestrazione → piano`
+
+### Esecuzione
+
+`piano → autorizzazione → executor → risultato → nuova osservazione`
+
+### Recupero
+
+`fallimento → contesto compatto → strategia Recovery → nuova simulazione/ranking → nuovo ciclo`
+
+## 19. Matrice di comunicazione
 
 | Da | A | Contratto/canale | Risultato |
 |---|---|---|---|
 | Percezione | World Model | `PerceptionWorldAdapter` | osservazione versionata |
 | World Model | Simulazione | WorldState immutabile | risultati previsti |
-| Simulazione | Tactical Ranking | SimulationResult | candidati valutati |
+| Simulazione | Tactical Ranking | `SimulationResult` | candidati valutati |
 | Tactical Ranking | Orchestrator | azioni ordinate | decisione di dominio |
-| Orchestrator | Planner/Runtime | contratto piano | AgentPlan limitato |
+| Orchestrator | Planner/Runtime | contratto piano | `AgentPlan` |
 | Decision Provider | Runtime | dati decisionali | candidato/piano |
-| Planner | Guard | GuardDecisionContext | valutazione |
+| Planner | Guard | `GuardDecisionContext` | valutazione |
 | Guard | Trust/Safety | contratto policy | stato autorizzativo |
 | Safety | Executor | autorizzazione esplicita | azione o blocco |
 | Executor | Percezione | confine osservazione | nuova osservazione |
@@ -154,18 +260,16 @@ I backend produttivi devono essere validati indipendentemente prima dell'uso liv
 | Runtime | EventBus | `RuntimeEvent` | audit/trace |
 | Runtime | Memoria | contratto eventi | esperienza/evidenza |
 | Hardware | Provider Router | `ResourceSnapshot` | scelta provider |
-| PC | Guard telefono | `SessionMessage` autenticato | coordinamento |
+| PC | Telefono | `SessionMessage` autenticato | coordinamento |
 
-## 15. Confini
+## 20. Stato della produzione
 
-- Nessun modello linguistico esegue direttamente.
-- Percezione non esegue direttamente.
-- Tactical Ranking non esegue direttamente.
-- Recovery può modificare strategia e modalità runtime.
-- Watchdog può modificare modalità runtime e gestione delle risorse.
-- Le autorizzazioni protette restano soggette al percorso Guard/Trust/Safety.
-- Nessun risultato non verificato viene trattato come successo.
-- Le integrazioni live restano dietro traguardi espliciti.
-- Gli iscritti a EventBus non acquisiscono autorità di esecuzione.
+Le fondamenta deterministiche sono disponibili. I backend produttivi di percezione, persistenza, rete autenticata, provider LLM, adapter di gioco e integrazione hardware reale devono essere considerati produttivi solo dopo validazione indipendente.
 
-**Governance versione:** NosAi rimane **1.0 Beta** finché il creatore non richiede esplicitamente una modifica.
+## 21. Regola linguistica
+
+La documentazione del progetto è italiana. Codice, identificatori, API, protocolli e nomi tecnici che richiedono la forma originale possono rimanere in inglese.
+
+## 22. Governance
+
+NosAi rimane **1.0 Beta** finché il creatore non richiede esplicitamente una modifica.
