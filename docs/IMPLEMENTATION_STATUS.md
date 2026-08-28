@@ -1,10 +1,12 @@
 # NosAi — Implementation Status
 
-Updated: 2026-08-28
+**Version:** 1.0 Beta  
+**Creator:** Volodymyr Ryzhuk  
+**Updated:** 2026-08-28
 
-This document reconciles the current repository implementation with the architecture and the decisions recorded during the current NosAi design/implementation cycle.
+This document is the current implementation ledger for `volobolo99/NosAiProject`. The project version is intentionally locked at **1.0 Beta** and must not be changed by implementation, refactoring, tests, or documentation updates unless the creator explicitly requests a version change.
 
-## Implemented
+## 🟢 Implemented
 
 - Core contracts and deterministic decision baseline.
 - Safety Gate boundary.
@@ -17,36 +19,62 @@ This document reconciles the current repository implementation with the architec
 - Perception contracts and injectable perception pipeline.
 - ROI vision layer.
 - Temporal centroid tracking foundation.
-- Game State Evaluator.
+- Game State Evaluator foundation.
 - Perception → WorldState adapter.
 - Tests for the above integration layers.
+- Project metadata documenting version and creator.
 
-## Implemented as foundations, not production backends
+## 🟡 Implemented foundations — not production-complete
 
-The following are architectural interfaces/foundations and must not be reported as production-ready implementations:
+These components have architectural foundations/contracts but are **not** to be reported as production-ready implementations:
 
-- DXGI capture.
-- Lock-free triple buffering.
-- YOLO detector.
-- Production OCR backends/cache.
-- Kalman tracking.
+- DXGI Direct Capture.
+- Lock-free Triple Buffer.
+- Production YOLO detector.
+- Production OCR backends and cache.
+- Production 2D Kalman tracking.
 - Full game-specific semantic mapping.
-- Live game adapter.
+- Live game/client adapter.
 
-## Not yet implemented
+## 🔴 Not yet implemented
 
-- Guard AI runtime.
+### Runtime / decision architecture
+
+- Guard AI runtime and Trust Tier 1–4 enforcement.
+- Minimal PC Play AI + PC Play Guard + phone Guard AI bring-up.
+- Authenticated local session, HELLO/CAPABILITIES/HEARTBEAT/STATUS and deterministic reconnect/disconnect.
 - Provider Registry and fallback policy.
-- Progression Engine runtime.
-- Knowledge Base persistence/evidence lifecycle.
-- SQLite memory.
-- Telemetry/PTS synchronization.
-- PC Play Guard + phone Guard AI runtime and authenticated session bring-up.
-- Local llama.cpp provider.
+- Full Play AI HBT + Utility AI runtime.
+- Humanizer Adapter production implementation.
+
+### Learning / strategy
+
+- Progression Engine V2 runtime.
+- MAUT / UCB1 / HTN-MCTS integration.
+- Beta-Binomial evidence updates.
+- Strategy lifecycle and mastery persistence.
+- Knowledge Base persistence and evidence lifecycle.
+- SQLite persistent memory.
+
+### Perception / telemetry
+
+- Production DXGI capture.
+- Lock-free triple buffering.
+- Production YOLO pipeline.
+- Glyph-hash OCR and AI-OCR fallback/cache.
+- Production Kalman temporal tracking.
+- Complete game-specific Game State Evaluator.
+- Telemetry / PTS synchronization.
+- Deterministic anomaly detection and recovery.
+
+### Game boundary / AI providers
+
 - Read-only game/client probe.
 - Simulation-first action adapter.
-- Live game adapter behind explicit safety controls.
-- Target-hardware benchmark and full runtime integration.
+- Controlled live game adapter.
+- Local `llama.cpp` provider.
+- Target-hardware benchmark.
+- Full runtime integration and release gate.
 
 ## Current integration path
 
@@ -71,25 +99,34 @@ Guard AI (pending)
   ↓
 Safety Gate
   ↓
-Play AI / Adapter (pending)
+Play AI / Humanizer / Adapter (pending)
   ↓
 Telemetry + Memory / Knowledge (pending)
 ```
 
-## Architectural decisions recorded
+## Architectural decisions locked for 1.0 Beta
 
-1. Perception feeds the canonical WorldState through an explicit adapter; it does not directly control decisions or execution.
-2. Coordinated Action Manager proposes actions; it does not execute them.
-3. Tactical ranking may use deterministic lookahead, but ranking remains separate from safety authorization.
-4. Guard AI is a separate protection/evaluation layer and must remain between tactical/planning decisions and execution safety.
-5. Game-specific integrations remain behind explicit adapters and must not contaminate the decision core.
-6. Deterministic/simulation-first behavior remains the validation baseline before live client integration or LLM optimization.
+1. Canonical repository: `volobolo99/NosAiProject`.
+2. Current version: **1.0 Beta**. Do not increment it without an explicit instruction from the creator.
+3. Creator: **Volodymyr Ryzhuk**.
+4. Perception feeds canonical `WorldState` through an explicit adapter and never directly controls execution.
+5. Coordinated Action Manager proposes actions; it does not execute them.
+6. Tactical Ranking may use deterministic lookahead, but ranking remains separate from safety authorization.
+7. Guard AI is an independent protection/evaluation layer.
+8. Execution-affecting decisions must pass the Guard/Safety boundary.
+9. Deterministic simulation/test infrastructure must remain usable without the game client.
+10. Game-specific integrations remain behind explicit adapters and must not contaminate the decision core.
+11. Localhost/LAN communication is the default for initial bring-up.
+12. Specialist integrations remain explicit placeholders until their production implementation is actually present.
+13. Perception foundations must be completed and validated before depending on live client capture.
 
-## Next recommended order
+## Recommended implementation order
 
-1. Guard AI contracts/runtime and integration with the Orchestrator.
-2. Telemetry + persistent memory foundations.
-3. Production perception backends: DXGI, buffer, YOLO/OCR, Kalman and game-specific semantic evaluation.
-4. Game boundary: read-only probe, simulation adapter, then explicitly controlled live adapter.
-5. Local LLM provider and hardware benchmark.
-6. Full CI/integration/benchmark gate.
+1. Minimal Guard AI + Play Guard bring-up contracts/runtime.
+2. Guard AI integration into Orchestrator/Safety Gate.
+3. Telemetry + persistent memory foundations.
+4. Production perception backends: DXGI, triple buffer, YOLO/OCR and Kalman.
+5. Game boundary: read-only probe → simulation adapter → controlled live adapter.
+6. Progression Engine V2 + Knowledge Base.
+7. Local LLM provider + hardware benchmark.
+8. Full CI/integration/benchmark/release gate.
