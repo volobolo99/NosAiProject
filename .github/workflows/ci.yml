@@ -27,4 +27,4 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - name: Build C# runtime
-        run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release --no-restore
+        run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release
