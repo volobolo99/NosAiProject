@@ -1,91 +1,94 @@
-# NosAi — Implementation Roadmap
+# NosAi — Tabella di marcia
 
-**Version:** 1.0 Beta  
-**Creator:** Volodymyr Ryzhuk
+**Versione:** 1.0 Beta  
+**Creatore:** Volodymyr Ryzhuk
 
-> Version remains 1.0 Beta until explicitly changed by the creator.
+> La versione rimane 1.0 Beta finché il creatore non richiede esplicitamente una modifica.
 
-## Phase 0 — Clean foundation
-- [x] Dedicated repository
-- [x] Repository hygiene
-- [x] Architecture and migration rules
-- [x] Deterministic decision baseline
-- [x] Safety Gate boundary
-- [x] Transport-independent Guard protocol
-- [x] Core WorldState / Goal / Action / Decision contracts
-- [x] World Model foundation
-- [x] Partner / Pet coordination foundations
-- [x] Coordinated Action Manager foundation
-- [x] Tactical Ranking + deterministic simulation foundation
-- [x] Perception contracts/pipeline
-- [x] Perception → WorldState adapter
-- [x] Agent Runtime contracts, provider routing, resources and policy
-- [x] Bounded multi-step autonomous loop with verification
-- [x] Retry/replan recovery and independent watchdog
+## Fase 0 — Fondazione pulita
+- [x] Repository dedicato
+- [x] Pulizia del repository
+- [x] Architettura e regole di migrazione
+- [x] Base decisionale deterministica
+- [x] Confine Safety Gate
+- [x] Protocollo Guard indipendente dal trasporto
+- [x] Contratti WorldState / Goal / Action / Decision
+- [x] Fondazione World Model
+- [x] Fondazioni Party / Pet / Partner
+- [x] Fondazione Coordinated Action Manager
+- [x] Tactical Ranking + simulazione deterministica
+- [x] Contratti/pipeline di Perception
+- [x] Adapter Perception → WorldState
+- [x] Contratti Agent Runtime, provider, risorse e policy
+- [x] Ciclo autonomo multi-step con verifica
+- [x] Recovery retry/replan e watchdog indipendente
 
-## Phase 1 — Minimal reliable bring-up
-- [ ] Start Play AI on PC
-- [ ] Start Play Guard on PC
-- [ ] Start Guard AI on phone
-- [ ] Establish authenticated PC ↔ phone session
-- [ ] Exchange HELLO / CAPABILITIES / HEARTBEAT / STATUS
-- [ ] Deterministic safe disconnect/reconnect
-- [ ] One-command bring-up validation without game client
+## Fase 1 — Avvio minimo affidabile
+- [ ] Avvio Play AI su PC
+- [ ] Avvio Play Guard su PC
+- [ ] Avvio Guard AI su telefono
+- [ ] Sessione PC ↔ telefono autenticata
+- [ ] Scambio HELLO / CAPABILITIES / HEARTBEAT / STATUS
+- [ ] Disconnessione/riconnessione sicura e deterministica
+- [ ] Validazione di avvio senza client di gioco
 
-## Phase 2 — Guard and safe decision runtime
-- [x] Guard AI runtime foundation
-- [x] Trust Tier 1–4 policy boundary
-- [x] Guard/Safety boundary integration in autonomous loop
-- [x] Provider registry / local-first fallback policy
-- [x] Runtime evaluation trace foundation
-- [ ] Production Guard AI runtime across PC/phone
-- [ ] Production watchdog/recovery state propagation
-- [ ] Telemetry contract integration
+## Fase 2 — Guard e decisione sicura
+- [x] Fondazione Guard AI
+- [x] Confine policy Trust Tier 1–4
+- [x] Integrazione Guard/Safety nel ciclo autonomo
+- [x] Registro provider e policy local-first
+- [x] Fondazione trace di valutazione runtime
+- [ ] Guard AI produttivo PC/telefono
+- [ ] Propagazione produttiva dello stato watchdog/recovery
+- [ ] Integrazione telemetria
 
-## Phase 3 — Production perception and memory
-- [x] ROI vision foundation
-- [x] Temporal tracking foundation
-- [x] Game State Evaluator foundation
+## Fase 3 — Percezione e memoria produttive
+- [x] Fondazione visione ROI
+- [x] Fondazione tracking temporale
+- [x] Fondazione Game State Evaluator
 - [ ] DXGI Direct Capture
-- [ ] Lock-free Triple Buffer
-- [ ] Production YOLO detector
-- [ ] Glyph-hash OCR + AI-OCR fallback/cache
-- [ ] Production 2D Kalman tracking
-- [ ] Complete game-specific semantic evaluator
-- [ ] SQLite memory
-- [ ] PTS-synchronized telemetry
-- [ ] Deterministic anomaly detection/recovery
+- [ ] Triple Buffer lock-free
+- [ ] Detector YOLO produttivo
+- [ ] OCR glyph-hash + fallback/cache AI-OCR
+- [ ] Tracking Kalman 2D produttivo
+- [ ] Valutatore semantico completo specifico del gioco
+- [ ] Memoria SQLite
+- [ ] Telemetria sincronizzata PTS
+- [ ] Rilevamento anomalie e recupero deterministico
 
-## Phase 4 — Game boundary
-- [ ] Read-only game/client probe
-- [ ] Simulation-first action adapter
-- [ ] Controlled live adapter behind Guard/Safety
+## Fase 4 — Confine gioco
+- [ ] Probe di sola lettura del client
+- [ ] Adapter di azione basato sulla simulazione
+- [ ] Adapter live controllato dietro Guard/Safety
 
-## Phase 5 — Strategy and AI providers
+## Fase 5 — Strategia e provider AI
 - [ ] Progression Engine V2
 - [ ] MAUT / UCB1 / HTN-MCTS
-- [ ] Beta-Binomial evidence updates
-- [ ] Strategy lifecycle + mastery persistence
+- [ ] Aggiornamenti evidenza Beta-Binomial
+- [ ] Ciclo di vita strategie e persistenza mastery
 - [ ] Knowledge Base
-- [ ] Local llama.cpp provider
-- [ ] Cloud provider adapters with policy-controlled escalation
-- [ ] Target-hardware benchmark and automatic runtime profiles
+- [ ] Provider locale `llama.cpp`
+- [ ] Provider cloud con escalation controllata dalla policy
+- [ ] Benchmark hardware e profili runtime automatici
 
-## Phase 6 — Integration gate
-- [x] CI includes Python tests/compile validation and C# runtime build validation
-- [ ] End-to-end deterministic tests
-- [ ] Runtime integration tests
-- [ ] Hardware benchmark gate
-- [ ] Release readiness review
+## Fase 6 — Gate di integrazione
+- [x] CI con test/compilazione Python e build del runtime C#
+- [ ] Test end-to-end deterministici
+- [ ] Test di integrazione runtime
+- [ ] Gate benchmark hardware
+- [ ] Revisione di prontezza al rilascio
 
-## External implementation points
-These remain explicit placeholders and are not silently converted into implementation claims:
-- `EXTERNAL_IMPLEMENTATION_REQUIRED: game-client-specific integration`
-- `EXTERNAL_IMPLEMENTATION_REQUIRED: anti-cheat compatibility/research`
-- `EXTERNAL_IMPLEMENTATION_REQUIRED: packet/network integration`
-- `EXTERNAL_IMPLEMENTATION_REQUIRED: client-specific bypass/injection work`
+## Punti di implementazione esterna
 
-The clean project does not implement bypass, anti-cheat evasion, packet manipulation or client injection as part of the minimal bring-up.
+Restano espliciti e non vengono trasformati silenziosamente in dichiarazioni di implementazione:
 
-## Legacy repository policy
-`volobolo99/NosAi` remains reference-only. A component is considered migrated only after architectural review, selective reimplementation and tests.
+- `EXTERNAL_IMPLEMENTATION_REQUIRED: integrazione specifica del client di gioco`
+- `EXTERNAL_IMPLEMENTATION_REQUIRED: compatibilità/ricerca anti-cheat`
+- `EXTERNAL_IMPLEMENTATION_REQUIRED: integrazione pacchetti/rete`
+- `EXTERNAL_IMPLEMENTATION_REQUIRED: bypass/injection specifici del client`
+
+Il progetto pulito non implementa bypass, evasione anti-cheat, manipolazione pacchetti o injection del client come parte dell'avvio minimo.
+
+## Repository legacy
+
+`volobolo99/NosAi` rimane esclusivamente un riferimento. Un componente è considerato migrato solo dopo revisione architetturale, reimplementazione selettiva e test.
