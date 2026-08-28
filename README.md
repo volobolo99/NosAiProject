@@ -11,7 +11,7 @@ Clean-source implementation of **NosAi**, an AI runtime for NosTale.
 
 The repository is the clean development source. The legacy repository `legacy` is reference-only: legacy code is audited and selectively reimplemented, never copied blindly.
 
-The runtime provides a bounded autonomous Agent Runtime and closed-loop domain bridge: observe → orchestrate → guard/safety → execute → verify → re-observe → bounded replan. The runtime now also has a typed observational EventBus and a versioned WorldState observation store. It remains testable without a live game client.
+The runtime provides a bounded autonomous Agent Runtime and closed-loop domain bridge: observe → orchestrate → guard/safety → execute → verify → re-observe → adaptive recovery/replan. The runtime now also has a typed observational EventBus, versioned WorldState observation store, VRAM-aware context slimming, adaptive RecoveryController and hardware-aware watchdog modes. It remains testable without a live game client.
 
 ## Final architecture
 
@@ -34,10 +34,15 @@ Perception → WorldState(vN) → Simulation → Tactical Ranking
                                            │
                                         Verifier
                                            │
-                              Recovery / Replan / Watchdog
-                                           │
-                                      Re-observe
-                                           └────→ WorldState(vN+1)
+                              Adaptive Recovery Controller
+                                  │                 │
+                         Context Slimming      Watchdog
+                                  │                 │
+                           retry/replan      mode/cooling
+                                  └──────┬──────────┘
+                                         ↓
+                                    Re-observe
+                                         └────→ WorldState(vN+1)
 ```
 
 WorldState is the current-state source of truth. The event/trace plane records provenance, decisions, safety checks, outcomes, recovery and evaluation so runs can be audited and later replayed without giving the event system execution authority.
@@ -50,10 +55,11 @@ WorldState is the current-state source of truth. The event/trace plane records p
 - Tactical Ranking → Orchestrator through ranked action contracts.
 - Orchestrator → Agent Runtime through bounded AgentPlan contracts.
 - Decision Providers supply decision data only; they never execute.
-- Guard, Trust and Safety are mandatory authorization boundaries.
-- Executor/Game Adapter is the only execution boundary.
+- Guard, Trust and Safety remain configured authorization boundaries for protected actions.
+- Executor/Game Adapter is the execution boundary.
 - Verifier consumes execution results plus a fresh observation.
-- Recovery can retry/replan but cannot escalate permissions.
+- Recovery is an active controller: it records failure context, compresses repeated exception history and selects retry/replan/degraded/cooling strategies.
+- Watchdog supports NORMAL, DEGRADED, RECOVERY, COOLING and STOPPED runtime modes and can react to runtime and hardware conditions.
 - Provider Router consumes hardware/resource telemetry and policy constraints.
 - Memory and Evaluation consume structured events/traces rather than controlling execution.
 - EventBus is observational and cannot create an execution side effect.
@@ -61,12 +67,13 @@ WorldState is the current-state source of truth. The event/trace plane records p
 ## Reliability / autonomy rules
 
 - Autonomous execution is bounded by step, retry, replan and watchdog budgets.
-- Every action is independently authorized; model output cannot bypass Guard/Safety.
+- Every protected action follows the configured authorization policy; model output cannot bypass Guard/Safety.
 - Verification failure is evidence for recovery, never implicit success.
 - Every accepted observation advances the versioned WorldState store.
 - Prediction can be compared with actual post-action state.
 - Sessions checkpoint progress and can be stopped/resumed in-process.
-- The watchdog can only reduce execution and can never grant privileges.
+- Recovery and Watchdog may adapt runtime strategy and mode according to policy and observed conditions.
+- Hardware watchdog supports thermal/I/O monitoring and Cooling Phase; the default thermal threshold is 80°C.
 - Production game capture/live execution remain separate gated milestones.
 
 ## Priorities
@@ -74,10 +81,10 @@ WorldState is the current-state source of truth. The event/trace plane records p
 1. Safety and fail-closed execution.
 2. Deterministic simulation and testability.
 3. Stable contracts and versioned WorldState.
-4. Closed-loop autonomy with verification and bounded recovery.
+4. Closed-loop autonomy with adaptive recovery and verification.
 5. Unified event/trace/replay observability.
 6. Complete Guard AI and safe PC/phone bring-up.
-7. Local LLM as an isolated decision provider, never a privileged executor.
+7. Local LLM as an isolated decision provider.
 8. Hardware-aware optimization after functional correctness.
 
 ## Documentation
