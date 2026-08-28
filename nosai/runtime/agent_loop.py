@@ -32,13 +32,13 @@ class AgentLoop:
 
     def run(self, context: object, tier: TrustTier = TrustTier.SIMULATE) -> LoopResult:
         plan = self.planner.plan(context)
-        if not plan.actions:
+        if not plan.steps:
             return LoopResult(plan, VerificationResult(False, "empty plan"), False)
-        action = plan.actions[0]
-        guard_ok = self.guard(action)
-        safety_ok = self.safety(action)
+        step = plan.steps[0]
+        guard_ok = self.guard(step)
+        safety_ok = self.safety(step)
         if not self.trust.authorize(tier, guard_ok, safety_ok):
             return LoopResult(plan, VerificationResult(False, "trust/guard/safety boundary rejected action"), False)
-        observed = self.executor.execute(action)
-        verification = self.verifier.verify(action, observed)
+        observed = self.executor.execute(step)
+        verification = self.verifier.verify(step, observed)
         return LoopResult(plan, verification, True)
