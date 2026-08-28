@@ -20,6 +20,7 @@ from .session_protocol import MessageType, SessionMessage, SequenceGuard
 from .evaluation import AgentTrace, EvaluationRecorder, EvaluationScore
 from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig, RankedActionPlanner, plan_from_ranked_actions
 from .orchestrator_bridge import OrchestratorRuntimePlanner, run_orchestrated_tick
+from .closed_loop import ClosedLoopRuntime, ClosedLoopResult, ClosedLoopStep
 
 __all__ = [
     "AgentRuntime", "RuntimeDecision", "AgentPlan", "DecisionProvider", "ExecutionMode",
@@ -32,5 +33,6 @@ __all__ = [
     "HardwareSnapshot", "RuntimeProfile", "MessageType", "SessionMessage", "SequenceGuard",
     "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge",
     "RuntimeIntegrationConfig", "RankedActionPlanner", "plan_from_ranked_actions",
-    "OrchestratorRuntimePlanner", "run_orchestrated_tick",
+    "OrchestratorRuntimePlanner", "run_orchestrated_tick", "ClosedLoopRuntime",
+    "ClosedLoopResult", "ClosedLoopStep",
 ]
