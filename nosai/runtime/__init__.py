@@ -16,6 +16,8 @@ from .recovery import RecoveryController, RecoveryEvent
 from .watchdog import RuntimeWatchdog, WatchdogPolicy
 from .tools import ToolRegistry, ToolSpec
 from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile
+from .hardware_watchdog import HardwareTelemetry, HardwareProbe, PsutilNvmlProbe, WatchdogDecision, NOSAIHardwareWatchdog
+from .context_slimming import ExceptionSignature, VRAMContextSlimmer
 from .session_protocol import MessageType, SessionMessage, SequenceGuard
 from .evaluation import AgentTrace, EvaluationRecorder, EvaluationScore
 from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig, RankedActionPlanner, plan_from_ranked_actions
@@ -26,16 +28,12 @@ from .state import WorldStateStore, VersionedWorldState
 
 __all__ = [
     "AgentRuntime", "RuntimeDecision", "AgentPlan", "DecisionProvider", "ExecutionMode",
-    "HardwareCapabilities", "Permission", "PrivacyClass", "ProviderCapabilities",
-    "ResourceSnapshot", "RuntimeContext", "VerificationResult", "MemoryBus", "MemoryEvent",
-    "ExecutionPolicy", "RoutingPolicy", "ProviderRegistry", "ProviderRouter", "ResourceManager",
-    "AgentSession", "SessionManager", "TrustBoundary", "TrustPolicy", "TrustTier", "AgentLoop",
-    "LoopResult", "RecoveryPolicy", "StepTrace", "RecoveryController", "RecoveryEvent",
-    "RuntimeWatchdog", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler",
-    "HardwareSnapshot", "RuntimeProfile", "MessageType", "SessionMessage", "SequenceGuard",
-    "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge",
-    "RuntimeIntegrationConfig", "RankedActionPlanner", "plan_from_ranked_actions",
-    "OrchestratorRuntimePlanner", "run_orchestrated_tick", "ClosedLoopRuntime",
-    "ClosedLoopResult", "ClosedLoopStep", "EventBus", "RuntimeEvent", "WorldStateStore",
-    "VersionedWorldState",
+    "HardwareCapabilities", "Permission", "PrivacyClass", "ProviderCapabilities", "ResourceSnapshot", "RuntimeContext", "VerificationResult",
+    "MemoryBus", "MemoryEvent", "ExecutionPolicy", "RoutingPolicy", "ProviderRegistry", "ProviderRouter", "ResourceManager",
+    "AgentSession", "SessionManager", "TrustBoundary", "TrustPolicy", "TrustTier", "AgentLoop", "LoopResult", "RecoveryPolicy", "StepTrace",
+    "RecoveryController", "RecoveryEvent", "RuntimeWatchdog", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler", "HardwareSnapshot",
+    "HardwareTelemetry", "HardwareProbe", "PsutilNvmlProbe", "WatchdogDecision", "NOSAIHardwareWatchdog", "ExceptionSignature", "VRAMContextSlimmer",
+    "MessageType", "SessionMessage", "SequenceGuard", "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge", "RuntimeIntegrationConfig",
+    "RankedActionPlanner", "plan_from_ranked_actions", "OrchestratorRuntimePlanner", "run_orchestrated_tick", "ClosedLoopRuntime", "ClosedLoopResult", "ClosedLoopStep",
+    "EventBus", "RuntimeEvent", "WorldStateStore", "VersionedWorldState",
 ]
