@@ -1,46 +1,53 @@
-# NosAi Project Rules
+# NosAi — Project Rules
 
-## Primary bring-up rule
-The first milestone is **Play AI + Play Guard + Guard AI minimal bring-up**. The system must first reach the smallest reliable state in which:
+**Version:** 1.0 Beta  
+**Creator:** Volodymyr Ryzhuk
 
-1. Play AI can start on the PC.
-2. Play Guard can start on the PC.
-3. Guard AI can start on the phone.
-4. PC Guard and phone Guard AI establish a local authenticated session.
-5. Both sides exchange heartbeat and capability/status messages.
-6. Disconnect/reconnect is deterministic and safe.
-7. The complete minimal path is testable without the game client.
+## 1. Version governance
 
-Only after this baseline is proven should richer game perception, memory, LLM optimization, game adapters, and advanced automation proceed.
+The project version is **1.0 Beta**. No implementation, refactor, test, documentation or automation may change the version unless explicitly requested by the creator.
 
-## Product role rule
-NosAi is designed as an automated player whose objective is to advance a character toward explicit goals efficiently while minimizing unnecessary time, effort, resource waste and avoidable risk.
+## 2. Safety-first execution
 
-- **Play AI** replaces the human at the execution layer: it receives approved actions/plans, operates through available game-interface adapters, and reports observations/results.
-- **Guard AI** is the strategic protection and evaluation layer: it analyzes risk, uncertainty, constraints and proposed plans/actions and can reject, constrain, downgrade or request reconsideration.
-- **Progression Engine** is the planning layer: it selects and evaluates progression paths using state, predictions, time, resources, risk and validated strategy knowledge.
-- **Knowledge Base** preserves validated strategies so knowledge can be transferred to compatible future characters instead of relearned from zero.
+Safety is fail-closed. Planning, ranking and AI providers cannot bypass Guard AI or the Safety Gate. No component may directly convert an untrusted decision into live execution.
 
-No role is allowed to silently assume another role's privileges.
+## 3. Layer separation
 
-## Architecture rule
-- Keep the new repository as the clean canonical implementation.
-- Reuse the old repository only as a source for selected contracts, algorithms, tests, or documentation after review.
-- Keep Play AI, Play Guard, Guard AI, Progression Engine and Knowledge Base separated by explicit contracts and transport interfaces.
-- Default to localhost/LAN-only communication during bring-up.
-- Every decision that can affect execution must pass through the Safety Gate.
-- Simulation must remain available so the stack can be tested without a game client.
-- CI must validate the minimal bring-up path before feature work is accepted.
-- Do not optimize hardware or the local LLM before deterministic functional behavior is proven.
+- Perception observes and produces semantic snapshots.
+- World Model owns canonical semantic state.
+- Partner and Pet systems remain independently modeled while participating in coordinated planning.
+- Coordinated Action Manager proposes coordinated actions; it does not execute them.
+- Tactical Ranking ranks candidates; it does not authorize execution.
+- Orchestrator coordinates modules; it is not a safety bypass.
+- Guard AI evaluates risk, trust and degradation.
+- Safety Gate is the final execution authorization boundary.
+- Game/client I/O is isolated behind explicit adapters.
+- LLMs are decision providers only.
 
-## Strategy and mastery rule
-Strategies are persistent, evidence-backed records. They must be scoped as needed by character category/class, level range, build/equipment, content/activity, objective and relevant context.
+## 4. Deterministic baseline
 
-Strategies move through an evidence lifecycle such as experimental → validated → preferred, with regression/demotion supported. A single run must never overwrite validated knowledge.
+Every critical decision path must remain testable deterministically without the live game client. Simulation/lookahead is the preferred validation path before live execution.
 
-NosAi must expose an evidence-based **Mastery Score** from 0–100, with contextual breakdowns where possible. The score describes proximity to the best validated/reference behavior for a context; it is not an unsupported claim of absolute perfection.
+## 5. Perception boundary
 
-## External implementation boundary
-Some future integrations may require capabilities that are outside this implementation scope or require separate specialist work (for example game-client-specific anti-cheat interaction, client bypasses, or packet/network manipulation). These capabilities are **not to be silently deleted from the architecture or roadmap**. They must instead remain represented as explicit integration interfaces/placeholders and be marked `EXTERNAL_IMPLEMENTATION_REQUIRED` until a separately supplied implementation can be reviewed and integrated safely.
+The intended production Perception has seven layers: DXGI capture, lock-free triple buffer, multi-ROI HSV vision, YOLO detection, glyph-hash OCR with AI-OCR fallback/cache, temporal 2D Kalman filtering, and Game State Evaluation. Current repository foundations must not be mislabeled as production backends.
 
-No such integration is required for the minimal bring-up milestone.
+## 6. Bring-up boundary
+
+The first reliable runtime milestone is minimal Play AI + Play Guard + Guard AI bring-up: authenticated local/LAN session, HELLO/CAPABILITIES/HEARTBEAT/STATUS exchange, deterministic reconnect/disconnect and validation without the game client.
+
+## 7. Persistence and learning
+
+Progression Engine and Knowledge Base changes must follow explicit evidence/strategy lifecycle rules. Validated knowledge cannot be silently overwritten by a single execution.
+
+## 8. External implementation points
+
+Specialist-dependent areas remain explicit `EXTERNAL_IMPLEMENTATION_REQUIRED` boundaries where appropriate. The clean project does not silently introduce bypass, anti-cheat evasion, packet manipulation or client injection.
+
+## 9. Legacy repository
+
+`volobolo99/NosAi` is reference-only. Components are audited and selectively reimplemented; no blind copying.
+
+## 10. Documentation integrity
+
+Implementation status must distinguish **implemented**, **foundation**, and **planned**. Documentation must reflect the actual repository state and must not claim production readiness for an unimplemented backend.
