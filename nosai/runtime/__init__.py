@@ -7,7 +7,6 @@ from .contracts import (
     AgentPlan,
     DecisionProvider,
     ExecutionMode,
-    HardwareCapabilities,
     Permission,
     PrivacyClass,
     ProviderCapabilities,
@@ -19,7 +18,7 @@ from .engine import AgentRuntime, RuntimeDecision
 from .memory import MemoryBus, MemoryEvent
 from .policy import ExecutionPolicy, RoutingPolicy
 from .provider_router import ProviderRegistry, ProviderRouter
-from .resources import ResourceManager
+from .resources import HardwareCapabilities, ResourceManager
 from .session import AgentSession, SessionManager
 
 __all__ = [
