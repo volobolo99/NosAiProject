@@ -4,7 +4,7 @@
 **Creatore:** Volodymyr Ryzhuk  
 **Aggiornato:** 2026-08-29
 
-Questo documento registra esclusivamente ciò che è effettivamente presente nel repository `volobolo99/NosAiProject`.
+Questo documento registra ciò che è presente o pianificato nel repository `volobolo99/NosAiProject`.
 
 ## 🟢 Implementato
 
@@ -34,6 +34,10 @@ Questo documento registra esclusivamente ciò che è effettivamente presente nel
 - Timeout fail-fast per blocchi sincroni tramite `RuntimeTimeout` e `run_with_timeout`.
 - Contratto Protobuf v3 per `EntityState`, `NetworkPacket`, `UIFrameUpdate` e tipi correlati.
 - Nonce crittograficamente casuale e validazione rafforzata nel protocollo di bring-up LAN.
+- Nucleo crittografico per sessioni effimere con X25519, HKDF-SHA256 e ChaCha20-Poly1305.
+- Stress test asincrono del nucleo di cifratura su 1000 operazioni.
+- Persistenza locale SQLite per sessioni di caccia e traiettorie tramite `NosAiSqliteLogger`, con WAL e inserimento batch.
+- Controller Miniland e automazione della pesca tramite `MinilandAdapter` astratto, con test tramite adapter simulato.
 - Documentazione architetturale consolidata e aggiornata in italiano.
 
 ## 🟡 Fondazioni — non complete per la produzione
@@ -45,12 +49,14 @@ Questo documento registra esclusivamente ciò che è effettivamente presente nel
 - TLS/mTLS o Noise completo per il trasporto LAN.
 - Generazione e integrazione dei binding Protobuf C++/TypeScript nella toolchain.
 - Discovery hardware, probing e benchmark reali.
-- Memoria SQLite durevole.
+- Shared Memory nativa e integrazione Node.js/N-API.
+- Persistenza analitica SQLite completa oltre al logger iniziale.
 - Sandbox strumenti e applicazione produttiva delle capability.
 - Backend produttivi DXGI, Triple Buffer, YOLO, OCR, Kalman e mapping specifico del gioco.
 - Adapter live del gioco/client.
 - Provider locale `llama.cpp` e provider cloud.
 - Benchmark IPC ad alta densità e validazione della Saturazione Controllata.
+- Integrazione Miniland con client reale e adapter I/O specifico della piattaforma.
 
 ## 🔴 Non ancora implementato
 
@@ -93,23 +99,11 @@ Questo documento registra esclusivamente ciò che è effettivamente presente nel
 - Benchmark hardware reale e profili runtime automatici.
 - Gate finale di integrazione/rilascio.
 
-## Ottimizzazioni v1.6/v1.7 recepite
+## Ottimizzazioni e specifiche importate
 
-Sono state recepite le parti architetturalmente compatibili delle specifiche allegate:
+Sono state recepite le parti implementabili delle specifiche allegate v1.6–v2.8: timeout fail-fast, circuit breaker, backoff, EventBus bounded, nonce, contratto Protobuf, sessioni effimere, stress test, persistenza SQLite iniziale, Shared Memory come fondazione, Miniland come controller tramite adapter e requisiti di audit/evidenza.
 
-- timeout fail-fast;
-- circuit breaker e backoff della Recovery;
-- code bounded per EventBus;
-- nonce e validazione del protocollo;
-- contratto Protobuf v3;
-- obiettivi di stress test multi-entità;
-- modalità di Saturazione Controllata come obiettivo di validazione;
-- separazione decisione/esecuzione del Game Adapter;
-- requisito di persistenza append-only delle evidenze.
-
-Le latenze numeriche dichiarate nei documenti allegati sono trattate come **obiettivi di benchmark**, non come prestazioni garantite dal codice.
-
-La parte di riconnessione descritta come tecnica per simulare il comportamento umano allo scopo di evitare sistemi anti-cheat non è stata implementata. NosAi implementerà invece una riconnessione orientata ad affidabilità, rate limiting, autenticazione, TTL e arresto sicuro.
+Le prestazioni numeriche dichiarate nelle specifiche sono trattate come **obiettivi di benchmark**, non come prestazioni garantite.
 
 ## Percorso corrente
 
@@ -129,11 +123,13 @@ Hardware → HardwareWatchdog → segnale runtime
 EventBus bounded → ciclo di vita, policy, provider, risorse, azioni, safety, memoria, valutazione e recovery
 LAN → protocollo tipizzato + nonce → futura autenticazione crittografica completa
 Protobuf → contratto binario versionabile per flussi ad alta frequenza
+SQLite → sessioni + traiettorie
+Miniland → controller → adapter → I/O client specifico
 ```
 
 ## Prossimo ordine di implementazione
 
-1. Integrare completamente timeout, RecoveryController e HardwareWatchdog nel ciclo Agent Runtime.
+1. Integrare completamente timeout, RecoveryController, RuntimeWatchdog e HardwareWatchdog nel ciclo Agent Runtime.
 2. Persistenza EventBus + replay deterministico.
 3. PredictionEvaluator e metriche predizione-vs-realtà.
 4. Ranking basato su evidenza + ciclo di vita della conoscenza.
@@ -141,7 +137,10 @@ Protobuf → contratto binario versionabile per flussi ad alta frequenza
 6. Guard AI produttivo + integrazione PC/telefono.
 7. TLS/Noise per il trasporto LAN e gestione TTL/sessione.
 8. Generazione binding Protobuf e integrazione Control Center/Eye AI View.
-9. SQLite e recupero durevole delle sessioni.
-10. Discovery/benchmark hardware e profili automatici.
-11. Provider locale `llama.cpp` e fallback cloud controllato dalla policy.
-12. Adapter Perception/Game produttivi e gate finale.
+9. Estendere SQLite a persistenza analitica e recupero durevole delle sessioni.
+10. Shared Memory nativa + N-API.
+11. Discovery/benchmark hardware e profili automatici.
+12. Provider locale `llama.cpp` e fallback cloud controllato dalla policy.
+13. Adapter Perception/Game produttivi.
+14. Adapter Miniland reale, mantenendo il controller indipendente dall'I/O.
+15. Gate finale di integrazione e rilascio.
