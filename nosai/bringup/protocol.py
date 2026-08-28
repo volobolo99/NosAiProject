@@ -1,17 +1,12 @@
-"""Transport-neutral JSON-lines protocol for the first PC ↔ phone bring-up.
-
-The transport is intentionally simple: one UTF-8 JSON object per line over a
-local Wi-Fi TCP connection. No game integration or privileged action is part
-of this protocol.
-"""
+"""Protocollo locale tipizzato per il coordinamento PC ↔ telefono."""
 from __future__ import annotations
-
 from dataclasses import dataclass, asdict
 import json
+import secrets
 from typing import Any
 
-PROTOCOL_VERSION = "1.0"
-
+PROTOCOL_VERSION = "1.1"
+NONCE_BYTES = 24
 
 @dataclass(frozen=True)
 class Message:
@@ -20,6 +15,7 @@ class Message:
     seq: int
     payload: dict[str, Any]
     protocol: str = PROTOCOL_VERSION
+    nonce: str = ""
 
     def encode(self) -> bytes:
         return (json.dumps(asdict(self), separators=(",", ":")) + "\n").encode("utf-8")
@@ -28,25 +24,27 @@ class Message:
     def decode(line: bytes) -> "Message":
         obj = json.loads(line.decode("utf-8"))
         if obj.get("protocol") != PROTOCOL_VERSION:
-            raise ValueError("unsupported protocol version")
+            raise ValueError("versione protocollo non supportata")
         if not isinstance(obj.get("type"), str) or not isinstance(obj.get("session_id"), str):
-            raise ValueError("invalid message envelope")
-        if not isinstance(obj.get("seq"), int) or not isinstance(obj.get("payload"), dict):
-            raise ValueError("invalid message envelope")
-        return Message(obj["type"], obj["session_id"], obj["seq"], obj["payload"])
+            raise ValueError("busta messaggio non valida")
+        if not isinstance(obj.get("seq"), int) or obj["seq"] < 0 or not isinstance(obj.get("payload"), dict):
+            raise ValueError("busta messaggio non valida")
+        nonce = obj.get("nonce")
+        if not isinstance(nonce, str) or len(nonce) < 16:
+            raise ValueError("nonce mancante o non valido")
+        return Message(obj["type"], obj["session_id"], obj["seq"], obj["payload"], obj["protocol"], nonce)
 
+def _message(type_: str, session_id: str, seq: int, payload: dict[str, Any]) -> Message:
+    return Message(type_, session_id, seq, payload, nonce=secrets.token_hex(NONCE_BYTES))
 
 def hello(session_id: str, seq: int, role: str) -> Message:
-    return Message("HELLO", session_id, seq, {"role": role, "protocol": PROTOCOL_VERSION})
-
+    return _message("HELLO", session_id, seq, {"role": role, "protocol": PROTOCOL_VERSION})
 
 def capabilities(session_id: str, seq: int, capabilities_list: list[str]) -> Message:
-    return Message("CAPABILITIES", session_id, seq, {"capabilities": capabilities_list})
-
+    return _message("CAPABILITIES", session_id, seq, {"capabilities": capabilities_list})
 
 def heartbeat(session_id: str, seq: int) -> Message:
-    return Message("HEARTBEAT", session_id, seq, {})
-
+    return _message("HEARTBEAT", session_id, seq, {})
 
 def status(session_id: str, seq: int, state: str, detail: str = "") -> Message:
-    return Message("STATUS", session_id, seq, {"state": state, "detail": detail})
+    return _message("STATUS", session_id, seq, {"state": state, "detail": detail})
