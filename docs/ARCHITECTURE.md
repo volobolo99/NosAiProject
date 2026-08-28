@@ -1,70 +1,79 @@
-# NosAi — Architecture Baseline
+# NosAi — Architecture
 
-## Purpose
-This repository is the clean implementation source for NosAi. The previous repository `volobolo99/NosAi` is treated as a reference/archive source only.
+**Version:** 1.0 Beta  
+**Creator:** Volodymyr Ryzhuk
 
-## Project roles
-- **Play AI** — execution-oriented player agent. It carries out approved plans/actions through game-interface adapters and reports observations/results.
-- **Guard AI** — strategic protection/evaluation layer. It evaluates risk, uncertainty, constraints and proposed plans/actions; it may reject, constrain, downgrade or request reconsideration.
-- **Progression Engine** — strategic planner. It determines the best progression path toward the current goal using state, predictions, resources, time, risk and validated strategy knowledge.
-- **Knowledge Base** — persistent reusable strategy knowledge, evidence, statistics and mastery information shared across compatible character profiles.
+## Runtime boundaries
 
-These roles are separate and communicate through explicit contracts. No role silently bypasses the Safety Gate.
-
-## Rules
-1. No blind copy of legacy code.
-2. Every imported component must first pass a source audit and contract review.
-3. Safety boundaries are first-class architecture, not a later patch.
-4. Local LLM inference is isolated behind a decision-provider interface.
-5. Game input/output adapters remain outside the decision engine.
-6. Simulation must be executable without the game client.
-7. CI must validate contracts, safety, deterministic simulation, and provider fallback.
-8. The first functional milestone is Play AI + Play Guard + Guard AI minimal bring-up and authenticated communication.
-9. Rich game perception and advanced automation follow only after the minimal runtime path is reliable.
-10. External specialist integrations are represented explicitly as interfaces/placeholders and marked `EXTERNAL_IMPLEMENTATION_REQUIRED` until reviewed and supplied.
-
-## Target flow
+NosAi is organized as a contract-driven pipeline. Observation, world state, planning, ranking, guarding and execution are independent boundaries.
 
 ```text
-Game/Simulation Observation
-          ↓
-     WorldState
-          ↓
- Progression Engine ←→ Knowledge Base
-          ↓
-     Plan / Decision Proposal
-          ↓
-       Guard AI
-          ↓
-     Safety Gate
-          ↓
-       Play AI
-          ↓
- Game Interface Adapter
-          ↓
-     Execution Result
-          ↓
- Observation / Telemetry → Knowledge Base
+Game / external sources
+        ↓
+Perception
+  ├─ DXGI capture (pending)
+  ├─ ROI / HSV
+  ├─ YOLO (pending)
+  ├─ OCR (pending)
+  └─ temporal tracking (foundation; Kalman pending)
+        ↓
+Game State Evaluator
+        ↓
+PerceptionWorldAdapter
+        ↓
+Canonical WorldState / World Model
+        ↓
+Party + Partner + Pet coordination
+        ↓
+Candidate Actions
+        ↓
+Simulation / Lookahead
+        ↓
+Tactical Action Ranking
+        ↓
+Orchestrator
+        ↓
+Guard AI / Trust Tier evaluation
+        ↓
+Safety Gate
+        ↓
+Play AI / Humanizer / Game Adapter
+        ↓
+Telemetry / Memory / Knowledge Base
 ```
 
-## Provider strategy
-- Deterministic rule provider: baseline/fallback.
-- Local LLM provider: optional accelerator for decision quality.
-- Future providers must implement the same contract and cannot bypass Safety Gate.
+## Separation rules
 
-## Runtime stages
-1. Core contracts
-2. Safety boundary
-3. Deterministic simulator
-4. Play/Guard minimal communication bring-up
-5. Progression Engine contracts and deterministic planner
-6. Knowledge Base and evidence-backed strategy lifecycle
-7. Decision providers
-8. Memory/telemetry
-9. Read-only vision/observation
-10. Game adapter
-11. Local LLM optimization
-12. Full runtime integration
+- Perception observes and produces semantic snapshots; it does not execute actions.
+- `PerceptionWorldAdapter` is the explicit boundary into canonical `WorldState`.
+- World Model is the shared semantic state consumed by decision systems.
+- Partner and Pet are coordinated actors but remain independently modeled.
+- Coordinated Action Manager proposes coordinated actions; execution belongs downstream.
+- Tactical Ranking evaluates candidates and may use deterministic lookahead.
+- Orchestrator coordinates modules; it is not a bypass around Guard/Safety.
+- Guard AI independently evaluates risk, trust and degradation before execution.
+- Safety Gate is fail-closed and remains the final execution authorization boundary.
+- Game-specific I/O is isolated behind adapters.
+- LLM providers are decision providers only and never privileged executors.
 
-## Migration policy
-Useful legacy files may be reimplemented or imported selectively from `volobolo99/NosAi`, but only after verifying their actual contents. Historical reports are evidence, not source code truth.
+## Perception architecture
+
+The intended production Perception follows seven layers:
+
+1. DXGI Direct Capture.
+2. Lock-free Triple Buffer.
+3. Multi-ROI HSV vision.
+4. YOLO object detection.
+5. Glyph-hash OCR with AI-OCR fallback/cache.
+6. Temporal 2D Kalman filtering.
+7. Game State Evaluator producing immutable semantic state.
+
+The repository currently contains reusable contracts/pipeline plus ROI, tracking and evaluator foundations. Production-specific capture/detection/OCR/Kalman backends remain gated.
+
+## Reliability-first bring-up
+
+Before live game integration, the system must support a minimal Play AI + Play Guard + Guard AI session using local/LAN communication, explicit authentication/capabilities, heartbeat/status and deterministic reconnect/disconnect. The path must be testable without the game client.
+
+## Version governance
+
+This architecture is for **NosAi 1.0 Beta**. No implementation or documentation task may silently change the project version.
