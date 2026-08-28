@@ -11,9 +11,9 @@ Implementazione sorgente di **NosAi**, runtime di intelligenza artificiale per N
 
 Il repository è la sorgente di sviluppo ufficiale. Il repository legacy `volobolo99/NosAi` è utilizzato esclusivamente come riferimento: il codice viene analizzato e reimplementato selettivamente, senza copia indiscriminata.
 
-Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazione → Guard/Safety → esecuzione → verifica → nuova osservazione → recupero e ripianificazione adattivi.
+Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazione → autorizzazione → esecuzione → verifica → nuova osservazione → recupero e ripianificazione adattivi.
 
-Sono presenti inoltre EventBus tipizzato, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo e watchdog hardware/runtime.
+Sono presenti EventBus tipizzato e bounded, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo, circuit breaker, watchdog hardware/runtime, nucleo di cifratura per sessioni effimere, logger SQLite per sessioni/traiettorie e controller Miniland tramite adapter.
 
 ## Architettura
 
@@ -40,7 +40,7 @@ Percezione → WorldState(vN) → Simulazione → Ranking Tattico
                             │                  │
                      Context Slimming       Watchdog
                             │                  │
-                    retry/replan       modalità/cooling
+                  retry/replan/degraded   modalità/cooling
                             └───────┬──────────┘
                                     ↓
                                Ri-osservazione
@@ -48,6 +48,15 @@ Percezione → WorldState(vN) → Simulazione → Ranking Tattico
 ```
 
 WorldState è la fonte canonica dello stato corrente. EventBus e trace registrano provenienza, decisioni, controlli di sicurezza, risultati, recuperi e valutazioni.
+
+## Componenti aggiunti
+
+- `nosai/runtime/context_slimming.py` — compressione dello storico diagnostico orientata alla VRAM.
+- `nosai/runtime/hardware_watchdog.py` — watchdog termico e I/O con Cooling Phase.
+- `nosai/security/ephemeral_session.py` — nucleo X25519 + HKDF-SHA256 + ChaCha20-Poly1305 per sessioni effimere.
+- `proto/nosai_network_v1.proto` — contratto Protobuf v3 per i flussi di rete/UI ad alta frequenza.
+- `nosai/persistence/sqlite_logger.py` — persistenza locale di sessioni e traiettorie tramite SQLite/WAL.
+- `nosai/miniland/automation.py` — controller Miniland e automazione pesca tramite `MinilandAdapter`.
 
 ## Modello di comunicazione
 
@@ -62,6 +71,8 @@ WorldState è la fonte canonica dello stato corrente. EventBus e trace registran
 - Il Verifier confronta risultato e nuova osservazione.
 - RecoveryController può adattare strategia, ripianificare, cambiare modalità runtime, entrare in modalità degradata/cooling e riprendere l'esecuzione secondo policy e condizioni osservate.
 - Watchdog può cambiare modalità runtime e applicare limiti operativi in funzione di condizioni runtime e hardware.
+- SQLite registra dati analitici locali senza diventare automaticamente la fonte canonica del WorldState.
+- Miniland utilizza un adapter esplicito per separare il controller dall'I/O del client.
 - EventBus è osservazionale e non genera da solo effetti di esecuzione.
 
 ## Documentazione
@@ -82,6 +93,8 @@ WorldState è la fonte canonica dello stato corrente. EventBus e trace registran
 - `docs/RETE_LAN.md` — comunicazione locale/LAN.
 - `docs/LLM_PROVIDER.md` — provider decisionali e instradamento.
 - `docs/CONTRATTI.md` — contratti tra componenti.
+- `docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md` — trasporto sicuro e chiavi effimere.
+- `docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md` — persistenza e fondazioni Shared Memory.
 - `docs/GLOSSARIO.md` — terminologia ufficiale.
 - `docs/CHANGELOG.md` — storico delle modifiche.
 
@@ -93,5 +106,7 @@ WorldState è la fonte canonica dello stato corrente. EventBus e trace registran
 4. Separazione tra decisione ed esecuzione.
 5. Recupero adattivo e verifica a ciclo chiuso.
 6. Osservabilità e provenienza dei dati.
-7. Testabilità senza client di gioco reale.
-8. Integrazioni live dietro traguardi espliciti.
+7. Persistenza separata dallo stato operativo canonico.
+8. Adapter espliciti per le integrazioni esterne.
+9. Testabilità senza client di gioco reale.
+10. Integrazioni live dietro traguardi espliciti.
