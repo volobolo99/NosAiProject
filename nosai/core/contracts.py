@@ -38,6 +38,15 @@ class Decision:
 class SafetyResult:
     allowed: bool
     reason: str
+@dataclass(frozen=True)
+class PerceptionWorldUpdate:
+    """Validated semantic observation mapped into WorldState fields."""
+    hp: Optional[float]=None
+    mp: Optional[float]=None
+    target_hp: Optional[float]=None
+    target_id: Optional[int]=None
+    position: Optional[tuple[float,float]]=None
+    tick_id: Optional[int]=None
 class DecisionProvider(Protocol):
     def decide(self, world_state: WorldState, goal: Goal) -> Decision: ...
 class ActionExecutor(Protocol):
