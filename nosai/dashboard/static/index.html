@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NosAi Control Center</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">N</span><div><b>NosAi</b><small>CONTROL CENTER</small></div></div>
+    <nav>
+      <button class="nav active" data-view="overview">◈ <span>Overview</span></button>
+      <button class="nav" data-view="eye">◉ <span>Eye Ai View</span></button>
+      <button class="nav" data-view="world">◇ <span>WorldState</span></button>
+      <button class="nav" data-view="decision">⌁ <span>Decision Trace</span></button>
+      <button class="nav" data-view="simulation">△ <span>Simulation</span></button>
+      <button class="nav" data-view="runtime">▣ <span>Runtime & Safety</span></button>
+      <button class="nav" data-view="resources">▤ <span>Resources</span></button>
+      <button class="nav" data-view="config">⚙ <span>Configuration</span></button>
+    </nav>
+    <div class="side-footer"><span class="dot"></span> Local-only surface<br><small>NosAi 1.0 Beta</small></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div><span class="eyebrow">LOCAL OPERATOR CONSOLE</span><h1 id="page-title">System Overview</h1></div>
+      <div class="top-actions"><span id="connection" class="pill muted">RUNTIME OFFLINE</span><button class="ghost" id="refresh">↻ Refresh</button></div>
+    </header>
+
+    <section id="overview" class="view active-view">
+      <div class="hero-grid">
+        <article class="hero-card"><div class="hero-label">RUNTIME MODE</div><strong id="mode">NORMAL</strong><p>Controller state is exposed without granting the dashboard hidden execution authority.</p><div class="mode-row"><button onclick="command('pause')">Pause</button><button onclick="command('recovery')">Recovery</button><button class="danger" onclick="command('stop')">STOP</button></div></article>
+        <article class="metric"><span>WorldState</span><b id="world-version">v0</b><small>canonical snapshot</small></article>
+        <article class="metric"><span>Trust</span><b id="trust">2 · REVERSIBLE</b><small>authorization ceiling</small></article>
+        <article class="metric"><span>Provider</span><b id="provider">—</b><small>decision source</small></article>
+      </div>
+      <div class="grid two"><article class="panel"><div class="panel-title"><b>Control Matrix</b><span>user authority</span></div><div class="control-list">
+        <label>Perception <input type="checkbox" data-config="perception_enabled"></label>
+        <label>Simulation <input type="checkbox" data-config="simulation_enabled"></label>
+        <label>Auto execution <input type="checkbox" data-config="auto_execute"></label>
+        <label>Cloud escalation <input type="checkbox" data-config="cloud_escalation"></label>
+      </div></article><article class="panel"><div class="panel-title"><b>Closed-loop pipeline</b><span>live architecture</span></div><div class="pipeline"><i>OBSERVE</i><em>→</em><i>WORLDSTATE</i><em>→</em><i>SIMULATE</i><em>→</em><i>RANK</i><em>→</em><i>PLAN</i><em>→</em><i>GUARD</i><em>→</em><i>EXECUTE</i><em>→</em><i>VERIFY</i></div></article></div>
+    </section>
+
+    <section id="eye" class="view"><div class="eye-toolbar"><div><b>Eye Ai View</b><span>Client projection + AI perception overlay</span></div><div><button class="toggle active">PERCEPTION</button><button class="toggle active">ROI</button><button class="toggle">PREDICTION</button><button class="toggle active">PARAMETERS</button></div></div><div class="eye-stage"><div class="screen-placeholder"><div class="screen-grid"></div><div class="crosshair"></div><div class="screen-note"><b>CLIENT CAPTURE UNAVAILABLE</b><span>Connect DXGI/Perception backend to display the real client frame.</span></div></div><div class="overlay-card"><div class="tag">AI PERCEPTION</div><h3>No live frame</h3><div class="kv"><span>Capture</span><b>not connected</b><span>ROI</span><b>—</b><span>Objects</span><b>—</b><span>Confidence</span><b>—</b><span>Prediction</span><b>not available</b></div></div></div><div class="grid three"><article class="panel compact"><b>What AI sees</b><p>Semantic entities, UI regions, coordinates, OCR and temporal tracking when the perception backend is connected.</p></article><article class="panel compact"><b>What AI estimates</b><p>Predicted outcomes and confidence are shown separately from observed facts.</p></article><article class="panel compact"><b>Provenance</b><p>Every overlay item must identify source, timestamp, WorldState version and confidence.</p></article></div></section>
+
+    <section id="world" class="view"><div class="grid three"><article class="metric"><span>Observation source</span><b>—</b><small>awaiting backend</small></article><article class="metric"><span>Confidence</span><b>—</b><small>no synthetic value</small></article><article class="metric"><span>Previous state</span><b id="prev-state">—</b><small>immutable history</small></article></div><article class="panel"><div class="panel-title"><b>WorldState Inspector</b><span>facts only</span></div><pre id="world-json">No live WorldState received.</pre></article></section>
+
+    <section id="decision" class="view"><div class="notice"><b>Decision Trace ≠ hidden chain-of-thought.</b> NosAi should expose structured inputs, candidates, scores, policies, evidence and outcomes—not private model reasoning or hidden chain-of-thought.</div><article class="panel"><div class="panel-title"><b>Decision timeline</b><span>auditable events</span></div><div id="trace" class="timeline"><div class="empty">No runtime events received.</div></div></article></section>
+
+    <section id="simulation" class="view"><div class="grid three"><article class="panel compact"><b>PredictedOutcome</b><p>Outcome, probability/confidence, expected reward, risk and evidence.</p></article><article class="panel compact"><b>Tactical Ranking</b><p>Ordered candidates with deterministic scoring inputs and policy constraints.</p></article><article class="panel compact"><b>What-if controls</b><p>Run simulations without executing actions. Results remain explicitly marked as predicted.</p></article></div><article class="panel"><div class="panel-title"><b>Candidate actions</b><button class="ghost" onclick="alert('Simulation endpoint will be connected to Tactical Ranking.')">Run simulation</button></div><pre>Simulation backend not connected.</pre></article></section>
+
+    <section id="runtime" class="view"><div class="grid three"><article class="metric"><span>Watchdog</span><b id="watchdog">NORMAL</b><small>runtime mode</small></article><article class="metric"><span>Safety</span><b>ENFORCED</b><small>final authorization boundary</small></article><article class="metric"><span>Recovery</span><b>READY</b><small>adaptive controller</small></article></div><article class="panel"><div class="panel-title"><b>Runtime controls</b><span>explicit commands</span></div><div class="mode-row"><button onclick="command('resume')">Resume</button><button onclick="command('checkpoint')">Checkpoint</button><button onclick="command('reobserve')">Re-observe</button><button onclick="command('cooling')">Cooling</button><button class="danger" onclick="command('stop')">STOP</button></div><p class="muted-text">Commands are queued locally. A production adapter must validate them through Guard/Trust/Safety before execution.</p></article></section>
+
+    <section id="resources" class="view"><div class="grid four"><article class="metric"><span>CPU</span><b>—</b><small>telemetry unavailable</small></article><article class="metric"><span>GPU</span><b>—</b><small>telemetry unavailable</small></article><article class="metric"><span>VRAM</span><b>—</b><small>telemetry unavailable</small></article><article class="metric"><span>Temperature</span><b>—</b><small>telemetry unavailable</small></article></div><article class="panel"><div class="panel-title"><b>Provider Router inputs</b><span>observed hardware only</span></div><p>VRAM/RAM · GPU load · temperature · latency · energy · complexity · recent provider performance. No value is fabricated when hardware telemetry is absent.</p></article></section>
+
+    <section id="config" class="view"><article class="panel"><div class="panel-title"><b>Operator configuration</b><span>persisted by runtime adapter</span></div><div class="form-grid"><label>Trust ceiling<select id="trust-config"><option value="0">0 · OBSERVE</option><option value="1">1 · SIMULATE</option><option value="2" selected>2 · REVERSIBLE</option><option value="3">3 · SENSITIVE</option><option value="4">4 · CRITICAL</option></select></label><label>Trace retention<select data-config="trace_retention"><option>session</option><option>persistent</option><option>disabled</option></select></label></div><button onclick="saveConfig()">Save configuration</button></article></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
