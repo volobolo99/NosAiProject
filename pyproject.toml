@@ -14,6 +14,7 @@ test = ["pytest>=8"]
 
 [project.scripts]
 nosai-dashboard = "nosai.dashboard.server:serve"
+nosai-test-evidence = "nosai.testing.runner:run_pytest_with_evidence"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
