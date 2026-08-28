@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from app.core.contracts import ActionType, Decision, Goal, WorldState
 
@@ -35,7 +35,7 @@ class LlamaCppDecisionProvider:
             "model": self.config.model,
             "messages": [
                 {"role": "system", "content": "Return only JSON with action, target_id, confidence, reasoning."},
-                {"role": "user", "content": json.dumps({"world_state": world_state.__dict__, "goal": goal.__dict__})},
+                {"role": "user", "content": json.dumps({"world_state": asdict(world_state), "goal": asdict(goal)})},
             ],
             "temperature": self.config.temperature,
             "max_tokens": self.config.max_tokens,
