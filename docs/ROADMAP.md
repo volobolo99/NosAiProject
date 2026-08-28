@@ -19,6 +19,9 @@
 - [x] Tactical Ranking + deterministic simulation foundation
 - [x] Perception contracts/pipeline
 - [x] Perception → WorldState adapter
+- [x] Agent Runtime contracts, provider routing, resources and policy
+- [x] Bounded multi-step autonomous loop with verification
+- [x] Retry/replan recovery and independent watchdog
 
 ## Phase 1 — Minimal reliable bring-up
 - [ ] Start Play AI on PC
@@ -30,12 +33,14 @@
 - [ ] One-command bring-up validation without game client
 
 ## Phase 2 — Guard and safe decision runtime
-- [ ] Guard AI runtime
-- [ ] Trust Tier 1–4 evaluation
-- [ ] Guard → Orchestrator integration
-- [ ] Guard → Safety Gate integration
-- [ ] Provider registry / fallback policy
-- [ ] Telemetry contract
+- [x] Guard AI runtime foundation
+- [x] Trust Tier 1–4 policy boundary
+- [x] Guard/Safety boundary integration in autonomous loop
+- [x] Provider registry / local-first fallback policy
+- [x] Runtime evaluation trace foundation
+- [ ] Production Guard AI runtime across PC/phone
+- [ ] Production watchdog/recovery state propagation
+- [ ] Telemetry contract integration
 
 ## Phase 3 — Production perception and memory
 - [x] ROI vision foundation
@@ -63,10 +68,11 @@
 - [ ] Strategy lifecycle + mastery persistence
 - [ ] Knowledge Base
 - [ ] Local llama.cpp provider
-- [ ] Target-hardware benchmark
+- [ ] Cloud provider adapters with policy-controlled escalation
+- [ ] Target-hardware benchmark and automatic runtime profiles
 
 ## Phase 6 — Integration gate
-- [ ] Full CI
+- [x] CI includes Python tests/compile validation and C# runtime build validation
 - [ ] End-to-end deterministic tests
 - [ ] Runtime integration tests
 - [ ] Hardware benchmark gate
