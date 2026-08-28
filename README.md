@@ -9,9 +9,9 @@ Clean-source implementation of **NosAi**, an AI runtime for NosTale.
 
 ## Current status
 
-The repository is the clean development source. The legacy repository `volobolo99/NosAi` is reference-only: legacy code is audited and selectively reimplemented, never copied blindly.
+The repository is the clean development source. The legacy repository `legacy` is reference-only: legacy code is audited and selectively reimplemented, never copied blindly.
 
-The runtime now provides a bounded autonomous Agent Runtime and a closed-loop domain bridge: observe → orchestrate → guard/safety → execute → verify → re-observe → bounded replan. It remains testable without a live game client.
+The runtime provides a bounded autonomous Agent Runtime and closed-loop domain bridge: observe → orchestrate → guard/safety → execute → verify → re-observe → bounded replan. The runtime now also has a typed observational EventBus and a versioned WorldState observation store. It remains testable without a live game client.
 
 ## Final architecture
 
@@ -40,11 +40,11 @@ Perception → WorldState(vN) → Simulation → Tactical Ranking
                                            └────→ WorldState(vN+1)
 ```
 
-WorldState is the current-state source of truth. The event/trace plane records provenance, decisions, safety checks, outcomes, recovery and evaluation so runs can be audited and replayed without giving the event system execution authority.
+WorldState is the current-state source of truth. The event/trace plane records provenance, decisions, safety checks, outcomes, recovery and evaluation so runs can be audited and later replayed without giving the event system execution authority.
 
 ## Communication model
 
-- Perception → World Model through an explicit `PerceptionWorldAdapter`.
+- Perception → World Model through an explicit `PerceptionWorldAdapter` and observation provenance.
 - World Model → Simulation through immutable WorldState snapshots.
 - Simulation → Tactical Ranking through deterministic SimulationResult data.
 - Tactical Ranking → Orchestrator through ranked action contracts.
@@ -56,13 +56,14 @@ WorldState is the current-state source of truth. The event/trace plane records p
 - Recovery can retry/replan but cannot escalate permissions.
 - Provider Router consumes hardware/resource telemetry and policy constraints.
 - Memory and Evaluation consume structured events/traces rather than controlling execution.
+- EventBus is observational and cannot create an execution side effect.
 
 ## Reliability / autonomy rules
 
 - Autonomous execution is bounded by step, retry, replan and watchdog budgets.
 - Every action is independently authorized; model output cannot bypass Guard/Safety.
 - Verification failure is evidence for recovery, never implicit success.
-- Every successful observation advances the canonical WorldState version.
+- Every accepted observation advances the versioned WorldState store.
 - Prediction can be compared with actual post-action state.
 - Sessions checkpoint progress and can be stopped/resumed in-process.
 - The watchdog can only reduce execution and can never grant privileges.
@@ -84,6 +85,7 @@ WorldState is the current-state source of truth. The event/trace plane records p
 - `docs/PROJECT_METADATA.md` — authoritative version/creator metadata.
 - `docs/IMPLEMENTATION_STATUS.md` — implementation ledger.
 - `docs/ARCHITECTURE.md` — final architecture and communication matrix.
+- `docs/FINAL_SYSTEM_ARCHITECTURE.md` — consolidated end-to-end architecture, contracts, data flow and authority model.
 - `docs/PROJECT_RULES.md` — project rules.
 - `docs/ROADMAP.md` — implementation gates.
 - `docs/AGENT_RUNTIME_PLATFORM_V1_BETA.md` — Agent Runtime expansion specification.
