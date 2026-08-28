@@ -7,14 +7,22 @@ class ActionType(str, Enum):
     NOOP="NOOP"; MOVE="MOVE"; ATTACK="ATTACK"; SKILL="SKILL"; PICKUP="PICKUP"; RECOVER="RECOVER"
 class DecisionStatus(str, Enum):
     PROPOSED="PROPOSED"; APPROVED="APPROVED"; BLOCKED="BLOCKED"
+
+@dataclass(frozen=True)
+class Position:
+    x: float
+    y: float
+
 @dataclass(frozen=True)
 class WorldState:
     hp: float
     mp: float
-    position: tuple[float,float]=(0.0,0.0)
-    target_id: Optional[int]=None
+    position: Position | tuple[float,float]=(0.0,0.0)
+    target_id: Optional[object]=None
     target_hp: Optional[float]=None
     tick_id: int=0
+    max_hp: Optional[float]=None
+    max_mp: Optional[float]=None
     party_ids: tuple[str,...]=()
     pet_ids: tuple[str,...]=()
     partner_ids: tuple[str,...]=()
@@ -25,7 +33,7 @@ class Goal:
 @dataclass(frozen=True)
 class CandidateAction:
     action: ActionType
-    target_id: Optional[int]=None
+    target_id: Optional[object]=None
     parameters: dict[str,object]=field(default_factory=dict)
     actor_id: Optional[str]=None
 @dataclass(frozen=True)
@@ -44,8 +52,8 @@ class PerceptionWorldUpdate:
     hp: Optional[float]=None
     mp: Optional[float]=None
     target_hp: Optional[float]=None
-    target_id: Optional[int]=None
-    position: Optional[tuple[float,float]]=None
+    target_id: Optional[object]=None
+    position: Optional[Position | tuple[float,float]]=None
     tick_id: Optional[int]=None
 class DecisionProvider(Protocol):
     def decide(self, world_state: WorldState, goal: Goal) -> Decision: ...
