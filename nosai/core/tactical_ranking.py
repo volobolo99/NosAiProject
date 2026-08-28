@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 from .contracts import CandidateAction, WorldState, ActionType
+from .simulation_policy import TacticalSimulationPolicy
 
 @dataclass(frozen=True)
 class RankedAction:
@@ -11,7 +12,10 @@ class RankedAction:
     reasons: tuple[str, ...]
 
 class TacticalActionRanker:
-    """Ranks proposals without executing them or bypassing SafetyGate."""
+    """Ranks proposals using tactical heuristics plus deterministic lookahead."""
+    def __init__(self, simulation_policy: TacticalSimulationPolicy | None = None) -> None:
+        self.simulation_policy = simulation_policy or TacticalSimulationPolicy()
+
     def rank(self, actions: Iterable[CandidateAction], world: WorldState) -> list[RankedAction]:
         ranked: list[RankedAction] = []
         hp_ratio = world.hp / world.max_hp if hasattr(world, "max_hp") and world.max_hp else None
@@ -33,8 +37,11 @@ class TacticalActionRanker:
                 score += 8.0; reasons.append("partner-coordination")
             elif actor.startswith("pet"):
                 score += 6.0; reasons.append("pet-assist")
+            forecast = self.simulation_policy.evaluate(action, world)
+            score += forecast.score
+            reasons.append(f"lookahead:{forecast.rationale}")
             ranked.append(RankedAction(action, score, tuple(reasons)))
-        return sorted(ranked, key=lambda item: (-item.score, item.action.actor_id or "", item.action.target_id or -1))
+        return sorted(ranked, key=lambda item: (-item.score, item.action.actor_id or "", item.action.target_id or ""))
 
     def best(self, actions: Iterable[CandidateAction], world: WorldState) -> RankedAction | None:
         ranked = self.rank(actions, world)
