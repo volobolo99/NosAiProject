@@ -51,3 +51,7 @@ Specialist-dependent areas remain explicit `EXTERNAL_IMPLEMENTATION_REQUIRED` bo
 ## 10. Documentation integrity
 
 Implementation status must distinguish **implemented**, **foundation**, and **planned**. Documentation must reflect the actual repository state and must not claim production readiness for an unimplemented backend.
+
+## 11. Adaptive runtime control
+
+Recovery and Watchdog are active runtime-control components. They may retry, replan, change runtime mode, enter cooling/degraded operation, resume operation and adapt resource/runtime budgets according to configured policy and observed conditions. Their state transitions are observable and auditable. They do not bypass the independent Guard AI or Safety Gate for actions that require authorization.
