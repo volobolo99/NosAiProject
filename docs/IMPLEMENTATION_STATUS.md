@@ -4,7 +4,7 @@
 **Creator:** Volodymyr Ryzhuk  
 **Updated:** 2026-08-28
 
-This is the implementation ledger for `volobolo99/NosAiProject`. The version is locked at **1.0 Beta** and must not be changed unless the creator explicitly requests it.
+This is the implementation ledger for `volobolo99/NosAiProject`. Version remains locked at **1.0 Beta**.
 
 ## 🟢 Implemented
 
@@ -12,31 +12,25 @@ This is the implementation ledger for `volobolo99/NosAiProject`. The version is 
 - Safety Gate boundary and Orchestrator integration.
 - World Model, Party, Pet and Partner systems.
 - Coordinated Action Manager.
-- Tactical Action Ranking and deterministic Simulation/Lookahead.
+- Tactical Action Ranking and deterministic Simulation/Lookahead foundations.
 - Perception contracts, injectable pipeline, ROI vision and tracking foundation.
 - Game State Evaluator foundation and Perception → WorldState adapter.
-- Agent Runtime Platform foundation.
-- SessionManager with checkpoints, stop/resume and explicit lifecycle helpers.
-- Bounded Agent MemoryBus and runtime decision/verification events.
-- ProviderRegistry and deterministic local-first ProviderRouter.
-- Privacy/locality-aware RoutingPolicy.
-- Deterministic ResourceManager and ExecutionPolicy primitives.
-- Deterministic TrustBoundary with Trust Tier 0–4.
+- Agent Runtime foundation: sessions, memory bus, local-first provider routing, resources, policy and Trust Tier 0–4.
 - Multi-step Planner → Guard → Safety → Executor → Verifier loop.
-- Per-step authorization and fail-closed unknown trust tiers.
-- Bounded retry and replanning with structured failure context.
-- Independent RuntimeWatchdog limiting runtime, actions and consecutive failures.
-- RecoveryController event abstraction.
-- Explicit ToolRegistry with trust, reversibility and locality declarations.
-- HardwareSnapshot/HardwareProfiler and deterministic runtime profiles.
-- LAN SessionMessage protocol types and sequence/replay guard.
-- AgentTrace/EvaluationRecorder/EvaluationScore offline evaluation primitives.
-- Tests covering trust, routing foundations, protocol ordering, multi-step execution, recovery/replanning, watchdog and safety boundary.
+- Bounded retry/replanning, checkpoints and independent watchdog.
+- ToolRegistry, hardware profiling, LAN message contracts and sequence/replay guard.
+- Agent evaluation trace primitives.
+- Orchestrator → Agent Runtime bridge.
+- Closed-loop observation/replanning runtime.
+- Final architecture/communication model documented in `docs/ARCHITECTURE.md`.
 
 ## 🟡 Foundations — not production-complete
 
-- Guard AI runtime and Trust Tier enforcement: deterministic boundary exists; production watchdog/recovery integration with Play Guard/phone Guard remains pending.
-- Agent Runtime autonomous loop: bounded and recoverable; durable distributed scheduling remains pending.
+- Event/trace bus contract and unified correlation model: architecture defined; implementation still pending.
+- Immutable/versioned WorldState: architectural contract defined; full persistence/provenance implementation pending.
+- Prediction-vs-actual evaluator: architectural contract defined; production metrics pending.
+- Evidence-aware ranking and verified-knowledge lifecycle: design target; runtime persistence pending.
+- Guard AI production watchdog/recovery integration across PC and phone.
 - Hardware discovery/probing and real benchmark backends.
 - Durable SQLite memory and knowledge persistence.
 - Authenticated LAN transport and cryptographic session establishment.
@@ -47,14 +41,15 @@ This is the implementation ledger for `volobolo99/NosAiProject`. The version is 
 
 ## 🔴 Not yet implemented
 
-### Runtime / decision architecture
-- Production Planner integration with full World Model + Simulation + Tactical Ranking.
-- Production Guard AI watchdog/recovery runtime across PC and phone.
+### Runtime / integration
+- Production Event Bus with typed events, correlation IDs, replay and audit persistence.
+- Production versioned WorldState store and observation provenance.
+- Full PredictionEvaluator and strategy evidence pipeline.
+- Production Planner integration across full World Model + Simulation + Tactical Ranking.
+- Production Guard AI watchdog/recovery propagation across PC/phone.
 - Play AI + PC Play Guard + phone Guard AI production bring-up.
 - Authenticated local/LAN transport with HELLO/CAPABILITIES/AUTH/HEARTBEAT/STATUS/COMMAND/ACK/ERROR/DISCONNECT.
 - Production tool sandbox and capability-based permission enforcement.
-- Full Play AI HBT + Utility AI runtime.
-- Humanizer Adapter production implementation.
 
 ### Learning / strategy
 - Progression Engine V2 runtime.
@@ -65,8 +60,8 @@ This is the implementation ledger for `volobolo99/NosAiProject`. The version is 
 
 ### Perception / telemetry
 - Production DXGI capture and lock-free triple buffering.
-- Production YOLO, glyph-hash OCR/AI-OCR fallback and Kalman tracking.
-- Complete game-specific Game State Evaluator.
+- Production YOLO, glyph-hash OCR/AI-OCR fallback/cache and Kalman tracking.
+- Complete game-specific semantic evaluator.
 - Telemetry / PTS synchronization.
 - Deterministic anomaly detection and recovery tied to live telemetry.
 
@@ -82,38 +77,33 @@ This is the implementation ledger for `volobolo99/NosAiProject`. The version is 
 ## Current integration path
 
 ```text
-Session / Scheduler / Resource / Policy
-              │
-              ▼
-Provider Router → Decision Provider (decision only)
-              │
-              ▼
-Perception → WorldState / WorldModel
-              │
-              ▼
-Party + Pet + Partner coordination
-              │
-              ▼
-Candidate Actions → Simulation → Tactical Ranking
-              │
-              ▼
-Orchestrator → Planner
-              │
-              ▼
+Perception
+  ↓
+PerceptionWorldAdapter
+  ↓
+WorldState(vN)
+  ↓
+Party / Pet / Partner
+  ↓
+Simulation
+  ↓
+Tactical Ranking
+  ↓
+Orchestrator
+  ↓
+Agent Planner / Runtime
+  ↓
 Guard AI → Trust Boundary → Safety Gate
-              │
-              ▼
+  ↓
 Executor / Game Adapter
-              │
-              ▼
-Verifier ───────────────┐
-   │                    │
-   └─ failure → Recovery → bounded Replan
-                         │
-                    Watchdog
-                         │
-                         ▼
-                 Telemetry / Memory
+  ↓
+Verifier + fresh observation
+  ↓
+WorldState(vN+1)
+  ├─ success → checkpoint → next cycle
+  └─ failure → bounded Recovery → Replan
+
+Cross-cutting: Session / Policy / Provider Router / Resources / Memory / Telemetry / Evaluation / Event Trace
 ```
 
 ## Architectural decisions locked for 1.0 Beta
@@ -121,34 +111,29 @@ Verifier ───────────────┐
 1. Canonical repository: `volobolo99/NosAiProject`.
 2. Current version: **1.0 Beta**; do not increment without explicit creator instruction.
 3. Creator: **Volodymyr Ryzhuk**.
-4. Perception feeds canonical `WorldState` through an explicit adapter and never directly controls execution.
-5. Coordinated Action Manager proposes actions; it does not execute them.
-6. Tactical Ranking remains separate from safety authorization.
-7. Guard AI is an independent protection/evaluation layer.
-8. Execution-affecting decisions must pass Guard/Safety.
-9. Deterministic simulation/test infrastructure remains usable without the game client.
-10. Game-specific integrations remain behind explicit adapters.
-11. Localhost/LAN communication is the default for initial bring-up.
-12. Specialist integrations remain explicit placeholders until production implementation exists.
-13. Decision Providers are model-agnostic and never receive execution privileges.
-14. Local-first routing is the default; cloud escalation is policy-controlled.
-15. Runtime resource selection is deterministic and hardware-independent at the decision-core level.
-16. Runtime sessions and memory are observable and resumable; durable persistence is a separate gate.
-17. Trust authorization is deterministic and independent from model output.
-18. Tools are registered capabilities; a DecisionProvider never receives direct execution privileges.
-19. Hardware profiling selects deterministic runtime profiles from discovered capabilities.
-20. Session messages are sequence-checked and replay/out-of-order messages are rejected.
-21. Agent evaluation records execution traces, safety blocks, tool calls and outcomes independently of the provider.
-22. Autonomous execution is bounded by step/retry/replan/watchdog budgets and fails closed on exhaustion.
-23. Recovery may retry or replan but never grants permissions.
+4. WorldState is the canonical current-state source; event/trace data records history and provenance.
+5. Perception never directly controls execution.
+6. Tactical Ranking and Orchestrator do not bypass safety.
+7. Execution-affecting decisions must pass Guard/Trust/Safety.
+8. Decision Providers never receive execution privileges.
+9. Local-first routing is default; cloud escalation is policy-controlled.
+10. Runtime resources and Trust authorization are deterministic.
+11. Recovery and Watchdog can reduce execution but cannot grant privileges.
+12. Closed-loop verification requires a fresh observation.
+13. Unverified outcomes are not success.
+14. Production game integrations remain behind explicit gates.
+15. Critical path remains deterministic; telemetry/memory/evaluation may be event-driven.
+16. Versioned state, evidence and trace must preserve provenance when productionized.
 
 ## Recommended next implementation order
 
-1. Wire the autonomous AgentLoop to the production World Model / Simulation / Tactical Ranking / Orchestrator contracts.
-2. Complete production Guard AI + PC Play Guard + phone Guard AI with watchdog and recovery state propagation.
-3. Add authenticated session transport and deterministic reconnect/disconnect.
-4. Add SQLite persistence for sessions, memory, evidence and evaluation traces.
-5. Add real hardware discovery/benchmark and automatic runtime profiles.
-6. Add local `llama.cpp` DecisionProvider and cloud fallback adapters.
-7. Complete production perception and game-boundary adapters.
-8. Full CI/integration/benchmark/release gate.
+1. Implement typed Event Bus + correlation IDs + audit/replay.
+2. Implement immutable/versioned WorldState + observation provenance.
+3. Connect PredictionEvaluator to Simulation and post-action verification.
+4. Add evidence-aware Tactical Ranking and verified-knowledge persistence.
+5. Complete production Guard AI + PC/phone Play Guard integration.
+6. Add authenticated LAN transport and deterministic reconnect/disconnect.
+7. Add SQLite persistence and durable session recovery.
+8. Add hardware discovery/benchmark and automatic runtime profiles.
+9. Add local `llama.cpp` provider and policy-controlled cloud fallback.
+10. Complete production perception/game adapters and final integration gate.
