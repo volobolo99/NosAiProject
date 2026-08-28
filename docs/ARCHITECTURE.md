@@ -3,44 +3,68 @@
 **Version:** 1.0 Beta  
 **Creator:** Volodymyr Ryzhuk
 
-## Runtime boundaries
+## Runtime architecture
 
-NosAi is organized as a contract-driven pipeline. Observation, world state, planning, ranking, guarding and execution are independent boundaries.
+NosAi remains contract-driven and deterministic at every security boundary. The Agent Runtime is a transverse control plane; it does not replace the original decision pipeline.
 
 ```text
-Game / external sources
-        ↓
-Perception
-  ├─ DXGI capture (pending)
-  ├─ ROI / HSV
-  ├─ YOLO (pending)
-  ├─ OCR (pending)
-  └─ temporal tracking (foundation; Kalman pending)
-        ↓
-Game State Evaluator
-        ↓
-PerceptionWorldAdapter
-        ↓
-Canonical WorldState / World Model
-        ↓
-Party + Partner + Pet coordination
-        ↓
-Candidate Actions
-        ↓
-Simulation / Lookahead
-        ↓
-Tactical Action Ranking
-        ↓
-Orchestrator
-        ↓
-Guard AI / Trust Tier evaluation
-        ↓
-Safety Gate
-        ↓
-Play AI / Humanizer / Game Adapter
-        ↓
-Telemetry / Memory / Knowledge Base
+                         Runtime Control Plane
+ Session / Scheduler / Memory / Resources / Policy / Provider Router
+                                │
+                                ▼
+Game / external sources → Perception → WorldState / World Model
+                                │
+                    Party + Partner + Pet
+                                │
+                    Candidate Actions / Simulation
+                                │
+                       Tactical Ranking
+                                │
+                         Orchestrator
+                                │
+             Planner → Guard AI → Trust Boundary
+                                │
+                          Safety Gate
+                                │
+                    Executor / Game Adapter
+                                │
+                          Verifier
+                         ↙           ↘
+                 Recovery/Replan     Telemetry/Memory
 ```
+
+## Autonomous Agent Loop
+
+The runtime supports bounded multi-step execution:
+
+1. Planner creates an `AgentPlan`.
+2. Each step is checked against the caller's Trust Tier ceiling.
+3. Guard and Safety must both approve before execution.
+4. Executor performs the step; it is never exposed to the Decision Provider.
+5. Verifier validates the observed result.
+6. A successful step is checkpointed and the loop advances.
+7. Execution errors and verification failures are bounded retry/replan inputs.
+8. Replanning receives structured failure context.
+9. RuntimeWatchdog independently limits total actions, runtime and consecutive failures.
+10. Exhausted budgets fail closed.
+
+## Trust model
+
+`OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
+
+The runtime caller supplies an authorization ceiling. A plan step may require a lower tier, but it can never exceed the caller ceiling or the configured TrustPolicy. Unknown/invalid step tiers are treated as `CRITICAL` and therefore fail closed under normal policy.
+
+## Session lifecycle
+
+Sessions are observable and resumable in-process. Runtime checkpoints record step index, status and recovery reason. Lifecycle states include `CREATED`, `RUNNING`, `PAUSED`, `RESUMED`, `STOPPED`, `FAILED` and `COMPLETED`. Durable persistence remains a separate implementation gate.
+
+## Recovery
+
+Recovery is deterministic and bounded. The runtime may retry a failed step, invoke a recovery callback, or request a fresh plan carrying `recovery_reason` and `failed_step_index`. Recovery never grants authorization.
+
+## Watchdog
+
+`RuntimeWatchdog` is independent from model output. It enforces runtime, action-count and consecutive-failure budgets. A tripped watchdog is a kill condition and cannot be reset by an agent decision.
 
 ## Separation rules
 
@@ -55,6 +79,7 @@ Telemetry / Memory / Knowledge Base
 - Safety Gate is fail-closed and remains the final execution authorization boundary.
 - Game-specific I/O is isolated behind adapters.
 - LLM providers are decision providers only and never privileged executors.
+- The watchdog can reduce execution but cannot grant permissions.
 
 ## Perception architecture
 
@@ -68,11 +93,7 @@ The intended production Perception follows seven layers:
 6. Temporal 2D Kalman filtering.
 7. Game State Evaluator producing immutable semantic state.
 
-The repository currently contains reusable contracts/pipeline plus ROI, tracking and evaluator foundations. Production-specific capture/detection/OCR/Kalman backends remain gated.
-
-## Reliability-first bring-up
-
-Before live game integration, the system must support a minimal Play AI + Play Guard + Guard AI session using local/LAN communication, explicit authentication/capabilities, heartbeat/status and deterministic reconnect/disconnect. The path must be testable without the game client.
+Production-specific capture/detection/OCR/Kalman backends remain gated.
 
 ## Version governance
 
