@@ -1,100 +1,191 @@
-# NosAi — Architecture
+# NosAi — Final Architecture & Communication Model
 
 **Version:** 1.0 Beta  
 **Creator:** Volodymyr Ryzhuk
 
-## Runtime architecture
+## 1. Architectural principle
 
-NosAi remains contract-driven and deterministic at every security boundary. The Agent Runtime is a transverse control plane; it does not replace the original decision pipeline.
+NosAi is a deterministic, contract-driven runtime. LLMs are Decision Providers only. No stochastic model can directly execute tools, game I/O, permissions or safety decisions. The canonical `WorldState` is the current-state source of truth; the event/trace plane records how the system arrived there.
+
+## 2. Final system
 
 ```text
-                         Runtime Control Plane
- Session / Scheduler / Memory / Resources / Policy / Provider Router
-                                │
-                                ▼
-Game / external sources → Perception → WorldState / World Model
-                                │
-                    Party + Partner + Pet
-                                │
-                    Candidate Actions / Simulation
-                                │
-                       Tactical Ranking
-                                │
-                         Orchestrator
-                                │
-             Planner → Guard AI → Trust Boundary
-                                │
-                          Safety Gate
-                                │
-                    Executor / Game Adapter
-                                │
-                          Verifier
-                         ↙           ↘
-                 Recovery/Replan     Telemetry/Memory
+                         ┌──────────────────────────────┐
+                         │       SESSION / SCHEDULER    │
+                         │ checkpoint • resume • stop   │
+                         └──────────────┬───────────────┘
+                                        │
+               ┌────────────────────────▼────────────────────────┐
+               │                 RUNTIME CONTROL PLANE            │
+               │ Policy • Trust • Resources • Provider Router    │
+               │ Memory • Tools • Watchdog • Evaluation           │
+               └────────────────────────┬────────────────────────┘
+                                        │
+                           ┌────────────▼────────────┐
+                           │      EVENT / TRACE BUS   │
+                           │ correlation • audit      │
+                           │ replay • telemetry       │
+                           └────────────┬────────────┘
+                                        │
+Game / external source ───────► PERCEPTION
+                                        │
+                              PerceptionWorldAdapter
+                                        │
+                                        ▼
+                               CANONICAL WORLDSTATE
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    ▼                   ▼                   ▼
+                  PARTY              PET / PARTNER       MEMORY
+                    │                   │                   │
+                    └───────────────────┼───────────────────┘
+                                        ▼
+                                  CANDIDATE ACTIONS
+                                        │
+                                        ▼
+                                  SIMULATION
+                                        │
+                                        ▼
+                                TACTICAL RANKING
+                                        │
+                                        ▼
+                                  ORCHESTRATOR
+                                        │
+                                        ▼
+                              AGENT PLANNER / LOOP
+                                        │
+                              GuardDecisionContext
+                                        │
+                                  GUARD AI / POLICY
+                                        │
+                                  TRUST BOUNDARY
+                                        │
+                                  SAFETY GATE
+                                        │
+                              PLAY AI / EXECUTOR
+                                        │
+                             GAME / PC PLAY GUARD
+                                        │
+                                        ▼
+                                  ACTION RESULT
+                                        │
+                                        ▼
+                                   VERIFIER
+                                        │
+                                  ┌─────┴─────┐
+                                  │           │
+                                PASS        FAIL
+                                  │           │
+                                  ▼           ▼
+                              CHECKPOINT   RECOVERY
+                                  │           │
+                                  │       retry / replan
+                                  │           │
+                                  └─────┬─────┘
+                                        ▼
+                                   RE-OBSERVE
+                                        │
+                                        └──────────► WORLDSTATE
 ```
 
-## Autonomous Agent Loop
+## 3. Communication rules
 
-The runtime supports bounded multi-step execution:
+### 3.1 Synchronous critical path
 
-1. Planner creates an `AgentPlan`.
-2. Each step is checked against the caller's Trust Tier ceiling.
-3. Guard and Safety must both approve before execution.
-4. Executor performs the step; it is never exposed to the Decision Provider.
-5. Verifier validates the observed result.
-6. A successful step is checkpointed and the loop advances.
-7. Execution errors and verification failures are bounded retry/replan inputs.
-8. Replanning receives structured failure context.
-9. RuntimeWatchdog independently limits total actions, runtime and consecutive failures.
-10. Exhausted budgets fail closed.
+The safety-critical control loop is deterministic and ordered:
 
-## Trust model
+`Observe → WorldState → Simulation → Ranking → Orchestrator → Plan → Guard → Trust → Safety → Execute → Verify → Re-observe`.
 
-`OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
+A failure cannot skip forward. Safety denial terminates the action. Verification failure never becomes implicit success.
 
-The runtime caller supplies an authorization ceiling. A plan step may require a lower tier, but it can never exceed the caller ceiling or the configured TrustPolicy. Unknown/invalid step tiers are treated as `CRITICAL` and therefore fail closed under normal policy.
+### 3.2 Event/trace plane
 
-## Session lifecycle
+The event bus is cross-cutting, not a replacement for synchronous contracts. Events carry `event_id`, `session_id`, `run_id`, `task_id`, `parent_event_id`, `timestamp`, `source`, `event_type`, `schema_version` and structured payload. It is used for telemetry, audit, memory/evidence processing and replay.
 
-Sessions are observable and resumable in-process. Runtime checkpoints record step index, status and recovery reason. Lifecycle states include `CREATED`, `RUNNING`, `PAUSED`, `RESUMED`, `STOPPED`, `FAILED` and `COMPLETED`. Durable persistence remains a separate implementation gate.
+Recommended event types: `PerceptionObserved`, `WorldStateUpdated`, `SimulationCompleted`, `RankingProduced`, `DecisionCreated`, `PlanCreated`, `GuardEvaluated`, `SafetyEvaluated`, `ActionRequested`, `ActionExecuted`, `ActionVerified`, `VerificationFailed`, `RecoveryStarted`, `ReplanRequested`, `MemoryRead`, `MemoryWritten`, `ProviderSelected`, `ProviderFallback`, `HardwareProfileChanged`, `SessionStarted`, `SessionResumed`, `SessionInterrupted`, `SessionCompleted`.
 
-## Recovery
+## 4. WorldState versioning
 
-Recovery is deterministic and bounded. The runtime may retry a failed step, invoke a recovery callback, or request a fresh plan carrying `recovery_reason` and `failed_step_index`. Recovery never grants authorization.
+Every accepted observation produces a new immutable state version. A state records `state_version`, `parent_version`, observation provenance, source and confidence. Simulation records the input state version; verification compares predicted and actual outcomes from consecutive versions.
 
-## Watchdog
+`WorldState v41 → planned action → observed outcome → WorldState v42`.
 
-`RuntimeWatchdog` is independent from model output. It enforces runtime, action-count and consecutive-failure budgets. A tripped watchdog is a kill condition and cannot be reset by an agent decision.
+This makes prediction accuracy measurable and enables deterministic replay.
 
-## Separation rules
+## 5. Decision and planning
 
-- Perception observes and produces semantic snapshots; it does not execute actions.
-- `PerceptionWorldAdapter` is the explicit boundary into canonical `WorldState`.
-- World Model is the shared semantic state consumed by decision systems.
-- Partner and Pet are coordinated actors but remain independently modeled.
-- Coordinated Action Manager proposes coordinated actions; execution belongs downstream.
-- Tactical Ranking evaluates candidates and may use deterministic lookahead.
-- Orchestrator coordinates modules; it is not a bypass around Guard/Safety.
-- Guard AI independently evaluates risk, trust and degradation before execution.
-- Safety Gate is fail-closed and remains the final execution authorization boundary.
-- Game-specific I/O is isolated behind adapters.
-- LLM providers are decision providers only and never privileged executors.
-- The watchdog can reduce execution but cannot grant permissions.
+Simulation and Tactical Ranking never authorize execution. Ranking produces candidates with score, confidence, risk, expected reward and evidence quality. The Orchestrator converts domain results into bounded runtime plans. Planner output remains data until it passes Guard, Trust and Safety.
 
-## Perception architecture
+## 6. Guard / Trust / Safety
 
-The intended production Perception follows seven layers:
+Guard evaluates the complete decision context: WorldState, goal, plan, simulation, ranking, action, risk, trust tier, provider, permissions, hardware and relevant evidence. Trust supplies a deterministic ceiling. Safety is the final fail-closed authorization boundary.
 
-1. DXGI Direct Capture.
-2. Lock-free Triple Buffer.
-3. Multi-ROI HSV vision.
-4. YOLO object detection.
-5. Glyph-hash OCR with AI-OCR fallback/cache.
-6. Temporal 2D Kalman filtering.
-7. Game State Evaluator producing immutable semantic state.
+Trust tiers: `OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
 
-Production-specific capture/detection/OCR/Kalman backends remain gated.
+## 7. Execution and verification
 
-## Version governance
+The Executor/Game Adapter is the only execution boundary. It receives an already authorized action, never raw LLM output. The Verifier receives the action result and a fresh observation. It returns verified/not verified plus structured evidence. Failed verification starts bounded recovery and causes a fresh observation before replanning.
 
-This architecture is for **NosAi 1.0 Beta**. No implementation or documentation task may silently change the project version.
+## 8. Recovery and watchdog
+
+Recovery can retry or request a new plan with failure context. It cannot increase trust or permissions. The independent Watchdog limits runtime, actions, consecutive failures and other configured budgets; it can only reduce execution authority.
+
+## 9. Memory and knowledge
+
+Memory is split into raw experience, observations, episodes, hypotheses and verified knowledge. A failed or unverified outcome is not promoted automatically to verified strategy. Evidence should preserve provenance, confidence and supporting event IDs.
+
+## 10. Provider and hardware routing
+
+Provider Router is local-first and policy-controlled. It evaluates privacy/locality, task complexity, latency, available VRAM/RAM, GPU utilization, temperature, energy and recent provider performance. Cloud escalation is never implicit when local-only policy applies.
+
+Hardware Profiler supplies deterministic runtime profiles; hardware optimization is separate from functional correctness.
+
+## 11. Session / PC / phone communication
+
+Initial bring-up remains local/LAN and authenticated. Session protocol uses explicit typed messages and sequence/replay protection. Intended lifecycle: `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
+
+Play AI, PC Play Guard and phone Guard AI remain separate processes/roles connected through explicit contracts. A disconnected or invalid session fails closed.
+
+## 12. Perception pipeline
+
+Production target: DXGI Direct Capture → lock-free Triple Buffer → multi-ROI HSV vision → YOLO → glyph-hash OCR with AI-OCR fallback/cache → temporal 2D Kalman filtering → Game State Evaluator → immutable semantic WorldState.
+
+These production backends remain gated until independently validated.
+
+## 13. Observability and replay
+
+Every run should be reconstructable from event/trace data. Evaluation records provider selection, decisions, tool calls, policy/safety blocks, action results, verification, recovery, latency and prediction error. Replay must be simulation-first and must not execute live game I/O.
+
+## 14. Final communication matrix
+
+| From | To | Contract / channel | Result |
+|---|---|---|---|
+| Perception | World Model | `PerceptionWorldAdapter` | versioned WorldState |
+| World Model | Simulation | immutable WorldState | predicted outcomes |
+| Simulation | Tactical Ranking | SimulationResult | scored candidates |
+| Tactical Ranking | Orchestrator | ranked actions | selected domain decision |
+| Orchestrator | Planner/Runtime | runtime plan contract | bounded AgentPlan |
+| Decision Provider | Runtime | decision data only | candidate/plan data |
+| Planner | Guard | GuardDecisionContext | allow/deny evaluation |
+| Guard | Trust/Safety | policy contract | authorization state |
+| Safety | Executor | explicit authorization | executable action or block |
+| Executor | Perception | observation boundary | new WorldState |
+| Executor | Verifier | action result | verification evidence |
+| Verifier | Recovery | structured failure | retry/replan |
+| Runtime | Memory | event/trace contract | experience/evidence |
+| Runtime | Evaluation | trace contract | metrics/replay record |
+| Hardware | Provider Router | ResourceSnapshot | provider selection |
+| PC | Phone Guard | authenticated SessionMessage | status/guard coordination |
+
+## 15. Non-negotiable boundaries
+
+- No LLM direct execution.
+- No Tactical Ranking direct execution.
+- No Perception direct execution.
+- No Recovery permission escalation.
+- No Watchdog permission escalation.
+- No cloud escalation when policy forbids it.
+- No unverified outcome treated as success.
+- No live game integration before explicit safety/release gates.
+
+**Version governance:** architecture remains **NosAi 1.0 Beta** until explicitly changed by the creator.
