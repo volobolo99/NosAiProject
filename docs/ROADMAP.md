@@ -23,6 +23,23 @@ Before expanding AI features, the project must prove the smallest reliable start
 - [ ] Provider registry / fallback policy
 - [ ] Telemetry contract
 
+## Gate 1.5 — Advanced tactical simulation
+- [x] Explicit tactical state/action contracts
+- [x] Element/resistance model foundation
+- [x] Time/resource/risk accounting
+- [x] Seeded stochastic simulation
+- [x] Monte-Carlo action evaluation
+- [x] Risk-adjusted beam-search planner
+- [x] Initial simulator test suite
+- [ ] Full map/world graph model
+- [ ] Full skill/cooldown/buff/debuff model
+- [ ] Time-Space mission model
+- [ ] Raid/party model
+- [ ] Multi-objective Pareto planner
+- [ ] Monte-Carlo Tree Search planner
+- [ ] Strategy database + evidence lifecycle
+- [ ] Mastery/performance score against validated baselines
+
 ## Gate 2 — Decision providers
 - [ ] Local llama.cpp provider behind DecisionProvider
 - [ ] Contract and integration tests
