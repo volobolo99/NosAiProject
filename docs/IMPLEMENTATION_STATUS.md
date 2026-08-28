@@ -22,14 +22,15 @@ This is the implementation ledger for `volobolo99/NosAiProject`. Version remains
 - Agent evaluation trace primitives.
 - Orchestrator → Agent Runtime bridge.
 - Closed-loop observation/replanning runtime.
-- Final architecture/communication model documented in `docs/ARCHITECTURE.md`.
+- Typed runtime EventBus with stable event/run/session/task correlation metadata.
+- Versioned WorldState observation store with provenance, confidence and state history.
+- Final architecture/communication model documented in `docs/ARCHITECTURE.md` and `docs/FINAL_SYSTEM_ARCHITECTURE.md`.
 
 ## 🟡 Foundations — not production-complete
 
-- Event/trace bus contract and unified correlation model: architecture defined; implementation still pending.
-- Immutable/versioned WorldState: architectural contract defined; full persistence/provenance implementation pending.
-- Prediction-vs-actual evaluator: architectural contract defined; production metrics pending.
-- Evidence-aware ranking and verified-knowledge lifecycle: design target; runtime persistence pending.
+- Event Bus durability, persistent audit/replay storage and cross-process transport.
+- Prediction-vs-actual evaluator and production prediction metrics.
+- Evidence-aware ranking and verified-knowledge lifecycle persistence.
 - Guard AI production watchdog/recovery integration across PC and phone.
 - Hardware discovery/probing and real benchmark backends.
 - Durable SQLite memory and knowledge persistence.
@@ -42,8 +43,7 @@ This is the implementation ledger for `volobolo99/NosAiProject`. Version remains
 ## 🔴 Not yet implemented
 
 ### Runtime / integration
-- Production Event Bus with typed events, correlation IDs, replay and audit persistence.
-- Production versioned WorldState store and observation provenance.
+- Durable EventBus persistence and deterministic replay runner.
 - Full PredictionEvaluator and strategy evidence pipeline.
 - Production Planner integration across full World Model + Simulation + Tactical Ranking.
 - Production Guard AI watchdog/recovery propagation across PC/phone.
@@ -78,16 +78,14 @@ This is the implementation ledger for `volobolo99/NosAiProject`. Version remains
 
 ```text
 Perception
-  ↓
-PerceptionWorldAdapter
-  ↓
-WorldState(vN)
+  ↓ PerceptionWorldAdapter + observation provenance
+WorldStateStore → WorldState(vN)
   ↓
 Party / Pet / Partner
   ↓
-Simulation
+Simulation → Prediction
   ↓
-Tactical Ranking
+Tactical Ranking → score/confidence/risk/evidence
   ↓
 Orchestrator
   ↓
@@ -99,11 +97,11 @@ Executor / Game Adapter
   ↓
 Verifier + fresh observation
   ↓
-WorldState(vN+1)
+WorldStateStore → WorldState(vN+1)
   ├─ success → checkpoint → next cycle
   └─ failure → bounded Recovery → Replan
 
-Cross-cutting: Session / Policy / Provider Router / Resources / Memory / Telemetry / Evaluation / Event Trace
+Cross-cutting EventBus: lifecycle / policy / provider / resource / action / safety / memory / evaluation / replay facts.
 ```
 
 ## Architectural decisions locked for 1.0 Beta
@@ -123,17 +121,17 @@ Cross-cutting: Session / Policy / Provider Router / Resources / Memory / Telemet
 13. Unverified outcomes are not success.
 14. Production game integrations remain behind explicit gates.
 15. Critical path remains deterministic; telemetry/memory/evaluation may be event-driven.
-16. Versioned state, evidence and trace must preserve provenance when productionized.
+16. Versioned state, evidence and trace preserve provenance.
+17. EventBus is observational: subscribers never gain execution authority.
 
 ## Recommended next implementation order
 
-1. Implement typed Event Bus + correlation IDs + audit/replay.
-2. Implement immutable/versioned WorldState + observation provenance.
-3. Connect PredictionEvaluator to Simulation and post-action verification.
-4. Add evidence-aware Tactical Ranking and verified-knowledge persistence.
-5. Complete production Guard AI + PC/phone Play Guard integration.
-6. Add authenticated LAN transport and deterministic reconnect/disconnect.
-7. Add SQLite persistence and durable session recovery.
-8. Add hardware discovery/benchmark and automatic runtime profiles.
-9. Add local `llama.cpp` provider and policy-controlled cloud fallback.
-10. Complete production perception/game adapters and final integration gate.
+1. Durable EventBus persistence + replay runner.
+2. PredictionEvaluator and prediction-vs-actual metrics.
+3. Evidence-aware Tactical Ranking + verified-knowledge lifecycle.
+4. Production Guard AI + PC/phone Play Guard integration.
+5. Authenticated LAN transport and deterministic reconnect/disconnect.
+6. SQLite persistence and durable session recovery.
+7. Hardware discovery/benchmark and automatic runtime profiles.
+8. Local `llama.cpp` provider and policy-controlled cloud fallback.
+9. Production perception/game adapters and final integration gate.
