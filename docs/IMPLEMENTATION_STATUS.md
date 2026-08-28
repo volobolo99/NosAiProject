@@ -31,37 +31,36 @@ This document is the current implementation ledger for `volobolo99/NosAiProject`
 - Deterministic ResourceManager abstraction and resource gating.
 - ExecutionPolicy primitives for execution mode and trust-tier policy.
 - AgentRuntime facade routing DecisionProvider output through Guard AI and Safety Gate.
-- Runtime tests covering local-first routing, cloud rejection and safety-gated provider output.
+- Deterministic TrustBoundary with Trust Tier 0–4 authorization.
+- Simulation-first Planner → Guard → Executor → Verifier loop foundation.
+- Explicit ToolRegistry with trust, reversibility and locality declarations.
+- HardwareSnapshot/HardwareProfiler and deterministic runtime profiles.
+- Deterministic LAN SessionMessage protocol types and sequence/replay guard.
+- AgentTrace/EvaluationRecorder/EvaluationScore offline evaluation primitives.
 
 ## 🟡 Implemented foundations — not production-complete
 
-These components have architectural foundations/contracts but are **not** to be reported as production-ready implementations:
-
-- Guard AI runtime and Trust Tier 1–4 model (current enforcement foundation is limited and requires completion).
-- DXGI Direct Capture.
-- Lock-free Triple Buffer.
-- Production YOLO detector.
-- Production OCR backends and cache.
-- Production 2D Kalman tracking.
-- Full game-specific semantic mapping.
-- Live game/client adapter.
-- Hardware-specific resource discovery/probing.
+- Guard AI runtime and Trust Tier enforcement (policy boundary exists; full watchdog/recovery and production Guard AI remain pending).
+- Planner/Executor/Verifier loop (single-step foundation; multi-step repair/replanning remains pending).
+- Hardware discovery/probing and real benchmark backends.
 - Durable SQLite memory.
+- Authenticated LAN transport and cryptographic session establishment.
+- Tool execution sandbox and production permission enforcement.
+- DXGI Direct Capture, Triple Buffer, YOLO, OCR, Kalman and game-specific mapping.
+- Live game/client adapter.
 
 ## 🔴 Not yet implemented
 
 ### Runtime / decision architecture
-
-- Full Guard AI Trust Tier 1–4 policy enforcement and watchdog/recovery runtime.
-- Minimal PC Play AI + PC Play Guard + phone Guard AI production bring-up.
-- Authenticated local session, HELLO/CAPABILITIES/HEARTBEAT/STATUS and deterministic reconnect/disconnect production protocol.
-- Full planner/executor/verifier agent loop.
-- Tool Registry and production permission enforcement.
+- Full multi-step Planner → Simulation → Guard → Executor → Verifier with retry/recovery.
+- Production Guard AI watchdog/recovery runtime.
+- Play AI + PC Play Guard + phone Guard AI production bring-up.
+- Authenticated local/LAN transport with HELLO/CAPABILITIES/AUTH/HEARTBEAT/STATUS/COMMAND/ACK/ERROR/DISCONNECT.
+- Production tool sandbox and capability-based permission enforcement.
 - Full Play AI HBT + Utility AI runtime.
 - Humanizer Adapter production implementation.
 
 ### Learning / strategy
-
 - Progression Engine V2 runtime.
 - MAUT / UCB1 / HTN-MCTS integration.
 - Beta-Binomial evidence updates.
@@ -69,7 +68,6 @@ These components have architectural foundations/contracts but are **not** to be 
 - Knowledge Base persistence and evidence lifecycle.
 
 ### Perception / telemetry
-
 - Production DXGI capture.
 - Lock-free triple buffering.
 - Production YOLO pipeline.
@@ -80,13 +78,12 @@ These components have architectural foundations/contracts but are **not** to be 
 - Deterministic anomaly detection and recovery.
 
 ### Game boundary / AI providers
-
 - Read-only game/client probe.
 - Simulation-first action adapter.
 - Controlled live game adapter.
 - Local `llama.cpp` provider.
 - Cloud provider adapters.
-- Target-hardware benchmark and automatic runtime profiles.
+- Target-hardware benchmark and automatic runtime profiles backed by real probes.
 - Full runtime integration and release gate.
 
 ## Current integration path
@@ -110,7 +107,7 @@ Candidate Actions → Simulation / Lookahead → Tactical Ranking
 Orchestrator
               │
               ▼
-Guard AI / Trust Tier
+Guard AI / Trust Boundary
               │
               ▼
 Safety Gate
@@ -141,14 +138,19 @@ Verification → Telemetry / Memory / Knowledge
 15. Local-first routing is the default; cloud escalation is policy-controlled.
 16. Runtime resource selection must remain deterministic and testable without specific hardware.
 17. Runtime sessions and memory are observable and resumable; durable persistence remains a separate gate.
+18. Trust authorization is deterministic and independent from model output.
+19. Tools are registered capabilities; a DecisionProvider never receives direct tool execution privileges.
+20. Hardware profiling selects a deterministic runtime profile from discovered capabilities; no fixed hardware dependency is introduced into the decision core.
+21. LAN session messages are sequence-checked and replay/out-of-order messages are rejected before application handling.
+22. Agent evaluation records the execution trace, safety blocks, tool calls and outcome independently of the model provider.
 
 ## Recommended next implementation order
 
-1. Complete Guard AI Trust Tier 1–4 + Play Guard + phone Guard AI bring-up.
-2. Add full Planner → Simulation → Guard → Executor → Verifier loop without live game I/O.
-3. Add authenticated session protocol and deterministic reconnect/disconnect.
+1. Complete Guard AI Trust Tier 1–4 + watchdog/recovery + Play Guard + phone Guard AI bring-up.
+2. Complete multi-step Planner → Simulation → Guard → Executor → Verifier with bounded retries and recovery.
+3. Add authenticated session transport and deterministic reconnect/disconnect around the new protocol.
 4. Add production telemetry and SQLite persistence.
-5. Add hardware discovery/benchmark and automatic runtime profiles.
-6. Add local `llama.cpp` DecisionProvider and provider fallback adapters.
+5. Add real hardware discovery/benchmark and automatic runtime profiles.
+6. Add local `llama.cpp` DecisionProvider and cloud fallback adapters.
 7. Complete production perception and game-boundary adapters.
 8. Full CI/integration/benchmark/release gate.
