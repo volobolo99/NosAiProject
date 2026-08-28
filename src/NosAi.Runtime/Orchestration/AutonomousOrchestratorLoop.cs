@@ -1,7 +1,4 @@
 using NosAi.Runtime.Contracts;
-using NosAi.Runtime.Guard;
-using NosAi.Runtime.Safety;
-using NosAi.Runtime.Tactical;
 using NosAi.Runtime.WorldModel;
 
 namespace NosAi.Runtime.Orchestration;
@@ -16,13 +13,7 @@ public sealed class AutonomousOrchestratorLoop
     private readonly int _maxSteps;
     private readonly int _maxRetries;
 
-    public AutonomousOrchestratorLoop(
-        Orchestrator orchestrator,
-        IWorldModel worldModel,
-        Func<CandidateAction, bool> execute,
-        Func<CandidateAction, bool> verify,
-        int maxSteps = 8,
-        int maxRetries = 2)
+    public AutonomousOrchestratorLoop(Orchestrator orchestrator, IWorldModel worldModel, Func<CandidateAction, bool> execute, Func<CandidateAction, bool> verify, int maxSteps = 8, int maxRetries = 2)
     {
         _orchestrator = orchestrator;
         _worldModel = worldModel;
@@ -38,27 +29,20 @@ public sealed class AutonomousOrchestratorLoop
         for (var step = 0; step < _maxSteps; step++)
         {
             var candidates = candidateFactory(_worldModel.Current).ToArray();
+            if (candidates.Length == 0) return new(false, "no_candidate", trace);
             var guard = _orchestrator.Tick(maxTrustTier, candidates);
-            var selected = candidates.FirstOrDefault(c => c.Id == guard.Action.Id)
-                ?? candidates.FirstOrDefault();
-
-            if (selected is null)
-                return new AutonomousLoopResult(false, "no_candidate", trace);
-
-            var attempt = 0;
-            while (attempt <= _maxRetries)
+            var selected = candidates.FirstOrDefault(c => c.Id == guard.Action.Id) ?? candidates[0];
+            var verified = false;
+            for (var attempt = 1; attempt <= _maxRetries + 1; attempt++)
             {
-                attempt++;
                 var executed = _execute(selected);
-                var verified = executed && _verify(selected);
-                trace.Add(new AutonomousStepTrace(step, attempt, selected.Id, executed, verified));
+                verified = executed && _verify(selected);
+                trace.Add(new(step, attempt, selected.Id, executed, verified));
                 if (verified) break;
-                if (attempt > _maxRetries)
-                    return new AutonomousLoopResult(false, "verification_failed", trace);
             }
+            if (!verified) return new(false, "verification_failed", trace);
         }
-
-        return new AutonomousLoopResult(true, "step_budget_reached", trace);
+        return new(true, "step_budget_reached", trace);
     }
 }
 
