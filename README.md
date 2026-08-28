@@ -1,100 +1,97 @@
 # NosAiProject
 
-Clean-source implementation of **NosAi**, an AI runtime for NosTale.
+Implementazione sorgente di **NosAi**, runtime di intelligenza artificiale per NosTale.
 
-**Version:** 1.0 Beta  
-**Creator:** Volodymyr Ryzhuk
+**Versione:** 1.0 Beta  
+**Creatore:** Volodymyr Ryzhuk
 
-> The version is locked at **1.0 Beta** until the creator explicitly requests a change.
+> La versione rimane **1.0 Beta** finché il creatore non richiede esplicitamente un cambiamento.
 
-## Current status
+## Stato del progetto
 
-The repository is the clean development source. The legacy repository `legacy` is reference-only: legacy code is audited and selectively reimplemented, never copied blindly.
+Il repository è la sorgente di sviluppo ufficiale. Il repository legacy `volobolo99/NosAi` è utilizzato esclusivamente come riferimento: il codice viene analizzato e reimplementato selettivamente, senza copia indiscriminata.
 
-The runtime provides a bounded autonomous Agent Runtime and closed-loop domain bridge: observe → orchestrate → guard/safety → execute → verify → re-observe → adaptive recovery/replan. The runtime now also has a typed observational EventBus, versioned WorldState observation store, VRAM-aware context slimming, adaptive RecoveryController and hardware-aware watchdog modes. It remains testable without a live game client.
+Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazione → Guard/Safety → esecuzione → verifica → nuova osservazione → recupero e ripianificazione adattivi.
 
-## Final architecture
+Sono presenti inoltre EventBus tipizzato, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo e watchdog hardware/runtime.
+
+## Architettura
 
 ```text
-Session / Scheduler / Resources / Policy / Providers
+Sessione / Scheduler / Risorse / Policy / Provider
                          │
                     Event / Trace Bus
                          │
-Perception → WorldState(vN) → Simulation → Tactical Ranking
-                         │                         │
-                         └──── Party/Pet/Partner ┘
-                                           │
-                                      Orchestrator
-                                           │
-                                      Agent Planner
-                                           │
-                                   Guard / Trust / Safety
-                                           │
-                                  Play AI / Executor
-                                           │
-                                        Verifier
-                                           │
-                              Adaptive Recovery Controller
-                                  │                 │
-                         Context Slimming      Watchdog
-                                  │                 │
-                           retry/replan      mode/cooling
-                                  └──────┬──────────┘
-                                         ↓
-                                    Re-observe
-                                         └────→ WorldState(vN+1)
+Percezione → WorldState(vN) → Simulazione → Ranking Tattico
+                         │                    │
+                         └── Party/Pet/Partner ┘
+                                      │
+                                  Orchestrator
+                                      │
+                                Agent Planner
+                                      │
+                              Guard / Trust / Safety
+                                      │
+                             Play AI / Executor
+                                      │
+                                  Verificatore
+                                      │
+                         RecoveryController adattivo
+                            │                  │
+                     Context Slimming       Watchdog
+                            │                  │
+                    retry/replan       modalità/cooling
+                            └───────┬──────────┘
+                                    ↓
+                               Ri-osservazione
+                                    └──→ WorldState(vN+1)
 ```
 
-WorldState is the current-state source of truth. The event/trace plane records provenance, decisions, safety checks, outcomes, recovery and evaluation so runs can be audited and later replayed without giving the event system execution authority.
+WorldState è la fonte canonica dello stato corrente. EventBus e trace registrano provenienza, decisioni, controlli di sicurezza, risultati, recuperi e valutazioni.
 
-## Communication model
+## Modello di comunicazione
 
-- Perception → World Model through an explicit `PerceptionWorldAdapter` and observation provenance.
-- World Model → Simulation through immutable WorldState snapshots.
-- Simulation → Tactical Ranking through deterministic SimulationResult data.
-- Tactical Ranking → Orchestrator through ranked action contracts.
-- Orchestrator → Agent Runtime through bounded AgentPlan contracts.
-- Decision Providers supply decision data only; they never execute.
-- Guard, Trust and Safety remain configured authorization boundaries for protected actions.
-- Executor/Game Adapter is the execution boundary.
-- Verifier consumes execution results plus a fresh observation.
-- Recovery is an active controller: it records failure context, compresses repeated exception history and selects retry/replan/degraded/cooling strategies.
-- Watchdog supports NORMAL, DEGRADED, RECOVERY, COOLING and STOPPED runtime modes and can react to runtime and hardware conditions.
-- Provider Router consumes hardware/resource telemetry and policy constraints.
-- Memory and Evaluation consume structured events/traces rather than controlling execution.
-- EventBus is observational and cannot create an execution side effect.
+- La Percezione comunica con il World Model tramite `PerceptionWorldAdapter`.
+- Il World Model fornisce snapshot immutabili alla Simulazione.
+- La Simulazione produce risultati per il Tactical Ranking.
+- Il Tactical Ranking produce candidati ordinati per l'Orchestrator.
+- L'Orchestrator costruisce piani runtime limitati.
+- I Decision Provider producono dati decisionali e non eseguono direttamente strumenti o I/O.
+- Guard, Trust e Safety costituiscono il percorso di autorizzazione delle azioni protette.
+- Executor/Game Adapter costituisce il confine di esecuzione.
+- Il Verifier confronta risultato e nuova osservazione.
+- RecoveryController può adattare strategia, ripianificare, cambiare modalità runtime, entrare in modalità degradata/cooling e riprendere l'esecuzione secondo policy e condizioni osservate.
+- Watchdog può cambiare modalità runtime e applicare limiti operativi in funzione di condizioni runtime e hardware.
+- EventBus è osservazionale e non genera da solo effetti di esecuzione.
 
-## Reliability / autonomy rules
+## Documentazione
 
-- Autonomous execution is bounded by step, retry, replan and watchdog budgets.
-- Every protected action follows the configured authorization policy; model output cannot bypass Guard/Safety.
-- Verification failure is evidence for recovery, never implicit success.
-- Every accepted observation advances the versioned WorldState store.
-- Prediction can be compared with actual post-action state.
-- Sessions checkpoint progress and can be stopped/resumed in-process.
-- Recovery and Watchdog may adapt runtime strategy and mode according to policy and observed conditions.
-- Hardware watchdog supports thermal/I/O monitoring and Cooling Phase; the default thermal threshold is 80°C.
-- Production game capture/live execution remain separate gated milestones.
+- `docs/METADATI_PROGETTO.md` — metadati ufficiali.
+- `docs/REGOLE_PROGETTO.md` — regole e vincoli del progetto.
+- `docs/ARCHITETTURA.md` — architettura e comunicazioni.
+- `docs/STATO_IMPLEMENTAZIONE.md` — registro dell'implementazione.
+- `docs/ROADMAP.md` — roadmap e traguardi.
+- `docs/REQUISITI.md` — requisiti funzionali e non funzionali.
+- `docs/CONTRIBUTING.md` — regole per contribuire.
+- `docs/TESTING.md` — strategia e procedure di test.
+- `docs/SICUREZZA.md` — modello di sicurezza.
+- `docs/DEPLOYMENT.md` — installazione, configurazione e avvio.
+- `docs/OSSERVABILITA.md` — EventBus, trace, audit e replay.
+- `docs/RECOVERY_WATCHDOG.md` — recupero adattivo e controllo hardware/runtime.
+- `docs/PERCEZIONE.md` — pipeline di percezione e stato di implementazione.
+- `docs/RETE_LAN.md` — comunicazione locale/LAN.
+- `docs/LLM_PROVIDER.md` — provider decisionali e instradamento.
+- `docs/CONTRATTI.md` — contratti tra componenti.
+- `docs/GLOSSARIO.md` — terminologia ufficiale.
+- `docs/CHANGELOG.md` — storico delle modifiche.
 
-## Priorities
+## Principi
 
-1. Safety and fail-closed execution.
-2. Deterministic simulation and testability.
-3. Stable contracts and versioned WorldState.
-4. Closed-loop autonomy with adaptive recovery and verification.
-5. Unified event/trace/replay observability.
-6. Complete Guard AI and safe PC/phone bring-up.
-7. Local LLM as an isolated decision provider.
-8. Hardware-aware optimization after functional correctness.
-
-## Documentation
-
-- `docs/PROJECT_METADATA.md` — authoritative version/creator metadata.
-- `docs/IMPLEMENTATION_STATUS.md` — implementation ledger.
-- `docs/ARCHITECTURE.md` — final architecture and communication matrix.
-- `docs/FINAL_SYSTEM_ARCHITECTURE.md` — consolidated end-to-end architecture, contracts, data flow and authority model.
-- `docs/PROJECT_RULES.md` — project rules.
-- `docs/ROADMAP.md` — implementation gates.
-- `docs/AGENT_RUNTIME_PLATFORM_V1_BETA.md` — Agent Runtime expansion specification.
-- `docs/PROGRESSION_ENGINE_SPEC.md` — Progression Engine specification.
-- `docs/WIFI_BRINGUP.md` — local/LAN bring-up specification.
+1. Sicurezza e autorizzazione esplicita.
+2. Percorso critico deterministico e verificabile.
+3. WorldState come fonte canonica dello stato corrente.
+4. Separazione tra decisione ed esecuzione.
+5. Recupero adattivo e verifica a ciclo chiuso.
+6. Osservabilità e provenienza dei dati.
+7. Testabilità senza client di gioco reale.
+8. Integrazioni live dietro traguardi espliciti.
