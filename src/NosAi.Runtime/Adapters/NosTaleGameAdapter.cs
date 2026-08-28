@@ -1,62 +1,67 @@
 using System.Diagnostics;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Guard;
+using NosAi.Runtime.Humanizer;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Adapters;
 
-/// <summary>
-/// Fail-closed boundary between tactical decisions and a future NosTale client adapter.
-/// This foundation deliberately does not inject input, manipulate packets, or bypass protections.
-/// </summary>
+/// <summary>Controlled client boundary. All live execution requires explicit safety authorization.</summary>
 public sealed class NosTaleGameAdapter : IGameAdapter
 {
     private readonly IGuardAi _guardAi;
+    private readonly IHumanizer _humanizer;
+    private readonly LiveInputAuthorization _authorization;
     private Process? _gameProcess;
     private bool _initialized;
 
-    public NosTaleGameAdapter(IGuardAi guardAi)
-        => _guardAi = guardAi ?? throw new ArgumentNullException(nameof(guardAi));
+    public NosTaleGameAdapter(IGuardAi guardAi, IHumanizer humanizer, LiveInputAuthorization authorization)
+    {
+        _guardAi = guardAi ?? throw new ArgumentNullException(nameof(guardAi));
+        _humanizer = humanizer ?? throw new ArgumentNullException(nameof(humanizer));
+        _authorization = authorization ?? throw new ArgumentNullException(nameof(authorization));
+    }
 
     public Task InitializeAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var processes = Process.GetProcessesByName("NosTaleX");
-        _gameProcess = processes.FirstOrDefault();
+        _gameProcess = Process.GetProcessesByName("NosTaleX").FirstOrDefault();
         _initialized = true;
         return Task.CompletedTask;
     }
 
-    public Task SendMovementCommandAsync(float targetX, float targetY, CancellationToken cancellationToken)
-        => RejectLiveExecutionAsync("Movement", cancellationToken);
+    public async Task SendMovementCommandAsync(float targetX, float targetY, CancellationToken cancellationToken)
+    {
+        var action = new CandidateAction("Movement", ActionKind.Utility, TrustTier.Tier4, 0);
+        Authorize(action);
+        await _humanizer.MoveMouseHumanlikeAsync(new ScreenPoint(400, 300), new TargetDescriptor(new ScreenPoint((int)targetX, (int)targetY), 20, 20, "GameWorldTarget"), cancellationToken);
+    }
 
-    public Task SendSkillCastAsync(string skillSlot, CancellationToken cancellationToken)
-        => RejectLiveExecutionAsync($"SkillCast:{skillSlot}", cancellationToken);
+    public async Task SendSkillCastAsync(string skillSlot, CancellationToken cancellationToken)
+    {
+        var action = new CandidateAction($"SkillCast:{skillSlot}", ActionKind.Utility, TrustTier.Tier4, 0);
+        Authorize(action);
+        await _humanizer.PressKeyHumanlikeAsync(skillSlot, cancellationToken);
+    }
 
-    public Task SendNosMateCommandAsync(char mateCommand, CancellationToken cancellationToken)
-        => RejectLiveExecutionAsync($"NosMate:{mateCommand}", cancellationToken);
+    public async Task SendNosMateCommandAsync(char mateCommand, CancellationToken cancellationToken)
+    {
+        var action = new CandidateAction($"NosMate:{mateCommand}", ActionKind.Utility, TrustTier.Tier4, 0);
+        Authorize(action);
+        await _humanizer.PressKeyHumanlikeAsync(mateCommand.ToString(), cancellationToken);
+    }
 
     public bool IsClientHealthy()
     {
-        if (!_initialized) return false;
-        if (_gameProcess is null) return false;
-        try { return !_gameProcess.HasExited; }
-        catch { return false; }
+        if (!_initialized || _gameProcess is null) return false;
+        try { return !_gameProcess.HasExited; } catch { return false; }
     }
 
-    private Task RejectLiveExecutionAsync(string actionName, CancellationToken cancellationToken)
+    private void Authorize(CandidateAction action)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (!_initialized)
-            throw new InvalidOperationException("GameAdapter non inizializzato.");
-        if (!IsClientHealthy())
-            throw new InvalidOperationException("Client NosTale non attivo o non disponibile.");
-
-        var candidate = new CandidateAction(actionName, ActionKind.Utility, TrustTier.Tier4, 0);
-        var decision = _guardAi.Evaluate(candidate, TrustTier.Tier3);
-        if (!decision.Allowed)
-            throw new UnauthorizedAccessException($"Azione bloccata dal Guard AI: {decision.Reason}");
-
-        throw new NotSupportedException(
-            "Live execution non ancora abilitata: il Game Adapter resta fail-closed fino al completamento del runtime Humanizer/Safety e dei test di bring-up.");
+        if (!_initialized) throw new InvalidOperationException("GameAdapter non inizializzato.");
+        var decision = _guardAi.Evaluate(action, TrustTier.Tier3);
+        if (!_authorization.CanExecute(action, decision, IsClientHealthy()))
+            throw new UnauthorizedAccessException($"Azione non autorizzata dal Safety Gate: {action.Id}");
     }
 }
