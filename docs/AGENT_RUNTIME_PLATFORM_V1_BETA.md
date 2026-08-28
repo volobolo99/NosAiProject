@@ -6,88 +6,89 @@
 
 ## Purpose
 
-This expansion adds a model-agnostic, local-first runtime layer over the existing deterministic NosAi pipeline without granting execution privileges to stochastic Decision Providers. The autonomous runtime is bounded, observable, recoverable and fail-closed.
+This expansion adds a model-agnostic, local-first runtime layer over the deterministic NosAi pipeline without granting execution privileges to stochastic Decision Providers. The runtime is bounded, observable, recoverable and fail-closed.
 
-## Cross-cutting runtime systems
+## Runtime control plane
 
-- **SessionManager** — resumable in-process lifecycle and checkpoints.
-- **MemoryBus** — bounded runtime events decoupled from durable persistence.
-- **ProviderRegistry / ProviderRouter** — model-agnostic local-first provider selection.
-- **RoutingPolicy** — privacy, locality, complexity, latency, VRAM and temperature constraints.
-- **ResourceManager** — deterministic resource snapshots and gating.
-- **ExecutionPolicy** — explicit execution mode and trust-tier policy.
-- **AgentLoop** — multi-step Planner → Guard → Safety → Executor → Verifier runtime.
-- **RecoveryController** — deterministic recovery events and callbacks.
-- **RuntimeWatchdog** — independent runtime/action/failure kill switch.
-- **AgentRuntime** — decision facade routing provider output through Guard AI and Safety Gate.
+SessionManager, Scheduler, Memory, Policy, Trust, Resources, ProviderRouter, Tools, Watchdog and Evaluation operate as a transverse control plane. They govern execution but do not replace the canonical domain pipeline.
 
-## Autonomous execution contract
-
-The loop treats the plan as untrusted data. Each step is authorized independently. The caller's Trust Tier is an authorization ceiling; a step may require a lower tier but never a higher one. Unknown or malformed trust requirements fail closed.
+## Closed-loop contract
 
 ```text
-Goal / Context
-      ↓
-   Planner
-      ↓
- AgentPlan (untrusted)
-      ↓
- ┌──────────────────────────────┐
- │ for each step                │
- │   Watchdog                   │
- │   Trust ceiling              │
- │   Guard AI                   │
- │   Safety Gate                │
- │   Executor                   │
- │   Verifier                   │
- │   Checkpoint                 │
- └──────────────┬───────────────┘
-                │ failure
-                ▼
-       bounded retry / recovery
-                │
-                ▼
-          bounded replan
-                │
-                ▼
-            next plan
+Observe
+  ↓
+Canonical WorldState(vN)
+  ↓
+Simulation → Tactical Ranking → Orchestrator
+  ↓
+Planner → GuardDecisionContext → Trust → Safety
+  ↓
+Executor / Game Adapter
+  ↓
+ActionResult
+  ↓
+Verifier + fresh Observation
+  ↓
+Canonical WorldState(vN+1)
+  ├── verified → checkpoint → next decision
+  └── failed → bounded retry/recovery → fresh replan
 ```
 
-## Recovery semantics
+Every action is independently authorized. The caller Trust Tier is a ceiling. Unknown or malformed trust requirements fail closed. Recovery and watchdogs can only reduce authority.
 
-Executor exceptions and verification failures are never treated as success. The runtime may retry the current step within `max_retries_per_step`; after that it may request a new plan with `recovery_reason` and `failed_step_index`, up to `max_replans`. A watchdog trip or exhausted budget terminates the run fail-closed.
+## Event / trace plane
 
-## Watchdog
+The runtime should emit typed events without making the event bus an execution path. Events carry `event_id`, `session_id`, `run_id`, `task_id`, `parent_event_id`, timestamp, source, type, schema version and payload.
 
-`RuntimeWatchdog` is independent from model output and cannot grant permissions. It enforces maximum runtime, action count and consecutive failures. Once tripped it blocks further execution until an external runtime owner explicitly resets it.
+Core event families include perception, WorldState updates, simulation, ranking, decisions, plans, Guard/Safety evaluations, execution, verification, recovery, replanning, memory, provider routing, hardware profile changes and session lifecycle.
 
-## Session lifecycle
+This plane supports audit, telemetry, evaluation and simulation-first replay.
 
-A session records goal, state, checkpoints and lifecycle events. It supports `RUNNING`, `PAUSED`, `RESUMED`, `STOPPED`, `FAILED` and `COMPLETED` states. Durable SQLite persistence and distributed session recovery remain separate gates.
+## WorldState provenance
 
-## Security boundary
+The canonical WorldState is immutable per accepted observation. Each version identifies its parent and observation provenance. Simulation references the exact input state version. Verification compares predicted and actual outcomes after the next observation.
 
-Decision Providers implement `DecisionProvider` and return decisions/plans only. They do not receive an `ActionExecutor`, Safety Gate bypass, game adapter, or privileged tool handle. Provider output is data until downstream validation succeeds.
+This produces the measurable chain:
 
-## Local-first policy
+`WorldState vN → prediction → action → WorldState vN+1 → prediction error`.
 
-`PrivacyClass.LOCAL_ONLY` and `PrivacyClass.SENSITIVE` default to local execution. Cloud escalation remains policy-controlled and is not implicitly authorized by the autonomous loop.
+## Decision / ranking semantics
 
-## Resource awareness
+Decision Providers return data only. Simulation predicts. Tactical Ranking scores candidates but never authorizes. The Orchestrator coordinates. The Planner creates bounded plans. Guard evaluates contextual risk. Trust supplies deterministic authorization ceilings. Safety is the final fail-closed gate.
 
-Resource and hardware profiling remain deterministic abstractions. OS/GPU-specific probes and real benchmark collection are separate implementation work so the autonomous runtime remains testable without specific hardware or the live game client.
+Ranking should expose score, confidence, risk, expected reward, prediction confidence and evidence quality so decisions can be audited and compared over time.
+
+## Memory semantics
+
+Runtime memory distinguishes raw experience, observation, episode, hypothesis and verified knowledge. Verification evidence and provenance are required before an experience is promoted to reusable strategy. Unverified outcomes cannot silently become knowledge.
+
+## Provider / hardware routing
+
+Provider Router is local-first and policy-controlled. Inputs include privacy/locality, task complexity, latency, VRAM/RAM, GPU utilization, temperature, energy and recent provider performance. Hardware profiling remains deterministic at the contract layer; real probes and benchmarks are gated.
+
+## Recovery / watchdog
+
+Executor exceptions and verification failures are never success. The runtime may retry within budget and then replan with structured failure context. The independent watchdog limits runtime, actions, consecutive failures and other configured budgets. A tripped watchdog cannot be reset by model output.
+
+## Session / PC / phone
+
+Initial bring-up is local/LAN and authenticated. Typed messages use sequence/replay protection. Intended lifecycle: `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`. PC Play AI, PC Play Guard and phone Guard AI remain separate roles connected through explicit contracts; invalid/disconnected sessions fail closed.
+
+## Security invariants
+
+- No LLM direct execution.
+- No ranking/orchestrator direct execution.
+- No perception direct execution.
+- No recovery permission escalation.
+- No watchdog permission escalation.
+- No cloud escalation when local-only policy applies.
+- No unverified outcome treated as success.
+- No live game integration before release/safety gates.
 
 ## Current production boundary
 
-Implemented now: bounded multi-step planning, independent authorization, verification, checkpointing, retry/replanning, recovery callbacks, watchdog and offline evaluation primitives.
+Implemented: bounded autonomous runtime, closed-loop observation/replanning bridge, deterministic Trust/Guard/Safety boundary, provider/resource foundations, session/checkpoint foundations and evaluation primitives.
 
-Still gated: production Guard AI integration, authenticated LAN transport, durable SQLite memory, real hardware probes, local llama.cpp/cloud providers, production perception and live game execution.
+Gated: production Event Bus, persistent/versioned WorldState store, PredictionEvaluator, evidence-aware knowledge persistence, authenticated LAN transport, production Guard/Play Guard, hardware probes, local/cloud providers, production perception and live game adapter.
 
-## Non-goals in this increment
-
-- No live game execution.
-- No cloud credentials or implicit network calls.
-- No direct LLM execution privileges.
-- No production GPU probing.
-- No persistent SQLite implementation.
-- No version increment.
+**No version increment:** project remains **NosAi 1.0 Beta**.
