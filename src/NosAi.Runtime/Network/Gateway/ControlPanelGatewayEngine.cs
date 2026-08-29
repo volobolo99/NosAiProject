@@ -20,27 +20,55 @@ using System.Threading.Tasks;
 
 namespace NosAi.Network.Gateway
 {
-    public sealed record ControlPanelPacket(Guid PacketId, string Topic, string PayloadJson, DateTime TimestampUtc);
+    #region 1. Contratti di Dominio per il Gateway di Rete
 
+    public sealed record ControlPanelPacket(
+        Guid PacketId,
+        string Topic,
+        string PayloadJson,
+        DateTime TimestampUtc
+    );
+
+    #endregion
+
+    #region 2. Rate Limiter & Telemetry Throttler
+
+    /// <summary>
+    /// Regola la frequenza di invio dei pacchetti di telemetria per prevenire congestioni sulla dashboard.
+    /// </summary>
     public sealed class TelemetryRateLimiter
     {
         private readonly TimeSpan _minInterval;
         private DateTime _lastSentUtc = DateTime.MinValue;
         private readonly object _lock = new();
 
-        public TelemetryRateLimiter(int maxFps = 10) => _minInterval = TimeSpan.FromMilliseconds(1000.0 / Math.Clamp(maxFps, 1, 60));
+        public TelemetryRateLimiter(int maxFps = 10)
+        {
+            _minInterval = TimeSpan.FromMilliseconds(1000.0 / Math.Clamp(maxFps, 1, 60));
+        }
 
         public bool ShouldThrottle()
         {
             lock (_lock)
             {
                 DateTime now = DateTime.UtcNow;
-                if (now - _lastSentUtc >= _minInterval) { _lastSentUtc = now; return false; }
-                return true;
+                if (now - _lastSentUtc >= _minInterval)
+                {
+                    _lastSentUtc = now;
+                    return false; // Non throtteled, invio consentito
+                }
+                return true; // Throtteled, scarta o salta questo frame
             }
         }
     }
 
+    #endregion
+
+    #region 3. Control Panel Gateway & Event Streamer
+
+    /// <summary>
+    /// Gestisce i flussi di dati in tempo reale tra il runtime e la dashboard locale.
+    /// </summary>
     public sealed class ControlPanelGatewayEngine : IAsyncDisposable
     {
         private readonly int _port;
@@ -49,7 +77,11 @@ namespace NosAi.Network.Gateway
         private HttpListener? _listener;
         private CancellationTokenSource? _gatewayCts;
 
-        public ControlPanelGatewayEngine(int port = 8766) { _port = port; _rateLimiter = new TelemetryRateLimiter(maxFps: 10); }
+        public ControlPanelGatewayEngine(int port = 8766)
+        {
+            _port = port;
+            _rateLimiter = new TelemetryRateLimiter(maxFps: 10);
+        }
 
         public void Start()
         {
@@ -64,7 +96,11 @@ namespace NosAi.Network.Gateway
         {
             while (!token.IsCancellationRequested && _listener != null && _listener.IsListening)
             {
-                try { var context = await _listener.GetContextAsync().ConfigureAwait(false); ProcessGatewayRequest(context); }
+                try
+                {
+                    var context = await _listener.GetContextAsync().ConfigureAwait(false);
+                    ProcessGatewayRequest(context);
+                }
                 catch (HttpListenerException) { break; }
                 catch (OperationCanceledException) { break; }
             }
@@ -79,18 +115,27 @@ namespace NosAi.Network.Gateway
                 {
                     context.Response.ContentType = "text/event-stream; charset=utf-8";
                     context.Response.StatusCode = 200;
+
                     string data = "data: {\"event\":\"CONNECTED\",\"timestamp\":\"" + DateTime.UtcNow.ToString("O") + "\"}\n\n";
                     byte[] buffer = Encoding.UTF8.GetBytes(data);
                     context.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else context.Response.StatusCode = 404;
+                else
+                {
+                    context.Response.StatusCode = 404;
+                }
             }
-            finally { context.Response.OutputStream.Close(); }
+            finally
+            {
+                context.Response.OutputStream.Close();
+            }
         }
 
         public void BroadcastPacket(string topic, string payloadJson)
         {
-            if (_rateLimiter.ShouldThrottle() && topic == "TELEMETRY") return;
+            if (_rateLimiter.ShouldThrottle() && topic == "TELEMETRY")
+                return;
+
             var packet = new ControlPanelPacket(Guid.NewGuid(), topic, payloadJson, DateTime.UtcNow);
             _packetHistory.Enqueue(packet);
             while (_packetHistory.Count > 100) _packetHistory.TryDequeue(out _);
@@ -99,31 +144,109 @@ namespace NosAi.Network.Gateway
         public async ValueTask DisposeAsync()
         {
             _gatewayCts?.Cancel();
-            if (_listener != null && _listener.IsListening) { _listener.Stop(); _listener.Close(); }
+            if (_listener != null && _listener.IsListening)
+            {
+                _listener.Stop();
+                _listener.Close();
+            }
             _gatewayCts?.Dispose();
             await Task.CompletedTask;
         }
     }
 
+    #endregion
+
+    #region 4. Suite di Test di Certificazione per il Gateway
+
     public static class ControlPanelGatewayTestRunner
     {
         public static async Task<bool> RunAllTestsAsync()
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=================================================================");
+            Console.WriteLine("    NosAi 1.0 Beta — Certificazione Control Panel Gateway        ");
+            Console.WriteLine("=================================================================");
+            Console.ResetColor();
+
             bool allPassed = true;
+
             allPassed &= RunTest("Test 1: Rate Limiter Throttling Telemetria", TestRateLimiterThrottling);
             allPassed &= await RunTestAsync("Test 2: Avvio e Chiusura Gateway HTTP/SSE", TestGatewayServerLifecycleAsync);
             allPassed &= RunTest("Test 3: Invariante Architetturale (Gateway Non-Executable)", TestGatewaySecurityInvariant);
+
+            Console.WriteLine();
+            if (allPassed)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DEL GATEWAY DI RETE SONO SUPERATI.");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(">> [ERRORE GATEWAY]: UNO O PIÙ TEST SONO FALLITI.");
+                Console.ResetColor();
+            }
+
             return allPassed;
         }
 
-        private static bool RunTest(string _, Func<bool> testFunc) { try { return testFunc(); } catch { return false; } }
-        private static async Task<bool> RunTestAsync(string _, Func<Task<bool>> testFunc) { try { return await testFunc(); } catch { return false; } }
+        private static bool RunTest(string testName, Func<bool> testFunc)
+        {
+            try
+            {
+                bool result = testFunc();
+                PrintResult(testName, result);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                PrintResult(testName, false, ex.Message);
+                return false;
+            }
+        }
+
+        private static async Task<bool> RunTestAsync(string testName, Func<Task<bool>> testFunc)
+        {
+            try
+            {
+                bool result = await testFunc();
+                PrintResult(testName, result);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                PrintResult(testName, false, err: ex.Message);
+                return false;
+            }
+        }
+
+        private static void PrintResult(string name, bool passed, string? err = null)
+        {
+            Console.Write($"[{ (passed ? "PASS" : "FAIL") }] {name,-62}");
+            if (passed)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(" [OK]");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($" [ERRORE: {err ?? "Asserzione fallita"}]");
+            }
+            Console.ResetColor();
+        }
 
         private static bool TestRateLimiterThrottling()
         {
-            var limiter = new TelemetryRateLimiter(maxFps: 10);
-            bool first = limiter.ShouldThrottle(); bool immediate = limiter.ShouldThrottle();
-            Thread.Sleep(110); bool afterWait = limiter.ShouldThrottle();
+            var limiter = new TelemetryRateLimiter(maxFps: 10); // 100ms tra i pacchetti
+
+            bool first = limiter.ShouldThrottle();  // False (permesso)
+            bool immediate = limiter.ShouldThrottle(); // True (throtteled)
+
+            Thread.Sleep(110);
+            bool afterWait = limiter.ShouldThrottle(); // False (permesso nuovamente)
+
             return !first && immediate && !afterWait;
         }
 
@@ -131,16 +254,44 @@ namespace NosAi.Network.Gateway
         {
             int port = 8795;
             await using var gateway = new ControlPanelGatewayEngine(port);
-            gateway.Start(); gateway.BroadcastPacket("TEST", "{\"msg\":\"hello\"}");
+            gateway.Start();
+            gateway.BroadcastPacket("TEST", "{\"msg\":\"hello\"}");
+
             await Task.Delay(50);
             return true;
         }
 
         private static bool TestGatewaySecurityInvariant()
         {
-            var types = typeof(ControlPanelGatewayEngine).Assembly.GetTypes();
-            bool hasExecution = types.Any(t => t.Namespace != null && t.Namespace.Contains("NosAi.Network.Gateway") && t.GetMethods().Any(m => m.Name.Contains("click", StringComparison.OrdinalIgnoreCase) || m.Name.Contains("sendpacket", StringComparison.OrdinalIgnoreCase)));
+            var types = typeof(ControlPanelGatewayEngine).Assembly.GetTypes()
+                .Where(t => t.Namespace != null && t.Namespace.Contains("NosAi.Network.Gateway"));
+
+            bool hasExecution = types.Any(t => t.GetMethods().Any(m => m.Name.ToLowerInvariant().Contains("click") || m.Name.ToLowerInvariant().Contains("sendpacket")));
             return !hasExecution;
         }
     }
+
+    #endregion
+
+    #region 5. Entry Point
+
+    public static class Program
+    {
+        public static async Task<int> Main(string[] args)
+        {
+            Console.Title = "NosAi Control Panel Gateway (1.0 Beta)";
+
+            if (args.Length > 0 && args[0].Equals("--test", StringComparison.OrdinalIgnoreCase))
+            {
+                bool success = await ControlPanelGatewayTestRunner.RunAllTestsAsync();
+                return success ? 0 : 1;
+            }
+
+            Console.WriteLine("Inizializzazione NosAi Control Panel Gateway...");
+            bool passed = await ControlPanelGatewayTestRunner.RunAllTestsAsync();
+            return passed ? 0 : 1;
+        }
+    }
+
+    #endregion
 }
