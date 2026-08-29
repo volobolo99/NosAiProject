@@ -2,6 +2,15 @@
 
 ## 1.0 Beta
 
+### Runtime
+
+- Integrati i blocchi Gate 4 per Progression Engine V2: DAG missioni, sblocco SP1/SP2, evidenza Beta-Binomiale, selezione UCB1/MAUT e Knowledge Base con ciclo di vita Mastery.
+- Aggiunto `Gate4TestRunner` con prove automatiche su prerequisiti DAG, convergenza bayesiana, UCB1, Mastery, pipeline SP e determinismo.
+- Integrati i blocchi Gate 5 per Provider Router local-first, policy StrictLocalOnly, provider euristico/locale/cloud, hardware baseline, discovery `NOSAI-SSD` e Eye AI View.
+- Completato il Control Center REST loopback su `127.0.0.1`, con endpoint di stato/Eye View e coda esplicita dei comandi verso il sink del runtime.
+- Aggiunto `Gate5IntegratedEngine` e `Gate5TestRunner` con prove automatiche su isolamento cloud, non-esecuzione dei provider, soglia termica, storage, stratificazione Eye AI e REST.
+- Il `Program` principale espone `--gate4-test` e `--gate5-test` senza introdurre entry point multipli nel progetto.
+
 ### Documentazione
 
 - Documentazione principale resa italiana.
@@ -13,30 +22,10 @@
 - Integrati nel modello architetturale il Crucial X6 CT2000X6SSD9, il volume `NOSAI-SSD`, il layout canonico, la policy SQLite e il provisioning PC-Phone.
 - Integrate nella documentazione le ottimizzazioni di memoria, throttling adattivo, delta encoding e requisiti di benchmark della specifica definitiva di performance.
 
-### Runtime
-
-- Aggiunto il riduttore di contesto orientato alla VRAM.
-- Aggiunto RecoveryController adattivo.
-- Aggiunte modalità runtime del watchdog.
-- Aggiunto watchdog hardware con gestione termica e I/O opzionale.
-- Aggiunto `AdaptiveThrottler` con `AdaptiveLimits`, `ResourcePlan` e modalità `NORMAL`, `COOLING`, `DEGRADED` e `STOPPED`.
-- Aggiunto storage discovery del volume NosAi tramite label Windows, indipendente dalla lettera di unità.
-- Aggiunta validazione non distruttiva del volume: NTFS, accessibilità e spazio minimo.
-- Aggiunto layout storage canonico sul volume dedicato.
-- Aggiunta policy SQLite centralizzata con WAL, `synchronous=FULL`, busy timeout, cache, limite WAL e incremental vacuum.
-- Aggiornato `NosAiSqliteLogger` per utilizzare la policy centralizzata.
-- Aggiunto provisioning ADB della phone Guard AI con verifica device autorizzato e gestione dell'APK locale.
-- Integrato `NosAiCryptoAuthManager` per challenge monouso da 32 byte e verifica RSA-2048/SHA-256/PKCS#1 v1.5 della firma Guard AI.
-- Consolidato il framing binario PC↔Phone a 12 byte e il controllo della sequenza.
-- Aggiunto delta encoding deterministico del WorldState al livello di framing, separato da autenticazione e cifratura.
-- Aggiunto `NosAiOnboardingEngine` per provisioning ADB isolato, forwarding TCP 6100 e costruzione del `SESSION_HELLO`.
-
 ### Test e validazione
 
-- Aggiunti test per autenticazione RSA, consumo monouso della challenge e fail-closed su firma non valida.
-- Aggiunti test per framing `SESSION_HELLO` e blocco del provisioning in assenza dell'ADB isolato.
-- Aggiunti test per `AdaptiveThrottler` e delta encoding del WorldState.
+- I test Gate 4 e Gate 5 sono ora invocabili dal runtime principale, ma la loro presenza **non equivale al superamento operativo dei gate**.
+- Il progetto resta vincolato alla regola di avanzamento del Gate 1: PC ↔ client NosTale ↔ rete ↔ Guard AI smartphone deve essere verificato end-to-end prima di dichiarare avanzamento operativo.
 - Il deployment SSD e il percorso PC-Phone restano soggetti a validazione fisica sul PC e sullo smartphone reali.
 - Nessuna prestazione dichiarata del Crucial X6 viene assunta come garantita: throughput e latenza devono essere misurati.
-- AES-GCM-256, heartbeat temporizzato, timeout fail-closed da 2000 ms, APK reale e interoperabilità con smartphone fisico non sono dichiarati produttivi finché non vengono implementati e validati.
 - Le ottimizzazioni C#/.NET 8 basate su `ArrayPool`, `Memory`, `Span` e caricamento modelli on-demand restano da integrare e benchmarkare nel percorso nativo.
