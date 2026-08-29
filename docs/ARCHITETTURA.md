@@ -1,128 +1,230 @@
-# NosAi — Architettura completa e modello di comunicazione
+# NosAi — Architettura, comunicazione e flusso dati
 
 **Versione:** 1.0 Beta  
-**Creatore:** Volodymyr Ryzhuk
+**Creatore:** Volodymyr Ryzhuk  
+**Stato:** documento architetturale canonico consolidato
 
-## 1. Mappa generale
+## 1. Scopo
+
+Questo è l'unico documento canonico dell'architettura di NosAi. Descrive responsabilità, dati, comunicazioni, autorità, percorso operativo, persistenza, sicurezza e componenti ancora pianificati.
+
+## 2. Architettura generale
 
 ```text
 SESSIONE / SCHEDULER
         │
-RISORSE ── POLICY ── PROVIDER ROUTER ── MEMORIA ── STORAGE SSD
-        │                                  │             │
-CONTROLLO RUNTIME ── WATCHDOG ── RECOVERY ── SQLITE/WAL
+RISORSE ─ POLICY ─ PROVIDER ROUTER
         │
-EVENTBUS / TRACE
+CONTROLLO RUNTIME
         │
-PERCEZIONE → WORLDSTATE(vN) → SIMULAZIONE → RANKING
+EVENTBUS / TRACE / AUDIT
+        │
+        ├──────── PERCEZIONE ────────┐
+        │                            ↓
+        └──────── MEMORIA       WORLDSTATE vN
+                                      │
+                           PARTY / PET / PARTNER
+                                      │
+                                  SIMULAZIONE
+                                      │
+                               TACTICAL RANKING
                                       │
                                  ORCHESTRATOR
                                       │
-                                  PLANNER
+                                AGENT PLANNER
                                       │
-                              GUARD / TRUST / SAFETY
+                            GUARD / TRUST / SAFETY
                                       │
-                             EXECUTOR / ADAPTER
+                                  EXECUTOR
                                       │
-                                  VERIFIER
+                               GAME ADAPTER
                                       │
-                              WORLDSTATE(vN+1)
+                                  RISULTATO
                                       │
-                         PASS ───────┴──── FAIL
-                                                │
-                              CONTEXT SLIMMING / RECOVERY
+                         VERIFIER + NUOVA OSSERVAZIONE
+                                      │
+                                  WORLDSTATE vN+1
+                                      │
+                         ┌────────────┴────────────┐
+                        PASS                       FAIL
+                         │                         │
+                    CHECKPOINT              RECOVERY
+                                                   │
+                                  retry / replan / degraded / cooling
+                                                   │
+                                             nuovo ciclo
 ```
 
-## 2. Deployment PC su SSD dedicato
+## 3. Percorso critico
 
-Il runtime PC di NosAi è progettato per il volume esterno dedicato `NOSAI-SSD`, Crucial X6 CT2000X6SSD9 da 2 TB. Windows rimane sul disco interno; codice NosAi, runtime locale, modelli, memoria persistente, SQLite, log, cache, configurazione e artefatti applicativi sono allocati sul volume dedicato.
+Il percorso operativo autorevole è:
 
-Il root viene risolto a runtime tramite etichetta del volume e non tramite una lettera fissa. Il modulo `nosai.storage.volume` valida presenza, NTFS, accessibilità e spazio minimo senza formattare il dispositivo. `nosai.storage.paths` costruisce il layout canonico.
+`Observe → WorldState → Simulation → Ranking → Orchestrator → Planner → Guard → Trust → Safety → Execute → Verify → Re-observe`.
 
-Il deployment è **portable-by-volume**, non bootable: cambiare la lettera assegnata da Windows non deve cambiare i percorsi logici di NosAi.
+Nessun subscriber dell'EventBus può inserire effetti di esecuzione in questo percorso.
 
-## 3. Storage layer
+## 4. Modello delle autorità
 
-Layout canonico:
+| Componente | Decide | Esegue | Concede autorizzazioni |
+|---|---|---|---|
+| Perception | fatti osservati | No | No |
+| World Model | rappresentazione dello stato | No | No |
+| Simulation | esiti previsti | No | No |
+| Tactical Ranking | ordinamento candidati | No | No |
+| Provider/LLM | dati decisionali | No | No |
+| Planner | piano limitato | No | No |
+| Guard | valutazione sicurezza/policy | No | No |
+| Trust Boundary | limite deterministico | No | No |
+| Safety Gate | autorizzazione finale | No | Sì, per il proprio confine |
+| Executor/Game Adapter | azione autorizzata | **Sì** | No |
+| Verifier | verifica risultato | No | No |
+| Recovery | strategia di recupero | No direttamente | No |
+| Watchdog | controllo modalità/runtime | No direttamente | No |
+| EventBus | registrazione/notifica | No | No |
 
-```text
-<NOSAI-SSD>:\NosAi\
-├── app\ runtime\ models\
-├── data\db\ state\ evidence\ exports\
-├── cache\ logs\ temp\ backups\ config\ tools\
-```
+Recovery e Watchdog sono controller runtime attivi: possono modificare strategia, modalità e budget secondo policy e condizioni osservate. Non acquisiscono automaticamente autorità di esecuzione o di concessione Trust.
 
-Il volume è considerato una dipendenza infrastrutturale del runtime. Se non è disponibile, il launcher deve rifiutare l'avvio delle funzioni che richiedono persistenza. Sono vietati path applicativi relativi dipendenti dalla directory corrente.
+## 5. EventBus e trace
 
-## 4. SQLite
+EventBus è trasversale e osservazionale. Gli eventi devono mantenere almeno identificativo evento, sessione, esecuzione, attività, genitore, timestamp, sorgente, tipo, versione schema e payload strutturato.
 
-La policy SQLite è centralizzata in `nosai/storage/sqlite_policy.py` e viene applicata da `NosAiSqliteLogger`.
+Il bus è bounded: la capacità è configurabile e il dropping controllato può interessare i log non critici sotto saturazione. Gli eventi critici non devono essere persi silenziosamente.
 
-Profilo corrente:
+Famiglie principali: percezione, WorldState, simulazione, ranking, decisioni, pianificazione, Guard/Safety, azioni, verifica, recovery, replan, memoria, provider, hardware e ciclo di sessione.
 
-- `journal_mode=WAL`;
-- `synchronous=FULL` per la persistenza critica;
-- `busy_timeout=5000 ms`;
-- cache di 64 MiB;
-- `journal_size_limit=64 MiB`;
-- `auto_vacuum=INCREMENTAL`.
+## 6. WorldState e provenienza
 
-WAL e i file ausiliari restano sul volume locale. Il checkpoint controllato è disponibile tramite la policy storage.
+`WorldStateStore` è la fonte canonica dello stato operativo. Ogni osservazione accettata produce una nuova versione con versione precedente, identificativo osservazione, sorgente e confidenza.
 
-## 5. PC Play Guard e sicurezza storage
+Ciclo concettuale:
 
-PC Play Guard deve osservare lo stato del volume e impedire che una perdita dello storage produca nuove scritture incontrollate. Gli stati progettuali sono `STORAGE_SAFE`, `STORAGE_BUSY` e `STORAGE_ERROR`.
+`WorldState v41 → Simulation → Action → Observation → WorldState v42`.
 
-In caso di scomparsa del volume: blocco nuove scritture, evento critico, sospensione delle attività dipendenti dalla persistenza, tentativo di recovery/reconnect e arresto sicuro se la persistenza non è garantibile.
+SQLite e altri sistemi di persistenza non sostituiscono il WorldState canonico.
 
-## 6. Topologia PC-Phone
+## 7. Decisione, simulazione e ranking
 
-La topologia resta composta da:
+Simulation produce `PredictedOutcome`; Tactical Ranking valuta candidati usando score, confidenza, rischio, ricompensa attesa ed evidenza. Nessuno di questi componenti esegue direttamente.
 
-- **Play AI / Executor:** runtime sul volume `NOSAI-SSD`, eseguito sul PC; unico confine di esecuzione diretta.
-- **PC Play Guard:** supervisione deterministica sul PC Windows.
-- **phone Guard AI:** applicazione Android `com.nosai.guard`, barriera esterna con autorità ALLOW/DENY.
+L'Orchestrator coordina il flusso e l'Agent Planner produce un piano limitato. Il piano attraversa Guard, Trust e Safety prima dell'esecuzione.
 
-## 7. Provisioning e onboarding smartphone
+## 8. Recovery e Watchdog
 
-`nosai/phone/provisioning.py` fornisce il provisioning ADB di base. `nosai/phone/onboarding_engine.py` aggiunge l'orchestrazione deterministica: ADB isolato nel volume, attesa di device autorizzato, installazione condizionata dell'APK locale `runtime\GuardAi.apk`, forwarding TCP `6100`, avvio di `com.nosai.guard` e costruzione del primo `SESSION_HELLO` con sequenza 1.
+### RecoveryController
 
-Il provisioning non scarica componenti dall'esterno e non opera su un dispositivo non autorizzato.
+Recovery usa il contesto del fallimento e lo storico compresso per scegliere tra retry, replan, modalità degradata e Cooling. Include circuit breaker con massimo predefinito di tre fallimenti consecutivi, backoff esponenziale e stato `CriticalDeadlock` per fallimenti persistenti.
 
-## 8. Autenticazione RSA SESSION_AUTH
+### Watchdog
 
-`nosai/network/crypto_auth.py` implementa `NosAiCryptoAuthManager`:
+Il RuntimeWatchdog gestisce `NORMAL`, `DEGRADED`, `RECOVERY`, `COOLING` e `STOPPED`. Il watchdog hardware può monitorare temperatura CPU/GPU e I/O quando i backend sono disponibili. La soglia termica predefinita è 80 °C.
 
-- challenge casuale di 32 byte;
-- rappresentazione wire in esadecimale;
-- verifica della firma Guard AI con RSA-2048, SHA-256 e PKCS#1 v1.5;
-- caricamento della sola chiave pubblica PEM dal volume dedicato;
-- digest SHA-256 della challenge per audit;
-- consumo della challenge dopo ogni tentativo, per impedire il riuso del nonce.
+Timeout sincroni devono poter fallire rapidamente tramite il meccanismo runtime dedicato.
 
-Le chiavi private non sono gestite dal runtime PC e non devono entrare nel repository.
+## 9. Riduzione del contesto
 
-## 9. Protocollo PC-Phone
+`VRAMContextSlimmer` riduce lo storico diagnostico ripetitivo, usa firme deterministiche delle eccezioni e mantiene uno storico limitato. È parte del percorso di recupero, non della fonte canonica dello stato.
 
-`nosai/network/wire_protocol.py` implementa il frame binario da 12 byte:
-`MAGIC(4) | VERSION(1) | TYPE(1) | PAYLOAD_LEN(2) | SEQ(4)`.
+## 10. Sicurezza e sessioni
 
-`SequenceGuard` accetta esclusivamente la sequenza attesa. Gap, duplicati e regressioni devono essere trattati dal livello di sessione come condizioni fail-closed.
+Il repository contiene il nucleo per sessioni effimere con X25519, HKDF-SHA256 e ChaCha20-Poly1305, oltre a test del nucleo su 1000 operazioni. Questo nucleo non deve essere descritto come implementazione completa del protocollo Noise IK/KK finché il trasporto completo non è stato integrato e verificato.
 
-Le primitive di framing e autenticazione sono ora presenti nel repository, ma il wire protocol completo non è ancora dichiarato produzione: restano da integrare trasporto TCP con macchina a stati, AES-GCM-256, heartbeat, timeout e interoperabilità completa con l'APK reale.
+Il bring-up PC/telefono previsto è:
 
-## 10. Fail-closed PC-Phone
+`HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
 
-La specifica di progetto richiede heartbeat a 1000 ms e fail-closed dopo 2 heartbeat mancanti o flag hardware critico, con stop delle scritture, checkpoint SQLite, modalità degradata ed evento critico.
+Nonce, validità della sessione, sequenza e replay devono essere verificati nel trasporto.
 
-Questa parte resta un **traguardo di integrazione da completare e validare**; la presenza delle primitive RSA/framing non equivale all'abilitazione dell'azione live.
+## 11. Protobuf e comunicazioni ad alta frequenza
 
-## 11. Resto dell'architettura
+Il contratto Protobuf v3 definisce i messaggi condivisi per stato entità, pacchetti di rete, aggiornamenti UI e tipi correlati. I binding C++/TypeScript generati restano un'attività di integrazione finché non sono presenti nella toolchain.
 
-Restano validi EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog, Context Slimming, Trust Tier, Executor/Adapter, Verifier, provider routing, percezione, Protobuf e sicurezza di sessione già documentati nel repository.
+## 12. Persistenza
 
-## 12. Regola di validazione
+`NosAiSqliteLogger` fornisce persistenza locale per sessioni di caccia e traiettorie, con SQLite, WAL, transazioni e inserimento batch.
 
-L'integrazione SSD, RSA, framing, onboarding e percorso PC-Phone non è considerata produttiva finché non passano i test automatici e i test sul PC reale e, per il percorso PC-Phone, sullo smartphone reale. Nessuna fase successiva deve essere considerata completata in presenza di test falliti.
+La persistenza analitica non equivale ancora a una persistenza completa di EventBus, audit, replay e Knowledge Base append-only.
 
-**Versione progetto: 1.0 Beta.**
+## 13. Miniland
+
+Il modulo `nosai/miniland` contiene il controller Miniland e `FishingAutomation`, separati dall'I/O tramite `MinilandAdapter`. Questa separazione permette di testare il dominio con adapter simulati e di aggiungere successivamente l'adapter specifico del client.
+
+L'integrazione reale del client rimane un traguardo separato e deve passare dai normali confini di autorizzazione, verifica e sicurezza.
+
+## 14. Percezione
+
+Pipeline produttiva prevista:
+
+`DXGI Direct Capture → Triple Buffer lock-free → HSV multi-ROI → YOLO → OCR glyph-hash con fallback/cache AI-OCR → Kalman 2D temporale → Game State Evaluator → WorldState semantico immutabile`.
+
+I backend produttivi devono essere validati prima dell'uso live.
+
+## 15. Provider e hardware
+
+Provider Router è local-first e policy-controlled. Può considerare privacy, complessità, latenza, VRAM/RAM, utilizzo GPU, coda, temperatura, energia e prestazioni recenti.
+
+Discovery hardware, benchmark reali e provider produttivi restano traguardi finché non sono integrati e testati.
+
+## 16. Ciclo memoria ed evidenza
+
+`esperienza → osservazione → episodio → ipotesi → evidenza verificata → strategia riutilizzabile`.
+
+La conoscenza verificata deve conservare provenienza, confidenza ed eventi di supporto. Un fallimento non può diventare automaticamente conoscenza verificata.
+
+## 17. Replay e valutazione
+
+Il replay deve essere orientato alla simulazione e non deve eseguire I/O live. La valutazione deve poter confrontare predizione e realtà, qualità del ranking, confidenza, blocchi Safety, successo dell'esecuzione, recovery, latenza provider e uso delle risorse.
+
+## 18. Matrice di comunicazione
+
+| Produttore | Consumatore | Contratto |
+|---|---|---|
+| Perception | WorldStateStore | PerceptionWorldUpdate |
+| WorldState | Simulation | snapshot immutabile |
+| Simulation | Tactical Ranking | SimulationResult |
+| Tactical Ranking | Orchestrator | contratto azioni ordinate |
+| Orchestrator | Planner | contratto di pianificazione |
+| Planner | Guard | GuardDecisionContext |
+| Guard | Trust/Safety | contratto autorizzativo |
+| Safety | Executor | autorizzazione esplicita |
+| Executor | Verifier | risultato/receipt |
+| Executor | Perception | confine osservazione |
+| Verifier | Recovery | evidenza del fallimento |
+| Runtime | EventBus | RuntimeEvent |
+| Runtime | Memory/Evaluation | eventi e trace |
+| Risorse | Provider Router | ResourceSnapshot |
+| Sessione | PC/Telefono | SessionMessage autenticato |
+| Miniland | Adapter | MinilandCommand/FishingResult |
+| SQLite | Analisi | sessioni/traiettorie |
+
+## 19. Stato implementativo
+
+### Presente
+
+EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog runtime/hardware, Context Slimming, sessioni effimere, Protobuf, SQLite iniziale e controller Miniland tramite adapter.
+
+### Fondazioni
+
+Persistenza EventBus, replay durevole, PredictionEvaluator, Knowledge Base append-only, trasporto Noise/mTLS completo, binding Protobuf, Shared Memory/N-API, discovery/benchmark hardware, provider produttivi e backend di percezione.
+
+### Traguardi live
+
+Adapter del client reale, pipeline di percezione produttiva, integrazione PC/telefono, provider locali/cloud, adapter Miniland reale e gate finale di integrazione.
+
+## 20. Confini non negoziabili
+
+1. Un LLM non esegue direttamente.
+2. Percezione non esegue.
+3. Simulazione non esegue.
+4. Tactical Ranking non esegue.
+5. Recovery non aumenta il Trust.
+6. Watchdog non aumenta il Trust.
+7. Un diniego Safety blocca l'azione corrente.
+8. Un risultato non verificato non è successo.
+9. Un subscriber EventBus non diventa un percorso di esecuzione.
+10. Le integrazioni live richiedono gate e test espliciti.
+
+## 21. Risultato architetturale
+
+**NosAi osserva il mondo, costruisce uno stato canonico, prevede gli esiti, ordina le opzioni, pianifica un'azione limitata, la sottopone ai confini di autorizzazione, la esegue attraverso l'Executor, verifica il risultato reale, registra il trace, aggiorna lo stato e ripianifica quando la realtà differisce dalla previsione.**
+
+Questo documento sostituisce qualsiasi precedente documento architetturale duplicato.
