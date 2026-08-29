@@ -3,18 +3,14 @@
 **Versione:** 1.0 Beta  
 **Creatore:** Volodymyr Ryzhuk
 
-## Scopo
-
-Questo è l'unico documento ufficiale dell'architettura di NosAi. Consolida architettura, responsabilità, comunicazioni, autorità, prestazioni, ciclo dei dati e sicurezza del trasporto.
-
 ## 1. Mappa generale
 
 ```text
 SESSIONE / SCHEDULER
         │
-RISORSE ── POLICY ── PROVIDER ROUTER ── MEMORIA ── STRUMENTI
-        │
-CONTROLLO RUNTIME ── WATCHDOG ── RECOVERY ── VALUTAZIONE
+RISORSE ── POLICY ── PROVIDER ROUTER ── MEMORIA ── STORAGE SSD
+        │                                  │             │
+CONTROLLO RUNTIME ── WATCHDOG ── RECOVERY ── SQLITE/WAL
         │
 EVENTBUS / TRACE
         │
@@ -35,218 +31,84 @@ PERCEZIONE → WORLDSTATE(vN) → SIMULAZIONE → RANKING
                          PASS ───────┴──── FAIL
                                                 │
                               CONTEXT SLIMMING / RECOVERY
-                                                │
-                                  retry / replan / degraded / cooling
-                                                │
-                                         nuovo ciclo
 ```
 
-## 2. Percorso critico e timeout
+## 2. Deployment PC su SSD dedicato
 
-Il percorso principale è:
+Il runtime PC di NosAi è progettato per il volume esterno dedicato `NOSAI-SSD`, Crucial X6 CT2000X6SSD9 da 2 TB. Windows rimane sul disco interno; codice NosAi, runtime locale, modelli, memoria persistente, SQLite, log, cache, configurazione e artefatti applicativi sono allocati sul volume dedicato.
 
-`Observe → WorldState → Simulation → Ranking → Orchestrator → Plan → Guard → Trust → Safety → Execute → Verify → Re-observe`.
+Il root viene risolto a runtime tramite etichetta del volume e non tramite una lettera fissa. Il modulo `nosai.storage.volume` valida presenza, NTFS, accessibilità e spazio minimo senza formattare il dispositivo. `nosai.storage.paths` costruisce il layout canonico.
 
-I blocchi sincroni di valutazione devono utilizzare un timeout fail-fast configurabile, con valore predefinito di 200 ms per blocco escluso il Planner. Un timeout deve produrre un evento runtime e attivare il percorso di Recovery/Watchdog previsto dalla policy, evitando attese indefinite.
+Il deployment è **portable-by-volume**, non bootable: cambiare la lettera assegnata da Windows non deve cambiare i percorsi logici di NosAi.
 
-## 3. Autorità dei componenti
+## 3. Storage layer
 
-| Componente | Responsabilità | Esecuzione diretta | Cambio strategia |
-|---|---|---:|---:|
-| Percezione | fatti osservati | No | No |
-| WorldState | stato canonico | No | No |
-| Simulazione | risultati previsti | No | No |
-| Tactical Ranking | ordine candidati | No | No |
-| Decision Provider | dati decisionali | No | Proposta |
-| Planner | piano | No | Sì |
-| Guard | valutazione | No | Sì |
-| Trust | autorizzazione secondo policy | No | Secondo policy |
-| Safety | autorizzazione finale | No | Secondo policy |
-| Executor | esecuzione | Sì | No |
-| Verifier | verifica | No | No |
-| Recovery | recupero e nuova strategia | No | **Sì** |
-| Watchdog | gestione runtime | No | **Sì** |
-| EventBus | osservazione/audit | No | No |
-
-Recovery e Watchdog sono controller attivi. Possono cambiare strategia, modalità e budget runtime; non costituiscono però un canale di esecuzione diretto alternativo all'Executor.
-
-## 4. Recovery e Circuit Breaker
-
-Recovery utilizza `VRAMContextSlimmer` per comprimere lo storico diagnostico e supporta retry, replan, modalità degradata e Cooling.
-
-Il controller implementa un circuit breaker configurabile con predefinito di 3 fallimenti consecutivi per macro-azione. Il backoff è esponenziale:
-
-`backoff(n) = base × 2^(n-1)`.
-
-Dopo il superamento della soglia viene sollevato `CriticalDeadlock` e il ciclo automatico viene interrotto. Un successo azzera il contatore della macro-azione.
-
-## 5. Watchdog e gestione hardware
-
-Il Watchdog supporta le modalità:
-
-`NORMAL → DEGRADED → RECOVERY → COOLING → STOPPED`.
-
-Il watchdog hardware può osservare temperatura CPU/GPU e I/O quando disponibili. La soglia termica predefinita è 80 °C. La gestione hardware deve rimanere osservabile e non deve assumere come garantite prestazioni non misurate.
-
-Le tecniche di ottimizzazione che dipendono da privilegi del sistema operativo, pinning della memoria fisica o impostazioni specifiche del kernel devono essere implementate come adapter opzionali e validate per piattaforma.
-
-## 6. Context Slimming e VRAM
-
-`VRAMContextSlimmer` conserva un numero limitato di errori recenti, normalizza elementi variabili come indirizzi e numeri di riga e produce firme deterministiche. L'obiettivo è ridurre il contesto diagnostico senza perdere la causa sintetica del fallimento.
-
-## 7. EventBus bounded
-
-EventBus utilizza una coda a capacità finita. I log non critici possono essere scartati quando la coda raggiunge il limite; gli eventi critici vengono preservati tramite sostituzione controllata dell'evento meno recente. Il contatore `dropped_noncritical` rende misurabile la perdita di telemetria.
-
-Gli iscritti restano osservatori e non acquisiscono autorità di esecuzione.
-
-## 8. Contratto binario Protobuf
-
-Per i flussi ad alta frequenza verso Control Center/Eye AI View è stato aggiunto `proto/nosai_network_v1.proto` con sintassi Protobuf v3.
-
-Il contratto definisce `EntityType`, `Vector2D`, `NetworkPacket`, `EntityState` e `UIFrameUpdate`. La generazione dei binding C++ e TypeScript/JavaScript viene mantenuta separata finché la toolchain Protobuf non è formalizzata.
-
-## 9. Trasporto sicuro Noise e chiavi effimere
-
-Le specifiche allegate v1.8 e v1.9 definiscono rispettivamente un'architettura Noise con pattern `Noise_KK_25519_ChaChaPoly_SHA256`, chiavi statiche X25519 e un'estensione `Noise_IK_25519_ChaChaPoly_SHA256` con chiave client effimera. fileciteturn88file0L2-L4 fileciteturn88file1L4-L5
-
-Nel repository è stato aggiunto `nosai/security/ephemeral_session.py`, che implementa X25519 + HKDF-SHA256 + ChaCha20-Poly1305 per il nucleo di una sessione effimera. Questo componente **non viene dichiarato un'implementazione completa del Noise IK/KK**: il vero handshake Noise richiede una libreria Noise validata, macchina a stati completa e test di interoperabilità.
-
-Le chiavi private non devono essere committate. Il prologo previsto dalle specifiche è `NOS_AI_PROTOCOL_V1`. fileciteturn88file0L2-L4
-
-## 10. Comunicazione LAN e nonce
-
-Il protocollo di bring-up usa messaggi con nonce crittograficamente casuale e validazione della versione. Il nonce protegge l'identificazione del messaggio, ma da solo non equivale a mTLS o Noise. L'autenticazione reciproca del trasporto deve essere aggiunta mediante una implementazione validata.
-
-Il protocollo previsto è:
-
-`HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
-
-La sessione deve inoltre validare sequenza, identità del dispositivo, autorizzazione e TTL.
-
-## 11. Stress test crittografico
-
-`tests/stress_test_cifratura.py` importa la metodologia della specifica v1.9: 1000 operazioni asincrone con misurazione del tempo totale, throughput e latenza media. fileciteturn88file1L2-L4
-
-I risultati dipendono dall'ambiente di esecuzione e non costituiscono una garanzia di 1000 macro/s.
-
-## 12. WorldState
-
-`WorldStateStore` mantiene osservazioni versionate, identificativo dell'osservazione, sorgente, confidenza e collegamento allo stato precedente.
-
-## 13. Simulazione e Tactical Ranking
-
-Questi moduli producono risultati previsti, candidati, punteggi, rischio, confidenza, ricompensa attesa ed evidenza. Non eseguono direttamente azioni.
-
-## 14. Guard, Trust e Safety
-
-Il percorso di autorizzazione rimane:
-
-`AgentPlan → GuardDecisionContext → Guard → Trust → Safety → Executor`.
-
-I livelli Trust sono:
-
-`OBSERVE (0) → SIMULATE (1) → REVERSIBLE (2) → SENSITIVE (3) → CRITICAL (4)`.
-
-## 15. Executor, Verifier e Adapter
-
-Executor è il confine tecnico di esecuzione delle primitive autorizzate. Un eventuale Live Game Adapter deve limitarsi a tradurre primitive standardizzate, senza introdurre logica decisionale.
-
-Verifier confronta risultato e nuova osservazione. Un risultato non verificato non diventa automaticamente successo o conoscenza verificata.
-
-## 16. Memoria ed evidenza
-
-Le evidenze verificate devono essere persistite in modalità append-only. Un'esperienza già verificata non deve essere sovrascritta da un'esecuzione successiva fallita.
-
-## 17. Provider e instradamento
-
-Provider Router deve favorire il local-first quando il profilo hardware e la policy lo consentono. Il caching locale dello stato può ridurre la latenza del percorso sincrono. Le decisioni di instradamento devono tenere conto di risorse, latenza, temperatura, carico e complessità.
-
-## 18. Pipeline di percezione
-
-Pipeline prevista:
+Layout canonico:
 
 ```text
-DXGI Direct Capture
- → Triple Buffer lock-free
- → HSV multi-ROI
- → YOLO
- → OCR glyph-hash
- → AI-OCR fallback/cache
- → Kalman 2D temporale
- → Game State Evaluator
- → WorldState
+<NOSAI-SSD>:\NosAi\
+├── app\ runtime\ models\
+├── data\db\ state\ evidence\ exports\
+├── cache\ logs\ temp\ backups\ config\ tools\
 ```
 
-I componenti live devono essere considerati produttivi solo dopo validazione indipendente.
+Il volume è considerato una dipendenza infrastrutturale del runtime. Se non è disponibile, il launcher deve rifiutare l'avvio delle funzioni che richiedono persistenza. Sono vietati path applicativi relativi dipendenti dalla directory corrente.
 
-## 19. Stress test e saturazione controllata
+## 4. SQLite
 
-Il test di carico deve misurare entità simultanee, pacchetti/sec, latenza IPC, packet drop rate e race conditions. La metodologia di riferimento considera scenari da 50 a 350 entità.
+La policy SQLite è centralizzata in `nosai/storage/sqlite_policy.py` e viene applicata da `NosAiSqliteLogger`.
 
-Sopra la soglia operativa configurata, il sistema può entrare in **Saturazione Controllata**, dando priorità ai dati essenziali per lo stato operativo e degradando i flussi non critici. La soglia deve essere configurabile e validata con benchmark reali.
+Profilo corrente:
 
-## 20. Riconnessione
+- `journal_mode=WAL`;
+- `synchronous=FULL` per la persistenza critica;
+- `busy_timeout=5000 ms`;
+- cache di 64 MiB;
+- `journal_size_limit=64 MiB`;
+- `auto_vacuum=INCREMENTAL`.
 
-La riconnessione deve essere gestita come macchina a stati con timeout, numero massimo di tentativi, riallineamento del WorldState e arresto sicuro in caso di fallimento persistente.
+WAL e i file ausiliari restano sul volume locale. Il checkpoint controllato è disponibile tramite la policy storage. Questa scelta sostituisce il precedente `synchronous=NORMAL` del logger, mantenendo comunque la policy configurabile.
 
-Non viene implementato un meccanismo finalizzato a eludere sistemi anti-cheat o a simulare deliberatamente il comportamento umano per aggirare controlli.
+## 5. PC Play Guard e sicurezza storage
 
-## 21. Control Center / Eye AI View
+PC Play Guard deve osservare lo stato del volume e impedire che una perdita dello storage produca nuove scritture incontrollate. Gli stati progettuali sono `STORAGE_SAFE`, `STORAGE_BUSY` e `STORAGE_ERROR`.
 
-Il Control Center locale è il piano di osservazione e controllo del sistema. Deve poter mostrare stato runtime, WorldState, simulazioni, ranking, piani, autorizzazioni, eventi, Recovery, Watchdog, risorse hardware, provider, rete e metriche.
+In caso di scomparsa del volume: blocco nuove scritture, evento critico, sospensione delle attività dipendenti dalla persistenza, tentativo di recovery/reconnect e arresto sicuro se la persistenza non è garantibile.
 
-Il formato Protobuf può essere utilizzato per i flussi ad alta frequenza, mentre contratti più leggibili possono restare disponibili per configurazione, debug e API amministrative.
+## 6. Topologia PC-Phone
 
-## 22. Matrice di rischio
+La topologia resta composta da:
 
-| Rischio | Mitigazione |
-|---|---|
-| Allucinazione LLM | validazione schema + Guard/Policy |
-| Latenza provider | timeout + local-first + cache |
-| Saturazione EventBus | code bounded + dropping non critico |
-| Compromissione LAN | autenticazione reciproca + nonce + TTL + sequenze |
-| Loop di Recovery | circuit breaker + `CriticalDeadlock` |
-| Sovraccarico hardware | Watchdog + modalità degradata/Cooling |
-| Evidenza corrotta | persistenza append-only |
-| Adapter con logica nascosta | separazione Executor/Adapter |
-| Compromissione chiavi | chiavi effimere + gestione segreti + lifecycle |
+- **Play AI / Executor:** runtime sul volume `NOSAI-SSD`, eseguito sul PC; unico confine di esecuzione diretta.
+- **PC Play Guard:** supervisione deterministica sul PC Windows.
+- **phone Guard AI:** applicazione Android `com.nosai.guard`, barriera esterna con autorità ALLOW/DENY.
 
-## 23. Ciclo dati
+Questa separazione è coerente con il Contratto di Comunicazione NosAi allegato. fileciteturn14file0L2-L2
 
-### Osservazione
-`percezione → semantica → validazione → WorldStateStore → versione`
+## 7. Provisioning smartphone
 
-### Decisione
-`WorldState + obiettivo → simulazione → ranking → orchestrazione → piano`
+È stata aggiunta `nosai/phone/provisioning.py`. Il manager usa esclusivamente l'ADB isolato nel volume `tools\adb\adb.exe`, attende un device autorizzato, verifica `com.nosai.guard`, installa `runtime\GuardAi.apk` se assente e avvia l'app.
 
-### Esecuzione
-`piano → Guard → Trust → Safety → Executor → risultato → verifica`
+Il provisioning non scarica componenti dall'esterno e non opera su un dispositivo non autorizzato. Il flusso segue il modello di onboarding definito nella specifica architetturale allegata. fileciteturn14file1L48-L52
 
-### Recupero
-`fallimento → Context Slimming → Recovery → backoff/replan → nuova valutazione`
+## 8. Protocollo PC-Phone
 
-### Comunicazione sicura
-`identità → handshake → derivazione sessione → AEAD → messaggi → chiusura → distruzione/rimozione chiavi effimere`
+La specifica allegata definisce un frame binario con header di 12 byte, Magic `0x4E4F5341`, lunghezza payload, contatore di sequenza monotono e payload JSON cifrato AES-GCM-256. fileciteturn14file0L40-L40
 
-## 24. Stato della produzione
+Il repository non dichiara ancora questo wire protocol completo come produzione: il contratto deve essere integrato con una macchina a stati, autenticazione delle sessioni, test di interoperabilità e gestione dei limiti di frame.
 
-Implementato nel core: EventBus bounded, Context Slimming, Recovery adattivo con circuit breaker, Watchdog runtime/hardware, timeout fail-fast e contratto Protobuf v3.
+## 9. Fail-closed PC-Phone
 
-Implementato come nucleo crittografico: X25519, HKDF-SHA256, ChaCha20-Poly1305 e sessione con chiave effimera.
+La specifica allegata richiede heartbeat a 1000 ms e fail-closed dopo 2 heartbeat mancanti o flag hardware critico, con stop delle scritture, checkpoint SQLite, modalità degradata ed evento critico. fileciteturn14file0L44-L44
 
-Parzialmente implementato/fondazione: protocollo LAN con nonce, Control Center, provider routing e hardware telemetry.
+Questa è una **specifica di integrazione da completare**, non viene presentata come già completamente cablata nel runtime.
 
-Da validare prima della produzione: handshake Noise IK/KK completo, binding Protobuf generati, persistenza append-only definitiva, adapter di gioco live, pipeline percezione produttiva, benchmark IPC/latency e integrazione hardware specifica.
+## 10. Resto dell'architettura
 
-## 25. Documentazione correlata
+Restano validi EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog, Context Slimming, Trust Tier, Executor/Adapter, Verifier, provider routing, percezione, Protobuf e sicurezza di sessione già documentati nel repository.
 
-- `docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md` — specifica importata v1.8/v1.9 e stato dell'implementazione.
-- `tests/test_ephemeral_session.py` — test della sessione effimera.
-- `tests/stress_test_cifratura.py` — stress test asincrono.
+## 11. Regola di validazione
 
-## 26. Lingua e governance
+L'integrazione SSD, SQLite e phone provisioning non è considerata produttiva finché non passano i test sul PC reale e, per il percorso PC-Phone, sullo smartphone reale. Nessuna fase successiva deve essere considerata completata in presenza di test falliti.
 
-La documentazione ufficiale è italiana. Codice, identificatori, API, protocolli e nomi tecnici obbligatori possono rimanere in inglese.
-
-NosAi rimane **1.0 Beta** finché il creatore non richiede esplicitamente una modifica.
+**Versione progetto: 1.0 Beta.**
