@@ -4,8 +4,6 @@
 **Creatore:** Volodymyr Ryzhuk  
 **Aggiornato:** 2026-08-29
 
-Questo documento registra ciò che è presente o pianificato nel repository `volobolo99/NosAiProject`.
-
 ## 🟢 Implementato
 
 - Contratti fondamentali e base decisionale deterministica.
@@ -19,128 +17,76 @@ Questo documento registra ciò che è presente o pianificato nel repository `vol
 - Ciclo Planner → Guard → Safety → Executor → Verifier multi-step.
 - Retry/ripianificazione, checkpoint e watchdog indipendente.
 - ToolRegistry, profilazione hardware, contratti LAN e protezione sequenza/replay.
-- Primitive di trace per valutazione Agent.
-- Bridge Orchestrator → Agent Runtime.
-- Runtime di osservazione/ripianificazione a ciclo chiuso.
-- EventBus runtime tipizzato con correlazione evento/esecuzione/sessione/attività.
-- EventBus bounded con limite configurabile e dropping controllato dei log non critici.
-- WorldState versionato con provenienza, confidenza e cronologia.
-- Context slimming orientato alla VRAM con firme deterministiche delle eccezioni e storico limitato.
-- RecoveryController adattivo con retry/replan/degraded-replan/cooling.
-- Circuit breaker Recovery con massimo predefinito di 3 fallimenti consecutivi e backoff esponenziale.
-- Eccezione `CriticalDeadlock` per loop di fallimento persistente.
-- RuntimeWatchdog con modalità NORMAL, DEGRADED, RECOVERY, COOLING e STOPPED.
-- Hardware watchdog con monitoraggio termico CPU/GPU e I/O opzionale.
-- Timeout fail-fast per blocchi sincroni tramite `RuntimeTimeout` e `run_with_timeout`.
-- Contratto Protobuf v3 per `EntityState`, `NetworkPacket`, `UIFrameUpdate` e tipi correlati.
-- Nonce crittograficamente casuale e validazione rafforzata nel protocollo di bring-up LAN.
-- Nucleo crittografico per sessioni effimere con X25519, HKDF-SHA256 e ChaCha20-Poly1305.
-- Stress test asincrono del nucleo di cifratura su 1000 operazioni.
-- Persistenza locale SQLite per sessioni di caccia e traiettorie tramite `NosAiSqliteLogger`, con WAL e inserimento batch.
-- Controller Miniland e automazione della pesca tramite `MinilandAdapter` astratto, con test tramite adapter simulato.
-- Documentazione architetturale consolidata e aggiornata in italiano.
+- EventBus bounded, WorldState versionato e Context Slimming.
+- RecoveryController adattivo, circuit breaker e Runtime/HW Watchdog.
+- Timeout fail-fast e contratto Protobuf v3.
+- Nucleo crittografico X25519 + HKDF-SHA256 + ChaCha20-Poly1305.
+- Persistenza SQLite per sessioni/traiettorie.
+- Controller Miniland tramite adapter.
+- <b>Storage dedicato Crucial X6:</b> discovery del volume `NOSAI-SSD`, validazione NTFS, soglia spazio, layout canonico e bootstrap Windows non distruttivo.
+- <b>Policy SQLite centralizzata:</b> WAL, FULL, busy timeout, cache, limite WAL e incremental vacuum.
+- <b>Provisioning Guard AI:</b> manager ADB su `tools\adb\adb.exe`, attesa device autorizzato, verifica/installazione `com.nosai.guard` e bootstrap dell'app.
+- Documentazione architetturale aggiornata con deployment SSD e integrazione PC-Phone.
 
 ## 🟡 Fondazioni — non complete per la produzione
 
 - Persistenza EventBus, audit/replay durevole e trasporto tra processi.
-- Valutatore predizione-vs-realtà e metriche produttive.
-- Ranking basato su evidenza e persistenza del ciclo di vita della conoscenza verificata.
+- PredictionEvaluator e metriche produttive.
+- Ranking basato su evidenza e lifecycle della conoscenza.
 - Integrazione produttiva Guard AI / Watchdog / Recovery tra PC e telefono.
+- Wire protocol PC-Phone AES-GCM completo e interoperabile.
 - TLS/mTLS o Noise completo per il trasporto LAN.
-- Generazione e integrazione dei binding Protobuf C++/TypeScript nella toolchain.
-- Discovery hardware, probing e benchmark reali.
-- Shared Memory nativa e integrazione Node.js/N-API.
-- Persistenza analitica SQLite completa oltre al logger iniziale.
-- Sandbox strumenti e applicazione produttiva delle capability.
-- Backend produttivi DXGI, Triple Buffer, YOLO, OCR, Kalman e mapping specifico del gioco.
-- Adapter live del gioco/client.
+- Generazione binding Protobuf C++/TypeScript.
+- Discovery hardware e benchmark reali, incluso benchmark del Crucial X6.
+- Shared Memory nativa e N-API.
+- Persistenza analitica completa oltre al logger iniziale.
+- Sandbox strumenti e capability enforcement.
+- Backend produttivi DXGI, Triple Buffer, YOLO, OCR, Kalman e mapping specifico.
+- Adapter live del gioco.
 - Provider locale `llama.cpp` e provider cloud.
-- Benchmark IPC ad alta densità e validazione della Saturazione Controllata.
-- Integrazione Miniland con client reale e adapter I/O specifico della piattaforma.
+- Benchmark IPC e Saturazione Controllata.
+- Integrazione Miniland con client reale.
 
-## 🔴 Non ancora implementato
+## 🔴 Non ancora validato
 
-### Runtime e integrazione
+### Deployment SSD
 
-- Persistenza durevole EventBus e runner di replay deterministico.
-- PredictionEvaluator completo e pipeline di evidenza delle strategie.
-- Integrazione produttiva Planner con World Model + Simulation + Tactical Ranking.
-- Propagazione produttiva Guard AI/Watchdog/Recovery PC-telefono.
-- Bring-up produttivo Play AI + Play Guard PC + Guard AI telefono.
-- Trasporto LAN autenticato completo con TLS/Noise.
-- Sandbox strumenti produttiva e autorizzazione basata su capability.
+L'implementazione software è presente, ma la validazione fisica richiede il Crucial X6 CT2000X6SSD9 collegato al PC Windows 11. Devono essere verificati: lettera di unità variabile, volume assente, NTFS, read-only, I/O, spazio, benchmark, perdita simulata, recovery/reconnect e assenza di scritture applicative involontarie sul disco interno.
 
-### Apprendimento e strategia
+### PC-Phone
 
-- Progression Engine V2 runtime.
-- MAUT / UCB1 / HTN-MCTS.
-- Aggiornamenti evidenza Beta-Binomial.
-- Ciclo di vita strategie e persistenza mastery.
-- Knowledge Base persistente append-only.
+Il provisioning ADB è implementato come fondazione. Restano da integrare e testare il server TCP su porta inoltrata 6100, frame binary 12-byte, AES-GCM-256, sequence counter, handshake, heartbeat 1000 ms e fail-closed secondo il contratto allegato. fileciteturn14file0L40-L44
 
-### Percezione e telemetria
+### APK
 
-- DXGI Direct Capture produttivo.
-- Triple Buffer lock-free produttivo.
-- YOLO produttivo.
-- OCR glyph-hash con fallback/cache AI-OCR.
-- Tracking Kalman 2D produttivo.
-- Valutatore semantico completo specifico del gioco.
-- Sincronizzazione PTS.
-- Rilevamento anomalie e recupero collegati alla telemetria live.
+`GuardAi.apk` deve essere fornito/buildato e verificato nel percorso `runtime\GuardAi.apk` del volume. Il repository non deve fingere che un APK inesistente sia disponibile.
 
-### Confine gioco e provider AI
-
-- Probe client in sola lettura.
-- Adapter azioni basato sulla simulazione.
-- Adapter live controllato.
-- Provider locale `llama.cpp`.
-- Provider cloud con escalation controllata dalla policy.
-- Benchmark hardware reale e profili runtime automatici.
-- Gate finale di integrazione/rilascio.
-
-## Ottimizzazioni e specifiche importate
-
-Sono state recepite le parti implementabili delle specifiche allegate v1.6–v2.8: timeout fail-fast, circuit breaker, backoff, EventBus bounded, nonce, contratto Protobuf, sessioni effimere, stress test, persistenza SQLite iniziale, Shared Memory come fondazione, Miniland come controller tramite adapter e requisiti di audit/evidenza.
-
-Le prestazioni numeriche dichiarate nelle specifiche sono trattate come **obiettivi di benchmark**, non come prestazioni garantite.
-
-## Percorso corrente
+## Nuova struttura storage
 
 ```text
-Perception → WorldState → Party/Pet/Partner → Simulation → Tactical Ranking
-→ Orchestrator → Agent Planner/Runtime → Guard/Trust/Safety
-→ Executor/Game Adapter → Verifier + nuova osservazione → WorldState(vN+1)
-                                  │
-                                  └─ fallimento → RecoveryController
-                                                  ├─ Context Slimming
-                                                  ├─ retry / replan
-                                                  ├─ circuit breaker
-                                                  ├─ modalità degradata
-                                                  └─ cooling
-
-Hardware → HardwareWatchdog → segnale runtime
-EventBus bounded → ciclo di vita, policy, provider, risorse, azioni, safety, memoria, valutazione e recovery
-LAN → protocollo tipizzato + nonce → futura autenticazione crittografica completa
-Protobuf → contratto binario versionabile per flussi ad alta frequenza
-SQLite → sessioni + traiettorie
-Miniland → controller → adapter → I/O client specifico
+<NOSAI-SSD>:\NosAi\
+├── app\
+├── runtime\
+├── models\
+├── data\db\
+├── data\state\
+├── data\evidence\
+├── data\exports\
+├── cache\
+├── logs\
+├── temp\
+├── backups\
+├── config\
+└── tools\
 ```
 
-## Prossimo ordine di implementazione
+## Ordine corrente
 
-1. Integrare completamente timeout, RecoveryController, RuntimeWatchdog e HardwareWatchdog nel ciclo Agent Runtime.
-2. Persistenza EventBus + replay deterministico.
-3. PredictionEvaluator e metriche predizione-vs-realtà.
-4. Ranking basato su evidenza + ciclo di vita della conoscenza.
-5. Persistenza append-only della Knowledge Base.
-6. Guard AI produttivo + integrazione PC/telefono.
-7. TLS/Noise per il trasporto LAN e gestione TTL/sessione.
-8. Generazione binding Protobuf e integrazione Control Center/Eye AI View.
-9. Estendere SQLite a persistenza analitica e recupero durevole delle sessioni.
-10. Shared Memory nativa + N-API.
-11. Discovery/benchmark hardware e profili automatici.
-12. Provider locale `llama.cpp` e fallback cloud controllato dalla policy.
-13. Adapter Perception/Game produttivi.
-14. Adapter Miniland reale, mantenendo il controller indipendente dall'I/O.
-15. Gate finale di integrazione e rilascio.
+1. Test PC reale del deployment SSD e della policy SQLite.
+2. Integrare storage health con Watchdog/Recovery e stato fail-closed.
+3. Test reale di provisioning Android.
+4. Implementare il wire protocol PC-Phone secondo contratto.
+5. Integrare heartbeat/fail-closed PC-Phone.
+6. Solo dopo esito positivo: proseguire con le successive integrazioni runtime.
+
+**Regola invariabile:** nessuna fase successiva viene considerata completata finché i test PC e Smartphone pertinenti non hanno esito positivo.
