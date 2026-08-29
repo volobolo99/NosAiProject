@@ -42,6 +42,8 @@ Ogni obiettivo significativo crea un gate. Il gate deve essere superato con test
 - Suite automatica `Gate4TestRunner` integrata nel runtime principale.
 - Gate 5 integrato a livello di codice: Provider Router local-first, Hardware Baseline, storage discovery e Eye AI View.
 - Control Center REST loopback e `Gate5IntegratedEngine`/`Gate5TestRunner` integrati nel runtime principale.
+- **Nuovo sottosistema Navigation/Pathfinding:** griglia collisioni 2D, costi hazard dinamici, A*, path smoothing Line-of-Sight, routing portali multi-mappa e controller anti-stallo.
+- **Nuovo sottosistema Economy/Inventory:** modello inventario, simulazione probabilistica upgrade con policy fail-closed, stima Bazar/NPC, compattazione stack, sanitizer pre-TimeSpace, crafting solver e snapshot economico.
 
 Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale al superamento del gate operativo reale**.
 
@@ -68,6 +70,7 @@ Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale
 - Benchmark IPC e Saturazione Controllata.
 - Integrazione Miniland con client reale.
 - ArrayPool/Memory/Span e caricamento modelli on-demand nel percorso C#/.NET 8.
+- **Test di integrazione runtime per Navigation/Pathfinding e Economy/Inventory e loro collegamento ai dati reali del client.**
 
 ## 🔴 Gate 1 — non ancora superato
 
@@ -158,4 +161,4 @@ Le prestazioni numeriche delle specifiche sono obiettivi di benchmark finché no
 
 ## Stato di sviluppo corrente
 
-Il progetto possiede una base software ampia, ora comprendente anche le implementazioni software Gate 4 e Gate 5. Il progetto **non deve essere considerato oltre il Gate 1** finché il percorso reale PC ↔ NosTale ↔ smartphone e la dashboard del relativo livello non sono stati verificati con esito positivo.
+Il progetto possiede una base software ampia, ora comprendente anche le implementazioni software Gate 4 e Gate 5 e i nuovi sottosistemi di Navigation/Pathfinding ed Economy/Inventory. Il progetto **non deve essere considerato oltre il Gate 1** finché il percorso reale PC ↔ NosTale ↔ smartphone e la dashboard del relativo livello non sono stati verificati con esito positivo.
