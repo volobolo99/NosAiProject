@@ -1,26 +1,26 @@
-# NosAi — C# Runtime Migration
+# NosAi — Migrazione del runtime a C#
 
-**Version:** 1.0 Beta  
-**Creator:** Volodymyr Ryzhuk
+**Versione:** 1.0 Beta  
+**Creatore:** Volodymyr Ryzhuk
 
-## Decision
+## Decisione
 
-The primary NosAi runtime is being established in **C# / .NET 8 on Windows**. Existing Python modules are retained as research/prototyping and compatibility assets while equivalent production runtime components are migrated behind stable contracts.
+Il runtime principale di NosAi viene stabilito in **C# / .NET 8 su Windows**. I moduli Python esistenti vengono mantenuti come risorse di ricerca, prototipazione e compatibilità, mentre i componenti equivalenti destinati alla produzione vengono migrati dietro contratti stabili.
 
-## First migrated boundaries
+## Primi confini migrati
 
-- Runtime entry point.
-- Candidate Action / Trust Tier contracts.
-- Guard AI deterministic evaluation.
-- Fail-closed Safety Gate boundary.
-- Utility AI candidate selection foundation.
-- Telemetry and Mastery Score foundation.
+- punto di ingresso del runtime;
+- contratti per Action e Trust Tier;
+- valutazione deterministica di Guard AI;
+- confine Safety Gate a chiusura sicura;
+- fondazione della selezione dei candidati tramite Utility AI;
+- fondazione della telemetria e del Mastery Score.
 
-## Migration rule
+## Regola di migrazione
 
-Do not perform a blind language translation. Preserve the architecture and contracts, then implement each runtime boundary natively in C# with tests. Python remains available where it materially benefits experimentation, ML research or tooling.
+Non deve essere eseguita una traduzione cieca del linguaggio. Devono essere preservati architettura e contratti; ogni confine del runtime deve essere implementato nativamente in C# e accompagnato dai relativi test. Python rimane disponibile quando offre un vantaggio concreto per sperimentazione, ricerca ML o strumenti.
 
-## Current C# runtime structure
+## Struttura corrente del runtime C#
 
 ```text
 src/NosAi.Runtime/
@@ -32,18 +32,18 @@ src/NosAi.Runtime/
 └── Program.cs
 ```
 
-## Safety status
+## Stato della sicurezza
 
-The C# Safety Gate is deliberately **fail-closed**. Until a validated game adapter and complete Guard bring-up exist, no live execution is authorized by this runtime foundation.
+Il Safety Gate C# è deliberatamente a **chiusura sicura**. Finché non sono disponibili un adapter di gioco validato e un'integrazione completa di Guard, questa fondazione runtime non autorizza l'esecuzione reale.
 
-## Next migration targets
+## Prossimi obiettivi di migrazione
 
-1. Minimal PC Play AI + Play Guard + Guard AI bring-up.
-2. World Model contracts.
-3. Perception contracts and production Windows capture boundary.
-4. Orchestrator integration.
-5. Simulation/Tactical Ranking.
-6. Persistent telemetry/memory.
-7. Controlled game adapter.
+1. Primo avvio minimo di Play AI PC + Play Guard + Guard AI.
+2. Contratti del World Model.
+3. Contratti della percezione e confine produttivo di acquisizione Windows.
+4. Integrazione dell'Orchestrator.
+5. Simulazione e Ranking tattico.
+6. Telemetria e memoria persistenti.
+7. Adapter di gioco controllato.
 
-The project version remains **1.0 Beta** until explicitly changed by the creator.
+La versione del progetto rimane **1.0 Beta** finché il creatore non la modifica esplicitamente.
