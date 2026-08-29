@@ -6,7 +6,7 @@
 
 ## 1. Scopo
 
-Questo è l'unico documento canonico dell'architettura di NosAi. Descrive responsabilità, dati, comunicazioni, autorità, percorso operativo, persistenza, sicurezza e componenti ancora pianificati.
+Questo è l'unico documento canonico dell'architettura di NosAi. Descrive responsabilità, dati, comunicazioni, autorità, percorso operativo, persistenza, sicurezza, ottimizzazione e componenti ancora pianificati.
 
 ## 2. Architettura generale
 
@@ -90,17 +90,11 @@ EventBus è trasversale e osservazionale. Gli eventi devono mantenere almeno ide
 
 Il bus è bounded: la capacità è configurabile e il dropping controllato può interessare i log non critici sotto saturazione. Gli eventi critici non devono essere persi silenziosamente.
 
-Famiglie principali: percezione, WorldState, simulazione, ranking, decisioni, pianificazione, Guard/Safety, azioni, verifica, recovery, replan, memoria, provider, hardware e ciclo di sessione.
-
 ## 6. WorldState e provenienza
 
 `WorldStateStore` è la fonte canonica dello stato operativo. Ogni osservazione accettata produce una nuova versione con versione precedente, identificativo osservazione, sorgente e confidenza.
 
-Ciclo concettuale:
-
-`WorldState v41 → Simulation → Action → Observation → WorldState v42`.
-
-SQLite e altri sistemi di persistenza non sostituiscono il WorldState canonico.
+Per la comunicazione PC↔telefono è disponibile un framing binario con intestazione `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico. Il delta trasmette soltanto i campi mutati; non sostituisce la verifica di integrità o l'autenticazione del trasporto.
 
 ## 7. Decisione, simulazione e ranking
 
@@ -108,7 +102,7 @@ Simulation produce `PredictedOutcome`; Tactical Ranking valuta candidati usando 
 
 L'Orchestrator coordina il flusso e l'Agent Planner produce un piano limitato. Il piano attraversa Guard, Trust e Safety prima dell'esecuzione.
 
-## 8. Recovery e Watchdog
+## 8. Recovery, Watchdog e throttling adattivo
 
 ### RecoveryController
 
@@ -116,13 +110,21 @@ Recovery usa il contesto del fallimento e lo storico compresso per scegliere tra
 
 ### Watchdog
 
-Il RuntimeWatchdog gestisce `NORMAL`, `DEGRADED`, `RECOVERY`, `COOLING` e `STOPPED`. Il watchdog hardware può monitorare temperatura CPU/GPU e I/O quando i backend sono disponibili. La soglia termica predefinita è 80 °C.
+Il RuntimeWatchdog gestisce `NORMAL`, `DEGRADED`, `RECOVERY`, `COOLING` e `STOPPED`. Il watchdog hardware può monitorare temperatura CPU/GPU e I/O quando i backend sono disponibili.
 
-Timeout sincroni devono poter fallire rapidamente tramite il meccanismo runtime dedicato.
+### AdaptiveThrottler
 
-## 9. Riduzione del contesto
+`AdaptiveThrottler` valuta temperatura GPU, pressione RAM, disconnessione LAN e guasti critici e produce un `ResourcePlan`. Il piano può mantenere il carico nominale, ridurre la frequenza di percezione e i moduli non critici oppure portare il runtime in `STOPPED` in presenza di condizioni critiche.
+
+Il componente produce decisioni di risorse ma non modifica direttamente il sistema operativo: l'applicazione del piano rimane sotto il controllo del runtime e dei relativi confini di sicurezza.
+
+Le soglie iniziali sono configurabili e rappresentano valori operativi di riferimento, non garanzie universali per ogni hardware.
+
+## 9. Riduzione del contesto e memoria
 
 `VRAMContextSlimmer` riduce lo storico diagnostico ripetitivo, usa firme deterministiche delle eccezioni e mantiene uno storico limitato. È parte del percorso di recupero, non della fonte canonica dello stato.
+
+Nel percorso C#/.NET 8 sono previste inoltre strategie `ArrayPool`, `Memory` e `Span` e caricamento dei modelli on-demand. Queste ottimizzazioni restano da integrare e misurare nel percorso produttivo C#.
 
 ## 10. Sicurezza e sessioni
 
@@ -132,11 +134,13 @@ Il bring-up PC/telefono previsto è:
 
 `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
 
-Nonce, validità della sessione, sequenza e replay devono essere verificati nel trasporto.
+Nonce, validità della sessione, sequenza, replay e autenticazione devono essere verificati nel trasporto.
 
 ## 11. Protobuf e comunicazioni ad alta frequenza
 
 Il contratto Protobuf v3 definisce i messaggi condivisi per stato entità, pacchetti di rete, aggiornamenti UI e tipi correlati. I binding C++/TypeScript generati restano un'attività di integrazione finché non sono presenti nella toolchain.
+
+Il framing binario Python è già separato dal livello crittografico, permettendo di applicare autenticazione e cifratura senza duplicare la logica di serializzazione.
 
 ## 12. Persistenza
 
@@ -164,17 +168,23 @@ Provider Router è local-first e policy-controlled. Può considerare privacy, co
 
 Discovery hardware, benchmark reali e provider produttivi restano traguardi finché non sono integrati e testati.
 
-## 16. Ciclo memoria ed evidenza
+## 16. Progressione NosTale
+
+Il motore di progressione dovrà rappresentare missioni principali e dipendenze come DAG, verificare prerequisiti prima dell'avanzamento, simulare requisiti delle TS e mantenere il monitoraggio delle catene SP e delle risorse necessarie.
+
+Questa parte deve essere integrata con WorldState, Simulation, Tactical Ranking ed evidenza prima di essere considerata operativa. Le prestazioni previste nella specifica sono obiettivi da benchmarkare.
+
+## 17. Ciclo memoria ed evidenza
 
 `esperienza → osservazione → episodio → ipotesi → evidenza verificata → strategia riutilizzabile`.
 
 La conoscenza verificata deve conservare provenienza, confidenza ed eventi di supporto. Un fallimento non può diventare automaticamente conoscenza verificata.
 
-## 17. Replay e valutazione
+## 18. Replay e valutazione
 
 Il replay deve essere orientato alla simulazione e non deve eseguire I/O live. La valutazione deve poter confrontare predizione e realtà, qualità del ranking, confidenza, blocchi Safety, successo dell'esecuzione, recovery, latenza provider e uso delle risorse.
 
-## 18. Matrice di comunicazione
+## 19. Matrice di comunicazione
 
 | Produttore | Consumatore | Contratto |
 |---|---|---|
@@ -193,24 +203,25 @@ Il replay deve essere orientato alla simulazione e non deve eseguire I/O live. L
 | Runtime | Memory/Evaluation | eventi e trace |
 | Risorse | Provider Router | ResourceSnapshot |
 | Sessione | PC/Telefono | SessionMessage autenticato |
+| WorldState | PC/Telefono | delta deterministico |
 | Miniland | Adapter | MinilandCommand/FishingResult |
 | SQLite | Analisi | sessioni/traiettorie |
 
-## 19. Stato implementativo
+## 20. Stato implementativo
 
 ### Presente
 
-EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog runtime/hardware, Context Slimming, sessioni effimere, Protobuf, SQLite iniziale e controller Miniland tramite adapter.
+EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog runtime/hardware, Context Slimming, `AdaptiveThrottler`, sessioni effimere, Protobuf, SQLite iniziale, framing binario con `SequenceGuard`, delta WorldState e controller Miniland tramite adapter.
 
 ### Fondazioni
 
-Persistenza EventBus, replay durevole, PredictionEvaluator, Knowledge Base append-only, trasporto Noise/mTLS completo, binding Protobuf, Shared Memory/N-API, discovery/benchmark hardware, provider produttivi e backend di percezione.
+Persistenza EventBus, replay durevole, PredictionEvaluator, Knowledge Base append-only, autenticazione end-to-end del trasporto PC/telefono, Noise/mTLS completo, binding Protobuf, Shared Memory/N-API, discovery/benchmark hardware, provider produttivi, backend di percezione e ottimizzazioni C#/.NET 8 complete.
 
 ### Traguardi live
 
 Adapter del client reale, pipeline di percezione produttiva, integrazione PC/telefono, provider locali/cloud, adapter Miniland reale e gate finale di integrazione.
 
-## 20. Confini non negoziabili
+## 21. Confini non negoziabili
 
 1. Un LLM non esegue direttamente.
 2. Percezione non esegue.
@@ -218,12 +229,13 @@ Adapter del client reale, pipeline di percezione produttiva, integrazione PC/tel
 4. Tactical Ranking non esegue.
 5. Recovery non aumenta il Trust.
 6. Watchdog non aumenta il Trust.
-7. Un diniego Safety blocca l'azione corrente.
-8. Un risultato non verificato non è successo.
-9. Un subscriber EventBus non diventa un percorso di esecuzione.
-10. Le integrazioni live richiedono gate e test espliciti.
+7. AdaptiveThrottler non concede autorizzazioni.
+8. Un diniego Safety blocca l'azione corrente.
+9. Un risultato non verificato non è successo.
+10. Un subscriber EventBus non diventa un percorso di esecuzione.
+11. Le integrazioni live richiedono gate e test espliciti.
 
-## 21. Risultato architetturale
+## 22. Risultato architetturale
 
 **NosAi osserva il mondo, costruisce uno stato canonico, prevede gli esiti, ordina le opzioni, pianifica un'azione limitata, la sottopone ai confini di autorizzazione, la esegue attraverso l'Executor, verifica il risultato reale, registra il trace, aggiorna lo stato e ripianifica quando la realtà differisce dalla previsione.**
 
