@@ -18,6 +18,7 @@ from .tools import ToolRegistry, ToolSpec
 from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile
 from .hardware_watchdog import HardwareTelemetry, HardwareProbe, PsutilNvmlProbe, WatchdogDecision, NOSAIHardwareWatchdog
 from .context_slimming import ExceptionSignature, VRAMContextSlimmer
+from .adaptive_throttling import AdaptiveLimits, AdaptiveThrottler, ResourcePlan, ThrottleMode
 from .session_protocol import MessageType, SessionMessage, SequenceGuard
 from .evaluation import AgentTrace, EvaluationRecorder, EvaluationScore
 from .integration import NosAiRuntimeBridge, RuntimeIntegrationConfig, RankedActionPlanner, plan_from_ranked_actions
@@ -33,6 +34,7 @@ __all__ = [
     "AgentSession", "SessionManager", "TrustBoundary", "TrustPolicy", "TrustTier", "AgentLoop", "LoopResult", "RecoveryPolicy", "StepTrace",
     "RecoveryController", "RecoveryEvent", "RuntimeWatchdog", "WatchdogMode", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler", "HardwareSnapshot",
     "HardwareTelemetry", "HardwareProbe", "PsutilNvmlProbe", "WatchdogDecision", "NOSAIHardwareWatchdog", "ExceptionSignature", "VRAMContextSlimmer",
+    "AdaptiveLimits", "AdaptiveThrottler", "ResourcePlan", "ThrottleMode",
     "MessageType", "SessionMessage", "SequenceGuard", "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge", "RuntimeIntegrationConfig",
     "RankedActionPlanner", "plan_from_ranked_actions", "OrchestratorRuntimePlanner", "run_orchestrated_tick", "ClosedLoopRuntime", "ClosedLoopResult", "ClosedLoopStep",
     "EventBus", "RuntimeEvent", "WorldStateStore", "VersionedWorldState",
