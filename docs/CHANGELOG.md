@@ -24,9 +24,14 @@
 - Aggiunta policy SQLite centralizzata con WAL, `synchronous=FULL`, busy timeout, cache, limite WAL e incremental vacuum.
 - Aggiornato `NosAiSqliteLogger` per utilizzare la policy centralizzata.
 - Aggiunto provisioning ADB della phone Guard AI con verifica device autorizzato e gestione dell'APK locale.
+- Integrato `NosAiCryptoAuthManager` per challenge monouso da 32 byte e verifica RSA-2048/SHA-256/PKCS#1 v1.5 della firma Guard AI.
+- Consolidato il framing binario PC↔Phone a 12 byte e il controllo della sequenza.
+- Aggiunto `NosAiOnboardingEngine` per provisioning ADB isolato, forwarding TCP 6100 e costruzione del `SESSION_HELLO`.
 
-### Validazione
+### Test e validazione
 
+- Aggiunti test per autenticazione RSA, consumo monouso della challenge e fail-closed su firma non valida.
+- Aggiunti test per framing `SESSION_HELLO` e blocco del provisioning in assenza dell'ADB isolato.
 - Il deployment SSD e il percorso PC-Phone restano soggetti a validazione fisica sul PC e sullo smartphone reali.
 - Nessuna prestazione dichiarata del Crucial X6 viene assunta come garantita: throughput e latenza devono essere misurati.
-- Nessun APK, handshake o wire protocol non presente viene dichiarato produttivo senza test di interoperabilità.
+- AES-GCM-256, heartbeat temporizzato, timeout fail-closed da 2000 ms, APK reale e interoperabilità con smartphone fisico non sono dichiarati produttivi finché non vengono implementati e validati.
