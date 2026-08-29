@@ -38,6 +38,10 @@ Ogni obiettivo significativo crea un gate. Il gate deve essere superato con test
 - Controller Miniland tramite adapter.
 - Framing binario PC↔telefono con `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico del WorldState.
 - Fondazione deployment su storage dedicato e provisioning ADB di Guard AI.
+- Gate 4 integrato a livello di codice: Progression Engine V2, DAG missioni, sblocco SP, Beta-Binomiale, UCB1/MAUT e Knowledge Base.
+- Suite automatica `Gate4TestRunner` integrata nel runtime principale.
+- Gate 5 integrato a livello di codice: Provider Router local-first, Hardware Baseline, storage discovery e Eye AI View.
+- Control Center REST loopback e `Gate5IntegratedEngine`/`Gate5TestRunner` integrati nel runtime principale.
 
 Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale al superamento del gate operativo reale**.
 
@@ -53,7 +57,6 @@ Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale
 - Dashboard collegata al runtime reale e completa per il livello di sviluppo corrente.
 - Persistenza EventBus, audit/replay durevole e trasporto tra processi.
 - PredictionEvaluator e metriche produttive.
-- Ranking basato su evidenza e ciclo di vita della conoscenza.
 - Generazione binding Protobuf C++/TypeScript.
 - Discovery hardware e benchmark reali.
 - Shared Memory nativa e N-API.
@@ -61,7 +64,7 @@ Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale
 - Sandbox strumenti e capability enforcement.
 - Backend produttivi DXGI, Triple Buffer, YOLO, OCR, Kalman e mapping specifico.
 - Adapter live del gioco.
-- Provider locale `llama.cpp` e provider cloud.
+- Provider locale `llama.cpp` e provider cloud produttivi.
 - Benchmark IPC e Saturazione Controllata.
 - Integrazione Miniland con client reale.
 - ArrayPool/Memory/Span e caricamento modelli on-demand nel percorso C#/.NET 8.
@@ -111,6 +114,10 @@ Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale
 
 **Finché tutti i punti pertinenti non sono superati, non si procede alle implementazioni successive non necessarie al Gate 1.**
 
+## Nota sui Gate 4 e 5
+
+Gate 4 e Gate 5 sono stati integrati nel repository come blocchi software e relative suite di certificazione invocabili. Non vengono marcati come **superati** perché il criterio ufficiale del progetto richiede prima la validazione operativa del percorso Gate 1 e, per le integrazioni successive, prove pertinenti sul sistema reale.
+
 ## Validazione successiva
 
 Dopo il Gate 1, ogni nuovo obiettivo significativo deve avere:
@@ -151,4 +158,4 @@ Le prestazioni numeriche delle specifiche sono obiettivi di benchmark finché no
 
 ## Stato di sviluppo corrente
 
-Il progetto possiede una base software ampia, ma **non deve essere considerato oltre il Gate 1** finché il percorso reale PC ↔ NosTale ↔ smartphone e la dashboard del relativo livello non sono stati verificati con esito positivo.
+Il progetto possiede una base software ampia, ora comprendente anche le implementazioni software Gate 4 e Gate 5. Il progetto **non deve essere considerato oltre il Gate 1** finché il percorso reale PC ↔ NosTale ↔ smartphone e la dashboard del relativo livello non sono stati verificati con esito positivo.
