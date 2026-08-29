@@ -4,7 +4,19 @@
 **Creatore:** Volodymyr Ryzhuk  
 **Aggiornato:** 2026-08-29
 
-## 🟢 Implementato
+## Regola di avanzamento
+
+Il progetto non avanza in base al semplice completamento di singoli file. Avanza attraverso **obiettivi significativi verificabili**.
+
+Il primo obiettivo operativo obbligatorio è raggiungere un collegamento reale e verificato:
+
+`NosAi PC ↔ client NosTale ↔ rete ↔ Guard AI smartphone`
+
+con acquisizione dei primi dati di base del client e del PC e visualizzazione/gestione corretta nella dashboard al livello raggiunto.
+
+Ogni obiettivo significativo crea un gate. Il gate deve essere superato con test pertinenti prima di iniziare implementazioni successive. Un test fallito blocca l'avanzamento fino alla correzione e alla ripetizione del test con esito positivo.
+
+## 🟢 Implementato a livello di codice
 
 - Contratti fondamentali e base decisionale deterministica.
 - Confine Safety Gate e integrazione Orchestrator.
@@ -19,29 +31,33 @@
 - ToolRegistry, profilazione hardware, contratti LAN e protezione sequenza/replay.
 - EventBus bounded, WorldState versionato e Context Slimming.
 - RecoveryController adattivo, circuit breaker e Runtime/HW Watchdog.
-- Throttling adattivo del runtime in base a temperatura GPU, pressione RAM, disconnessione LAN e guasti critici.
+- Throttling adattivo del runtime.
 - Timeout fail-fast e contratto Protobuf v3.
 - Nucleo crittografico X25519 + HKDF-SHA256 + ChaCha20-Poly1305.
-- Persistenza SQLite per sessioni/traiettorie.
+- Persistenza SQLite iniziale per sessioni/traiettorie.
 - Controller Miniland tramite adapter.
-- Framing binario PC↔telefono con intestazione `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico del WorldState.
-- Storage dedicato Crucial X6: discovery del volume `NOSAI-SSD`, validazione NTFS, soglia spazio, layout canonico e bootstrap Windows non distruttivo.
-- Policy SQLite centralizzata: WAL, FULL, busy timeout, cache, limite WAL e incremental vacuum.
-- Provisioning Guard AI: manager ADB su `tools\\adb\\adb.exe`, attesa device autorizzato, verifica/installazione `com.nosai.guard` e bootstrap dell'app.
-- Documentazione architetturale aggiornata con performance, deployment SSD e integrazione PC-Phone.
+- Framing binario PC↔telefono con `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico del WorldState.
+- Fondazione deployment su storage dedicato e provisioning ADB di Guard AI.
 
-## 🟡 Fondazioni — non complete per la produzione
+Questa sezione indica presenza di codice/fondazioni verificabili; **non equivale al superamento del gate operativo reale**.
 
+## 🟡 Fondazioni da integrare e verificare
+
+- Collegamento reale NosAi ↔ client NosTale.
+- Lettura affidabile dei dati di base necessari dal client.
+- Acquisizione dei dati di base del PC nel runtime operativo.
+- Avvio e collegamento reale di Guard AI sullo smartphone.
+- Autenticazione e interoperabilità end-to-end PC ↔ smartphone.
+- Heartbeat, STATUS, gestione riconnessione e fail-closed nel trasporto completo.
+- Applicazione della cifratura autenticata al framing PC-Phone.
+- Dashboard collegata al runtime reale e completa per il livello di sviluppo corrente.
 - Persistenza EventBus, audit/replay durevole e trasporto tra processi.
 - PredictionEvaluator e metriche produttive.
-- Ranking basato su evidenza e lifecycle della conoscenza.
-- Integrazione produttiva Guard AI / Watchdog / Recovery tra PC e telefono.
-- Applicazione della cifratura autenticata al framing PC-Phone e interoperabilità end-to-end.
-- TLS/mTLS o Noise completo per il trasporto LAN.
+- Ranking basato su evidenza e ciclo di vita della conoscenza.
 - Generazione binding Protobuf C++/TypeScript.
-- Discovery hardware e benchmark reali, incluso benchmark del Crucial X6.
+- Discovery hardware e benchmark reali.
 - Shared Memory nativa e N-API.
-- Persistenza analitica completa oltre al logger iniziale.
+- Persistenza analitica completa.
 - Sandbox strumenti e capability enforcement.
 - Backend produttivi DXGI, Triple Buffer, YOLO, OCR, Kalman e mapping specifico.
 - Adapter live del gioco.
@@ -50,25 +66,71 @@
 - Integrazione Miniland con client reale.
 - ArrayPool/Memory/Span e caricamento modelli on-demand nel percorso C#/.NET 8.
 
-## 🔴 Non ancora validato
+## 🔴 Gate 1 — non ancora superato
 
-### Prestazioni e memoria
+### NosAi PC
 
-La logica di throttling e delta encoding è implementata e testabile, ma i valori prestazionali dichiarati nella specifica allegata restano obiettivi di benchmark. Devono essere misurati sul sistema di riferimento prima di essere considerati raggiunti.
+- [ ] Avvio affidabile sul PC.
+- [ ] Acquisizione dati di base del PC.
+- [ ] Collegamento controllato al client NosTale.
+- [ ] Lettura dei dati di base necessari.
+- [ ] Validazione provenienza, correttezza e freschezza dei dati.
+- [ ] Gestione client assente, dati incompleti e disconnessione.
 
-### Deployment SSD
+### Guard AI smartphone
 
-L'implementazione software è presente, ma la validazione fisica richiede il Crucial X6 CT2000X6SSD9 collegato al PC Windows 11. Devono essere verificati: lettera di unità variabile, volume assente, NTFS, read-only, I/O, spazio, benchmark, perdita simulata, recovery/reconnect e assenza di scritture applicative involontarie sul disco interno.
+- [ ] Avvio affidabile.
+- [ ] Connessione a NosAi sul PC.
+- [ ] Autenticazione della sessione.
+- [ ] Scambio HELLO / CAPABILITIES / HEARTBEAT / STATUS.
+- [ ] Ricezione dei primi dati di base.
+- [ ] Verifica integrità, provenienza e freschezza.
+- [ ] Gestione disconnessione e riconnessione.
 
-### PC-Phone
+### Dashboard
 
-Il framing binario e `SequenceGuard` sono implementati. Restano da integrare e testare end-to-end: autenticazione crittografica sul frame, handshake completo, heartbeat 1000 ms, delta WorldState sul trasporto, server TCP sulla porta prevista e comportamento fail-closed.
+- [ ] Avvio affidabile.
+- [ ] Connessione al runtime corretto.
+- [ ] Visualizzazione dei dati realmente disponibili.
+- [ ] Stato PC/NosAi/Guard AI coerente.
+- [ ] Controlli disponibili solo se realmente implementati e autorizzati.
+- [ ] Gestione errori e disconnessioni.
+- [ ] Funzionamento al 100% di tutte le funzioni previste per questo livello.
 
-### APK
+### Prove obbligatorie del Gate 1
 
-`GuardAi.apk` deve essere fornito/buildato e verificato nel percorso `runtime\\GuardAi.apk` del volume. Il repository non deve fingere che un APK inesistente sia disponibile.
+- [ ] Test PC.
+- [ ] Test smartphone.
+- [ ] Test NosAi ↔ client NosTale.
+- [ ] Test NosAi ↔ Guard AI.
+- [ ] Test PC ↔ smartphone.
+- [ ] Test dashboard.
+- [ ] Test errore/disconnessione/riconnessione.
+- [ ] Nessuna regressione bloccante.
+- [ ] Documentazione coerente con il risultato osservato.
 
-## Nuova struttura storage
+**Finché tutti i punti pertinenti non sono superati, non si procede alle implementazioni successive non necessarie al Gate 1.**
+
+## Validazione successiva
+
+Dopo il Gate 1, ogni nuovo obiettivo significativo deve avere:
+
+1. implementazione completa del blocco interessato;
+2. test automatici;
+3. test di integrazione;
+4. test PC quando il PC è coinvolto;
+5. test smartphone quando lo smartphone è coinvolto;
+6. test PC ↔ smartphone quando la comunicazione è coinvolta;
+7. verifica della dashboard quando il cambiamento la interessa;
+8. verifica di assenza di regressioni;
+9. aggiornamento della documentazione;
+10. approvazione del gate prima del successivo obiettivo.
+
+## Nota sui benchmark
+
+Le prestazioni numeriche delle specifiche sono obiettivi di benchmark finché non sono state misurate sul sistema di riferimento.
+
+## Storage previsto
 
 ```text
 <NOSAI-SSD>:\\NosAi\\
@@ -87,15 +149,6 @@ Il framing binario e `SequenceGuard` sono implementati. Restano da integrare e t
 └── tools\\
 ```
 
-## Ordine corrente
+## Stato di sviluppo corrente
 
-1. Test PC reale del deployment SSD e della policy SQLite.
-2. Integrare storage health con Watchdog/Recovery e stato fail-closed.
-3. Test reale di provisioning Android.
-4. Completare autenticazione del wire protocol PC-Phone e interoperabilità end-to-end.
-5. Integrare heartbeat/delta WorldState/fail-closed PC-Phone.
-6. Integrare throttling nel percorso runtime C# e nei budget dei moduli non critici.
-7. Implementare e benchmarkare ArrayPool/Memory/Span e caricamento modelli on-demand nel percorso C#.
-8. Solo dopo esito positivo: proseguire con le successive integrazioni runtime.
-
-**Regola invariabile:** nessuna fase successiva viene considerata completata finché i test PC e Smartphone pertinenti non hanno esito positivo.
+Il progetto possiede una base software ampia, ma **non deve essere considerato oltre il Gate 1** finché il percorso reale PC ↔ NosTale ↔ smartphone e la dashboard del relativo livello non sono stati verificati con esito positivo.
