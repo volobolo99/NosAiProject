@@ -4,6 +4,27 @@ using NosAi.Runtime.Gate1;
 
 namespace NosAi.LiveIntegration;
 
+public enum ClientBaselineAvailability
+{
+    Unavailable = 0,
+    ProcessOnly = 1,
+    WindowAttached = 2,
+    BaselineReady = 3
+}
+
+public sealed record ClientBaselineSnapshot(
+    bool ProcessDetected,
+    bool WindowDetected,
+    bool ClientAttached,
+    int? ProcessId,
+    nint WindowHandle,
+    string Source,
+    DateTime ObservedAtUtc,
+    ClientBaselineAvailability Availability,
+    string Status,
+    string? Warning,
+    string? FailureReason);
+
 /// <summary>
 /// Connects the runtime to the real NosTale process and exposes the existing
 /// Gate 1 Guard AI transport. The connector deliberately does not inspect or
@@ -17,6 +38,8 @@ public sealed class RealClientConnector : IAsyncDisposable
     private readonly GuardAiNetworkChannel _networkChannel;
     private Process? _gameProcess;
     private IntPtr _gameWindowHandle = IntPtr.Zero;
+    private DateTime _lastObservedAtUtc = DateTime.MinValue;
+    private string? _lastFailureReason;
     private bool _disposed;
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -45,6 +68,8 @@ public sealed class RealClientConnector : IAsyncDisposable
         ThrowIfDisposed();
 
         DetachCurrentProcess();
+        _lastObservedAtUtc = DateTime.UtcNow;
+        _lastFailureReason = null;
 
         Process[] processes;
         try
@@ -53,12 +78,14 @@ public sealed class RealClientConnector : IAsyncDisposable
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
+            _lastFailureReason = $"process_enumeration_failed:{ex.GetType().Name}";
             Console.WriteLine($"[RealClientConnector] ERRORE: impossibile enumerare '{TargetProcessName}': {ex.Message}");
             return false;
         }
 
         if (processes.Length == 0)
         {
+            _lastFailureReason = "process_not_found";
             Console.WriteLine($"[RealClientConnector] ERRORE: processo '{TargetProcessName}' non trovato sul sistema.");
             return false;
         }
@@ -75,6 +102,7 @@ public sealed class RealClientConnector : IAsyncDisposable
 
                     _gameProcess = process;
                     _gameWindowHandle = windowHandle;
+                    _lastObservedAtUtc = DateTime.UtcNow;
                     LogAttachmentSuccess(process.Id, windowHandle);
                     return true;
                 }
@@ -95,6 +123,7 @@ public sealed class RealClientConnector : IAsyncDisposable
 
                     _gameProcess = process;
                     _gameWindowHandle = titledWindow;
+                    _lastObservedAtUtc = DateTime.UtcNow;
                     LogAttachmentSuccess(process.Id, titledWindow);
                     return true;
                 }
@@ -109,8 +138,54 @@ public sealed class RealClientConnector : IAsyncDisposable
             }
         }
 
+        _lastFailureReason = "window_not_found";
         Console.WriteLine("[RealClientConnector] ERRORE: finestra di gioco non rilevata nonostante il processo sia attivo.");
         return false;
+    }
+
+    /// <summary>
+    /// Returns the current client baseline snapshot for Gate 1.
+    /// This baseline intentionally exposes attachment/readiness status only.
+    /// It does not claim gameplay data extraction until a real provider exists.
+    /// </summary>
+    public ClientBaselineSnapshot CaptureBaselineSnapshot()
+    {
+        ThrowIfDisposed();
+
+        var processDetected = _gameProcess is { HasExited: false };
+        var windowDetected = _gameWindowHandle != IntPtr.Zero;
+        var attached = processDetected && windowDetected;
+        var observedAt = _lastObservedAtUtc == DateTime.MinValue ? DateTime.UtcNow : _lastObservedAtUtc;
+
+        var availability = attached
+            ? ClientBaselineAvailability.WindowAttached
+            : processDetected
+                ? ClientBaselineAvailability.ProcessOnly
+                : ClientBaselineAvailability.Unavailable;
+
+        var status = availability switch
+        {
+            ClientBaselineAvailability.WindowAttached => "attached_window_only",
+            ClientBaselineAvailability.ProcessOnly => "process_detected_window_missing",
+            _ => "client_unavailable"
+        };
+
+        var warning = attached
+            ? "Gameplay baseline data not yet available: only process/window attachment is currently verified."
+            : null;
+
+        return new ClientBaselineSnapshot(
+            ProcessDetected: processDetected,
+            WindowDetected: windowDetected,
+            ClientAttached: attached,
+            ProcessId: AttachedProcessId,
+            WindowHandle: _gameWindowHandle,
+            Source: "live_process_attach",
+            ObservedAtUtc: observedAt,
+            Availability: availability,
+            Status: status,
+            Warning: warning,
+            FailureReason: _lastFailureReason);
     }
 
     /// <summary>

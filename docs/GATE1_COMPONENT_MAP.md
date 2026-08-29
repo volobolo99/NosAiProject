@@ -29,7 +29,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | manca validazione end-to-end reale del trasporto e della sessione |
 | **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs` | **Present** | **No** | **Sì** | va verificato quanto copra il flusso reale e non solo invarianti locali |
 | **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Parziale** | espone stato utile ma include campi non ancora alimentati da provider reali completi |
-| **Client connector NosTale** | componenti runtime introdotti dai commit recenti del 29/08 | **Partial** | **Parziale** | **Non provato** | manca evidenza documentata e ripetibile di lettura dati reali dal client |
+| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Non provato** | ora espone uno snapshot baseline strutturato, ma non legge ancora dati gameplay reali dal client |
 | **Perception contracts** | `src/NosAi.Runtime/Perception/PerceptionContracts.cs` | **Present** | **No** | **Parziale** | il contratto esiste ma non basta senza backend produttivo |
 | **Perception null provider** | `src/NosAi.Runtime/Perception/NullPerceptionProvider.cs` | **Partial** | **No** | **Parziale** | è utile come fallback tecnico ma non contribuisce al Gate 1 reale |
 | **World state / world model** | area `src/NosAi.Runtime/WorldModel` | **Integrated** | **Parziale** | **Parziale** | dipende dal completamento delle sorgenti reali di input |
@@ -54,7 +54,7 @@ Queste aree devono essere verificate prima di qualsiasi dichiarazione di avanzam
 |---|---|---|
 | **Dashboard embedded** | metriche e stati che sembrano esemplificativi o statici | sostituire o marcare esplicitamente come non reali |
 | **Host telemetry** | parte dei valori osservabili sembra non derivare da provider live completi | collegare ogni campo a una sorgente reale o rimuoverlo dal percorso critico |
-| **Client connector NosTale** | presenza suggerita da commit recenti ma non ancora riflessa chiaramente nello stato documentato | aggiungere evidenza, test e documentazione del flusso minimo reale |
+| **Client connector NosTale** | attualmente verifica processo/finestra e produce uno snapshot baseline strutturato, ma non espone ancora dati gameplay reali | estendere il baseline dataset senza oltrepassare i vincoli del progetto |
 | **Perception** | contratti presenti ma backend reali non ancora chiusi | delimitare cosa è davvero usato nel Gate 1 e cosa è ancora fondazione |
 | **Test suite** | copertura eterogenea tra Python e C# | distinguere test di contratto, test di integrazione e test autorevoli Gate 1 |
 
