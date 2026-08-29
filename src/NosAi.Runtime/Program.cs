@@ -1,4 +1,6 @@
 using NosAi.Runtime.Gate1;
+using NosAi.Runtime.Gate4;
+using NosAi.Runtime.Gate5;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Orchestration;
 
@@ -10,11 +12,13 @@ public static class Program
     {
         if (args.Any(a => string.Equals(a, "--gate1-test", StringComparison.OrdinalIgnoreCase)))
             return await Gate1TestRunner.RunAllAsync().ConfigureAwait(false) ? 0 : 1;
+        if (args.Any(a => string.Equals(a, "--gate4-test", StringComparison.OrdinalIgnoreCase)))
+            return await Gate4TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
+        if (args.Any(a => string.Equals(a, "--gate5-test", StringComparison.OrdinalIgnoreCase)))
+            return await Gate5TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
 
         var runtime = RuntimeComposition.CreateSafe();
-        var profileStore = new HardwareProfileStore(
-            HardwareProfilePaths.PlayAiDefaultProfile(),
-            new HardwareAutoSettings());
+        var profileStore = new HardwareProfileStore(HardwareProfilePaths.PlayAiDefaultProfile(), new HardwareAutoSettings());
         var autoSet = new AutoSetManager(new WindowsHardwareProbe(), profileStore);
         var settings = autoSet.Initialize();
 
