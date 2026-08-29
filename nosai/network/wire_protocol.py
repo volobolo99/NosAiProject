@@ -1,13 +1,16 @@
-"""Binary PC↔Phone framing defined by the NosAi onboarding specification."""
+"""Framing binario PC↔telefono per il protocollo NosAi."""
 from __future__ import annotations
 
+import json
 import struct
 from dataclasses import dataclass
+from typing import Any
 
 MAGIC = b"NOSA"
 VERSION = 1
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
 MAX_PAYLOAD = 64 * 1024
+
 
 @dataclass(frozen=True)
 class Frame:
@@ -17,27 +20,28 @@ class Frame:
 
     def encode(self) -> bytes:
         if not 0 <= self.message_type <= 255:
-            raise ValueError("message_type out of range")
+            raise ValueError("message_type fuori intervallo")
         if not 0 <= self.sequence <= 0xFFFFFFFF:
-            raise ValueError("sequence out of range")
+            raise ValueError("sequence fuori intervallo")
         if len(self.payload) > MAX_PAYLOAD:
-            raise ValueError("payload too large")
+            raise ValueError("payload troppo grande")
         return HEADER.pack(MAGIC, VERSION, self.message_type, len(self.payload), self.sequence) + self.payload
 
 
 def decode(data: bytes) -> Frame:
     if len(data) < HEADER.size:
-        raise ValueError("incomplete frame header")
+        raise ValueError("intestazione frame incompleta")
     magic, version, message_type, length, sequence = HEADER.unpack(data[:HEADER.size])
     if magic != MAGIC or version != VERSION:
-        raise ValueError("invalid frame header")
+        raise ValueError("intestazione frame non valida")
     if length > MAX_PAYLOAD or len(data) != HEADER.size + length:
-        raise ValueError("invalid payload length")
+        raise ValueError("lunghezza payload non valida")
     return Frame(message_type, sequence, data[HEADER.size:])
 
 
 class SequenceGuard:
-    """Accept only the next monotonic sequence; caller must fail closed on violation."""
+    """Accetta esclusivamente la sequenza monotona successiva."""
+
     def __init__(self, expected: int = 1):
         self.expected = expected
 
@@ -46,3 +50,36 @@ class SequenceGuard:
             return False
         self.expected += 1
         return True
+
+
+def encode_delta(previous: dict[str, Any], current: dict[str, Any]) -> bytes:
+    """Serializza solo i campi mutati rispetto allo stato precedente.
+
+    Il risultato è deterministico e limitato a JSON UTF-8; la compressione e la
+    cifratura possono essere applicate dal livello di trasporto senza duplicare
+    la logica di confronto.
+    """
+    changed = {key: current[key] for key in sorted(current) if previous.get(key) != current[key]}
+    removed = sorted(key for key in previous if key not in current)
+    payload = {"changed": changed, "removed": removed}
+    encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    if len(encoded) > MAX_PAYLOAD:
+        raise ValueError("delta troppo grande")
+    return encoded
+
+
+def apply_delta(previous: dict[str, Any], delta: bytes) -> dict[str, Any]:
+    """Applica un delta senza modificare il dizionario di origine."""
+    payload = json.loads(delta.decode("utf-8"))
+    if not isinstance(payload, dict) or not isinstance(payload.get("changed"), dict) or not isinstance(payload.get("removed"), list):
+        raise ValueError("delta non valido")
+    result = dict(previous)
+    for key in payload["removed"]:
+        if not isinstance(key, str):
+            raise ValueError("chiave rimossa non valida")
+        result.pop(key, None)
+    for key, value in payload["changed"].items():
+        if not isinstance(key, str):
+            raise ValueError("chiave modificata non valida")
+        result[key] = value
+    return result
