@@ -1,3 +1,4 @@
+using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Orchestration;
 
@@ -5,8 +6,11 @@ namespace NosAi.Runtime;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
+        if (args.Any(a => string.Equals(a, "--gate1-test", StringComparison.OrdinalIgnoreCase)))
+            return await Gate1TestRunner.RunAllAsync().ConfigureAwait(false) ? 0 : 1;
+
         var runtime = RuntimeComposition.CreateSafe();
         var profileStore = new HardwareProfileStore(
             HardwareProfilePaths.PlayAiDefaultProfile(),
@@ -22,5 +26,6 @@ public static class Program
         Console.WriteLine($"Graphics tier: {settings.GraphicsTier}");
         Console.WriteLine($"Workers: {settings.WorkerCount}");
         Console.WriteLine("Runtime composition and hardware profile initialized in safe mode.");
+        return 0;
     }
 }
