@@ -11,7 +11,6 @@ using NosAi.Runtime.WorldModel;
 
 namespace NosAi.Runtime.Gate1;
 
-/// <summary>Wire message identifiers shared by the PC↔Phone session.</summary>
 public enum WireMessageType : byte
 {
     SessionHello = 0x01,
@@ -28,7 +27,6 @@ public enum WireMessageType : byte
     Disconnect = 0xFF
 }
 
-/// <summary>Canonical 12-byte frame header. The Python protocol uses magic NOSA.</summary>
 public readonly record struct WireHeader(WireMessageType MessageType, ushort PayloadLength, uint SequenceNumber)
 {
     public const uint ExpectedMagic = 0x4E4F5341; // NOSA
@@ -40,7 +38,6 @@ public readonly record struct WireHeader(WireMessageType MessageType, ushort Pay
     {
         if (destination.Length < HeaderSize)
             throw new ArgumentException("Destination buffer is smaller than the 12-byte header.", nameof(destination));
-
         BinaryPrimitives.WriteUInt32BigEndian(destination[0..4], ExpectedMagic);
         destination[4] = CurrentVersion;
         destination[5] = (byte)MessageType;
@@ -52,33 +49,14 @@ public readonly record struct WireHeader(WireMessageType MessageType, ushort Pay
     {
         header = default;
         error = null;
-        if (source.Length < HeaderSize)
-        {
-            error = "incomplete_header";
-            return false;
-        }
-
-        if (BinaryPrimitives.ReadUInt32BigEndian(source[0..4]) != ExpectedMagic)
-        {
-            error = "invalid_magic";
-            return false;
-        }
-
-        if (source[4] != CurrentVersion)
-        {
-            error = "unsupported_version";
-            return false;
-        }
-
-        var type = (WireMessageType)source[5];
-        var length = BinaryPrimitives.ReadUInt16BigEndian(source[6..8]);
-        var sequence = BinaryPrimitives.ReadUInt32BigEndian(source[8..12]);
-        header = new WireHeader(type, length, sequence);
+        if (source.Length < HeaderSize) { error = "incomplete_header"; return false; }
+        if (BinaryPrimitives.ReadUInt32BigEndian(source[0..4]) != ExpectedMagic) { error = "invalid_magic"; return false; }
+        if (source[4] != CurrentVersion) { error = "unsupported_version"; return false; }
+        header = new WireHeader((WireMessageType)source[5], BinaryPrimitives.ReadUInt16BigEndian(source[6..8]), BinaryPrimitives.ReadUInt32BigEndian(source[8..12]));
         return true;
     }
 }
 
-/// <summary>Strict monotonic sequence validation for one direction of a session.</summary>
 public sealed class SequenceGuard
 {
     private readonly object _sync = new();
@@ -96,24 +74,15 @@ public sealed class SequenceGuard
                 reason = null;
                 return true;
             }
-
             reason = received < _expected ? "replay_or_duplicate" : "sequence_gap";
             return false;
         }
     }
 
-    public uint Next
-    {
-        get { lock (_sync) return _expected; }
-    }
-
-    public void Reset(uint expected = 1)
-    {
-        lock (_sync) _expected = expected;
-    }
+    public uint Next { get { lock (_sync) return _expected; } }
+    public void Reset(uint expected = 1) { lock (_sync) _expected = expected; }
 }
 
-/// <summary>RSA-2048/SHA-256 session authentication using a trusted public key.</summary>
 public sealed class SessionAuth : IDisposable
 {
     private readonly RSA _verifier;
@@ -124,7 +93,6 @@ public sealed class SessionAuth : IDisposable
     {
         if (string.IsNullOrWhiteSpace(trustedPublicKeyPem))
             throw new ArgumentException("A trusted public key is required; authentication is fail-closed.", nameof(trustedPublicKeyPem));
-
         _verifier = RSA.Create();
         _verifier.ImportFromPem(trustedPublicKeyPem);
         if (_verifier.KeySize != 2048)
@@ -146,37 +114,17 @@ public sealed class SessionAuth : IDisposable
         {
             var challenge = _challenge;
             _challenge = null;
-            if (challenge is null)
-                return false;
-
-            try
-            {
-                return _verifier.VerifyData(
-                    challenge,
-                    signature,
-                    HashAlgorithmName.SHA256,
-                    RSASignaturePadding.Pkcs1);
-            }
-            catch (CryptographicException)
-            {
-                return false;
-            }
+            if (challenge is null) return false;
+            try { return _verifier.VerifyData(challenge, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1); }
+            catch (CryptographicException) { return false; }
         }
     }
 
     public void Dispose() => _verifier.Dispose();
 }
 
-public sealed record Gate1ConnectionSnapshot(
-    string SessionId,
-    bool Connected,
-    bool Authenticated,
-    DateTime LastHeartbeatUtc,
-    string? LastTerminationReason);
+public sealed record Gate1ConnectionSnapshot(string SessionId, bool Connected, bool Authenticated, DateTime LastHeartbeatUtc, string? LastTerminationReason);
 
-/// <summary>
-/// PC↔Phone Guard session boundary. It does not execute game actions and never bypasses Guard/Safety.
-/// </summary>
 public sealed class GuardAiNetworkChannel : IAsyncDisposable
 {
     public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromMilliseconds(2000);
@@ -197,11 +145,12 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     public bool IsClientConnected { get; private set; }
     public bool IsAuthenticated { get; private set; }
     public string? ActiveSessionId { get; private set; }
+    public int LocalPort => (_listener?.LocalEndpoint as IPEndPoint)?.Port ?? 0;
     public event Action<string>? OnSessionTerminated;
 
     public GuardAiNetworkChannel(int port, SessionAuth auth)
     {
-        if (port is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
+        if (port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
         _port = port;
         _auth = auth;
     }
@@ -224,12 +173,7 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                 var client = await _listener!.AcceptTcpClientAsync(token).ConfigureAwait(false);
                 lock (_sync)
                 {
-                    if (_client is not null)
-                    {
-                        client.Close();
-                        continue;
-                    }
-
+                    if (_client is not null) { client.Close(); continue; }
                     _client = client;
                     _stream = client.GetStream();
                     IsClientConnected = true;
@@ -240,7 +184,6 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                     _ingress.Reset();
                     _egress.Reset();
                 }
-
                 _ = ProcessSessionAsync(client, _stream, token);
                 _ = HeartbeatWatchdogAsync(token);
             }
@@ -257,23 +200,10 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             {
                 var headerBytes = new byte[WireHeader.HeaderSize];
                 await ReadExactlyAsync(stream, headerBytes, token).ConfigureAwait(false);
-
-                if (!WireHeader.TryRead(headerBytes, out var header, out var error))
-                {
-                    TerminateSession($"invalid_header:{error}");
-                    return;
-                }
-
-                if (!_ingress.ValidateAndAdvance(header.SequenceNumber, out var sequenceError))
-                {
-                    TerminateSession($"sequence_violation:{sequenceError}");
-                    return;
-                }
-
+                if (!WireHeader.TryRead(headerBytes, out var header, out var error)) { TerminateSession($"invalid_header:{error}"); return; }
+                if (!_ingress.ValidateAndAdvance(header.SequenceNumber, out var sequenceError)) { TerminateSession($"sequence_violation:{sequenceError}"); return; }
                 var payload = new byte[header.PayloadLength];
-                if (payload.Length > 0)
-                    await ReadExactlyAsync(stream, payload, token).ConfigureAwait(false);
-
+                if (payload.Length > 0) await ReadExactlyAsync(stream, payload, token).ConfigureAwait(false);
                 await HandleMessageAsync(header.MessageType, payload, token).ConfigureAwait(false);
             }
         }
@@ -290,25 +220,20 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                 await SendAsync(WireMessageType.Capabilities, Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256;heartbeat=2000;execution=disabled"), token).ConfigureAwait(false);
                 await SendAsync(WireMessageType.AuthChallenge, _auth.CreateChallenge(), token).ConfigureAwait(false);
                 break;
-
             case WireMessageType.AuthResponse:
                 var authenticated = _auth.VerifyAndConsume(payload);
                 IsAuthenticated = authenticated;
                 await SendAsync(WireMessageType.AuthResult, new[] { (byte)(authenticated ? 1 : 0) }, token).ConfigureAwait(false);
                 if (!authenticated) TerminateSession("authentication_failed");
                 break;
-
             case WireMessageType.Heartbeat:
                 lock (_sync) _lastHeartbeatUtc = DateTime.UtcNow;
                 await SendAsync(WireMessageType.HeartbeatAck, Array.Empty<byte>(), token).ConfigureAwait(false);
                 break;
-
             case WireMessageType.CommandRequest:
-                // Gate 1 deliberately has no execution path. A command is never an implicit authorization.
                 var denied = JsonSerializer.SerializeToUtf8Bytes(new { allowed = false, reason = "execution_disabled_in_gate1" });
                 await SendAsync(WireMessageType.CommandAck, denied, token).ConfigureAwait(false);
                 break;
-
             case WireMessageType.Disconnect:
                 TerminateSession("peer_requested_disconnect");
                 break;
@@ -322,11 +247,7 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             await Task.Delay(250, token).ConfigureAwait(false);
             DateTime last;
             lock (_sync) last = _lastHeartbeatUtc;
-            if (DateTime.UtcNow - last > HeartbeatTimeout)
-            {
-                TerminateSession("heartbeat_timeout_fail_closed");
-                return;
-            }
+            if (DateTime.UtcNow - last > HeartbeatTimeout) { TerminateSession("heartbeat_timeout_fail_closed"); return; }
         }
     }
 
@@ -336,7 +257,6 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         NetworkStream? stream;
         lock (_sync) stream = _stream;
         if (stream is null || !IsClientConnected) return;
-
         await _sendLock.WaitAsync(token).ConfigureAwait(false);
         try
         {
@@ -346,22 +266,14 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             payload.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
             await stream.WriteAsync(packet, token).ConfigureAwait(false);
             await stream.FlushAsync(token).ConfigureAwait(false);
-            _egress.ValidateAndAdvance(header.SequenceNumber, out _);
+            if (!_egress.ValidateAndAdvance(header.SequenceNumber, out _)) TerminateSession("egress_sequence_failure");
         }
         finally { _sendLock.Release(); }
     }
 
     public Gate1ConnectionSnapshot GetSnapshot()
     {
-        lock (_sync)
-        {
-            return new Gate1ConnectionSnapshot(
-                ActiveSessionId ?? "",
-                IsClientConnected,
-                IsAuthenticated,
-                _lastHeartbeatUtc,
-                _terminationReason);
-        }
+        lock (_sync) return new(ActiveSessionId ?? "", IsClientConnected, IsAuthenticated, _lastHeartbeatUtc, _terminationReason);
     }
 
     public void TerminateSession(string reason)
@@ -402,7 +314,6 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     }
 }
 
-/// <summary>Read-only adapter exposing the canonical runtime state to Gate 1 consumers.</summary>
 public sealed class Gate1RuntimeSnapshotProvider
 {
     private readonly RuntimeComponents _runtime;
