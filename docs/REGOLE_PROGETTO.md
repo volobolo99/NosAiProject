@@ -3,11 +3,37 @@
 **Versione:** 1.0 Beta  
 **Creatore:** Volodymyr Ryzhuk
 
-## 1. Governance della versione
+## 1. Governance
 
-La versione corrente è **1.0 Beta**. Nessuna implementazione, rifattorizzazione, documentazione o automazione può modificarla senza richiesta esplicita del creatore.
+La versione corrente è **1.0 Beta**. Nessuna implementazione, rifattorizzazione, documentazione o automazione deve modificare la versione senza richiesta esplicita del creatore.
 
-## 2. Separazione delle responsabilità
+## 2. Lingua ufficiale della documentazione
+
+Tutti i documenti del progetto devono essere scritti in **italiano**.
+
+Sono ammesse parole, sigle e denominazioni in altre lingue esclusivamente quando almeno una delle seguenti condizioni è vera:
+
+- sono identificatori di codice, nomi di classi, funzioni, variabili, moduli o file;
+- sono nomi ufficiali di API, protocolli, librerie, standard o tecnologie;
+- sono nomi propri o denominazioni ufficiali che non devono essere tradotti;
+- la traduzione altererebbe il significato tecnico richiesto;
+- il termine straniero è necessario per garantire interoperabilità o corrispondenza con un'interfaccia esterna.
+
+Quando un termine tecnico può essere tradotto senza perdere precisione, deve essere preferita la forma italiana. Se un termine inglese è indispensabile, alla prima occorrenza deve essere spiegato in italiano quando questo migliora la comprensione.
+
+## 3. Organizzazione della documentazione
+
+Ogni documento deve avere una responsabilità chiara. Non devono esistere documenti duplicati o sostanzialmente sovrapposti.
+
+`docs/ARCHITETTURA.md` è l'unico riferimento canonico per l'architettura del sistema.
+
+La documentazione deve distinguere sempre tra:
+
+- **implementato** — presente nel codice e verificabile;
+- **fondazione** — presente parzialmente o predisposto, ma non completo per l'uso produttivo;
+- **pianificato** — definito ma non ancora implementato.
+
+## 4. Separazione delle responsabilità
 
 - Percezione osserva e produce dati semantici.
 - World Model possiede lo stato semantico canonico.
@@ -17,14 +43,18 @@ La versione corrente è **1.0 Beta**. Nessuna implementazione, rifattorizzazione
 - Orchestrator coordina i moduli.
 - Guard valuta il contesto operativo.
 - Safety costituisce il confine finale per le azioni protette.
-- Game/client I/O è isolato dietro adapter espliciti.
+- I/O del client di gioco è isolato dietro adapter espliciti.
 - I provider LLM forniscono dati decisionali e non eseguono direttamente il sistema.
 
-## 3. Percorso deterministico
+## 5. Percorso deterministico
 
-Il percorso critico deve poter essere testato senza client di gioco reale. La simulazione e il lookahead sono i principali strumenti di validazione prima dell'esecuzione live.
+Il percorso critico deve poter essere testato senza client di gioco reale. La simulazione e il lookahead sono strumenti di validazione prima dell'esecuzione reale.
 
-## 4. Recovery e Watchdog
+Percorso autorevole:
+
+`Observe → WorldState → Simulation → Ranking → Orchestrator → Planner → Guard → Trust → Safety → Execute → Verify → Re-observe`.
+
+## 6. Recovery e Watchdog
 
 RecoveryController e Watchdog sono componenti attivi del controllo runtime.
 
@@ -34,30 +64,34 @@ Watchdog può adattare modalità runtime e budget operativi sulla base delle con
 
 La precedente regola che limitava Recovery e Watchdog esclusivamente a riduzione o blocco dell'esecuzione non fa più parte delle regole del progetto.
 
-Le azioni protette devono comunque rispettare i confini di autorizzazione configurati.
+Recovery e Watchdog non acquisiscono automaticamente autorità di esecuzione né possono aumentare il livello Trust.
 
-## 5. Percezione
+## 7. Sicurezza
 
-Pipeline produttiva prevista: DXGI Direct Capture, Triple Buffer lock-free, HSV multi-ROI, YOLO, OCR glyph-hash con fallback/cache AI-OCR, Kalman 2D temporale e Game State Evaluator.
+Le azioni protette devono rispettare i confini Guard, Trust e Safety configurati.
 
-Le fondamenta presenti non devono essere descritte come backend produttivi finché non sono realmente validati.
+Un risultato non verificato non deve essere considerato automaticamente riuscito. Una conoscenza non supportata da evidenza non deve essere promossa automaticamente a conoscenza verificata.
 
-## 6. Rete
+## 8. Percezione e integrazioni esterne
 
-Il bring-up iniziale utilizza comunicazione locale/LAN autenticata, messaggi tipizzati, heartbeat, stato e protezione da replay.
+Le pipeline produttive di acquisizione, visione, OCR e tracciamento devono essere validate prima dell'uso reale.
 
-## 7. Persistenza e apprendimento
+Le integrazioni con client, smartphone, rete, provider AI, hardware e sistemi nativi devono essere isolate dietro contratti e adapter espliciti.
 
-Le conoscenze validate devono mantenere evidenza e provenienza. Un singolo risultato fallito o non verificato non deve diventare automaticamente conoscenza verificata.
+## 9. Persistenza
 
-## 8. Repository legacy
+La persistenza analitica non sostituisce il WorldState canonico. EventBus, audit, replay e Knowledge Base devono mantenere separazione di responsabilità e provenienza dei dati.
 
-`volobolo99/NosAi` è esclusivamente riferimento. Il codice deve essere analizzato e reimplementato selettivamente.
+## 10. Repository legacy
 
-## 9. Integrità documentale
+`volobolo99/NosAi` è esclusivamente un riferimento. Il codice deve essere analizzato e reimplementato selettivamente.
 
-La documentazione deve distinguere chiaramente tra implementato, fondazione e pianificato. Non deve dichiarare produttivo un componente non validato.
+## 11. Test
 
-## 10. Lingua
+Non si procede al traguardo successivo quando i test richiesti per il traguardo corrente non hanno dato esito positivo.
 
-La documentazione del progetto deve essere scritta in italiano. Codice, identificatori, API, protocolli, nomi tecnici obbligatori e contenuti che richiedono la lingua originale possono rimanere in inglese.
+Le prestazioni dichiarate nelle specifiche sono obiettivi finché non sono state misurate e validate.
+
+## 12. Integrità del repository
+
+Non devono essere eliminati componenti tecnici solo perché non possono essere completati nell'ambiente corrente. Se una componente richiede sviluppo o validazione esterna, deve rimanere nel progetto, essere documentata e avere un punto di integrazione chiaro.
