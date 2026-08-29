@@ -4,7 +4,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from nosai.storage.sqlite_policy import SqlitePolicy, configure_connection
+from nosai.storage.sqlite_policy import SqlitePolicy, configure_connection, initialize_database_file
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,11 @@ class NosAiSqliteLogger:
         return conn
 
     def _initialize_database(self) -> None:
-        with self._connect() as conn:
+        database_is_new = not self.db_path.exists() or self.db_path.stat().st_size == 0
+        with sqlite3.connect(self.db_path, timeout=self.policy.busy_timeout_ms / 1000.0) as conn:
+            if database_is_new:
+                initialize_database_file(conn)
+            configure_connection(conn, self.policy)
             conn.execute("""CREATE TABLE IF NOT EXISTS hunting_sessions (
                 session_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp INTEGER NOT NULL,
