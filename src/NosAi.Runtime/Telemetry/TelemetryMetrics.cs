@@ -15,7 +15,7 @@ public sealed record TelemetryMetrics(
 
 public sealed class TelemetryCollector
 {
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
     private readonly List<TelemetryMetrics> _history = [];
 
     public void Record(TelemetryMetrics metrics)
