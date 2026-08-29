@@ -1,94 +1,98 @@
-# NOS AI — Agent Runtime Platform
+# NosAi — Piattaforma runtime degli agenti
 
-**Architecture Expansion:** v1.0 Beta  
-**Version:** 1.0 Beta (locked)  
-**Creator:** Volodymyr Ryzhuk
+**Estensione architetturale:** v1.0 Beta  
+**Versione:** 1.0 Beta (bloccata)  
+**Creatore:** Volodymyr Ryzhuk
 
-## Purpose
+## Scopo
 
-This expansion adds a model-agnostic, local-first runtime layer over the deterministic NosAi pipeline without granting execution privileges to stochastic Decision Providers. The runtime is bounded, observable, recoverable and fail-closed.
+Questa estensione aggiunge un livello runtime indipendente dal modello e orientato all'esecuzione locale sopra la pipeline deterministica di NosAi, senza concedere privilegi di esecuzione ai fornitori decisionali stocastici. Il runtime è limitato, osservabile, recuperabile e progettato per chiudere in sicurezza in caso di errore.
 
-## Runtime control plane
+## Piano di controllo runtime
 
-SessionManager, Scheduler, Memory, Policy, Trust, Resources, ProviderRouter, Tools, Watchdog and Evaluation operate as a transverse control plane. They govern execution but do not replace the canonical domain pipeline.
+SessionManager, Scheduler, Memoria, Policy, Trust, Risorse, ProviderRouter, Strumenti, Watchdog e Valutazione costituiscono un piano di controllo trasversale. Governano l'esecuzione senza sostituire la pipeline di dominio canonica.
 
-## Closed-loop contract
+## Contratto a ciclo chiuso
 
 ```text
-Observe
+Osservazione
   ↓
-Canonical WorldState(vN)
+WorldState canonico (vN)
   ↓
-Simulation → Tactical Ranking → Orchestrator
+Simulazione → Ranking tattico → Orchestrator
   ↓
-Planner → GuardDecisionContext → Trust → Safety
+Planner → Contesto decisionale Guard → Trust → Safety
   ↓
 Executor / Game Adapter
   ↓
-ActionResult
+Risultato azione
   ↓
-Verifier + fresh Observation
+Verificatore + nuova osservazione
   ↓
-Canonical WorldState(vN+1)
-  ├── verified → checkpoint → next decision
-  └── failed → bounded retry/recovery → fresh replan
+WorldState canonico (vN+1)
+  ├── verificato → checkpoint → decisione successiva
+  └── fallito → retry/recupero limitato → nuova pianificazione
 ```
 
-Every action is independently authorized. The caller Trust Tier is a ceiling. Unknown or malformed trust requirements fail closed. Recovery and watchdogs can only reduce authority.
+Ogni azione viene autorizzata indipendentemente. Il livello Trust del chiamante costituisce un limite massimo. Requisiti Trust sconosciuti o malformati devono chiudere il percorso in sicurezza.
 
-## Event / trace plane
+Recovery e Watchdog sono controller runtime adattivi: non possono aumentare il livello Trust né concedersi autonomamente autorità di esecuzione.
 
-The runtime should emit typed events without making the event bus an execution path. Events carry `event_id`, `session_id`, `run_id`, `task_id`, `parent_event_id`, timestamp, source, type, schema version and payload.
+## Piano eventi e tracce
 
-Core event families include perception, WorldState updates, simulation, ranking, decisions, plans, Guard/Safety evaluations, execution, verification, recovery, replanning, memory, provider routing, hardware profile changes and session lifecycle.
+Il runtime deve emettere eventi tipizzati senza trasformare il bus eventi in un percorso di esecuzione. Gli eventi contengono `event_id`, `session_id`, `run_id`, `task_id`, `parent_event_id`, timestamp, sorgente, tipo, versione dello schema e payload.
 
-This plane supports audit, telemetry, evaluation and simulation-first replay.
+Le famiglie principali comprendono percezione, aggiornamenti WorldState, simulazione, ranking, decisioni, piani, valutazioni Guard/Safety, esecuzione, verifica, recupero, ripianificazione, memoria, instradamento provider, modifiche del profilo hardware e ciclo di vita della sessione.
 
-## WorldState provenance
+Il piano supporta audit, telemetria, valutazione e replay orientato alla simulazione.
 
-The canonical WorldState is immutable per accepted observation. Each version identifies its parent and observation provenance. Simulation references the exact input state version. Verification compares predicted and actual outcomes after the next observation.
+## Provenienza WorldState
 
-This produces the measurable chain:
+Il WorldState canonico è immutabile per ogni osservazione accettata. Ogni versione identifica il proprio predecessore e la provenienza dell'osservazione. La simulazione deve riferirsi alla versione esatta dello stato di ingresso. La verifica confronta risultato previsto e risultato reale dopo la nuova osservazione.
 
-`WorldState vN → prediction → action → WorldState vN+1 → prediction error`.
+Catena misurabile:
 
-## Decision / ranking semantics
+`WorldState vN → previsione → azione → WorldState vN+1 → errore di previsione`.
 
-Decision Providers return data only. Simulation predicts. Tactical Ranking scores candidates but never authorizes. The Orchestrator coordinates. The Planner creates bounded plans. Guard evaluates contextual risk. Trust supplies deterministic authorization ceilings. Safety is the final fail-closed gate.
+## Semantica decisionale e ranking
 
-Ranking should expose score, confidence, risk, expected reward, prediction confidence and evidence quality so decisions can be audited and compared over time.
+I fornitori decisionali restituiscono solo dati. La simulazione prevede. Il ranking tattico assegna punteggi ma non autorizza. L'Orchestrator coordina. Il Planner crea piani limitati. Guard valuta il rischio contestuale. Trust fornisce limiti deterministici di autorizzazione. Safety è il controllo finale a chiusura sicura.
 
-## Memory semantics
+Il ranking deve esporre punteggio, confidenza, rischio, ricompensa attesa, confidenza della previsione e qualità dell'evidenza per permettere audit e confronto nel tempo.
 
-Runtime memory distinguishes raw experience, observation, episode, hypothesis and verified knowledge. Verification evidence and provenance are required before an experience is promoted to reusable strategy. Unverified outcomes cannot silently become knowledge.
+## Semantica della memoria
 
-## Provider / hardware routing
+La memoria distingue esperienza grezza, osservazione, episodio, ipotesi e conoscenza verificata. Prima di promuovere un'esperienza a strategia riutilizzabile sono necessarie evidenza di verifica e provenienza. Gli esiti non verificati non possono diventare silenziosamente conoscenza.
 
-Provider Router is local-first and policy-controlled. Inputs include privacy/locality, task complexity, latency, VRAM/RAM, GPU utilization, temperature, energy and recent provider performance. Hardware profiling remains deterministic at the contract layer; real probes and benchmarks are gated.
+## Instradamento provider e hardware
 
-## Recovery / watchdog
+Provider Router è locale come prima scelta e controllato dalla policy. Gli ingressi comprendono privacy/località, complessità del compito, latenza, VRAM/RAM, utilizzo GPU, temperatura, energia e prestazioni recenti dei provider. La profilazione hardware rimane deterministica a livello di contratto; rilevamenti e benchmark reali sono soggetti a gate.
 
-Executor exceptions and verification failures are never success. The runtime may retry within budget and then replan with structured failure context. The independent watchdog limits runtime, actions, consecutive failures and other configured budgets. A tripped watchdog cannot be reset by model output.
+## Recupero e Watchdog
 
-## Session / PC / phone
+Eccezioni dell'Executor e fallimenti della verifica non costituiscono mai un successo. Il runtime può effettuare retry entro un budget e successivamente ripianificare usando un contesto strutturato del fallimento. Il Watchdog indipendente limita runtime, azioni, fallimenti consecutivi e altri budget configurati. Un Watchdog attivato non può essere ripristinato dall'output di un modello.
 
-Initial bring-up is local/LAN and authenticated. Typed messages use sequence/replay protection. Intended lifecycle: `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`. PC Play AI, PC Play Guard and phone Guard AI remain separate roles connected through explicit contracts; invalid/disconnected sessions fail closed.
+## Sessione, PC e telefono
 
-## Security invariants
+Il primo avvio previsto è locale/LAN e autenticato. I messaggi tipizzati utilizzano protezione da sequenza e replay. Ciclo previsto: `HELLO → CAPABILITIES → AUTH → HEARTBEAT/STATUS → COMMAND/EVENT → ACK/ERROR → DISCONNECT`.
 
-- No LLM direct execution.
-- No ranking/orchestrator direct execution.
-- No perception direct execution.
-- No recovery permission escalation.
-- No watchdog permission escalation.
-- No cloud escalation when local-only policy applies.
-- No unverified outcome treated as success.
-- No live game integration before release/safety gates.
+Play AI PC, Play Guard PC e Guard AI telefono rimangono ruoli separati collegati tramite contratti espliciti; sessioni non valide o disconnesse devono chiudere il percorso in sicurezza.
 
-## Current production boundary
+## Invarianti di sicurezza
 
-Implemented: bounded autonomous runtime, closed-loop observation/replanning bridge, deterministic Trust/Guard/Safety boundary, provider/resource foundations, session/checkpoint foundations and evaluation primitives.
+- Nessun LLM esegue direttamente.
+- Nessun ranking o Orchestrator esegue direttamente.
+- Nessuna percezione esegue direttamente.
+- Nessun recupero può aumentare l'autorizzazione.
+- Nessun Watchdog può aumentare l'autorizzazione.
+- Nessuna escalation cloud quando la policy impone il funzionamento locale.
+- Nessun esito non verificato viene trattato come successo.
+- Nessuna integrazione live del gioco prima dei gate di rilascio e sicurezza.
 
-Gated: production Event Bus, persistent/versioned WorldState store, PredictionEvaluator, evidence-aware knowledge persistence, authenticated LAN transport, production Guard/Play Guard, hardware probes, local/cloud providers, production perception and live game adapter.
+## Confine produttivo corrente
 
-**No version increment:** project remains **NosAi 1.0 Beta**.
+Implementato: runtime autonomo limitato, ponte osservazione/ripianificazione a ciclo chiuso, confine deterministico Trust/Guard/Safety, fondazioni provider/risorse, fondazioni sessione/checkpoint e primitive di valutazione.
+
+Soggetto a gate: bus eventi produttivo, archivio WorldState persistente/versionato, PredictionEvaluator, persistenza della conoscenza basata sull'evidenza, trasporto LAN autenticato, Guard/Play Guard produttivi, rilevamento hardware, provider locali/cloud, percezione produttiva e adapter live del gioco.
+
+**Nessun incremento di versione:** il progetto rimane **NosAi 1.0 Beta**.
