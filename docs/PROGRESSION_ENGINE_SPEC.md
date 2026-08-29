@@ -1,117 +1,129 @@
-# NosAi — Progression Engine Specification
+# NosAi — Specifica del motore di progressione
 
-## Status
-Design baseline — Step 3B.2.
+## Stato
 
-## Purpose
-The Progression Engine is the strategic planner responsible for maximizing character progression toward an explicit goal while minimizing time, resource waste, failure probability, and unnecessary risk.
+Base di progettazione — Passo 3B.2.
 
-It does not directly control the game. It produces plans and scored candidate objectives/actions for Play AI, while Guard AI evaluates strategy, risk, constraints, and protection requirements.
+## Scopo
 
-## Design principle
-NosAi should behave as a highly optimized player: it observes the current game state, predicts likely outcomes, evaluates alternatives, selects the best expected progression path, executes through Play AI, measures the result, and stores validated knowledge for reuse.
+Il Motore di Progressione è il pianificatore strategico responsabile di massimizzare la progressione del personaggio verso un obiettivo esplicito, riducendo al minimo tempo, spreco di risorse, probabilità di fallimento e rischio non necessario.
 
-## Optimization objective
-The planner evaluates candidate paths using a configurable utility function built from:
+Non controlla direttamente il gioco. Produce piani e candidati di obiettivi/azioni valutati per Play AI, mentre Guard AI valuta strategia, rischio, vincoli e requisiti di protezione.
 
-- progress toward the current objective;
-- expected time to completion;
-- expected resource consumption and item loss;
-- probability of success/failure;
-- risk of death or unrecoverable state;
-- future value such as unlocks, equipment, materials, quests, and progression dependencies;
-- confidence in the underlying strategy knowledge.
+## Principio di progettazione
 
-No single metric such as XP/hour is sufficient.
+NosAi deve comportarsi come un giocatore altamente ottimizzato: osserva lo stato corrente, prevede gli esiti probabili, valuta le alternative, seleziona il percorso di progressione con il miglior risultato atteso, esegue tramite Play AI, misura il risultato e conserva la conoscenza verificata per il riutilizzo.
 
-## Runtime flow
+## Obiettivo di ottimizzazione
+
+Il pianificatore valuta i percorsi candidati mediante una funzione di utilità configurabile basata su:
+
+- progressione verso l'obiettivo corrente;
+- tempo previsto per il completamento;
+- consumo previsto di risorse e perdita di oggetti;
+- probabilità di successo o fallimento;
+- rischio di morte o stato non recuperabile;
+- valore futuro, inclusi sbloccabili, equipaggiamento, materiali, missioni e dipendenze di progressione;
+- confidenza nella conoscenza strategica sottostante.
+
+Nessuna singola metrica, come XP/ora, è sufficiente.
+
+## Flusso runtime
 
 ```text
-Game Observation
+Osservazione del gioco
       ↓
-Normalized WorldState
+WorldState normalizzato
       ↓
-Goal + Character Profile + Known Strategies
+Obiettivo + Profilo personaggio + Strategie note
       ↓
-Candidate generation
+Generazione candidati
       ↓
-Outcome prediction / scoring
+Previsione / valutazione esiti
       ↓
-Guard AI risk & constraint evaluation
+Valutazione rischio e vincoli di Guard AI
       ↓
-Best plan / next action proposal
+Miglior piano / proposta della prossima azione
       ↓
-Play AI execution
+Esecuzione tramite Play AI
       ↓
-Observed result
+Risultato osservato
       ↓
-Evaluation + telemetry
+Valutazione + telemetria
       ↓
-Knowledge Base update
+Aggiornamento Knowledge Base
 ```
 
-## Core concepts
+## Concetti fondamentali
 
-### Goal
-A goal contains the desired outcome, priority, constraints, deadline/time preference, and acceptable risk/resource limits.
+### Obiettivo
 
-Examples include level progression, completing a quest chain, clearing a dungeon, obtaining an item, improving equipment, or reaching a target build state.
+Un obiettivo contiene risultato desiderato, priorità, vincoli, scadenza o preferenza temporale e limiti accettabili di rischio e risorse.
 
-### Candidate path
-A candidate path is a sequence or short horizon of possible activities. Each candidate carries predicted duration, success probability, resource cost, risk, expected progression value, and confidence.
+Esempi: avanzamento di livello, completamento di una catena di missioni, completamento di un dungeon, ottenimento di un oggetto, miglioramento dell'equipaggiamento o raggiungimento di una configurazione obiettivo.
 
-### Strategy
-A strategy is reusable knowledge describing how a character profile should approach a specific context. Strategy keys should include, where available:
+### Percorso candidato
 
-- character class/category;
-- level range;
-- build/equipment profile;
-- content/activity;
-- objective;
-- relevant party/context conditions.
+Un percorso candidato è una sequenza o un orizzonte breve di attività possibili. Ogni candidato contiene durata prevista, probabilità di successo, costo delle risorse, rischio, valore di progressione atteso e confidenza.
 
-Strategies are versioned and must retain evidence and validation statistics.
+### Strategia
 
-## Knowledge lifecycle
+Una strategia è conoscenza riutilizzabile che descrive come un determinato profilo di personaggio dovrebbe affrontare uno specifico contesto. Le chiavi della strategia dovrebbero includere, quando disponibili:
+
+- classe o categoria del personaggio;
+- intervallo di livello;
+- profilo di configurazione/equipaggiamento;
+- contenuto o attività;
+- obiettivo;
+- condizioni rilevanti del gruppo o del contesto.
+
+Le strategie sono versionate e devono conservare evidenza e statistiche di validazione.
+
+## Ciclo di vita della conoscenza
 
 ```text
-Observed / proposed
+Osservata / proposta
         ↓
-Experimental strategy
-        ↓ sufficient evidence
-Validated strategy
-        ↓ repeated superior results
-Preferred strategy
-        ↓ regression detected
-Demoted / re-evaluated
+Strategia sperimentale
+        ↓ evidenza sufficiente
+Strategia validata
+        ↓ risultati superiori ripetuti
+Strategia preferita
+        ↓ regressione rilevata
+Declassata / rivalutata
 ```
 
-The system must never overwrite validated knowledge merely because one new run performed better or worse. Statistical evidence and reproducibility are required.
+Il sistema non deve sovrascrivere conoscenza validata solo perché una singola esecuzione nuova ha prodotto un risultato migliore o peggiore. Sono necessarie evidenza statistica e riproducibilità.
 
-## Transfer to new characters
-Knowledge is shared at the strategy level rather than tied permanently to a single character. A new character can inherit applicable validated strategies and then personalize them using its own build, equipment, resources, and observed performance.
+## Trasferimento a nuovi personaggi
 
-## Mastery Score
-The system exposes a 0–100 Mastery Score representing how closely current behavior approaches the best validated strategy/reference for the evaluated context.
+La conoscenza viene condivisa a livello di strategia e non legata permanentemente a un singolo personaggio. Un nuovo personaggio può ereditare strategie validate applicabili e personalizzarle usando configurazione, equipaggiamento, risorse e prestazioni osservate proprie.
 
-Mastery is contextual, not merely global. At minimum the data model should support:
+## Punteggio di padronanza
 
-- global mastery;
-- class/category mastery;
-- level-range mastery;
-- activity/content mastery;
-- objective-specific mastery.
+Il sistema espone un **Punteggio di Padronanza** da 0 a 100 che rappresenta quanto il comportamento corrente si avvicina alla migliore strategia validata o al riferimento per il contesto valutato.
 
-The score must be evidence-based and include enough metadata to explain why it changed. It is not a claim of absolute game perfection.
+La padronanza è contestuale e non soltanto globale. Il modello dati deve supportare almeno:
 
-## Guard AI boundary
-Guard AI is not a second Play AI. It acts as the strategic protection and evaluation layer. It can reject, constrain, downgrade, or request reconsideration of a proposed plan/action when risk, uncertainty, resource limits, or safety constraints are violated.
+- padronanza globale;
+- padronanza per classe/categoria;
+- padronanza per intervallo di livello;
+- padronanza per attività/contenuto;
+- padronanza specifica per obiettivo.
 
-## Play AI boundary
-Play AI is the execution-oriented agent. It receives approved goals/plans/actions and is responsible for carrying them out through the available game interface adapters. It reports observations and execution outcomes back to the planning stack.
+Il punteggio deve essere basato sull'evidenza e contenere metadati sufficienti a spiegare perché è cambiato. Non rappresenta una dichiarazione di perfezione assoluta nel gioco.
 
-## Required contracts
-The implementation should expose explicit contracts for:
+## Confine Guard AI
+
+Guard AI non è una seconda Play AI. È il livello strategico di protezione e valutazione. Può rifiutare, limitare, declassare o richiedere una rivalutazione di un piano/azione quando vengono violati rischio, incertezza, limiti delle risorse o vincoli di sicurezza.
+
+## Confine Play AI
+
+Play AI è l'agente orientato all'esecuzione. Riceve obiettivi, piani e azioni approvati ed è responsabile della loro esecuzione tramite gli adapter disponibili del gioco. Riporta osservazioni ed esiti alla catena di pianificazione.
+
+## Contratti richiesti
+
+L'implementazione deve esporre contratti espliciti per:
 
 - `Goal`
 - `CharacterProfile`
@@ -123,17 +135,19 @@ The implementation should expose explicit contracts for:
 - `MasterySnapshot`
 - `ExecutionResult`
 
-These contracts should remain transport-agnostic and testable without a game client.
+Questi contratti devono rimanere indipendenti dal trasporto ed essere testabili senza un client di gioco.
 
-## Deterministic-first requirement
-The first implementation must work with synthetic/simulated WorldState data. A game-client adapter is an input source, not a prerequisite for testing the planner.
+## Requisito di priorità al determinismo
 
-## Non-goals for this step
-- direct game input implementation;
-- packet manipulation;
-- anti-cheat bypass;
-- client bypass;
-- production vision pipeline;
-- final LLM tuning.
+La prima implementazione deve funzionare con dati WorldState sintetici o simulati. Un adapter del client di gioco è una sorgente di input e non un prerequisito per testare il pianificatore.
 
-Those remain explicit integration boundaries where required and must not be silently removed from the architecture.
+## Esclusioni di questo passo
+
+- implementazione dell'input diretto al gioco;
+- manipolazione di pacchetti;
+- elusione dell'anti-cheat;
+- aggiramento del client;
+- pipeline produttiva di visione;
+- ottimizzazione finale dell'LLM.
+
+Questi elementi rimangono confini di integrazione espliciti dove necessari e non devono essere rimossi silenziosamente dall'architettura.
