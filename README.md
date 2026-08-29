@@ -7,6 +7,16 @@ Implementazione sorgente di **NosAi**, runtime di intelligenza artificiale per N
 
 > La versione rimane **1.0 Beta** finché il creatore non richiede esplicitamente un cambiamento.
 
+## Deployment PC
+
+Il runtime PC è progettato per essere installato sul **Crucial X6 CT2000X6SSD9 da 2 TB**, collegato via USB-C/USB 3.2. Il volume dedicato usa l'etichetta `NOSAI-SSD` e una root `NosAi\`; Windows rimane sul disco interno.
+
+Il sistema individua il volume tramite etichetta, non tramite una lettera fissa, e valida filesystem NTFS, accessibilità e spazio disponibile. Il bootstrap Windows è non distruttivo e non formatta il dispositivo.
+
+Codice, runtime locale, modelli, SQLite/WAL, memoria persistente, evidence, log, cache, configurazioni e artefatti NosAi sono destinati al volume dedicato. Driver e dipendenze realmente globali di Windows restano gestiti dal sistema operativo.
+
+La policy SQLite è centralizzata: WAL, `synchronous=FULL` per la persistenza critica, busy timeout, cache, limite WAL e incremental vacuum.
+
 ## Stato del progetto
 
 Il repository è la sorgente di sviluppo ufficiale. Il repository legacy `volobolo99/NosAi` è utilizzato esclusivamente come riferimento: il codice viene analizzato e reimplementato selettivamente, senza copia indiscriminata.
@@ -15,78 +25,20 @@ Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazio
 
 Sono presenti EventBus tipizzato e bounded, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo, circuit breaker, watchdog hardware/runtime, nucleo di cifratura per sessioni effimere, logger SQLite per sessioni/traiettorie e controller Miniland tramite adapter.
 
-## Architettura
-
-```text
-Sessione / Scheduler / Risorse / Policy / Provider
-                         │
-                    Event / Trace Bus
-                         │
-Percezione → WorldState(vN) → Simulazione → Ranking Tattico
-                         │                    │
-                         └── Party/Pet/Partner ┘
-                                      │
-                                  Orchestrator
-                                      │
-                                Agent Planner
-                                      │
-                              Guard / Trust / Safety
-                                      │
-                             Play AI / Executor
-                                      │
-                                  Verificatore
-                                      │
-                         RecoveryController adattivo
-                            │                  │
-                     Context Slimming       Watchdog
-                            │                  │
-                  retry/replan/degraded   modalità/cooling
-                            └───────┬──────────┘
-                                    ↓
-                               Ri-osservazione
-                                    └──→ WorldState(vN+1)
-```
-
-WorldState è la fonte canonica dello stato corrente. EventBus e trace registrano provenienza, decisioni, controlli di sicurezza, risultati, recuperi e valutazioni.
-
-## Componenti aggiunti
-
-- `nosai/runtime/context_slimming.py` — compressione dello storico diagnostico orientata alla VRAM.
-- `nosai/runtime/hardware_watchdog.py` — watchdog termico e I/O con Cooling Phase.
-- `nosai/security/ephemeral_session.py` — nucleo X25519 + HKDF-SHA256 + ChaCha20-Poly1305 per sessioni effimere.
-- `proto/nosai_network_v1.proto` — contratto Protobuf v3 per i flussi di rete/UI ad alta frequenza.
-- `nosai/persistence/sqlite_logger.py` — persistenza locale di sessioni e traiettorie tramite SQLite/WAL.
-- `nosai/miniland/automation.py` — controller Miniland e automazione pesca tramite `MinilandAdapter`.
-
-## Modello di comunicazione
-
-- La Percezione comunica con il World Model tramite `PerceptionWorldAdapter`.
-- Il World Model fornisce snapshot immutabili alla Simulazione.
-- La Simulazione produce risultati per il Tactical Ranking.
-- Il Tactical Ranking produce candidati ordinati per l'Orchestrator.
-- L'Orchestrator costruisce piani runtime limitati.
-- I Decision Provider producono dati decisionali e non eseguono direttamente strumenti o I/O.
-- Guard, Trust e Safety costituiscono il percorso di autorizzazione delle azioni protette.
-- Executor/Game Adapter costituisce il confine di esecuzione.
-- Il Verifier confronta risultato e nuova osservazione.
-- RecoveryController può adattare strategia, ripianificare, cambiare modalità runtime, entrare in modalità degradata/cooling e riprendere l'esecuzione secondo policy e condizioni osservate.
-- Watchdog può cambiare modalità runtime e applicare limiti operativi in funzione di condizioni runtime e hardware.
-- SQLite registra dati analitici locali senza diventare automaticamente la fonte canonica del WorldState.
-- Miniland utilizza un adapter esplicito per separare il controller dall'I/O del client.
-- EventBus è osservazionale e non genera da solo effetti di esecuzione.
+È presente inoltre la fondazione di deployment su SSD dedicato e provisioning ADB della phone Guard AI (`com.nosai.guard`). Il wire protocol PC-Phone completo e il fail-closed 1000/2000 ms della specifica restano da integrare e validare.
 
 ## Documentazione
 
 - `docs/METADATI_PROGETTO.md` — metadati ufficiali.
 - `docs/REGOLE_PROGETTO.md` — regole e vincoli del progetto.
-- `docs/ARCHITETTURA.md` — architettura e comunicazioni.
-- `docs/STATO_IMPLEMENTAZIONE.md` — registro dell'implementazione.
+- `docs/ARCHITETTURA.md` — architettura e comunicazioni, incluso storage SSD e PC-Phone.
+- `docs/STATO_IMPLEMENTAZIONE.md` — registro dell'implementazione e validazione.
+- `docs/EXTERNAL_SSD_DEPLOYMENT.md` — specifica del deployment Crucial X6.
 - `docs/ROADMAP.md` — roadmap e traguardi.
 - `docs/REQUISITI.md` — requisiti funzionali e non funzionali.
 - `docs/CONTRIBUTING.md` — regole per contribuire.
 - `docs/TESTING.md` — strategia e procedure di test.
 - `docs/SICUREZZA.md` — modello di sicurezza.
-- `docs/DEPLOYMENT.md` — installazione, configurazione e avvio.
 - `docs/OSSERVABILITA.md` — EventBus, trace, audit e replay.
 - `docs/RECOVERY_WATCHDOG.md` — recupero adattivo e controllo hardware/runtime.
 - `docs/PERCEZIONE.md` — pipeline di percezione e stato di implementazione.
@@ -110,3 +62,5 @@ WorldState è la fonte canonica dello stato corrente. EventBus e trace registran
 8. Adapter espliciti per le integrazioni esterne.
 9. Testabilità senza client di gioco reale.
 10. Integrazioni live dietro traguardi espliciti.
+11. Storage dedicato validato prima dell'avvio del runtime PC.
+12. Nessuna fase successiva senza esito positivo dei test PC/Smartphone pertinenti.
