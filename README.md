@@ -25,7 +25,7 @@ Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazio
 
 Sono presenti EventBus tipizzato e bounded, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo, circuit breaker, watchdog hardware/runtime, nucleo di cifratura per sessioni effimere, logger SQLite per sessioni/traiettorie e controller Miniland tramite adapter.
 
-È presente inoltre la fondazione di deployment su SSD dedicato e provisioning ADB della phone Guard AI (`com.nosai.guard`). Il wire protocol PC-Phone completo e il fail-closed 1000/2000 ms della specifica restano da integrare e validare.
+È presente inoltre la fondazione di deployment su SSD dedicato e provisioning ADB della phone Guard AI (`com.nosai.guard`). La fondazione C# del Gate 1 è ora allineata al framing canonico `NOSA` a 12 byte, autenticazione RSA-2048/SHA-256, sequence guard bidirezionale e heartbeat fail-closed a 2000 ms. L'interoperabilità PC↔smartphone, il client NosTale reale e la dashboard/runtime adapter restano da validare end-to-end.
 
 ## Documentazione
 
