@@ -67,7 +67,7 @@ Profilo corrente:
 - `journal_size_limit=64 MiB`;
 - `auto_vacuum=INCREMENTAL`.
 
-WAL e i file ausiliari restano sul volume locale. Il checkpoint controllato è disponibile tramite la policy storage. Questa scelta sostituisce il precedente `synchronous=NORMAL` del logger, mantenendo comunque la policy configurabile.
+WAL e i file ausiliari restano sul volume locale. Il checkpoint controllato è disponibile tramite la policy storage.
 
 ## 5. PC Play Guard e sicurezza storage
 
@@ -83,32 +83,46 @@ La topologia resta composta da:
 - **PC Play Guard:** supervisione deterministica sul PC Windows.
 - **phone Guard AI:** applicazione Android `com.nosai.guard`, barriera esterna con autorità ALLOW/DENY.
 
-Questa separazione è coerente con il Contratto di Comunicazione NosAi allegato. fileciteturn14file0L2-L2
+## 7. Provisioning e onboarding smartphone
 
-## 7. Provisioning smartphone
+`nosai/phone/provisioning.py` fornisce il provisioning ADB di base. `nosai/phone/onboarding_engine.py` aggiunge l'orchestrazione deterministica: ADB isolato nel volume, attesa di device autorizzato, installazione condizionata dell'APK locale `runtime\GuardAi.apk`, forwarding TCP `6100`, avvio di `com.nosai.guard` e costruzione del primo `SESSION_HELLO` con sequenza 1.
 
-È stata aggiunta `nosai/phone/provisioning.py`. Il manager usa esclusivamente l'ADB isolato nel volume `tools\adb\adb.exe`, attende un device autorizzato, verifica `com.nosai.guard`, installa `runtime\GuardAi.apk` se assente e avvia l'app.
+Il provisioning non scarica componenti dall'esterno e non opera su un dispositivo non autorizzato.
 
-Il provisioning non scarica componenti dall'esterno e non opera su un dispositivo non autorizzato. Il flusso segue il modello di onboarding definito nella specifica architetturale allegata. fileciteturn14file1L48-L52
+## 8. Autenticazione RSA SESSION_AUTH
 
-## 8. Protocollo PC-Phone
+`nosai/network/crypto_auth.py` implementa `NosAiCryptoAuthManager`:
 
-La specifica allegata definisce un frame binario con header di 12 byte, Magic `0x4E4F5341`, lunghezza payload, contatore di sequenza monotono e payload JSON cifrato AES-GCM-256. fileciteturn14file0L40-L40
+- challenge casuale di 32 byte;
+- rappresentazione wire in esadecimale;
+- verifica della firma Guard AI con RSA-2048, SHA-256 e PKCS#1 v1.5;
+- caricamento della sola chiave pubblica PEM dal volume dedicato;
+- digest SHA-256 della challenge per audit;
+- consumo della challenge dopo ogni tentativo, per impedire il riuso del nonce.
 
-Il repository non dichiara ancora questo wire protocol completo come produzione: il contratto deve essere integrato con una macchina a stati, autenticazione delle sessioni, test di interoperabilità e gestione dei limiti di frame.
+Le chiavi private non sono gestite dal runtime PC e non devono entrare nel repository.
 
-## 9. Fail-closed PC-Phone
+## 9. Protocollo PC-Phone
 
-La specifica allegata richiede heartbeat a 1000 ms e fail-closed dopo 2 heartbeat mancanti o flag hardware critico, con stop delle scritture, checkpoint SQLite, modalità degradata ed evento critico. fileciteturn14file0L44-L44
+`nosai/network/wire_protocol.py` implementa il frame binario da 12 byte:
+`MAGIC(4) | VERSION(1) | TYPE(1) | PAYLOAD_LEN(2) | SEQ(4)`.
 
-Questa è una **specifica di integrazione da completare**, non viene presentata come già completamente cablata nel runtime.
+`SequenceGuard` accetta esclusivamente la sequenza attesa. Gap, duplicati e regressioni devono essere trattati dal livello di sessione come condizioni fail-closed.
 
-## 10. Resto dell'architettura
+Le primitive di framing e autenticazione sono ora presenti nel repository, ma il wire protocol completo non è ancora dichiarato produzione: restano da integrare trasporto TCP con macchina a stati, AES-GCM-256, heartbeat, timeout e interoperabilità completa con l'APK reale.
+
+## 10. Fail-closed PC-Phone
+
+La specifica di progetto richiede heartbeat a 1000 ms e fail-closed dopo 2 heartbeat mancanti o flag hardware critico, con stop delle scritture, checkpoint SQLite, modalità degradata ed evento critico.
+
+Questa parte resta un **traguardo di integrazione da completare e validare**; la presenza delle primitive RSA/framing non equivale all'abilitazione dell'azione live.
+
+## 11. Resto dell'architettura
 
 Restano validi EventBus bounded, WorldState versionato, RecoveryController, circuit breaker, Watchdog, Context Slimming, Trust Tier, Executor/Adapter, Verifier, provider routing, percezione, Protobuf e sicurezza di sessione già documentati nel repository.
 
-## 11. Regola di validazione
+## 12. Regola di validazione
 
-L'integrazione SSD, SQLite e phone provisioning non è considerata produttiva finché non passano i test sul PC reale e, per il percorso PC-Phone, sullo smartphone reale. Nessuna fase successiva deve essere considerata completata in presenza di test falliti.
+L'integrazione SSD, RSA, framing, onboarding e percorso PC-Phone non è considerata produttiva finché non passano i test automatici e i test sul PC reale e, per il percorso PC-Phone, sullo smartphone reale. Nessuna fase successiva deve essere considerata completata in presenza di test falliti.
 
 **Versione progetto: 1.0 Beta.**
