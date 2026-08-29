@@ -1,128 +1,129 @@
-# NosAi Hardware Baseline & First-Run Auto-Setting
+# NosAi — Profilo hardware di riferimento e configurazione automatica al primo avvio
 
-**Version:** 1.0 Beta  
-**Creator:** Volodymyr Ryzhuk
+**Versione:** 1.0 Beta  
+**Creatore:** Volodymyr Ryzhuk
 
-## 1. Purpose
+## 1. Scopo
 
-This document defines the exact reference hardware profile supplied by the project owner for NosAi development, profiling and regression, plus the runtime Auto-Setting policy for PlayAi on PC and GuardAi on smartphone.
+Questo documento definisce il profilo hardware di riferimento fornito dal proprietario del progetto per sviluppo, profilazione e regressione di NosAi, oltre alla politica di configurazione automatica al primo avvio per Play AI su PC e Guard AI su smartphone.
 
-The PC profile is the authoritative development target provided by the owner. It is a baseline for optimization, not a hard deployment requirement. Runtime settings must always be selected from the actual device capabilities.
+Il profilo PC è il riferimento autorevole di sviluppo. È una base per l'ottimizzazione e non un requisito rigido di distribuzione. Le impostazioni devono essere sempre determinate dalle capacità effettive del dispositivo.
 
-## 2. Authoritative development reference: PC / PlayAi
+## 2. Riferimento PC / Play AI
 
-| Component | Exact reference specification |
+| Componente | Specifica di riferimento |
 |---|---|
-| Device | Acer Nitro V 16 AI |
-| CPU | AMD Ryzen 7 260, up to 5.1 GHz turbo, 16 MB cache |
+| Dispositivo | Acer Nitro V 16 AI |
+| CPU | AMD Ryzen 7 260, fino a 5,1 GHz turbo, 16 MB di cache |
 | GPU | NVIDIA GeForce RTX 5060, 8 GB GDDR7, 95 W TDP, 1785 MHz Boost Clock |
-| RAM | 16 GB DDR5, 2 × 8 GB, 5600 MT/s, expandable to 32 GB |
-| Display | 16-inch WUXGA IPS, 1920 × 1200 px, 180 Hz, 300 nit, 9 ms, matte, NTSC 45% |
-| Storage | 1024 GB PCIe NVMe M.2 80 mm SSD, PCIe Mainstream Performance (NVMe), free SSD slot |
-| Networking | Intel Wi-Fi 6E, Bluetooth 5.3, LAN |
-| Cooling | Dual-fan cooling |
+| RAM | 16 GB DDR5, 2 × 8 GB, 5600 MT/s, espandibile a 32 GB |
+| Schermo | 16 pollici WUXGA IPS, 1920 × 1200 px, 180 Hz, 300 nit, 9 ms, opaco, NTSC 45% |
+| Archiviazione | SSD PCIe NVMe M.2 80 mm da 1024 GB, PCIe Mainstream Performance (NVMe), secondo alloggiamento SSD libero |
+| Rete | Intel Wi-Fi 6E, Bluetooth 5.3, LAN |
+| Raffreddamento | Doppia ventola |
 | Audio | Realtek ALC245-CG (HDA)_G4, DTS:X Ultra, Acer TrueHarmony |
-| Power adapter | 135 W |
-| OS | Windows 11 Home |
-| OEM software | Microsoft 365 Trial, NitroSense |
-| Keyboard | Backlit; Fn+F11 backlight off; Fn+F12 backlight on |
+| Alimentatore | 135 W |
+| Sistema operativo | Windows 11 Home |
+| Software OEM | Microsoft 365 Trial, NitroSense |
+| Tastiera | Retroilluminata; Fn+F11 disattiva la retroilluminazione; Fn+F12 la attiva |
 
-These values are the **authoritative owner-supplied PC baseline**. They must be used for PlayAi development tuning and baseline regression until explicitly changed by the project owner.
+Questi valori costituiscono il **profilo PC di riferimento fornito dal proprietario** e devono essere utilizzati per la taratura di Play AI e per le regressioni di base finché il proprietario non li modifica esplicitamente.
 
-## 3. Development reference: Smartphone / GuardAi
+## 3. Riferimento smartphone / Guard AI
 
-| Component | Reference |
+| Componente | Riferimento |
 |---|---|
 | SoC | Snapdragon 865 5G |
-| Charging | 65 W SuperDART |
-| Display | 90 Hz Super AMOLED fullscreen |
-| Main camera | 64 MP quad camera |
-| Front camera | 32 MP in-display dual selfie camera |
+| Ricarica | 65 W SuperDART |
+| Schermo | Super AMOLED a schermo intero, 90 Hz |
+| Fotocamera principale | Quadrupla fotocamera da 64 MP |
+| Fotocamera anteriore | Doppia fotocamera da 32 MP integrata nello schermo |
 
-These smartphone values remain the project's reference profile. They must not be silently treated as exact specifications of every deployment device.
+Questi valori rimangono il profilo di riferimento del progetto. Non devono essere trattati automaticamente come specifiche esatte di ogni dispositivo utilizzato.
 
-## 4. Hardware capability model
+## 4. Modello delle capacità hardware
 
-The runtime normalizes hardware into capability data rather than hard-coding a device model. The normalized profile should include:
+Il runtime deve normalizzare l'hardware in dati sulle capacità invece di fissare il funzionamento a un modello specifico. Il profilo normalizzato dovrebbe includere:
 
-- CPU model, architecture, core/thread topology and performance information;
-- total/available RAM;
-- GPU model, VRAM and graphics capability;
-- display resolution and refresh rate;
-- storage type, capacity and available space;
-- OS/runtime version;
-- thermal state and limits when exposed;
-- power/battery state where available;
-- network capabilities;
-- accelerator/inference capabilities when exposed by the platform.
+- modello CPU, architettura, struttura di core/thread e informazioni sulle prestazioni;
+- RAM totale e disponibile;
+- modello GPU, VRAM e capacità grafiche;
+- risoluzione e frequenza di aggiornamento dello schermo;
+- tipo, capacità e spazio libero dell'archiviazione;
+- versione del sistema operativo e del runtime;
+- stato e limiti termici quando disponibili;
+- alimentazione/batteria quando disponibili;
+- capacità di rete;
+- capacità di accelerazione/inferenza quando esposte dalla piattaforma.
 
-OEM-specific information such as NitroSense is treated as optional telemetry/integration, not as a runtime dependency.
+Le informazioni specifiche del produttore, come NitroSense, sono telemetria o integrazione opzionale e non una dipendenza obbligatoria del runtime.
 
-## 5. First-run Auto-Setting
+## 5. Configurazione automatica al primo avvio
 
-On first launch of each device, the corresponding runtime performs a hardware capability scan and generates an optimized settings profile.
+Al primo avvio di ogni dispositivo, il runtime esegue una scansione delle capacità hardware e genera un profilo di impostazioni ottimizzato.
 
-### PlayAi (PC)
+### Play AI su PC
 
-The target profile must be able to represent the RTX 5060 8 GB GDDR7 configuration and the 16 GB/5600 MT/s DDR5 baseline. Where platform APIs expose them, collect GPU utilization, VRAM usage, temperature, power and clock state in addition to static hardware identity.
+Il profilo deve poter rappresentare la configurazione RTX 5060 con 8 GB GDDR7 e la base 16 GB/5600 MT/s DDR5. Quando le API della piattaforma lo consentono, devono essere raccolti anche utilizzo GPU, uso VRAM, temperatura, potenza e stato delle frequenze.
 
-### GuardAi (smartphone)
+### Guard AI su smartphone
 
-Collect, where available:
-- SoC/device model;
-- CPU core topology and performance information;
-- RAM and memory pressure;
-- display resolution and refresh rate;
-- battery/thermal/power state;
-- Android/runtime capability information;
-- camera capability only when a GuardAi feature actually requires it.
+Quando disponibili, devono essere raccolti:
 
-## 6. Auto-Setting rules
+- modello SoC/dispositivo;
+- struttura dei core CPU e informazioni sulle prestazioni;
+- RAM e pressione della memoria;
+- risoluzione e frequenza di aggiornamento dello schermo;
+- stato batteria/temperatura/alimentazione;
+- capacità Android/runtime;
+- capacità della fotocamera soltanto quando una funzione di Guard AI la richiede effettivamente.
 
-Auto-Setting must optimize for **stability first, then responsiveness, then resource efficiency**. It must never assume that the reference hardware is present.
+## 6. Regole della configurazione automatica
 
-The generated profile should contain at least:
+La configurazione automatica deve ottimizzare nell'ordine **stabilità, reattività, efficienza delle risorse**. Non deve mai presupporre la presenza dell'hardware di riferimento.
 
-- compute tier;
-- memory tier;
-- graphics tier (PC);
-- display tier;
-- inference/update budget;
-- perception sampling budget;
-- telemetry frequency;
-- concurrency/worker budget;
-- power/thermal policy;
-- safe fallback limits.
+Il profilo generato deve contenere almeno:
 
-For PlayAi, the baseline 16 GB RAM / RTX 5060 8 GB profile should be treated as a tuning target, while the 32 GB RAM expansion path should be detected as a higher-memory capability rather than assumed.
+- livello di calcolo;
+- livello di memoria;
+- livello grafico per PC;
+- livello dello schermo;
+- budget di inferenza/aggiornamento;
+- budget di campionamento della percezione;
+- frequenza della telemetria;
+- budget di concorrenza/lavoratori;
+- politica energetica/termica;
+- limiti di sicurezza di ripiego.
 
-Auto-Setting must be deterministic for the same normalized hardware profile and policy version.
+Per Play AI, la configurazione 16 GB RAM / RTX 5060 8 GB è un obiettivo di taratura, mentre l'eventuale espansione a 32 GB deve essere rilevata come capacità superiore e non presunta.
 
-## 7. Persistence and device identity
+La configurazione automatica deve essere deterministica a parità di profilo hardware normalizzato e versione della politica.
 
-Auto-Setting runs automatically **only on first launch for a device**.
+## 7. Persistenza e identità del dispositivo
 
-After successful calibration, persist:
+La configurazione automatica viene eseguita automaticamente **solo al primo avvio di un dispositivo**.
 
-- normalized hardware fingerprint;
-- detected capabilities;
-- generated settings;
-- Auto-Setting policy version;
-- timestamp;
-- schema/configuration version.
+Dopo una calibrazione riuscita devono essere salvati:
 
-On subsequent launches, load the saved profile instead of recalibrating when the hardware fingerprint still matches.
+- impronta hardware normalizzata;
+- capacità rilevate;
+- impostazioni generate;
+- versione della politica di configurazione automatica;
+- data e ora;
+- versione dello schema/configurazione.
 
-If the fingerprint changes materially, invalidate the old profile and perform Auto-Setting again.
+Negli avvii successivi il profilo salvato deve essere utilizzato se l'impronta hardware corrisponde ancora.
 
-The fingerprint must use hardware characteristics, not personally identifying data.
+Se l'impronta cambia in modo significativo, il vecchio profilo deve essere invalidato e la configurazione automatica deve essere eseguita nuovamente.
 
-## 8. Manual override
+L'impronta deve usare caratteristiche hardware e non dati personali identificativi.
 
-Auto-Setting is the default. A user/operator override may tune non-safety-critical performance settings, but safety limits and GuardAi authorization cannot be overridden by performance configuration.
+## 8. Modifica manuale
 
-## 9. Development standard
+La configurazione automatica è il comportamento predefinito. L'utente o operatore può modificare le impostazioni di prestazione non critiche per la sicurezza; i limiti di sicurezza e l'autorizzazione di Guard AI non possono essere superati tramite la configurazione delle prestazioni.
 
-The exact PC profile in section 2 is the current PlayAi development and regression standard. The smartphone profile in section 3 is the current GuardAi reference standard.
+## 9. Standard di sviluppo
 
-**Project version remains 1.0 Beta until explicitly changed by the project owner.**
+Il profilo PC della sezione 2 è lo standard corrente di sviluppo e regressione di Play AI. Il profilo smartphone della sezione 3 è lo standard corrente di riferimento di Guard AI.
+
+**La versione del progetto rimane 1.0 Beta finché il proprietario non la modifica esplicitamente.**
