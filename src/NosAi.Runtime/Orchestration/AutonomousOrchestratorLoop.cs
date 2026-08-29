@@ -25,7 +25,7 @@ public sealed class AutonomousOrchestratorLoop
 
     public AutonomousLoopResult Run(TrustTier maxTrustTier, Func<WorldState, IEnumerable<CandidateAction>> candidateFactory)
     {
-        var trace = new List<AutonomousStepTrace>();
+        var trace = new List<OrchestratorStepTrace>();
         for (var step = 0; step < _maxSteps; step++)
         {
             var candidates = candidateFactory(_worldModel.Current).ToArray();
@@ -46,5 +46,5 @@ public sealed class AutonomousOrchestratorLoop
     }
 }
 
-public sealed record AutonomousStepTrace(int Step, int Attempt, string ActionId, bool Executed, bool Verified);
-public sealed record AutonomousLoopResult(bool Succeeded, string Reason, IReadOnlyList<AutonomousStepTrace> Trace);
+public sealed record OrchestratorStepTrace(int Step, int Attempt, string ActionId, bool Executed, bool Verified);
+public sealed record AutonomousLoopResult(bool Succeeded, string Reason, IReadOnlyList<OrchestratorStepTrace> Trace);
