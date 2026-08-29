@@ -17,7 +17,7 @@ public static class Gate1TestRunner
             TestCanonicalWireHeader(),
             TestSequenceGuard(),
             TestRsaChallengeIsSingleUse(),
-            TestSafetyCompositionIsReadOnly()
+            await TestSafetyCompositionIsReadOnlyAsync().ConfigureAwait(false)
         };
 
         var heartbeat = await TestHeartbeatFailClosedAsync().ConfigureAwait(false);
@@ -29,7 +29,6 @@ public static class Gate1TestRunner
         var header = new WireHeader(WireMessageType.SessionHello, 32, 7);
         Span<byte> bytes = stackalloc byte[WireHeader.HeaderSize];
         header.WriteTo(bytes);
-
         if (Encoding.ASCII.GetString(bytes[..4]) != "NOSA") return false;
         if (BinaryPrimitives.ReadUInt16BigEndian(bytes[6..8]) != 32) return false;
         return WireHeader.TryRead(bytes, out var decoded, out _) && decoded == header;
@@ -53,13 +52,13 @@ public static class Gate1TestRunner
         return auth.VerifyAndConsume(signature) && !auth.VerifyAndConsume(signature);
     }
 
-    private static bool TestSafetyCompositionIsReadOnly()
+    private static async Task<bool> TestSafetyCompositionIsReadOnlyAsync()
     {
         var runtime = RuntimeComposition.CreateSafe();
         var world = new WorldModel();
         using var key = RSA.Create(2048);
         using var auth = new SessionAuth(key.ExportRSAPublicKeyPem());
-        using var channel = new GuardAiNetworkChannel(0, auth);
+        await using var channel = new GuardAiNetworkChannel(0, auth);
         var provider = new Gate1RuntimeSnapshotProvider(runtime, world, channel);
         var snapshot = provider.GetSnapshot().ToString() ?? string.Empty;
         return !runtime.SafetyPolicy.LiveInputEnabled &&
@@ -73,7 +72,6 @@ public static class Gate1TestRunner
         using var auth = new SessionAuth(key.ExportRSAPublicKeyPem());
         await using var server = new GuardAiNetworkChannel(0, auth);
         server.Start();
-
         using var client = new TcpClient();
         await client.ConnectAsync(IPAddress.Loopback, server.LocalPort).ConfigureAwait(false);
         await Task.Delay(2300).ConfigureAwait(false);
