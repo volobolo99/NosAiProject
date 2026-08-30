@@ -1,0 +1,35 @@
+name: Feature / Milestone
+
+description: Track a concrete NosAiProject milestone or feature.
+
+title: "[MILESTONE] "
+
+body:
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone ID
+      placeholder: M010
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What must be true when this task is complete?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification evidence
