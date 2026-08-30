@@ -1,0 +1,24 @@
+---
+description: Core NosAiProject architecture and agent safety rules
+alwaysApply: true
+---
+
+# NosAiProject Core Rules
+
+Read `NOSAI_MASTER_ROADMAP.md`, `CLAUDE.md`, `docs/NOSAI_ARCHITECTURE_BASELINE.md`, and relevant ADRs before substantial changes.
+
+Canonical flow:
+`Observe → World Model → Decision/Policy → Safety → Execute → Verify → Re-observe`
+
+Rules:
+- Runtime is authoritative for authorization, safety and privileged execution.
+- UI/mobile clients request operations; they never define security policy.
+- Distinguish `LIVE`, `DERIVED`, `CACHED`, `SIMULATED`, `UNKNOWN` data explicitly.
+- Never silently substitute demo/mock data for a real provider.
+- Unknown is not zero/false/empty.
+- Do not silently change public APIs, protocols or persistence contracts.
+- Do not weaken/delete tests to obtain green CI.
+- Keep changes scoped to the active milestone.
+- Stop and report architectural conflicts; use an ADR for accepted changes.
+- Never commit secrets, private keys, tokens or credentials.
+- A source file being present does not make a feature `VERIFIED`.
