@@ -48,6 +48,7 @@ public static class Gate1TestRunner
         allPassed &= await RunAsync("Bootstrap without a client reports DEGRADED", TestBootstrapWithoutClientIsDegradedAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Busy dashboard port degrades the dashboard, not the runtime", TestBusyDashboardPortDoesNotKillTheRuntimeAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Ephemeral dashboard port binds and serves the snapshot", TestEphemeralDashboardPortServesSnapshotAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Busy Guard port fails closed with a named reason", TestBusyGuardPortFailsClosedWithAReasonAsync).ConfigureAwait(false);
 
         Console.WriteLine(allPassed
             ? "=== Gate 1 checks passed. Local only: this is not real-environment verification. ==="
@@ -491,6 +492,46 @@ public static class Gate1TestRunner
         using var document = JsonDocument.Parse(body);
         return document.RootElement.GetProperty("contractVersion").GetString() == Gate1SnapshotContract.Version
                && document.RootElement.GetProperty("client").GetProperty("attached").GetProperty("value").GetBoolean() == false;
+    }
+
+    /// <summary>
+    /// Regression: a Guard port already held by another runtime instance surfaced as
+    /// "SocketException (10048)" plus a stack trace naming neither the port nor the
+    /// remedy. Unlike the dashboard the channel must still fail closed — it is the
+    /// authenticated PC-phone link — but the reason has to be actionable.
+    /// </summary>
+    private static async Task<bool> TestBusyGuardPortFailsClosedWithAReasonAsync()
+    {
+        using var key = RSA.Create(2048);
+        var squatter = new TcpListener(IPAddress.Loopback, 0);
+        squatter.Start();
+        var busyPort = ((IPEndPoint)squatter.LocalEndpoint).Port;
+        try
+        {
+            var options = new Gate1HostOptions
+            {
+                DashboardPort = 0,
+                GuardPort = busyPort,
+                StartDashboard = false,
+                TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem(),
+                ClientProcessName = "nosai-absent-client-4f1c9a2e"
+            };
+            await using var host = new Gate1BootstrapHost(options, probe: new ThrowingHardwareProbe());
+            try
+            {
+                await host.StartAsync().ConfigureAwait(false);
+                return false; // A busy Guard port must not look like a successful start.
+            }
+            catch (GuardChannelBindException ex)
+            {
+                return ex.Reason == $"guard_port_in_use:{busyPort}"
+                       && ex.Message.Contains("--guard-port", StringComparison.Ordinal);
+            }
+        }
+        finally
+        {
+            squatter.Stop();
+        }
     }
 
     private sealed class ThrowingHardwareProbe : IHardwareProbe

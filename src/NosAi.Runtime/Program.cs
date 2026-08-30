@@ -51,6 +51,15 @@ public static class Program
         {
             return 0;
         }
+        catch (GuardChannelBindException ex)
+        {
+            // The Guard channel is the authenticated PC-phone link, so a failed bind
+            // must fail closed. It is a configuration problem, not a defect: report
+            // the port and the remedy, without a stack trace the operator cannot use.
+            logger.Error($"Gate 1 bootstrap failed; the runtime is not serving. reason={ex.Reason}");
+            Console.Error.WriteLine(ex.Message);
+            return 3;
+        }
         catch (Exception ex)
         {
             // A raw unhandled stack trace told the operator nothing actionable and

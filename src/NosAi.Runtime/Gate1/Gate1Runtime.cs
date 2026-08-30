@@ -127,6 +127,21 @@ public sealed class SessionAuth : IDisposable
 
 public sealed record Gate1ConnectionSnapshot(string SessionId, bool Connected, bool Authenticated, DateTime LastHeartbeatUtc, string? LastTerminationReason);
 
+/// <summary>
+/// The Guard channel could not bind. Carries a structured <see cref="Reason"/>
+/// (for example <c>guard_port_in_use:17471</c>) so the failure names the port and
+/// the remedy instead of surfacing as an opaque socket error.
+/// </summary>
+public sealed class GuardChannelBindException : Exception
+{
+    public GuardChannelBindException(string reason)
+        : base($"Guard channel could not bind: {reason}. " +
+               "Free the port, pass --guard-port <n>, or pass --guard-port 0 for an ephemeral port.")
+        => Reason = reason;
+
+    public string Reason { get; }
+}
+
 public sealed class GuardAiNetworkChannel : IAsyncDisposable
 {
     public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromMilliseconds(2000);
@@ -162,14 +177,55 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         _auth = auth;
     }
 
-    public void Start()
+    /// <summary>
+    /// Binds the Guard channel, reporting a busy or refused port as a structured
+    /// reason instead of a raw <see cref="SocketException"/>. Unlike the operator
+    /// dashboard, a failure here is not survivable: this is the authenticated
+    /// PC-phone link, so the caller must fail closed rather than run without it.
+    /// </summary>
+    public bool TryStart(out string? failureReason)
     {
         if (_listener is not null) throw new InvalidOperationException("Channel already started.");
-        _listener = new TcpListener(IPAddress.Loopback, _port);
-        _listener.Start();
+
+        var listener = new TcpListener(IPAddress.Loopback, _port);
+        try
+        {
+            listener.Start();
+        }
+        catch (SocketException ex)
+        {
+            listener.Dispose();
+            failureReason = DescribeBindFailure(_port, ex);
+            return false;
+        }
+
+        _listener = listener;
         _cts = new CancellationTokenSource();
         _ = AcceptLoopAsync(_cts.Token);
+        failureReason = null;
+        return true;
     }
+
+    public void Start()
+    {
+        if (!TryStart(out var failureReason))
+            throw new GuardChannelBindException(failureReason!);
+    }
+
+    /// <summary>
+    /// Maps the socket error onto a reason an operator can act on. A port already
+    /// held by another runtime instance previously surfaced only as
+    /// "SocketException (10048)" plus a stack trace, which named neither the port
+    /// nor the remedy.
+    /// </summary>
+    private static string DescribeBindFailure(int port, SocketException ex)
+        => ex.SocketErrorCode switch
+        {
+            SocketError.AddressAlreadyInUse => $"guard_port_in_use:{port}",
+            SocketError.AccessDenied => $"guard_port_access_denied:{port}",
+            SocketError.AddressNotAvailable => $"guard_address_unavailable:{port}",
+            _ => $"guard_bind_failed:{port}:{ex.SocketErrorCode}"
+        };
 
     private async Task AcceptLoopAsync(CancellationToken token)
     {
