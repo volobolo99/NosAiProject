@@ -2,7 +2,17 @@
 
 **Versione progetto:** 1.0 Beta
 
-Il Centro di controllo è una dashboard web servita **solo in locale** dal runtime NosAi. Non è un secondo orchestratore: osserva lo stato, presenta provenienza e telemetria e invia comandi espliciti al runtime attraverso il percorso di autorizzazione già definito.
+Il Centro di controllo è una dashboard **solo locale**. Non è un secondo orchestratore: osserva lo stato, presenta provenienza e telemetria e invia comandi espliciti al runtime attraverso il percorso di autorizzazione già definito.
+
+Per l'uso quotidiano su Windows, senza riga di comando:
+
+```powershell
+.\scripts\windows\start_control_panel.ps1
+```
+
+L'eseguibile è `src/NosAi.ControlPanel/bin/Release/net8.0-windows/NosAi.ControlPanel.exe`. Avvia o si collega al runtime da solo, con pulsanti per abbinamento telefono, probe DXGI, suite di certificazione e impostazioni. Dettaglio: `src/NosAi.ControlPanel/README.md`.
+
+Il Centro di controllo web Python resta disponibile per chi preferisce il browser.
 
 ## Obiettivi
 
