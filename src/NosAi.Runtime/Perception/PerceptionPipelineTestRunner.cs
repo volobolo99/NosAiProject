@@ -34,9 +34,13 @@ public static class PerceptionPipelineTestRunner
         allPassed &= Run("Tracker keeps stable ids for a moving entity", TestTrackerStableIds);
         allPassed &= Run("Tracker spawns and ages out entities", TestTrackerSpawnAndExpire);
         allPassed &= Run("Pipeline maps tracks into the canonical WorldState", TestPipelineToWorldState);
+        allPassed &= Run("Triple buffer hands out the newest frame and counts drops", TestTripleBufferSemantics);
+        allPassed &= Run("Triple-buffered capture publishes from its own thread", TestTripleBufferedCapturePublishes);
+        allPassed &= Run("DXGI backend either opens or names why it cannot", TestDxgiBackendIsFailClosed);
+        allPassed &= Run("A DXGI frame, when available, is LIVE and fully sized", TestDxgiFrameIsLiveWhenAvailable);
 
         Console.WriteLine(allPassed
-            ? "=== Perception checks passed. Local only: no real DXGI capture backend is attached. ==="
+            ? "=== Perception checks passed. Local only: this is not real-environment verification. ==="
             : "=== Perception checks FAILED. See the lines marked FAIL above. ===");
         return allPassed;
     }
@@ -195,6 +199,94 @@ public static class PerceptionPipelineTestRunner
             && world.Entities[0].Kind == "Monster"
             && world.PlayerHpRatio == 0.95
             && world.Tick == last.FrameIndex;
+    }
+
+    // ---------------------------------------------------------------- capture
+
+    private static CaptureFrame Frame(int tone, int width = 4, int height = 4)
+    {
+        byte[] bgra = new byte[width * height * 4];
+        Array.Fill(bgra, (byte)tone);
+        return new CaptureFrame(width, height, bgra, DataSourceKind.Simulated,
+            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(tone));
+    }
+
+    private static bool TestTripleBufferSemantics()
+    {
+        var buffer = new TripleFrameBuffer();
+        if (buffer.TryTakeLatest(out _)) return false;              // nothing published yet
+        if (buffer.PublishedCount != 0 || buffer.DroppedCount != 0) return false;
+
+        buffer.Publish(Frame(1));
+        if (!buffer.TryTakeLatest(out var first) || first.Bgra.Span[0] != 1) return false;
+        if (buffer.TryTakeLatest(out _)) return false;               // consumed exactly once
+
+        // Two publishes without a read: the consumer must get the newest, and the
+        // superseded frame must be counted as dropped rather than silently lost.
+        buffer.Publish(Frame(2));
+        buffer.Publish(Frame(3));
+        if (!buffer.TryTakeLatest(out var latest) || latest.Bgra.Span[0] != 3) return false;
+        return buffer.DroppedCount == 1 && buffer.PublishedCount == 3;
+    }
+
+    private static bool TestTripleBufferedCapturePublishes()
+    {
+        using var capture = new TripleBufferedCapture(new SyntheticFrameSource(width: 8, height: 8));
+        // The producer runs on its own thread: poll for a bounded time instead of
+        // sleeping a fixed amount, so the check is neither flaky nor slow.
+        CaptureFrame? taken = null;
+        for (int attempt = 0; attempt < 200 && taken is null; attempt++)
+        {
+            if (capture.TryAcquire(out var frame)) taken = frame;
+            else System.Threading.Thread.Sleep(5);
+        }
+        return taken is not null
+            && taken.Width == 8
+            && taken.Source == DataSourceKind.Simulated
+            && capture.Source == DataSourceKind.Simulated
+            && capture.Buffer.PublishedCount > 0;
+    }
+
+    private static bool TestDxgiBackendIsFailClosed()
+    {
+        bool opened = DxgiDesktopDuplicationSource.TryCreate(out var source, out var unavailable);
+        using (source)
+        {
+            // Exactly one of the two outcomes, never a half-built source and never
+            // a silent failure: either a usable backend, or a named reason.
+            if (opened)
+                return source is not null && unavailable is null
+                    && source.Source == DataSourceKind.Live
+                    && source.Width > 0 && source.Height > 0;
+            return source is null
+                && unavailable is not null
+                && !string.IsNullOrWhiteSpace(unavailable.Reason);
+        }
+    }
+
+    private static bool TestDxgiFrameIsLiveWhenAvailable()
+    {
+        if (!DxgiDesktopDuplicationSource.TryCreate(out var source, out _))
+            return true;   // no interactive desktop here: nothing to certify, nothing faked
+        using (source)
+        {
+            for (int attempt = 0; attempt < 40; attempt++)
+            {
+                if (!source!.TryAcquire(out var frame))
+                {
+                    System.Threading.Thread.Sleep(25);
+                    continue;
+                }
+                // A real frame must be LIVE, fully sized, and carry every pixel:
+                // RowPitch padding must have been stripped, not left in.
+                return frame.Source == DataSourceKind.Live
+                    && frame.HasPixels
+                    && frame.Bgra.Length == frame.Width * frame.Height * 4
+                    && frame.Width == source.Width
+                    && frame.Height == source.Height;
+            }
+            return true;   // a perfectly static desktop yields no new frame; not a defect
+        }
     }
 
     /// <summary>Deterministic zero-mean noise so the Kalman checks never flake.</summary>

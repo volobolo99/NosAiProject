@@ -61,6 +61,12 @@ public static class Program
             return 0;
         }
 
+        // Real-environment probe for the DXGI capture backend. The perception suite
+        // certifies the contract without a desktop; only a real interactive session
+        // can say whether Desktop Duplication actually yields live pixels here.
+        if (args.Any(a => string.Equals(a, "--dxgi-probe", StringComparison.OrdinalIgnoreCase)))
+            return RunDxgiProbe();
+
         var logger = new ConsoleRuntimeLogger();
         Gate1HostOptions options;
         try
@@ -145,6 +151,54 @@ public static class Program
         => !field.HasValue
             ? $"UNKNOWN ({field.FailureReason})"
             : $"{field.Value} [{field.Source.ToWire()}]";
+
+    private static int RunDxgiProbe()
+    {
+        Console.WriteLine("=== DXGI Desktop Duplication probe ===");
+        if (!NosAi.Runtime.Perception.DxgiDesktopDuplicationSource.TryCreate(out var capture, out var unavailable))
+        {
+            Console.WriteLine($"[UNAVAILABLE] {unavailable!.Reason} (hr=0x{unavailable.HResult:X8})");
+            Console.WriteLine("No live capture in this session. Perception stays UNKNOWN; no pixels are invented.");
+            return 1;
+        }
+
+        using (capture)
+        {
+            Console.WriteLine($"[OK] duplication open: {capture!.Width}x{capture.Height}");
+            for (int attempt = 1; attempt <= 40; attempt++)
+            {
+                if (!capture.TryAcquire(out var frame))
+                {
+                    // A still desktop legitimately produces no new frame.
+                    Thread.Sleep(50);
+                    continue;
+                }
+                ReadOnlySpan<byte> pixels = frame.Bgra.Span;
+                var sampled = new HashSet<int>();
+                byte min = 255, max = 0;
+                for (int i = 0; i + 3 < pixels.Length; i += 64)
+                {
+                    if (sampled.Count < 4096)
+                        sampled.Add(pixels[i] | (pixels[i + 1] << 8) | (pixels[i + 2] << 16));
+                    if (pixels[i] < min) min = pixels[i];
+                    if (pixels[i] > max) max = pixels[i];
+                }
+
+                Console.WriteLine($"[frame {attempt}] {frame.Width}x{frame.Height} source={frame.Source.ToWire()} " +
+                                  $"bytes={frame.Bgra.Length} distinctColours={sampled.Count} blueMin={min} blueMax={max}");
+                if (sampled.Count > 1)
+                {
+                    Console.WriteLine("=== DXGI probe passed: real desktop pixels captured. ===");
+                    return 0;
+                }
+                // A uniform frame is normal right after DuplicateOutput; keep asking
+                // (and keep writing to the console, which itself changes the screen).
+                Thread.Sleep(60);
+            }
+            Console.WriteLine("[TIMEOUT] no frame within the attempt budget (a fully static desktop can do this).");
+            return 1;
+        }
+    }
 
     private static Dictionary<string, string?> ReadEnvironment()
     {
