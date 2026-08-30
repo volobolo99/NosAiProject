@@ -121,9 +121,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         if (!string.IsNullOrWhiteSpace(options.TrustedGuardPublicKeyPem))
             return new SessionAuth(options.TrustedGuardPublicKeyPem);
 
-        var rsa = RSA.Create(2048);
         if (options.DevEnrollment)
         {
+            var rsa = RSA.Create(2048);
             devKey = rsa;
             var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NosAi", "Gate1");
             Directory.CreateDirectory(directory);
