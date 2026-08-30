@@ -1,0 +1,16 @@
+---
+description: NosAiProject .NET engineering and testing rules
+alwaysApply: false
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln", "**/*.props", "**/*.targets"]
+---
+
+# .NET Rule
+
+- Follow the repository's existing target frameworks, SDK style, nullable settings, analyzers, and package conventions.
+- Prefer async APIs for I/O and propagate CancellationToken where the surrounding contract supports it.
+- Dispose owned IDisposable/IAsyncDisposable resources deterministically.
+- Avoid blocking async code with .Result, .Wait(), or equivalent patterns.
+- Keep public APIs explicit and strongly typed; avoid unnecessary dynamic/reflection.
+- Preserve existing logging conventions and never log secrets.
+- Add focused tests for changed behavior and failure paths.
+- Run the relevant restore, build, and test commands before declaring completion.
