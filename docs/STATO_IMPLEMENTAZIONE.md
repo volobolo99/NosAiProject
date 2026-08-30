@@ -79,10 +79,10 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ## 🟡 Aree Partial da integrare e verificare
 
-- Collegamento reale NosAi ↔ client NosTale (processo/finestra/titolo LIVE; gameplay HP/mappa/entità ancora UNKNOWN).
+- Collegamento reale NosAi ↔ client NosTale: **OS baseline verificato sul client reale**; gameplay HP/mappa/entità ancora UNKNOWN (manca il provider).
 - Lettura affidabile dei dati di base necessari dal client (OS baseline presente; manca ancora un provider gameplay).
 - Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
-- Avvio e collegamento reale di Guard AI sullo smartphone (loopback auth/heartbeat coperti; dispositivo reale no).
+- Avvio e collegamento reale di Guard AI sullo smartphone: **l'app telefono non esiste** (nessun progetto Android/iOS); loopback auth/heartbeat coperti. Canale canonico fissato da ADR-0006.
 - Autenticazione e interoperabilità end-to-end PC ↔ smartphone.
 - Heartbeat, STATUS, gestione riconnessione e fail-closed nel trasporto completo.
 - Applicazione della cifratura autenticata al framing PC-Phone nel flusso completo.
@@ -113,7 +113,7 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 |---|---|---|
 | **Bootstrap runtime PC** | **Integrated** | Avvio e bootstrap esistono, ma manca prova operativa completa sul sistema reale. |
 | **Protocollo/sessione PC ↔ smartphone** | **Integrated** | Fondazione solida visibile a livello di codice, ma non ancora validata end-to-end nel sistema reale. |
-| **Client connector NosTale** | **Partial** | La presenza di codice non equivale ancora a validazione del flusso dati reale. |
+| **Client connector NosTale** | **Verified** (OS baseline) | Validato contro NosTale reale: processo/PID/titolo/handle/responding/visible `LIVE`. Gameplay resta **Partial**: nessun provider. |
 | **Guard AI smartphone** | **Partial** | Fondazioni presenti, integrazione reale da provare sul campo. |
 | **Dashboard / Control Center** | **Partial** | Base tecnica presente, ma va resa coerente esclusivamente con segnali reali. |
 | **Perception / acquisizione dati di gioco** | **Partial** | Contratti e fondazioni presenti; backend produttivi ancora incompleti. |

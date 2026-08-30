@@ -29,7 +29,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | auth/heartbeat/riconnessione locali coperti; manca sessione su dispositivo reale |
 | **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs`, `tests/NosAi.Runtime.Tests` | **Integrated** | **No** | **Sì** | copre invarianti locali, non il client NosTale reale |
 | **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs` | **Integrated** | **Parziale** | **Sì** | contratto `gate1.snapshot.v1` con classificazione LIVE/UNKNOWN |
-| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Sì** | OS session baseline LIVE; gameplay HP/mappa ancora UNKNOWN |
+| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Verified** (OS baseline) | **Sì** | **Sì** | validato su NosTale reale (PID 7932, finestra `Nostale`); gameplay HP/mappa ancora UNKNOWN |
 | **Dashboard embedded** | `src/NosAi.Runtime/Gate1/Gate1BootstrapHost.cs`, `Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Sì** | campi demo rimossi; dashboard mostra UNKNOWN invece di gold/mostri finti |
 | **Hardware profiling / autoset** | `Hardware/LiveHardwareTelemetry.cs` | **Integrated** | **Parziale** | **Sì** | RAM processo LIVE; RAM sistema/GPU UNKNOWN se il probe fallisce |
 | **Perception contracts** | `src/NosAi.Runtime/Perception/PerceptionContracts.cs` | **Present** | **No** | **Parziale** | il contratto esiste ma non basta senza backend produttivo |

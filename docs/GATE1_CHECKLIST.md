@@ -17,31 +17,78 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 
 | Area | Punto | Stato | Evidenza attesa |
 |---|---|---|---|
-| Runtime PC | Avvio affidabile | [x] locale | `Gate1BootstrapHost` + `--gate1-test`; evidenza PC reale ancora richiesta per VERIFIED |
+| Runtime PC | Avvio affidabile | [x] **reale** | avviato sul PC target con NosTale in esecuzione: `Health: Healthy`, Guard 17471, API operatore 8766 |
 | Runtime PC | Configurazione valida | [x] locale | `Gate1HostOptionsLoader` rifiuta timeout/porte invalidi |
 | Runtime PC | Logging utile | [x] locale | `ConsoleRuntimeLogger` con correlation id nel bootstrap |
 | Runtime PC | Safety policy attive | [x] locale | snapshot Gate 1 espone live input/packet injection disabilitati |
 | Runtime PC | Stato sessione osservabile | [x] locale | `gate1.snapshot.v1` include sessione Guard classificata |
-| Client NosTale | Rilevamento client | [x] locale | processo/finestra LIVE; assenza → `client_unavailable` |
-| Client NosTale | Lettura dati minimi | [x] locale | OS baseline LIVE (processo, PID, titolo/handle finestra, responding/visible); gameplay HP/mappa/entità ancora UNKNOWN |
+| Client NosTale | Rilevamento client | [x] **reale** | NosTale reale agganciato: `NostaleClientX` PID 7932, handle `0x8099A`; assenza → `client_unavailable` |
+| Client NosTale | Lettura dati minimi | [x] **reale** | dal client reale: processName/processId/windowTitle/windowHandle/processResponding/windowVisible tutti `LIVE`; gameplay HP/mappa/entità ancora `UNKNOWN` |
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
-| Guard AI smartphone | Avvio affidabile | [ ] | richiede dispositivo reale |
-| Guard AI smartphone | Connessione reale | [ ] | loopback autenticato coperto da test; rete reale no |
+| Guard AI smartphone | Avvio affidabile | [ ] | **bloccato: l'app telefono non esiste** — nessun progetto Android/iOS nel repository (ADR-0006) |
+| Guard AI smartphone | Connessione reale | [ ] | **bloccato: l'app telefono non esiste**; loopback autenticato coperto da test, rete reale no (ADR-0006) |
 | Guard AI smartphone | Autenticazione reale | [x] locale | RSA-2048 challenge/response + fail-closed |
 | Guard AI smartphone | Heartbeat reale | [x] locale | timeout 2s fail-closed + riconnessione |
 | Guard AI smartphone | Riconnessione controllata | [x] locale | nuova sessione accettata dopo timeout |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
-| Dashboard | Connessione al runtime corretto | [x] locale | UI su 8765, API operatore runtime su 8766; `NOSAI_RUNTIME_URL` predefinita sulla porta del runtime; porta occupata → runtime vivo e `dashboard_port_in_use` esplicito |
+| Dashboard | Connessione al runtime corretto | [x] **reale** | UI 8765 → runtime 8766 con default `NOSAI_RUNTIME_URL`, nessuna variabile impostata a mano; porta occupata → runtime vivo e `dashboard_port_in_use` esplicito |
 | Dashboard | Dati reali soltanto | [x] locale | demo gold/mostri/GPU rimossi; UNKNOWN esplicito |
 | Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
 | Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
-| End-to-end | PC ↔ client | [ ] | richiede NosTale reale |
-| End-to-end | PC ↔ smartphone | [ ] | richiede Guard AI reale |
-| End-to-end | Runtime ↔ dashboard | [x] locale | `/api/gate1` + dashboard classificata |
+| End-to-end | PC ↔ client | [x] **reale** | runtime `Healthy` contro NosTale in esecuzione; `attached_os_session`, campi client `LIVE`, gameplay `UNKNOWN` |
+| End-to-end | PC ↔ smartphone | [ ] | **bloccato: l'app telefono non esiste** (ADR-0006) |
+| End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
-| Governance | Nessuna regressione bloccante | [x] locale | `pytest`; `--gate1-test`; `NosAi.Runtime.Tests`. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 87; `--gate1-test` 19/19; `--host-test` 7/7; `NosAi.Runtime.Tests` 5/5. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
+
+---
+
+## Evidenza reale registrata
+
+**Data:** 2026-08-30 · **Ambiente:** PC target Windows 11, NosTale installato in
+`C:\Program Files (x86)\Nostale`, client in esecuzione.
+
+Comandi:
+
+```bash
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll
+python -m nosai.dashboard.server
+```
+
+Osservato dal runtime:
+
+```
+Health: Healthy
+Guard port: 17471
+Runtime operator API: http://127.0.0.1:8766/
+Client: attached_os_session (LIVE)
+Client process: NostaleClientX [LIVE] pid=7932 [LIVE]
+Client window: Nostale [LIVE] 0x8099A [LIVE]
+Gameplay baseline: UNKNOWN (gameplay_provider_not_available)
+Hardware CPU: AMD Ryzen 7 260 w/ Radeon 780M Graphics [LIVE]
+```
+
+Osservato dalla dashboard operatore su `http://127.0.0.1:8765/api/state`, senza
+impostare `NOSAI_RUNTIME_URL` a mano:
+
+```
+connected        : True
+telemetry_source : LIVE
+gate1_failure    : None
+client.status    : attached_os_session
+processName      : NostaleClientX / LIVE
+windowTitle      : Nostale / LIVE
+gameplayBaseline : None / UNKNOWN
+```
+
+Cosa prova: rilevamento e lettura del client reale, catena runtime → dashboard su
+porte separate, e classificazione onesta (il gameplay resta `UNKNOWN`, non viene
+inventato).
+
+Cosa **non** prova: nessuna sessione smartphone, nessuna lettura di memoria di
+gioco, nessun input o injection (restano disabilitati).
 
 ---
 
@@ -88,7 +135,16 @@ Il Gate 1 è superato solo se:
 6. i casi di errore e disconnessione hanno esito positivo;
 7. la documentazione finale è coerente con le prove osservate.
 
-Il Gate 1 **non è superato** finché restano aperti i punti end-to-end reali (NosTale, smartphone, evidenza sul PC di produzione). Le spunte `locale` coprono implementazione e test automatici, non la promozione a `VERIFIED`.
+Il Gate 1 **non è superato**. Il ramo PC ↔ NosTale è ora chiuso con evidenza reale
+(vedi *Evidenza reale registrata*), ma il ramo smartphone resta aperto e il criterio 3
+non è soddisfatto.
+
+Il blocco residuo **non è la disponibilità di un telefono**: l'applicazione Guard AI
+non esiste nel repository (nessun progetto Android/iOS). Finché non viene scritta
+contro il canale canonico di ADR-0006, i tre punti smartphone non possono chiudersi.
+
+Le spunte `locale` coprono implementazione e test automatici, non la promozione a
+`VERIFIED`.
 
 ---
 
