@@ -76,6 +76,7 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
 
     private readonly int _port;
     private readonly SessionAuth _auth;
+    private readonly IPAddress _bindAddress;
     private readonly SequenceGuard _ingress = new();
     private readonly SequenceGuard _egress = new();
     private readonly object _sync = new();
@@ -98,11 +99,24 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     public void SetSnapshotSource(Func<Gate1CanonicalSnapshot> snapshotSource)
         => _snapshotSource = snapshotSource ?? throw new ArgumentNullException(nameof(snapshotSource));
 
-    public GuardAiNetworkChannel(int port, SessionAuth auth)
+    /// <param name="bindAddress">
+    /// Interface to listen on. <see cref="IPAddress.Any"/> is required for the
+    /// Wi-Fi transport, since the phone dials this machine's LAN address; over USB
+    /// the <c>adb reverse</c> tunnel terminates on loopback and either works.
+    /// </param>
+    /// <remarks>
+    /// Binding beyond loopback exposes the channel to the local network. It stays
+    /// fail-closed — an unknown key is refused — but two consequences follow and
+    /// are documented in ADR-0007: any host on the network can reach the handshake,
+    /// and because the channel serves one phone at a time, one that merely connects
+    /// can hold the slot. Use loopback-only where the network is not trusted.
+    /// </remarks>
+    public GuardAiNetworkChannel(int port, SessionAuth auth, IPAddress? bindAddress = null)
     {
         if (port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
         _port = port;
         _auth = auth;
+        _bindAddress = bindAddress ?? IPAddress.Loopback;
     }
 
     /// <summary>
@@ -115,7 +129,12 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     {
         if (_listener is not null) throw new InvalidOperationException("Channel already started.");
 
-        var listener = new TcpListener(IPAddress.Loopback, _port);
+        var listener = new TcpListener(_bindAddress, _port);
+        // Without this, binding 0.0.0.0 succeeds while another process holds
+        // 127.0.0.1 on the same port -- and that process, being more specific, keeps
+        // the loopback traffic. The USB path would then land on a foreign listener
+        // with nothing to say so. An occupied port has to fail loudly.
+        listener.ExclusiveAddressUse = true;
         try
         {
             listener.Start();

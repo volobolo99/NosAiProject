@@ -23,6 +23,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly LiveHardwareTelemetry _hardware;
     private readonly Gate1RuntimeSnapshotProvider _snapshot;
     private readonly Gate1OperatorServer? _dashboard;
+    private DiscoveryResponder? _discovery;
     private readonly string _correlationId = Guid.NewGuid().ToString("N");
     private RuntimeHealthStatus _health = RuntimeHealthStatus.Bootstrapping;
     private RSA? _devKey;
@@ -33,6 +34,12 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
 
     /// <summary>The port the operator dashboard is actually listening on, or null when it is disabled or failed to bind.</summary>
     public int? DashboardPort => _dashboard?.BoundPort;
+
+    /// <summary>Whether the LAN discovery responder is answering probes.</summary>
+    public bool DiscoveryListening => _discovery?.IsListening == true;
+
+    /// <summary>Why discovery is not answering; null while it is.</summary>
+    public string? DiscoveryFailureReason { get; private set; } = "discovery_not_started";
 
     /// <summary>
     /// Structured reason the operator dashboard is not serving: <c>dashboard_disabled</c>
@@ -49,7 +56,11 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _options.Validate();
         _logger = logger ?? new ConsoleRuntimeLogger();
         _auth = CreateAuth(_options, _logger, out _devKey);
-        _channel = new GuardAiNetworkChannel(_options.GuardPort, _auth);
+        _channel = new GuardAiNetworkChannel(
+            _options.GuardPort, _auth,
+            // Loopback alone would make the Wi-Fi transport impossible: the phone
+            // dials this machine's LAN address, not its loopback.
+            _options.GuardLoopbackOnly ? System.Net.IPAddress.Loopback : System.Net.IPAddress.Any);
         _client = new RealClientConnector(_channel, _options.ClientProcessName);
         var safeProbe = new SafeHardwareProbe(probe ?? CreateDefaultProbe());
         _hardware = new LiveHardwareTelemetry(safeProbe);
@@ -89,14 +100,55 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
 
         await _client.StartRealNetworkTransportAsync(cancellationToken).ConfigureAwait(false);
         StartDashboard();
+        StartDiscovery();
         _health = attached ? RuntimeHealthStatus.Healthy : RuntimeHealthStatus.Degraded;
         _logger.Info("Gate 1 runtime is listening.", new Dictionary<string, object?>
         {
             ["health"] = _health.ToString(),
             ["guardPort"] = GuardPort,
             ["dashboard"] = DashboardPort is int port ? $"http://127.0.0.1:{port}/" : "unavailable",
-            ["dashboardFailure"] = DashboardFailureReason
+            ["dashboardFailure"] = DashboardFailureReason,
+            ["discovery"] = DiscoveryListening ? $"udp/{DiscoveryProtocol.Port}" : "unavailable",
+            ["discoveryFailure"] = DiscoveryFailureReason
         });
+    }
+
+    /// <summary>
+    /// Starts the LAN discovery responder so the phone can find this runtime
+    /// without being given an address.
+    /// </summary>
+    /// <remarks>
+    /// Like the dashboard and unlike the Guard channel, a failure to bind degrades
+    /// the feature rather than the runtime: discovery is a convenience, and the
+    /// phone can always be pointed at an address by hand. It answers probes only —
+    /// it grants nothing and every authorisation still happens in the handshake.
+    /// </remarks>
+    private void StartDiscovery()
+    {
+        if (!_options.EnableDiscovery)
+        {
+            DiscoveryFailureReason = "discovery_disabled";
+            return;
+        }
+
+        var responder = new DiscoveryResponder(GuardPort);
+        if (responder.TryStart(out var failureReason))
+        {
+            _discovery = responder;
+            DiscoveryFailureReason = null;
+            return;
+        }
+
+        DiscoveryFailureReason = failureReason;
+        _logger.Error(
+            "LAN discovery could not bind; the runtime continues without it.",
+            new InvalidOperationException(failureReason ?? "discovery_bind_failed"),
+            new Dictionary<string, object?>
+            {
+                ["port"] = DiscoveryProtocol.Port,
+                ["reason"] = failureReason,
+                ["remedy"] = "Free the port or pass --no-discovery; the phone can still be given an address."
+            });
     }
 
     /// <summary>
@@ -161,7 +213,15 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     {
         devKey = null;
         if (!string.IsNullOrWhiteSpace(options.TrustedGuardPublicKeyPem))
+        {
+            // Which key is trusted decides which devices can open a session, so it
+            // is stated rather than left to be inferred from a silent startup.
+            logger.Info("Trusting one Guard device key.", new Dictionary<string, object?>
+            {
+                ["source"] = options.TrustedGuardPublicKeySource ?? "explicit"
+            });
             return new SessionAuth(options.TrustedGuardPublicKeyPem);
+        }
 
         if (options.DevEnrollment)
         {
@@ -181,7 +241,10 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             return new SessionAuth(rsa.ExportRSAPublicKeyPem());
         }
 
-        logger.Warning("No trusted Guard public key configured. The channel is listening, but authentication will fail closed.", null);
+        logger.Warning(
+            "No trusted Guard device key. The channel is listening, but every session will be refused. "
+            + $"Pair a phone (python -m nosai.phone.deploy) or pass --guard-public-key-path; the default is {Gate1HostOptions.DefaultTrustedKeyPath}.",
+            null);
         var ephemeral = RSA.Create(2048);
         try
         {
@@ -199,6 +262,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             return;
         _disposed = true;
         _health = RuntimeHealthStatus.Stopping;
+        if (_discovery is not null)
+            await _discovery.DisposeAsync().ConfigureAwait(false);
         if (_dashboard is not null)
             await _dashboard.DisposeAsync().ConfigureAwait(false);
         await _client.DisposeAsync().ConfigureAwait(false);
