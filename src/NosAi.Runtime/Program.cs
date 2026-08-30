@@ -38,6 +38,7 @@ public static class Program
             ["--miniland-test"] = NosAi.Miniland.Production.MinilandProductionTestRunner.RunAllTestsAsync,
             ["--localai-test"] = NosAi.AI.LocalInference.LocalAiInferenceTestRunner.RunAllTestsAsync,
             ["--hardware-test"] = NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner.RunAllTestsAsync,
+            ["--input-test"] = NosAi.Runtime.LowLevel.InputControlTestRunner.RunAllTestsAsync,
             // Synchronous RunAll(), adapted here rather than by editing their files.
             ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
             ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
