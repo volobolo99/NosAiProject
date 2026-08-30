@@ -13,8 +13,12 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Install test runner
-        run: python -m pip install --upgrade pip pytest
+      - name: Install project and test dependencies
+        # Installing the project itself pulls the declared runtime dependencies
+        # (e.g. cryptography); installing only pytest made collection fail.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
       - name: Compile Python runtime
         run: python -m compileall -q nosai
       - name: Run tests
@@ -35,13 +39,16 @@ jobs:
         run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release --no-restore
       - name: Run C# tests when test projects exist
         shell: bash
+        # find, not a glob: ** without globstar collapses to * and would silently
+        # miss a test project nested more than one directory deep, reporting
+        # success. This mirrors scripts/test.sh so CI and the scripts agree.
+        # No --no-restore: only NosAi.Runtime.csproj was restored above.
         run: |
-          shopt -s nullglob
-          tests=(**/*Tests.csproj)
+          mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*')
           if [ ${#tests[@]} -eq 0 ]; then
             echo "No .NET test projects found; skipping."
           else
             for test_project in "${tests[@]}"; do
-              dotnet test "$test_project" --configuration Release --no-restore
+              dotnet test "$test_project" --configuration Release
             done
           fi
