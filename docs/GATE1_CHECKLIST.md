@@ -26,8 +26,8 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Client NosTale | Lettura dati minimi | [x] **reale** | dal client reale: processName/processId/windowTitle/windowHandle/processResponding/windowVisible tutti `LIVE`; gameplay HP/mappa/entità ancora `UNKNOWN` |
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
-| Guard AI smartphone | Avvio affidabile | [ ] | **bloccato: l'app telefono non esiste** — nessun progetto Android/iOS nel repository (ADR-0006) |
-| Guard AI smartphone | Connessione reale | [ ] | **bloccato: l'app telefono non esiste**; loopback autenticato coperto da test, rete reale no (ADR-0006) |
+| Guard AI smartphone | Avvio affidabile | [ ] | app Android presente e compilata (`src/NosAi.GuardAi.App`); manca l'esecuzione su dispositivo fisico |
+| Guard AI smartphone | Connessione reale | [ ] | client canonico verificato contro il runtime reale in C# e Python; **rete LAN e dispositivo fisico ancora no** |
 | Guard AI smartphone | Autenticazione reale | [x] locale | RSA-2048 challenge/response + fail-closed |
 | Guard AI smartphone | Heartbeat reale | [x] locale | timeout 2s fail-closed + riconnessione |
 | Guard AI smartphone | Riconnessione controllata | [x] locale | nuova sessione accettata dopo timeout |
@@ -37,7 +37,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
 | Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
 | End-to-end | PC ↔ client | [x] **reale** | runtime `Healthy` contro NosTale in esecuzione; `attached_os_session`, campi client `LIVE`, gameplay `UNKNOWN` |
-| End-to-end | PC ↔ smartphone | [ ] | **bloccato: l'app telefono non esiste** (ADR-0006) |
+| End-to-end | PC ↔ smartphone | [ ] | entrambi i lati esistono e si parlano in test; manca la prova su telefono reale via LAN |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
 | Governance | Nessuna regressione bloccante | [x] locale | `pytest` 87; `--gate1-test` 19/19; `--host-test` 7/7; `NosAi.Runtime.Tests` 5/5. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |

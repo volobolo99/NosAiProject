@@ -54,3 +54,23 @@ channel, not from the JSON-lines path.
   which collided with the Python operator UI.
 - If the JSON-lines transport is ever revived, it needs authentication before it
   can carry any Gate 1 claim, and this ADR must be superseded explicitly.
+
+## Implementation (2026-08-30)
+
+The canonical primitives now live in `src/NosAi.Protocol` (`net8.0`), referenced by
+both the runtime and the phone client, so the two ends compile against one
+definition of the wire format. They previously sat inside `Gate1Runtime.cs`, where
+only the runtime could reach them and any client had to restate the format.
+
+- `src/NosAi.GuardClient` (`net8.0`) — the client: handshake, RSA-2048 signature,
+  per-direction sequence guards, heartbeat, and fail-closed rejection of an
+  unrecognised snapshot contract version.
+- `src/NosAi.GuardAi.App` (`net8.0-android`, .NET MAUI) — the operator interface.
+- `nosai/phone/guard_client.py` — an independent Python implementation, kept as a
+  cross-language conformance check on the same contract.
+
+Two implementations in different languages, both driven against the real channel
+by tests, is what makes "canonical" verifiable rather than declared.
+
+The smartphone checklist rows stay open: the application builds but has not been
+run on a physical device against the runtime over a LAN.

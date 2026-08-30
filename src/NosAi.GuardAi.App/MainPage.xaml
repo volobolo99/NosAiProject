@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:NosAi.GuardAi.App"
+             x:Class="NosAi.GuardAi.App.MainPage"
+             Title="NosAi Guard AI">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Guard AI" FontSize="26" FontAttributes="Bold" />
+            <Label Text="Gate 1 — sola osservazione. Nessun input, nessuna injection."
+                   FontSize="13" TextColor="Gray" />
+
+            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Runtime NosAi (PC)" FontAttributes="Bold" />
+                    <Entry x:Name="HostEntry" Placeholder="Indirizzo LAN del PC, es. 192.168.1.20"
+                           Keyboard="Url" Text="127.0.0.1" />
+                    <Entry x:Name="PortEntry" Placeholder="Porta" Keyboard="Numeric" Text="17471" />
+                    <HorizontalStackLayout Spacing="10">
+                        <Button x:Name="ConnectButton" Text="Connetti" Clicked="OnConnectClicked" />
+                        <Button x:Name="DisconnectButton" Text="Disconnetti" Clicked="OnDisconnectClicked"
+                                IsEnabled="False" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Stato del collegamento" FontAttributes="Bold" />
+                    <Label x:Name="StateLabel" Text="IDLE" FontSize="20" FontAttributes="Bold" />
+                    <Label x:Name="DetailLabel" Text="Nessuna sessione avviata." FontSize="13" TextColor="Gray" />
+                    <Label x:Name="ObservedLabel" Text="" FontSize="12" TextColor="Gray" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Client NosTale" FontAttributes="Bold" />
+                    <Label Text="UNKNOWN significa non osservato. Non è zero e non è assente."
+                           FontSize="12" TextColor="Gray" />
+                    <CollectionView x:Name="FieldsView" HeightRequest="220">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="app:ClassifiedField">
+                                <Grid Padding="0,6" ColumnDefinitions="120,*">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" TextColor="Gray" />
+                                    <Label Grid.Column="1" Text="{Binding Display}" FontSize="14" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Chiave pubblica di questo dispositivo" FontAttributes="Bold" />
+                    <Label Text="Va registrata sul PC: il runtime rifiuta ogni chiave non fidata."
+                           FontSize="12" TextColor="Gray" />
+                    <Editor x:Name="PublicKeyEditor" IsReadOnly="True" HeightRequest="140" FontSize="11" />
+                    <Button Text="Copia chiave pubblica" Clicked="OnCopyKeyClicked" />
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

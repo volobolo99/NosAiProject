@@ -82,7 +82,7 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 - Collegamento reale NosAi ↔ client NosTale: **OS baseline verificato sul client reale**; gameplay HP/mappa/entità ancora UNKNOWN (manca il provider).
 - Lettura affidabile dei dati di base necessari dal client (OS baseline presente; manca ancora un provider gameplay).
 - Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
-- Avvio e collegamento reale di Guard AI sullo smartphone: **l'app telefono non esiste** (nessun progetto Android/iOS); loopback auth/heartbeat coperti. Canale canonico fissato da ADR-0006.
+- Avvio e collegamento reale di Guard AI sullo smartphone: l'app Android esiste (`src/NosAi.GuardAi.App`, .NET MAUI su `NosAi.GuardClient`) e compila, ma **non è ancora stata eseguita su un dispositivo fisico** contro il runtime su LAN. La chiave del dispositivo è ancora in memoria e non nell'Android Key Store.
 - Autenticazione e interoperabilità end-to-end PC ↔ smartphone.
 - Heartbeat, STATUS, gestione riconnessione e fail-closed nel trasporto completo.
 - Applicazione della cifratura autenticata al framing PC-Phone nel flusso completo.
