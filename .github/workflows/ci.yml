@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
       - name: Install test runner
         run: python -m pip install --upgrade pip pytest
       - name: Compile Python runtime
@@ -26,5 +27,21 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
+          cache: true
+          cache-dependency-path: src/NosAi.Runtime/NosAi.Runtime.csproj
+      - name: Restore C# runtime
+        run: dotnet restore src/NosAi.Runtime/NosAi.Runtime.csproj
       - name: Build C# runtime
-        run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release
+        run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release --no-restore
+      - name: Run C# tests when test projects exist
+        shell: bash
+        run: |
+          shopt -s nullglob
+          tests=(**/*Tests.csproj)
+          if [ ${#tests[@]} -eq 0 ]; then
+            echo "No .NET test projects found; skipping."
+          else
+            for test_project in "${tests[@]}"; do
+              dotnet test "$test_project" --configuration Release --no-restore
+            done
+          fi
