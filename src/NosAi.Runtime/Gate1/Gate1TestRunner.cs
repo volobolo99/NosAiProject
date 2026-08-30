@@ -23,6 +23,9 @@ public static class Gate1TestRunner
             TestRsaChallengeIsSingleUse(),
             TestMissingClientDoesNotInventGameplay(),
             TestFailedHardwareProbeIsUnknownNotZero(),
+            TestRecoveredProbeKeepsItsFailureReason(),
+            TestAbsentHardwareLabelsNeedNoSentinelString(),
+            TestSimulatedIsNotATrustedProductionSource(),
             TestConfigurationRejectsInvalidTimeout()
         };
 
@@ -94,6 +97,46 @@ public static class Gate1TestRunner
                && snapshot.View.LogicalCores.HasValue
                && snapshot.View.LogicalCores.Value == Environment.ProcessorCount
                && snapshot.FailureReason is not null;
+    }
+
+    private static bool TestRecoveredProbeKeepsItsFailureReason()
+    {
+        // SafeHardwareProbe recovers internally and never throws, so the reason
+        // used to be lost and the snapshot looked like a probe that simply found
+        // nothing rather than one that failed.
+        var telemetry = new LiveHardwareTelemetry(new SafeHardwareProbe(new ThrowingHardwareProbe()));
+        var snapshot = telemetry.Capture();
+
+        return snapshot.FailureReason is not null
+               && snapshot.FailureReason.Contains("hardware_probe_failed", StringComparison.Ordinal)
+               && snapshot.View.Cpu.Source == DataSourceKind.Unknown
+               && snapshot.View.Cpu.FailureReason == snapshot.FailureReason
+               && snapshot.View.SystemRamMb.FailureReason == snapshot.FailureReason;
+    }
+
+    private static bool TestAbsentHardwareLabelsNeedNoSentinelString()
+    {
+        // The fallback reports absence as an empty value, so classification no
+        // longer depends on matching the word "Unknown" inside a device name.
+        var fingerprint = new FallbackHardwareProbe().Detect();
+        if (fingerprint.Cpu.Length != 0 || fingerprint.Gpu.Length != 0)
+            return false;
+
+        var snapshot = new LiveHardwareTelemetry(new FallbackHardwareProbe()).Capture();
+        return snapshot.View.Cpu.Source == DataSourceKind.Unknown
+               && snapshot.View.Gpu.Source == DataSourceKind.Unknown
+               && snapshot.View.LogicalCores.Source == DataSourceKind.Live;
+    }
+
+    private static bool TestSimulatedIsNotATrustedProductionSource()
+    {
+        var simulated = ClassifiedValue<double>.Simulated(68.5);
+        var live = ClassifiedValue<double>.Live(68.5);
+
+        return simulated.Source == DataSourceKind.Simulated
+               && !simulated.Source.IsTrustedProductionSource()
+               && live.Source.IsTrustedProductionSource()
+               && simulated.HasValue;
     }
 
     private static bool TestConfigurationRejectsInvalidTimeout()
