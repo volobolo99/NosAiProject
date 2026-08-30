@@ -16,4 +16,10 @@
   <ItemGroup>
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- The canonical PC/phone wire format, shared with the Guard AI client so the
+         two ends cannot drift. See docs/adr/ADR-0006-canonical-phone-channel.md. -->
+    <ProjectReference Include="..\NosAi.Protocol\NosAi.Protocol.csproj" />
+  </ItemGroup>
 </Project>
