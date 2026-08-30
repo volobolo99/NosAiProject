@@ -1,5 +1,7 @@
 # Python
 __pycache__/
+build/
+dist/
 *.py[cod]
 *.egg-info/
 .venv/
@@ -15,10 +17,17 @@ models/
 *.sqlite
 *.sqlite3
 logs/
-telemetry/
+# Anchored to the repository root: an unanchored pattern also matches the
+# nosai/telemetry source package and silently hides it from git and tooling.
+/telemetry/
 
 # IDE / OS
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# .NET build artifacts
+bin/
+obj/
+*.user
