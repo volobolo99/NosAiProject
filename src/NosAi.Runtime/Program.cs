@@ -18,6 +18,10 @@ public static class Program
             return await Gate4TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
         if (args.Any(a => string.Equals(a, "--gate5-test", StringComparison.OrdinalIgnoreCase)))
             return await Gate5TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
+        // Pinning StartupObject made every other Main unreachable, orphaning the
+        // master-host self-tests. This flag keeps them executable.
+        if (args.Any(a => string.Equals(a, "--host-test", StringComparison.OrdinalIgnoreCase)))
+            return await NosAi.Host.MasterHostTestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
 
         var logger = new ConsoleRuntimeLogger();
         Gate1HostOptions options;
