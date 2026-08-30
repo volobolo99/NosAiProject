@@ -191,6 +191,12 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
 
     public Gate1CanonicalSnapshot Capture() => _snapshot.Capture();
 
+    /// <summary>
+    /// Operator request for an emergency stop. Same path as POST /api/command:
+    /// the UI may ask, it does not enforce policy. Execution stays disabled in Gate 1.
+    /// </summary>
+    public void RequestEmergencyStop() => HandleOperatorCommand("EMERGENCY_STOP");
+
     private void HandleOperatorCommand(string command)
     {
         if (command.Contains("EMERGENCY_STOP", StringComparison.OrdinalIgnoreCase)
