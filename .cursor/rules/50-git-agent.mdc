@@ -1,0 +1,16 @@
+---
+description: Git discipline and AI-agent workflow for NosAiProject
+alwaysApply: true
+---
+
+# Git and Agent Rules
+
+- Work from the current repository state; inspect before editing.
+- Keep one coherent purpose per commit.
+- Use imperative commit messages.
+- Do not rewrite unrelated history.
+- Do not modify generated/build artifacts unless they are explicitly versioned project outputs.
+- Before completion, inspect the diff for unrelated changes and secrets.
+- Report blockers instead of inventing undocumented requirements.
+- For architecture changes, reference the relevant ADR in the implementation/PR description.
+- Completion report must include changed files, build/test results, verification level and remaining risks.
