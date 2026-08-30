@@ -17,31 +17,31 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 
 | Area | Punto | Stato | Evidenza attesa |
 |---|---|---|---|
-| Runtime PC | Avvio affidabile | [ ] | Il runtime parte senza crash e produce stato osservabile coerente |
-| Runtime PC | Configurazione valida | [ ] | Configurazione caricata e validata senza fallback opachi |
-| Runtime PC | Logging utile | [ ] | Log sufficienti per capire bootstrap, errori e sessione |
-| Runtime PC | Safety policy attive | [ ] | Le policy rilevanti sono esposte e coerenti con lo stato reale |
-| Runtime PC | Stato sessione osservabile | [ ] | Stato della sessione disponibile in modo leggibile |
-| Client NosTale | Rilevamento client | [ ] | Il client viene rilevato in modo controllato |
-| Client NosTale | Lettura dati minimi | [ ] | Almeno il dataset minimo canonico è letto dal client reale |
-| Client NosTale | Validazione dati | [ ] | Provenienza, correttezza e freschezza dei dati sono verificabili |
-| Client NosTale | Gestione client assente | [ ] | Il runtime non degrada in modo opaco quando il client manca |
-| Guard AI smartphone | Avvio affidabile | [ ] | Guard AI è avviabile senza stato ambiguo |
-| Guard AI smartphone | Connessione reale | [ ] | Il telefono raggiunge il runtime corretto |
-| Guard AI smartphone | Autenticazione reale | [ ] | La sessione autenticata avviene con esito osservabile |
-| Guard AI smartphone | Heartbeat reale | [ ] | Il watchdog di heartbeat entra nel flusso reale |
-| Guard AI smartphone | Riconnessione controllata | [ ] | Il sistema gestisce disconnessione e ritorno del peer |
-| Dashboard | Avvio affidabile | [ ] | La dashboard si apre in modo stabile |
-| Dashboard | Connessione al runtime corretto | [ ] | Lo stato mostrato proviene dal runtime attivo |
-| Dashboard | Dati reali soltanto | [ ] | Nessun dato demo viene esposto come dato reale |
-| Dashboard | Coerenza degli stati | [ ] | PC, runtime, client e guard risultano coerenti |
-| Dashboard | Error handling | [ ] | Gli stati di errore/disconnessione sono chiari |
-| End-to-end | PC ↔ client | [ ] | Il flusso reale PC ↔ client è verificato |
-| End-to-end | PC ↔ smartphone | [ ] | Il flusso reale PC ↔ smartphone è verificato |
-| End-to-end | Runtime ↔ dashboard | [ ] | Il flusso reale runtime ↔ dashboard è verificato |
-| End-to-end | Errore/disconnessione/riconnessione | [ ] | I casi negativi sono stati provati e documentati |
-| Governance | Nessuna regressione bloccante | [ ] | I test pertinenti non mostrano regressioni critiche |
-| Governance | Documentazione coerente | [ ] | La documentazione riflette il comportamento osservato |
+| Runtime PC | Avvio affidabile | [x] locale | `Gate1BootstrapHost` + `--gate1-test`; evidenza PC reale ancora richiesta per VERIFIED |
+| Runtime PC | Configurazione valida | [x] locale | `Gate1HostOptionsLoader` rifiuta timeout/porte invalidi |
+| Runtime PC | Logging utile | [x] locale | `ConsoleRuntimeLogger` con correlation id nel bootstrap |
+| Runtime PC | Safety policy attive | [x] locale | snapshot Gate 1 espone live input/packet injection disabilitati |
+| Runtime PC | Stato sessione osservabile | [x] locale | `gate1.snapshot.v1` include sessione Guard classificata |
+| Client NosTale | Rilevamento client | [x] locale | processo/finestra LIVE; assenza → `client_unavailable` |
+| Client NosTale | Lettura dati minimi | [ ] | attachment LIVE; gameplay baseline ancora UNKNOWN |
+| Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
+| Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
+| Guard AI smartphone | Avvio affidabile | [ ] | richiede dispositivo reale |
+| Guard AI smartphone | Connessione reale | [ ] | loopback autenticato coperto da test; rete reale no |
+| Guard AI smartphone | Autenticazione reale | [x] locale | RSA-2048 challenge/response + fail-closed |
+| Guard AI smartphone | Heartbeat reale | [x] locale | timeout 2s fail-closed + riconnessione |
+| Guard AI smartphone | Riconnessione controllata | [x] locale | nuova sessione accettata dopo timeout |
+| Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
+| Dashboard | Connessione al runtime corretto | [x] locale | `/api/gate1` dal runtime; Python dashboard resta UNKNOWN se `NOSAI_RUNTIME_URL` manca |
+| Dashboard | Dati reali soltanto | [x] locale | demo gold/mostri/GPU rimossi; UNKNOWN esplicito |
+| Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
+| Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
+| End-to-end | PC ↔ client | [ ] | richiede NosTale reale |
+| End-to-end | PC ↔ smartphone | [ ] | richiede Guard AI reale |
+| End-to-end | Runtime ↔ dashboard | [x] locale | `/api/gate1` + dashboard classificata |
+| End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
+| Governance | Nessuna regressione bloccante | [x] locale | pytest + `NosAi.Runtime.Tests` |
+| Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---
 
@@ -88,7 +88,7 @@ Il Gate 1 è superato solo se:
 6. i casi di errore e disconnessione hanno esito positivo;
 7. la documentazione finale è coerente con le prove osservate.
 
-Se anche uno solo dei blocchi critici fallisce, il Gate 1 rimane non superato.
+Il Gate 1 **non è superato** finché restano aperti i punti end-to-end reali (NosTale, smartphone, evidenza sul PC di produzione). Le spunte `locale` coprono implementazione e test automatici, non la promozione a `VERIFIED`.
 
 ---
 

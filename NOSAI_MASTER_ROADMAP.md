@@ -57,11 +57,11 @@ AI-agent rules:
 ## Phase 0 — Baseline & AI-agent governance
 - [x] `M001` — Audit repository structure, projects, dependencies, TODOs and obsolete code. **DONE**
 - [x] `M002` — Establish canonical architecture and component boundaries. **DONE**
-- [ ] `M003` — Establish source-of-truth technical specifications and ADRs.
-- [ ] `M004` — Add/validate `CLAUDE.md` for Claude Code.
-- [ ] `M005` — Add/validate Cursor project rules.
-- [ ] `M006` — Define Git branching, commit and review workflow.
-- [ ] `M007` — Define build, test and release commands as reproducible procedures.
+- [x] `M003` — Establish source-of-truth technical specifications and ADRs. **DONE** (`docs/SOURCE_OF_TRUTH.md`, `docs/adr/ADR-0001`–`0005`)
+- [x] `M004` — Add/validate `CLAUDE.md` for Claude Code. **DONE**
+- [x] `M005` — Add/validate Cursor project rules. **DONE** (`.cursor/rules/`)
+- [x] `M006` — Define Git branching, commit and review workflow. **DONE** (`docs/GIT_WORKFLOW.md`)
+- [x] `M007` — Define build, test and release commands as reproducible procedures. **DONE** (`docs/BUILD_TEST_RELEASE.md`)
 
 **Gate G0:** repository is understandable, buildable and safe for agent-assisted development.
 
@@ -301,7 +301,7 @@ Recommended prompt:
 
 | Phase | Milestones | Done | Verified | Status |
 |---|---:|---:|---:|---|
-| 0 — Baseline & Governance | 7 | 2 | 0 | `IN_PROGRESS` |
+| 0 — Baseline & Governance | 7 | 7 | 0 | `DONE` |
 | 1 — Core Foundation | 6 | 0 | 0 | `TODO` |
 | 2 — Security & Identity | 8 | 0 | 0 | `TODO` |
 | 3 — Runtime | 6 | 0 | 0 | `TODO` |
@@ -323,18 +323,16 @@ Recommended prompt:
 
 # Next execution priority
 
-1. `M003` — source-of-truth technical specifications and ADRs;
-2. `M004` — `CLAUDE.md`;
-3. `M005` — Cursor rules;
-4. `M006` — Git workflow;
-5. `M007` — reproducible build/test/release commands;
-6. execute the Gate 1 critical path with real-environment evidence;
-7. promote milestones to `VERIFIED` only after evidence.
+1. Close Gate 1 on the real Windows + NosTale + Guard AI path and record evidence (`M030`–`M047`, `M050`–`M058`, `M090`–`M098`, `M100`–`M109` as required by the circuit).
+2. Promote Gate 1 items to `VERIFIED` only after real-environment evidence.
+3. Then execute Core Foundation leftovers that are not already implied by Gate 1 (`M010`–`M015`) and Security (`M020`–`M027`).
 
 # Change log
 
 ### 2026-08-30 — v1.1
 - Marked M001 repository audit `DONE`.
 - Marked M002 architecture baseline `DONE` using repository inspection and `docs/GATE1_COMPONENT_MAP.md`.
+- Marked M003–M007 governance artifacts `DONE`.
+- Added classified Gate 1 snapshot `gate1.snapshot.v1` and local Gate 1 bootstrap/dashboard path. Real-environment Gate 1 remains not `VERIFIED`.
 - Added architectural baseline and explicit distinction between implementation and verification.
 - Updated progress tracking and execution priority.

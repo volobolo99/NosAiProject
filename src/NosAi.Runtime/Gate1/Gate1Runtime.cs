@@ -5,9 +5,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.WorldModel;
+using NosAi.LiveIntegration;
 
 namespace NosAi.Runtime.Gate1;
 
@@ -142,11 +144,16 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     private DateTime _lastHeartbeatUtc;
     private string? _terminationReason;
 
+    private Func<Gate1CanonicalSnapshot>? _snapshotSource;
+
     public bool IsClientConnected { get; private set; }
     public bool IsAuthenticated { get; private set; }
     public string? ActiveSessionId { get; private set; }
     public int LocalPort => (_listener?.LocalEndpoint as IPEndPoint)?.Port ?? 0;
     public event Action<string>? OnSessionTerminated;
+
+    public void SetSnapshotSource(Func<Gate1CanonicalSnapshot> snapshotSource)
+        => _snapshotSource = snapshotSource ?? throw new ArgumentNullException(nameof(snapshotSource));
 
     public GuardAiNetworkChannel(int port, SessionAuth auth)
     {
@@ -224,11 +231,18 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                 var authenticated = _auth.VerifyAndConsume(payload);
                 IsAuthenticated = authenticated;
                 await SendAsync(WireMessageType.AuthResult, new[] { (byte)(authenticated ? 1 : 0) }, token).ConfigureAwait(false);
-                if (!authenticated) TerminateSession("authentication_failed");
+                if (!authenticated)
+                {
+                    TerminateSession("authentication_failed");
+                    break;
+                }
+                await SendTelemetrySnapshotAsync(token).ConfigureAwait(false);
                 break;
             case WireMessageType.Heartbeat:
                 lock (_sync) _lastHeartbeatUtc = DateTime.UtcNow;
                 await SendAsync(WireMessageType.HeartbeatAck, Array.Empty<byte>(), token).ConfigureAwait(false);
+                if (IsAuthenticated)
+                    await SendTelemetrySnapshotAsync(token).ConfigureAwait(false);
                 break;
             case WireMessageType.CommandRequest:
                 var denied = JsonSerializer.SerializeToUtf8Bytes(new { allowed = false, reason = "execution_disabled_in_gate1" });
@@ -269,6 +283,25 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             if (!_egress.ValidateAndAdvance(header.SequenceNumber, out _)) TerminateSession("egress_sequence_failure");
         }
         finally { _sendLock.Release(); }
+    }
+
+    private async Task SendTelemetrySnapshotAsync(CancellationToken token)
+    {
+        var source = _snapshotSource;
+        if (source is null || !IsAuthenticated)
+            return;
+        Gate1CanonicalSnapshot snapshot;
+        try
+        {
+            snapshot = source();
+        }
+        catch (Exception ex)
+        {
+            TerminateSession($"telemetry_source_failed:{ex.GetType().Name}");
+            return;
+        }
+        var payload = JsonSerializer.SerializeToUtf8Bytes(snapshot.ToWire());
+        await SendAsync(WireMessageType.TelemetrySnapshot, payload, token).ConfigureAwait(false);
     }
 
     public Gate1ConnectionSnapshot GetSnapshot()
@@ -319,27 +352,54 @@ public sealed class Gate1RuntimeSnapshotProvider
     private readonly RuntimeComponents _runtime;
     private readonly IWorldModel _worldModel;
     private readonly GuardAiNetworkChannel _channel;
+    private readonly LiveHardwareTelemetry _hardware;
+    private readonly RealClientConnector? _client;
+    private readonly Func<RuntimeHealthStatus> _health;
+    private readonly string _correlationId;
 
-    public Gate1RuntimeSnapshotProvider(RuntimeComponents runtime, IWorldModel worldModel, GuardAiNetworkChannel channel)
+    public Gate1RuntimeSnapshotProvider(
+        RuntimeComponents runtime,
+        IWorldModel worldModel,
+        GuardAiNetworkChannel channel,
+        LiveHardwareTelemetry? hardware = null,
+        RealClientConnector? client = null,
+        Func<RuntimeHealthStatus>? health = null,
+        string? correlationId = null)
     {
         _runtime = runtime;
         _worldModel = worldModel;
         _channel = channel;
+        _hardware = hardware ?? new LiveHardwareTelemetry(new FallbackHardwareProbe());
+        _client = client;
+        _health = health ?? (() => RuntimeHealthStatus.Healthy);
+        _correlationId = correlationId ?? "gate1";
     }
 
-    public object GetSnapshot() => new
+    public Gate1CanonicalSnapshot Capture()
     {
-        session = _channel.GetSnapshot(),
-        worldState = _worldModel.Current,
-        safety = new
-        {
-            _runtime.SafetyPolicy.LiveInputEnabled,
-            _runtime.SafetyPolicy.PacketInjectionEnabled,
-            _runtime.SafetyPolicy.RequireClientHealthy,
-            _runtime.SafetyPolicy.RequireGuardApproval
-        },
-        trust = "managed_by_runtime_guard",
-        hardware = "unavailable_until_real_telemetry_provider",
-        execution = "disabled_in_gate1"
-    };
+        var hardware = _hardware.Capture();
+        var client = _client?.Observe() ?? new ClientBaselineSnapshot(
+            ProcessDetected: false,
+            WindowDetected: false,
+            ClientAttached: false,
+            ProcessId: null,
+            WindowHandle: IntPtr.Zero,
+            Source: "live_process_attach",
+            ObservedAtUtc: DateTime.UtcNow,
+            Availability: ClientBaselineAvailability.Unavailable,
+            Status: "client_unavailable",
+            Warning: "No RealClientConnector is bound to this snapshot provider.",
+            FailureReason: "connector_not_bound");
+        _ = _worldModel.Current;
+        return Gate1SnapshotFactory.Create(
+            _health(),
+            _correlationId,
+            hardware.View,
+            client,
+            _channel.GetSnapshot(),
+            _runtime.SafetyPolicy,
+            hardware.FailureReason);
+    }
+
+    public object GetSnapshot() => Capture().ToWire();
 }

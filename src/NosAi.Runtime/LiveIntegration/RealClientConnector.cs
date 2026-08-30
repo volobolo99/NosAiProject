@@ -60,6 +60,29 @@ public sealed class RealClientConnector : IAsyncDisposable
     public IntPtr GameWindowHandle => _gameWindowHandle;
 
     /// <summary>
+    /// Re-observes the previously attached process. If it has exited, the
+    /// connector detaches and records an explicit disconnect instead of keeping
+    /// a stale attached=true snapshot.
+    /// </summary>
+    public ClientBaselineSnapshot Observe()
+    {
+        ThrowIfDisposed();
+        _lastObservedAtUtc = DateTime.UtcNow;
+
+        if (_gameProcess is { HasExited: true })
+        {
+            _lastFailureReason = "client_process_exited";
+            DetachCurrentProcess();
+        }
+        else if (_gameProcess is { HasExited: false } && _gameWindowHandle == IntPtr.Zero && OperatingSystem.IsWindows())
+        {
+            VerifyAndAttachClient();
+        }
+
+        return CaptureBaselineSnapshot();
+    }
+
+    /// <summary>
     /// Finds the live NosTale process and its main window without opening a
     /// process handle with write/debug privileges.
     /// </summary>
@@ -70,6 +93,13 @@ public sealed class RealClientConnector : IAsyncDisposable
         DetachCurrentProcess();
         _lastObservedAtUtc = DateTime.UtcNow;
         _lastFailureReason = null;
+
+        if (!OperatingSystem.IsWindows())
+        {
+            _lastFailureReason = "unsupported_platform";
+            Console.WriteLine("[RealClientConnector] ERRORE: il rilevamento della finestra NosTale è supportato solo su Windows.");
+            return false;
+        }
 
         Process[] processes;
         try
@@ -112,7 +142,7 @@ public sealed class RealClientConnector : IAsyncDisposable
                 }
             }
 
-            var titledWindow = FindWindow(null, DefaultWindowTitle);
+            var titledWindow = OperatingSystem.IsWindows() ? FindWindow(null, DefaultWindowTitle) : IntPtr.Zero;
             if (titledWindow != IntPtr.Zero)
             {
                 GetWindowThreadProcessId(titledWindow, out var processId);

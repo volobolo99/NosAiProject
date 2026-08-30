@@ -30,12 +30,13 @@ python -m pytest -q
 dotnet --version
 dotnet restore src/NosAi.Runtime/NosAi.Runtime.csproj
 dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj --configuration Release
 ```
 
-When test projects are present:
+The Gate 1 in-process suite can also be invoked directly:
 
 ```bash
-dotnet test --configuration Release --no-restore
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate1-test
 ```
 
 ## 5. Full validation sequence
@@ -52,7 +53,7 @@ dotnet test --configuration Release --no-restore
 
 ## 6. CI
 
-The canonical CI workflow is `.github/workflows/ci.yml`. It currently performs Python compilation/tests and a Release build of `src/NosAi.Runtime/NosAi.Runtime.csproj`.
+The canonical CI workflow is `.github/workflows/ci.yml`. It currently performs Python compilation/tests, a Release build of `src/NosAi.Runtime/NosAi.Runtime.csproj`, and `dotnet test` for every `*Tests.csproj`.
 
 CI success is necessary but does not imply real-environment verification.
 

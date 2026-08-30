@@ -25,24 +25,24 @@ Il percorso minimo da chiudere e verificare è il seguente:
 
 | Componente | File principali | Maturità | Usa dati reali? | Test esiste? | Blocco principale |
 |---|---|---|---|---|---|
-| **Bootstrap runtime** | `src/NosAi.Runtime/Program.cs` | **Integrated** | **Parziale** | **Sì** | manca evidenza completa di esecuzione affidabile sul PC reale |
-| **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | manca validazione end-to-end reale del trasporto e della sessione |
-| **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs` | **Present** | **No** | **Sì** | va verificato quanto copra il flusso reale e non solo invarianti locali |
-| **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Parziale** | espone stato utile ma include campi non ancora alimentati da provider reali completi |
-| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Non provato** | ora espone uno snapshot baseline strutturato, ma non legge ancora dati gameplay reali dal client |
+| **Bootstrap runtime** | `src/NosAi.Runtime/Program.cs`, `Gate1/Gate1BootstrapHost.cs` | **Integrated** | **Parziale** | **Sì** | avvio locale coperto; manca evidenza completa sul PC di produzione |
+| **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | auth/heartbeat/riconnessione locali coperti; manca sessione su dispositivo reale |
+| **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs`, `tests/NosAi.Runtime.Tests` | **Integrated** | **No** | **Sì** | copre invarianti locali, non il client NosTale reale |
+| **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs` | **Integrated** | **Parziale** | **Sì** | contratto `gate1.snapshot.v1` con classificazione LIVE/UNKNOWN |
+| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Sì** | attachment processo/finestra; gameplay ancora UNKNOWN |
+| **Dashboard embedded** | `src/NosAi.Runtime/Gate1/Gate1BootstrapHost.cs`, `Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Sì** | campi demo rimossi; dashboard mostra UNKNOWN invece di gold/mostri finti |
+| **Hardware profiling / autoset** | `Hardware/LiveHardwareTelemetry.cs` | **Integrated** | **Parziale** | **Sì** | RAM processo LIVE; RAM sistema/GPU UNKNOWN se il probe fallisce |
 | **Perception contracts** | `src/NosAi.Runtime/Perception/PerceptionContracts.cs` | **Present** | **No** | **Parziale** | il contratto esiste ma non basta senza backend produttivo |
 | **Perception null provider** | `src/NosAi.Runtime/Perception/NullPerceptionProvider.cs` | **Partial** | **No** | **Parziale** | è utile come fallback tecnico ma non contribuisce al Gate 1 reale |
 | **World state / world model** | area `src/NosAi.Runtime/WorldModel` | **Integrated** | **Parziale** | **Parziale** | dipende dal completamento delle sorgenti reali di input |
-| **Guard AI smartphone** | area `src/NosAi.Runtime/Guard` + `Gate1Runtime.cs` | **Partial** | **Parziale** | **Parziale** | manca prova reale di handshake, auth, heartbeat e riconnessione sul dispositivo |
-| **Dashboard embedded** | `src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs` | **Partial** | **No / misto** | **Parziale** | parte della telemetria appare dimostrativa o simulata |
-| **Control center HTTP** | `src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Parziale** | va separata meglio la struttura reale dai dati dimostrativi |
+| **Guard AI smartphone** | area `src/NosAi.Runtime/Guard` + `Gate1Runtime.cs` | **Partial** | **Parziale** | **Parziale** | handshake locale coperto; manca prova sul dispositivo reale |
+| **Control center HTTP** | `Gate1OperatorServer`, `Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Sì** | `/api/gate1` classificato; Host legacy non inventa più gold/mostri |
 | **Gateway eventi dashboard** | `src/NosAi.Runtime/Network/Gateway/ControlPanelGatewayEngine.cs` | **Integrated** | **No / misto** | **Sì** | l'infrastruttura esiste ma non dimostra ancora stream di dati reali del runtime |
 | **Safety / trust boundary** | `src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs`, `src/NosAi.Runtime/Contracts/RuntimeContracts.cs` | **Integrated** | **Parziale** | **Parziale** | necessita verifica con segnali reali e casi negativi reali |
-| **Hardware profiling / autoset** | `src/NosAi.Runtime/Program.cs` + area `src/NosAi.Runtime/Hardware` | **Integrated** | **Parziale** | **Parziale** | manca prova documentata di acquisizione reale e benchmark utili nel Gate 1 |
 | **Storage / session persistence** | area `src/NosAi.Runtime/Storage` | **Integrated** | **Parziale** | **Parziale** | va dimostrato l'uso reale lungo il percorso critico |
-| **Logging / telemetria** | Host, Gateway, Gate1 snapshot | **Partial** | **Parziale** | **Parziale** | segnali presenti ma non ancora chiaramente autorevoli per il debug end-to-end |
-| **Dashboard error/disconnect handling** | Host + Gateway + componenti UI embedded | **Partial** | **No / misto** | **Non provato** | mancano casi negativi provati e visualizzati in modo coerente |
-| **Suite test Python legacy/ibrida** | `tests/` | **Partial** | **No / misto** | **Sì** | copertura abbondante ma non ancora chiaramente allineata al runtime C# reale |
+| **Logging / telemetria** | Host, Gateway, Gate1 snapshot | **Integrated** | **Parziale** | **Sì** | snapshot Gate 1 classificato; debug end-to-end reale ancora incompleto |
+| **Dashboard error/disconnect handling** | Gate1 operator dashboard + Python dashboard | **Integrated** | **Parziale** | **Sì** | runtime offline e client assente restano UNKNOWN |
+| **Suite test Python legacy/ibrida** | `tests/` | **Partial** | **No / misto** | **Sì** | aggiunti test di classificazione Gate 1; e2e reale ancora assente |
 
 ---
 

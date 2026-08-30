@@ -14,10 +14,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+import urllib.error
+import urllib.request
 
 ROOT = Path(__file__).resolve().parent / "static"
 HOST = os.getenv("NOSAI_DASHBOARD_HOST", "127.0.0.1")
 PORT = int(os.getenv("NOSAI_DASHBOARD_PORT", "8765"))
+RUNTIME_URL = os.getenv("NOSAI_RUNTIME_URL", "").rstrip("/")
 
 
 @dataclass
@@ -43,10 +46,36 @@ STATE = DashboardState()
 LOCK = threading.RLock()
 
 
+def fetch_gate1_snapshot() -> dict[str, Any] | None:
+    if not RUNTIME_URL:
+        return None
+    try:
+        with urllib.request.urlopen(f"{RUNTIME_URL}/api/gate1", timeout=1.5) as response:
+            payload = json.loads(response.read().decode())
+        if not isinstance(payload, dict):
+            return None
+        return payload
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError):
+        return None
+
+
 def runtime_snapshot() -> dict[str, Any]:
     """Return a truthful snapshot; no fake hardware/runtime values are generated."""
+    gate1 = fetch_gate1_snapshot()
     with LOCK:
-        return asdict(STATE)
+        payload = asdict(STATE)
+    if gate1 is None:
+        payload["connected"] = False
+        payload["provider"] = "not-connected"
+        payload["telemetry_source"] = "UNKNOWN"
+        payload["gate1"] = None
+        return payload
+    payload["connected"] = True
+    payload["provider"] = "gate1-runtime"
+    payload["telemetry_source"] = "LIVE"
+    payload["mode"] = str(gate1.get("runtimeStatus") or payload["mode"])
+    payload["gate1"] = gate1
+    return payload
 
 
 def enqueue_command(action: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -77,7 +106,13 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, runtime_snapshot())
             return
         if path == "/api/health":
-            self._json(200, {"ok": True, "service": "local-dashboard", "runtime_connected": STATE.connected})
+            snapshot = runtime_snapshot()
+            self._json(200, {
+                "ok": True,
+                "service": "local-dashboard",
+                "runtime_connected": snapshot["connected"],
+                "telemetry_source": snapshot["telemetry_source"],
+            })
             return
         self._serve_static(path)
 

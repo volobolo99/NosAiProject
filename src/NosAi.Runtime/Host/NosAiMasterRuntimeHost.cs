@@ -53,14 +53,22 @@ namespace NosAi.Host
         ulong TotalTicksCount,
         MasterHostStatus HostStatus,
         TrustTier ActiveTrustTier,
-        double GpuTemperatureCelsius,
-        double CpuUsagePercentage,
-        long RamWorkingSetMb,
-        long VramUsageMb,
-        bool IsGameClientHooked,
-        bool IsGuardPhoneConnected,
-        int ActiveMonstersTracked,
-        long TotalGoldTracked,
+        double? GpuTemperatureCelsius,
+        string GpuTemperatureSource,
+        double? CpuUsagePercentage,
+        string CpuUsageSource,
+        long? RamWorkingSetMb,
+        string RamWorkingSetSource,
+        long? VramUsageMb,
+        string VramUsageSource,
+        bool? IsGameClientHooked,
+        string GameClientSource,
+        bool? IsGuardPhoneConnected,
+        string GuardPhoneSource,
+        int? ActiveMonstersTracked,
+        string ActiveMonstersSource,
+        long? TotalGoldTracked,
+        string TotalGoldSource,
         DateTime SnapshotTimestampUtc
     );
 
@@ -255,21 +263,42 @@ namespace NosAi.Host
                 <div class="grid">
                     <div class="card">
                         <h3>1. Strato Osservato (Percezione)</h3>
-                        <p>Client Hook: <span class="metric" id="hook">COLLEGATO</span></p>
-                        <p>Mostri in Raggio ROI: <span class="metric" id="mobs">3</span></p>
+                        <p>Client Hook: <span class="metric" id="hook">UNKNOWN</span></p>
+                        <p>Mostri in Raggio ROI: <span class="metric" id="mobs">UNKNOWN</span></p>
                     </div>
                     <div class="card">
                         <h3>2. Strato Stimato (Active Inference)</h3>
-                        <p>Rischio Globale: <span class="metric" style="color:#f59e0b;">5.2%</span></p>
-                        <p>Confidenza WorldState: <span class="metric">96.8%</span></p>
+                        <p>Rischio Globale: <span class="metric" id="risk">UNKNOWN</span></p>
+                        <p>Confidenza WorldState: <span class="metric" id="confidence">UNKNOWN</span></p>
                     </div>
                     <div class="card">
                         <h3>3. Strato Decisionale (Safety & Trust)</h3>
-                        <p>Trust Tier: <span class="metric" id="trust">Tier 2 (Semi-Auto)</span></p>
-                        <p>Temperatura GPU: <span class="metric" id="gpu">68.5 °C</span></p>
+                        <p>Trust Tier: <span class="metric" id="trust">UNKNOWN</span></p>
+                        <p>Temperatura GPU: <span class="metric" id="gpu">UNKNOWN</span></p>
                         <button class="btn-danger" onclick="fetch('/api/command',{method:'POST',body:'EMERGENCY_STOP'})">ARRESTO DI EMERGENZA</button>
                     </div>
                 </div>
+                <script>
+                    function classified(value, source) {
+                        if (!source || source === 'UNKNOWN' || value === null || value === undefined) return 'UNKNOWN';
+                        return value + ' [' + source + ']';
+                    }
+                    async function refresh() {
+                        try {
+                            const t = await (await fetch('/api/telemetry')).json();
+                            document.getElementById('hook').textContent = classified(t.IsGameClientHooked, t.GameClientSource);
+                            document.getElementById('mobs').textContent = classified(t.ActiveMonstersTracked, t.ActiveMonstersSource);
+                            document.getElementById('risk').textContent = 'UNKNOWN';
+                            document.getElementById('confidence').textContent = 'UNKNOWN';
+                            document.getElementById('trust').textContent = t.ActiveTrustTier + ' [LIVE]';
+                            document.getElementById('gpu').textContent = classified(t.GpuTemperatureCelsius, t.GpuTemperatureSource);
+                        } catch (e) {
+                            document.getElementById('hook').textContent = 'UNKNOWN';
+                        }
+                    }
+                    refresh();
+                    setInterval(refresh, 2000);
+                </script>
             </body>
             </html>
             """;
@@ -303,7 +332,8 @@ namespace NosAi.Host
 
         private MasterHostStatus _status = MasterHostStatus.Bootstrapping;
         private ulong _tickCounter = 0;
-        private double _simulatedGpuTemp = 68.5;
+        private double _simulatedGpuTemp;
+        private bool _gpuTemperatureSimulated;
         private readonly string _sessionId;
 
         public MasterHostStatus Status => _status;
@@ -344,11 +374,11 @@ namespace NosAi.Host
                     tickWatch.Restart();
                     _tickCounter++;
 
-                    if (_simulatedGpuTemp >= 80.0)
+                    if (_gpuTemperatureSimulated && _simulatedGpuTemp >= 80.0)
                     {
                         _status = MasterHostStatus.CoolingThrottled;
                     }
-                    else if (_status == MasterHostStatus.CoolingThrottled && _simulatedGpuTemp < 74.0)
+                    else if (_status == MasterHostStatus.CoolingThrottled && _gpuTemperatureSimulated && _simulatedGpuTemp < 74.0)
                     {
                         _status = MasterHostStatus.Running;
                     }
@@ -356,7 +386,7 @@ namespace NosAi.Host
                     if (_status is MasterHostStatus.Running or MasterHostStatus.CoolingThrottled)
                     {
                         var candidateId = Guid.NewGuid();
-                        if (_safetyGate.TryAuthorizeAction(candidateId, TrustTier.Tier2_SemiAutonomous, _simulatedGpuTemp, out var sig, out _))
+                        if (_safetyGate.TryAuthorizeAction(candidateId, TrustTier.Tier2_SemiAutonomous, _gpuTemperatureSimulated ? _simulatedGpuTemp : 0, out var sig, out _))
                         {
                             bool valid = _safetyGate.VerifySafetyToken(candidateId, sig);
                             Debug.Assert(valid, "Integrità firma SafetyToken violata.");
@@ -385,14 +415,22 @@ namespace NosAi.Host
                 TotalTicksCount: _tickCounter,
                 HostStatus: _status,
                 ActiveTrustTier: _trustManager.CurrentTier,
-                GpuTemperatureCelsius: _simulatedGpuTemp,
-                CpuUsagePercentage: 14.5,
+                GpuTemperatureCelsius: _gpuTemperatureSimulated ? _simulatedGpuTemp : null,
+                GpuTemperatureSource: _gpuTemperatureSimulated ? "SIMULATED" : "UNKNOWN",
+                CpuUsagePercentage: null,
+                CpuUsageSource: "UNKNOWN",
                 RamWorkingSetMb: ramMb,
-                VramUsageMb: 1820,
-                IsGameClientHooked: true,
-                IsGuardPhoneConnected: true,
-                ActiveMonstersTracked: 3,
-                TotalGoldTracked: 150000,
+                RamWorkingSetSource: "LIVE",
+                VramUsageMb: null,
+                VramUsageSource: "UNKNOWN",
+                IsGameClientHooked: null,
+                GameClientSource: "UNKNOWN",
+                IsGuardPhoneConnected: null,
+                GuardPhoneSource: "UNKNOWN",
+                ActiveMonstersTracked: null,
+                ActiveMonstersSource: "UNKNOWN",
+                TotalGoldTracked: null,
+                TotalGoldSource: "UNKNOWN",
                 SnapshotTimestampUtc: DateTime.UtcNow
             );
         }
@@ -410,6 +448,7 @@ namespace NosAi.Host
         public void SetSimulatedGpuTemperature(double temp)
         {
             _simulatedGpuTemp = temp;
+            _gpuTemperatureSimulated = true;
         }
 
         public async ValueTask DisposeAsync()

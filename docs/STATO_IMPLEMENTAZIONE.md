@@ -2,7 +2,7 @@
 
 **Versione:** 1.0 Beta  
 **Creatore:** Volodymyr Ryzhuk  
-**Aggiornato:** 2026-08-29
+**Aggiornato:** 2026-08-30
 
 ## Regola di avanzamento
 
@@ -79,10 +79,10 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ## 🟡 Aree Partial da integrare e verificare
 
-- Collegamento reale NosAi ↔ client NosTale.
-- Lettura affidabile dei dati di base necessari dal client.
-- Acquisizione dei dati di base del PC nel runtime operativo.
-- Avvio e collegamento reale di Guard AI sullo smartphone.
+- Collegamento reale NosAi ↔ client NosTale (attachment processo/finestra LIVE; gameplay ancora UNKNOWN).
+- Lettura affidabile dei dati di base necessari dal client (non ancora disponibili senza provider gameplay).
+- Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
+- Avvio e collegamento reale di Guard AI sullo smartphone (loopback auth/heartbeat coperti; dispositivo reale no).
 - Autenticazione e interoperabilità end-to-end PC ↔ smartphone.
 - Heartbeat, STATUS, gestione riconnessione e fail-closed nel trasporto completo.
 - Applicazione della cifratura autenticata al framing PC-Phone nel flusso completo.

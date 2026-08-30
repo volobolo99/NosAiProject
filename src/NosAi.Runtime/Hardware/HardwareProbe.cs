@@ -1,4 +1,5 @@
 using System.Management;
+using System.Runtime.Versioning;
 
 namespace NosAi.Runtime.Hardware;
 
@@ -8,10 +9,14 @@ public interface IHardwareProbe
 }
 
 /// <summary>Windows hardware probe used by PlayAi on first run.</summary>
+[SupportedOSPlatform("windows")]
 public sealed class WindowsHardwareProbe : IHardwareProbe
 {
     public HardwareFingerprint Detect()
     {
+        if (!OperatingSystem.IsWindows())
+            throw new PlatformNotSupportedException("WindowsHardwareProbe requires Windows WMI.");
+
         var cpu = GetSingle("Win32_Processor", "Name") ?? "Unknown CPU";
         var cores = int.TryParse(GetSingle("Win32_Processor", "NumberOfLogicalProcessors"), out var c) ? c : Environment.ProcessorCount;
         var ram = long.TryParse(GetSingle("Win32_ComputerSystem", "TotalPhysicalMemory"), out var bytes) ? bytes / (1024 * 1024) : 0;
