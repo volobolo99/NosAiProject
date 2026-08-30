@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using NosAi.Runtime.Gate1;
 
 namespace NosAi.LiveIntegration;
@@ -23,7 +24,12 @@ public sealed record ClientBaselineSnapshot(
     ClientBaselineAvailability Availability,
     string Status,
     string? Warning,
-    string? FailureReason);
+    string? FailureReason,
+    string? ProcessName = null,
+    string? WindowTitle = null,
+    bool? ProcessResponding = null,
+    bool? WindowVisible = null,
+    string? WindowTitleFailureReason = null);
 
 /// <summary>
 /// Connects the runtime to the real NosTale process and exposes the existing
@@ -57,6 +63,20 @@ public sealed class RealClientConnector : IAsyncDisposable
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern int GetWindowTextLength(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
     /// <param name="clientProcessNames">
     /// Comma-separated executable names to look for, without the extension.
     /// Null or blank keeps <see cref="DefaultProcessNames"/>.
@@ -76,7 +96,7 @@ public sealed class RealClientConnector : IAsyncDisposable
     /// <summary>Executable names this connector looks for.</summary>
     public IReadOnlyList<string> ClientProcessNames => _processNames;
 
-    public bool IsClientAttached => _gameProcess is { HasExited: false } && _gameWindowHandle != IntPtr.Zero;
+    public bool IsClientAttached => _gameProcess is { HasExited: false } && IsLiveWindow(_gameWindowHandle);
 
     public int? AttachedProcessId => _gameProcess is null || _gameProcess.HasExited ? null : _gameProcess.Id;
 
@@ -246,33 +266,48 @@ public sealed class RealClientConnector : IAsyncDisposable
 
     /// <summary>
     /// Returns the current client baseline snapshot for Gate 1.
-    /// This baseline intentionally exposes attachment/readiness status only.
-    /// It does not claim gameplay data extraction until a real provider exists.
+    /// OS-observable session fields (process, window, title) are included when
+    /// they can be read. Gameplay fields are never invented here.
     /// </summary>
     public ClientBaselineSnapshot CaptureBaselineSnapshot()
     {
         ThrowIfDisposed();
 
         var processDetected = _gameProcess is { HasExited: false };
-        var windowDetected = _gameWindowHandle != IntPtr.Zero;
+        var windowHandle = _gameWindowHandle;
+        var windowDetected = processDetected && IsLiveWindow(windowHandle);
+        if (!windowDetected)
+            windowHandle = IntPtr.Zero;
+
         var attached = processDetected && windowDetected;
         var observedAt = _lastObservedAtUtc == DateTime.MinValue ? DateTime.UtcNow : _lastObservedAtUtc;
+        var processName = TryReadProcessName();
+        var responding = TryReadProcessResponding(out var respondingFailure);
+        var windowVisible = windowDetected ? TryReadWindowVisible(windowHandle) : null;
+        string? titleFailureReason = processDetected ? "window_not_attached" : "process_not_attached";
+        var windowTitle = windowDetected
+            ? TryReadWindowTitle(windowHandle, out titleFailureReason)
+            : null;
 
-        var availability = attached
-            ? ClientBaselineAvailability.WindowAttached
-            : processDetected
-                ? ClientBaselineAvailability.ProcessOnly
-                : ClientBaselineAvailability.Unavailable;
+        var osSessionReady = attached && !string.IsNullOrWhiteSpace(windowTitle);
+        var availability = osSessionReady
+            ? ClientBaselineAvailability.BaselineReady
+            : attached
+                ? ClientBaselineAvailability.WindowAttached
+                : processDetected
+                    ? ClientBaselineAvailability.ProcessOnly
+                    : ClientBaselineAvailability.Unavailable;
 
         var status = availability switch
         {
+            ClientBaselineAvailability.BaselineReady => "attached_os_session",
             ClientBaselineAvailability.WindowAttached => "attached_window_only",
             ClientBaselineAvailability.ProcessOnly => "process_detected_window_missing",
             _ => "client_unavailable"
         };
 
         var warning = attached
-            ? "Gameplay baseline data not yet available: only process/window attachment is currently verified."
+            ? "Gameplay fields (HP, map, entities) remain UNKNOWN: no gameplay provider is bound."
             : null;
 
         return new ClientBaselineSnapshot(
@@ -280,13 +315,18 @@ public sealed class RealClientConnector : IAsyncDisposable
             WindowDetected: windowDetected,
             ClientAttached: attached,
             ProcessId: AttachedProcessId,
-            WindowHandle: _gameWindowHandle,
+            WindowHandle: windowHandle,
             Source: "live_process_attach",
             ObservedAtUtc: observedAt,
             Availability: availability,
             Status: status,
             Warning: warning,
-            FailureReason: _lastFailureReason);
+            FailureReason: _lastFailureReason ?? respondingFailure,
+            ProcessName: processName,
+            WindowTitle: windowTitle,
+            ProcessResponding: responding,
+            WindowVisible: windowVisible,
+            WindowTitleFailureReason: string.IsNullOrWhiteSpace(windowTitle) ? titleFailureReason : null);
     }
 
     /// <summary>
@@ -313,6 +353,118 @@ public sealed class RealClientConnector : IAsyncDisposable
     private static void LogAttachmentSuccess(string processName, int processId, IntPtr windowHandle)
     {
         Console.WriteLine($"[RealClientConnector] SUCCESSO: connesso al processo '{processName}' (PID: {processId}), Window Handle: {windowHandle}");
+    }
+
+    private static bool IsLiveWindow(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero || !OperatingSystem.IsWindows())
+            return false;
+        try
+        {
+            return IsWindow(hwnd);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    private string? TryReadProcessName()
+    {
+        if (_gameProcess is null)
+            return null;
+        try
+        {
+            return _gameProcess.HasExited ? null : _gameProcess.ProcessName;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return null;
+        }
+    }
+
+    private bool? TryReadProcessResponding(out string? failureReason)
+    {
+        failureReason = null;
+        if (_gameProcess is null)
+        {
+            failureReason = "process_not_attached";
+            return null;
+        }
+
+        try
+        {
+            if (_gameProcess.HasExited)
+            {
+                failureReason = "client_process_exited";
+                return null;
+            }
+
+            return _gameProcess.Responding;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            failureReason = $"process_responding_failed:{ex.GetType().Name}";
+            return null;
+        }
+    }
+
+    private static bool? TryReadWindowVisible(IntPtr hwnd)
+    {
+        if (!OperatingSystem.IsWindows() || hwnd == IntPtr.Zero)
+            return null;
+        try
+        {
+            return IsWindowVisible(hwnd);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static string? TryReadWindowTitle(IntPtr hwnd, out string? failureReason)
+    {
+        failureReason = null;
+        if (!OperatingSystem.IsWindows() || hwnd == IntPtr.Zero)
+        {
+            failureReason = "window_not_attached";
+            return null;
+        }
+
+        try
+        {
+            Marshal.SetLastPInvokeError(0);
+            var length = GetWindowTextLength(hwnd);
+            if (length <= 0)
+            {
+                var error = Marshal.GetLastPInvokeError();
+                failureReason = error != 0 ? $"get_window_text_length_failed:{error}" : "window_title_empty";
+                return null;
+            }
+
+            var buffer = new StringBuilder(length + 1);
+            var copied = GetWindowText(hwnd, buffer, buffer.Capacity);
+            if (copied <= 0)
+            {
+                failureReason = "window_title_unreadable";
+                return null;
+            }
+
+            var title = buffer.ToString();
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                failureReason = "window_title_empty";
+                return null;
+            }
+
+            return title;
+        }
+        catch (Exception ex)
+        {
+            failureReason = $"window_title_failed:{ex.GetType().Name}";
+            return null;
+        }
     }
 
     private void DetachCurrentProcess()

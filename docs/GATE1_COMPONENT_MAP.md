@@ -29,7 +29,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | auth/heartbeat/riconnessione locali coperti; manca sessione su dispositivo reale |
 | **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs`, `tests/NosAi.Runtime.Tests` | **Integrated** | **No** | **Sì** | copre invarianti locali, non il client NosTale reale |
 | **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs` | **Integrated** | **Parziale** | **Sì** | contratto `gate1.snapshot.v1` con classificazione LIVE/UNKNOWN |
-| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Sì** | attachment processo/finestra; gameplay ancora UNKNOWN |
+| **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Partial** | **Parziale** | **Sì** | OS session baseline LIVE; gameplay HP/mappa ancora UNKNOWN |
 | **Dashboard embedded** | `src/NosAi.Runtime/Gate1/Gate1BootstrapHost.cs`, `Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Sì** | campi demo rimossi; dashboard mostra UNKNOWN invece di gold/mostri finti |
 | **Hardware profiling / autoset** | `Hardware/LiveHardwareTelemetry.cs` | **Integrated** | **Parziale** | **Sì** | RAM processo LIVE; RAM sistema/GPU UNKNOWN se il probe fallisce |
 | **Perception contracts** | `src/NosAi.Runtime/Perception/PerceptionContracts.cs` | **Present** | **No** | **Parziale** | il contratto esiste ma non basta senza backend produttivo |
@@ -54,7 +54,7 @@ Queste aree devono essere verificate prima di qualsiasi dichiarazione di avanzam
 |---|---|---|
 | **Dashboard embedded** | metriche e stati che sembrano esemplificativi o statici | sostituire o marcare esplicitamente come non reali |
 | **Host telemetry** | parte dei valori osservabili sembra non derivare da provider live completi | collegare ogni campo a una sorgente reale o rimuoverlo dal percorso critico |
-| **Client connector NosTale** | attualmente verifica processo/finestra e produce uno snapshot baseline strutturato, ma non espone ancora dati gameplay reali | estendere il baseline dataset senza oltrepassare i vincoli del progetto |
+| **Client connector NosTale** | attualmente verifica processo/finestra e legge titolo/PID/handle LIVE, ma non espone ancora HP/mappa | estendere solo con sorgenti reali, senza filler |
 | **Perception** | contratti presenti ma backend reali non ancora chiusi | delimitare cosa è davvero usato nel Gate 1 e cosa è ancora fondazione |
 | **Test suite** | copertura eterogenea tra Python e C# | distinguere test di contratto, test di integrazione e test autorevoli Gate 1 |
 

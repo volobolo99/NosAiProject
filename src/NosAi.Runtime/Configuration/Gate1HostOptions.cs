@@ -2,9 +2,16 @@ namespace NosAi.Runtime.Configuration;
 
 public sealed class Gate1HostOptions
 {
-    public const int DefaultDashboardPort = 8765;
+    /// <summary>
+    /// Operator API port for the runtime. It is deliberately NOT 8765: that port
+    /// belongs to the Python operator UI (<c>python -m nosai.dashboard.server</c>),
+    /// which reads this runtime over <c>NOSAI_RUNTIME_URL</c>. Sharing one default
+    /// made whichever process started second fail to bind.
+    /// </summary>
+    public const int DefaultDashboardPort = 8766;
     public const int DefaultGuardPort = 17471;
 
+    /// <summary>Port for the operator API. 0 selects a free loopback port at bind time.</summary>
     public int DashboardPort { get; init; } = DefaultDashboardPort;
     public int GuardPort { get; init; } = DefaultGuardPort;
     public int OperationTimeoutMs { get; init; } = 5000;

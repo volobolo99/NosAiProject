@@ -23,7 +23,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Runtime PC | Safety policy attive | [x] locale | snapshot Gate 1 espone live input/packet injection disabilitati |
 | Runtime PC | Stato sessione osservabile | [x] locale | `gate1.snapshot.v1` include sessione Guard classificata |
 | Client NosTale | Rilevamento client | [x] locale | processo/finestra LIVE; assenza → `client_unavailable` |
-| Client NosTale | Lettura dati minimi | [ ] | attachment LIVE; gameplay baseline ancora UNKNOWN |
+| Client NosTale | Lettura dati minimi | [x] locale | OS baseline LIVE (processo, PID, titolo/handle finestra, responding/visible); gameplay HP/mappa/entità ancora UNKNOWN |
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
 | Guard AI smartphone | Avvio affidabile | [ ] | richiede dispositivo reale |
@@ -32,7 +32,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Guard AI smartphone | Heartbeat reale | [x] locale | timeout 2s fail-closed + riconnessione |
 | Guard AI smartphone | Riconnessione controllata | [x] locale | nuova sessione accettata dopo timeout |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
-| Dashboard | Connessione al runtime corretto | [x] locale | `/api/gate1` dal runtime; Python dashboard resta UNKNOWN se `NOSAI_RUNTIME_URL` manca |
+| Dashboard | Connessione al runtime corretto | [x] locale | UI su 8765, API operatore runtime su 8766; `NOSAI_RUNTIME_URL` predefinita sulla porta del runtime; porta occupata → runtime vivo e `dashboard_port_in_use` esplicito |
 | Dashboard | Dati reali soltanto | [x] locale | demo gold/mostri/GPU rimossi; UNKNOWN esplicito |
 | Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
 | Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
@@ -40,7 +40,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | End-to-end | PC ↔ smartphone | [ ] | richiede Guard AI reale |
 | End-to-end | Runtime ↔ dashboard | [x] locale | `/api/gate1` + dashboard classificata |
 | End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
-| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 81, `--gate1-test` 14/14, `--host-test` 7/7, `NosAi.Runtime.Tests` 4/4. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest`; `--gate1-test`; `NosAi.Runtime.Tests`. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---

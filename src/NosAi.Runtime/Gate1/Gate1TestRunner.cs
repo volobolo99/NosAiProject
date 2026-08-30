@@ -9,6 +9,7 @@ using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Orchestration;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate1;
 
@@ -32,6 +33,8 @@ public static class Gate1TestRunner
         allPassed &= Run("Sequence guard rejects replayed frames", TestSequenceGuard);
         allPassed &= Run("RSA challenge is single use", TestRsaChallengeIsSingleUse);
         allPassed &= Run("Missing client does not invent gameplay", TestMissingClientDoesNotInventGameplay);
+        allPassed &= Run("OS session baseline is LIVE when observed", TestOsSessionBaselineIsLiveWhenObserved);
+        allPassed &= Run("UNKNOWN client fields are not published as values", TestUnknownClientFieldsAreNotPublishedAsValues);
         allPassed &= Run("Failed hardware probe is UNKNOWN, not zero", TestFailedHardwareProbeIsUnknownNotZero);
         allPassed &= Run("Recovered probe keeps its failure reason", TestRecoveredProbeKeepsItsFailureReason);
         allPassed &= Run("Absent hardware needs no sentinel string", TestAbsentHardwareLabelsNeedNoSentinelString);
@@ -43,6 +46,8 @@ public static class Gate1TestRunner
         allPassed &= await RunAsync("Reconnect accepted after heartbeat timeout", TestReconnectAfterHeartbeatTimeoutAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Authenticated session receives classified telemetry", TestAuthenticatedSessionReceivesClassifiedTelemetryAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Bootstrap without a client reports DEGRADED", TestBootstrapWithoutClientIsDegradedAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Busy dashboard port degrades the dashboard, not the runtime", TestBusyDashboardPortDoesNotKillTheRuntimeAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Ephemeral dashboard port binds and serves the snapshot", TestEphemeralDashboardPortServesSnapshotAsync).ConfigureAwait(false);
 
         Console.WriteLine(allPassed
             ? "=== Gate 1 checks passed. Local only: this is not real-environment verification. ==="
@@ -121,9 +126,105 @@ public static class Gate1TestRunner
         return snapshot.ContractVersion == Gate1SnapshotContract.Version
                && snapshot.Client.Attached.Value == false
                && snapshot.Client.Attached.Source == DataSourceKind.Live
+               && snapshot.Client.ProcessName.Source == DataSourceKind.Unknown
+               && !snapshot.Client.ProcessName.HasValue
+               && snapshot.Client.WindowTitle.Source == DataSourceKind.Unknown
+               && !snapshot.Client.WindowTitle.HasValue
                && snapshot.Client.GameplayBaseline.Source == DataSourceKind.Unknown
                && !snapshot.Client.GameplayBaseline.HasValue
                && snapshot.Safety.LiveInputEnabled.Value == false;
+    }
+
+    private static bool TestOsSessionBaselineIsLiveWhenObserved()
+    {
+        var observed = DateTime.UtcNow;
+        var client = new ClientBaselineSnapshot(
+            ProcessDetected: true,
+            WindowDetected: true,
+            ClientAttached: true,
+            ProcessId: 4242,
+            WindowHandle: (nint)0xABC,
+            Source: "live_process_attach",
+            ObservedAtUtc: observed,
+            Availability: ClientBaselineAvailability.BaselineReady,
+            Status: "attached_os_session",
+            Warning: "Gameplay fields remain UNKNOWN: no gameplay provider is bound.",
+            FailureReason: null,
+            ProcessName: "NostaleClientX",
+            WindowTitle: "NosTale",
+            ProcessResponding: true,
+            WindowVisible: true);
+        var snapshot = SnapshotFromClient(client);
+        return snapshot.Client.ProcessName.Source == DataSourceKind.Live
+               && snapshot.Client.ProcessName.Value == "NostaleClientX"
+               && snapshot.Client.ProcessId.Value == 4242
+               && snapshot.Client.WindowTitle.Value == "NosTale"
+               && snapshot.Client.WindowHandle.Value == "0xABC"
+               && snapshot.Client.ProcessResponding.Value
+               && snapshot.Client.WindowVisible.Value
+               && snapshot.Client.Availability.Value == nameof(ClientBaselineAvailability.BaselineReady)
+               && snapshot.Client.GameplayBaseline.Source == DataSourceKind.Unknown
+               && !snapshot.Client.GameplayBaseline.HasValue;
+    }
+
+    private static bool TestUnknownClientFieldsAreNotPublishedAsValues()
+    {
+        var snapshot = SnapshotFromClient(new ClientBaselineSnapshot(
+            ProcessDetected: false,
+            WindowDetected: false,
+            ClientAttached: false,
+            ProcessId: null,
+            WindowHandle: IntPtr.Zero,
+            Source: "live_process_attach",
+            ObservedAtUtc: DateTime.UtcNow,
+            Availability: ClientBaselineAvailability.Unavailable,
+            Status: "client_unavailable",
+            Warning: null,
+            FailureReason: "connector_not_bound"));
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(snapshot.ToWire()));
+        return UnknownFieldsHaveNullValues(document.RootElement, "$");
+    }
+
+    private static Gate1CanonicalSnapshot SnapshotFromClient(ClientBaselineSnapshot client)
+    {
+        var hardware = new LiveHardwareTelemetry(new FallbackHardwareProbe()).Capture().View;
+        return Gate1SnapshotFactory.Create(
+            RuntimeHealthStatus.Degraded,
+            "test",
+            hardware,
+            client,
+            new Gate1ConnectionSnapshot(string.Empty, false, false, default, null),
+            RuntimeSafetyPolicy.SafeDefault);
+    }
+
+    private static bool UnknownFieldsHaveNullValues(JsonElement element, string path)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            if (element.TryGetProperty("source", out var source) && element.TryGetProperty("value", out var value)
+                && source.GetString() == "UNKNOWN"
+                && value.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined)
+            {
+                return false;
+            }
+
+            foreach (var property in element.EnumerateObject())
+            {
+                if (!UnknownFieldsHaveNullValues(property.Value, path + "." + property.Name))
+                    return false;
+            }
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
+        {
+            var index = 0;
+            foreach (var item in element.EnumerateArray())
+            {
+                if (!UnknownFieldsHaveNullValues(item, $"{path}[{index++}]"))
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool TestFailedHardwareProbeIsUnknownNotZero()
@@ -287,7 +388,7 @@ public static class Gate1TestRunner
         using var key = RSA.Create(2048);
         var options = new Gate1HostOptions
         {
-            DashboardPort = 8765,
+            DashboardPort = 0,
             GuardPort = 0,
             StartDashboard = false,
             TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem(),
@@ -325,6 +426,71 @@ public static class Gate1TestRunner
         if (payload.Length > 0)
             await stream.ReadExactlyAsync(payload).ConfigureAwait(false);
         return (header.MessageType, payload);
+    }
+
+    /// <summary>
+    /// Regression: a dashboard port already held by another process (the Python
+    /// operator UI, historically on the same default port) threw out of
+    /// <c>StartAsync</c> and killed the runtime, taking the Guard channel and the
+    /// attached client with it. The dashboard is observability, not a safety gate.
+    /// </summary>
+    private static async Task<bool> TestBusyDashboardPortDoesNotKillTheRuntimeAsync()
+    {
+        using var key = RSA.Create(2048);
+        var squatter = new TcpListener(IPAddress.Loopback, 0);
+        squatter.Start();
+        var busyPort = ((IPEndPoint)squatter.LocalEndpoint).Port;
+        try
+        {
+            var options = new Gate1HostOptions
+            {
+                DashboardPort = busyPort,
+                GuardPort = 0,
+                StartDashboard = true,
+                TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem(),
+                ClientProcessName = "nosai-absent-client-4f1c9a2e"
+            };
+            await using var host = new Gate1BootstrapHost(options, probe: new ThrowingHardwareProbe());
+            await host.StartAsync().ConfigureAwait(false);
+
+            return host.Health == RuntimeHealthStatus.Degraded
+                   && host.DashboardPort is null
+                   && host.DashboardFailureReason is not null
+                   && host.DashboardFailureReason.StartsWith("dashboard_port_", StringComparison.Ordinal)
+                   && host.GuardPort > 0;
+        }
+        finally
+        {
+            squatter.Stop();
+        }
+    }
+
+    /// <summary>
+    /// Port 0 means "any free loopback port", not "silently use 8765". The reported
+    /// port must be the one actually bound, and it must serve the classified snapshot.
+    /// </summary>
+    private static async Task<bool> TestEphemeralDashboardPortServesSnapshotAsync()
+    {
+        using var key = RSA.Create(2048);
+        var options = new Gate1HostOptions
+        {
+            DashboardPort = 0,
+            GuardPort = 0,
+            StartDashboard = true,
+            TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem(),
+            ClientProcessName = "nosai-absent-client-4f1c9a2e"
+        };
+        await using var host = new Gate1BootstrapHost(options, probe: new ThrowingHardwareProbe());
+        await host.StartAsync().ConfigureAwait(false);
+
+        if (host.DashboardPort is not int port || port == Gate1HostOptions.DefaultDashboardPort || host.DashboardFailureReason is not null)
+            return false;
+
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        var body = await http.GetStringAsync($"http://127.0.0.1:{port}/api/gate1").ConfigureAwait(false);
+        using var document = JsonDocument.Parse(body);
+        return document.RootElement.GetProperty("contractVersion").GetString() == Gate1SnapshotContract.Version
+               && document.RootElement.GetProperty("client").GetProperty("attached").GetProperty("value").GetBoolean() == false;
     }
 
     private sealed class ThrowingHardwareProbe : IHardwareProbe

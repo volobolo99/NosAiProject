@@ -79,8 +79,8 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ## 🟡 Aree Partial da integrare e verificare
 
-- Collegamento reale NosAi ↔ client NosTale (attachment processo/finestra LIVE; gameplay ancora UNKNOWN).
-- Lettura affidabile dei dati di base necessari dal client (non ancora disponibili senza provider gameplay).
+- Collegamento reale NosAi ↔ client NosTale (processo/finestra/titolo LIVE; gameplay HP/mappa/entità ancora UNKNOWN).
+- Lettura affidabile dei dati di base necessari dal client (OS baseline presente; manca ancora un provider gameplay).
 - Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
 - Avvio e collegamento reale di Guard AI sullo smartphone (loopback auth/heartbeat coperti; dispositivo reale no).
 - Autenticazione e interoperabilità end-to-end PC ↔ smartphone.

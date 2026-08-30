@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from nosai.core.data_classification import ClassifiedValue, DataSource
-from nosai.dashboard.server import GATE1_CONTRACT_VERSION, runtime_snapshot
+from nosai.core.data_classification import ClassifiedValue, DataSource, unknown_published_value_errors
+from nosai.dashboard.server import GATE1_CONTRACT_VERSION, accept_gate1_payload, runtime_snapshot
 from nosai.runtime.hardware import classified_local_pc
 
 
@@ -51,6 +51,42 @@ def test_matching_contract_version_is_accepted(monkeypatch):
     assert snapshot["telemetry_source"] == "LIVE"
     assert snapshot["gate1"] is payload
     assert snapshot["gate1_failure"] is None
+
+
+def test_unknown_classified_fields_must_not_publish_a_value():
+    honest = {
+        "gameplayBaseline": {
+            "value": None,
+            "source": "UNKNOWN",
+            "hasObservedValue": False,
+            "failureReason": "gameplay_provider_not_available",
+        }
+    }
+    lie = {
+        "gameplayBaseline": {
+            "value": 150000,
+            "source": "UNKNOWN",
+            "hasObservedValue": False,
+            "failureReason": "gameplay_provider_not_available",
+        }
+    }
+    assert unknown_published_value_errors(honest) == []
+    errors = unknown_published_value_errors(lie)
+    assert errors
+    assert "gameplayBaseline" in errors[0]
+
+
+def test_dashboard_rejects_unknown_fields_that_publish_a_value():
+    payload = {
+        "contractVersion": GATE1_CONTRACT_VERSION,
+        "runtimeStatus": "Healthy",
+        "client": {
+            "gameplayBaseline": {"value": 3, "source": "UNKNOWN", "hasObservedValue": False},
+        },
+    }
+    accepted, reason = accept_gate1_payload(payload)
+    assert accepted is None
+    assert reason == "unknown_field_published_a_value"
 
 
 def test_simulated_is_never_labelled_live():

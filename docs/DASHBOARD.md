@@ -39,18 +39,48 @@ La dashboard non deve trasformare un dato visualizzato in un'autorizzazione impl
 
 ## Backend locale
 
-Avvio:
+Il Centro di controllo è composto da **due processi distinti su due porte distinte**:
+
+| Processo | Porta predefinita | Ruolo |
+|---|---|---|
+| `python -m nosai.dashboard.server` | `8765` | interfaccia operatore servita al browser |
+| `dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll` | `8766` | API operatore del runtime (`/api/gate1`, `/api/health`, `/api/command`) |
+| `NosAiMasterRuntimeHost` | `8767` | Centro di Controllo Master (`--host-test` e host alternativo) |
+| `Gate5IntegratedEngine` | `8768` | Control Center Gate 5 |
+
+Le porte non devono coincidere: due server HTTP sulla stessa porta non convivono e
+il secondo processo che parte non riesce ad aprire l'ascolto.
+
+Avvio, nell'ordine:
 
 ```bash
+# 1. runtime (espone /api/gate1 su 8766 e stampa l'URL esatto all'avvio)
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll
+
+# 2. interfaccia operatore (legge il runtime e serve il browser su 8765)
 python -m nosai.dashboard.server
 ```
 
-Indirizzo predefinito: `http://127.0.0.1:8765`.
+Indirizzo dell'interfaccia: `http://127.0.0.1:8765`.
 
 Variabili opzionali:
 
 - `NOSAI_DASHBOARD_HOST`
 - `NOSAI_DASHBOARD_PORT`
+- `NOSAI_RUNTIME_URL` — origine del runtime da interrogare, predefinita
+  `http://127.0.0.1:8766`. Va cambiata solo se il runtime è stato avviato con
+  `--dashboard-port` diverso dal valore predefinito.
+
+Opzioni del runtime:
+
+- `--dashboard-port <n>` (o `NOSAI_DASHBOARD_PORT`) — porta dell'API operatore;
+  `0` seleziona una porta libera e il runtime stampa quella effettivamente aperta;
+- `--no-dashboard` — avvia il runtime senza API operatore.
+
+Se la porta richiesta è occupata, il runtime **non termina**: prosegue con canale
+Guard e client collegati, segnala `dashboard_port_in_use:<porta>` e riporta
+l'API operatore come non disponibile. La dashboard è una superficie di
+osservazione, non un gate di sicurezza, e non deve poter abbattere il runtime.
 
 Il server di base non inventa telemetria: quando il runtime o l'adapter di percezione non sono collegati, l'interfaccia mostra esplicitamente `unavailable` / `not connected`.
 

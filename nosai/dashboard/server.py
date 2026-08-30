@@ -17,10 +17,18 @@ from urllib.parse import urlparse
 import urllib.error
 import urllib.request
 
+from nosai.core.data_classification import unknown_published_value_errors
+
 ROOT = Path(__file__).resolve().parent / "static"
 HOST = os.getenv("NOSAI_DASHBOARD_HOST", "127.0.0.1")
 PORT = int(os.getenv("NOSAI_DASHBOARD_PORT", "8765"))
-RUNTIME_URL = os.getenv("NOSAI_RUNTIME_URL", "").rstrip("/")
+
+# The operator UI and the C# runtime are two processes on two ports. Defaulting
+# this to "" meant the UI never called the runtime unless the operator happened to
+# know the variable, so a healthy runtime still rendered as "not connected".
+# 8766 is Gate1HostOptions.DefaultDashboardPort; keep the two in step.
+DEFAULT_RUNTIME_URL = "http://127.0.0.1:8766"
+RUNTIME_URL = os.getenv("NOSAI_RUNTIME_URL", DEFAULT_RUNTIME_URL).rstrip("/")
 
 
 @dataclass
@@ -52,6 +60,21 @@ LOCK = threading.RLock()
 GATE1_CONTRACT_VERSION = "gate1.snapshot.v1"
 
 
+def accept_gate1_payload(payload: Any) -> tuple[dict[str, Any] | None, str | None]:
+    """Validate a Gate 1 snapshot before the dashboard treats it as live."""
+    if not isinstance(payload, dict):
+        return None, "malformed_snapshot"
+
+    version = payload.get("contractVersion")
+    if version != GATE1_CONTRACT_VERSION:
+        return None, "unsupported_contract_version:" + str(version or "missing")
+
+    if unknown_published_value_errors(payload):
+        return None, "unknown_field_published_a_value"
+
+    return payload, None
+
+
 def fetch_gate1_snapshot() -> tuple[dict[str, Any] | None, str | None]:
     """Return the runtime snapshot, or None plus the reason it is unusable."""
     if not RUNTIME_URL:
@@ -62,16 +85,7 @@ def fetch_gate1_snapshot() -> tuple[dict[str, Any] | None, str | None]:
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError):
         return None, "runtime_unreachable"
 
-    if not isinstance(payload, dict):
-        return None, "malformed_snapshot"
-
-    version = payload.get("contractVersion")
-    if version != GATE1_CONTRACT_VERSION:
-        # An unrecognised version is not a live reading. Fail closed rather than
-        # showing fields whose meaning is no longer guaranteed.
-        return None, "unsupported_contract_version:" + str(version or "missing")
-
-    return payload, None
+    return accept_gate1_payload(payload)
 
 
 def runtime_snapshot() -> dict[str, Any]:
@@ -177,16 +191,42 @@ class Handler(BaseHTTPRequestHandler):
         print(f"[dashboard] {self.address_string()} - {fmt % args}")
 
 
-def serve(host: str = HOST, port: int = PORT) -> None:
-    httpd = ThreadingHTTPServer((host, port), Handler)
+class DashboardHTTPServer(ThreadingHTTPServer):
+    """Refuses to share a port with an already-running dashboard.
+
+    ``HTTPServer`` sets ``allow_reuse_address``, which on Windows lets a second
+    process bind a port that is already in use. Two dashboards would then split
+    the requests between them and neither would be wrong-looking enough to
+    notice. Binding must fail loudly instead.
+    """
+
+    allow_reuse_address = os.name != "nt"
+    daemon_threads = True
+
+
+def serve(host: str = HOST, port: int = PORT) -> int:
+    """Serve the operator UI. Returns a process exit code."""
+    try:
+        httpd = DashboardHTTPServer((host, port), Handler)
+    except OSError as exc:
+        print(
+            f"[dashboard] cannot bind http://{host}:{port} ({exc.strerror or exc}). "
+            f"Another process already holds the port; stop it or set NOSAI_DASHBOARD_PORT."
+        )
+        return 1
+
     print(f"NosAi local dashboard: http://{host}:{port}")
+    print(
+        f"[dashboard] runtime source: {RUNTIME_URL or 'not configured (set NOSAI_RUNTIME_URL)'}"
+    )
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         httpd.server_close()
+    return 0
 
 
 if __name__ == "__main__":
-    serve()
+    raise SystemExit(serve())

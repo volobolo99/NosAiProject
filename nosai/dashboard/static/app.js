@@ -25,6 +25,12 @@ function sourceLabel(field) {
   return field && field.source ? field.source : 'UNKNOWN';
 }
 
+function fieldLabel(field) {
+  const value = classified(field);
+  const source = sourceLabel(field);
+  return source === 'UNKNOWN' ? 'UNKNOWN' : `${value} [${source}]`;
+}
+
 function render(state) {
   document.querySelector('#mode').textContent = state.mode;
   document.querySelector('#watchdog').textContent = state.mode;
@@ -54,6 +60,19 @@ function render(state) {
   document.querySelector('#res-ram-src').textContent = sourceLabel(ram);
   document.querySelector('#res-client').textContent = client ? client.status : 'UNKNOWN';
   document.querySelector('#res-client-src').textContent = client ? sourceLabel(client.attached) : 'UNKNOWN';
+  document.querySelector('#client-status').textContent = client ? `${client.status} [${sourceLabel(client.attached)}]` : 'UNKNOWN';
+  document.querySelector('#client-name').textContent = fieldLabel(client && client.processName);
+  document.querySelector('#client-pid').textContent = fieldLabel(client && client.processId);
+  document.querySelector('#client-title').textContent = fieldLabel(client && client.windowTitle);
+  document.querySelector('#client-handle').textContent = fieldLabel(client && client.windowHandle);
+  document.querySelector('#client-responding').textContent = fieldLabel(client && client.processResponding);
+  document.querySelector('#client-visible').textContent = fieldLabel(client && client.windowVisible);
+  const gameplay = client && client.gameplayBaseline;
+  document.querySelector('#client-gameplay').textContent = gameplay
+    ? `${sourceLabel(gameplay)}${gameplay.failureReason ? ' · ' + gameplay.failureReason : ''}`
+    : 'UNKNOWN';
+  document.querySelector('#client-warning').textContent = (client && (client.warning || client.failureReason))
+    || (state.gate1_failure ? `runtime: ${state.gate1_failure}` : 'No client warning.');
   document.querySelectorAll('[data-config]').forEach(el => {
     const key = el.dataset.config;
     if (key in state.config) {

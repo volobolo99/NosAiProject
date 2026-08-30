@@ -80,3 +80,27 @@ class ClassifiedValue(Generic[T]):
             "warning": self.warning,
             "failureReason": self.failure_reason,
         }
+
+
+def iter_classified_wire_fields(payload: Any, path: str = "") -> Any:
+    """Yield (path, field) for every classified wire object in a JSON payload."""
+    if isinstance(payload, dict):
+        if "source" in payload and "value" in payload:
+            yield path or "$", payload
+        for key, child in payload.items():
+            child_path = f"{path}.{key}" if path else key
+            yield from iter_classified_wire_fields(child, child_path)
+    elif isinstance(payload, list):
+        for index, child in enumerate(payload):
+            yield from iter_classified_wire_fields(child, f"{path}[{index}]")
+
+
+def unknown_published_value_errors(payload: Any) -> list[str]:
+    """UNKNOWN is not a value. A published number/string under UNKNOWN is a contract break."""
+    errors: list[str] = []
+    for path, field in iter_classified_wire_fields(payload):
+        if field.get("source") == DataSource.UNKNOWN.value and field.get("value") is not None:
+            errors.append(f"{path} is UNKNOWN but published value={field['value']!r}")
+        if field.get("source") == DataSource.LIVE.value and field.get("hasObservedValue") is False:
+            errors.append(f"{path} is LIVE but hasObservedValue is false")
+    return errors

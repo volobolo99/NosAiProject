@@ -15,7 +15,8 @@ Il runtime di **NosAi** è stato implementato nativamente in **C# / .NET 8** per
 ## 2. Struttura dei Sottosistemi Principali nel Repository
 
 1. **`NosAi.Runtime.Gate1` — Connettività Base & Dashboard:**
-   - Adapter client di gioco NosTale, telemetria hardware e server HTTP locale su `http://127.0.0.1:8765/`.
+   - Adapter client di gioco NosTale, telemetria hardware e API operatore locale su `http://127.0.0.1:8766/`
+     (l'interfaccia operatore Python resta su `http://127.0.0.1:8765/` e legge questa API).
 2. **`NosAi.Runtime.Gate2` — World Model, Bounded Bus & WAL SQLite:**
    - Modello di stato immutabile, EventBus a capienza limitata, `VRAMContextSlimmer`, persistenza batch asincrona e compressione Delta-Encoding (>70% risparmio banda).
 3. **`NosAi.Runtime.Gate3` — Pipeline di Sicurezza & Ciclo Chiuso:**
@@ -58,7 +59,7 @@ Per avviare il Master Runtime Host in background e aprire il Centro di Controllo
 ```bash
 dotnet run --project NosAi.Host.csproj
 ```
-*(Successivamente, aprire il browser all'indirizzo `http://127.0.0.1:8765/` per accedere alla dashboard interattiva Eye AI View).* 
+*(Successivamente, aprire il browser all'indirizzo `http://127.0.0.1:8767/` per accedere alla dashboard interattiva Eye AI View del Master Host; l'host stampa all'avvio la porta effettivamente aperta).* 
 
 ---
 *Documento ufficiale redatto in conformità alle specifiche di progetto di NosAi 1.0 Beta.*

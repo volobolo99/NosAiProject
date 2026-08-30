@@ -18,7 +18,11 @@ public sealed class Gate5IntegratedEngine : IAsyncDisposable
     public HardwareBaselineProfiler HardwareProfiler => _hardwareProfiler;
     public ExternalStorageDiscoveryManager StorageManager => _storageManager;
 
-    public Gate5IntegratedEngine(int httpPort = 8765)
+    // 8765 is the Python operator UI's port. Every embedded HTTP surface in the
+    // repository gets its own default so two of them can run side by side.
+    public const int DefaultHttpPort = 8768;
+
+    public Gate5IntegratedEngine(int httpPort = DefaultHttpPort)
     {
         _providerRouter = new ProviderRouter(ProviderRoutingPolicy.StrictLocalOnly);
         _hardwareProfiler = new HardwareBaselineProfiler();

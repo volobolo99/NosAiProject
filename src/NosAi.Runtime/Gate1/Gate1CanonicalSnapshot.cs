@@ -7,6 +7,11 @@ namespace NosAi.Runtime.Gate1;
 
 public static class Gate1SnapshotContract
 {
+    /// <summary>
+    /// Additive fields on <c>client</c> (processName, windowHandle, windowTitle,
+    /// processResponding, windowVisible) stay on v1: unknown keys are ignored by
+    /// older readers, and the Python dashboard requires an exact version match.
+    /// </summary>
     public const string Version = "gate1.snapshot.v1";
 }
 
@@ -36,6 +41,11 @@ public sealed record Gate1ClientView(
     ClassifiedValue<bool> WindowDetected,
     ClassifiedValue<bool> Attached,
     ClassifiedValue<int?> ProcessId,
+    ClassifiedValue<string> ProcessName,
+    ClassifiedValue<string> WindowHandle,
+    ClassifiedValue<string> WindowTitle,
+    ClassifiedValue<bool> ProcessResponding,
+    ClassifiedValue<bool> WindowVisible,
     ClassifiedValue<string> Availability,
     ClassifiedValue<object> GameplayBaseline,
     string Status,
@@ -92,6 +102,11 @@ public sealed record Gate1CanonicalSnapshot(
             windowDetected = Client.WindowDetected.ToWire(),
             attached = Client.Attached.ToWire(),
             processId = Client.ProcessId.ToWire(),
+            processName = Client.ProcessName.ToWire(),
+            windowHandle = Client.WindowHandle.ToWire(),
+            windowTitle = Client.WindowTitle.ToWire(),
+            processResponding = Client.ProcessResponding.ToWire(),
+            windowVisible = Client.WindowVisible.ToWire(),
             availability = Client.Availability.ToWire(),
             gameplayBaseline = Client.GameplayBaseline.ToWire(),
             status = Client.Status,
@@ -132,7 +147,7 @@ public static class Gate1SnapshotFactory
         var clientObserved = client.ObservedAtUtc;
         var gameplayUnknown = ClassifiedValue<object>.Unknown(
             "gameplay_provider_not_available",
-            "Gate 1 does not extract gameplay memory. Process/window attachment is the current client baseline.");
+            "Gate 1 does not extract gameplay memory. Process/window/title are the current client baseline.");
 
         return new Gate1CanonicalSnapshot(
             ContractVersion: Gate1SnapshotContract.Version,
@@ -147,6 +162,21 @@ public static class Gate1SnapshotFactory
                 ProcessId: client.ProcessId is int pid
                     ? ClassifiedValue<int?>.Live(pid, clientObserved)
                     : ClassifiedValue<int?>.Unknown(client.FailureReason ?? "process_not_attached"),
+                ProcessName: ClassifyText(client.ProcessName, clientObserved, client.FailureReason ?? "process_not_attached"),
+                WindowHandle: client.WindowHandle != IntPtr.Zero
+                    ? ClassifiedValue<string>.Live($"0x{client.WindowHandle.ToInt64():X}", clientObserved)
+                    : ClassifiedValue<string>.Unknown(client.FailureReason ?? "window_not_attached"),
+                WindowTitle: ClassifyText(
+                    client.WindowTitle,
+                    clientObserved,
+                    client.WindowTitleFailureReason ?? "window_title_unavailable"),
+                ProcessResponding: client.ProcessResponding is bool responding
+                    ? ClassifiedValue<bool>.Live(responding, clientObserved)
+                    : ClassifiedValue<bool>.Unknown(client.FailureReason ?? "process_not_attached"),
+                WindowVisible: client.WindowVisible is bool visible
+                    ? ClassifiedValue<bool>.Live(visible, clientObserved)
+                    : ClassifiedValue<bool>.Unknown(
+                        client.WindowHandle == IntPtr.Zero ? "window_not_attached" : "window_visibility_unavailable"),
                 Availability: ClassifiedValue<string>.Live(client.Availability.ToString(), clientObserved),
                 GameplayBaseline: gameplayUnknown,
                 Status: client.Status,
@@ -172,4 +202,9 @@ public static class Gate1SnapshotFactory
                 ExecutionMode: ClassifiedValue<string>.Live("disabled_in_gate1", now)),
             Warning: warning);
     }
+
+    private static ClassifiedValue<string> ClassifyText(string? value, DateTime observedAtUtc, string missingReason)
+        => string.IsNullOrWhiteSpace(value)
+            ? ClassifiedValue<string>.Unknown(missingReason)
+            : ClassifiedValue<string>.Live(value, observedAtUtc);
 }

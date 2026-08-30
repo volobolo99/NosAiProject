@@ -40,7 +40,19 @@
         <label>Simulation <input type="checkbox" data-config="simulation_enabled"></label>
         <label>Auto execution <input type="checkbox" data-config="auto_execute"></label>
         <label>Cloud escalation <input type="checkbox" data-config="cloud_escalation"></label>
-      </div></article><article class="panel"><div class="panel-title"><b>Closed-loop pipeline</b><span>live architecture</span></div><div class="pipeline"><i>OBSERVE</i><em>→</em><i>WORLDSTATE</i><em>→</em><i>SIMULATE</i><em>→</em><i>RANK</i><em>→</em><i>PLAN</i><em>→</em><i>GUARD</i><em>→</em><i>EXECUTE</i><em>→</em><i>VERIFY</i></div></article></div>
+      </div></article><article class="panel"><div class="panel-title"><b>Client OS baseline</b><span>process/window only</span></div>
+        <div class="kv">
+          <span>Status</span><b id="client-status">UNKNOWN</b>
+          <span>Process</span><b id="client-name">UNKNOWN</b>
+          <span>PID</span><b id="client-pid">UNKNOWN</b>
+          <span>Window title</span><b id="client-title">UNKNOWN</b>
+          <span>Handle</span><b id="client-handle">UNKNOWN</b>
+          <span>Responding</span><b id="client-responding">UNKNOWN</b>
+          <span>Visible</span><b id="client-visible">UNKNOWN</b>
+          <span>Gameplay</span><b id="client-gameplay">UNKNOWN</b>
+        </div>
+        <p class="muted-text" id="client-warning">No runtime snapshot yet.</p>
+      </article></div>
     </section>
 
     <section id="eye" class="view"><div class="eye-toolbar"><div><b>Eye Ai View</b><span>Client projection + AI perception overlay</span></div><div><button class="toggle active">PERCEPTION</button><button class="toggle active">ROI</button><button class="toggle">PREDICTION</button><button class="toggle active">PARAMETERS</button></div></div><div class="eye-stage"><div class="screen-placeholder"><div class="screen-grid"></div><div class="crosshair"></div><div class="screen-note"><b>CLIENT CAPTURE UNAVAILABLE</b><span>Connect DXGI/Perception backend to display the real client frame.</span></div></div><div class="overlay-card"><div class="tag">AI PERCEPTION</div><h3>No live frame</h3><div class="kv"><span>Capture</span><b>not connected</b><span>ROI</span><b>—</b><span>Objects</span><b>—</b><span>Confidence</span><b>—</b><span>Prediction</span><b>not available</b></div></div></div><div class="grid three"><article class="panel compact"><b>What AI sees</b><p>Semantic entities, UI regions, coordinates, OCR and temporal tracking when the perception backend is connected.</p></article><article class="panel compact"><b>What AI estimates</b><p>Predicted outcomes and confidence are shown separately from observed facts.</p></article><article class="panel compact"><b>Provenance</b><p>Every overlay item must identify source, timestamp, WorldState version and confidence.</p></article></div></section>

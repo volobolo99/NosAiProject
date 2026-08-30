@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -29,7 +30,15 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
 
     public RuntimeHealthStatus Health => _health;
     public int GuardPort => _channel.LocalPort;
+
+    /// <summary>The port the operator dashboard is actually listening on, or null when it is disabled or failed to bind.</summary>
     public int? DashboardPort => _dashboard?.BoundPort;
+
+    /// <summary>
+    /// Structured reason the operator dashboard is not serving: <c>dashboard_disabled</c>
+    /// when it was never requested, otherwise the bind failure. Null while it is up.
+    /// </summary>
+    public string? DashboardFailureReason { get; private set; } = "dashboard_not_started";
     public Gate1RuntimeSnapshotProvider SnapshotProvider => _snapshot;
     public RealClientConnector Client => _client;
     public GuardAiNetworkChannel Channel => _channel;
@@ -79,14 +88,47 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         });
 
         await _client.StartRealNetworkTransportAsync(cancellationToken).ConfigureAwait(false);
-        _dashboard?.Start();
+        StartDashboard();
         _health = attached ? RuntimeHealthStatus.Healthy : RuntimeHealthStatus.Degraded;
         _logger.Info("Gate 1 runtime is listening.", new Dictionary<string, object?>
         {
             ["health"] = _health.ToString(),
             ["guardPort"] = GuardPort,
-            ["dashboard"] = DashboardPort is int port ? $"http://127.0.0.1:{port}/" : "disabled"
+            ["dashboard"] = DashboardPort is int port ? $"http://127.0.0.1:{port}/" : "unavailable",
+            ["dashboardFailure"] = DashboardFailureReason
         });
+    }
+
+    /// <summary>
+    /// The dashboard is an observability surface, not a safety gate. A port already
+    /// held by another process used to throw out of <see cref="StartAsync"/> and kill
+    /// the whole runtime, taking the Guard channel and the attached client with it.
+    /// It now degrades to "no dashboard" and says why.
+    /// </summary>
+    private void StartDashboard()
+    {
+        if (_dashboard is null)
+        {
+            DashboardFailureReason = "dashboard_disabled";
+            return;
+        }
+
+        if (_dashboard.TryStart(out var failureReason))
+        {
+            DashboardFailureReason = null;
+            return;
+        }
+
+        DashboardFailureReason = failureReason;
+        _logger.Error(
+            "Operator dashboard could not bind; the runtime continues without it.",
+            new InvalidOperationException(failureReason ?? "dashboard_bind_failed"),
+            new Dictionary<string, object?>
+            {
+                ["requestedPort"] = _options.DashboardPort,
+                ["reason"] = failureReason,
+                ["remedy"] = "Free the port, pass --dashboard-port <n>, or pass --dashboard-port 0 for an ephemeral port."
+            });
     }
 
     public Gate1CanonicalSnapshot Capture() => _snapshot.Capture();
@@ -166,42 +208,178 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     }
 }
 
+/// <summary>
+/// Read-mostly operator surface for Gate 1: it serves the classified snapshot and
+/// accepts the emergency-stop command. It is an observability surface, not a
+/// safety gate, so a failure to bind must degrade the dashboard and never take
+/// the runtime (Guard channel, client attachment) down with it.
+/// </summary>
 public sealed class Gate1OperatorServer : IAsyncDisposable
 {
-    private readonly HttpListener _listener;
+    /// <summary>Attempts used when resolving an ephemeral port (port 0).</summary>
+    private const int EphemeralBindAttempts = 8;
+
     private readonly Func<Gate1CanonicalSnapshot> _snapshot;
     private readonly Action<string> _commandHandler;
-    private CancellationTokenSource? _cts;
     private readonly int _requestedPort;
+    private HttpListener? _listener;
+    private CancellationTokenSource? _cts;
+    private bool _disposed;
 
-    public int BoundPort { get; private set; }
+    /// <summary>
+    /// The port actually bound, or <c>null</c> while the server is not listening.
+    /// It is never a guess: reporting the requested port before the bind succeeded
+    /// is what previously made an unreachable dashboard look reachable.
+    /// </summary>
+    public int? BoundPort { get; private set; }
+
+    /// <summary>Why the last start attempt failed; <c>null</c> while listening.</summary>
+    public string? FailureReason { get; private set; }
+
+    public bool IsListening => _listener?.IsListening == true;
 
     public Gate1OperatorServer(int port, Func<Gate1CanonicalSnapshot> snapshot, Action<string> commandHandler)
     {
+        if (port is < 0 or > 65535)
+            throw new ArgumentOutOfRangeException(nameof(port), port, "Dashboard port must be between 0 and 65535.");
         _requestedPort = port;
-        _snapshot = snapshot;
-        _commandHandler = commandHandler;
-        _listener = new HttpListener();
-        var bindPort = port == 0 ? 8765 : port;
-        BoundPort = bindPort;
-        _listener.Prefixes.Add($"http://127.0.0.1:{bindPort}/");
+        _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
     }
 
-    public void Start()
+    /// <summary>
+    /// Binds the loopback listener. Returns false with a structured reason instead
+    /// of throwing, so the caller can keep the runtime alive without the dashboard.
+    /// </summary>
+    public bool TryStart(out string? failureReason)
     {
-        _listener.Start();
-        BoundPort = _requestedPort == 0 ? BoundPort : _requestedPort;
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (IsListening)
+        {
+            failureReason = null;
+            return true;
+        }
+
+        failureReason = _requestedPort == 0 ? BindEphemeral() : BindFixed(_requestedPort);
+        FailureReason = failureReason;
+        if (failureReason is not null)
+        {
+            BoundPort = null;
+            return false;
+        }
+
         _cts = new CancellationTokenSource();
         _ = LoopAsync(_cts.Token);
+        return true;
     }
+
+    /// <summary>Starts the dashboard or throws. Use <see cref="TryStart"/> when the caller must survive a busy port.</summary>
+    public void Start()
+    {
+        if (!TryStart(out var reason))
+            throw new InvalidOperationException($"Gate 1 operator dashboard could not start: {reason}");
+    }
+
+    /// <summary>
+    /// An explicitly requested port is never silently swapped for another one: an
+    /// operator who pinned a port would otherwise be told the dashboard is up at
+    /// an address that serves nothing.
+    /// </summary>
+    private string? BindFixed(int port)
+    {
+        var listener = CreateListener(port);
+        try
+        {
+            listener.Start();
+        }
+        catch (HttpListenerException ex)
+        {
+            listener.Close();
+            return DescribeBindFailure(port, ex);
+        }
+        catch (ObjectDisposedException)
+        {
+            return $"dashboard_port_unavailable:{port}";
+        }
+
+        _listener = listener;
+        BoundPort = port;
+        return null;
+    }
+
+    /// <summary>
+    /// Port 0 means "any free loopback port". HttpListener cannot bind 0 itself, so
+    /// a socket picks a free port first; the gap between probe and bind is a race,
+    /// hence the retries.
+    /// </summary>
+    private string? BindEphemeral()
+    {
+        string? lastFailure = null;
+        for (var attempt = 0; attempt < EphemeralBindAttempts; attempt++)
+        {
+            int candidate;
+            try
+            {
+                candidate = ReserveFreeLoopbackPort();
+            }
+            catch (SocketException ex)
+            {
+                return $"dashboard_port_probe_failed:{ex.SocketErrorCode}";
+            }
+
+            lastFailure = BindFixed(candidate);
+            if (lastFailure is null)
+                return null;
+        }
+
+        return lastFailure ?? "dashboard_ephemeral_port_unavailable";
+    }
+
+    private static int ReserveFreeLoopbackPort()
+    {
+        var probe = new TcpListener(IPAddress.Loopback, 0);
+        probe.Start();
+        try
+        {
+            return ((IPEndPoint)probe.LocalEndpoint).Port;
+        }
+        finally
+        {
+            probe.Stop();
+        }
+    }
+
+    private static HttpListener CreateListener(int port)
+    {
+        var listener = new HttpListener();
+        listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+        return listener;
+    }
+
+    /// <summary>
+    /// Maps the Win32 error behind HttpListenerException onto a reason an operator
+    /// can act on. Error 32 (sharing violation) is what a second process already
+    /// holding the port looks like, and it used to surface only as a stack trace.
+    /// </summary>
+    private static string DescribeBindFailure(int port, HttpListenerException ex)
+        => ex.ErrorCode switch
+        {
+            32 or 183 => $"dashboard_port_in_use:{port}",
+            5 => $"dashboard_port_access_denied:{port}",
+            _ => $"dashboard_bind_failed:{port}:{ex.ErrorCode}"
+        };
 
     private async Task LoopAsync(CancellationToken token)
     {
-        while (!token.IsCancellationRequested && _listener.IsListening)
+        var listener = _listener;
+        if (listener is null)
+            return;
+
+        while (!token.IsCancellationRequested && listener.IsListening)
         {
             try
             {
-                var context = await _listener.GetContextAsync().ConfigureAwait(false);
+                var context = await listener.GetContextAsync().ConfigureAwait(false);
                 _ = Task.Run(() => Handle(context), token);
             }
             catch (HttpListenerException) { break; }
@@ -214,65 +392,82 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
     {
         try
         {
-            var path = context.Request.Url?.AbsolutePath ?? "/";
-            var method = context.Request.HttpMethod;
+            // The response is materialised before a single byte is written, so a
+            // snapshot that throws yields an honest 500 instead of a truncated 200
+            // that the dashboard would parse as live data.
+            var (status, contentType, body) = BuildResponse(context);
+            context.Response.StatusCode = status;
+            context.Response.ContentType = contentType;
+            context.Response.Headers["Cache-Control"] = "no-store";
+            context.Response.ContentLength64 = body.Length;
+            context.Response.OutputStream.Write(body, 0, body.Length);
+        }
+        catch (HttpListenerException) { }
+        catch (ObjectDisposedException) { }
+        finally
+        {
+            try { context.Response.OutputStream.Close(); }
+            catch (HttpListenerException) { }
+            catch (ObjectDisposedException) { }
+        }
+    }
+
+    private (int Status, string ContentType, byte[] Body) BuildResponse(HttpListenerContext context)
+    {
+        var path = context.Request.Url?.AbsolutePath ?? "/";
+        var method = context.Request.HttpMethod;
+        try
+        {
             if (method == "GET" && (path == "/api/gate1" || path == "/api/telemetry" || path == "/api/state"))
-            {
-                WriteJson(context, 200, _snapshot().ToWire());
-                return;
-            }
+                return Json(200, _snapshot().ToWire());
+
             if (method == "GET" && path == "/api/health")
             {
                 var snapshot = _snapshot();
-                WriteJson(context, 200, new
+                return Json(200, new
                 {
                     ok = snapshot.RuntimeStatus is RuntimeHealthStatus.Healthy or RuntimeHealthStatus.Degraded,
                     service = "gate1-operator",
                     runtimeStatus = snapshot.RuntimeStatus.ToString(),
                     contractVersion = snapshot.ContractVersion
                 });
-                return;
             }
+
             if (method == "POST" && path == "/api/command")
             {
                 using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
-                var command = reader.ReadToEnd();
-                _commandHandler(command);
-                WriteJson(context, 202, new { status = "ACCEPTED", execution = "disabled_in_gate1" });
-                return;
+                _commandHandler(reader.ReadToEnd());
+                return Json(202, new { status = "ACCEPTED", execution = "disabled_in_gate1" });
             }
 
-            var html = Gate1DashboardHtml.Render();
-            var bytes = Encoding.UTF8.GetBytes(html);
-            context.Response.ContentType = "text/html; charset=utf-8";
-            context.Response.StatusCode = 200;
-            context.Response.ContentLength64 = bytes.Length;
-            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+            return (200, "text/html; charset=utf-8", Encoding.UTF8.GetBytes(Gate1DashboardHtml.Render()));
         }
-        finally
+        catch (Exception ex)
         {
-            context.Response.OutputStream.Close();
+            return Json(500, new { error = "operator_endpoint_failed", reason = $"{ex.GetType().Name}: {ex.Message}" });
         }
     }
 
-    private static void WriteJson(HttpListenerContext context, int status, object value)
-    {
-        var payload = JsonSerializer.SerializeToUtf8Bytes(value, new JsonSerializerOptions { WriteIndented = true });
-        context.Response.ContentType = "application/json; charset=utf-8";
-        context.Response.StatusCode = status;
-        context.Response.ContentLength64 = payload.Length;
-        context.Response.OutputStream.Write(payload, 0, payload.Length);
-    }
+    private static (int Status, string ContentType, byte[] Body) Json(int status, object value)
+        => (status,
+            "application/json; charset=utf-8",
+            JsonSerializer.SerializeToUtf8Bytes(value, new JsonSerializerOptions { WriteIndented = true }));
 
     public ValueTask DisposeAsync()
     {
+        if (_disposed)
+            return ValueTask.CompletedTask;
+        _disposed = true;
         _cts?.Cancel();
-        if (_listener.IsListening)
+        if (_listener is not null)
         {
-            _listener.Stop();
+            if (_listener.IsListening)
+                _listener.Stop();
             _listener.Close();
+            _listener = null;
         }
         _cts?.Dispose();
+        BoundPort = null;
         return ValueTask.CompletedTask;
     }
 }

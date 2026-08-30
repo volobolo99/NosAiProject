@@ -169,21 +169,51 @@ namespace NosAi.Host
         private readonly HttpListener _listener;
         private readonly Func<MasterSystemTelemetry> _telemetryProvider;
         private readonly Action<string> _commandHandler;
+        private readonly int _port;
         private CancellationTokenSource? _serverCts;
+
+        /// <summary>The port actually bound, or null while the control centre is not listening.</summary>
+        public int? BoundPort { get; private set; }
 
         public EmbeddedControlCenterServer(int port, Func<MasterSystemTelemetry> telemetryProvider, Action<string> commandHandler)
         {
             _telemetryProvider = telemetryProvider;
             _commandHandler = commandHandler;
+            _port = port;
             _listener = new HttpListener();
             _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
         }
 
-        public void Start()
+        /// <summary>
+        /// Binds the control centre, reporting a busy port instead of throwing. The
+        /// control centre observes the host; it must not be able to abort it.
+        /// </summary>
+        public bool TryStart(out string? failureReason)
         {
-            _listener.Start();
+            try
+            {
+                _listener.Start();
+            }
+            catch (HttpListenerException ex)
+            {
+                failureReason = ex.ErrorCode is 32 or 183
+                    ? $"control_center_port_in_use:{_port}"
+                    : $"control_center_bind_failed:{_port}:{ex.ErrorCode}";
+                BoundPort = null;
+                return false;
+            }
+
+            BoundPort = _port;
             _serverCts = new CancellationTokenSource();
             _ = ServerLoopAsync(_serverCts.Token);
+            failureReason = null;
+            return true;
+        }
+
+        public void Start()
+        {
+            if (!TryStart(out var reason))
+                throw new InvalidOperationException($"Control centre could not start: {reason}");
         }
 
         private async Task ServerLoopAsync(CancellationToken token)
@@ -268,7 +298,7 @@ namespace NosAi.Host
             <body>
                 <div class="header">
                     <h2>NosAi 1.0 Beta — Centro di Controllo Master (Eye AI View)</h2>
-                    <div class="badge">HOST ATTIVO: http://127.0.0.1:8765</div>
+                    <div class="badge" id="hostBadge">HOST ATTIVO</div>
                 </div>
                 <div class="grid">
                     <div class="card">
@@ -289,6 +319,9 @@ namespace NosAi.Host
                     </div>
                 </div>
                 <script>
+                    // The badge used to hardcode a port. It now reports the address the
+                    // page was actually served from, so it cannot name a dead one.
+                    document.getElementById('hostBadge').textContent = 'HOST ATTIVO: ' + window.location.origin;
                     function classified(value, source) {
                         if (!source || source === 'UNKNOWN' || value === null || value === undefined) return 'UNKNOWN';
                         return value + ' [' + source + ']';
@@ -350,7 +383,14 @@ namespace NosAi.Host
         public MasterTrustManager Trust => _trustManager;
         public MasterSafetyGate SafetyGate => _safetyGate;
 
-        public NosAiMasterRuntimeHost(int dashboardPort = 8765)
+        /// <summary>
+        /// 8765 belongs to the Python operator UI and 8766 to the Gate 1 operator
+        /// API, so this host takes 8767. Sharing a default made whichever process
+        /// started second fail to bind.
+        /// </summary>
+        public const int DefaultDashboardPort = 8767;
+
+        public NosAiMasterRuntimeHost(int dashboardPort = DefaultDashboardPort)
         {
             _sessionId = $"NOSAI_SESSION_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}"[..32];
             _trustManager = new MasterTrustManager(TrustTier.Tier2_SemiAutonomous);
@@ -363,11 +403,14 @@ namespace NosAi.Host
             _status = MasterHostStatus.Bootstrapping;
             Trace.WriteLine($"[MasterHost] Inizializzazione NosAi {Version} su architettura C# .NET 8...");
 
-            _controlCenter.Start();
+            if (!_controlCenter.TryStart(out var controlCenterFailure))
+                Trace.WriteLine($"[MasterHost] Centro di Controllo non disponibile: {controlCenterFailure}. L'host prosegue senza dashboard.");
 
             _status = MasterHostStatus.Running;
             Trace.WriteLine("[MasterHost] Tutti i sottosistemi inizializzati con successo.");
-            Trace.WriteLine("[MasterHost] Centro di Controllo operativo su: http://127.0.0.1:8765/");
+            Trace.WriteLine(_controlCenter.BoundPort is int controlCenterPort
+                ? $"[MasterHost] Centro di Controllo operativo su: http://127.0.0.1:{controlCenterPort}/"
+                : "[MasterHost] Centro di Controllo non in ascolto.");
 
             _ = RunMainExecutiveLoopAsync(_hostCts.Token);
             await Task.CompletedTask;
@@ -664,11 +707,11 @@ namespace NosAi.Host
             Console.WriteLine("=================================================================\n");
             Console.ResetColor();
 
-            await using var host = new NosAiMasterRuntimeHost(dashboardPort: 8765);
+            await using var host = new NosAiMasterRuntimeHost();
             await host.StartHostAsync();
 
             Console.WriteLine(">> Master Host operativo in background.");
-            Console.WriteLine(">> Aprire il browser all'indirizzo: http://127.0.0.1:8765/ per la Dashboard.");
+            Console.WriteLine($">> Aprire il browser all'indirizzo: http://127.0.0.1:{NosAiMasterRuntimeHost.DefaultDashboardPort}/ per la Dashboard.");
             Console.WriteLine(">> Premere Invio per eseguire i test di certificazione integrata...\n");
 
             Console.ReadLine();
