@@ -38,6 +38,9 @@ The gate in-process suites can also be invoked directly:
 ```bash
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate1-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate2-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate3-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate4-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate5-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
 ```
 
