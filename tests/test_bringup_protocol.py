@@ -17,4 +17,6 @@ def test_protocol_version_is_enforced():
 def test_message_contracts():
     assert capabilities("s", 2, ["heartbeat"]).payload == {"capabilities": ["heartbeat"]}
     assert heartbeat("s", 3).type == "HEARTBEAT"
-    assert PROTOCOL_VERSION == "1.0"
+    # Bumped to 1.1 by 16bed70, which made the nonce mandatory in the
+    # message envelope: an intentional, incompatible protocol change.
+    assert PROTOCOL_VERSION == "1.1"
