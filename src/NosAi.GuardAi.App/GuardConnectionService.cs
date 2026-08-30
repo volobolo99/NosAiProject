@@ -9,8 +9,13 @@ public enum GuardLinkState
 {
     /// <summary>No session has been attempted. Not "offline": nothing is known yet.</summary>
     Idle,
+
+    /// <summary>Looking for the runtime on the network.</summary>
+    Searching,
+
     Connecting,
     Connected,
+
     /// <summary>The link failed or was refused. <see cref="GuardStatus.Detail"/> says why.</summary>
     Failed
 }
@@ -32,38 +37,51 @@ public sealed record ClassifiedField(string Name, string? Value, string Source)
 public sealed record GuardStatus(
     GuardLinkState State,
     string? Detail,
-    string? Capabilities,
     IReadOnlyList<ClassifiedField> Client,
     string? RuntimeStatus,
+    string? Endpoint,
     DateTimeOffset? ObservedAt)
 {
     public static GuardStatus Idle { get; } =
-        new(GuardLinkState.Idle, null, null, Array.Empty<ClassifiedField>(), null, null);
+        new(GuardLinkState.Idle, null, Array.Empty<ClassifiedField>(), null, null, null);
 
-    public static GuardStatus Failure(string reason) =>
-        new(GuardLinkState.Failed, reason, null, Array.Empty<ClassifiedField>(), null, null);
+    public static GuardStatus Busy(GuardLinkState state, string detail) =>
+        new(state, detail, Array.Empty<ClassifiedField>(), null, null, null);
+
+    public static GuardStatus Failure(string detail) =>
+        new(GuardLinkState.Failed, detail, Array.Empty<ClassifiedField>(), null, null, null);
 }
 
 /// <summary>
-/// Owns the Guard AI session and turns snapshots into something the UI can show.
+/// Owns the Guard AI session end to end, so the screen carries a status and two
+/// buttons and nothing else.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The heartbeat loop is the whole point: the runtime terminates a session that
-/// goes quiet for <see cref="GuardAiClient.HeartbeatTimeout"/>, so the app must
-/// keep beating while it is on screen, and must show the session as lost the
-/// moment it stops.
+/// Everything the operator would otherwise have to handle is resolved here: the
+/// device key is loaded or created and never shown, the runtime's address is
+/// discovered rather than typed, and enrollment is the pairing step done once
+/// over USB. What surfaces is the state of the link.
 /// </para>
 /// <para>
-/// The device key is generated per install in this Gate 1 build and its public
-/// half must be enrolled on the PC. That is a deliberate limitation, not a
-/// finished key lifecycle: see the README for what is still missing.
+/// The heartbeat loop is the whole point: the runtime terminates a session that
+/// goes quiet for <see cref="GuardAiClient.HeartbeatTimeout"/>, so the app must
+/// keep beating while it is on screen and must show the session as lost the
+/// moment it stops.
 /// </para>
 /// </remarks>
 public sealed class GuardConnectionService : IAsyncDisposable
 {
-    // Half the server deadline, so one lost beat does not drop the session.
+    /// <summary>Half the server deadline, so one lost beat does not drop the session.</summary>
     private static readonly TimeSpan BeatInterval = TimeSpan.FromMilliseconds(1000);
+
+    /// <summary>How long to wait for a runtime to answer a discovery probe.</summary>
+    private static readonly TimeSpan DiscoveryTimeout = TimeSpan.FromSeconds(3);
+
+    /// <summary>Loopback: over USB the reverse tunnel makes the PC answer here.</summary>
+    private const string UsbHost = "127.0.0.1";
+
+    private const int GuardPort = 17471;
 
     private readonly RSA _deviceKey;
     private GuardAiClient? _client;
@@ -74,48 +92,99 @@ public sealed class GuardConnectionService : IAsyncDisposable
     /// <summary>Raised on every status change, including failures.</summary>
     public event Action<GuardStatus>? StatusChanged;
 
-    public async Task ConnectAsync(string host, int port, CancellationToken cancellationToken = default)
+    public async Task ConnectAsync(GuardTransport transport, CancellationToken cancellationToken = default)
     {
         await StopAsync().ConfigureAwait(false);
-        Publish(new GuardStatus(GuardLinkState.Connecting, $"{host}:{port}", null, Array.Empty<ClassifiedField>(), null, null));
 
-        var client = new GuardAiClient(host, port, _deviceKey);
+        string host;
+        if (transport == GuardTransport.WiFi)
+        {
+            Publish(GuardStatus.Busy(GuardLinkState.Searching, "Ricerca del runtime sulla rete…"));
+            DiscoveredRuntime? found;
+            try
+            {
+                found = await RuntimeDiscovery.FindFirstAsync(DiscoveryTimeout, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Publish(GuardStatus.Failure($"ricerca fallita ({ex.GetType().Name})"));
+                return;
+            }
+
+            if (found is null)
+            {
+                Publish(GuardStatus.Failure(
+                    "nessun runtime trovato sulla rete. Verificare che il PC sia sullo stesso Wi-Fi e che il runtime sia avviato."));
+                return;
+            }
+
+            host = found.Address;
+        }
+        else
+        {
+            host = UsbHost;
+        }
+
+        var endpoint = $"{host}:{GuardPort}";
+        Publish(GuardStatus.Busy(GuardLinkState.Connecting, endpoint));
+
+        var client = new GuardAiClient(host, GuardPort, _deviceKey);
         GuardSession session;
         try
         {
             await client.ConnectAsync(cancellationToken).ConfigureAwait(false);
             session = await client.OpenSessionAsync(cancellationToken).ConfigureAwait(false);
             _client = client;
-            Publish(Describe(session.Capabilities, session.TelemetryJson));
         }
         catch (GuardProtocolException ex)
         {
             await client.DisposeAsync().ConfigureAwait(false);
-            Publish(GuardStatus.Failure(ex.Detail is null ? ex.Reason : $"{ex.Reason} ({ex.Detail})"));
+            Publish(GuardStatus.Failure(Explain(ex, transport)));
             return;
         }
         catch (OperationCanceledException)
         {
             await client.DisposeAsync().ConfigureAwait(false);
-            Publish(GuardStatus.Failure("cancelled"));
+            Publish(GuardStatus.Idle);
             return;
         }
 
+        Publish(Describe(session.TelemetryJson, endpoint));
         _loop = new CancellationTokenSource();
-        // Capabilities are negotiated once at handshake; carry them into the loop so
-        // every later status still reports what the runtime said it allows.
-        _ = BeatAsync(session.Capabilities, _loop.Token);
+        _ = BeatAsync(endpoint, _loop.Token);
     }
 
-    private async Task BeatAsync(string? capabilities, CancellationToken token)
+    /// <summary>
+    /// Turns a protocol failure into something an operator can act on.
+    /// </summary>
+    /// <remarks>
+    /// A refused device and a dead tunnel both surface as "not connected" but need
+    /// opposite responses, and over USB a refused connection almost always means
+    /// the reverse tunnel is gone rather than the runtime being down.
+    /// </remarks>
+    private static string Explain(GuardProtocolException ex, GuardTransport transport) => ex.Reason switch
+    {
+        "authentication_refused" =>
+            "dispositivo non riconosciuto dal runtime. Ripetere l'abbinamento via USB.",
+        "connect_failed" when transport == GuardTransport.Usb =>
+            "runtime irraggiungibile via USB. Ricollegare il cavo e rieseguire l'abbinamento.",
+        "connect_failed" =>
+            "runtime irraggiungibile. Verificare che sia avviato sul PC.",
+        "unsupported_contract_version" =>
+            $"versione del contratto non supportata ({ex.Detail}). Aggiornare l'app o il runtime.",
+        "peer_disconnected" => "sessione chiusa dal runtime.",
+        _ => ex.Detail is null ? ex.Reason : $"{ex.Reason} ({ex.Detail})"
+    };
+
+    private async Task BeatAsync(string endpoint, CancellationToken token)
     {
         try
         {
             while (!token.IsCancellationRequested && _client is { } client)
             {
                 await Task.Delay(BeatInterval, token).ConfigureAwait(false);
-                var telemetry = await client.HeartbeatAsync(token).ConfigureAwait(false);
-                Publish(Describe(capabilities, telemetry));
+                Publish(Describe(await client.HeartbeatAsync(token).ConfigureAwait(false), endpoint));
             }
         }
         catch (OperationCanceledException)
@@ -127,12 +196,14 @@ public sealed class GuardConnectionService : IAsyncDisposable
             // A dropped session must be visible immediately. Leaving the last good
             // snapshot on screen would show the operator stale state as if it were
             // current, which is the one thing this app must never do.
-            Publish(GuardStatus.Failure(ex.Reason));
+            Publish(GuardStatus.Failure(ex.Reason == "peer_disconnected"
+                ? "sessione chiusa dal runtime."
+                : $"sessione interrotta ({ex.Reason})."));
             await StopAsync().ConfigureAwait(false);
         }
     }
 
-    private static GuardStatus Describe(string? capabilities, string telemetryJson)
+    private static GuardStatus Describe(string telemetryJson, string endpoint)
     {
         using var document = JsonDocument.Parse(telemetryJson);
         var root = document.RootElement;
@@ -140,21 +211,20 @@ public sealed class GuardConnectionService : IAsyncDisposable
 
         var fields = new List<ClassifiedField>
         {
-            Field(client, "processName", "Process"),
+            Field(client, "processName", "Processo"),
             Field(client, "processId", "PID"),
-            Field(client, "windowTitle", "Window"),
-            Field(client, "processResponding", "Responding"),
-            Field(client, "windowVisible", "Visible"),
+            Field(client, "windowTitle", "Finestra"),
+            Field(client, "processResponding", "Risponde"),
+            Field(client, "windowVisible", "Visibile"),
             Field(client, "gameplayBaseline", "Gameplay"),
         };
 
-        var runtimeStatus = root.TryGetProperty("runtimeStatus", out var status) ? status.GetString() : null;
         return new GuardStatus(
             GuardLinkState.Connected,
             client.TryGetProperty("status", out var clientStatus) ? clientStatus.GetString() : null,
-            capabilities,
             fields,
-            runtimeStatus,
+            root.TryGetProperty("runtimeStatus", out var status) ? status.GetString() : null,
+            endpoint,
             DateTimeOffset.Now);
     }
 

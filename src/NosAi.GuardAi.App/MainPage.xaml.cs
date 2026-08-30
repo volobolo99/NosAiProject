@@ -3,45 +3,64 @@ using System.Text;
 
 namespace NosAi.GuardAi.App;
 
+/// <summary>
+/// The operator screen: pick a transport, connect, read the state.
+/// </summary>
+/// <remarks>
+/// There is deliberately nothing here about keys, addresses or pairing. The
+/// device identity is loaded and published for enrollment by
+/// <see cref="DeviceIdentity"/>, and the runtime's address is discovered, so the
+/// only thing left to decide is USB or Wi-Fi.
+/// </remarks>
 public partial class MainPage : ContentPage
 {
     private readonly GuardConnectionService _connection;
     private readonly RSA _deviceKey;
+    private GuardTransport _transport;
+    private bool _applyingStoredChoice;
 
     public MainPage()
     {
         InitializeComponent();
 
-        // Persisted in app-private storage, so the identity survives a restart and
-        // the PC does not have to re-enroll on every launch. Not the Android Key
-        // Store: see DeviceIdentity and README.md for what that still costs.
         _deviceKey = DeviceIdentity.LoadOrCreate();
         DeviceIdentity.PublishPublicKey(_deviceKey);
 
         _connection = new GuardConnectionService(_deviceKey);
         _connection.StatusChanged += OnStatusChanged;
 
-        PublicKeyEditor.Text = _deviceKey.ExportSubjectPublicKeyInfoPem();
+        // Restoring the stored choice fires CheckedChanged, which would write the
+        // value straight back; the guard keeps startup from looking like a change.
+        _applyingStoredChoice = true;
+        _transport = TransportPreference.Load();
+        UsbOption.IsChecked = _transport == GuardTransport.Usb;
+        WiFiOption.IsChecked = _transport == GuardTransport.WiFi;
+        _applyingStoredChoice = false;
+
+        UpdateTransportHint();
         Render(GuardStatus.Idle);
     }
 
+    private void OnTransportChanged(object? sender, CheckedChangedEventArgs e)
+    {
+        if (!e.Value || _applyingStoredChoice)
+            return;
+
+        _transport = ReferenceEquals(sender, WiFiOption) ? GuardTransport.WiFi : GuardTransport.Usb;
+        TransportPreference.Save(_transport);
+        UpdateTransportHint();
+    }
+
+    private void UpdateTransportHint() => TransportHint.Text = _transport switch
+    {
+        GuardTransport.WiFi => "Il PC viene cercato sulla rete. Nessun indirizzo da inserire.",
+        _ => "Telefono collegato al PC via cavo USB."
+    };
+
     private async void OnConnectClicked(object? sender, EventArgs e)
     {
-        var host = HostEntry.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(host))
-        {
-            Render(GuardStatus.Failure("indirizzo mancante"));
-            return;
-        }
-
-        if (!int.TryParse(PortEntry.Text?.Trim(), out var port) || port is < 1 or > 65535)
-        {
-            Render(GuardStatus.Failure("porta non valida"));
-            return;
-        }
-
         ConnectButton.IsEnabled = false;
-        await _connection.ConnectAsync(host, port);
+        await _connection.ConnectAsync(_transport);
     }
 
     private async void OnDisconnectClicked(object? sender, EventArgs e)
@@ -50,22 +69,14 @@ public partial class MainPage : ContentPage
         Render(GuardStatus.Idle);
     }
 
-    private async void OnCopyKeyClicked(object? sender, EventArgs e)
-    {
-        await Clipboard.Default.SetTextAsync(PublicKeyEditor.Text);
-        await DisplayAlert(
-            "Chiave copiata",
-            "Salvala sul PC e avvia il runtime con --guard-public-key-path <file>.",
-            "OK");
-    }
-
     private void OnStatusChanged(GuardStatus status) => MainThread.BeginInvokeOnMainThread(() => Render(status));
 
     private void Render(GuardStatus status)
     {
         StateLabel.Text = status.State switch
         {
-            GuardLinkState.Idle => "IDLE",
+            GuardLinkState.Idle => "NON CONNESSO",
+            GuardLinkState.Searching => "RICERCA…",
             GuardLinkState.Connecting => "CONNESSIONE…",
             GuardLinkState.Connected => "CONNESSO",
             _ => "NON CONNESSO"
@@ -79,15 +90,20 @@ public partial class MainPage : ContentPage
         };
 
         DetailLabel.Text = BuildDetail(status);
-        // No timestamp while disconnected: a stale "last seen" next to a dead link
+
+        // No timestamp unless connected: a stale "last seen" beside a dead link
         // reads as if the data were still current.
         ObservedLabel.Text = status is { State: GuardLinkState.Connected, ObservedAt: { } at }
             ? $"Ultimo aggiornamento: {at:HH:mm:ss}"
             : string.Empty;
 
         FieldsView.ItemsSource = status.Client;
-        ConnectButton.IsEnabled = status.State is not GuardLinkState.Connecting;
+
+        var busy = status.State is GuardLinkState.Searching or GuardLinkState.Connecting;
+        ConnectButton.IsEnabled = !busy && status.State != GuardLinkState.Connected;
         DisconnectButton.IsEnabled = status.State is GuardLinkState.Connected;
+        UsbOption.IsEnabled = !busy && status.State != GuardLinkState.Connected;
+        WiFiOption.IsEnabled = UsbOption.IsEnabled;
     }
 
     private static string BuildDetail(GuardStatus status)
@@ -97,16 +113,16 @@ public partial class MainPage : ContentPage
             parts.Append(status.Detail);
         if (status.RuntimeStatus is { Length: > 0 })
             parts.Append(parts.Length > 0 ? $" · runtime {status.RuntimeStatus}" : $"runtime {status.RuntimeStatus}");
-        if (status.Capabilities is { Length: > 0 })
-            parts.Append($"\n{status.Capabilities}");
+        if (status.Endpoint is { Length: > 0 } && status.State == GuardLinkState.Connected)
+            parts.Append($"\n{status.Endpoint}");
         return parts.Length > 0 ? parts.ToString() : "Nessuna sessione avviata.";
     }
 
     protected override async void OnDisappearing()
     {
         base.OnDisappearing();
-        // The runtime drops a session that stops beating; stop deliberately instead
-        // of leaving one to time out while the app is off screen.
+        // The runtime drops a session that stops beating; stop deliberately rather
+        // than leaving one to time out while the app is off screen.
         await _connection.StopAsync();
     }
 }

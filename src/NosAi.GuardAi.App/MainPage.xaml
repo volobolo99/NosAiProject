@@ -13,11 +13,19 @@
                    FontSize="13" TextColor="Gray" />
 
             <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Runtime NosAi (PC)" FontAttributes="Bold" />
-                    <Entry x:Name="HostEntry" Placeholder="Indirizzo LAN del PC, es. 192.168.1.20"
-                           Keyboard="Url" Text="127.0.0.1" />
-                    <Entry x:Name="PortEntry" Placeholder="Porta" Keyboard="Numeric" Text="17471" />
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Collegamento" FontAttributes="Bold" />
+
+                    <!-- The only decision the operator makes. Everything else -
+                         address, key, pairing - is resolved by the app. -->
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="UsbOption" Content="USB" GroupName="transport"
+                                     CheckedChanged="OnTransportChanged" />
+                        <RadioButton x:Name="WiFiOption" Content="Wi-Fi" GroupName="transport"
+                                     CheckedChanged="OnTransportChanged" />
+                    </HorizontalStackLayout>
+                    <Label x:Name="TransportHint" FontSize="12" TextColor="Gray" />
+
                     <HorizontalStackLayout Spacing="10">
                         <Button x:Name="ConnectButton" Text="Connetti" Clicked="OnConnectClicked" />
                         <Button x:Name="DisconnectButton" Text="Disconnetti" Clicked="OnDisconnectClicked"
@@ -28,8 +36,8 @@
 
             <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Stato del collegamento" FontAttributes="Bold" />
-                    <Label x:Name="StateLabel" Text="IDLE" FontSize="20" FontAttributes="Bold" />
+                    <Label Text="Stato" FontAttributes="Bold" />
+                    <Label x:Name="StateLabel" Text="NON CONNESSO" FontSize="20" FontAttributes="Bold" />
                     <Label x:Name="DetailLabel" Text="Nessuna sessione avviata." FontSize="13" TextColor="Gray" />
                     <Label x:Name="ObservedLabel" Text="" FontSize="12" TextColor="Gray" />
                 </VerticalStackLayout>
@@ -50,16 +58,6 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
-            </Frame>
-
-            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Chiave pubblica di questo dispositivo" FontAttributes="Bold" />
-                    <Label Text="Va registrata sul PC: il runtime rifiuta ogni chiave non fidata."
-                           FontSize="12" TextColor="Gray" />
-                    <Editor x:Name="PublicKeyEditor" IsReadOnly="True" HeightRequest="140" FontSize="11" />
-                    <Button Text="Copia chiave pubblica" Clicked="OnCopyKeyClicked" />
                 </VerticalStackLayout>
             </Frame>
 
