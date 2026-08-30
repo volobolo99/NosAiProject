@@ -26,6 +26,16 @@ class WorldState:
     party_ids: tuple[str,...]=()
     pet_ids: tuple[str,...]=()
     partner_ids: tuple[str,...]=()
+
+    def hp_ratio(self) -> Optional[float]:
+        """Observed HP as a fraction of max HP, or None when max HP is unknown.
+
+        Callers must handle None explicitly: an unobserved max HP is not a full
+        bar and not an empty one, so no ratio may be substituted for it.
+        """
+        if self.max_hp is None or self.max_hp <= 0:
+            return None
+        return self.hp / self.max_hp
 @dataclass(frozen=True)
 class Goal:
     name: str
