@@ -208,18 +208,36 @@ public sealed class GuardAiClientTests
                 await using var stream = client.GetStream();
                 uint egress = 1;
 
-                var clientNonce = await ReadFrameAsync(stream, token);
+                // Wire version 3: the hello carries the nonce and the client's
+                // ephemeral key, and both are covered by the proof this stub signs.
+                var clientHello = await ReadFrameAsync(stream, token);
+                var clientNonce = clientHello[..SessionTranscript.NonceLength];
+                var clientEphemeral = clientHello[SessionTranscript.NonceLength..];
+
                 var serverNonce = SessionTranscript.CreateNonce();
+                using var exchange = EphemeralKeyExchange.Create();
+                var serverHello = new byte[SessionAuth.HandshakeHelloLength];
+                serverNonce.CopyTo(serverHello, 0);
+                exchange.PublicKey.CopyTo(serverHello, SessionTranscript.NonceLength);
+
                 await WriteFrameAsync(stream, WireMessageType.Capabilities,
-                    System.Text.Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual"), egress++, token);
-                await WriteFrameAsync(stream, WireMessageType.AuthChallenge, serverNonce, egress++, token);
-                var proof = SessionTranscript.Sign(_runtimeKey, HandshakeRole.Server, clientNonce, serverNonce);
+                    System.Text.Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual;payload=aes256gcm"), egress++, token);
+                await WriteFrameAsync(stream, WireMessageType.AuthChallenge, serverHello, egress++, token);
+                var proof = SessionTranscript.Sign(
+                    _runtimeKey, HandshakeRole.Server, clientNonce, serverNonce, clientEphemeral, exchange.PublicKey);
                 await WriteFrameAsync(stream, WireMessageType.ServerAuthProof, proof, egress++, token);
+
+                var binding = SessionTranscript.ComputeBinding(clientNonce, serverNonce, clientEphemeral, exchange.PublicKey);
+                using var cipher = SessionCipher.ForRuntime(exchange.DeriveSessionMaterial(clientEphemeral, binding));
 
                 await ReadFrameAsync(stream, token); // AuthResponse
                 await WriteFrameAsync(stream, WireMessageType.AuthResult, new byte[] { 1 }, egress++, token);
-                await WriteFrameAsync(stream, WireMessageType.TelemetrySnapshot,
-                    System.Text.Encoding.UTF8.GetBytes($"{{\"contractVersion\":\"{contractVersion}\"}}"), egress, token);
+
+                // The snapshot is sealed, like the real runtime's (ADR-0009).
+                var sealedFrame = cipher.SealFrame(WireMessageType.TelemetrySnapshot, egress,
+                    System.Text.Encoding.UTF8.GetBytes($"{{\"contractVersion\":\"{contractVersion}\"}}"));
+                await stream.WriteAsync(sealedFrame, token);
+                await stream.FlushAsync(token);
 
                 await Task.Delay(TimeSpan.FromSeconds(2), token);
             }

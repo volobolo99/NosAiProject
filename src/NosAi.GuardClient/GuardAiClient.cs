@@ -45,13 +45,19 @@ public sealed record GuardSession(string Capabilities, string TelemetryJson);
 /// PC cannot impersonate the phone.
 /// </para>
 /// <para>
-/// Session contract (wire version 2): connect, <c>SessionHello</c> carrying the
-/// phone's 32-byte nonce, then <c>Capabilities</c>, a 32-byte <c>AuthChallenge</c>
-/// (the runtime's nonce) and <c>ServerAuthProof</c>. The phone verifies the proof
-/// against a pinned runtime public key, answers with a transcript signature, and
-/// receives <c>AuthResult</c> plus the classified snapshot. Heartbeat stays inside
+/// Session contract (wire version 3): connect, <c>SessionHello</c> carrying the
+/// phone's 32-byte nonce and its 65-byte ephemeral P-256 key, then
+/// <c>Capabilities</c>, an <c>AuthChallenge</c> carrying the runtime's nonce and
+/// ephemeral key, and <c>ServerAuthProof</c>. The phone verifies the proof against
+/// a pinned runtime public key, answers with a transcript signature, and receives
+/// <c>AuthResult</c> plus the classified snapshot. Heartbeat stays inside
 /// <see cref="HeartbeatTimeout"/>. Each direction is sequence-guarded independently
 /// from 1.
+/// </para>
+/// <para>
+/// Everything after the handshake is sealed with AES-256-GCM under keys derived
+/// from the ephemeral exchange, which the transcript signatures authenticate
+/// (ADR-0009). A snapshot that arrives in clear is refused, not read.
 /// </para>
 /// </remarks>
 public sealed class GuardAiClient : IAsyncDisposable
@@ -70,6 +76,7 @@ public sealed class GuardAiClient : IAsyncDisposable
     private readonly SequenceGuard _ingress = new();
     private TcpClient? _client;
     private NetworkStream? _stream;
+    private SessionCipher? _cipher;
     private bool _disposed;
 
     /// <param name="privateKey">
@@ -132,18 +139,47 @@ public sealed class GuardAiClient : IAsyncDisposable
     public async Task<GuardSession> OpenSessionAsync(CancellationToken cancellationToken = default)
     {
         var clientNonce = SessionTranscript.CreateNonce();
-        await SendAsync(WireMessageType.SessionHello, clientNonce, cancellationToken).ConfigureAwait(false);
+        using var exchange = EphemeralKeyExchange.Create();
+        var clientEphemeral = exchange.PublicKey;
+
+        var hello = new byte[SessionTranscript.NonceLength + SessionTranscript.EphemeralKeyLength];
+        clientNonce.CopyTo(hello, 0);
+        clientEphemeral.CopyTo(hello, SessionTranscript.NonceLength);
+        await SendAsync(WireMessageType.SessionHello, hello, cancellationToken).ConfigureAwait(false);
 
         var capabilities = await ExpectAsync(WireMessageType.Capabilities, cancellationToken).ConfigureAwait(false);
-        var serverNonce = await ExpectAsync(WireMessageType.AuthChallenge, cancellationToken).ConfigureAwait(false);
-        if (serverNonce.Length != SessionTranscript.NonceLength)
-            throw new GuardProtocolException("invalid_challenge_length", serverNonce.Length.ToString());
+        var challenge = await ExpectAsync(WireMessageType.AuthChallenge, cancellationToken).ConfigureAwait(false);
+        if (challenge.Length != hello.Length)
+            throw new GuardProtocolException("invalid_challenge_length", challenge.Length.ToString());
+
+        var serverNonce = challenge[..SessionTranscript.NonceLength];
+        var serverEphemeral = challenge[SessionTranscript.NonceLength..];
 
         var serverProof = await ExpectAsync(WireMessageType.ServerAuthProof, cancellationToken).ConfigureAwait(false);
-        if (!VerifyRuntimeProof(clientNonce, serverNonce, serverProof))
+
+        // Verify before deriving anything. The proof is what says the ephemeral key
+        // just received belongs to the runtime this phone was paired with, and not
+        // to whatever answered on the network.
+        if (!VerifyRuntimeProof(clientNonce, serverNonce, clientEphemeral, serverEphemeral, serverProof))
             throw new GuardProtocolException("runtime_proof_rejected");
 
-        var signature = SessionTranscript.Sign(_key, HandshakeRole.Client, clientNonce, serverNonce);
+        byte[] material;
+        try
+        {
+            var binding = SessionTranscript.ComputeBinding(clientNonce, serverNonce, clientEphemeral, serverEphemeral);
+            material = exchange.DeriveSessionMaterial(serverEphemeral, binding);
+        }
+        catch (CryptographicException ex)
+        {
+            throw new GuardProtocolException("invalid_server_ephemeral_key", ex.GetType().Name);
+        }
+
+        var cipher = SessionCipher.ForPhone(material);
+        CryptographicOperations.ZeroMemory(material);
+        _cipher?.Dispose();
+        _cipher = cipher;
+
+        var signature = SessionTranscript.Sign(_key, HandshakeRole.Client, clientNonce, serverNonce, clientEphemeral, serverEphemeral);
         await SendAsync(WireMessageType.AuthResponse, signature, cancellationToken).ConfigureAwait(false);
 
         var result = await ExpectAsync(WireMessageType.AuthResult, cancellationToken).ConfigureAwait(false);
@@ -154,7 +190,12 @@ public sealed class GuardAiClient : IAsyncDisposable
         return new GuardSession(Encoding.UTF8.GetString(capabilities), telemetry);
     }
 
-    private bool VerifyRuntimeProof(ReadOnlySpan<byte> clientNonce, ReadOnlySpan<byte> serverNonce, ReadOnlySpan<byte> proof)
+    private bool VerifyRuntimeProof(
+        ReadOnlySpan<byte> clientNonce,
+        ReadOnlySpan<byte> serverNonce,
+        ReadOnlySpan<byte> clientEphemeral,
+        ReadOnlySpan<byte> serverEphemeral,
+        ReadOnlySpan<byte> proof)
     {
         using var runtime = RSA.Create();
         try
@@ -169,7 +210,8 @@ public sealed class GuardAiClient : IAsyncDisposable
         if (runtime.KeySize != 2048)
             return false;
 
-        return SessionTranscript.Verify(runtime, HandshakeRole.Server, clientNonce, serverNonce, proof);
+        return SessionTranscript.Verify(
+            runtime, HandshakeRole.Server, clientNonce, serverNonce, clientEphemeral, serverEphemeral, proof);
     }
 
     /// <summary>Sends one heartbeat and returns the snapshot that follows the ack.</summary>
@@ -206,16 +248,38 @@ public sealed class GuardAiClient : IAsyncDisposable
         return json;
     }
 
+    /// <summary>
+    /// Writes one frame: handshake messages in clear, everything else sealed.
+    /// </summary>
+    /// <remarks>
+    /// A non-handshake message with no cipher is refused rather than sent in
+    /// clear. The client would otherwise leak exactly what ADR-0009 exists to
+    /// hide, at the moment the session is already in an unexpected state.
+    /// </remarks>
     private async Task SendAsync(WireMessageType type, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
     {
         var stream = RequireStream();
-        if (payload.Length > WireHeader.MaxPayloadLength)
+        bool handshake = WireMessageTypes.IsHandshake(type);
+        int limit = handshake ? WireHeader.MaxPayloadLength : SessionCipher.MaxPlaintextLength;
+        if (payload.Length > limit)
             throw new GuardProtocolException("payload_too_large", payload.Length.ToString());
 
+        var cipher = _cipher;
+        if (!handshake && cipher is null)
+            throw new GuardProtocolException("cipher_unavailable", type.ToString());
+
         var sequence = _egress.Next;
-        var packet = new byte[WireHeader.HeaderSize + payload.Length];
-        new WireHeader(type, (ushort)payload.Length, sequence).WriteTo(packet);
-        payload.Span.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+        byte[] packet;
+        if (handshake)
+        {
+            packet = new byte[WireHeader.HeaderSize + payload.Length];
+            new WireHeader(type, (ushort)payload.Length, sequence).WriteTo(packet);
+            payload.Span.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+        }
+        else
+        {
+            packet = cipher!.SealFrame(type, sequence, payload.Span);
+        }
 
         try
         {
@@ -253,6 +317,16 @@ public sealed class GuardAiClient : IAsyncDisposable
         var payload = new byte[header.PayloadLength];
         if (payload.Length > 0)
             await ReadExactlyAsync(payload, cancellationToken).ConfigureAwait(false);
+
+        // ADR-0009: past the handshake nothing is readable. A frame that arrives in
+        // clear, or that fails its tag, is refused rather than interpreted.
+        if (!WireMessageTypes.IsHandshake(header.MessageType))
+        {
+            var cipher = _cipher ?? throw new GuardProtocolException("plaintext_after_handshake", header.MessageType.ToString());
+            if (!cipher.TryOpenFrame(headerBytes, payload, out var opened, out var openError))
+                throw new GuardProtocolException("decrypt_failed", openError);
+            payload = opened;
+        }
 
         return (header.MessageType, payload);
     }
@@ -313,7 +387,9 @@ public sealed class GuardAiClient : IAsyncDisposable
         _disposed = true;
         _stream?.Dispose();
         _client?.Dispose();
+        _cipher?.Dispose();
         _stream = null;
         _client = null;
+        _cipher = null;
     }
 }

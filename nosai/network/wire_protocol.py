@@ -7,10 +7,12 @@ from dataclasses import dataclass
 from typing import Any
 
 MAGIC = b"NOSA"
-# Version 2 added mutual authentication. A version 1 peer is refused rather than
-# downgraded: version 1 cannot prove the runtime to the phone, which is the hole
-# the bump exists to close. Source of truth: WireHeader.CurrentVersion.
-VERSION = 2
+# Version 2 added mutual authentication; version 3 encrypts the session payload
+# (ADR-0009). An older peer is refused rather than downgraded: version 1 cannot
+# prove the runtime to the phone and version 2 sends the payload in clear, so
+# accepting either leaves exactly the hole the bump exists to close. There is no
+# negotiation. Source of truth: WireHeader.CurrentVersion.
+VERSION = 3
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
 # PAYLOAD_LEN is a uint16, so 65535 is the largest length the header can express.
 # This was 64 * 1024 (= 65536), one byte too generous: a payload of exactly that
@@ -42,6 +44,20 @@ KNOWN_MESSAGE_TYPES = frozenset({
     TYPE_AUTH_RESULT, TYPE_SERVER_AUTH_PROOF, TYPE_HEARTBEAT, TYPE_HEARTBEAT_ACK, TYPE_WORLD_STATE_DELTA,
     TYPE_TELEMETRY_SNAPSHOT, TYPE_COMMAND_REQUEST, TYPE_COMMAND_ACK, TYPE_DISCONNECT,
 })
+
+# The messages that establish the session keys. They travel in clear because they
+# are what produces the keys, and RSA already authenticates them; everything else
+# is encrypted under ADR-0009 and refused if it arrives any other way.
+# Source of truth: WireMessageTypes.IsHandshake in src/NosAi.Protocol/WireProtocol.cs.
+HANDSHAKE_MESSAGE_TYPES = frozenset({
+    TYPE_SESSION_HELLO, TYPE_CAPABILITIES, TYPE_AUTH_CHALLENGE,
+    TYPE_AUTH_RESPONSE, TYPE_AUTH_RESULT, TYPE_SERVER_AUTH_PROOF,
+})
+
+
+def is_handshake(message_type: int) -> bool:
+    """Whether this message is allowed to be readable on the wire."""
+    return message_type in HANDSHAKE_MESSAGE_TYPES
 
 
 @dataclass(frozen=True)

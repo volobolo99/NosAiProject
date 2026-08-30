@@ -113,17 +113,33 @@ public static class Gate1TestRunner
         using var auth = new SessionAuth(key.ExportRSAPublicKeyPem());
 
         byte[] clientNonce = SessionTranscript.CreateNonce();
-        if (!auth.TryBeginHandshake(clientNonce, out byte[] serverNonce))
+        using var exchange = EphemeralKeyExchange.Create();
+        byte[] clientHello = Concat(clientNonce, exchange.PublicKey);
+        if (!auth.TryBeginHandshake(clientHello, out byte[] serverHello))
             return false;
 
+        byte[] serverNonce = serverHello[..SessionTranscript.NonceLength];
+        byte[] serverEphemeral = serverHello[SessionTranscript.NonceLength..];
+
         byte[] signature = key.SignHash(
-            SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce),
+            SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral),
             HashAlgorithmName.SHA256,
             RSASignaturePadding.Pkcs1);
 
         // Accepted once, then the transcript is consumed: replaying the same valid
-        // signature must not open a second session.
-        return auth.VerifyAndConsume(signature) && !auth.VerifyAndConsume(signature);
+        // signature must not open a second session, and must not hand out a second
+        // copy of the session key material.
+        if (!auth.VerifyAndConsume(signature, out byte[] first) || first.Length != EphemeralKeyExchange.SessionMaterialLength)
+            return false;
+        return !auth.VerifyAndConsume(signature, out byte[] second) && second.Length == 0;
+    }
+
+    private static byte[] Concat(byte[] first, byte[] second)
+    {
+        var joined = new byte[first.Length + second.Length];
+        first.CopyTo(joined, 0);
+        second.CopyTo(joined, first.Length);
+        return joined;
     }
 
     private static bool TestMissingClientDoesNotInventGameplay()
@@ -353,9 +369,10 @@ public static class Gate1TestRunner
             return false;
 
         uint seq = 1;
-        var helloNonce = SessionTranscript.CreateNonce();
-        await WriteFrameAsync(second.GetStream(), WireMessageType.SessionHello, helloNonce, seq++).ConfigureAwait(false);
-        var (type, _) = await ReadFrameAsync(second.GetStream()).ConfigureAwait(false);
+        using var exchange = EphemeralKeyExchange.Create();
+        var hello = Concat(SessionTranscript.CreateNonce(), exchange.PublicKey);
+        await WriteFrameAsync(second.GetStream(), WireMessageType.SessionHello, hello, seq++).ConfigureAwait(false);
+        var (type, _, _) = await ReadFrameAsync(second.GetStream()).ConfigureAwait(false);
         return type == WireMessageType.Capabilities;
     }
 
@@ -375,21 +392,29 @@ public static class Gate1TestRunner
         var stream = client.GetStream();
         uint seq = 1;
         var clientNonce = SessionTranscript.CreateNonce();
-        await WriteFrameAsync(stream, WireMessageType.SessionHello, clientNonce, seq++).ConfigureAwait(false);
+        using var exchange = EphemeralKeyExchange.Create();
+        await WriteFrameAsync(stream, WireMessageType.SessionHello, Concat(clientNonce, exchange.PublicKey), seq++).ConfigureAwait(false);
         var capabilities = await ReadFrameAsync(stream).ConfigureAwait(false);
         var challenge = await ReadFrameAsync(stream).ConfigureAwait(false);
         var proof = await ReadFrameAsync(stream).ConfigureAwait(false);
         if (capabilities.Type != WireMessageType.Capabilities
             || challenge.Type != WireMessageType.AuthChallenge
-            || proof.Type != WireMessageType.ServerAuthProof)
+            || proof.Type != WireMessageType.ServerAuthProof
+            || challenge.Payload.Length != SessionAuth.HandshakeHelloLength)
             return false;
+
+        var serverNonce = challenge.Payload[..SessionTranscript.NonceLength];
+        var serverEphemeral = challenge.Payload[SessionTranscript.NonceLength..];
 
         using var runtimeKey = RSA.Create();
         runtimeKey.ImportFromPem(auth.RuntimePublicKeyPem);
-        if (!SessionTranscript.Verify(runtimeKey, HandshakeRole.Server, clientNonce, challenge.Payload, proof.Payload))
+        if (!SessionTranscript.Verify(runtimeKey, HandshakeRole.Server, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral, proof.Payload))
             return false;
 
-        var signature = SessionTranscript.Sign(key, HandshakeRole.Client, clientNonce, challenge.Payload);
+        var binding = SessionTranscript.ComputeBinding(clientNonce, serverNonce, exchange.PublicKey, serverEphemeral);
+        using var cipher = SessionCipher.ForPhone(exchange.DeriveSessionMaterial(serverEphemeral, binding));
+
+        var signature = SessionTranscript.Sign(key, HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral);
         await WriteFrameAsync(stream, WireMessageType.AuthResponse, signature, seq++).ConfigureAwait(false);
         var result = await ReadFrameAsync(stream).ConfigureAwait(false);
         var telemetry = await ReadFrameAsync(stream).ConfigureAwait(false);
@@ -398,7 +423,12 @@ public static class Gate1TestRunner
         if (telemetry.Type != WireMessageType.TelemetrySnapshot)
             return false;
 
-        using var doc = JsonDocument.Parse(telemetry.Payload);
+        // The snapshot arrives sealed (ADR-0009). Reading it here is what proves the
+        // runtime encrypted it rather than merely claiming to.
+        if (!cipher.TryOpenFrame(telemetry.Header, telemetry.Payload, out byte[] snapshotJson, out _))
+            return false;
+
+        using var doc = JsonDocument.Parse(snapshotJson);
         var gameplay = doc.RootElement.GetProperty("client").GetProperty("gameplayBaseline");
         return gameplay.GetProperty("source").GetString() == "UNKNOWN"
                && gameplay.GetProperty("value").ValueKind == JsonValueKind.Null
@@ -438,7 +468,11 @@ public static class Gate1TestRunner
         await stream.FlushAsync().ConfigureAwait(false);
     }
 
-    private static async Task<(WireMessageType Type, byte[] Payload)> ReadFrameAsync(NetworkStream stream)
+    /// <summary>
+    /// Reads one frame, keeping the raw header: it is the AEAD associated data for
+    /// an encrypted frame, so a caller that discarded it could not open one.
+    /// </summary>
+    private static async Task<(WireMessageType Type, byte[] Payload, byte[] Header)> ReadFrameAsync(NetworkStream stream)
     {
         var headerBytes = new byte[WireHeader.HeaderSize];
         await stream.ReadExactlyAsync(headerBytes).ConfigureAwait(false);
@@ -447,7 +481,7 @@ public static class Gate1TestRunner
         var payload = new byte[header.PayloadLength];
         if (payload.Length > 0)
             await stream.ReadExactlyAsync(payload).ConfigureAwait(false);
-        return (header.MessageType, payload);
+        return (header.MessageType, payload, headerBytes);
     }
 
     /// <summary>

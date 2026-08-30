@@ -27,6 +27,12 @@ namespace NosAi.Runtime.Gate1;
 /// The nonces are held per session and consumed once. A session that has not sent
 /// its hello has no nonces, so no signature can verify against it.
 /// </para>
+/// <para>
+/// Under ADR-0009 the handshake also carries an ephemeral P-256 key from each
+/// side, covered by the same signatures. The session material derived from them
+/// is held here and released only when the phone's signature verifies, so an
+/// unauthenticated peer never obtains a usable cipher.
+/// </para>
 /// </remarks>
 public sealed class SessionAuth : IDisposable
 {
@@ -36,6 +42,9 @@ public sealed class SessionAuth : IDisposable
     private readonly object _sync = new();
     private byte[]? _clientNonce;
     private byte[]? _serverNonce;
+    private byte[]? _clientEphemeral;
+    private byte[]? _serverEphemeral;
+    private byte[]? _sessionMaterial;
 
     /// <param name="identity">
     /// The runtime's own key. Created in memory when omitted, which is fine for
@@ -59,24 +68,59 @@ public sealed class SessionAuth : IDisposable
     public string RuntimePublicKeyPem => _identity.PublicKeyPem;
 
     /// <summary>
-    /// Starts a handshake: records the phone's nonce and returns the runtime's.
+    /// Length of the hello each side sends: nonce followed by ephemeral key.
+    /// </summary>
+    public const int HandshakeHelloLength = SessionTranscript.NonceLength + SessionTranscript.EphemeralKeyLength;
+
+    /// <summary>
+    /// Starts a handshake: records the phone's hello and returns the runtime's.
     /// </summary>
     /// <remarks>
-    /// A hello without a well-formed nonce is refused here rather than later. A
-    /// peer that will not commit to a nonce cannot be given a session-bound proof,
-    /// and accepting one would mean signing over material it fully controls.
+    /// A hello that is not a well-formed nonce plus a valid P-256 point is refused
+    /// here rather than later. A peer that will not commit to a nonce cannot be
+    /// given a session-bound proof, and an unchecked ephemeral point would let it
+    /// steer the key agreement.
     /// </remarks>
-    public bool TryBeginHandshake(ReadOnlySpan<byte> clientNonce, out byte[] serverNonce)
+    public bool TryBeginHandshake(ReadOnlySpan<byte> clientHello, out byte[] serverHello)
     {
-        serverNonce = Array.Empty<byte>();
-        if (clientNonce.Length != SessionTranscript.NonceLength)
+        serverHello = Array.Empty<byte>();
+        if (clientHello.Length != HandshakeHelloLength)
+            return false;
+
+        var clientNonce = clientHello[..SessionTranscript.NonceLength].ToArray();
+        var clientEphemeral = clientHello[SessionTranscript.NonceLength..].ToArray();
+        if (!EphemeralKeyExchange.IsValidPublicKey(clientEphemeral))
             return false;
 
         lock (_sync)
         {
-            _clientNonce = clientNonce.ToArray();
-            _serverNonce = SessionTranscript.CreateNonce();
-            serverNonce = _serverNonce.ToArray();
+            var serverNonce = SessionTranscript.CreateNonce();
+
+            byte[] serverEphemeral;
+            byte[] material;
+            using (var exchange = EphemeralKeyExchange.Create())
+            {
+                serverEphemeral = exchange.PublicKey;
+                byte[] binding = SessionTranscript.ComputeBinding(clientNonce, serverNonce, clientEphemeral, serverEphemeral);
+                try
+                {
+                    material = exchange.DeriveSessionMaterial(clientEphemeral, binding);
+                }
+                catch (CryptographicException)
+                {
+                    return false;
+                }
+            }
+
+            _clientNonce = clientNonce;
+            _serverNonce = serverNonce;
+            _clientEphemeral = clientEphemeral;
+            _serverEphemeral = serverEphemeral;
+            _sessionMaterial = material;
+
+            serverHello = new byte[HandshakeHelloLength];
+            serverNonce.CopyTo(serverHello, 0);
+            serverEphemeral.CopyTo(serverHello, SessionTranscript.NonceLength);
             return true;
         }
     }
@@ -87,41 +131,60 @@ public sealed class SessionAuth : IDisposable
         proof = Array.Empty<byte>();
         lock (_sync)
         {
-            if (_clientNonce is null || _serverNonce is null)
+            if (_clientNonce is null || _serverNonce is null || _clientEphemeral is null || _serverEphemeral is null)
                 return false;
-            proof = _identity.SignAsServer(_clientNonce, _serverNonce);
+            proof = _identity.SignAsServer(_clientNonce, _serverNonce, _clientEphemeral, _serverEphemeral);
             return true;
         }
     }
 
     /// <summary>
-    /// Verifies the phone's signature over this session's transcript, once.
+    /// Verifies the phone's signature over this session's transcript, once, and
+    /// releases the session key material on success.
     /// </summary>
     /// <remarks>
-    /// The nonces are cleared whether or not verification succeeds, so a failed
-    /// attempt cannot be retried against the same transcript.
+    /// Every piece of handshake state is cleared whether or not verification
+    /// succeeds, so a failed attempt cannot be retried against the same
+    /// transcript, and a refused peer never receives usable key material.
     /// </remarks>
-    public bool VerifyAndConsume(ReadOnlySpan<byte> signature)
+    public bool VerifyAndConsume(ReadOnlySpan<byte> signature, out byte[] sessionMaterial)
     {
+        sessionMaterial = Array.Empty<byte>();
         lock (_sync)
         {
             byte[]? clientNonce = _clientNonce;
             byte[]? serverNonce = _serverNonce;
+            byte[]? clientEphemeral = _clientEphemeral;
+            byte[]? serverEphemeral = _serverEphemeral;
+            byte[]? material = _sessionMaterial;
             _clientNonce = null;
             _serverNonce = null;
+            _clientEphemeral = null;
+            _serverEphemeral = null;
+            _sessionMaterial = null;
 
-            if (clientNonce is null || serverNonce is null)
+            if (clientNonce is null || serverNonce is null || clientEphemeral is null || serverEphemeral is null || material is null)
                 return false;
 
+            bool verified;
             try
             {
-                byte[] expected = SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce);
-                return _verifier.VerifyHash(expected, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                byte[] expected = SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce, clientEphemeral, serverEphemeral);
+                verified = _verifier.VerifyHash(expected, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             }
             catch (CryptographicException)
             {
+                verified = false;
+            }
+
+            if (!verified)
+            {
+                CryptographicOperations.ZeroMemory(material);
                 return false;
             }
+
+            sessionMaterial = material;
+            return true;
         }
     }
 
@@ -130,6 +193,12 @@ public sealed class SessionAuth : IDisposable
         _verifier.Dispose();
         if (_ownsIdentity)
             _identity.Dispose();
+        lock (_sync)
+        {
+            if (_sessionMaterial is not null)
+                CryptographicOperations.ZeroMemory(_sessionMaterial);
+            _sessionMaterial = null;
+        }
     }
 }
 
@@ -167,6 +236,13 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     private CancellationTokenSource? _cts;
     private DateTime _lastHeartbeatUtc;
     private string? _terminationReason;
+
+    /// <summary>
+    /// Session payload encryption (ADR-0009). Null until the phone authenticates,
+    /// which is exactly why a non-handshake frame before that point is refused
+    /// instead of being read in clear.
+    /// </summary>
+    private SessionCipher? _cipher;
 
     private Func<Gate1CanonicalSnapshot>? _snapshotSource;
 
@@ -273,6 +349,10 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                     _lastHeartbeatUtc = DateTime.UtcNow;
                     _ingress.Reset();
                     _egress.Reset();
+                    // Keys belong to one session. Carrying a cipher across would let
+                    // a new peer decrypt under the previous phone's material.
+                    _cipher?.Dispose();
+                    _cipher = null;
                 }
                 _ = ProcessSessionAsync(client, _stream, token);
                 _ = HeartbeatWatchdogAsync(token);
@@ -294,6 +374,23 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                 if (!_ingress.ValidateAndAdvance(header.SequenceNumber, out var sequenceError)) { TerminateSession($"sequence_violation:{sequenceError}"); return; }
                 var payload = new byte[header.PayloadLength];
                 if (payload.Length > 0) await ReadExactlyAsync(stream, payload, token).ConfigureAwait(false);
+
+                // ADR-0009: only the handshake is readable. Anything else must be
+                // sealed under this session's keys, and a frame that will not open
+                // ends the session rather than being interpreted.
+                if (!WireMessageTypes.IsHandshake(header.MessageType))
+                {
+                    SessionCipher? cipher;
+                    lock (_sync) cipher = _cipher;
+                    if (cipher is null) { TerminateSession($"plaintext_after_handshake:{header.MessageType}"); return; }
+                    if (!cipher.TryOpenFrame(headerBytes, payload, out var opened, out var openError))
+                    {
+                        TerminateSession($"decrypt_failed:{openError}");
+                        return;
+                    }
+                    payload = opened;
+                }
+
                 await HandleMessageAsync(header.MessageType, payload, token).ConfigureAwait(false);
             }
         }
@@ -307,17 +404,19 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         switch (type)
         {
             case WireMessageType.SessionHello:
-                // The hello now carries the phone's nonce, so the runtime's proof can
-                // be bound to a value the phone chose. Without it the phone could not
-                // tell a fresh proof from a replayed one.
-                if (!_auth.TryBeginHandshake(payload, out byte[] serverNonce))
+                // The hello carries the phone's nonce and its ephemeral key, so the
+                // runtime's proof is bound to values the phone chose. Without the
+                // nonce the phone could not tell a fresh proof from a replayed one;
+                // without the ephemeral key in the transcript the agreement would be
+                // unauthenticated and a peer on the path could sit in the middle.
+                if (!_auth.TryBeginHandshake(payload, out byte[] serverHello))
                 {
-                    TerminateSession("missing_or_malformed_client_nonce");
+                    TerminateSession("missing_or_malformed_client_hello");
                     break;
                 }
 
-                await SendAsync(WireMessageType.Capabilities, Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual;heartbeat=2000;execution=disabled"), token).ConfigureAwait(false);
-                await SendAsync(WireMessageType.AuthChallenge, serverNonce, token).ConfigureAwait(false);
+                await SendAsync(WireMessageType.Capabilities, Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual;payload=aes256gcm;heartbeat=2000;execution=disabled"), token).ConfigureAwait(false);
+                await SendAsync(WireMessageType.AuthChallenge, serverHello, token).ConfigureAwait(false);
 
                 // The runtime proves itself before asking the phone to sign anything.
                 // The order matters: a phone that signs first has already answered an
@@ -331,7 +430,19 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
                 await SendAsync(WireMessageType.ServerAuthProof, serverProof, token).ConfigureAwait(false);
                 break;
             case WireMessageType.AuthResponse:
-                var authenticated = _auth.VerifyAndConsume(payload);
+                var authenticated = _auth.VerifyAndConsume(payload, out byte[] sessionMaterial);
+                if (authenticated)
+                {
+                    // The cipher exists only past this point: a refused phone never
+                    // gets one, and every frame after AuthResult travels sealed.
+                    var cipher = SessionCipher.ForRuntime(sessionMaterial);
+                    CryptographicOperations.ZeroMemory(sessionMaterial);
+                    lock (_sync)
+                    {
+                        _cipher?.Dispose();
+                        _cipher = cipher;
+                    }
+                }
                 IsAuthenticated = authenticated;
                 await SendAsync(WireMessageType.AuthResult, new[] { (byte)(authenticated ? 1 : 0) }, token).ConfigureAwait(false);
                 if (!authenticated)
@@ -368,22 +479,45 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Writes one frame: handshake messages in clear, everything else sealed.
+    /// </summary>
+    /// <remarks>
+    /// A non-handshake message with no cipher available is dropped and the session
+    /// terminated. Sending it in clear would defeat ADR-0009 at exactly the moment
+    /// something went wrong, which is when it matters.
+    /// </remarks>
     private async Task SendAsync(WireMessageType type, byte[] payload, CancellationToken token)
     {
-        if (payload.Length > WireHeader.MaxPayloadLength) throw new InvalidDataException("payload_too_large");
+        bool handshake = WireMessageTypes.IsHandshake(type);
+        int limit = handshake ? WireHeader.MaxPayloadLength : SessionCipher.MaxPlaintextLength;
+        if (payload.Length > limit) throw new InvalidDataException("payload_too_large");
+
         NetworkStream? stream;
-        lock (_sync) stream = _stream;
+        SessionCipher? cipher;
+        lock (_sync) { stream = _stream; cipher = _cipher; }
         if (stream is null || !IsClientConnected) return;
+        if (!handshake && cipher is null) { TerminateSession($"cipher_unavailable:{type}"); return; }
+
         await _sendLock.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            var packet = new byte[WireHeader.HeaderSize + payload.Length];
-            var header = new WireHeader(type, checked((ushort)payload.Length), _egress.Next);
-            header.WriteTo(packet);
-            payload.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+            var sequence = _egress.Next;
+            byte[] packet;
+            if (handshake)
+            {
+                packet = new byte[WireHeader.HeaderSize + payload.Length];
+                new WireHeader(type, checked((ushort)payload.Length), sequence).WriteTo(packet);
+                payload.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+            }
+            else
+            {
+                packet = cipher!.SealFrame(type, sequence, payload);
+            }
+
             await stream.WriteAsync(packet, token).ConfigureAwait(false);
             await stream.FlushAsync(token).ConfigureAwait(false);
-            if (!_egress.ValidateAndAdvance(header.SequenceNumber, out _)) TerminateSession("egress_sequence_failure");
+            if (!_egress.ValidateAndAdvance(sequence, out _)) TerminateSession("egress_sequence_failure");
         }
         finally { _sendLock.Release(); }
     }
@@ -424,6 +558,9 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             _client = null;
             _stream = null;
             ActiveSessionId = null;
+            // The keys die with the session they were derived for.
+            _cipher?.Dispose();
+            _cipher = null;
         }
         OnSessionTerminated?.Invoke(reason);
     }

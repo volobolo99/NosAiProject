@@ -575,19 +575,29 @@ namespace NosAi.Runtime.Gate6
 
             // Adapted to the version 2 handshake: both sides now sign a session
             // transcript rather than a raw challenge, so the phone can no longer be
-            // used as a signing oracle. See ADR-0008.
+            // used as a signing oracle. See ADR-0008. Version 3 adds the ephemeral
+            // key-agreement keys to that same transcript (ADR-0009), so the hello
+            // carries a nonce and a P-256 point.
             byte[] clientNonce = NosAi.Runtime.Gate1.SessionTranscript.CreateNonce();
-            if (!auth.TryBeginHandshake(clientNonce, out byte[] serverNonce)) return false;
+            using var exchange = NosAi.Runtime.Gate1.EphemeralKeyExchange.Create();
+            byte[] clientHello = new byte[NosAi.Runtime.Gate1.SessionAuth.HandshakeHelloLength];
+            clientNonce.CopyTo(clientHello, 0);
+            exchange.PublicKey.CopyTo(clientHello, NosAi.Runtime.Gate1.SessionTranscript.NonceLength);
+            if (!auth.TryBeginHandshake(clientHello, out byte[] serverHello)) return false;
+
+            byte[] serverNonce = serverHello[..NosAi.Runtime.Gate1.SessionTranscript.NonceLength];
+            byte[] serverEphemeral = serverHello[NosAi.Runtime.Gate1.SessionTranscript.NonceLength..];
 
             byte[] signature = deviceKey.SignHash(
                 NosAi.Runtime.Gate1.SessionTranscript.Compute(
-                    NosAi.Runtime.Gate1.HandshakeRole.Client, clientNonce, serverNonce),
+                    NosAi.Runtime.Gate1.HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral),
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
-            if (!auth.VerifyAndConsume(signature)) return false;
+            if (!auth.VerifyAndConsume(signature, out byte[] material)) return false;
+            if (material.Length != NosAi.Runtime.Gate1.EphemeralKeyExchange.SessionMaterialLength) return false;
             // Replaying the same valid signature must fail: the challenge is consumed.
-            return !auth.VerifyAndConsume(signature);
+            return !auth.VerifyAndConsume(signature, out _);
         }
 
         // -------------------------------------------------------- safety boundary

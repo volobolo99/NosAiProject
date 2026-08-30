@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+from nosai.network.session_cipher import NONCE_LENGTH, OVERHEAD, SessionCipher
 from nosai.network.wire_protocol import HEADER, MAX_PAYLOAD, Frame, decode
 from nosai.phone.guard_client import (
     GuardAiClient,
@@ -37,12 +38,22 @@ STARTUP_TIMEOUT_S = 30.0
 # --------------------------------------------------------------------------
 
 def test_frame_bytes_match_the_csharp_header_layout():
-    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 2, TYPE, then
+    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 3, TYPE, then
     # PAYLOAD_LEN as uint16 big-endian and SEQ as uint32 big-endian. A silent
     # endianness or field-order change on either side breaks the phone client,
     # so the layout is pinned to literal bytes rather than to a round-trip.
     frame = Frame(message_type=0x11, sequence=0x01020304, payload=b"hi")
-    assert frame.encode() == b"NOSA" + b"\x02" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
+    assert frame.encode() == b"NOSA" + b"\x03" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
+
+
+@pytest.mark.parametrize("version", [0x01, 0x02, 0x04])
+def test_decode_refuses_any_other_wire_version(version):
+    # No downgrade (ADR-0009). Version 1 cannot prove the runtime to the phone and
+    # version 2 sends the payload in clear, so an older peer is refused at the
+    # header rather than negotiated down.
+    good = Frame(0x06, 1, b"").encode()
+    with pytest.raises(ValueError):
+        decode(good[:4] + bytes((version,)) + good[5:])
 
 
 def test_header_is_twelve_bytes():
@@ -171,9 +182,14 @@ def test_reference_client_completes_the_canonical_handshake(guard_runtime, trust
         assert session.authenticated
         assert "auth=rsa2048-sha256" in session.capabilities
         assert "heartbeat=2000" in session.capabilities
+        assert "payload=aes256gcm" in session.capabilities
         # Gate 1 forbids execution, and the phone must be able to read that from
         # the capabilities rather than assuming it.
         assert "execution=disabled" in session.capabilities
+
+        # The snapshot arrived sealed: the client could only produce this object by
+        # deriving the session keys and opening the frame (ADR-0009).
+        assert client._cipher is not None
 
         snapshot = session.telemetry
         assert snapshot["contractVersion"] == "gate1.snapshot.v1"
@@ -209,3 +225,38 @@ def test_a_trusted_key_still_works_after_a_refused_session(guard_runtime, truste
     # the challenge is single-use, so the next session needs a fresh one.
     with GuardAiClient("127.0.0.1", guard_runtime, trusted_key, _runtime_public_key()) as client:
         assert client.open_session().authenticated
+
+
+def test_the_snapshot_is_not_readable_on_the_wire(guard_runtime, trusted_key):
+    """The property ADR-0009 exists for, observed on the real runtime's bytes.
+
+    An authenticated session is opened normally and the raw frame the runtime
+    wrote is inspected before it is opened. Asserting on the ciphertext is the
+    only way to tell encryption from a claim of encryption: a client that
+    silently fell back to plaintext would still return a valid snapshot object.
+    """
+    captured: list[bytes] = []
+
+    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key, _runtime_public_key()) as client:
+        original_open = SessionCipher.open
+
+        def capture(self, header, payload):
+            captured.append(payload)
+            return original_open(self, header, payload)
+
+        SessionCipher.open = capture
+        try:
+            snapshot = client.open_session().telemetry
+        finally:
+            SessionCipher.open = original_open
+
+    assert snapshot["contractVersion"] == "gate1.snapshot.v1"
+    assert captured, "no encrypted frame was received"
+
+    on_the_wire = captured[0]
+    assert b"contractVersion" not in on_the_wire
+    assert b"gate1.snapshot" not in on_the_wire
+    assert b"UNKNOWN" not in on_the_wire
+    # nonce(12) + tag(16) on top of the plaintext, and the counter starts at zero.
+    assert len(on_the_wire) > OVERHEAD
+    assert on_the_wire[:NONCE_LENGTH] == b"\x00" * NONCE_LENGTH

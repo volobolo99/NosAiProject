@@ -118,9 +118,18 @@ public sealed class RuntimeIdentity : IDisposable
     public static RuntimeIdentity CreateEphemeral() => new(RSA.Create(2048));
 
     /// <summary>Signs the handshake transcript as the server.</summary>
-    public byte[] SignAsServer(ReadOnlySpan<byte> clientNonce, ReadOnlySpan<byte> serverNonce)
+    /// <remarks>
+    /// The transcript covers both ephemeral key-agreement keys (ADR-0009), so
+    /// this one signature also authenticates the key exchange the session payload
+    /// is encrypted under.
+    /// </remarks>
+    public byte[] SignAsServer(
+        ReadOnlySpan<byte> clientNonce,
+        ReadOnlySpan<byte> serverNonce,
+        ReadOnlySpan<byte> clientEphemeral,
+        ReadOnlySpan<byte> serverEphemeral)
         => _key.SignHash(
-            SessionTranscript.Compute(HandshakeRole.Server, clientNonce, serverNonce),
+            SessionTranscript.Compute(HandshakeRole.Server, clientNonce, serverNonce, clientEphemeral, serverEphemeral),
             HashAlgorithmName.SHA256,
             RSASignaturePadding.Pkcs1);
 

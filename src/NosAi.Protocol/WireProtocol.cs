@@ -37,19 +37,47 @@ public enum WireMessageType : byte
     Disconnect = 0xFF
 }
 
+/// <summary>Which messages travel in clear, and which must be sealed.</summary>
+public static class WireMessageTypes
+{
+    /// <summary>
+    /// True for the messages that establish the session keys.
+    /// </summary>
+    /// <remarks>
+    /// These travel in clear because they are what produces the keys, and they
+    /// are already authenticated by RSA. Everything else is encrypted under
+    /// ADR-0009 and is refused if it arrives any other way — the predicate is
+    /// stated once here so the runtime and the phone cannot disagree about which
+    /// frames are allowed to be readable.
+    /// </remarks>
+    public static bool IsHandshake(WireMessageType type) => type switch
+    {
+        WireMessageType.SessionHello => true,
+        WireMessageType.Capabilities => true,
+        WireMessageType.AuthChallenge => true,
+        WireMessageType.AuthResponse => true,
+        WireMessageType.AuthResult => true,
+        WireMessageType.ServerAuthProof => true,
+        _ => false
+    };
+}
+
 public readonly record struct WireHeader(WireMessageType MessageType, ushort PayloadLength, uint SequenceNumber)
 {
     public const uint ExpectedMagic = 0x4E4F5341; // NOSA
     /// <summary>
-    /// Wire version. Bumped to 2 by mutual authentication.
+    /// Wire version. Bumped to 2 by mutual authentication, to 3 by payload
+    /// encryption (ADR-0009).
     /// </summary>
     /// <remarks>
-    /// A version 1 peer is refused rather than downgraded: version 1 cannot prove
-    /// the runtime to the phone, so accepting it would leave exactly the hole the
-    /// bump exists to close. Both ends ship together, so there is nothing to keep
-    /// compatible.
+    /// An older peer is refused rather than downgraded. Version 1 cannot prove the
+    /// runtime to the phone and version 2 sends the payload in clear, so accepting
+    /// either would leave exactly the hole the bump exists to close. There is no
+    /// negotiation: a channel that agrees to skip encryption when asked is a
+    /// channel with no encryption. Both ends ship together, so there is nothing to
+    /// stay compatible with.
     /// </remarks>
-    public const byte CurrentVersion = 2;
+    public const byte CurrentVersion = 3;
     public const int HeaderSize = 12;
     public const int MaxPayloadLength = ushort.MaxValue;
 

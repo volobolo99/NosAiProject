@@ -17,16 +17,16 @@ client with no phone dependencies, so it can be:
 It is NOT the Guard AI application, and running it does not close any Gate 1
 smartphone checklist row.
 
-Session contract, from the client's side (wire version 2):
+Session contract, from the client's side (wire version 3):
 
     1. connect
-    2. send    SESSION_HELLO      (32-byte client nonce)
+    2. send    SESSION_HELLO      (32-byte client nonce + 65-byte ephemeral key)
     3. receive CAPABILITIES       (UTF-8 descriptor)
-    4. receive AUTH_CHALLENGE     (32-byte server nonce)
+    4. receive AUTH_CHALLENGE     (32-byte server nonce + 65-byte ephemeral key)
     5. receive SERVER_AUTH_PROOF  (runtime signature over the server transcript)
     6. send    AUTH_RESPONSE      (phone signature over the client transcript)
     7. receive AUTH_RESULT        (1 byte: 1 accepted, 0 refused)
-    8. receive TELEMETRY_SNAPSHOT (Gate 1 classified snapshot, JSON)
+    8. receive TELEMETRY_SNAPSHOT (Gate 1 classified snapshot, JSON, encrypted)
     9. send    HEARTBEAT -> receive HEARTBEAT_ACK + TELEMETRY_SNAPSHOT
 
 Both signatures cover `nosai.network.session_transcript`, not the raw nonce.
@@ -34,6 +34,10 @@ The runtime public key is pinned at pairing; without it the handshake is
 fail-closed. Both directions are sequence-guarded independently, each starting
 at 1. The server terminates a session that misses its heartbeat for 2000 ms, so
 callers must heartbeat well inside `HEARTBEAT_TIMEOUT_MS`.
+
+Everything after the handshake is sealed with AES-256-GCM under keys derived
+from the ephemeral exchange, which those same signatures authenticate
+(ADR-0009). A non-handshake frame that arrives in clear is refused, not read.
 """
 from __future__ import annotations
 
@@ -47,11 +51,27 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from nosai.network.session_transcript import ROLE_CLIENT, ROLE_SERVER, compute, create_nonce
+from nosai.network.session_cipher import (
+    SessionCipher,
+    SessionCipherError,
+    derive_session_material,
+    generate_ephemeral,
+    public_key_bytes,
+)
+from nosai.network.session_transcript import (
+    EPHEMERAL_KEY_LENGTH,
+    NONCE_LENGTH,
+    ROLE_CLIENT,
+    ROLE_SERVER,
+    compute,
+    compute_binding,
+    create_nonce,
+)
 from nosai.network.wire_protocol import (
     HEADER,
     MAX_PAYLOAD,
     SequenceGuard,
+    is_handshake,
     TYPE_AUTH_CHALLENGE,
     TYPE_AUTH_RESPONSE,
     TYPE_AUTH_RESULT,
@@ -62,13 +82,20 @@ from nosai.network.wire_protocol import (
     TYPE_SERVER_AUTH_PROOF,
     TYPE_SESSION_HELLO,
     TYPE_TELEMETRY_SNAPSHOT,
+    MAGIC,
+    VERSION,
     Frame,
     decode,
 )
+from nosai.network.session_cipher import OVERHEAD
 
 #: Server-side heartbeat deadline. Source of truth:
 #: GuardAiNetworkChannel.HeartbeatTimeout in Gate1Runtime.cs.
 HEARTBEAT_TIMEOUT_MS = 2000
+
+#: Length of the hello each side sends. Source of truth:
+#: SessionAuth.HandshakeHelloLength in Gate1Runtime.cs.
+HANDSHAKE_HELLO_LENGTH = NONCE_LENGTH + EPHEMERAL_KEY_LENGTH
 
 
 class GuardProtocolError(RuntimeError):
@@ -130,6 +157,9 @@ class GuardAiClient:
         # runtime's _ingress/_egress pair.
         self._egress = SequenceGuard(1)
         self._ingress = SequenceGuard(1)
+        # None until the handshake completes, which is why a non-handshake frame
+        # before that point is refused rather than read in clear.
+        self._cipher: SessionCipher | None = None
 
     # -- lifecycle -----------------------------------------------------------
 
@@ -160,6 +190,8 @@ class GuardAiClient:
             pass
         finally:
             self._sock = None
+            # The keys die with the session they were derived for.
+            self._cipher = None
             try:
                 sock.close()
             except OSError:
@@ -168,11 +200,33 @@ class GuardAiClient:
     # -- framing -------------------------------------------------------------
 
     def _send(self, message_type: int, payload: bytes = b"") -> None:
+        """Writes one frame: handshake in clear, everything else sealed.
+
+        A non-handshake message with no cipher is refused rather than sent in
+        clear. Falling back to plaintext would leak exactly what ADR-0009 exists
+        to hide, at the moment the session is already in an unexpected state.
+        """
         sock = self._require_socket()
-        if len(payload) > MAX_PAYLOAD:
-            raise GuardProtocolError("payload_too_large", str(len(payload)))
+        handshake = is_handshake(message_type)
+        if handshake:
+            if len(payload) > MAX_PAYLOAD:
+                raise GuardProtocolError("payload_too_large", str(len(payload)))
+        elif self._cipher is None:
+            raise GuardProtocolError("cipher_unavailable", f"0x{message_type:02X}")
+
         sequence = self._egress.expected
-        frame = Frame(message_type=message_type, sequence=sequence, payload=payload)
+        if handshake:
+            body = payload
+        else:
+            # The header is the associated data, so it must be built before the
+            # payload is sealed and must be the very bytes that go on the wire.
+            header = HEADER.pack(MAGIC, VERSION, message_type, len(payload) + OVERHEAD, sequence)
+            try:
+                body = self._cipher.seal(header, payload)  # type: ignore[union-attr]
+            except SessionCipherError as exc:
+                raise GuardProtocolError("encrypt_failed", exc.reason) from exc
+
+        frame = Frame(message_type=message_type, sequence=sequence, payload=body)
         try:
             sock.sendall(frame.encode())
         except OSError as exc:
@@ -196,6 +250,18 @@ class GuardAiClient:
                 "sequence_violation",
                 f"expected {self._ingress.expected}, received {frame.sequence}",
             )
+
+        # ADR-0009: past the handshake nothing is readable. A frame that arrives in
+        # clear, or that fails its tag, is refused rather than interpreted.
+        if not is_handshake(frame.message_type):
+            if self._cipher is None:
+                raise GuardProtocolError("plaintext_after_handshake", f"0x{frame.message_type:02X}")
+            try:
+                opened = self._cipher.open(header, frame.payload)
+            except SessionCipherError as exc:
+                raise GuardProtocolError("decrypt_failed", exc.reason) from exc
+            frame = Frame(message_type=frame.message_type, sequence=frame.sequence, payload=opened)
+
         return frame
 
     def _read_exactly(self, count: int) -> bytes:
@@ -240,23 +306,39 @@ class GuardAiClient:
         an unauthenticated session object would invite the caller to keep using
         a dead socket.
         """
-        # The phone commits to its own nonce first, so the runtime's proof is bound
-        # to a value the phone chose and a replayed proof cannot pass.
+        # The phone commits to its own nonce and ephemeral key first, so the
+        # runtime's proof is bound to values the phone chose: a replayed proof
+        # cannot pass, and the key agreement cannot be steered by a peer on the path.
         client_nonce = create_nonce()
-        self._send(TYPE_SESSION_HELLO, client_nonce)
+        ephemeral = generate_ephemeral()
+        client_ephemeral = public_key_bytes(ephemeral)
+        self._send(TYPE_SESSION_HELLO, client_nonce + client_ephemeral)
 
         capabilities = self._expect(TYPE_CAPABILITIES).payload.decode("utf-8")
-        server_nonce = self._expect(TYPE_AUTH_CHALLENGE).payload
-        if len(server_nonce) != 32:
-            raise GuardProtocolError("invalid_challenge_length", str(len(server_nonce)))
+        challenge = self._expect(TYPE_AUTH_CHALLENGE).payload
+        if len(challenge) != HANDSHAKE_HELLO_LENGTH:
+            raise GuardProtocolError("invalid_challenge_length", str(len(challenge)))
+        server_nonce = challenge[:NONCE_LENGTH]
+        server_ephemeral = challenge[NONCE_LENGTH:]
 
-        # The runtime proves itself before the phone signs anything. Signing first
-        # would mean answering a peer that has shown nothing.
+        # The runtime proves itself before the phone signs anything, and before the
+        # phone derives anything. Signing first would mean answering a peer that has
+        # shown nothing; deriving first would mean keying off its ephemeral key.
         proof = self._expect(TYPE_SERVER_AUTH_PROOF).payload
-        if not self._runtime_proof_valid(client_nonce, server_nonce, proof):
+        if not self._runtime_proof_valid(client_nonce, server_nonce, client_ephemeral, server_ephemeral, proof):
             raise GuardProtocolError("runtime_proof_rejected")
 
-        self._send(TYPE_AUTH_RESPONSE, self.sign_transcript(client_nonce, server_nonce))
+        binding = compute_binding(client_nonce, server_nonce, client_ephemeral, server_ephemeral)
+        try:
+            material = derive_session_material(ephemeral, server_ephemeral, binding)
+        except SessionCipherError as exc:
+            raise GuardProtocolError("invalid_server_ephemeral_key", exc.reason) from exc
+        self._cipher = SessionCipher.for_phone(material)
+
+        self._send(
+            TYPE_AUTH_RESPONSE,
+            self.sign_transcript(client_nonce, server_nonce, client_ephemeral, server_ephemeral),
+        )
         result = self._expect(TYPE_AUTH_RESULT).payload
         if result != b"\x01":
             raise GuardProtocolError("authentication_refused")
@@ -270,17 +352,32 @@ class GuardAiClient:
         self._expect(TYPE_HEARTBEAT_ACK)
         return self._read_telemetry()
 
-    def sign_transcript(self, client_nonce: bytes, server_nonce: bytes) -> bytes:
+    def sign_transcript(
+        self,
+        client_nonce: bytes,
+        server_nonce: bytes,
+        client_ephemeral: bytes,
+        server_ephemeral: bytes,
+    ) -> bytes:
         """Signs the session transcript as the client.
 
         Prehashed on purpose: both sides sign a digest they each compute, so
-        neither can hand the other arbitrary bytes to put a signature on.
+        neither can hand the other arbitrary bytes to put a signature on. The
+        digest covers both ephemeral keys, so this one signature also
+        authenticates the key agreement.
         """
-        digest = compute(ROLE_CLIENT, client_nonce, server_nonce)
+        digest = compute(ROLE_CLIENT, client_nonce, server_nonce, client_ephemeral, server_ephemeral)
         return self._key.sign(digest, padding.PKCS1v15(), Prehashed(hashes.SHA256()))
 
-    def _runtime_proof_valid(self, client_nonce: bytes, server_nonce: bytes, proof: bytes) -> bool:
-        digest = compute(ROLE_SERVER, client_nonce, server_nonce)
+    def _runtime_proof_valid(
+        self,
+        client_nonce: bytes,
+        server_nonce: bytes,
+        client_ephemeral: bytes,
+        server_ephemeral: bytes,
+        proof: bytes,
+    ) -> bool:
+        digest = compute(ROLE_SERVER, client_nonce, server_nonce, client_ephemeral, server_ephemeral)
         try:
             self._runtime_key.verify(proof, digest, padding.PKCS1v15(), Prehashed(hashes.SHA256()))
             return True
