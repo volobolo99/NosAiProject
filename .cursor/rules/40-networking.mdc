@@ -1,0 +1,17 @@
+---
+description: NosAiProject networking, IPC and protocol rules
+alwaysApply: false
+globs: ["**/*Network*", "**/*Gateway*", "**/*Connector*", "**/*Protocol*", "**/*Transport*", "**/*.cs"]
+---
+
+# Networking Rule
+
+- Treat every network and IPC boundary as a trust boundary.
+- Validate framing, message type, version, length, and semantic constraints before processing payloads.
+- Use explicit timeouts and cancellation for network operations.
+- Define bounded retry behavior; do not create unbounded retry loops.
+- Handle disconnects, partial reads/writes, malformed messages, and peer shutdown deterministically.
+- Preserve protocol compatibility and document intentional protocol changes.
+- Avoid blocking I/O on hot paths.
+- Keep connection lifecycle and resource ownership explicit.
+- Add negative and integration tests for malformed input, timeouts, cancellation, reconnect, and protocol errors where applicable.
