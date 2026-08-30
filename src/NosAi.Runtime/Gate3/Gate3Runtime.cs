@@ -680,6 +680,18 @@ namespace NosAi.Runtime.Gate3
         /// <summary>Nothing was planned, or nothing survived ranking.</summary>
         NoCandidate = 1,
 
+        /// <summary>
+        /// The world state could not be read, so there was nothing to plan from.
+        /// Planning over UNKNOWN would mean inventing the inputs.
+        /// </summary>
+        NoWorldState = 6,
+
+        /// <summary>
+        /// The plan was built on simulated state while a live effector was bound.
+        /// Refused: a dry run must never reach the real client.
+        /// </summary>
+        RefusedSimulatedInput = 7,
+
         /// <summary>The Safety Gate refused authorisation.</summary>
         Blocked = 2,
 
@@ -771,14 +783,60 @@ namespace NosAi.Runtime.Gate3
             _observer = observer ?? new UnavailableWorldStateObserver();
         }
 
-        public async Task<Gate3CycleResult> ExecuteCycleAsync(
+        /// <summary>
+        /// Runs one cycle over explicitly hypothetical state.
+        /// </summary>
+        /// <remarks>
+        /// Kept for dry runs and tests. The numbers are labelled SIMULATED, so a plan
+        /// built from them cannot be mistaken for one built from the game, and the
+        /// orchestrator will refuse to carry it through to a live effector.
+        /// </remarks>
+        public Task<Gate3CycleResult> ExecuteCycleAsync(
             int playerHp,
             int maxHp,
             int playerMp,
             bool hasTarget,
             bool isInCombat,
             CancellationToken token = default)
+            => ExecuteCycleAsync(
+                Gate3WorldState.Simulated(playerHp, maxHp, playerMp, hasTarget, isInCombat),
+                token);
+
+        /// <summary>Runs one cycle over a classified world state.</summary>
+        public async Task<Gate3CycleResult> ExecuteCycleAsync(
+            Gate3WorldState state,
+            CancellationToken token = default)
         {
+            ArgumentNullException.ThrowIfNull(state);
+
+            // Nothing to reason about. Planning here would mean inventing the inputs,
+            // which is the input-side twin of confirming an unobserved outcome.
+            if (!state.IsPlannable)
+            {
+                return Result(
+                    CycleOutcome.NoWorldState,
+                    $"Stato del mondo non disponibile: {state.UnusableReason}. Nessuna pianificazione possibile.",
+                    ActionType.None,
+                    null);
+            }
+
+            // Planning on hypothetical numbers is legitimate; acting on them is not.
+            if (!state.IsFullyObserved && CanExecute)
+            {
+                return Result(
+                    CycleOutcome.RefusedSimulatedInput,
+                    "Stato simulato con effector reale collegato: esecuzione rifiutata. "
+                    + "Si può pianificare su dati simulati, non agire.",
+                    ActionType.None,
+                    null);
+            }
+
+            int playerHp = state.Hp.Value;
+            int maxHp = state.MaxHp.Value;
+            int playerMp = state.Mp.Value;
+            bool hasTarget = state.HasTarget.Value;
+            bool isInCombat = state.InCombat.Value;
+
             List<ActionCandidate> candidates = _planner.PlanCandidates(
                 playerHp, maxHp, playerMp, hasTarget, isInCombat);
 
@@ -891,6 +949,8 @@ namespace NosAi.Runtime.Gate3
             allPassed &= await RunAsync("An observed match confirms the cycle", TestObservedMatchConfirmsAsync);
             allPassed &= await RunAsync("A failing observer leaves the cycle unverified", TestFailingObserverIsUnverifiedAsync);
             allPassed &= await RunAsync("A blocked cycle never reaches the effector", TestBlockedCycleNeverExecutesAsync);
+            allPassed &= await RunAsync("Planning over UNKNOWN state is refused", TestUnknownWorldStateIsRefusedAsync);
+            allPassed &= await RunAsync("Simulated state never reaches a live effector", TestSimulatedStateCannotActAsync);
 
             Console.WriteLine(allPassed
                 ? "=== Gate 3 checks passed. Local only: this is not real-environment verification. ==="
@@ -1144,7 +1204,7 @@ namespace NosAi.Runtime.Gate3
             // The regression this pins: the pipeline used to sleep 50 ms and report a
             // completed action while nothing had touched the client.
             var orchestrator = new Gate3ExecutionOrchestrator();
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.ExecutionDisabled
                    && !result.IsConfirmed
@@ -1159,7 +1219,7 @@ namespace NosAi.Runtime.Gate3
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector());
 
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Unverified && !result.IsConfirmed && !orchestrator.CanVerify;
         }
@@ -1170,7 +1230,7 @@ namespace NosAi.Runtime.Gate3
             var observer = new FixedObserver(ObservedState.Live(1, 1));
             var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
 
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Failed && result.Strategy is not null;
         }
@@ -1196,7 +1256,7 @@ namespace NosAi.Runtime.Gate3
                 Math.Max(0, mp + predicted.ExpectedMpDelta)));
 
             var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(hp, maxHp, mp, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(hp, maxHp, mp, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Confirmed && result.IsConfirmed;
         }
@@ -1209,9 +1269,53 @@ namespace NosAi.Runtime.Gate3
             var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
             var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
 
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Unverified && !result.IsConfirmed;
+        }
+
+        /// <summary>
+        /// Nothing known means nothing to plan from.
+        /// </summary>
+        /// <remarks>
+        /// The input-side twin of confirming an unobserved outcome: the cycle used to
+        /// take bare integers, so a caller could hand the planner invented numbers and
+        /// get back a confident plan with nothing marking it as fiction.
+        /// </remarks>
+        private static async Task<bool> TestUnknownWorldStateIsRefusedAsync()
+        {
+            var orchestrator = new Gate3ExecutionOrchestrator();
+
+            Gate3CycleResult result = await orchestrator
+                .ExecuteCycleAsync(Gate3WorldState.Unobserved("gameplay_provider_not_available"))
+                .ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.NoWorldState
+                   && result.SelectedAction == ActionType.None
+                   && result.Summary.Contains("gameplay_provider_not_available", StringComparison.Ordinal);
+        }
+
+        /// <summary>You may plan on simulated state; you may not act on it.</summary>
+        private static async Task<bool> TestSimulatedStateCannotActAsync()
+        {
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var effector = new RecordingEffector();
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, effector);
+
+            Gate3CycleResult refused = await orchestrator
+                .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
+                .ConfigureAwait(false);
+
+            // A dry run with nothing able to act is still legitimate.
+            var dryRun = new Gate3ExecutionOrchestrator();
+            Gate3CycleResult planned = await dryRun
+                .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
+                .ConfigureAwait(false);
+
+            return refused.Outcome == CycleOutcome.RefusedSimulatedInput
+                   && effector.Applications == 0
+                   && planned.Outcome == CycleOutcome.ExecutionDisabled
+                   && planned.SelectedAction != ActionType.None;
         }
 
         private static async Task<bool> TestBlockedCycleNeverExecutesAsync()
@@ -1223,7 +1327,7 @@ namespace NosAi.Runtime.Gate3
             var orchestrator = new Gate3ExecutionOrchestrator(
                 policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
 
-            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Blocked && effector.Applications == 0;
         }

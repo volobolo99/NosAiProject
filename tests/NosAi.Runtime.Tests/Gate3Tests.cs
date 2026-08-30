@@ -96,7 +96,7 @@ public sealed class Gate3Tests
     {
         var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, new CountingEffector());
 
-        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
         Assert.Equal(CycleOutcome.Unverified, result.Outcome);
         Assert.False(result.IsConfirmed);
@@ -144,7 +144,7 @@ public sealed class Gate3Tests
         var orchestrator = new Gate3ExecutionOrchestrator(
             ExecutionAllowed, new CountingEffector(), new FixedObserver(ObservedState.Live(1, 1)));
 
-        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
         Assert.Equal(CycleOutcome.Failed, result.Outcome);
         Assert.NotNull(result.Strategy);
@@ -170,9 +170,123 @@ public sealed class Gate3Tests
         var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
         var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, new CountingEffector(), observer);
 
-        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
         Assert.Equal(CycleOutcome.Unverified, result.Outcome);
+    }
+
+    // -- the input side ------------------------------------------------------
+
+    [Fact]
+    public async Task PlanningOverAnUnknownWorldStateIsRefused()
+    {
+        // The input-side twin of confirming an unobserved outcome: with nothing
+        // known, any plan would be built on invented numbers.
+        var orchestrator = new Gate3ExecutionOrchestrator();
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
+            Gate3WorldState.Unobserved("gameplay_provider_not_available"));
+
+        Assert.Equal(CycleOutcome.NoWorldState, result.Outcome);
+        Assert.Equal(ActionType.None, result.SelectedAction);
+        Assert.Contains("gameplay_provider_not_available", result.Summary);
+    }
+
+    [Fact]
+    public async Task SimulatedStateMayBePlannedOnWhenNothingCanAct()
+    {
+        // A dry run is legitimate: it is how the pipeline is exercised without a
+        // client. It just must not end in an action.
+        var orchestrator = new Gate3ExecutionOrchestrator();
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
+            Gate3WorldState.Simulated(800, 1000, 100, hasTarget: true, inCombat: false));
+
+        Assert.Equal(CycleOutcome.ExecutionDisabled, result.Outcome);
+        Assert.NotEqual(ActionType.None, result.SelectedAction);
+    }
+
+    [Fact]
+    public async Task SimulatedStateIsRefusedWhenALiveEffectorIsBound()
+    {
+        // The rule this enforces: you may plan on simulated state, you may not act
+        // on it. Without the check, a dry run wired to a real effector would drive
+        // the client from numbers nobody observed.
+        var effector = new CountingEffector();
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector);
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
+            Gate3WorldState.Simulated(800, 1000, 100, true, false));
+
+        Assert.Equal(CycleOutcome.RefusedSimulatedInput, result.Outcome);
+        Assert.Equal(0, effector.Applications);
+    }
+
+    [Fact]
+    public async Task ObservedStateReachesTheEffector()
+    {
+        var effector = new CountingEffector();
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector);
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
+            Gate3WorldState.Live(800, 1000, 100, true, false));
+
+        Assert.Equal(1, effector.Applications);
+        // No observer bound, so it runs but cannot be confirmed.
+        Assert.Equal(CycleOutcome.Unverified, result.Outcome);
+    }
+
+    [Fact]
+    public void AWorldStateIsPlannableButNotObservedWhenSimulated()
+    {
+        Gate3WorldState simulated = Gate3WorldState.Simulated(1, 2, 3, true, false);
+
+        Assert.True(simulated.IsPlannable);
+        Assert.False(simulated.IsFullyObserved);
+        Assert.Null(simulated.UnusableReason);
+    }
+
+    [Fact]
+    public void AnUnknownWorldStateCarriesTheReasonItIsUnusable()
+    {
+        Gate3WorldState unknown = Gate3WorldState.Unobserved("client_not_attached");
+
+        Assert.False(unknown.IsPlannable);
+        Assert.False(unknown.IsFullyObserved);
+        Assert.Equal("client_not_attached", unknown.UnusableReason);
+    }
+
+    [Fact]
+    public async Task TheGate1AdapterReportsGameplayAsUnobserved()
+    {
+        // The adapter that joins Gate 3 to the real runtime. Gate 1 observes the
+        // client's process, window and title, not its HP, so UNKNOWN with a reason
+        // is the honest answer today — not a stub. When a gameplay provider exists
+        // this starts returning LIVE and nothing else has to change.
+        var runtime = NosAi.Runtime.Orchestration.RuntimeComposition.CreateSafe();
+        var world = new NosAi.Runtime.WorldModel.WorldModel();
+        using var key = System.Security.Cryptography.RSA.Create(2048);
+        using var auth = new NosAi.Runtime.Gate1.SessionAuth(key.ExportRSAPublicKeyPem());
+        await using var channel = new NosAi.Runtime.Gate1.GuardAiNetworkChannel(0, auth);
+        var provider = new NosAi.Runtime.Gate1.Gate1RuntimeSnapshotProvider(runtime, world, channel);
+
+        var source = new Gate1SnapshotWorldStateSource(provider.Capture);
+        Gate3WorldState state = await source.ReadAsync();
+
+        Assert.False(state.IsPlannable);
+        Assert.False(state.IsFullyObserved);
+        Assert.NotNull(state.UnusableReason);
+    }
+
+    [Fact]
+    public async Task AFailingSnapshotLeavesTheStateUnknownRatherThanThrowing()
+    {
+        var source = new Gate1SnapshotWorldStateSource(() => throw new InvalidOperationException("boom"));
+
+        Gate3WorldState state = await source.ReadAsync();
+
+        Assert.False(state.IsPlannable);
+        Assert.Contains("snapshot_failed", state.UnusableReason!);
     }
 
     // -- authorisation -------------------------------------------------------
@@ -186,7 +300,7 @@ public sealed class Gate3Tests
         var orchestrator = new Gate3ExecutionOrchestrator(
             ExecutionAllowed, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
 
-        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
         Assert.Equal(CycleOutcome.Blocked, result.Outcome);
         Assert.Equal(0, effector.Applications);

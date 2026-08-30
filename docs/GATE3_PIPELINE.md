@@ -72,6 +72,47 @@ chiuso era una tautologia.
 da `IWorldStateObserver`. Dove non c'è osservazione non c'è conferma: l'esito è
 `Unverified`, classificato `UNKNOWN`.
 
+### 3. Il pianificatore accettava numeri senza provenienza
+
+`ExecuteCycleAsync(800, 1000, 100, …)` prendeva interi nudi. Chiunque poteva
+passare valori inventati e ottenere un piano sicuro di sé, senza nulla che li
+marcasse come finzione.
+
+È lo **stesso difetto del verifier, ma sull'ingresso**: un valore privo di
+provenienza trattato come un'osservazione.
+
+**Correzione.** Il ciclo accetta `Gate3WorldState`, in cui ogni campo è
+classificato. Da qui una regola precisa:
+
+> **Si può pianificare su dati simulati. Non si può agire su dati simulati.**
+
+- stato `UNKNOWN` → `NoWorldState`: nessuna pianificazione, perché costruirla
+  significherebbe inventare gli ingressi;
+- stato `SIMULATED` con effector reale collegato → `RefusedSimulatedInput`:
+  l'effector non viene mai raggiunto;
+- stato `SIMULATED` senza effector → pianificazione consentita, è una prova a
+  vuoto legittima;
+- stato `LIVE` → il ciclo procede.
+
+L'overload con gli interi resta per prove a vuoto e test, ma costruisce uno stato
+esplicitamente `SIMULATED`: i chiamanti esistenti continuano a funzionare e la
+loro provenienza diventa onesta. Applicando la regola, quattro test già scritti
+sono diventati rossi — passavano numeri simulati a un effector reale. Erano loro
+a sbagliare.
+
+### L'aggancio al runtime reale
+
+`Gate1SnapshotWorldStateSource` legge lo stato di pianificazione dallo snapshot
+canonico di Gate 1. **Oggi restituisce sempre `UNKNOWN`**, perché Gate 1
+classifica il gameplay come `gameplay_provider_not_available`: il runtime osserva
+processo, finestra e titolo del client, non i suoi HP.
+
+Non è uno stub: è il risultato corretto. Gate 3 non può pianificare sul gioco
+finché qualcosa non sa leggere il gioco, e collegare l'adapter ora rende la
+dipendenza esplicita e verificata invece di lasciarla scoprire a chi passa numeri
+a mano. Nel momento in cui esisterà un provider gameplay, l'adapter comincerà a
+restituire `LIVE` e nient'altro dovrà cambiare.
+
 ## Esiti del ciclo
 
 `Gate3CycleResult.Outcome` distingue casi che prima collassavano su un `bool`:
@@ -80,6 +121,8 @@ da `IWorldStateObserver`. Dove non c'è osservazione non c'è conferma: l'esito 
 |---|---|---|
 | `Confirmed` | eseguito e confermato su osservazione reale | azzera i fallimenti |
 | `NoCandidate` | nulla da pianificare o nulla sopravvive al ranking | no |
+| `NoWorldState` | stato del mondo non leggibile: nessuna pianificazione | no |
+| `RefusedSimulatedInput` | piano su stato simulato con effector reale collegato | no |
 | `Blocked` | Safety Gate ha negato l'autorizzazione | no |
 | `ExecutionDisabled` | policy vieta l'input live, nulla è stato tentato | **no** |
 | `Unverified` | eseguito ma non osservabile | **no**, e non azzera i fallimenti |
@@ -99,7 +142,7 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
 
 ## Invarianti garantite dai test
 
-`--gate3-test` (19 controlli) e `NosAi.Runtime.Tests/Gate3Tests.cs`:
+`--gate3-test` (21 controlli) e `NosAi.Runtime.Tests/Gate3Tests.cs`:
 
 - la simulazione è deterministica e priva di effetti collaterali;
 - a HP critico il ranking mette la sopravvivenza davanti al danno;
@@ -120,7 +163,10 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
 - un'esecuzione non osservata è `Unverified`, non un successo;
 - un osservatore che solleva un'eccezione lascia il ciclo non verificato invece di
   abbattere la pipeline;
-- una lettura non osservata non viene mai letta come zero.
+- una lettura non osservata non viene mai letta come zero;
+- pianificare su stato `UNKNOWN` è rifiutato;
+- uno stato simulato non raggiunge mai un effector reale, mentre resta pianificabile
+  a vuoto.
 
 ## Cosa Gate 3 **non** fa ancora
 
@@ -129,9 +175,9 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
   sul client NosTale. Finché non c'è, ogni ciclo termina `ExecutionDisabled`.
 - **Nessun osservatore reale è collegato.** Serve il backend di percezione. Finché
   non c'è, un'eventuale esecuzione termina `Unverified`.
-- **Non è integrato nel runtime Gate 1.** La suite è invocabile con
-  `--gate3-test`, ma l'orchestratore non è ancora alimentato dallo snapshot reale
-  del client.
+- **L'aggancio a Gate 1 esiste ma non ha dati.** `Gate1SnapshotWorldStateSource`
+  legge lo snapshot reale, che però classifica il gameplay come non disponibile.
+  Finché non c'è un provider, ogni ciclo termina `NoWorldState`.
 
 Questi tre punti sono la vera distanza dall'operatività, e sono limiti dichiarati,
 non difetti nascosti.
