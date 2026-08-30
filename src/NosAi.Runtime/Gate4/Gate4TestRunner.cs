@@ -14,6 +14,8 @@ public static class Gate4TestRunner
         allPassed &= Run("Beta-Binomial convergence", TestBetaBinomialBayesianConvergence);
         allPassed &= Run("UCB1 strategy selection", TestUcb1StrategySelection);
         allPassed &= Run("Strategy mastery lifecycle", TestStrategyMasteryLifecycle);
+        allPassed &= Run("Repeated failure deprecates a strategy", TestStrategyDeprecationOnFailure);
+        allPassed &= Run("Evidence for an unknown strategy is refused", TestUnknownStrategyIsRefused);
         allPassed &= Run("SP1 -> SP2 progression pipeline", TestSpecialistCardUnlockPipeline);
         allPassed &= Run("Deterministic pure evaluation", TestDeterministicPureEvaluation);
         Console.WriteLine(allPassed
@@ -82,16 +84,88 @@ public static class Gate4TestRunner
         return selector.SelectBestStrategy(new[] { a, b }, 10, profile) is not null;
     }
 
+    /// <summary>
+    /// A strategy climbs Candidate -> Verified -> Mastered on consecutive successes,
+    /// and only once the evidence actually supports it.
+    /// </summary>
+    /// <remarks>
+    /// This test used to run ten trials and assert Mastered. Ten is not enough and
+    /// the suite failed. From the uniform prior the expected rate after n successes
+    /// is (1+n)/(2+n) and confidence is 1-e^(-0.15n), so at n=10 the rate is 0.9167
+    /// against a 0.92 threshold and mastery is 0.8747 against 0.90. The first n that
+    /// clears both is 12.
+    ///
+    /// The fix is in the test, not the thresholds: mastery is meant to be hard to
+    /// reach, and lowering the bar to match an arbitrary loop count would have made
+    /// the suite pass by weakening the very thing it checks. The counts are asserted
+    /// explicitly so a future change to the thresholds fails here instead of
+    /// silently altering what "mastered" means.
+    /// </remarks>
     private static bool TestStrategyMasteryLifecycle()
     {
+        const int trialsForMastery = 12;
+
         var kb = new KnowledgeBaseManager();
         var strategy = new StrategyRecord(Guid.NewGuid(), "TS_12_Optimal_Route", GoalType.TimeSpace,
             "ACT1_Q2_TS_12", BetaBinomialEvidence.CreateUniformPrior(), StrategyLifecycleStatus.Candidate,
             400000, 500, 0.5f, DateTime.UtcNow);
         kb.RegisterStrategy(strategy);
+
+        var statuses = new List<StrategyLifecycleStatus>();
         StrategyRecord updated = strategy;
-        for (int i = 0; i < 10; i++) updated = kb.UpdateStrategyEvidence(strategy.StrategyId, true);
-        return updated.Status == StrategyLifecycleStatus.Mastered && updated.MasteryScore >= 0.90f;
+        for (int i = 0; i < trialsForMastery; i++)
+        {
+            updated = kb.UpdateStrategyEvidence(strategy.StrategyId, true);
+            statuses.Add(updated.Status);
+        }
+
+        // Verified must be reached before Mastered: a strategy cannot be mastered
+        // without having passed through the stage where it was merely credible.
+        int firstVerified = statuses.IndexOf(StrategyLifecycleStatus.Verified);
+        int firstMastered = statuses.IndexOf(StrategyLifecycleStatus.Mastered);
+
+        bool ladderRespected = firstVerified >= 0 && firstMastered > firstVerified;
+        bool masteredAtExpectedTrial = firstMastered == trialsForMastery - 1;
+        bool evidenceSupportsIt = updated.MasteryScore >= 0.90f
+                                  && updated.Evidence.ExpectedSuccessRate >= 0.92
+                                  && updated.Evidence.TotalTrials == trialsForMastery;
+
+        return updated.Status == StrategyLifecycleStatus.Mastered
+               && ladderRespected
+               && masteredAtExpectedTrial
+               && evidenceSupportsIt;
+    }
+
+    /// <summary>A run of failures must retire a strategy rather than leave it selectable.</summary>
+    private static bool TestStrategyDeprecationOnFailure()
+    {
+        var kb = new KnowledgeBaseManager();
+        var strategy = new StrategyRecord(Guid.NewGuid(), "TS_12_Bad_Route", GoalType.TimeSpace,
+            "ACT1_Q2_TS_12", BetaBinomialEvidence.CreateUniformPrior(), StrategyLifecycleStatus.Candidate,
+            400000, 500, 0.5f, DateTime.UtcNow);
+        kb.RegisterStrategy(strategy);
+
+        StrategyRecord updated = strategy;
+        for (int i = 0; i < 6; i++) updated = kb.UpdateStrategyEvidence(strategy.StrategyId, false);
+
+        return updated.Status == StrategyLifecycleStatus.Deprecated
+               && updated.Evidence.ExpectedSuccessRate < 0.40
+               && updated.MasteryScore < 0.50f;
+    }
+
+    /// <summary>Evidence for an unknown strategy is refused, not silently created.</summary>
+    private static bool TestUnknownStrategyIsRefused()
+    {
+        var kb = new KnowledgeBaseManager();
+        try
+        {
+            kb.UpdateStrategyEvidence(Guid.NewGuid(), true);
+            return false;
+        }
+        catch (KeyNotFoundException)
+        {
+            return true;
+        }
     }
 
     private static bool TestSpecialistCardUnlockPipeline()
