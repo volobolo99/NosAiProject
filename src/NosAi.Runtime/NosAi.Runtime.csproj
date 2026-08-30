@@ -19,6 +19,11 @@
          (docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md); this replaces the earlier
          placeholder file-append logger in Gate2Runtime.cs. -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+    <!-- X25519 for the ephemeral-session crypto (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md):
+         the .NET BCL has no Curve25519, so the vetted BouncyCastle primitive backs
+         the C# counterpart of nosai/security/ephemeral_session.py. AEAD (ChaCha20-
+         Poly1305) and HKDF come from the BCL. -->
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
