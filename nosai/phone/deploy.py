@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
 from nosai.phone.adb import (
@@ -21,10 +22,16 @@ from nosai.phone.adb import (
     GUARD_PORT,
     PACKAGE_NAME,
     AdbError,
+    Gate1Defaults,
     deploy,
 )
+from nosai.phone.enroll import EnrollmentError, collect
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
+#: The app publishes its key at startup; the first log line can lag the launch.
+ENROLL_ATTEMPTS = 5
+ENROLL_RETRY_DELAY_S = 1.5
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,6 +42,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=GUARD_PORT, help=f"Guard channel port (default {GUARD_PORT})")
     parser.add_argument("--reinstall", action="store_true", help="Reinstall even if already present")
     parser.add_argument("--no-launch", action="store_true", help="Do not start the app after deploying")
+    parser.add_argument("--no-enroll", action="store_true", help="Skip collecting the device key")
+    parser.add_argument(
+        "--key-out",
+        default=Gate1Defaults.TRUSTED_KEY_PATH,
+        help=f"Where to write the device public key (default: {Gate1Defaults.TRUSTED_KEY_PATH})",
+    )
     args = parser.parse_args(argv)
 
     apk = Path(args.apk) if args.apk else REPO_ROOT / BUILT_APK_RELATIVE
@@ -71,9 +84,42 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Device:   {result.serial}")
     print(f"Package:  {PACKAGE_NAME} ({'installed' if result.installed else 'already present'})")
     print(f"Tunnel:   phone 127.0.0.1:{result.reversed_port} -> PC {result.reversed_port} (adb reverse)")
+
+    if args.no_enroll:
+        print("Pairing: skipped (--no-enroll)")
+        return 0
+
+    # Pairing is part of deploying, not a separate chore for the operator. The app
+    # publishes its public key at startup, so it has to have been launched first.
+    if args.no_launch:
+        print("Pairing: skipped (the app must be running to publish its key)")
+        return 0
+
+    key_path = Path(args.key_out)
+    for attempt in range(ENROLL_ATTEMPTS):
+        try:
+            pem = collect(adb_path=args.adb, isolated_root=args.isolated_root)
+            break
+        except EnrollmentError as exc:
+            # The app was launched a moment ago; its first log line may not have
+            # landed yet. Only the "not there yet" case is worth retrying.
+            if exc.reason == "public_key_not_in_log" and attempt < ENROLL_ATTEMPTS - 1:
+                time.sleep(ENROLL_RETRY_DELAY_S)
+                continue
+            print(f"Pairing failed: {exc.reason}", file=sys.stderr)
+            if exc.detail:
+                print(f"  {exc.detail}", file=sys.stderr)
+            return 1
+
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    key_path.write_text(pem, encoding="utf-8")
+    print(f"Pairing:  device key written to {key_path}")
     print()
-    print("In the app, connect to 127.0.0.1 on that port.")
-    print("Enroll the device public key on the PC first: the runtime refuses untrusted keys.")
+    print("Start the runtime; it picks that key up on its own:")
+    print("  dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll")
+    print()
+    print("Then press Connetti in the app. USB works over this tunnel; for Wi-Fi,")
+    print("put the phone on the same network and choose Wi-Fi - the PC is found by discovery.")
     return 0
 
 

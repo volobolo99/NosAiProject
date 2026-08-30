@@ -28,6 +28,22 @@ GUARD_PORT = 17471
 
 #: Release output of the MAUI project.
 APK_NAME = f"{PACKAGE_NAME}-Signed.apk"
+
+
+class Gate1Defaults:
+    """Paths and ports the runtime uses when nothing is passed on its command line.
+
+    Mirrors constants in src/NosAi.Runtime/Configuration/Gate1HostOptions.cs and is
+    pinned to them by tests, so pairing writes where the runtime actually looks.
+    """
+
+    #: Gate1HostOptions.DefaultTrustedKeyPath
+    TRUSTED_KEY_PATH = "data/guard_public_key.pem"
+
+    #: DiscoveryProtocol.Port
+    DISCOVERY_PORT = 17472
+
+
 BUILT_APK_RELATIVE = Path("src/NosAi.GuardAi.App/bin/Release/net8.0-android") / APK_NAME
 
 
