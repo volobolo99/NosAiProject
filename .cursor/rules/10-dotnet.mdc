@@ -1,0 +1,18 @@
+---
+description: C# and .NET engineering standards for NosAiProject
+alwaysApply: false
+globs: ["**/*.cs", "**/*.csproj"]
+---
+
+# .NET Rules
+
+- Prefer clear, strongly typed C# and existing repository conventions.
+- Keep classes focused and dependencies explicit.
+- Use async APIs correctly and propagate `CancellationToken` for cancellable operations.
+- Dispose owned resources deterministically (`IDisposable`/`IAsyncDisposable`).
+- Validate external input at boundaries.
+- Avoid broad exception swallowing; preserve diagnostic context.
+- Prefer structured logging over interpolated diagnostic strings.
+- Do not add dependencies for functionality already provided by the platform or repository.
+- Add unit/integration tests for changed behavior.
+- Avoid unrelated refactors.
