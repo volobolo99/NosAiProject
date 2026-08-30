@@ -30,8 +30,8 @@ public sealed class AutonomousOrchestratorLoop
         {
             var candidates = candidateFactory(_worldModel.Current).ToArray();
             if (candidates.Length == 0) return new(false, "no_candidate", trace);
-            var guard = _orchestrator.Tick(maxTrustTier, candidates);
-            var selected = candidates.FirstOrDefault(c => c.Id == guard.Action.Id) ?? candidates[0];
+            var tick = _orchestrator.Tick(maxTrustTier, candidates);
+            var selected = candidates.FirstOrDefault(c => c.Id == tick.SelectedAction.Id) ?? candidates[0];
             var verified = false;
             for (var attempt = 1; attempt <= _maxRetries + 1; attempt++)
             {

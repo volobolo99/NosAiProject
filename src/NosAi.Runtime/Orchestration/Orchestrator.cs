@@ -32,7 +32,7 @@ public sealed class Orchestrator
         _safetyGate = safetyGate;
     }
 
-    public GuardDecision Tick(TrustTier maxTrustTier, IEnumerable<CandidateAction> candidates)
+    public OrchestratorTickResult Tick(TrustTier maxTrustTier, IEnumerable<CandidateAction> candidates)
     {
         var snapshot = _perception.Capture();
         _worldModel.Update(_adapter.ToWorldState(snapshot));
@@ -42,7 +42,16 @@ public sealed class Orchestrator
             ?? new CandidateAction("noop", ActionKind.NoOp, TrustTier.Tier1, 0);
 
         var guard = _guardAi.Evaluate(selected, maxTrustTier);
-        _safetyGate.Authorize(selected, guard);
-        return guard;
+        var authorized = _safetyGate.Authorize(selected, guard);
+        return new OrchestratorTickResult(selected, guard, authorized);
     }
 }
+
+/// <summary>
+/// Outcome of a single orchestration tick: which action was selected, what the
+/// Guard decided, and whether the Safety Gate authorized execution.
+/// </summary>
+public sealed record OrchestratorTickResult(
+    CandidateAction SelectedAction,
+    GuardDecision Decision,
+    bool Authorized);
