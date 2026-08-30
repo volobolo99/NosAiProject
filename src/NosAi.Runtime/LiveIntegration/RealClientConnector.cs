@@ -32,10 +32,19 @@ public sealed record ClientBaselineSnapshot(
 /// </summary>
 public sealed class RealClientConnector : IAsyncDisposable
 {
-    private const string TargetProcessName = "NosTale";
-    private const string DefaultWindowTitle = "NosTale";
+    /// <summary>
+    /// Candidate executable names, tried in order. The shipped client runs as
+    /// NostaleClientX, so a lone "NosTale" entry matched nothing:
+    /// Process.GetProcessesByName needs the exact name, not a prefix.
+    /// NostaleLauncher is deliberately absent - it is not the game client.
+    /// </summary>
+    public static readonly string[] DefaultProcessNames = { "NostaleClientX", "NostaleClient", "NosTale" };
+
+    private const string DefaultWindowTitle = "Nostale";
 
     private readonly GuardAiNetworkChannel _networkChannel;
+    private readonly string[] _processNames;
+    private readonly string _windowTitle;
     private Process? _gameProcess;
     private IntPtr _gameWindowHandle = IntPtr.Zero;
     private DateTime _lastObservedAtUtc = DateTime.MinValue;
@@ -48,10 +57,24 @@ public sealed class RealClientConnector : IAsyncDisposable
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-    public RealClientConnector(GuardAiNetworkChannel networkChannel)
+    /// <param name="clientProcessNames">
+    /// Comma-separated executable names to look for, without the extension.
+    /// Null or blank keeps <see cref="DefaultProcessNames"/>.
+    /// </param>
+    public RealClientConnector(
+        GuardAiNetworkChannel networkChannel,
+        string? clientProcessNames = null,
+        string? windowTitle = null)
     {
         _networkChannel = networkChannel ?? throw new ArgumentNullException(nameof(networkChannel));
+        var configured = (clientProcessNames ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        _processNames = configured.Length > 0 ? configured : DefaultProcessNames;
+        _windowTitle = string.IsNullOrWhiteSpace(windowTitle) ? DefaultWindowTitle : windowTitle;
     }
+
+    /// <summary>Executable names this connector looks for.</summary>
+    public IReadOnlyList<string> ClientProcessNames => _processNames;
 
     public bool IsClientAttached => _gameProcess is { HasExited: false } && _gameWindowHandle != IntPtr.Zero;
 
@@ -123,27 +146,35 @@ public sealed class RealClientConnector : IAsyncDisposable
             return false;
         }
 
-        Process[] processes;
-        try
+        var processes = new List<Process>();
+        foreach (var candidate in _processNames)
         {
-            processes = Process.GetProcessesByName(TargetProcessName);
-        }
-        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
-        {
-            _lastFailureReason = $"process_enumeration_failed:{ex.GetType().Name}";
-            Console.WriteLine($"[RealClientConnector] ERRORE: impossibile enumerare '{TargetProcessName}': {ex.Message}");
-            return false;
+            try
+            {
+                processes.AddRange(Process.GetProcessesByName(candidate));
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+            {
+                _lastFailureReason = $"process_enumeration_failed:{ex.GetType().Name}";
+                Console.WriteLine($"[RealClientConnector] ERRORE: impossibile enumerare '{candidate}': {ex.Message}");
+                foreach (var opened in processes)
+                    opened.Dispose();
+                return false;
+            }
         }
 
-        if (processes.Length == 0)
+        if (processes.Count == 0)
         {
             _lastFailureReason = "process_not_found";
-            Console.WriteLine($"[RealClientConnector] ERRORE: processo '{TargetProcessName}' non trovato sul sistema.");
+            Console.WriteLine($"[RealClientConnector] ERRORE: nessun processo client trovato tra: {string.Join(", ", _processNames)}.");
             return false;
         }
 
         try
         {
+            // The client runs several processes under the same executable name and
+            // only one owns the game window, so the windowed one wins rather than
+            // whichever the OS happened to list first.
             foreach (var process in processes)
             {
                 try
@@ -155,16 +186,15 @@ public sealed class RealClientConnector : IAsyncDisposable
                     _gameProcess = process;
                     _gameWindowHandle = windowHandle;
                     _lastObservedAtUtc = DateTime.UtcNow;
-                    LogAttachmentSuccess(process.Id, windowHandle);
+                    LogAttachmentSuccess(process.ProcessName, process.Id, windowHandle);
                     return true;
                 }
                 catch (InvalidOperationException)
                 {
-                    process.Dispose();
                 }
             }
 
-            var titledWindow = OperatingSystem.IsWindows() ? FindWindow(null, DefaultWindowTitle) : IntPtr.Zero;
+            var titledWindow = FindWindow(null, _windowTitle);
             if (titledWindow != IntPtr.Zero)
             {
                 GetWindowThreadProcessId(titledWindow, out var processId);
@@ -176,9 +206,28 @@ public sealed class RealClientConnector : IAsyncDisposable
                     _gameProcess = process;
                     _gameWindowHandle = titledWindow;
                     _lastObservedAtUtc = DateTime.UtcNow;
-                    LogAttachmentSuccess(process.Id, titledWindow);
+                    LogAttachmentSuccess(process.ProcessName, process.Id, titledWindow);
                     return true;
                 }
+            }
+
+            // The process is running even though no window could be matched.
+            // Keeping it makes ProcessDetected true and the ProcessOnly state
+            // reachable; dropping it reported the client as entirely absent.
+            foreach (var process in processes)
+            {
+                try
+                {
+                    if (process.HasExited)
+                        continue;
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                    continue;
+                }
+
+                _gameProcess = process;
+                break;
             }
         }
         finally
@@ -261,9 +310,9 @@ public sealed class RealClientConnector : IAsyncDisposable
         return _networkChannel.GetSnapshot();
     }
 
-    private void LogAttachmentSuccess(int processId, IntPtr windowHandle)
+    private static void LogAttachmentSuccess(string processName, int processId, IntPtr windowHandle)
     {
-        Console.WriteLine($"[RealClientConnector] SUCCESSO: connesso al processo '{TargetProcessName}' (PID: {processId}), Window Handle: {windowHandle}");
+        Console.WriteLine($"[RealClientConnector] SUCCESSO: connesso al processo '{processName}' (PID: {processId}), Window Handle: {windowHandle}");
     }
 
     private void DetachCurrentProcess()

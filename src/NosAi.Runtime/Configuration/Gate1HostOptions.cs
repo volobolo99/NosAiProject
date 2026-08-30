@@ -11,7 +11,12 @@ public sealed class Gate1HostOptions
     public string? TrustedGuardPublicKeyPem { get; init; }
     public bool DevEnrollment { get; init; }
     public bool StartDashboard { get; init; } = true;
-    public string ClientProcessName { get; init; } = "NosTale";
+    /// <summary>
+    /// Comma-separated executable names for the game client, without extension.
+    /// The default covers the shipped NostaleClientX; "NosTale" alone matched no
+    /// running process, and this option was never passed to the connector.
+    /// </summary>
+    public string ClientProcessName { get; init; } = "NostaleClientX,NostaleClient,NosTale";
 
     public void Validate()
     {
@@ -39,7 +44,7 @@ public static class Gate1HostOptionsLoader
             TrustedGuardPublicKeyPem = ReadPem(environment, argList),
             DevEnrollment = HasFlag(argList, "--dev-enroll") || IsTruthy(environment, "NOSAI_DEV_ENROLL"),
             StartDashboard = !HasFlag(argList, "--no-dashboard"),
-            ClientProcessName = ReadString(environment, argList, "NOSAI_CLIENT_PROCESS", "--client-process", "NosTale")
+            ClientProcessName = ReadString(environment, argList, "NOSAI_CLIENT_PROCESS", "--client-process", new Gate1HostOptions().ClientProcessName)
         };
         options.Validate();
         return options;

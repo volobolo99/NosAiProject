@@ -290,7 +290,11 @@ public static class Gate1TestRunner
             DashboardPort = 8765,
             GuardPort = 0,
             StartDashboard = false,
-            TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem()
+            TrustedGuardPublicKeyPem = key.ExportRSAPublicKeyPem(),
+            // A name no process can have. Without it this check asserted on
+            // ambient machine state and passed only while client detection was
+            // broken: with NosTale actually running the host reports Healthy.
+            ClientProcessName = "nosai-absent-client-4f1c9a2e"
         };
         await using var host = new Gate1BootstrapHost(options, probe: new ThrowingHardwareProbe());
         await host.StartAsync().ConfigureAwait(false);

@@ -41,7 +41,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _logger = logger ?? new ConsoleRuntimeLogger();
         _auth = CreateAuth(_options, _logger, out _devKey);
         _channel = new GuardAiNetworkChannel(_options.GuardPort, _auth);
-        _client = new RealClientConnector(_channel);
+        _client = new RealClientConnector(_channel, _options.ClientProcessName);
         var safeProbe = new SafeHardwareProbe(probe ?? CreateDefaultProbe());
         _hardware = new LiveHardwareTelemetry(safeProbe);
         var runtime = RuntimeComposition.CreateSafe();
@@ -327,6 +327,7 @@ internal static class Gate1DashboardHtml
         document.getElementById('cpu-src').textContent = src(s.hardware.cpu);
         document.getElementById('ram').textContent = field(s.hardware.processWorkingSetMb, 'UNKNOWN');
         document.getElementById('ram-src').textContent = src(s.hardware.processWorkingSetMb);
+        document.getElementById('client').textContent = s.client.status;
         document.getElementById('client-status').textContent = s.client.status;
         document.getElementById('client-src').textContent = src(s.client.attached);
         document.getElementById('guard-status').textContent = field(s.guard.authenticated, false) === true ? 'AUTHENTICATED' : (field(s.guard.connected, false) === true ? 'CONNECTED' : 'DISCONNECTED');
