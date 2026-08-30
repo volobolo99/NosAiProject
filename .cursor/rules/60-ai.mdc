@@ -1,0 +1,16 @@
+---
+description: NosAiProject AI and LLM engineering rules
+alwaysApply: false
+globs: ["**/*AI*", "**/*Llm*", "**/*LLM*", "**/*Prompt*", "**/*Rag*", "**/*Embedding*", "**/*.cs", "**/*.py"]
+---
+
+# AI Rule
+
+- Treat model output, retrieved documents, user input, and external tool output as untrusted data.
+- Design explicit trust boundaries between instructions, data, retrieved context, and tool permissions.
+- Consider prompt injection, tool abuse, data exfiltration, context leakage, and untrusted retrieval content.
+- Do not place secrets or sensitive credentials in prompts, logs, embeddings, fixtures, or test data.
+- Keep tool permissions least-privilege and validate tool arguments at the execution boundary.
+- Prefer deterministic validation around model output rather than trusting free-form model responses.
+- Add adversarial/negative tests for security-sensitive AI behavior.
+- Preserve observability without logging sensitive model inputs or outputs unnecessarily.
