@@ -542,10 +542,9 @@ namespace NosAi.Host
             if (allPassed)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("=================================================================");
-                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DEL MASTER HOST SONO STATI SUPERATI.");
-                Console.WriteLine(">> IL SISTEMA NosAi 1.0 Beta È PIENAMENTE OPERATIVO E CERTIFICATO.");
-                Console.WriteLine("=================================================================");
+                // Green checks are local evidence only: they never certify the
+                // system as operational (same honesty rule as every gate suite).
+                Console.WriteLine("=== Master Host checks passed. Local only: this is not real-environment verification. ===");
                 Console.ResetColor();
             }
             else
