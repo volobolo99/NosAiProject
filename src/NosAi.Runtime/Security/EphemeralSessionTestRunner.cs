@@ -11,7 +11,7 @@ using System.Text;
 
 namespace NosAi.Runtime.Security;
 
-public static class EphemeralSessionTestRunner
+public static partial class EphemeralSessionTestRunner
 {
     /// <summary>
     /// Runs every crypto check and reports each one by name (same contract as the
@@ -32,9 +32,20 @@ public static class EphemeralSessionTestRunner
         allPassed &= Run("Each session derives a distinct ephemeral key", TestDistinctSessionKeys);
         allPassed &= Run("Wire layout is nonce(12) || ciphertext || tag(16)", TestWireLayout);
         allPassed &= Run("A small-order peer key is rejected", TestSmallOrderRejected);
+        allPassed &= Run("Noise IK handshake completes and both sides agree", TestNoiseIkHandshakeCompletes);
+        allPassed &= Run("Noise IK authenticates both static identities", TestNoiseIkAuthenticatesIdentities);
+        allPassed &= Run("Noise IK carries payloads in both handshake messages", TestNoiseIkHandshakePayloads);
+        allPassed &= Run("Noise transport round-trips in both directions", TestNoiseTransportRoundTrip);
+        allPassed &= Run("Noise handshake rejects a tampered message", TestNoiseHandshakeRejectsTampering);
+        allPassed &= Run("Noise handshake rejects the wrong responder key", TestNoiseHandshakeRejectsWrongResponder);
+        allPassed &= Run("Noise handshake refuses out-of-order steps", TestNoiseHandshakeIsOrdered);
+        allPassed &= Run("Transport keys are unreachable before completion", TestNoiseSplitRequiresCompletion);
+        allPassed &= Run("Replay window accepts once, reorders, refuses the old", TestReplayWindowSemantics);
+        allPassed &= Run("Transport refuses replayed and forged frames", TestNoiseTransportRefusesReplay);
+        allPassed &= Run("Transport binds the sequence number into the tag", TestNoiseTransportBindsSequence);
 
         Console.WriteLine(allPassed
-            ? "=== Crypto checks passed. This is not a full Noise Protocol implementation. ==="
+            ? "=== Crypto checks passed. Local only: no interoperability test against another Noise stack. ==="
             : "=== Crypto checks FAILED. See the lines marked FAIL above. ===");
         return allPassed;
     }

@@ -18,7 +18,13 @@ La specifica v1.8 propone un canale Zero-Trust basato sul Noise Protocol Framewo
 6. dati associati autenticati;
 7. nuova chiave effimera per ogni nuova sessione.
 
-Questa implementazione **non viene presentata come implementazione completa del Noise Protocol Framework**. Per dichiarare un handshake Noise KK/IK conforme servono una libreria Noise validata, la corretta macchina a stati del pattern e test di interoperabilità.
+Il modulo effimero (`EphemeralSession`) resta una costruzione a sé, mantenuta per parità di formato con la controparte Python.
+
+Accanto ad esso, `src/NosAi.Runtime/Security/NoiseProtocol.cs` implementa il pattern **`Noise_IK_25519_ChaChaPoly_SHA256`** con la macchina a stati del framework: `CipherState`, `SymmetricState` (HKDF a catena HMAC, `MixKey`/`MixHash`/`EncryptAndHash`/`Split`) e `HandshakeState` con i token `e, es, s, ss` / `e, ee, se`. Il nonce è little-endian come impone Noise, a differenza del big-endian del modulo effimero: **i due formati non vanno mescolati**.
+
+Il trasporto post-handshake porta il numero di sequenza esplicito sul filo, autenticato come dato associato, e lo verifica con una finestra scorrevole anti-replay in stile RFC 6479 (64 messaggi).
+
+Resta fuori dall'attuale livello di verifica il **test di interoperabilità contro un'altra implementazione Noise**: finché non esiste, questa resta una implementazione conforme alla specifica ma verificata solo contro sé stessa.
 
 ## Chiavi statiche
 
@@ -66,10 +72,12 @@ L'integrazione del vero handshake Noise IK/KK nel trasporto NosAi deve includere
 | HKDF-SHA256 | estensione implementativa | implementato |
 | Chiavi statiche | v1.8 | generatore disponibile; gestione segreti da completare |
 | Noise KK completo | v1.8 | pianificato |
-| Noise IK completo | v1.9 | pianificato |
+| Noise IK completo | v1.9 | implementato (`NoiseHandshakeState`), verificato solo localmente |
+| Anti-replay sliding window | v1.9 | implementato (`ReplayWindow`, 64 messaggi) |
+| Interoperabilità con altre implementazioni Noise | — | non verificata |
 | Chiavi client effimere | v1.9 | implementato come sessione crittografica |
 | Stress test 1000 macro | v1.9 | importato come benchmark |
-| Forward Secrecy end-to-end Noise IK | v1.9 | da validare con handshake Noise completo |
+| Forward Secrecy end-to-end Noise IK | v1.9 | fornita dalle chiavi effimere dell'handshake IK; da validare contro una controparte esterna |
 
 ## Regola di integrazione
 
