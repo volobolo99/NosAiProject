@@ -1,0 +1,16 @@
+---
+description: Security rules for NosAiProject
+alwaysApply: false
+globs: ["**/*"]
+---
+
+# Security Rules
+
+- Treat all network/client input as untrusted.
+- Enforce authentication and authorization at the runtime/service boundary.
+- Validate message type, version, size and semantic constraints before processing.
+- Never log private keys, tokens, passwords or sensitive credentials.
+- Do not hard-code secrets or generate fake credentials as a substitute for configuration.
+- Security-sensitive changes require negative tests and documentation updates.
+- Preserve fail-closed behavior where required by the architecture.
+- Do not weaken cryptographic validation for convenience or tests.
