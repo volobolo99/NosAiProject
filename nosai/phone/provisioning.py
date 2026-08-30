@@ -5,6 +5,8 @@ import subprocess
 import time
 from pathlib import Path
 
+from nosai.phone.adb import APK_NAME, GUARD_PORT, PACKAGE_NAME
+
 logger = logging.getLogger("NosAi.Provisioning")
 
 
@@ -14,8 +16,8 @@ class GuardProvisioningManager:
     def __init__(self, root_path: str | Path) -> None:
         self.root_path = Path(root_path).resolve()
         self.adb_path = self.root_path / "tools" / "adb" / "adb.exe"
-        self.apk_path = self.root_path / "runtime" / "GuardAi.apk"
-        self.package_name = "com.nosai.guard"
+        self.apk_path = self.root_path / "runtime" / APK_NAME
+        self.package_name = PACKAGE_NAME
 
     def _execute_adb(self, args: list[str], timeout: float = 10.0) -> str | None:
         if not self.adb_path.is_file():
@@ -57,18 +59,25 @@ class GuardProvisioningManager:
         installed = self._execute_adb(
             ["-s", device_id, "shell", "pm", "list", "packages", self.package_name]
         )
-        if installed and self.package_name in installed:
-            return self._execute_adb(
-                ["-s", device_id, "shell", "monkey", "-p", self.package_name, "1"]
-            ) is not None
-        if not self.apk_path.is_file():
-            logger.error("Guard AI APK not found: %s", self.apk_path)
+        if not (installed and self.package_name in installed):
+            if not self.apk_path.is_file():
+                logger.error("Guard AI APK not found: %s", self.apk_path)
+                return False
+            result = self._execute_adb(
+                ["-s", device_id, "install", "-r", "-g", str(self.apk_path)], timeout=60.0
+            )
+            if not (result and "Success" in result):
+                return False
+
+        # Without this the app had nothing to reach: the runtime listens on the PC,
+        # so the phone's own localhost:GUARD_PORT has to be carried back here.
+        # `reverse`, not `forward`, which points the tunnel the other way.
+        if self._execute_adb(
+            ["-s", device_id, "reverse", f"tcp:{GUARD_PORT}", f"tcp:{GUARD_PORT}"]
+        ) is None:
+            logger.error("Could not open the reverse tunnel on port %s", GUARD_PORT)
             return False
-        result = self._execute_adb(
-            ["-s", device_id, "install", "-r", "-g", str(self.apk_path)], timeout=60.0
-        )
-        if result and "Success" in result:
-            return self._execute_adb(
-                ["-s", device_id, "shell", "monkey", "-p", self.package_name, "1"]
-            ) is not None
-        return False
+
+        return self._execute_adb(
+            ["-s", device_id, "shell", "monkey", "-p", self.package_name, "1"]
+        ) is not None

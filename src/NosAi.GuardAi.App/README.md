@@ -70,6 +70,15 @@ smartphone del Gate 1:
   fra i limiti aperti. Usare solo su rete domestica fidata.
 - **Nessun comando.** Gate 1 disabilita l'esecuzione: il runtime risponde
   `execution_disabled_in_gate1` a ogni `CommandRequest`. L'app non li invia.
-- **Onboarding ADB non allineato.** `nosai/phone/onboarding_engine.py` usa ancora
-  la porta 6100 e `adb forward`; vedi le incoerenze aperte in
-  `docs/INTEGRAZIONE_RSA_SESSION_AUTH.md`.
+
+## Deploy su telefono
+
+Con il telefono collegato via USB e il debug ADB autorizzato:
+
+```bash
+python -m nosai.phone.deploy
+```
+
+Installa l'APK, apre `adb reverse tcp:17471 tcp:17471` e avvia l'app. Nell'app ci
+si collega a `127.0.0.1:17471`: il tunnel porta la connessione al runtime sul PC,
+quindi via USB non servono Wi-Fi né indirizzo LAN.

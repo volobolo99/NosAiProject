@@ -35,16 +35,33 @@ i campi multibyte. È byte-compatibile con `WireHeader` in
 
 Il provisioning non scarica componenti dall'esterno.
 
-> **Incoerenze aperte, non risolte.** Il modulo non è allineato ad ADR-0006 e non
-> è verificabile su questa macchina (nessun ADB, nessun dispositivo):
->
-> 1. usa `PORT = 6100`, mentre il canale canonico è TCP/17471;
-> 2. usa `adb forward` (PC → telefono), ma nel modello canonico è il **telefono a
->    connettersi al PC**: il runtime è il listener, quindi servirebbe
->    `adb reverse`;
-> 3. installa `GuardAi.apk`, che non esiste nel repository.
->
-> Vanno risolte con un dispositivo reale in mano, non a occhio.
+Le tre incoerenze rilevate in precedenza sono state corrette:
+
+| Era | Ora | Perché contava |
+|---|---|---|
+| `PORT = 6100` | `17471` da `nosai/phone/adb.py`, allineato a `Gate1HostOptions.DefaultGuardPort` da un test | il tunnel si apriva su una porta che il runtime non serviva |
+| `adb forward` | `adb reverse` | `forward` fa raggiungere il telefono **dal** PC; qui il runtime è il listener e il telefono lo chiama, quindi il tunnel puntava dalla parte sbagliata e l'app non avrebbe mai potuto collegarsi |
+| `GuardAi.apk` inesistente | `com.nosai.guardai-Signed.apk`, l'artefatto reale della build MAUI | non c'era nulla da installare |
+
+La meccanica ADB vive ora in un unico modulo, `nosai/phone/adb.py`, usato sia da
+`onboarding_engine.py` sia da `provisioning.py`, che ne portavano due copie
+divergenti. `provisioning.py` inoltre installava e avviava l'app senza mai aprire
+il tunnel: l'app non aveva nulla da raggiungere.
+
+Deploy su un telefono collegato via USB:
+
+```bash
+python -m nosai.phone.deploy
+```
+
+Installa l'APK se assente, apre `adb reverse tcp:17471 tcp:17471` e avvia l'app.
+Nell'app ci si collega a `127.0.0.1:17471`: via USB non servono né Wi-Fi né
+indirizzo LAN.
+
+> **Ancora non validato su dispositivo fisico.** I comandi ADB sono coperti da test
+> con un eseguibile registratore, e la CLI è stata eseguita contro l'ADB reale, ma
+> nessun telefono è mai stato collegato. Finché non accade, i punti smartphone del
+> Gate 1 restano aperti.
 
 ## Limiti attuali
 Non sono ancora dichiarati operativi in produzione: trasporto TCP completo con macchina a stati, AES-GCM-256 del payload, heartbeat temporizzato, timeout fail-closed da 2000 ms, APK `GuardAi.apk` reale e test di interoperabilità su smartphone fisico.
