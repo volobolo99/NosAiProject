@@ -21,3 +21,7 @@ addopts = "-q"
 
 [tool.setuptools.packages.find]
 include = ["nosai*"]
+
+[tool.setuptools.package-data]
+# The nosai-dashboard entry point serves these from the installed package.
+"nosai.dashboard" = ["static/*"]
