@@ -28,7 +28,28 @@ namespace NosAi.Navigation.Pathfinding
         BlockedObstacle = 1,
         WaterOrChasm = 2,
         SafeZoneTown = 3,
-        PortalEntrance = 4
+        PortalEntrance = 4,
+
+        /// <summary>
+        /// Terrain nobody has observed yet. It is deliberately NOT walkable:
+        /// planning a route across unmapped ground would be exactly the
+        /// "unknown treated as empty" mistake the architecture forbids.
+        /// </summary>
+        Unobserved = 255
+    }
+
+    /// <summary>Why a path search produced no route.</summary>
+    public enum PathFailureReason : byte
+    {
+        None = 0,
+        StartNotWalkable = 1,
+        TargetNotWalkable = 2,
+
+        /// <summary>No route exists on the observed grid.</summary>
+        Unreachable = 3,
+
+        /// <summary>The search budget ran out: the answer is unknown, not "no route".</summary>
+        SearchBudgetExhausted = 4
     }
 
     public enum NavigationStatus : byte
@@ -79,7 +100,8 @@ namespace NosAi.Navigation.Pathfinding
         bool IsPathFound,
         ImmutableArray<GridPoint> Waypoints,
         double TotalPathCost,
-        long ComputationTimeMs
+        long ComputationTimeMs,
+        PathFailureReason FailureReason = PathFailureReason.None
     );
 
     #endregion
@@ -96,14 +118,44 @@ namespace NosAi.Navigation.Pathfinding
         private readonly byte[] _tiles;
         private readonly float[] _hazardCostOverlay;
 
-        public MapGridData(int mapId, string mapName, int width, int height)
+        /// <summary>
+        /// Creates a grid whose tiles are <see cref="TileType.Unobserved"/> until
+        /// something observes them. Callers that genuinely want open ground must
+        /// say so through <see cref="CreateFullyWalkable"/>.
+        /// </summary>
+        public MapGridData(int mapId, string mapName, int width, int height,
+            TileType initialTile = TileType.Unobserved)
         {
+            if (width <= 0 || height <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), "A map grid needs positive dimensions.");
             MapId = mapId;
             MapName = mapName;
             Width = width;
             Height = height;
             _tiles = new byte[width * height];
+            if (initialTile != 0) Array.Fill(_tiles, (byte)initialTile);
             _hazardCostOverlay = new float[width * height];
+        }
+
+        /// <summary>
+        /// A grid that is open ground everywhere. Synthetic by construction: for
+        /// tests and simulations, never a stand-in for an observed map.
+        /// </summary>
+        public static MapGridData CreateFullyWalkable(int mapId, string mapName, int width, int height) =>
+            new(mapId, mapName, width, height, TileType.Walkable);
+
+        /// <summary>Tiles that still carry no observation.</summary>
+        public int UnobservedTileCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (byte tile in _tiles)
+                {
+                    if (tile == (byte)TileType.Unobserved) count++;
+                }
+                return count;
+            }
         }
 
         public bool IsWithinBounds(int x, int y) =>
@@ -183,9 +235,16 @@ namespace NosAi.Navigation.Pathfinding
         {
             var sw = Stopwatch.StartNew();
 
-            if (!map.IsWalkable(start.X, start.Y) || !map.IsWalkable(target.X, target.Y))
+            if (!map.IsWalkable(start.X, start.Y))
             {
-                return new CalculatedPathResult(map.MapId, start, target, false, ImmutableArray<GridPoint>.Empty, 0, sw.ElapsedMilliseconds);
+                return new CalculatedPathResult(map.MapId, start, target, false, ImmutableArray<GridPoint>.Empty, 0,
+                    sw.ElapsedMilliseconds, PathFailureReason.StartNotWalkable);
+            }
+
+            if (!map.IsWalkable(target.X, target.Y))
+            {
+                return new CalculatedPathResult(map.MapId, start, target, false, ImmutableArray<GridPoint>.Empty, 0,
+                    sw.ElapsedMilliseconds, PathFailureReason.TargetNotWalkable);
             }
 
             if (start == target)
@@ -243,7 +302,12 @@ namespace NosAi.Navigation.Pathfinding
             }
 
             sw.Stop();
-            return new CalculatedPathResult(map.MapId, start, target, false, ImmutableArray<GridPoint>.Empty, 0, sw.ElapsedMilliseconds);
+            // Exhausting the budget is not proof that no route exists. Reporting
+            // both cases as a bare "not found" lets a planner conclude a
+            // destination is unreachable when the search simply gave up.
+            var reason = steps > maxSteps ? PathFailureReason.SearchBudgetExhausted : PathFailureReason.Unreachable;
+            return new CalculatedPathResult(map.MapId, start, target, false, ImmutableArray<GridPoint>.Empty, 0,
+                sw.ElapsedMilliseconds, reason);
         }
 
         private static float Heuristic(GridPoint a, GridPoint b)
@@ -532,11 +596,7 @@ namespace NosAi.Navigation.Pathfinding
     {
         public static async Task<bool> RunAllTestsAsync()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("=================================================================");
-            Console.WriteLine("    NosAi 1.0 Beta — Certificazione Pathfinding & Navigation     ");
-            Console.WriteLine("=================================================================");
-            Console.ResetColor();
+            Console.WriteLine("=== Navigation checks ===");
 
             bool allPassed = true;
 
@@ -546,20 +606,13 @@ namespace NosAi.Navigation.Pathfinding
             allPassed &= RunTest("Test 4: Routing Multi-Mappa su Grafo Portali (NosVille->Fernon)", TestMultiMapPortalRouting);
             allPassed &= RunTest("Test 5: Rilevamento Anti-Stallo & Ricalcolo Automatico", TestStuckDetectionAndReroute);
             allPassed &= RunTest("Test 6: Invariante Architetturale (Navigation Non-Executable)", TestNavigationSecurityInvariant);
+            allPassed &= RunTest("Test 7: Terreno non osservato non e percorribile", TestUnobservedTerrainIsNotWalkable);
+            allPassed &= RunTest("Test 8: Budget esaurito distinto da irraggiungibile", TestBudgetExhaustionIsDistinctFromUnreachable);
+            allPassed &= RunTest("Test 9: Diagonali non tagliano gli angoli bloccati", TestDiagonalDoesNotCutCorners);
 
-            Console.WriteLine();
-            if (allPassed)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DI NAVIGAZIONE E PATHFINDING SONO SUPERATI.");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(">> [ERRORE NAVIGAZIONE]: UNO O PIÙ TEST SONO FALLITI.");
-                Console.ResetColor();
-            }
+            Console.WriteLine(allPassed
+                ? "=== Navigation checks passed. Local only: this is not real-environment verification. ==="
+                : "=== Navigation checks FAILED. See the lines marked FAIL above. ===");
 
             await Task.CompletedTask;
             return allPassed;
@@ -596,9 +649,70 @@ namespace NosAi.Navigation.Pathfinding
             Console.ResetColor();
         }
 
+
+        private static bool TestUnobservedTerrainIsNotWalkable()
+        {
+            // A freshly created grid is unobserved, not open ground. Planning
+            // across it must fail closed rather than invent a route.
+            var unobserved = new MapGridData(1, "Unmapped", 20, 20);
+            if (unobserved.UnobservedTileCount != 400) return false;
+            if (unobserved.IsWalkable(5, 5)) return false;
+
+            var pathfinder = new AStarPathfinder();
+            var blind = pathfinder.FindPath(unobserved, new GridPoint(1, 1), new GridPoint(18, 18));
+            if (blind.IsPathFound || blind.FailureReason != PathFailureReason.StartNotWalkable) return false;
+
+            // Once observed, the same tiles become navigable.
+            for (int y = 0; y < 20; y++)
+            {
+                for (int x = 0; x < 20; x++) unobserved.SetTileType(x, y, TileType.Walkable);
+            }
+            var observed = pathfinder.FindPath(unobserved, new GridPoint(1, 1), new GridPoint(18, 18));
+            return observed.IsPathFound
+                && unobserved.UnobservedTileCount == 0
+                && observed.FailureReason == PathFailureReason.None;
+        }
+
+        private static bool TestBudgetExhaustionIsDistinctFromUnreachable()
+        {
+            // A target walled off on an observed map is genuinely unreachable.
+            var map = MapGridData.CreateFullyWalkable(1, "Sealed", 20, 20);
+            for (int y = 0; y < 20; y++) map.SetTileType(10, y, TileType.BlockedObstacle);
+
+            var pathfinder = new AStarPathfinder();
+            var sealedOff = pathfinder.FindPath(map, new GridPoint(2, 2), new GridPoint(18, 18));
+            if (sealedOff.IsPathFound || sealedOff.FailureReason != PathFailureReason.Unreachable) return false;
+
+            // A target standing on a blocked tile is a different failure again.
+            var onWall = pathfinder.FindPath(map, new GridPoint(2, 2), new GridPoint(10, 5));
+            return !onWall.IsPathFound && onWall.FailureReason == PathFailureReason.TargetNotWalkable;
+        }
+
+        private static bool TestDiagonalDoesNotCutCorners()
+        {
+            // Two blocked orthogonal neighbours form a closed corner: a diagonal
+            // step through it would pass through solid geometry.
+            var map = MapGridData.CreateFullyWalkable(1, "Corner", 5, 5);
+            map.SetTileType(2, 1, TileType.BlockedObstacle);
+            map.SetTileType(1, 2, TileType.BlockedObstacle);
+
+            var path = new AStarPathfinder().FindPath(map, new GridPoint(1, 1), new GridPoint(2, 2));
+            if (!path.IsPathFound) return false;
+
+            for (int i = 1; i < path.Waypoints.Length; i++)
+            {
+                GridPoint previous = path.Waypoints[i - 1], current = path.Waypoints[i];
+                int dx = current.X - previous.X, dy = current.Y - previous.Y;
+                if (dx == 0 || dy == 0) continue;
+                if (!map.IsWalkable(previous.X + dx, previous.Y) || !map.IsWalkable(previous.X, previous.Y + dy))
+                    return false;
+            }
+            return true;
+        }
+
         private static bool TestAStarObstacleAvoidance()
         {
-            var map = new MapGridData(1, "TestMap", 20, 20);
+            var map = MapGridData.CreateFullyWalkable(1, "TestMap", 20, 20);
             for (int y = 0; y <= 15; y++) map.SetTileType(10, y, TileType.BlockedObstacle);
 
             var pathfinder = new AStarPathfinder();
@@ -613,7 +727,7 @@ namespace NosAi.Navigation.Pathfinding
 
         private static bool TestDynamicHazardAvoidance()
         {
-            var map = new MapGridData(1, "TestMap", 30, 30);
+            var map = MapGridData.CreateFullyWalkable(1, "TestMap", 30, 30);
             var pathfinder = new AStarPathfinder();
 
             var baseResult = pathfinder.FindPath(map, new GridPoint(5, 15), new GridPoint(25, 15));
@@ -629,7 +743,7 @@ namespace NosAi.Navigation.Pathfinding
 
         private static bool TestPathSmoothingReduction()
         {
-            var map = new MapGridData(1, "OpenPlains", 50, 50);
+            var map = MapGridData.CreateFullyWalkable(1, "OpenPlains", 50, 50);
             var pathfinder = new AStarPathfinder();
             var smoother = new PathSmoother();
 
@@ -655,7 +769,7 @@ namespace NosAi.Navigation.Pathfinding
 
         private static bool TestStuckDetectionAndReroute()
         {
-            var map = new MapGridData(1, "TestMap", 20, 20);
+            var map = MapGridData.CreateFullyWalkable(1, "TestMap", 20, 20);
             var controller = new NavigationExecutionController();
 
             controller.StartNavigation(map, new GridPoint(0, 0), new GridPoint(10, 10));
