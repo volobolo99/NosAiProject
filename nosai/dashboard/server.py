@@ -46,22 +46,37 @@ STATE = DashboardState()
 LOCK = threading.RLock()
 
 
-def fetch_gate1_snapshot() -> dict[str, Any] | None:
+# The runtime stamps this on every snapshot. Consuming a payload without
+# checking it defeats the point of versioning the contract: an incompatible
+# future shape would be rendered as though it were understood.
+GATE1_CONTRACT_VERSION = "gate1.snapshot.v1"
+
+
+def fetch_gate1_snapshot() -> tuple[dict[str, Any] | None, str | None]:
+    """Return the runtime snapshot, or None plus the reason it is unusable."""
     if not RUNTIME_URL:
-        return None
+        return None, "runtime_url_not_configured"
     try:
         with urllib.request.urlopen(f"{RUNTIME_URL}/api/gate1", timeout=1.5) as response:
             payload = json.loads(response.read().decode())
-        if not isinstance(payload, dict):
-            return None
-        return payload
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError):
-        return None
+        return None, "runtime_unreachable"
+
+    if not isinstance(payload, dict):
+        return None, "malformed_snapshot"
+
+    version = payload.get("contractVersion")
+    if version != GATE1_CONTRACT_VERSION:
+        # An unrecognised version is not a live reading. Fail closed rather than
+        # showing fields whose meaning is no longer guaranteed.
+        return None, "unsupported_contract_version:" + str(version or "missing")
+
+    return payload, None
 
 
 def runtime_snapshot() -> dict[str, Any]:
     """Return a truthful snapshot; no fake hardware/runtime values are generated."""
-    gate1 = fetch_gate1_snapshot()
+    gate1, failure = fetch_gate1_snapshot()
     with LOCK:
         payload = asdict(STATE)
     if gate1 is None:
@@ -69,12 +84,14 @@ def runtime_snapshot() -> dict[str, Any]:
         payload["provider"] = "not-connected"
         payload["telemetry_source"] = "UNKNOWN"
         payload["gate1"] = None
+        payload["gate1_failure"] = failure
         return payload
     payload["connected"] = True
     payload["provider"] = "gate1-runtime"
     payload["telemetry_source"] = "LIVE"
     payload["mode"] = str(gate1.get("runtimeStatus") or payload["mode"])
     payload["gate1"] = gate1
+    payload["gate1_failure"] = None
     return payload
 
 
