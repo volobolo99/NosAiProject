@@ -186,11 +186,17 @@ class Adb:
         self.run("-s", serial, "shell", "monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1", check=False)
 
     def push_runtime_pin(self, serial: str, pem: str | Path, package: str = PACKAGE_NAME) -> None:
-        """Install the runtime's public key into the app's private storage.
+        """Deliver the runtime's public key to the phone.
 
-        The phone verifies the runtime against this pin before it signs anything.
-        Without it the handshake is fail-closed. `run-as` only works on a
-        debuggable package, which this development APK is.
+        The phone verifies the runtime against this pin before it signs anything,
+        so without it the handshake is fail-closed.
+
+        It goes to the app's external files directory, not app-private storage.
+        `adb run-as` reaches private storage only on a debuggable package, and the
+        release APK is not one -- the previous implementation assumed it was and
+        failed on a real handset with "package not debuggable". The app adopts the
+        file into private storage on its next launch. It is a public key, so an
+        externally readable inbox costs nothing.
         """
         pem_path = Path(pem)
         if not pem_path.is_file():
@@ -199,22 +205,19 @@ class Adb:
         if "BEGIN PUBLIC KEY" not in text:
             raise AdbError("runtime_pin_malformed", str(pem_path))
 
-        remote_tmp = "/data/local/tmp/nosai_runtime_public.pem"
-        self.run("-s", serial, "push", str(pem_path), remote_tmp)
-        # Device shell copies into app-private files/. `run-as cp` from
-        # /data/local/tmp is refused on some images; piping through the shell is not.
-        result = self.run(
-            "-s",
-            serial,
-            "shell",
-            f"cat {remote_tmp} | run-as {package} sh -c 'cat > files/runtime_public.pem'",
-            check=False,
-        )
-        if result.returncode != 0:
-            raise AdbError(
-                "runtime_pin_push_failed",
-                (result.stderr or result.stdout or "").strip() or "run-as copy failed",
-            )
+        inbox = f"/sdcard/Android/data/{package}/files"
+        # The directory does not exist until the app has used external storage, and
+        # push will not create it.
+        self.run("-s", serial, "shell", "mkdir", "-p", inbox, check=False)
+
+        result = self.run("-s", serial, "push", str(pem_path), f"{inbox}/runtime_public.pem", check=False)
+        combined = f"{result.stdout} {result.stderr}"
+        if "1 file pushed" not in combined:
+            raise AdbError("runtime_pin_push_failed", combined.strip()[:300] or f"exit {result.returncode}")
+
+        verify = self.run("-s", serial, "shell", "head", "-1", f"{inbox}/runtime_public.pem", check=False)
+        if "BEGIN PUBLIC KEY" not in verify.stdout:
+            raise AdbError("runtime_pin_unreadable", (verify.stdout or verify.stderr).strip()[:200])
 
 
 @dataclass(frozen=True)

@@ -152,17 +152,61 @@ def test_a_similarly_named_package_does_not_count_as_installed(monkeypatch, fake
     assert result.installed is True
 
 
-def test_push_runtime_pin_copies_into_app_private_storage(monkeypatch, tmp_path, fake_adb_binary):
+def test_push_runtime_pin_never_uses_run_as(monkeypatch, tmp_path, fake_adb_binary):
+    """The pin must reach a release build, which `run-as` cannot.
+
+    This check previously asserted the opposite: it required `run-as`, so it
+    passed against a recorder and then failed on the first real handset with
+    "run-as: package not debuggable". The release APK is not debuggable and never
+    will be, so the pin goes to the app's external files directory instead and the
+    app adopts it from there.
+    """
     pem = tmp_path / "runtime_public.pem"
     pem.write_text("-----BEGIN PUBLIC KEY-----\nMIIB\n-----END PUBLIC KEY-----\n", encoding="utf-8")
-    recorder = _install_recorder(monkeypatch, {})
+    inbox = f"/sdcard/Android/data/{PACKAGE_NAME}/files"
+    recorder = _install_recorder(monkeypatch, {
+        "-s R58M12345 push": "1 file pushed, 0 skipped.",
+        "-s R58M12345 shell head": "-----BEGIN PUBLIC KEY-----",
+    })
 
     Adb(fake_adb_binary).push_runtime_pin("R58M12345", pem)
 
-    assert ["-s", "R58M12345", "push", str(pem), "/data/local/tmp/nosai_runtime_public.pem"] in recorder.calls
     joined = " | ".join(" ".join(call) for call in recorder.calls)
-    assert "run-as" in joined and PACKAGE_NAME in joined
-    assert "files/runtime_public.pem" in joined
+    assert "run-as" not in joined, "run-as does not work on a release build"
+    assert ["-s", "R58M12345", "push", str(pem), f"{inbox}/runtime_public.pem"] in recorder.calls
+    # push will not create the directory, and it does not exist until the app has
+    # used external storage.
+    assert ["-s", "R58M12345", "shell", "mkdir", "-p", inbox] in recorder.calls
+
+
+def test_push_runtime_pin_fails_closed_when_the_copy_did_not_land(monkeypatch, tmp_path, fake_adb_binary):
+    # A pin that silently failed to arrive leaves the phone unable to verify the
+    # runtime, and the failure would surface much later as "runtime not
+    # recognised" — pointing the operator at the wrong problem.
+    pem = tmp_path / "runtime_public.pem"
+    pem.write_text("-----BEGIN PUBLIC KEY-----\nMIIB\n-----END PUBLIC KEY-----\n", encoding="utf-8")
+    _install_recorder(monkeypatch, {"-s R58M12345 push": "adb: error: failed to copy"})
+
+    with pytest.raises(AdbError) as raised:
+        Adb(fake_adb_binary).push_runtime_pin("R58M12345", pem)
+
+    assert raised.value.reason == "runtime_pin_push_failed"
+
+
+def test_push_runtime_pin_verifies_what_landed(monkeypatch, tmp_path, fake_adb_binary):
+    # The push can report success while the file is empty or truncated, so the
+    # pin is read back before pairing claims to have worked.
+    pem = tmp_path / "runtime_public.pem"
+    pem.write_text("-----BEGIN PUBLIC KEY-----\nMIIB\n-----END PUBLIC KEY-----\n", encoding="utf-8")
+    _install_recorder(monkeypatch, {
+        "-s R58M12345 push": "1 file pushed, 0 skipped.",
+        "-s R58M12345 shell head": "",
+    })
+
+    with pytest.raises(AdbError) as raised:
+        Adb(fake_adb_binary).push_runtime_pin("R58M12345", pem)
+
+    assert raised.value.reason == "runtime_pin_unreadable"
 
 
 def test_unauthorized_device_is_reported_as_such(monkeypatch, fake_apk, fake_adb_binary):
