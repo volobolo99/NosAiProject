@@ -64,9 +64,12 @@ smartphone del Gate 1:
   dell'app, quindi sopravvive ai riavvii, ma **non è nell'Android Key Store** e non
   è hardware-backed: è leggibile con root o da un backup dei dati dell'app.
   `DeviceIdentity` è il punto in cui va sostituita.
-- **Wi-Fi/LAN non provata.** L'app è stata validata su dispositivo fisico contro il
-  runtime reale, ma attraverso `adb reverse` su USB. Il percorso di rete —
-  indirizzamento LAN, firewall, latenza, perdita di pacchetti — non è stato provato.
+- **Il runtime non è autenticato verso il telefono.** Il canale prova il telefono
+  al PC, non il contrario. Su una rete non controllata un host può rispondere per
+  primo alla discovery e spacciarsi per runtime. Usare il Wi-Fi solo su rete
+  fidata; vedi [ADR-0007](../../docs/adr/ADR-0007-wifi-transport.md).
+- **Una sola sessione per volta.** Su LAN chiunque apra una connessione può
+  occupare lo slot ed escludere il telefono legittimo.
 - **Trasporto in chiaro.** Il canale autentica il telefono ma non cifra il
   payload. `docs/INTEGRAZIONE_RSA_SESSION_AUTH.md` elenca la cifratura autenticata
   fra i limiti aperti. Usare solo su rete domestica fidata.
@@ -81,16 +84,28 @@ Con il telefono collegato via USB e il debug ADB autorizzato:
 python -m nosai.phone.deploy
 ```
 
-Installa l'APK, apre `adb reverse tcp:17471 tcp:17471` e avvia l'app. Nell'app ci
-si collega a `127.0.0.1:17471`: il tunnel porta la connessione al runtime sul PC,
-quindi via USB non servono Wi-Fi né indirizzo LAN.
-
-Poi registra la chiave del dispositivo sul PC e avvia il runtime fidandosene:
+Installa l'APK, apre il tunnel USB **e abbina il dispositivo**: la chiave del
+telefono viene raccolta e scritta dove il runtime la cerca da solo. Poi:
 
 ```bash
-python -m nosai.phone.enroll --out data/guard_public_key.pem
-dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll     --guard-public-key-path data/guard_public_key.pem
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll
 ```
+
+Nessun flag: il runtime carica `data/guard_public_key.pem` e dichiara nel log
+quale chiave sta fidando.
+
+## Come si collega
+
+Nell'app c'è una sola scelta, ricordata fra un avvio e l'altro:
+
+| | |
+|---|---|
+| **USB** | telefono collegato al cavo; passa dal tunnel `adb reverse` |
+| **Wi-Fi** | telefono sulla stessa rete del PC; il runtime è **trovato per discovery** |
+
+In nessuno dei due casi si inserisce un indirizzo, una chiave o un'autorizzazione.
+L'abbinamento si fa una volta via USB e vale anche per il Wi-Fi, perché l'identità
+del dispositivo è persistita.
 
 > Se l'app mostra `connect_failed (ConnectionRefused)`, controllare
 > `adb reverse --list` prima di sospettare il runtime: il tunnel non sopravvive

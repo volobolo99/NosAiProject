@@ -27,7 +27,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
 | Guard AI smartphone | Avvio affidabile | [x] **reale** | APK installato e avviato su dispositivo Android `9125322104AC`; UI operativa |
-| Guard AI smartphone | Connessione reale | [x] **reale via USB** | sessione autenticata dal telefono fisico al runtime; trasporto `adb reverse` su USB. **Rete Wi-Fi/LAN ancora non provata** |
+| Guard AI smartphone | Connessione reale | [x] **reale via Wi-Fi** | sessione autenticata su LAN, cavo USB staccato e tunnel rimosso; runtime trovato per discovery, nessun indirizzo inserito |
 | Guard AI smartphone | Autenticazione reale | [x] **reale** | chiave del telefono registrata via `enroll`; `authenticated=True [LIVE]` sul runtime |
 | Guard AI smartphone | Heartbeat reale | [x] **reale** | `lastHeartbeatUtc` aggiornato dal dispositivo fisico; silenzio > 2s → sessione chiusa |
 | Guard AI smartphone | Riconnessione controllata | [x] **reale** | app terminata → sessione caduta fail-closed; riavvio → **nuovo** sessionId `2730cc13…` (era `eb78f421…`) |
@@ -37,7 +37,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
 | Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
 | End-to-end | PC ↔ client | [x] **reale** | runtime `Healthy` contro NosTale in esecuzione; `attached_os_session`, campi client `LIVE`, gameplay `UNKNOWN` |
-| End-to-end | PC ↔ smartphone | [x] **reale via USB** | NosTale reale → runtime → telefono fisico: l'app mostra `NostaleClientX [LIVE]`, PID 7932, finestra `Nostale [LIVE]`. LAN ancora no |
+| End-to-end | PC ↔ smartphone | [x] **reale via Wi-Fi** | NosTale reale → runtime → telefono su LAN senza USB: `authenticated=True`, heartbeat in avanzamento, `NostaleClientX [LIVE]` |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] **reale** | ciclo completo su dispositivo fisico: connesso → ucciso → fail-closed → riconnesso con nuova sessione |
 | Governance | Nessuna regressione bloccante | [x] locale | `pytest` 87; `--gate1-test` 19/19; `--host-test` 7/7; `NosAi.Runtime.Tests` 5/5. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
@@ -143,6 +143,48 @@ gioco (il gameplay resta `UNKNOWN`); nessun input o injection.
 > `connect_failed (ConnectionRefused)`. Se l'app non si collega, verificare
 > `adb reverse --list` prima di cercare il problema nel runtime.
 
+## Evidenza reale — Wi-Fi (2026-08-30)
+
+Verifica con **cavo USB staccato** e tunnel `adb reverse` rimosso, così la LAN
+era l'unico percorso possibile.
+
+```
+adb devices                  -> (nessun dispositivo)
+telefono -> 127.0.0.1:17471  -> rifiutato          (nessun tunnel)
+telefono -> 192.168.0.4:17471 -> aperta            (LAN)
+```
+
+PC `192.168.0.4`, telefono `192.168.0.2/24`. Nell'app è stato scelto Wi-Fi;
+**nessun indirizzo è stato inserito**: il runtime è stato trovato per discovery
+su UDP/17472.
+
+Sessione letta dal runtime, con `adb devices` vuoto:
+
+```
+connected        True                                LIVE
+authenticated    True                                LIVE
+sessionId        '648fbd94d9eb4085b3f80072085f386a'  LIVE
+client.status    attached_os_session
+proc             NostaleClientX
+
+lastHeartbeatUtc 18:07:12 -> 18:07:15 -> 18:07:17    (in avanzamento)
+```
+
+Il runtime era stato avviato **senza alcun flag**: ha caricato da solo la chiave
+del dispositivo da `data/guard_public_key.pem`, scritta dall'abbinamento via USB
+fatto in precedenza.
+
+```
+[INFO] Trusting one Guard device key. source=data/guard_public_key.pem
+[INFO] Gate 1 runtime is listening. guardPort=17471 discovery=udp/17472
+```
+
+Cosa prova: il circuito completo su rete reale, senza cavo e senza configurazione
+da parte dell'operatore.
+
+Cosa **non** prova: nessuna autenticazione del runtime verso il telefono (ADR-0007,
+limite 1); nessuna cifratura del payload; nessuna lettura di memoria di gioco.
+
 ---
 
 ## Dataset minimo canonico da acquisire
@@ -188,32 +230,28 @@ Il Gate 1 è superato solo se:
 6. i casi di errore e disconnessione hanno esito positivo;
 7. la documentazione finale è coerente con le prove osservate.
 
-**Stato: tutte le righe hanno evidenza. Resta una sola riserva esplicita.**
+**Stato: tutti e sette i criteri sono soddisfatti con evidenza reale.**
 
-I criteri 1, 2, 4, 5, 6 e 7 sono soddisfatti con evidenza reale registrata in
-questo documento. Il criterio 3 è soddisfatto **su trasporto USB**: il telefono
-fisico ha completato autenticazione, heartbeat, caduta fail-closed e riconnessione
-contro il runtime reale, ma attraverso `adb reverse`, non sulla rete Wi-Fi/LAN.
+Il criterio 3 è chiuso **su rete Wi-Fi**, non solo su USB: la sessione è stata
+completata con il cavo staccato e il tunnel `adb reverse` rimosso, con il runtime
+trovato per discovery e nessun indirizzo inserito a mano (vedi *Evidenza reale —
+Wi-Fi*).
 
-La riserva è quindi una sola e va nominata invece che nascosta:
+Restano tre limiti dichiarati. **Nessuno blocca il Gate 1**, ma vanno chiusi prima
+di parlare di esercizio continuativo, e il primo prima di usare il Wi-Fi su una
+rete non controllata:
 
-> **La sessione su Wi-Fi/LAN non è mai stata provata.** Il canale è identico —
-> stesso framing, stessa autenticazione, stesso heartbeat — ma il percorso di rete
-> no: non sono provati indirizzamento LAN, firewall, latenza né perdita di
-> pacchetti su Wi-Fi.
+1. **Il runtime non è autenticato verso il telefono.** Il canale prova il telefono
+   al PC, non il contrario: su una rete ostile un host può rispondere per primo
+   alla discovery e presentarsi come runtime, alimentando il telefono con stato
+   inventato o raccogliendo firme su challenge scelte da lui. Vedi ADR-0007.
+2. **Il canale serve una sola sessione per volta**, quindi su LAN chiunque apra
+   una connessione può occupare lo slot ed escludere il telefono legittimo.
+3. **Il payload non è cifrato**, e la chiave del dispositivo è in storage privato
+   dell'app, non nell'Android Key Store.
 
-Se il creatore considera la sessione su USB sufficiente per il criterio 3, il
-Gate 1 è superato. Se richiede la rete reale, resta questa unica prova da fare:
-avviare il runtime, collegare il telefono allo stesso Wi-Fi e inserire nell'app
-l'indirizzo LAN del PC al posto di `127.0.0.1`. **La decisione è del creatore, non
-di chi implementa.**
-
-Restano inoltre due limiti dichiarati che non bloccano il Gate 1 ma vanno chiusi
-prima di parlare di esercizio continuativo:
-
-- la chiave del dispositivo è in storage privato dell'app, non nell'Android Key
-  Store, e non è hardware-backed;
-- il canale autentica ma non cifra il payload.
+Il punto 1 richiede autenticazione mutua nell'handshake, che modifica il contratto
+di wire e supera in parte ADR-0006. Non è stato fatto qui.
 
 ---
 
