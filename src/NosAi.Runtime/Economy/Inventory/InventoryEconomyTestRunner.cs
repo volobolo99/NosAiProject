@@ -31,11 +31,49 @@ public static class InventoryEconomyTestRunner
         allPassed &= Run("Grid compaction conserves total quantity per item", TestGridCompactionConservesQuantity);
         allPassed &= Run("A saturated ETC tab requires sanitization before a TimeSpace", TestSaturationGate);
         allPassed &= Run("Crafting solver reports feasibility and missing materials", TestCraftingSolver);
+        allPassed &= Run("Unobserved balances stay UNKNOWN, never a seeded number", TestBalancesStartUnknown);
+        allPassed &= Run("Observed balances are LIVE and seeded ones SIMULATED", TestBalanceProvenance);
 
         Console.WriteLine(allPassed
-            ? "=== Economy checks passed. Seed balances are SIMULATED until a real client feeds them. ==="
+            ? "=== Economy checks passed. Local only: this is not real-environment verification. ==="
             : "=== Economy checks FAILED. See the lines marked FAIL above. ===");
         return allPassed;
+    }
+
+
+    private static bool TestBalancesStartUnknown()
+    {
+        var orchestrator = new InventoryEconomyOrchestrator();
+        var snapshot = orchestrator.CaptureEconomicSnapshot();
+
+        // Nothing has been observed: the balance must not read as zero, and it
+        // must not read as the old invented seed either.
+        return snapshot.CurrentGold.Source == NosAi.Runtime.Contracts.DataSourceKind.Unknown
+            && !snapshot.CurrentGold.HasValue
+            && snapshot.BankGold.Source == NosAi.Runtime.Contracts.DataSourceKind.Unknown
+            && orchestrator.SpendableGold is null;
+    }
+
+    private static bool TestBalanceProvenance()
+    {
+        var orchestrator = new InventoryEconomyOrchestrator();
+
+        orchestrator.ObserveBalances(1234, 5678);
+        var observed = orchestrator.CaptureEconomicSnapshot();
+        if (observed.CurrentGold.Source != NosAi.Runtime.Contracts.DataSourceKind.Live) return false;
+        if (observed.CurrentGold.Value != 1234 || observed.BankGold.Value != 5678) return false;
+        if (orchestrator.SpendableGold != 1234) return false;
+
+        // A simulated seed must never masquerade as an observation.
+        orchestrator.SeedSimulatedBalances(999, 111);
+        if (orchestrator.CaptureEconomicSnapshot().CurrentGold.Source
+            != NosAi.Runtime.Contracts.DataSourceKind.Simulated) return false;
+
+        // Losing the client returns the balance to UNKNOWN rather than freezing
+        // a stale number that would keep being spent against.
+        orchestrator.ForgetBalances("client_detached");
+        return orchestrator.SpendableGold is null
+            && orchestrator.CaptureEconomicSnapshot().CurrentGold.FailureReason == "client_detached";
     }
 
     private static bool Run(string name, Func<bool> check)

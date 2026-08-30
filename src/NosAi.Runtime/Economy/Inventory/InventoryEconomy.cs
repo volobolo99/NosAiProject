@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Economy.Inventory;
 
@@ -14,7 +15,20 @@ public sealed record InventoryTabContainer(InventoryTab Tab,ImmutableDictionary<
     public int UsedSlotsCount=>Slots.Values.Count(s=>!s.IsEmpty);public int FreeSlotsCount=>Capacity-UsedSlotsCount;public double SaturationPercentage=>(double)UsedSlotsCount/Capacity;
     public static InventoryTabContainer CreateEmpty(InventoryTab tab,int capacity=48){var b=ImmutableDictionary.CreateBuilder<int,InventorySlot>();for(int i=0;i<capacity;i++)b[i]=InventorySlot.Empty(i,tab);return new(tab,b.ToImmutable(),capacity);}
 }
-public sealed record EconomicStateSnapshot(long CurrentGold,long BankGold,long TotalInventoryEstimatedValueGold,double OverallInventorySaturation,int AngelFeathersCount,int FullMoonCrystalsCount,int GillionStonesCount,int ProtectionScrollsCount);
+/// <summary>
+/// Economic state. Carried balances are classified: gold nobody observed is
+/// UNKNOWN, never a plausible-looking number. Item counts are DERIVED because
+/// they are computed from the inventory this process actually holds.
+/// </summary>
+public sealed record EconomicStateSnapshot(
+    ClassifiedValue<long> CurrentGold,
+    ClassifiedValue<long> BankGold,
+    long TotalInventoryEstimatedValueGold,
+    double OverallInventorySaturation,
+    int AngelFeathersCount,
+    int FullMoonCrystalsCount,
+    int GillionStonesCount,
+    int ProtectionScrollsCount);
 
 public sealed record UpgradeProbabilityTier(int TargetUpgradeLevel,float SuccessProbability,float FailureProbability,float BreakOrDestructionProbability,long RequiredGoldCost,int RequiredSoulGems,int RequiredAngelFeathers,int RequiredFullMoonCrystals);
 public sealed record UpgradeRiskEvaluation(int CurrentLevel,int TargetLevel,float SuccessChance,float DestructionRisk,long ExpectedTotalGoldCost,int ExpectedTotalFeathersCost,bool IsProtectedAgainstDestruction,bool IsRecommendedBySafetyPolicy,string RiskRationale);
@@ -63,11 +77,63 @@ public sealed class CraftingRecipeSolver
 
 public sealed class InventoryEconomyOrchestrator
 {
-    private readonly Dictionary<InventoryTab,InventoryTabContainer> _containers=new();private long _currentGold=150000;private long _bankGold=500000;
+    private readonly Dictionary<InventoryTab,InventoryTabContainer> _containers=new();
+
+    // Balances start UNKNOWN. The previous seed values (150000 / 500000) were
+    // invented, and nothing could replace them: every consumer read fabricated
+    // gold as if it were the character's. Observation is now the only way in.
+    private ClassifiedValue<long> _currentGold = ClassifiedValue<long>.Unknown("gold_not_observed");
+    private ClassifiedValue<long> _bankGold = ClassifiedValue<long>.Unknown("bank_gold_not_observed");
     public EquipmentUpgradeSimulator UpgradeSimulator{get;}=new();public BazaarMarketArbitrageEvaluator ArbitrageEvaluator{get;}=new();public InventoryGridOptimizer GridOptimizer{get;}=new();public CraftingRecipeSolver RecipeSolver{get;}=new();
     public InventoryEconomyOrchestrator(){foreach(var tab in Enum.GetValues<InventoryTab>())_containers[tab]=InventoryTabContainer.CreateEmpty(tab);}
     public InventoryTabContainer GetTab(InventoryTab tab)=>_containers[tab];
     public void SetSlot(InventoryTab tab,InventorySlot slot){if(slot.SlotIndex<0||slot.SlotIndex>=_containers[tab].Capacity)throw new ArgumentOutOfRangeException(nameof(slot));_containers[tab]=_containers[tab] with{Slots=_containers[tab].Slots.SetItem(slot.SlotIndex,slot)};}
-    public EconomicStateSnapshot CaptureEconomicSnapshot(){long value=_containers.Values.SelectMany(c=>c.Slots.Values).Where(s=>!s.IsEmpty).Sum(s=>s.EstimatedBazaarValueGold*s.Quantity);return new(_currentGold,_bankGold,value,_containers.Values.Average(c=>c.SaturationPercentage),GetTotalItemQuantity(205),GetTotalItemQuantity(206),GetTotalItemQuantity(203),GetTotalItemQuantity(301));}
+    /// <summary>Records balances read from the real client.</summary>
+    public void ObserveBalances(long currentGold, long bankGold, DateTime? observedAtUtc = null)
+    {
+        if (currentGold < 0 || bankGold < 0)
+            throw new ArgumentOutOfRangeException(nameof(currentGold), "Observed balances cannot be negative.");
+        _currentGold = ClassifiedValue<long>.Live(currentGold, observedAtUtc);
+        _bankGold = ClassifiedValue<long>.Live(bankGold, observedAtUtc);
+    }
+
+    /// <summary>
+    /// Seeds balances for simulations and tests. They are labelled SIMULATED, so
+    /// downstream policy can refuse to act on them.
+    /// </summary>
+    public void SeedSimulatedBalances(long currentGold, long bankGold)
+    {
+        _currentGold = ClassifiedValue<long>.Simulated(currentGold);
+        _bankGold = ClassifiedValue<long>.Simulated(bankGold);
+    }
+
+    /// <summary>Drops observed balances back to UNKNOWN when the client goes away.</summary>
+    public void ForgetBalances(string reason)
+    {
+        _currentGold = ClassifiedValue<long>.Unknown(reason);
+        _bankGold = ClassifiedValue<long>.Unknown(reason);
+    }
+
+    /// <summary>
+    /// Spendable gold for a purchase decision. An unobserved balance yields null,
+    /// not zero and not an optimistic guess: the caller must handle "unknown".
+    /// </summary>
+    public long? SpendableGold => _currentGold.HasValue ? _currentGold.Value : null;
+
+    public EconomicStateSnapshot CaptureEconomicSnapshot()
+    {
+        long value = _containers.Values.SelectMany(c => c.Slots.Values)
+            .Where(s => !s.IsEmpty)
+            .Sum(s => s.EstimatedBazaarValueGold * s.Quantity);
+        return new EconomicStateSnapshot(
+            _currentGold,
+            _bankGold,
+            value,
+            _containers.Values.Average(c => c.SaturationPercentage),
+            GetTotalItemQuantity(205),
+            GetTotalItemQuantity(206),
+            GetTotalItemQuantity(203),
+            GetTotalItemQuantity(301));
+    }
     public int GetTotalItemQuantity(int itemId)=>_containers.Values.SelectMany(c=>c.Slots.Values).Where(s=>s.ItemId==itemId).Sum(s=>s.Quantity);
 }
