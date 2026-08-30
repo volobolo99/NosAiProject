@@ -1,0 +1,7 @@
+# Regole di Sviluppo per Cursor & Claude in NosAiProject
+- Linguaggio di Implementazione: C# / .NET 8, fortemente tipizzato.
+- Pattern Architetturali: Principi SOLID, DRY, KISS, zero-allocation sul percorso critico (utilizzo di Span<T>, Memory<T>, ArrayPool).
+- Invarianti di Sicurezza: Nessun LLM o provider decisionale può eseguire azioni direttamente. Il percorso critico deve passare tassativamente attraverso: Observe -> WorldState -> Simulation -> Ranking -> Orchestrator -> Planner -> Guard -> Trust -> Safety -> Executor -> Verify.
+- Divieto di Mock sul Percorso Critico: Gli adapter di gioco e di rete (DXGI Direct Capture, socket TCP asincroni, framing binario a 12 byte) devono interagire con l'hardware e i client reali (Acer Nitro V 16 AI, client NosTale, smartphone Android via ADB).
+- Documentazione: Aggiornare i registri tecnici e la documentazione in lingua italiana quando richiesto dalle regole di progetto.
+-
