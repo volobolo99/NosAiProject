@@ -1,0 +1,15 @@
+---
+description: NosAiProject testing and validation rules
+alwaysApply: false
+globs: ["**/*Tests*", "**/*Test*", "**/*.cs", "**/*.py"]
+---
+
+# Testing Rule
+
+- Treat tests as part of the implementation, not an afterthought.
+- For behavior changes, add or update focused tests covering success and relevant failure paths.
+- Prefer deterministic tests; avoid arbitrary sleeps and timing-dependent assertions where possible.
+- For concurrency and networking, test cancellation, timeout, disconnect, malformed input, and resource cleanup where applicable.
+- Run the narrowest relevant tests first, then the broader suite when practical.
+- Before completion, run the repository's build and test workflow or document exactly why a check could not run.
+- Never claim a test passed unless it was actually executed and passed.
