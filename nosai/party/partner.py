@@ -95,11 +95,17 @@ class PartnerEntity:
         return max(0.0, min(1.0, self.affinity() / 100.0 * self.morale / 100.0 * stress_factor))
 
     def register_memory(self, impact: float, description: str, consolidation_threshold: float = 30.0) -> None:
-        self.short_term_memory.append(MemoryEvent(impact, description))
+        """Record an event, consolidating it into a permanent trait when strong enough.
+
+        Consolidation moves the event out of volatile memory: a consolidated trait
+        must not keep decaying in short-term memory as if it were still transient.
+        """
         if abs(impact) >= consolidation_threshold:
             self.trust = max(0.0, min(100.0, self.trust + impact))
             if description not in self.long_term_traits:
                 self.long_term_traits.append(description)
+            return
+        self.short_term_memory.append(MemoryEvent(impact, description))
 
     def decay_memory(self, dt: float, decay_lambda: float = 0.05) -> None:
         for event in self.short_term_memory:

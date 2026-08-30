@@ -38,6 +38,13 @@ def test_partner_memory_consolidation_and_decay():
     assert len(partner.short_term_memory) == 1
 
 
+def test_consolidated_memory_leaves_short_term_store():
+    partner = PartnerEntity("p1", "Kliff")
+    partner.register_memory(35, "SAVED_PLAYER_IN_RAID")
+    assert partner.short_term_memory == []
+    assert "SAVED_PLAYER_IN_RAID" in partner.long_term_traits
+
+
 def test_pet_is_independent_from_partner():
     pet = PetEntity("pet1", "Wolf", current_hp=100, max_hp=100, energy=100, hunger=0)
     assert pet.choose_behavior(owner_distance=5) is PetBehavior.FOLLOW
