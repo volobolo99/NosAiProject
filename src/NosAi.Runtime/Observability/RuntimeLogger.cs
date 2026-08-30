@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace NosAi.Runtime.Observability;
 
 public interface IRuntimeLogger
