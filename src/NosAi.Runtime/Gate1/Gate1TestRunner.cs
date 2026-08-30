@@ -93,6 +93,7 @@ public static class Gate1TestRunner
         Span<byte> bytes = stackalloc byte[WireHeader.HeaderSize];
         header.WriteTo(bytes);
         if (Encoding.ASCII.GetString(bytes[..4]) != "NOSA") return false;
+        if (bytes[4] != WireHeader.CurrentVersion) return false;
         if (BinaryPrimitives.ReadUInt16BigEndian(bytes[6..8]) != 32) return false;
         return WireHeader.TryRead(bytes, out var decoded, out _) && decoded == header;
     }
@@ -110,8 +111,18 @@ public static class Gate1TestRunner
     {
         using var key = RSA.Create(2048);
         using var auth = new SessionAuth(key.ExportRSAPublicKeyPem());
-        var challenge = auth.CreateChallenge();
-        var signature = key.SignData(challenge, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+        byte[] clientNonce = SessionTranscript.CreateNonce();
+        if (!auth.TryBeginHandshake(clientNonce, out byte[] serverNonce))
+            return false;
+
+        byte[] signature = key.SignHash(
+            SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce),
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        // Accepted once, then the transcript is consumed: replaying the same valid
+        // signature must not open a second session.
         return auth.VerifyAndConsume(signature) && !auth.VerifyAndConsume(signature);
     }
 
@@ -342,7 +353,8 @@ public static class Gate1TestRunner
             return false;
 
         uint seq = 1;
-        await WriteFrameAsync(second.GetStream(), WireMessageType.SessionHello, Array.Empty<byte>(), seq++).ConfigureAwait(false);
+        var helloNonce = SessionTranscript.CreateNonce();
+        await WriteFrameAsync(second.GetStream(), WireMessageType.SessionHello, helloNonce, seq++).ConfigureAwait(false);
         var (type, _) = await ReadFrameAsync(second.GetStream()).ConfigureAwait(false);
         return type == WireMessageType.Capabilities;
     }
@@ -362,13 +374,22 @@ public static class Gate1TestRunner
         await client.ConnectAsync(IPAddress.Loopback, server.LocalPort).ConfigureAwait(false);
         var stream = client.GetStream();
         uint seq = 1;
-        await WriteFrameAsync(stream, WireMessageType.SessionHello, Array.Empty<byte>(), seq++).ConfigureAwait(false);
+        var clientNonce = SessionTranscript.CreateNonce();
+        await WriteFrameAsync(stream, WireMessageType.SessionHello, clientNonce, seq++).ConfigureAwait(false);
         var capabilities = await ReadFrameAsync(stream).ConfigureAwait(false);
         var challenge = await ReadFrameAsync(stream).ConfigureAwait(false);
-        if (capabilities.Type != WireMessageType.Capabilities || challenge.Type != WireMessageType.AuthChallenge)
+        var proof = await ReadFrameAsync(stream).ConfigureAwait(false);
+        if (capabilities.Type != WireMessageType.Capabilities
+            || challenge.Type != WireMessageType.AuthChallenge
+            || proof.Type != WireMessageType.ServerAuthProof)
             return false;
 
-        var signature = key.SignData(challenge.Payload, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        using var runtimeKey = RSA.Create();
+        runtimeKey.ImportFromPem(auth.RuntimePublicKeyPem);
+        if (!SessionTranscript.Verify(runtimeKey, HandshakeRole.Server, clientNonce, challenge.Payload, proof.Payload))
+            return false;
+
+        var signature = SessionTranscript.Sign(key, HandshakeRole.Client, clientNonce, challenge.Payload);
         await WriteFrameAsync(stream, WireMessageType.AuthResponse, signature, seq++).ConfigureAwait(false);
         var result = await ReadFrameAsync(stream).ConfigureAwait(false);
         var telemetry = await ReadFrameAsync(stream).ConfigureAwait(false);

@@ -40,6 +40,12 @@ class Gate1Defaults:
     #: Gate1HostOptions.DefaultTrustedKeyPath
     TRUSTED_KEY_PATH = "data/guard_public_key.pem"
 
+    #: RuntimeIdentity.DefaultPublicPath — the half the phone pins.
+    RUNTIME_PUBLIC_KEY_PATH = "data/runtime_public.pem"
+
+    #: RuntimeIdentity.DefaultPath
+    RUNTIME_IDENTITY_PATH = "data/runtime_identity.pem"
+
     #: DiscoveryProtocol.Port
     DISCOVERY_PORT = 17472
 
@@ -178,6 +184,37 @@ class Adb:
 
     def launch(self, serial: str, package: str = PACKAGE_NAME) -> None:
         self.run("-s", serial, "shell", "monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1", check=False)
+
+    def push_runtime_pin(self, serial: str, pem: str | Path, package: str = PACKAGE_NAME) -> None:
+        """Install the runtime's public key into the app's private storage.
+
+        The phone verifies the runtime against this pin before it signs anything.
+        Without it the handshake is fail-closed. `run-as` only works on a
+        debuggable package, which this development APK is.
+        """
+        pem_path = Path(pem)
+        if not pem_path.is_file():
+            raise AdbError("runtime_pin_not_found", str(pem_path))
+        text = pem_path.read_text(encoding="utf-8")
+        if "BEGIN PUBLIC KEY" not in text:
+            raise AdbError("runtime_pin_malformed", str(pem_path))
+
+        remote_tmp = "/data/local/tmp/nosai_runtime_public.pem"
+        self.run("-s", serial, "push", str(pem_path), remote_tmp)
+        # Device shell copies into app-private files/. `run-as cp` from
+        # /data/local/tmp is refused on some images; piping through the shell is not.
+        result = self.run(
+            "-s",
+            serial,
+            "shell",
+            f"cat {remote_tmp} | run-as {package} sh -c 'cat > files/runtime_public.pem'",
+            check=False,
+        )
+        if result.returncode != 0:
+            raise AdbError(
+                "runtime_pin_push_failed",
+                (result.stderr or result.stdout or "").strip() or "run-as copy failed",
+            )
 
 
 @dataclass(frozen=True)

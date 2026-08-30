@@ -25,6 +25,7 @@ from nosai.phone.guard_client import (
     generate_client_key,
     public_key_pem,
 )
+from cryptography.hazmat.primitives import serialization
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RUNTIME_DLL = REPO_ROOT / "src" / "NosAi.Runtime" / "bin" / "Release" / "net8.0-windows" / "NosAi.Runtime.dll"
@@ -36,12 +37,12 @@ STARTUP_TIMEOUT_S = 30.0
 # --------------------------------------------------------------------------
 
 def test_frame_bytes_match_the_csharp_header_layout():
-    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 1, TYPE, then
+    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 2, TYPE, then
     # PAYLOAD_LEN as uint16 big-endian and SEQ as uint32 big-endian. A silent
     # endianness or field-order change on either side breaks the phone client,
     # so the layout is pinned to literal bytes rather than to a round-trip.
     frame = Frame(message_type=0x11, sequence=0x01020304, payload=b"hi")
-    assert frame.encode() == b"NOSA" + b"\x01" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
+    assert frame.encode() == b"NOSA" + b"\x02" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
 
 
 def test_header_is_twelve_bytes():
@@ -141,8 +142,30 @@ def guard_runtime(trusted_key, tmp_path_factory):
             process.wait(timeout=10)
 
 
+def _runtime_public_key():
+    """The public half of the identity the runtime process just loaded.
+
+    The host writes `data/runtime_public.pem` on start. If only the private
+    file exists, the public half is derived rather than skipping the suite.
+    """
+    public = REPO_ROOT / "data" / "runtime_public.pem"
+    private = REPO_ROOT / "data" / "runtime_identity.pem"
+    pem_bytes: bytes
+    if public.is_file():
+        pem_bytes = public.read_bytes()
+    elif private.is_file():
+        key = serialization.load_pem_private_key(private.read_bytes(), password=None)
+        pem_bytes = key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+    else:
+        pytest.skip("runtime identity not written; start the runtime once")
+    return serialization.load_pem_public_key(pem_bytes)
+
+
 def test_reference_client_completes_the_canonical_handshake(guard_runtime, trusted_key):
-    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key) as client:
+    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key, _runtime_public_key()) as client:
         session = client.open_session()
 
         assert session.authenticated
@@ -162,7 +185,7 @@ def test_reference_client_completes_the_canonical_handshake(guard_runtime, trust
 
 
 def test_heartbeat_is_acknowledged_and_returns_fresh_telemetry(guard_runtime, trusted_key):
-    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key) as client:
+    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key, _runtime_public_key()) as client:
         client.open_session()
         snapshot = client.heartbeat()
         assert snapshot["contractVersion"] == "gate1.snapshot.v1"
@@ -175,7 +198,7 @@ def test_an_untrusted_key_is_refused(guard_runtime):
     # Negative test on the security boundary: a well-formed RSA-2048 signature
     # from a key the runtime does not trust must fail closed.
     intruder = generate_client_key()
-    with GuardAiClient("127.0.0.1", guard_runtime, intruder) as client:
+    with GuardAiClient("127.0.0.1", guard_runtime, intruder, _runtime_public_key()) as client:
         with pytest.raises(GuardProtocolError) as raised:
             client.open_session()
     assert raised.value.reason == "authentication_refused"
@@ -184,5 +207,5 @@ def test_an_untrusted_key_is_refused(guard_runtime):
 def test_a_trusted_key_still_works_after_a_refused_session(guard_runtime, trusted_key):
     # A rejected intruder must not poison the channel for the legitimate phone:
     # the challenge is single-use, so the next session needs a fresh one.
-    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key) as client:
+    with GuardAiClient("127.0.0.1", guard_runtime, trusted_key, _runtime_public_key()) as client:
         assert client.open_session().authenticated

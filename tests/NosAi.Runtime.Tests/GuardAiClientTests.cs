@@ -57,7 +57,7 @@ public sealed class GuardAiClientTests
         await using var channel = StartChannel();
         using var cts = Deadline();
 
-        await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey);
+        await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey, channel.Auth.RuntimePublicKeyPem);
         await client.ConnectAsync(cts.Token);
         var session = await client.OpenSessionAsync(cts.Token);
 
@@ -85,7 +85,7 @@ public sealed class GuardAiClientTests
         await using var channel = StartChannel();
         using var cts = Deadline();
 
-        await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey);
+        await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey, channel.Auth.RuntimePublicKeyPem);
         await client.ConnectAsync(cts.Token);
         await client.OpenSessionAsync(cts.Token);
 
@@ -107,7 +107,7 @@ public sealed class GuardAiClientTests
         using var cts = Deadline();
         using var intruder = RSA.Create(2048);
 
-        await using var client = new GuardAiClient("127.0.0.1", channel.Port, intruder);
+        await using var client = new GuardAiClient("127.0.0.1", channel.Port, intruder, channel.Auth.RuntimePublicKeyPem);
         await client.ConnectAsync(cts.Token);
 
         var refused = await Assert.ThrowsAsync<GuardProtocolException>(() => client.OpenSessionAsync(cts.Token));
@@ -125,7 +125,7 @@ public sealed class GuardAiClientTests
         using var cts = Deadline();
         using var key = RSA.Create(2048);
 
-        await using var client = new GuardAiClient("127.0.0.1", listener.Port, key);
+        await using var client = new GuardAiClient("127.0.0.1", listener.Port, key, listener.RuntimePublicKeyPem);
         await client.ConnectAsync(cts.Token);
 
         var rejected = await Assert.ThrowsAsync<GuardProtocolException>(() => client.OpenSessionAsync(cts.Token));
@@ -138,17 +138,34 @@ public sealed class GuardAiClientTests
     {
         var deadPort = FreePort();
         using var key = RSA.Create(2048);
-        await using var client = new GuardAiClient("127.0.0.1", deadPort, key);
+        using var dummyRuntime = RSA.Create(2048);
+        await using var client = new GuardAiClient("127.0.0.1", deadPort, key, dummyRuntime.ExportSubjectPublicKeyInfoPem());
 
         var failed = await Assert.ThrowsAsync<GuardProtocolException>(() => client.ConnectAsync(CancellationToken.None));
         Assert.Equal("connect_failed", failed.Reason);
     }
 
     [Fact]
+    public async Task ClientRejectsARuntimeItDidNotPin()
+    {
+        using var listener = new StubChannel(contractVersion: "gate1.snapshot.v1");
+        using var cts = Deadline();
+        using var key = RSA.Create(2048);
+        using var impostor = RSA.Create(2048);
+
+        await using var client = new GuardAiClient("127.0.0.1", listener.Port, key, impostor.ExportSubjectPublicKeyInfoPem());
+        await client.ConnectAsync(cts.Token);
+
+        var rejected = await Assert.ThrowsAsync<GuardProtocolException>(() => client.OpenSessionAsync(cts.Token));
+        Assert.Equal("runtime_proof_rejected", rejected.Reason);
+    }
+
+    [Fact]
     public void KeysOtherThanRsa2048AreRejectedBeforeAnyTraffic()
     {
         using var weak = RSA.Create(1024);
-        Assert.Throws<ArgumentException>(() => new GuardAiClient("127.0.0.1", 17471, weak));
+        using var dummyRuntime = RSA.Create(2048);
+        Assert.Throws<ArgumentException>(() => new GuardAiClient("127.0.0.1", 17471, weak, dummyRuntime.ExportSubjectPublicKeyInfoPem()));
     }
 
     private static int FreePort()
@@ -169,16 +186,19 @@ public sealed class GuardAiClientTests
     {
         private readonly TcpListener _listener;
         private readonly CancellationTokenSource _cts = new();
+        private readonly RSA _runtimeKey = RSA.Create(2048);
 
         public StubChannel(string contractVersion)
         {
             _listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
             _listener.Start();
             Port = ((System.Net.IPEndPoint)_listener.LocalEndpoint).Port;
+            RuntimePublicKeyPem = _runtimeKey.ExportSubjectPublicKeyInfoPem();
             _ = ServeAsync(contractVersion, _cts.Token);
         }
 
         public int Port { get; }
+        public string RuntimePublicKeyPem { get; }
 
         private async Task ServeAsync(string contractVersion, CancellationToken token)
         {
@@ -188,10 +208,13 @@ public sealed class GuardAiClientTests
                 await using var stream = client.GetStream();
                 uint egress = 1;
 
-                await ReadFrameAsync(stream, token); // SessionHello
+                var clientNonce = await ReadFrameAsync(stream, token);
+                var serverNonce = SessionTranscript.CreateNonce();
                 await WriteFrameAsync(stream, WireMessageType.Capabilities,
-                    System.Text.Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256"), egress++, token);
-                await WriteFrameAsync(stream, WireMessageType.AuthChallenge, new byte[32], egress++, token);
+                    System.Text.Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual"), egress++, token);
+                await WriteFrameAsync(stream, WireMessageType.AuthChallenge, serverNonce, egress++, token);
+                var proof = SessionTranscript.Sign(_runtimeKey, HandshakeRole.Server, clientNonce, serverNonce);
+                await WriteFrameAsync(stream, WireMessageType.ServerAuthProof, proof, egress++, token);
 
                 await ReadFrameAsync(stream, token); // AuthResponse
                 await WriteFrameAsync(stream, WireMessageType.AuthResult, new byte[] { 1 }, egress++, token);
@@ -202,8 +225,8 @@ public sealed class GuardAiClientTests
             }
             catch (Exception)
             {
-                // The client closes as soon as it rejects the version; that is the
-                // expected end of this stub's life, not a failure.
+                // The client closes as soon as it rejects the version or the proof;
+                // that is the expected end of this stub's life, not a failure.
             }
         }
 
@@ -217,14 +240,14 @@ public sealed class GuardAiClientTests
             await stream.FlushAsync(token);
         }
 
-        private static async Task ReadFrameAsync(NetworkStream stream, CancellationToken token)
+        private static async Task<byte[]> ReadFrameAsync(NetworkStream stream, CancellationToken token)
         {
             var header = new byte[WireHeader.HeaderSize];
             var read = 0;
             while (read < header.Length)
             {
                 var received = await stream.ReadAsync(header.AsMemory(read), token);
-                if (received == 0) return;
+                if (received == 0) return Array.Empty<byte>();
                 read += received;
             }
 
@@ -234,9 +257,11 @@ public sealed class GuardAiClientTests
             while (read < payload.Length)
             {
                 var received = await stream.ReadAsync(payload.AsMemory(read), token);
-                if (received == 0) return;
+                if (received == 0) return payload;
                 read += received;
             }
+
+            return payload;
         }
 
         public void Dispose()
@@ -244,6 +269,7 @@ public sealed class GuardAiClientTests
             _cts.Cancel();
             _listener.Stop();
             _cts.Dispose();
+            _runtimeKey.Dispose();
         }
     }
 }

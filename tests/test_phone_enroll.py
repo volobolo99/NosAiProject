@@ -13,6 +13,7 @@ from nosai.phone.enroll import (
     END_MARKER,
     LOG_TAG,
     EnrollmentError,
+    ensure_runtime_public_pem,
     extract_public_key,
 )
 from nosai.phone.guard_client import generate_client_key, public_key_pem
@@ -84,3 +85,27 @@ def test_the_extracted_key_is_accepted_by_the_client_contract():
     assert extracted.rstrip().endswith("-----END PUBLIC KEY-----")
     loaded = serialization.load_pem_public_key(extracted.encode())
     assert loaded.key_size == 2048
+
+
+def test_ensure_runtime_public_pem_derives_from_the_private_identity(tmp_path):
+    key = generate_client_key()
+    private = tmp_path / "data" / "runtime_identity.pem"
+    private.parent.mkdir(parents=True)
+    private.write_bytes(
+        key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+    )
+
+    public = ensure_runtime_public_pem(tmp_path)
+
+    loaded = serialization.load_pem_public_key(public.read_bytes())
+    assert loaded.public_numbers() == key.public_key().public_numbers()
+
+
+def test_a_missing_runtime_identity_is_a_structured_failure(tmp_path):
+    with pytest.raises(EnrollmentError) as raised:
+        ensure_runtime_public_pem(tmp_path)
+    assert raised.value.reason == "runtime_identity_missing"

@@ -7,7 +7,10 @@ from dataclasses import dataclass
 from typing import Any
 
 MAGIC = b"NOSA"
-VERSION = 1
+# Version 2 added mutual authentication. A version 1 peer is refused rather than
+# downgraded: version 1 cannot prove the runtime to the phone, which is the hole
+# the bump exists to close. Source of truth: WireHeader.CurrentVersion.
+VERSION = 2
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
 # PAYLOAD_LEN is a uint16, so 65535 is the largest length the header can express.
 # This was 64 * 1024 (= 65536), one byte too generous: a payload of exactly that
@@ -25,6 +28,7 @@ TYPE_CAPABILITIES = 0x02
 TYPE_AUTH_CHALLENGE = 0x03
 TYPE_AUTH_RESPONSE = 0x04
 TYPE_AUTH_RESULT = 0x05
+TYPE_SERVER_AUTH_PROOF = 0x08
 TYPE_HEARTBEAT = 0x06
 TYPE_HEARTBEAT_ACK = 0x07
 TYPE_WORLD_STATE_DELTA = 0x10
@@ -35,7 +39,7 @@ TYPE_DISCONNECT = 0xFF
 
 KNOWN_MESSAGE_TYPES = frozenset({
     TYPE_SESSION_HELLO, TYPE_CAPABILITIES, TYPE_AUTH_CHALLENGE, TYPE_AUTH_RESPONSE,
-    TYPE_AUTH_RESULT, TYPE_HEARTBEAT, TYPE_HEARTBEAT_ACK, TYPE_WORLD_STATE_DELTA,
+    TYPE_AUTH_RESULT, TYPE_SERVER_AUTH_PROOF, TYPE_HEARTBEAT, TYPE_HEARTBEAT_ACK, TYPE_WORLD_STATE_DELTA,
     TYPE_TELEMETRY_SNAPSHOT, TYPE_COMMAND_REQUEST, TYPE_COMMAND_ACK, TYPE_DISCONNECT,
 })
 

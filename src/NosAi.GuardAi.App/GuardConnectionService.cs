@@ -84,10 +84,15 @@ public sealed class GuardConnectionService : IAsyncDisposable
     private const int GuardPort = 17471;
 
     private readonly RSA _deviceKey;
+    private readonly string? _runtimePublicKeyPem;
     private GuardAiClient? _client;
     private CancellationTokenSource? _loop;
 
-    public GuardConnectionService(RSA deviceKey) => _deviceKey = deviceKey;
+    public GuardConnectionService(RSA deviceKey, string? runtimePublicKeyPem)
+    {
+        _deviceKey = deviceKey;
+        _runtimePublicKeyPem = runtimePublicKeyPem;
+    }
 
     /// <summary>Raised on every status change, including failures.</summary>
     public event Action<GuardStatus>? StatusChanged;
@@ -129,7 +134,14 @@ public sealed class GuardConnectionService : IAsyncDisposable
         var endpoint = $"{host}:{GuardPort}";
         Publish(GuardStatus.Busy(GuardLinkState.Connecting, endpoint));
 
-        var client = new GuardAiClient(host, GuardPort, _deviceKey);
+        if (string.IsNullOrWhiteSpace(_runtimePublicKeyPem))
+        {
+            Publish(GuardStatus.Failure(
+                "chiave del runtime assente. Collegare il telefono via USB ed eseguire python -m nosai.phone.deploy."));
+            return;
+        }
+
+        var client = new GuardAiClient(host, GuardPort, _deviceKey, _runtimePublicKeyPem);
         GuardSession session;
         try
         {
@@ -167,6 +179,8 @@ public sealed class GuardConnectionService : IAsyncDisposable
     {
         "authentication_refused" =>
             "dispositivo non riconosciuto dal runtime. Ripetere l'abbinamento via USB.",
+        "runtime_proof_rejected" =>
+            "runtime non riconosciuto. Ripetere l'abbinamento via USB.",
         "connect_failed" when transport == GuardTransport.Usb =>
             "runtime irraggiungibile via USB. Ricollegare il cavo e rieseguire l'abbinamento.",
         "connect_failed" =>

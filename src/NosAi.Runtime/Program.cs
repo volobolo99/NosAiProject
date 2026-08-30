@@ -42,10 +42,7 @@ public static class Program
             ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
             ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
             ["--security-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
-            // Subsystems with synchronous runners are adapted to the table shape.
-            ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
             ["--crypto-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
-            ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
         };
 
         foreach (string argument in args)

@@ -45,11 +45,13 @@ public sealed record GuardSession(string Capabilities, string TelemetryJson);
 /// PC cannot impersonate the phone.
 /// </para>
 /// <para>
-/// Session contract: connect, <c>SessionHello</c>, then <c>Capabilities</c> and a
-/// 32-byte <c>AuthChallenge</c>, answer with an RSA-2048/SHA-256/PKCS#1 v1.5
-/// signature, receive <c>AuthResult</c> and the classified snapshot, then heartbeat
-/// inside <see cref="HeartbeatTimeout"/>. Each direction is sequence-guarded
-/// independently from 1.
+/// Session contract (wire version 2): connect, <c>SessionHello</c> carrying the
+/// phone's 32-byte nonce, then <c>Capabilities</c>, a 32-byte <c>AuthChallenge</c>
+/// (the runtime's nonce) and <c>ServerAuthProof</c>. The phone verifies the proof
+/// against a pinned runtime public key, answers with a transcript signature, and
+/// receives <c>AuthResult</c> plus the classified snapshot. Heartbeat stays inside
+/// <see cref="HeartbeatTimeout"/>. Each direction is sequence-guarded independently
+/// from 1.
 /// </para>
 /// </remarks>
 public sealed class GuardAiClient : IAsyncDisposable
@@ -60,11 +62,10 @@ public sealed class GuardAiClient : IAsyncDisposable
     /// <summary>The snapshot contract this client understands.</summary>
     public const string SupportedContractVersion = "gate1.snapshot.v1";
 
-    private const int ChallengeLength = 32;
-
     private readonly string _host;
     private readonly int _port;
     private readonly RSA _key;
+    private readonly string _runtimePublicKeyPem;
     private readonly SequenceGuard _egress = new();
     private readonly SequenceGuard _ingress = new();
     private TcpClient? _client;
@@ -75,7 +76,11 @@ public sealed class GuardAiClient : IAsyncDisposable
     /// The device key. Not disposed by this client: on a phone it is owned by the
     /// platform key store, which must outlive any single session.
     /// </param>
-    public GuardAiClient(string host, int port, RSA privateKey)
+    /// <param name="runtimePublicKeyPem">
+    /// The runtime's public key, pinned at pairing. Without it the phone cannot
+    /// tell a genuine runtime from anything else on the network.
+    /// </param>
+    public GuardAiClient(string host, int port, RSA privateKey, string runtimePublicKeyPem)
     {
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("A host is required.", nameof(host));
@@ -84,10 +89,13 @@ public sealed class GuardAiClient : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(privateKey);
         if (privateKey.KeySize != 2048)
             throw new ArgumentException("Gate 1 accepts RSA-2048 keys only.", nameof(privateKey));
+        if (string.IsNullOrWhiteSpace(runtimePublicKeyPem))
+            throw new ArgumentException("A pinned runtime public key is required; mutual authentication is fail-closed.", nameof(runtimePublicKeyPem));
 
         _host = host;
         _port = port;
         _key = privateKey;
+        _runtimePublicKeyPem = runtimePublicKeyPem;
     }
 
     public bool IsConnected => _client?.Connected == true;
@@ -123,14 +131,19 @@ public sealed class GuardAiClient : IAsyncDisposable
     /// </remarks>
     public async Task<GuardSession> OpenSessionAsync(CancellationToken cancellationToken = default)
     {
-        await SendAsync(WireMessageType.SessionHello, ReadOnlyMemory<byte>.Empty, cancellationToken).ConfigureAwait(false);
+        var clientNonce = SessionTranscript.CreateNonce();
+        await SendAsync(WireMessageType.SessionHello, clientNonce, cancellationToken).ConfigureAwait(false);
 
         var capabilities = await ExpectAsync(WireMessageType.Capabilities, cancellationToken).ConfigureAwait(false);
-        var challenge = await ExpectAsync(WireMessageType.AuthChallenge, cancellationToken).ConfigureAwait(false);
-        if (challenge.Length != ChallengeLength)
-            throw new GuardProtocolException("invalid_challenge_length", challenge.Length.ToString());
+        var serverNonce = await ExpectAsync(WireMessageType.AuthChallenge, cancellationToken).ConfigureAwait(false);
+        if (serverNonce.Length != SessionTranscript.NonceLength)
+            throw new GuardProtocolException("invalid_challenge_length", serverNonce.Length.ToString());
 
-        var signature = _key.SignData(challenge, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var serverProof = await ExpectAsync(WireMessageType.ServerAuthProof, cancellationToken).ConfigureAwait(false);
+        if (!VerifyRuntimeProof(clientNonce, serverNonce, serverProof))
+            throw new GuardProtocolException("runtime_proof_rejected");
+
+        var signature = SessionTranscript.Sign(_key, HandshakeRole.Client, clientNonce, serverNonce);
         await SendAsync(WireMessageType.AuthResponse, signature, cancellationToken).ConfigureAwait(false);
 
         var result = await ExpectAsync(WireMessageType.AuthResult, cancellationToken).ConfigureAwait(false);
@@ -139,6 +152,24 @@ public sealed class GuardAiClient : IAsyncDisposable
 
         var telemetry = await ReadTelemetryAsync(cancellationToken).ConfigureAwait(false);
         return new GuardSession(Encoding.UTF8.GetString(capabilities), telemetry);
+    }
+
+    private bool VerifyRuntimeProof(ReadOnlySpan<byte> clientNonce, ReadOnlySpan<byte> serverNonce, ReadOnlySpan<byte> proof)
+    {
+        using var runtime = RSA.Create();
+        try
+        {
+            runtime.ImportFromPem(_runtimePublicKeyPem);
+        }
+        catch (Exception ex) when (ex is CryptographicException or ArgumentException)
+        {
+            return false;
+        }
+
+        if (runtime.KeySize != 2048)
+            return false;
+
+        return SessionTranscript.Verify(runtime, HandshakeRole.Server, clientNonce, serverNonce, proof);
     }
 
     /// <summary>Sends one heartbeat and returns the snapshot that follows the ack.</summary>

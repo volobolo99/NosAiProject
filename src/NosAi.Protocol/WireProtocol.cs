@@ -18,6 +18,16 @@ public enum WireMessageType : byte
     AuthChallenge = 0x03,
     AuthResponse = 0x04,
     AuthResult = 0x05,
+
+    /// <summary>
+    /// The runtime proving itself to the phone, before the phone signs anything.
+    /// </summary>
+    /// <remarks>
+    /// Added in version 2. Without it the channel authenticated the phone to the
+    /// PC and not the reverse, so on a network the operator does not control a
+    /// hostile host could answer discovery first and act as a runtime.
+    /// </remarks>
+    ServerAuthProof = 0x08,
     Heartbeat = 0x06,
     HeartbeatAck = 0x07,
     WorldStateDelta = 0x10,
@@ -30,7 +40,16 @@ public enum WireMessageType : byte
 public readonly record struct WireHeader(WireMessageType MessageType, ushort PayloadLength, uint SequenceNumber)
 {
     public const uint ExpectedMagic = 0x4E4F5341; // NOSA
-    public const byte CurrentVersion = 1;
+    /// <summary>
+    /// Wire version. Bumped to 2 by mutual authentication.
+    /// </summary>
+    /// <remarks>
+    /// A version 1 peer is refused rather than downgraded: version 1 cannot prove
+    /// the runtime to the phone, so accepting it would leave exactly the hole the
+    /// bump exists to close. Both ends ship together, so there is nothing to keep
+    /// compatible.
+    /// </remarks>
+    public const byte CurrentVersion = 2;
     public const int HeaderSize = 12;
     public const int MaxPayloadLength = ushort.MaxValue;
 

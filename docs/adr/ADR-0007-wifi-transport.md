@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-08-30
 **Builds on:** [ADR-0006](ADR-0006-canonical-phone-channel.md)
+**Amended by:** [ADR-0008](ADR-0008-mutual-handshake.md) — closes consequence 1
 
 ## Context
 
@@ -46,7 +47,10 @@ refused.
 Binding beyond loopback is a real change to the attack surface, and three
 consequences follow:
 
-1. **The runtime is not authenticated to the phone.** This is the significant
+1. **The runtime is not authenticated to the phone.** *(Closed by
+   [ADR-0008](ADR-0008-mutual-handshake.md), wire version 2. Left here because it
+   is what motivated that change, and because the reasoning below is still the
+   reason the Wi-Fi transport needed it.)* This was the significant
    one. The channel proves the *phone* to the *PC* and not the reverse, so a
    hostile host on the same network can answer a discovery probe first, accept
    the connection, and act as a runtime: feeding the phone fabricated state, or

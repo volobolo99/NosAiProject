@@ -28,6 +28,15 @@ def test_trusted_key_path_matches_where_the_runtime_looks():
     assert Gate1Defaults.TRUSTED_KEY_PATH == match.group(1)
 
 
+def test_runtime_public_path_matches_the_identity_companion():
+    source = (REPO_ROOT / "src" / "NosAi.Runtime" / "Gate1" / "RuntimeIdentity.cs").read_text(encoding="utf-8")
+    public = re.search(r'const string DefaultPublicPath\s*=\s*"([^"]+)"', source)
+    private = re.search(r'const string DefaultPath\s*=\s*"([^"]+)"', source)
+    assert public and private, "RuntimeIdentity default paths not found"
+    assert Gate1Defaults.RUNTIME_PUBLIC_KEY_PATH == public.group(1)
+    assert Gate1Defaults.RUNTIME_IDENTITY_PATH == private.group(1)
+
+
 def test_discovery_port_matches_the_protocol():
     source = DISCOVERY_PROTOCOL.read_text(encoding="utf-8")
     match = re.search(r"public const int Port\s*=\s*(\d+)", source)

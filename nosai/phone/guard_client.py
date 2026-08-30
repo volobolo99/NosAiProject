@@ -17,20 +17,23 @@ client with no phone dependencies, so it can be:
 It is NOT the Guard AI application, and running it does not close any Gate 1
 smartphone checklist row.
 
-Session contract, from the client's side:
+Session contract, from the client's side (wire version 2):
 
     1. connect
-    2. send    SESSION_HELLO      (empty)
+    2. send    SESSION_HELLO      (32-byte client nonce)
     3. receive CAPABILITIES       (UTF-8 descriptor)
-    4. receive AUTH_CHALLENGE     (32 random bytes)
-    5. send    AUTH_RESPONSE      (RSA-2048/SHA-256/PKCS#1 v1.5 over the challenge)
-    6. receive AUTH_RESULT        (1 byte: 1 accepted, 0 refused)
-    7. receive TELEMETRY_SNAPSHOT (Gate 1 classified snapshot, JSON)
-    8. send    HEARTBEAT -> receive HEARTBEAT_ACK + TELEMETRY_SNAPSHOT
+    4. receive AUTH_CHALLENGE     (32-byte server nonce)
+    5. receive SERVER_AUTH_PROOF  (runtime signature over the server transcript)
+    6. send    AUTH_RESPONSE      (phone signature over the client transcript)
+    7. receive AUTH_RESULT        (1 byte: 1 accepted, 0 refused)
+    8. receive TELEMETRY_SNAPSHOT (Gate 1 classified snapshot, JSON)
+    9. send    HEARTBEAT -> receive HEARTBEAT_ACK + TELEMETRY_SNAPSHOT
 
-Both directions are sequence-guarded independently, each starting at 1. The
-server terminates a session that misses its heartbeat for 2000 ms, so callers
-must heartbeat well inside `HEARTBEAT_TIMEOUT_MS`.
+Both signatures cover `nosai.network.session_transcript`, not the raw nonce.
+The runtime public key is pinned at pairing; without it the handshake is
+fail-closed. Both directions are sequence-guarded independently, each starting
+at 1. The server terminates a session that misses its heartbeat for 2000 ms, so
+callers must heartbeat well inside `HEARTBEAT_TIMEOUT_MS`.
 """
 from __future__ import annotations
 
@@ -39,9 +42,12 @@ import socket
 from dataclasses import dataclass
 from typing import Any
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
+from nosai.network.session_transcript import ROLE_CLIENT, ROLE_SERVER, compute, create_nonce
 from nosai.network.wire_protocol import (
     HEADER,
     MAX_PAYLOAD,
@@ -53,6 +59,7 @@ from nosai.network.wire_protocol import (
     TYPE_DISCONNECT,
     TYPE_HEARTBEAT,
     TYPE_HEARTBEAT_ACK,
+    TYPE_SERVER_AUTH_PROOF,
     TYPE_SESSION_HELLO,
     TYPE_TELEMETRY_SNAPSHOT,
     Frame,
@@ -99,13 +106,24 @@ class GuardAiClient:
         host: str,
         port: int,
         private_key: rsa.RSAPrivateKey,
+        runtime_public_key: rsa.RSAPublicKey,
         timeout: float = 5.0,
     ):
+        """
+        :param runtime_public_key: the runtime's key, pinned during USB pairing.
+
+        Required, not optional. Without it the phone cannot tell a genuine runtime
+        from anything else that answered on the network, which is the whole reason
+        version 2 exists.
+        """
         if private_key.key_size != 2048:
             raise ValueError("Gate 1 accepts RSA-2048 keys only")
+        if runtime_public_key.key_size != 2048:
+            raise ValueError("the runtime key must be RSA-2048")
         self._host = host
         self._port = port
         self._key = private_key
+        self._runtime_key = runtime_public_key
         self._timeout = timeout
         self._sock: socket.socket | None = None
         # Independent guards per direction, both starting at 1, matching the
@@ -222,13 +240,23 @@ class GuardAiClient:
         an unauthenticated session object would invite the caller to keep using
         a dead socket.
         """
-        self._send(TYPE_SESSION_HELLO)
-        capabilities = self._expect(TYPE_CAPABILITIES).payload.decode("utf-8")
-        challenge = self._expect(TYPE_AUTH_CHALLENGE).payload
-        if len(challenge) != 32:
-            raise GuardProtocolError("invalid_challenge_length", str(len(challenge)))
+        # The phone commits to its own nonce first, so the runtime's proof is bound
+        # to a value the phone chose and a replayed proof cannot pass.
+        client_nonce = create_nonce()
+        self._send(TYPE_SESSION_HELLO, client_nonce)
 
-        self._send(TYPE_AUTH_RESPONSE, self.sign_challenge(challenge))
+        capabilities = self._expect(TYPE_CAPABILITIES).payload.decode("utf-8")
+        server_nonce = self._expect(TYPE_AUTH_CHALLENGE).payload
+        if len(server_nonce) != 32:
+            raise GuardProtocolError("invalid_challenge_length", str(len(server_nonce)))
+
+        # The runtime proves itself before the phone signs anything. Signing first
+        # would mean answering a peer that has shown nothing.
+        proof = self._expect(TYPE_SERVER_AUTH_PROOF).payload
+        if not self._runtime_proof_valid(client_nonce, server_nonce, proof):
+            raise GuardProtocolError("runtime_proof_rejected")
+
+        self._send(TYPE_AUTH_RESPONSE, self.sign_transcript(client_nonce, server_nonce))
         result = self._expect(TYPE_AUTH_RESULT).payload
         if result != b"\x01":
             raise GuardProtocolError("authentication_refused")
@@ -242,9 +270,22 @@ class GuardAiClient:
         self._expect(TYPE_HEARTBEAT_ACK)
         return self._read_telemetry()
 
-    def sign_challenge(self, challenge: bytes) -> bytes:
-        """RSA-2048 / SHA-256 / PKCS#1 v1.5, matching SessionAuth.VerifyAndConsume."""
-        return self._key.sign(challenge, padding.PKCS1v15(), hashes.SHA256())
+    def sign_transcript(self, client_nonce: bytes, server_nonce: bytes) -> bytes:
+        """Signs the session transcript as the client.
+
+        Prehashed on purpose: both sides sign a digest they each compute, so
+        neither can hand the other arbitrary bytes to put a signature on.
+        """
+        digest = compute(ROLE_CLIENT, client_nonce, server_nonce)
+        return self._key.sign(digest, padding.PKCS1v15(), Prehashed(hashes.SHA256()))
+
+    def _runtime_proof_valid(self, client_nonce: bytes, server_nonce: bytes, proof: bytes) -> bool:
+        digest = compute(ROLE_SERVER, client_nonce, server_nonce)
+        try:
+            self._runtime_key.verify(proof, digest, padding.PKCS1v15(), Prehashed(hashes.SHA256()))
+            return True
+        except InvalidSignature:
+            return False
 
     def _read_telemetry(self) -> dict[str, Any]:
         payload = self._expect(TYPE_TELEMETRY_SNAPSHOT).payload

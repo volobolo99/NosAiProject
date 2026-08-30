@@ -152,6 +152,19 @@ def test_a_similarly_named_package_does_not_count_as_installed(monkeypatch, fake
     assert result.installed is True
 
 
+def test_push_runtime_pin_copies_into_app_private_storage(monkeypatch, tmp_path, fake_adb_binary):
+    pem = tmp_path / "runtime_public.pem"
+    pem.write_text("-----BEGIN PUBLIC KEY-----\nMIIB\n-----END PUBLIC KEY-----\n", encoding="utf-8")
+    recorder = _install_recorder(monkeypatch, {})
+
+    Adb(fake_adb_binary).push_runtime_pin("R58M12345", pem)
+
+    assert ["-s", "R58M12345", "push", str(pem), "/data/local/tmp/nosai_runtime_public.pem"] in recorder.calls
+    joined = " | ".join(" ".join(call) for call in recorder.calls)
+    assert "run-as" in joined and PACKAGE_NAME in joined
+    assert "files/runtime_public.pem" in joined
+
+
 def test_unauthorized_device_is_reported_as_such(monkeypatch, fake_apk, fake_adb_binary):
     # The most common real failure. Reporting it as "no device" sends the operator
     # hunting for a cable problem instead of tapping the prompt on the phone.

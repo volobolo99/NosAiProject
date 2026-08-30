@@ -26,7 +26,7 @@ public partial class MainPage : ContentPage
         _deviceKey = DeviceIdentity.LoadOrCreate();
         DeviceIdentity.PublishPublicKey(_deviceKey);
 
-        _connection = new GuardConnectionService(_deviceKey);
+        _connection = new GuardConnectionService(_deviceKey, RuntimePin.Load());
         _connection.StatusChanged += OnStatusChanged;
 
         // Restoring the stored choice fires CheckedChanged, which would write the

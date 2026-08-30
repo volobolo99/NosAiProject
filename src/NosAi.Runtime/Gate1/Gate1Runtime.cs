@@ -13,13 +13,36 @@ using NosAi.LiveIntegration;
 
 namespace NosAi.Runtime.Gate1;
 
+/// <summary>
+/// Verifies the phone and lets the runtime prove itself in return.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Both signatures now cover a <see cref="SessionTranscript"/> rather than a raw
+/// challenge. That closes three holes at once: the phone is no longer a signing
+/// oracle for bytes a peer chooses, a signature is bound to one session, and the
+/// role byte stops a phone's signature being replayed back as the runtime's proof.
+/// </para>
+/// <para>
+/// The nonces are held per session and consumed once. A session that has not sent
+/// its hello has no nonces, so no signature can verify against it.
+/// </para>
+/// </remarks>
 public sealed class SessionAuth : IDisposable
 {
     private readonly RSA _verifier;
+    private readonly RuntimeIdentity _identity;
+    private readonly bool _ownsIdentity;
     private readonly object _sync = new();
-    private byte[]? _challenge;
+    private byte[]? _clientNonce;
+    private byte[]? _serverNonce;
 
-    public SessionAuth(string trustedPublicKeyPem)
+    /// <param name="identity">
+    /// The runtime's own key. Created in memory when omitted, which is fine for
+    /// tests but means a restart looks like an impostor to a paired phone; the
+    /// bootstrap host passes the persisted one.
+    /// </param>
+    public SessionAuth(string trustedPublicKeyPem, RuntimeIdentity? identity = null)
     {
         if (string.IsNullOrWhiteSpace(trustedPublicKeyPem))
             throw new ArgumentException("A trusted public key is required; authentication is fail-closed.", nameof(trustedPublicKeyPem));
@@ -27,30 +50,87 @@ public sealed class SessionAuth : IDisposable
         _verifier.ImportFromPem(trustedPublicKeyPem);
         if (_verifier.KeySize != 2048)
             throw new CryptographicException("Only RSA-2048 trusted keys are accepted by Gate 1.");
+
+        _ownsIdentity = identity is null;
+        _identity = identity ?? RuntimeIdentity.CreateEphemeral();
     }
 
-    public byte[] CreateChallenge()
+    /// <summary>The runtime's public key, for the phone to pin.</summary>
+    public string RuntimePublicKeyPem => _identity.PublicKeyPem;
+
+    /// <summary>
+    /// Starts a handshake: records the phone's nonce and returns the runtime's.
+    /// </summary>
+    /// <remarks>
+    /// A hello without a well-formed nonce is refused here rather than later. A
+    /// peer that will not commit to a nonce cannot be given a session-bound proof,
+    /// and accepting one would mean signing over material it fully controls.
+    /// </remarks>
+    public bool TryBeginHandshake(ReadOnlySpan<byte> clientNonce, out byte[] serverNonce)
     {
+        serverNonce = Array.Empty<byte>();
+        if (clientNonce.Length != SessionTranscript.NonceLength)
+            return false;
+
         lock (_sync)
         {
-            _challenge = RandomNumberGenerator.GetBytes(32);
-            return _challenge.ToArray();
+            _clientNonce = clientNonce.ToArray();
+            _serverNonce = SessionTranscript.CreateNonce();
+            serverNonce = _serverNonce.ToArray();
+            return true;
         }
     }
 
+    /// <summary>The runtime's proof of identity for the session in progress.</summary>
+    public bool TryCreateServerProof(out byte[] proof)
+    {
+        proof = Array.Empty<byte>();
+        lock (_sync)
+        {
+            if (_clientNonce is null || _serverNonce is null)
+                return false;
+            proof = _identity.SignAsServer(_clientNonce, _serverNonce);
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Verifies the phone's signature over this session's transcript, once.
+    /// </summary>
+    /// <remarks>
+    /// The nonces are cleared whether or not verification succeeds, so a failed
+    /// attempt cannot be retried against the same transcript.
+    /// </remarks>
     public bool VerifyAndConsume(ReadOnlySpan<byte> signature)
     {
         lock (_sync)
         {
-            var challenge = _challenge;
-            _challenge = null;
-            if (challenge is null) return false;
-            try { return _verifier.VerifyData(challenge, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1); }
-            catch (CryptographicException) { return false; }
+            byte[]? clientNonce = _clientNonce;
+            byte[]? serverNonce = _serverNonce;
+            _clientNonce = null;
+            _serverNonce = null;
+
+            if (clientNonce is null || serverNonce is null)
+                return false;
+
+            try
+            {
+                byte[] expected = SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce);
+                return _verifier.VerifyHash(expected, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
         }
     }
 
-    public void Dispose() => _verifier.Dispose();
+    public void Dispose()
+    {
+        _verifier.Dispose();
+        if (_ownsIdentity)
+            _identity.Dispose();
+    }
 }
 
 public sealed record Gate1ConnectionSnapshot(string SessionId, bool Connected, bool Authenticated, DateTime LastHeartbeatUtc, string? LastTerminationReason);
@@ -227,8 +307,28 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         switch (type)
         {
             case WireMessageType.SessionHello:
-                await SendAsync(WireMessageType.Capabilities, Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256;heartbeat=2000;execution=disabled"), token).ConfigureAwait(false);
-                await SendAsync(WireMessageType.AuthChallenge, _auth.CreateChallenge(), token).ConfigureAwait(false);
+                // The hello now carries the phone's nonce, so the runtime's proof can
+                // be bound to a value the phone chose. Without it the phone could not
+                // tell a fresh proof from a replayed one.
+                if (!_auth.TryBeginHandshake(payload, out byte[] serverNonce))
+                {
+                    TerminateSession("missing_or_malformed_client_nonce");
+                    break;
+                }
+
+                await SendAsync(WireMessageType.Capabilities, Encoding.UTF8.GetBytes("gate1;auth=rsa2048-sha256-mutual;heartbeat=2000;execution=disabled"), token).ConfigureAwait(false);
+                await SendAsync(WireMessageType.AuthChallenge, serverNonce, token).ConfigureAwait(false);
+
+                // The runtime proves itself before asking the phone to sign anything.
+                // The order matters: a phone that signs first has already answered an
+                // unauthenticated peer.
+                if (!_auth.TryCreateServerProof(out byte[] serverProof))
+                {
+                    TerminateSession("server_proof_unavailable");
+                    break;
+                }
+
+                await SendAsync(WireMessageType.ServerAuthProof, serverProof, token).ConfigureAwait(false);
                 break;
             case WireMessageType.AuthResponse:
                 var authenticated = _auth.VerifyAndConsume(payload);

@@ -573,8 +573,17 @@ namespace NosAi.Runtime.Gate6
             using var deviceKey = RSA.Create(2048);
             using var auth = new NosAi.Runtime.Gate1.SessionAuth(deviceKey.ExportSubjectPublicKeyInfoPem());
 
-            byte[] challenge = auth.CreateChallenge();
-            byte[] signature = deviceKey.SignData(challenge, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            // Adapted to the version 2 handshake: both sides now sign a session
+            // transcript rather than a raw challenge, so the phone can no longer be
+            // used as a signing oracle. See ADR-0008.
+            byte[] clientNonce = NosAi.Runtime.Gate1.SessionTranscript.CreateNonce();
+            if (!auth.TryBeginHandshake(clientNonce, out byte[] serverNonce)) return false;
+
+            byte[] signature = deviceKey.SignHash(
+                NosAi.Runtime.Gate1.SessionTranscript.Compute(
+                    NosAi.Runtime.Gate1.HandshakeRole.Client, clientNonce, serverNonce),
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
 
             if (!auth.VerifyAndConsume(signature)) return false;
             // Replaying the same valid signature must fail: the challenge is consumed.

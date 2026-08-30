@@ -64,10 +64,10 @@ smartphone del Gate 1:
   dell'app, quindi sopravvive ai riavvii, ma **non è nell'Android Key Store** e non
   è hardware-backed: è leggibile con root o da un backup dei dati dell'app.
   `DeviceIdentity` è il punto in cui va sostituita.
-- **Il runtime non è autenticato verso il telefono.** Il canale prova il telefono
-  al PC, non il contrario. Su una rete non controllata un host può rispondere per
-  primo alla discovery e spacciarsi per runtime. Usare il Wi-Fi solo su rete
-  fidata; vedi [ADR-0007](../../docs/adr/ADR-0007-wifi-transport.md).
+- **Il runtime è autenticato verso il telefono.** Wire version 2: il telefono
+  verifica `ServerAuthProof` contro la chiave pubblica del runtime, pinnata
+  all'abbinamento USB (`python -m nosai.phone.deploy`). Senza pin l'handshake
+  è fail-closed. Vedi [ADR-0008](../../docs/adr/ADR-0008-mutual-handshake.md).
 - **Una sola sessione per volta.** Su LAN chiunque apra una connessione può
   occupare lo slot ed escludere il telefono legittimo.
 - **Trasporto in chiaro.** Il canale autentica il telefono ma non cifra il

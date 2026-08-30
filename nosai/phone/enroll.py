@@ -17,7 +17,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from nosai.phone.adb import PACKAGE_NAME, Adb, AdbError, resolve_adb
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+
+from nosai.phone.adb import PACKAGE_NAME, Adb, AdbError, Gate1Defaults, resolve_adb
 
 LOG_TAG = "NosAiGuardKey"
 BEGIN_MARKER = "BEGIN_NOSAI_GUARD_PUBLIC_KEY"
@@ -88,6 +91,44 @@ def collect(adb_path: str | Path | None = None, isolated_root: str | Path | None
     return extract_public_key(result.stdout)
 
 
+def ensure_runtime_public_pem(repo_root: str | Path | None = None) -> Path:
+    """Return the runtime public key, exporting it from the private identity if needed.
+
+    Pairing must pin this on the phone. The runtime writes it on first start; if
+    only the private file exists (an identity created before the companion was
+    added), the public half is derived here rather than requiring a restart.
+    The private file is never copied to the phone.
+    """
+    root = Path(repo_root) if repo_root is not None else Path.cwd()
+    public = root / Gate1Defaults.RUNTIME_PUBLIC_KEY_PATH
+    private = root / Gate1Defaults.RUNTIME_IDENTITY_PATH
+    if public.is_file():
+        text = public.read_text(encoding="utf-8")
+        if "BEGIN PUBLIC KEY" in text:
+            return public
+
+    if not private.is_file():
+        raise EnrollmentError(
+            "runtime_identity_missing",
+            "start the runtime once so it writes data/runtime_identity.pem, then pair again",
+        )
+
+    try:
+        key = serialization.load_pem_private_key(private.read_bytes(), password=None)
+    except ValueError as exc:
+        raise EnrollmentError("runtime_identity_unreadable", str(private)) from exc
+    if not isinstance(key, rsa.RSAPrivateKey) or key.key_size != 2048:
+        raise EnrollmentError("runtime_identity_unreadable", "not RSA-2048")
+
+    pem = key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    public.parent.mkdir(parents=True, exist_ok=True)
+    public.write_bytes(pem)
+    return public
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Enroll the phone's Guard AI public key on this PC")
     parser.add_argument("--out", default="data/guard_public_key.pem", help="Where to write the PEM")
@@ -111,6 +152,27 @@ def main(argv: list[str] | None = None) -> int:
     out.write_text(pem, encoding="utf-8")
 
     print(f"Public key written to {out}")
+
+    try:
+        runtime_pem = ensure_runtime_public_pem()
+        adb = Adb(resolve_adb(args.adb, args.isolated_root))
+        device = adb.ready_device()
+        if device is None:
+            raise EnrollmentError("no_authorized_device", "none attached")
+        adb.push_runtime_pin(device.serial, runtime_pem)
+    except (EnrollmentError, AdbError) as exc:
+        reason = getattr(exc, "reason", "failed")
+        print(f"Runtime pin failed: {reason}", file=sys.stderr)
+        if getattr(exc, "detail", None):
+            print(f"  {exc.detail}", file=sys.stderr)
+        if reason == "runtime_identity_missing":
+            print(
+                "  Start the runtime once so it writes data/runtime_identity.pem, then run this again.",
+                file=sys.stderr,
+            )
+        return 1
+
+    print(f"Runtime pin pushed ({runtime_pem})")
     print()
     print("Start the runtime trusting it:")
     print(f"  dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll --guard-public-key-path {out}")

@@ -21,11 +21,13 @@ from nosai.phone.adb import (
     BUILT_APK_RELATIVE,
     GUARD_PORT,
     PACKAGE_NAME,
+    Adb,
     AdbError,
     Gate1Defaults,
     deploy,
+    resolve_adb,
 )
-from nosai.phone.enroll import EnrollmentError, collect
+from nosai.phone.enroll import EnrollmentError, collect, ensure_runtime_public_pem
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -114,6 +116,23 @@ def main(argv: list[str] | None = None) -> int:
     key_path.parent.mkdir(parents=True, exist_ok=True)
     key_path.write_text(pem, encoding="utf-8")
     print(f"Pairing:  device key written to {key_path}")
+
+    try:
+        runtime_pem = ensure_runtime_public_pem(REPO_ROOT)
+        Adb(resolve_adb(args.adb, args.isolated_root)).push_runtime_pin(result.serial, runtime_pem)
+    except (EnrollmentError, AdbError) as exc:
+        reason = getattr(exc, "reason", "failed")
+        print(f"Pairing failed: {reason}", file=sys.stderr)
+        if getattr(exc, "detail", None):
+            print(f"  {exc.detail}", file=sys.stderr)
+        if reason == "runtime_identity_missing":
+            print(
+                "  Start the runtime once so it writes data/runtime_identity.pem, then re-run deploy.",
+                file=sys.stderr,
+            )
+        return 1
+
+    print(f"Pairing:  runtime pin pushed ({runtime_pem})")
     print()
     print("Start the runtime; it picks that key up on its own:")
     print("  dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll")

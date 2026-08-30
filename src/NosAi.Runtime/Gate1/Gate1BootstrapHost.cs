@@ -18,6 +18,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly Gate1HostOptions _options;
     private readonly IRuntimeLogger _logger;
     private readonly SessionAuth _auth;
+    private readonly RuntimeIdentity _runtimeIdentity;
     private readonly GuardAiNetworkChannel _channel;
     private readonly RealClientConnector _client;
     private readonly LiveHardwareTelemetry _hardware;
@@ -55,7 +56,12 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _options.Validate();
         _logger = logger ?? new ConsoleRuntimeLogger();
-        _auth = CreateAuth(_options, _logger, out _devKey);
+        _runtimeIdentity = RuntimeIdentity.LoadOrCreate();
+        _logger.Info("Runtime identity loaded.", new Dictionary<string, object?>
+        {
+            ["publicKeyPath"] = RuntimeIdentity.PublicPathFor(RuntimeIdentity.DefaultPath)
+        });
+        _auth = CreateAuth(_options, _logger, _runtimeIdentity, out _devKey);
         _channel = new GuardAiNetworkChannel(
             _options.GuardPort, _auth,
             // Loopback alone would make the Wi-Fi transport impossible: the phone
@@ -209,18 +215,16 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     private static IHardwareProbe CreateWindowsProbe() => new WindowsHardwareProbe();
 
-    private static SessionAuth CreateAuth(Gate1HostOptions options, IRuntimeLogger logger, out RSA? devKey)
+    private static SessionAuth CreateAuth(Gate1HostOptions options, IRuntimeLogger logger, RuntimeIdentity identity, out RSA? devKey)
     {
         devKey = null;
         if (!string.IsNullOrWhiteSpace(options.TrustedGuardPublicKeyPem))
         {
-            // Which key is trusted decides which devices can open a session, so it
-            // is stated rather than left to be inferred from a silent startup.
             logger.Info("Trusting one Guard device key.", new Dictionary<string, object?>
             {
                 ["source"] = options.TrustedGuardPublicKeySource ?? "explicit"
             });
-            return new SessionAuth(options.TrustedGuardPublicKeyPem);
+            return new SessionAuth(options.TrustedGuardPublicKeyPem, identity);
         }
 
         if (options.DevEnrollment)
@@ -238,7 +242,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
                 ["publicKeyPath"] = publicPath,
                 ["privateKeyPath"] = privatePath
             });
-            return new SessionAuth(rsa.ExportRSAPublicKeyPem());
+            return new SessionAuth(rsa.ExportRSAPublicKeyPem(), identity);
         }
 
         logger.Warning(
@@ -248,7 +252,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         var ephemeral = RSA.Create(2048);
         try
         {
-            return new SessionAuth(ephemeral.ExportRSAPublicKeyPem());
+            return new SessionAuth(ephemeral.ExportRSAPublicKeyPem(), identity);
         }
         finally
         {
@@ -268,6 +272,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             await _dashboard.DisposeAsync().ConfigureAwait(false);
         await _client.DisposeAsync().ConfigureAwait(false);
         _auth.Dispose();
+        _runtimeIdentity.Dispose();
         _devKey?.Dispose();
         _health = RuntimeHealthStatus.Stopped;
     }

@@ -182,8 +182,9 @@ fatto in precedenza.
 Cosa prova: il circuito completo su rete reale, senza cavo e senza configurazione
 da parte dell'operatore.
 
-Cosa **non** prova: nessuna autenticazione del runtime verso il telefono (ADR-0007,
-limite 1); nessuna cifratura del payload; nessuna lettura di memoria di gioco.
+Cosa **non** prova: nessuna cifratura del payload; nessuna lettura di memoria di gioco.
+L'autenticazione mutua del canale (ADR-0008) è nel codice; il circuito Wi-Fi
+documentato sopra è stato chiuso su wire version 1 e va ripetuto dopo il re-pair.
 
 ---
 
