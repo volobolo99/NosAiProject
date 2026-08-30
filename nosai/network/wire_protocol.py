@@ -11,6 +11,29 @@ VERSION = 1
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
 MAX_PAYLOAD = 64 * 1024
 
+# Canonical Gate 1 message types.
+# Source of truth: WireMessageType in src/NosAi.Runtime/Gate1/Gate1Runtime.cs.
+# The 12-byte NOSA header above is byte-compatible with that runtime, so these
+# identifiers must stay numerically identical on both sides.
+TYPE_SESSION_HELLO = 0x01
+TYPE_CAPABILITIES = 0x02
+TYPE_AUTH_CHALLENGE = 0x03
+TYPE_AUTH_RESPONSE = 0x04
+TYPE_AUTH_RESULT = 0x05
+TYPE_HEARTBEAT = 0x06
+TYPE_HEARTBEAT_ACK = 0x07
+TYPE_WORLD_STATE_DELTA = 0x10
+TYPE_TELEMETRY_SNAPSHOT = 0x11
+TYPE_COMMAND_REQUEST = 0x20
+TYPE_COMMAND_ACK = 0x21
+TYPE_DISCONNECT = 0xFF
+
+KNOWN_MESSAGE_TYPES = frozenset({
+    TYPE_SESSION_HELLO, TYPE_CAPABILITIES, TYPE_AUTH_CHALLENGE, TYPE_AUTH_RESPONSE,
+    TYPE_AUTH_RESULT, TYPE_HEARTBEAT, TYPE_HEARTBEAT_ACK, TYPE_WORLD_STATE_DELTA,
+    TYPE_TELEMETRY_SNAPSHOT, TYPE_COMMAND_REQUEST, TYPE_COMMAND_ACK, TYPE_DISCONNECT,
+})
+
 
 @dataclass(frozen=True)
 class Frame:
