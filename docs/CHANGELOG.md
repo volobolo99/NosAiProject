@@ -29,3 +29,9 @@
 - Il deployment SSD e il percorso PC-Phone restano soggetti a validazione fisica sul PC e sullo smartphone reali.
 - Nessuna prestazione dichiarata del Crucial X6 viene assunta come garantita: throughput e latenza devono essere misurati.
 - Le ottimizzazioni C#/.NET 8 basate su `ArrayPool`, `Memory`, `Span` e caricamento modelli on-demand restano da integrare e benchmarkare nel percorso nativo.
+
+### Build e dipendenze
+
+- `System.Management` è passato dalla versione `8.0.1` alla `8.0.0` nel commit `d5c6731`. La modifica **non è dichiarata nel messaggio di quel commit**, che parla solo del pin di `StartupObject`: viene registrata qui perché una modifica di dipendenza non resti invisibile in review.
+- Motivo della correzione: la versione `8.0.1` **non esiste su NuGet**. Il restore la risolveva silenziosamente alla `9.0.0` emettendo `NU1603`, quindi il progetto compilava contro una major diversa da quella dichiarata. La `8.0.0` è la versione realmente pubblicata della linea 8.
+- Il pin di `StartupObject` nello stesso commit ha reso irraggiungibili tutti i `Main` diversi da `Program.Main`, orfanando le self-test di `MasterHostTestRunner`. Sono state riattivate tramite il flag `--host-test`.
