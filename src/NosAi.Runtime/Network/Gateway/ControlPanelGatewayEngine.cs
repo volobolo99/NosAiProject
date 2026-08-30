@@ -275,23 +275,10 @@ namespace NosAi.Network.Gateway
 
     #region 5. Entry Point
 
-    public static class Program
-    {
-        public static async Task<int> Main(string[] args)
-        {
-            Console.Title = "NosAi Control Panel Gateway (1.0 Beta)";
-
-            if (args.Length > 0 && args[0].Equals("--test", StringComparison.OrdinalIgnoreCase))
-            {
-                bool success = await ControlPanelGatewayTestRunner.RunAllTestsAsync();
-                return success ? 0 : 1;
-            }
-
-            Console.WriteLine("Inizializzazione NosAi Control Panel Gateway...");
-            bool passed = await ControlPanelGatewayTestRunner.RunAllTestsAsync();
-            return passed ? 0 : 1;
-        }
-    }
-
+    // The subsystem's own Program.Main used to live here. It was dead code: the
+    // pinned StartupObject in the .csproj makes every other Main in the assembly
+    // unreachable, which is why this suite had never run. It is reachable now
+    // through the flag table in Program.cs; keeping a second entry point would
+    // only suggest a way to run it that does not work.
     #endregion
 }

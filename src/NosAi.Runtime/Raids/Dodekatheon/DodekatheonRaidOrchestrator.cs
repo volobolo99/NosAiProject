@@ -184,14 +184,10 @@ namespace NosAi.Raids.Dodekatheon
     #endregion
 
     #region 7. Entry Point
-    public static class Program
-    {
-        public static async Task<int> Main(string[] args)
-        {
-            Console.Title = "NosAi Dodekatheon Celestial Raid Engine (1.0 Beta)";
-            if (args.Length > 0 && args[0].Equals("--test", StringComparison.OrdinalIgnoreCase)) { bool success = await DodekatheonRaidTestRunner.RunAllTestsAsync(); return success ? 0 : 1; }
-            Console.WriteLine("Inizializzazione NosAi Dodekatheon Celestial Raid Orchestrator..."); Console.WriteLine("Esecuzione della suite di test per meccaniche boss, Stagger e scudi celestiali..."); bool passed = await DodekatheonRaidTestRunner.RunAllTestsAsync(); return passed ? 0 : 1;
-        }
-    }
+    // The subsystem's own Program.Main used to live here. It was dead code: the
+    // pinned StartupObject in the .csproj makes every other Main in the assembly
+    // unreachable, which is why this suite had never run. It is reachable now
+    // through the flag table in Program.cs; keeping a second entry point would
+    // only suggest a way to run it that does not work.
     #endregion
 }

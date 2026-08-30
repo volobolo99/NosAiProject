@@ -86,6 +86,7 @@ namespace NosAi.Miniland.Production
     {
         public static async Task<bool> RunAllTestsAsync()
         {
+            Console.WriteLine("=== Miniland production checks ===");
             bool allPassed = true;
             allPassed &= RunTest("Test 1: Registrazione e Rilevamento Stazioni Pronte", TestStationReadinessDetection);
             allPassed &= RunTest("Test 2: Raccolta Risorse e Ripristino Cooldown", TestStationHarvestAndResetCooldown);
@@ -93,23 +94,38 @@ namespace NosAi.Miniland.Production
             allPassed &= RunTest("Test 4: Esecuzione Minigioco Pesca", TestMinigameFishingSimulation);
             allPassed &= RunTest("Test 5: Tick Temporale & Aggiornamento Cooldown", TestSchedulerTickProgression);
             allPassed &= RunTest("Test 6: Invariante Architetturale", TestMinilandSecurityInvariant);
+            Console.WriteLine(allPassed
+                ? "=== Miniland production checks passed. Local only. ==="
+                : "=== Miniland production checks FAILED. See the lines marked FAIL above. ===");
             await Task.CompletedTask; return allPassed;
         }
-        private static bool RunTest(string _, Func<bool> testFunc) { try { return testFunc(); } catch { return false; } }
+        private static bool RunTest(string name, Func<bool> testFunc)
+        {
+            try { return Report(name, testFunc(), null); }
+            catch (Exception ex) { return Report(name, false, $"{ex.GetType().Name}: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Reports each check by name.
+        /// </summary>
+        /// <remarks>
+        /// The runner used to discard the name and print nothing, returning one
+        /// aggregate bool: a failure gave exit 1 and no way to tell which check
+        /// broke or why, because the catch swallowed the exception too. The same
+        /// defect was already fixed once for Gate 1.
+        /// </remarks>
+        private static bool Report(string name, bool passed, string? error)
+        {
+            string detail = error is null ? string.Empty : $" [{error}]";
+            Console.WriteLine($"[{(passed ? "PASS" : "FAIL")}] {name}{detail}");
+            return passed;
+        }
+
         private static bool TestStationReadinessDetection() { var e = new MinilandAutomationMasterEngine(); var r = e.Scheduler.GetReadyStations(); return r.Count == 1 && r[0].StationInstanceId == 1; }
         private static bool TestStationHarvestAndResetCooldown() { var e = new MinilandAutomationMasterEngine(); bool a = e.Scheduler.TryHarvestStation(1, out var h, out _); bool b = e.Scheduler.TryHarvestStation(1, out _, out var err); return a && h != null && !b && err?.Contains("cooldown") == true; }
         private static bool TestMinigameArcherySimulation() { var e = new MinilandAutomationMasterEngine(); var r = e.MinigameSolver.SimulateMinigamePlay(MinigameKind.ArcheryTarget, 5); return r.IsVictory && r.ScoreAchieved >= 2000 && r.RewardBoxesEarned > 0; }
         private static bool TestMinigameFishingSimulation() { var e = new MinilandAutomationMasterEngine(); var r = e.MinigameSolver.SimulateMinigamePlay(MinigameKind.Fishing, 8); return r.IsVictory && r.ScoreAchieved >= 2500 && r.RewardBoxesEarned >= 1; }
         private static bool TestSchedulerTickProgression() { var s = new MinilandProductionScheduler(); s.RegisterStation(new MinilandStationState(99, MinilandStationType.FishPond, "Stagno Test", 3, false, DateTime.UtcNow.AddSeconds(10), 10, 401, 5)); s.TickUpdate(TimeSpan.FromSeconds(10)); return s.GetReadyStations().Count == 1; }
         private static bool TestMinilandSecurityInvariant() { var types = typeof(MinilandAutomationMasterEngine).Assembly.GetTypes().Where(t => t.Namespace?.Contains("NosAi.Miniland.Production") == true); return !types.Any(t => t.GetMethods().Any(m => m.Name.Contains("click", StringComparison.OrdinalIgnoreCase) || m.Name.Contains("sendpacket", StringComparison.OrdinalIgnoreCase))); }
-    }
-
-    public static class Program
-    {
-        public static async Task<int> Main(string[] args)
-        {
-            if (args.Length > 0 && args[0].Equals("--test", StringComparison.OrdinalIgnoreCase)) return await MinilandProductionTestRunner.RunAllTestsAsync() ? 0 : 1;
-            return await MinilandProductionTestRunner.RunAllTestsAsync() ? 0 : 1;
-        }
     }
 }

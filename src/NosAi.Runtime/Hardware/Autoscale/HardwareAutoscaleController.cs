@@ -98,21 +98,42 @@ namespace NosAi.Hardware.Autoscale
     {
         public static async Task<bool> RunAllTestsAsync()
         {
+            Console.WriteLine("=== Hardware autoscale checks ===");
             bool allPassed = true;
-            allPassed &= RunTest(TestNominalTelemetryCapture);
-            allPassed &= RunTest(TestThermalThrottlingTrigger);
-            allPassed &= RunTest(TestBudgetScalingParameters);
-            allPassed &= RunTest(TestRecoveryToNominalMode);
-            allPassed &= RunTest(TestHardwareSecurityInvariant);
+            allPassed &= RunTest("Nominal telemetry is captured", TestNominalTelemetryCapture);
+            allPassed &= RunTest("Thermal threshold triggers throttling", TestThermalThrottlingTrigger);
+            allPassed &= RunTest("Budget scaling parameters follow the mode", TestBudgetScalingParameters);
+            allPassed &= RunTest("Recovery returns to nominal", TestRecoveryToNominalMode);
+            allPassed &= RunTest("Autoscale exposes no execution surface", TestHardwareSecurityInvariant);
+            Console.WriteLine(allPassed
+                ? "=== Hardware autoscale checks passed. Local only. ==="
+                : "=== Hardware autoscale checks FAILED. See the lines marked FAIL above. ===");
             await Task.CompletedTask;
             return allPassed;
         }
 
-        private static bool RunTest(Func<bool> testFunc)
+        private static bool RunTest(string name, Func<bool> testFunc)
         {
-            try { return testFunc(); }
-            catch { return false; }
+            try { return Report(name, testFunc(), null); }
+            catch (Exception ex) { return Report(name, false, $"{ex.GetType().Name}: {ex.Message}"); }
         }
+
+        /// <summary>
+        /// Reports each check by name.
+        /// </summary>
+        /// <remarks>
+        /// The runner used to discard the name and print nothing, returning one
+        /// aggregate bool: a failure gave exit 1 and no way to tell which check
+        /// broke or why, because the catch swallowed the exception too. The same
+        /// defect was already fixed once for Gate 1.
+        /// </remarks>
+        private static bool Report(string name, bool passed, string? error)
+        {
+            string detail = error is null ? string.Empty : $" [{error}]";
+            Console.WriteLine($"[{(passed ? "PASS" : "FAIL")}] {name}{detail}");
+            return passed;
+        }
+
 
         private static bool TestNominalTelemetryCapture()
         {

@@ -45,6 +45,30 @@ dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Rele
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
 ```
 
+Ogni sottosistema porta la propria suite di certificazione:
+
+```bash
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --storage-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --navigation-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gateway-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --raids-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --miniland-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --localai-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --hardware-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate6-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
+```
+
+`--list-suites` stampa l'elenco completo dei flag disponibili, così non serve
+leggere questo documento per sapere cosa si può eseguire.
+
+> **Perché conta.** Lo `StartupObject` fissato nel `.csproj` rende irraggiungibile
+> ogni altro `Main` dell'assembly. Sette di queste suite erano state scritte e poi
+> **non eseguite nemmeno una volta**, perché nessun flag le invocava e il loro
+> punto d'ingresso era morto. Lo stesso difetto teneva nascosti due bug in Gate 3
+> e lasciava la suite di Gate 4 rossa. Una suite che nessuno sa lanciare è una
+> suite che nessuno lancia.
+
 If a Windows Application Control policy blocks the generated apphost
 (`0x800711C7`, "Un criterio di controllo dell'applicazione ha bloccato il
 file"), run the managed assembly through the shared host instead. The policy

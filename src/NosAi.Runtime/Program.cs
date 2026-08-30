@@ -14,22 +14,52 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        if (args.Any(a => string.Equals(a, "--gate1-test", StringComparison.OrdinalIgnoreCase)))
-            return await Gate1TestRunner.RunAllAsync().ConfigureAwait(false) ? 0 : 1;
-        if (args.Any(a => string.Equals(a, "--gate2-test", StringComparison.OrdinalIgnoreCase)))
-            return await Gate2TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
-        if (args.Any(a => string.Equals(a, "--gate3-test", StringComparison.OrdinalIgnoreCase)))
-            return await Gate3TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
-        if (args.Any(a => string.Equals(a, "--gate4-test", StringComparison.OrdinalIgnoreCase)))
-            return await Gate4TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
-        if (args.Any(a => string.Equals(a, "--gate5-test", StringComparison.OrdinalIgnoreCase)))
-            return await Gate5TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
-        if (args.Any(a => string.Equals(a, "--gate6-test", StringComparison.OrdinalIgnoreCase)))
-            return await NosAi.Runtime.Gate6.Gate6ReleaseCertifier.RunFullReleaseCertificationAsync().ConfigureAwait(false) ? 0 : 1;
-        // Pinning StartupObject made every other Main unreachable, orphaning the
-        // master-host self-tests. This flag keeps them executable.
-        if (args.Any(a => string.Equals(a, "--host-test", StringComparison.OrdinalIgnoreCase)))
-            return await NosAi.Host.MasterHostTestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
+        // Every certification suite the runtime carries, in one table.
+        //
+        // Pinning StartupObject makes every other Main in the assembly unreachable,
+        // so a subsystem's own entry point cannot run it. Seven suites were written
+        // and then never executed once for exactly that reason -- Gate 3 hid two
+        // defects behind it, and the Gate 4 suite sat failing. A table beats a
+        // ladder of ifs here: adding a runner without wiring it is the failure mode,
+        // and one list makes the omission obvious.
+        IReadOnlyDictionary<string, Func<Task<bool>>> suites = new Dictionary<string, Func<Task<bool>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["--gate1-test"] = Gate1TestRunner.RunAllAsync,
+            ["--gate2-test"] = Gate2TestRunner.RunAllTestsAsync,
+            ["--gate3-test"] = Gate3TestRunner.RunAllTestsAsync,
+            ["--gate4-test"] = Gate4TestRunner.RunAllTestsAsync,
+            ["--gate5-test"] = Gate5TestRunner.RunAllTestsAsync,
+            ["--gate6-test"] = NosAi.Runtime.Gate6.Gate6ReleaseCertifier.RunFullReleaseCertificationAsync,
+            ["--host-test"] = NosAi.Host.MasterHostTestRunner.RunAllTestsAsync,
+            ["--storage-test"] = NosAi.Storage.Infrastructure.StorageInfrastructureTestRunner.RunAllTestsAsync,
+            ["--navigation-test"] = NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner.RunAllTestsAsync,
+            ["--gateway-test"] = NosAi.Network.Gateway.ControlPanelGatewayTestRunner.RunAllTestsAsync,
+            ["--raids-test"] = NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner.RunAllTestsAsync,
+            ["--miniland-test"] = NosAi.Miniland.Production.MinilandProductionTestRunner.RunAllTestsAsync,
+            ["--localai-test"] = NosAi.AI.LocalInference.LocalAiInferenceTestRunner.RunAllTestsAsync,
+            ["--hardware-test"] = NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner.RunAllTestsAsync,
+            // Synchronous RunAll(), adapted here rather than by editing their files.
+            ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
+            ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
+            ["--security-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
+            // Subsystems with synchronous runners are adapted to the table shape.
+            ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
+            ["--crypto-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
+            ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
+        };
+
+        foreach (string argument in args)
+        {
+            if (suites.TryGetValue(argument, out Func<Task<bool>>? suite))
+                return await suite().ConfigureAwait(false) ? 0 : 1;
+        }
+
+        if (args.Any(a => string.Equals(a, "--list-suites", StringComparison.OrdinalIgnoreCase)))
+        {
+            foreach (string flag in suites.Keys.OrderBy(f => f, StringComparer.Ordinal))
+                Console.WriteLine(flag);
+            return 0;
+        }
 
         var logger = new ConsoleRuntimeLogger();
         Gate1HostOptions options;
