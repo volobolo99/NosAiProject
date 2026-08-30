@@ -371,7 +371,9 @@ public sealed class Gate1RuntimeSnapshotProvider
         _channel = channel;
         _hardware = hardware ?? new LiveHardwareTelemetry(new FallbackHardwareProbe());
         _client = client;
-        _health = health ?? (() => RuntimeHealthStatus.Healthy);
+        // No health source means the state is not established. Bootstrapping, not
+        // Healthy: an unreported health must never read as a passing one.
+        _health = health ?? (() => RuntimeHealthStatus.Bootstrapping);
         _correlationId = correlationId ?? "gate1";
     }
 

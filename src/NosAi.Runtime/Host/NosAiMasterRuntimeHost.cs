@@ -122,10 +122,20 @@ namespace NosAi.Host
             RandomNumberGenerator.Fill(_hmacSecret);
         }
 
-        public bool TryAuthorizeAction(Guid actionId, TrustTier requiredTier, double gpuTemp, out byte[]? tokenSignature, out string? rejectReason)
+        /// <param name="gpuTemp">
+        /// Observed GPU temperature, or <c>null</c> when it was never observed. Unknown
+        /// is not zero: a missing reading must not satisfy the thermal limit.
+        /// </param>
+        public bool TryAuthorizeAction(Guid actionId, TrustTier requiredTier, double? gpuTemp, out byte[]? tokenSignature, out string? rejectReason)
         {
             tokenSignature = null;
             rejectReason = null;
+
+            if (gpuTemp is null)
+            {
+                rejectReason = "TEMPERATURA GPU SCONOSCIUTA: nessuna lettura osservata. Il limite termico non può essere verificato, quindi il token non viene emesso.";
+                return false;
+            }
 
             if (gpuTemp >= 80.0)
             {
@@ -386,7 +396,7 @@ namespace NosAi.Host
                     if (_status is MasterHostStatus.Running or MasterHostStatus.CoolingThrottled)
                     {
                         var candidateId = Guid.NewGuid();
-                        if (_safetyGate.TryAuthorizeAction(candidateId, TrustTier.Tier2_SemiAutonomous, _gpuTemperatureSimulated ? _simulatedGpuTemp : 0, out var sig, out _))
+                        if (_safetyGate.TryAuthorizeAction(candidateId, TrustTier.Tier2_SemiAutonomous, _gpuTemperatureSimulated ? _simulatedGpuTemp : null, out var sig, out _))
                         {
                             bool valid = _safetyGate.VerifySafetyToken(candidateId, sig);
                             Debug.Assert(valid, "Integrità firma SafetyToken violata.");
@@ -480,6 +490,7 @@ namespace NosAi.Host
             allPassed &= await RunTestAsync("Test 1: Avvio Host & Inizializzazione Main Executive Loop", TestHostBootstrappingAndTicksAsync);
             allPassed &= RunTest("Test 2: Emissione e Verifica Firma SafetyToken HMAC-SHA256", TestSafetyTokenSigningAndVerification);
             allPassed &= RunTest("Test 3: Throttling Termico GPU (>=80°C Cooling State)", TestThermalThrottlingTrigger);
+            allPassed &= RunTest("Test 3b: Temperatura GPU sconosciuta non autorizza", TestUnknownTemperatureIsNotAuthorized);
             allPassed &= RunTest("Test 4: Comando Dashboard Emergency STOP (Tier 0 Fail-Closed)", TestDashboardEmergencyStopCommand);
             allPassed &= await RunTestAsync("Test 5: Endpoint REST Telemetria Centro di Controllo (127.0.0.1)", TestControlCenterRestEndpointAsync);
             allPassed &= RunTest("Test 6: Invariante Architetturale (Master Host Safety Isolation)", TestHostSecurityInvariant);
@@ -582,6 +593,23 @@ namespace NosAi.Host
 
             bool authBlocked = !gate.TryAuthorizeAction(actionId, TrustTier.Tier1_Assisted, 82.0, out _, out string? reason);
             return authBlocked && reason != null && reason.Contains("BLOCCO TERMICO");
+        }
+
+        private static bool TestUnknownTemperatureIsNotAuthorized()
+        {
+            var trust = new MasterTrustManager(TrustTier.Tier3_AutonomousRestricted);
+            var gate = new MasterSafetyGate(trust);
+
+            // Unknown is not zero: before this was nullable the tick loop passed 0
+            // for an unobserved temperature, so the >= 80 check never fired and the
+            // thermal limit was effectively absent in production.
+            bool blocked = !gate.TryAuthorizeAction(
+                Guid.NewGuid(), TrustTier.Tier1_Assisted, null, out var token, out string? reason);
+
+            return blocked
+                   && token is null
+                   && reason is not null
+                   && reason.Contains("SCONOSCIUTA");
         }
 
         private static bool TestDashboardEmergencyStopCommand()
