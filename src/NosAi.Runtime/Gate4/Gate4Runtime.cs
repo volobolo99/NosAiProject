@@ -33,7 +33,31 @@ namespace NosAi.Runtime.Gate4
 
     public sealed record ResourceInventory(long Gold, int AngelFeathers, int FullMoonCrystals, int SoulGems, int GillionStones, int NormalPotionsCount, int BigPotionsCount);
     public sealed record CharacterProgressionProfile(long CharacterId, string Name, int CombatLevel, int JobLevel, int CurrentAct, int CurrentChapter, ResourceInventory Inventory, ImmutableHashSet<SpecialistCardType> UnlockedCards, ImmutableHashSet<string> CompletedQuestIds);
-    public sealed record QuestDependencyNode(string QuestId, string Title, GoalType Type, int RequiredCombatLevel, int RequiredJobLevel, ImmutableArray<string> PrerequisiteQuestIds, ImmutableDictionary<string, int> RequiredItems, long RequiredGold, SpecialistCardType UnlocksSpecialist, int EstimatedDurationMinutes, float BaseDifficulty);
+    /// <summary>Where a quest node's numbers come from.</summary>
+    /// <remarks>
+    /// The DAG's shape — which unlock precedes which — is knowable from the game's
+    /// structure. The exact level, item and gold requirements are not, unless
+    /// somebody has checked them against the real client. Keeping the two apart
+    /// stops a planner, or a reader, from treating a plausible number as a
+    /// confirmed one.
+    /// </remarks>
+    public enum QuestDataProvenance : byte
+    {
+        /// <summary>Requirements checked against the real game.</summary>
+        Verified = 0,
+
+        /// <summary>
+        /// Ordering and prerequisites are modelled; the numeric requirements are
+        /// not verified. The default, because verification has to be claimed.
+        /// </summary>
+        Provisional = 1
+    }
+
+    /// <param name="Provenance">
+    /// Defaults to <see cref="QuestDataProvenance.Provisional"/>: a node is
+    /// unverified unless someone explicitly states otherwise.
+    /// </param>
+    public sealed record QuestDependencyNode(string QuestId, string Title, GoalType Type, int RequiredCombatLevel, int RequiredJobLevel, ImmutableArray<string> PrerequisiteQuestIds, ImmutableDictionary<string, int> RequiredItems, long RequiredGold, SpecialistCardType UnlocksSpecialist, int EstimatedDurationMinutes, float BaseDifficulty, QuestDataProvenance Provenance = QuestDataProvenance.Provisional);
 
     public sealed record BetaBinomialEvidence(double Alpha, double Beta, int TotalTrials)
     {
@@ -115,15 +139,127 @@ namespace NosAi.Runtime.Gate4
         private readonly KnowledgeBaseManager _knowledgeBase;
         private readonly Ucb1StrategySelector _selector;
         private int _totalDecisionsCount;
+        /// <summary>Specialist Cards the DAG can actually plan a route to.</summary>
+        /// <remarks>
+        /// Exposed because the enum advertising eight tiers is not evidence that
+        /// eight are reachable. A caller that needs to know can ask instead of
+        /// assuming.
+        /// </remarks>
+        public IReadOnlySet<SpecialistCardType> PlannableSpecialistCards =>
+            _questDag.Values
+                .Where(q => q.UnlocksSpecialist != SpecialistCardType.None)
+                .Select(q => q.UnlocksSpecialist)
+                .ToHashSet();
+
+        /// <summary>
+        /// Quests whose numeric requirements nobody has checked against the game.
+        /// </summary>
+        /// <remarks>
+        /// Currently every one of them. This is the list to work through before any
+        /// progression claim is called verified.
+        /// </remarks>
+        public IReadOnlyList<string> UnverifiedQuestIds =>
+            _questDag.Values
+                .Where(q => q.Provenance == QuestDataProvenance.Provisional)
+                .Select(q => q.QuestId)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToList();
+
         public ProgressionEngineV2(KnowledgeBaseManager knowledgeBase) { _knowledgeBase = knowledgeBase; _selector = new Ucb1StrategySelector(); InitializeStandardNosTaleQuests(); }
+        /// <summary>
+        /// Builds the quest DAG the planner resolves against.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Every node is marked <see cref="QuestDataProvenance.Provisional"/>. The
+        /// ordering is real — each Specialist Card unlock genuinely requires the one
+        /// before it — but the level, item and gold figures have not been checked
+        /// against the game client by anyone. Marking them verified would turn
+        /// plausible numbers into apparent facts, which is the one thing this
+        /// project does not do.
+        /// </para>
+        /// <para>
+        /// SP3 to SP8 previously had no nodes at all while the enum advertised all
+        /// eight, so the planner silently could not plan past SP2. Modelling them
+        /// provisionally makes the ladder complete and its uncertainty visible;
+        /// <see cref="ProgressionEngineV2.UnverifiedQuestIds"/> lists exactly what
+        /// still needs checking.
+        /// </para>
+        /// </remarks>
         private void InitializeStandardNosTaleQuests()
         {
             AddQuest(new QuestDependencyNode("ACT1_Q1_NOSVILLE_START", "Atto 1-1: Il mistero dei Kovolt", GoalType.MainQuest, 1, 1, ImmutableArray<string>.Empty, ImmutableDictionary<string, int>.Empty, 0, SpecialistCardType.None, 5, 0.1f));
             AddQuest(new QuestDependencyNode("ACT1_Q2_TS_12", "Atto 1-2: Pietra Spazio-Tempo 12", GoalType.TimeSpace, 12, 5, ImmutableArray.Create("ACT1_Q1_NOSVILLE_START"), ImmutableDictionary.CreateRange(new[] { new KeyValuePair<string, int>("GillionStone", 2) }), 500, SpecialistCardType.None, 8, 0.3f));
-            AddQuest(new QuestDependencyNode("SP1_QUEST_UNLOCK", "Gemma dell'Anima Misteriosa: Sblocco SP1", GoalType.SpecialistCardUnlock, 36, 20, ImmutableArray.Create("ACT1_Q2_TS_12"), ImmutableDictionary.CreateRange(new[] { new KeyValuePair<string, int>("AngelFeathers", 5), new KeyValuePair<string, int>("SoulGems", 1) }), 15000, SpecialistCardType.SP1_Warrior_Ranger_RedMage, 25, 0.65f));
-            AddQuest(new QuestDependencyNode("SP2_QUEST_UNLOCK", "Santuario Sacro: Sblocco SP2", GoalType.SpecialistCardUnlock, 46, 35, ImmutableArray.Create("SP1_QUEST_UNLOCK"), ImmutableDictionary.CreateRange(new[] { new KeyValuePair<string, int>("AngelFeathers", 15), new KeyValuePair<string, int>("FullMoonCrystals", 3) }), 50000, SpecialistCardType.SP2_Blade_Assassin_HolyMage, 40, 0.80f));
+
+            AddSpecialistUnlock("SP1_QUEST_UNLOCK", "Gemma dell'Anima Misteriosa: Sblocco SP1", 36, 20, "ACT1_Q2_TS_12",
+                SpecialistCardType.SP1_Warrior_Ranger_RedMage, 15000, 25, 0.65f,
+                ("AngelFeathers", 5), ("SoulGems", 1));
+
+            AddSpecialistUnlock("SP2_QUEST_UNLOCK", "Santuario Sacro: Sblocco SP2", 46, 35, "SP1_QUEST_UNLOCK",
+                SpecialistCardType.SP2_Blade_Assassin_HolyMage, 50000, 40, 0.80f,
+                ("AngelFeathers", 15), ("FullMoonCrystals", 3));
+
+            AddSpecialistUnlock("SP3_QUEST_UNLOCK", "Rovine Sommerse: Sblocco SP3", 55, 45, "SP2_QUEST_UNLOCK",
+                SpecialistCardType.SP3_Crusader_Destroyer_BlueMage, 120000, 55, 0.84f,
+                ("AngelFeathers", 25), ("FullMoonCrystals", 6), ("SoulGems", 2));
+
+            AddSpecialistUnlock("SP4_QUEST_UNLOCK", "Foresta Proibita: Sblocco SP4", 65, 55, "SP3_QUEST_UNLOCK",
+                SpecialistCardType.SP4_Berserker_WildKeeper_DarkGunner, 250000, 70, 0.87f,
+                ("AngelFeathers", 40), ("FullMoonCrystals", 10), ("SoulGems", 4));
+
+            AddSpecialistUnlock("SP5_QUEST_UNLOCK", "Arena di Fuoco: Sblocco SP5", 75, 65, "SP4_QUEST_UNLOCK",
+                SpecialistCardType.SP5_Gladiator_Cannoneer_Volcano, 500000, 85, 0.89f,
+                ("AngelFeathers", 60), ("FullMoonCrystals", 15), ("SoulGems", 6));
+
+            AddSpecialistUnlock("SP6_QUEST_UNLOCK", "Abisso delle Maree: Sblocco SP6", 82, 72, "SP5_QUEST_UNLOCK",
+                SpecialistCardType.SP6_BattleMonk_Scout_TideLord, 900000, 100, 0.91f,
+                ("AngelFeathers", 85), ("FullMoonCrystals", 22), ("SoulGems", 9));
+
+            AddSpecialistUnlock("SP7_QUEST_UNLOCK", "Necropoli Silente: Sblocco SP7", 88, 80, "SP6_QUEST_UNLOCK",
+                SpecialistCardType.SP7_DeathReaper_DemonHunter_Seer, 1500000, 120, 0.93f,
+                ("AngelFeathers", 120), ("FullMoonCrystals", 30), ("SoulGems", 13));
+
+            AddSpecialistUnlock("SP8_QUEST_UNLOCK", "Cittadella dei Rinnegati: Sblocco SP8", 93, 88, "SP7_QUEST_UNLOCK",
+                SpecialistCardType.SP8_Renegade_AvengingAngel_Archmage, 2500000, 140, 0.95f,
+                ("AngelFeathers", 160), ("FullMoonCrystals", 40), ("SoulGems", 18));
+        }
+
+        /// <summary>Adds one Specialist Card unlock, chained to the previous one.</summary>
+        private void AddSpecialistUnlock(
+            string questId,
+            string title,
+            int requiredCombatLevel,
+            int requiredJobLevel,
+            string prerequisiteQuestId,
+            SpecialistCardType unlocks,
+            long requiredGold,
+            int estimatedDurationMinutes,
+            float baseDifficulty,
+            params (string Item, int Quantity)[] requiredItems)
+        {
+            AddQuest(new QuestDependencyNode(
+                questId,
+                title,
+                GoalType.SpecialistCardUnlock,
+                requiredCombatLevel,
+                requiredJobLevel,
+                ImmutableArray.Create(prerequisiteQuestId),
+                ImmutableDictionary.CreateRange(requiredItems.Select(i => new KeyValuePair<string, int>(i.Item, i.Quantity))),
+                requiredGold,
+                unlocks,
+                estimatedDurationMinutes,
+                baseDifficulty,
+                QuestDataProvenance.Provisional));
         }
         public void AddQuest(QuestDependencyNode node) => _questDag[node.QuestId] = node;
+
+        /// <summary>One quest node by id, or null when the DAG has no such quest.</summary>
+        /// <remarks>
+        /// Returns null rather than throwing: asking whether a quest is modelled is a
+        /// legitimate question, and the answer "it is not" is information.
+        /// </remarks>
+        public QuestDependencyNode? GetQuest(string questId) =>
+            _questDag.TryGetValue(questId, out QuestDependencyNode? node) ? node : null;
         public IReadOnlyList<QuestDependencyNode> GetAvailableQuests(CharacterProgressionProfile profile)
         {
             var available = new List<QuestDependencyNode>();

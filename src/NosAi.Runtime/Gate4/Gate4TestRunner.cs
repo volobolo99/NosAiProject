@@ -17,6 +17,9 @@ public static class Gate4TestRunner
         allPassed &= Run("Repeated failure deprecates a strategy", TestStrategyDeprecationOnFailure);
         allPassed &= Run("Evidence for an unknown strategy is refused", TestUnknownStrategyIsRefused);
         allPassed &= Run("SP1 -> SP2 progression pipeline", TestSpecialistCardUnlockPipeline);
+        allPassed &= Run("Every declared Specialist Card is plannable", TestAllSpecialistCardsArePlannable);
+        allPassed &= Run("Specialist unlocks form a single ordered chain", TestSpecialistChainIsOrdered);
+        allPassed &= Run("Unverified quest data is declared, not hidden", TestProvisionalDataIsDeclared);
         allPassed &= Run("Deterministic pure evaluation", TestDeterministicPureEvaluation);
         Console.WriteLine(allPassed
             ? ">> Gate 4 test suite: PASS"
@@ -166,6 +169,73 @@ public static class Gate4TestRunner
         {
             return true;
         }
+    }
+
+    /// <summary>
+    /// The enum advertises SP1..SP8, so the DAG has to be able to reach all eight.
+    /// </summary>
+    /// <remarks>
+    /// It could not: only SP1 and SP2 had nodes, so the planner silently stopped at
+    /// SP2 while the type said otherwise. This check fails if a tier is ever
+    /// declared without a route to it.
+    /// </remarks>
+    private static bool TestAllSpecialistCardsArePlannable()
+    {
+        var engine = new ProgressionEngineV2(new KnowledgeBaseManager());
+        var declared = Enum.GetValues<SpecialistCardType>()
+            .Where(c => c != SpecialistCardType.None)
+            .ToHashSet();
+
+        return declared.All(engine.PlannableSpecialistCards.Contains)
+               && engine.PlannableSpecialistCards.Count == declared.Count;
+    }
+
+    /// <summary>Each Specialist unlock requires the previous one, with rising requirements.</summary>
+    private static bool TestSpecialistChainIsOrdered()
+    {
+        var engine = new ProgressionEngineV2(new KnowledgeBaseManager());
+        var profile = CreateProfile(120, 120, 100_000_000);
+
+        for (int tier = 2; tier <= 8; tier++)
+        {
+            QuestDependencyNode? current = engine.GetQuest($"SP{tier}_QUEST_UNLOCK");
+            QuestDependencyNode? previous = engine.GetQuest($"SP{tier - 1}_QUEST_UNLOCK");
+            if (current is null || previous is null)
+                return false;
+
+            if (!current.PrerequisiteQuestIds.Contains(previous.QuestId))
+                return false;
+
+            // A later tier that were easier or cheaper would let the planner skip
+            // ahead for the wrong reason.
+            if (current.RequiredCombatLevel <= previous.RequiredCombatLevel
+                || current.RequiredGold <= previous.RequiredGold)
+                return false;
+        }
+
+        // And the chain must actually be gated: with nothing completed, only the
+        // first quest is available however high the character's level is.
+        var available = engine.GetAvailableQuests(profile);
+        return available.All(q => q.UnlocksSpecialist == SpecialistCardType.None);
+    }
+
+    /// <summary>
+    /// Quest requirements nobody verified must say so.
+    /// </summary>
+    /// <remarks>
+    /// The ordering of the unlock chain is real; the level, item and gold figures
+    /// are modelled and unchecked. Presenting them as verified would turn plausible
+    /// numbers into apparent facts.
+    /// </remarks>
+    private static bool TestProvisionalDataIsDeclared()
+    {
+        var engine = new ProgressionEngineV2(new KnowledgeBaseManager());
+        QuestDependencyNode? sp8 = engine.GetQuest("SP8_QUEST_UNLOCK");
+
+        return sp8 is not null
+               && sp8.Provenance == QuestDataProvenance.Provisional
+               && engine.UnverifiedQuestIds.Contains("SP8_QUEST_UNLOCK")
+               && engine.UnverifiedQuestIds.Count > 0;
     }
 
     private static bool TestSpecialistCardUnlockPipeline()
