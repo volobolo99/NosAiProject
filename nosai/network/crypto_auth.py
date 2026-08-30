@@ -56,16 +56,27 @@ class NosAiCryptoAuthManager:
     def verify_phone_signature(
         self, b64_signature: str, original_challenge_hex: Optional[str] = None
     ) -> bool:
-        """Verify RSA PKCS#1 v1.5 + SHA-256 and consume the challenge exactly once."""
-        challenge = (
-            bytes.fromhex(original_challenge_hex)
-            if original_challenge_hex is not None
-            else self._last_generated_challenge
-        )
+        """Verify RSA PKCS#1 v1.5 + SHA-256 and consume the challenge exactly once.
+
+        ``original_challenge_hex`` may only confirm the challenge that is
+        currently pending. It can never designate a different or an already
+        consumed challenge, otherwise a captured signature could be replayed
+        indefinitely by supplying its challenge explicitly.
+        """
         # Consume first: SUCCESS, malformed input and FAIL must all invalidate it.
+        challenge = self._last_generated_challenge
         self._last_generated_challenge = None
         if challenge is None or len(challenge) != self.CHALLENGE_BYTES:
             return False
+
+        if original_challenge_hex is not None:
+            try:
+                supplied = bytes.fromhex(original_challenge_hex)
+            except (ValueError, TypeError):
+                return False
+            if not secrets.compare_digest(supplied, challenge):
+                return False
+
         try:
             signature = base64.b64decode(b64_signature.encode("ascii"), validate=True)
             self._load_public_key().verify(
