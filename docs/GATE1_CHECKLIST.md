@@ -40,7 +40,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | End-to-end | PC ↔ smartphone | [ ] | richiede Guard AI reale |
 | End-to-end | Runtime ↔ dashboard | [x] locale | `/api/gate1` + dashboard classificata |
 | End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
-| Governance | Nessuna regressione bloccante | [ ] | `pytest` e `--gate1-test` verdi; `NosAi.Runtime.Tests` **non eseguito** su questa macchina (Application Control blocca l'assembly, `0x800711C7`), quindi la copertura xunit non è ancora evidenza |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 81, `--gate1-test` 14/14, `--host-test` 7/7, `NosAi.Runtime.Tests` 4/4. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---

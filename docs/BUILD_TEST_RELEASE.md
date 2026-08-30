@@ -37,6 +37,16 @@ The Gate 1 in-process suite can also be invoked directly:
 
 ```bash
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate1-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
+```
+
+If a Windows Application Control policy blocks the generated apphost
+(`0x800711C7`, "Un criterio di controllo dell'applicazione ha bloccato il
+file"), run the managed assembly through the shared host instead. The policy
+applies to the `.exe`, not to the DLL:
+
+```bash
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll --gate1-test
 ```
 
 ## 5. Full validation sequence
