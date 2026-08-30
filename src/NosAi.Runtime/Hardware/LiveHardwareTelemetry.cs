@@ -42,8 +42,12 @@ public sealed class LiveHardwareTelemetry
         }
         catch (Exception ex)
         {
-            failure = $"hardware_probe_failed:{ex.GetType().Name}";
+            failure = $"hardware_probe_failed:{ex.GetType().Name}:{ex.Message}";
         }
+
+        // A probe that recovers internally never throws, so without this the real
+        // cause would be dropped and the snapshot would report success.
+        failure ??= (_probe as IHardwareProbeDiagnostics)?.LastFailureReason;
 
         if (fingerprint is null)
         {
@@ -56,35 +60,35 @@ public sealed class LiveHardwareTelemetry
 
         var systemRam = fingerprint.RamMb > 0
             ? ClassifiedValue<long>.Live(fingerprint.RamMb, now)
-            : ClassifiedValue<long>.Unknown("system_ram_not_reported");
+            : ClassifiedValue<long>.Unknown(failure ?? "system_ram_not_reported");
 
         var gpuMemory = fingerprint.GpuMemoryMb > 0
             ? ClassifiedValue<long>.Live(fingerprint.GpuMemoryMb, now)
-            : ClassifiedValue<long>.Unknown("gpu_memory_not_reported");
+            : ClassifiedValue<long>.Unknown(failure ?? "gpu_memory_not_reported");
 
         var refresh = fingerprint.DisplayRefreshHz > 0
             ? ClassifiedValue<int>.Live(fingerprint.DisplayRefreshHz, now)
-            : ClassifiedValue<int>.Unknown("display_refresh_not_reported");
+            : ClassifiedValue<int>.Unknown(failure ?? "display_refresh_not_reported");
 
-        var cpuUnknown = IsUnknownLabel(fingerprint.Cpu);
-        var gpuUnknown = IsUnknownLabel(fingerprint.Gpu);
+        var cpuUnknown = !NonEmpty(fingerprint.Cpu);
+        var gpuUnknown = !NonEmpty(fingerprint.Gpu);
 
         var view = new Gate1HardwareView(
             Platform: NonEmpty(fingerprint.Platform)
                 ? ClassifiedValue<string>.Live(fingerprint.Platform, now)
                 : ClassifiedValue<string>.Unknown("platform_not_reported"),
-            Cpu: cpuUnknown ? ClassifiedValue<string>.Unknown("cpu_not_reported") : ClassifiedValue<string>.Live(fingerprint.Cpu, now),
+            Cpu: cpuUnknown ? ClassifiedValue<string>.Unknown(failure ?? "cpu_not_reported") : ClassifiedValue<string>.Live(fingerprint.Cpu, now),
             LogicalCores: cores,
             ProcessWorkingSetMb: processRam,
             SystemRamMb: systemRam,
-            Gpu: gpuUnknown ? ClassifiedValue<string>.Unknown("gpu_not_reported") : ClassifiedValue<string>.Live(fingerprint.Gpu, now),
+            Gpu: gpuUnknown ? ClassifiedValue<string>.Unknown(failure ?? "gpu_not_reported") : ClassifiedValue<string>.Live(fingerprint.Gpu, now),
             GpuMemoryMb: gpuMemory,
             DisplayRefreshHz: refresh,
             OsVersion: NonEmpty(fingerprint.OsVersion)
                 ? ClassifiedValue<string>.Live(fingerprint.OsVersion, now)
                 : ClassifiedValue<string>.Unknown("os_version_not_reported"));
 
-        return new ClassifiedHardwareSnapshot(view, fingerprint, null);
+        return new ClassifiedHardwareSnapshot(view, fingerprint, failure);
     }
 
     private static ClassifiedHardwareSnapshot BuildUnknown(DateTime now, ClassifiedValue<long> processRam, string reason)
@@ -102,10 +106,6 @@ public sealed class LiveHardwareTelemetry
         return new ClassifiedHardwareSnapshot(view, null, reason);
     }
 
-    private static bool IsUnknownLabel(string? value)
-        => string.IsNullOrWhiteSpace(value)
-           || value.Contains("Unknown", StringComparison.OrdinalIgnoreCase);
-
     private static bool NonEmpty(string? value) => !string.IsNullOrWhiteSpace(value);
 }
 
@@ -115,16 +115,16 @@ public sealed class FallbackHardwareProbe : IHardwareProbe
     public HardwareFingerprint Detect()
         => new(
             Environment.OSVersion.Platform.ToString(),
-            "Unknown CPU",
+            string.Empty,
             Environment.ProcessorCount,
             0,
-            "Unknown GPU",
+            string.Empty,
             0,
             0,
             Environment.OSVersion.VersionString);
 }
 
-public sealed class SafeHardwareProbe : IHardwareProbe
+public sealed class SafeHardwareProbe : IHardwareProbe, IHardwareProbeDiagnostics
 {
     private readonly IHardwareProbe _inner;
 
@@ -133,14 +133,22 @@ public sealed class SafeHardwareProbe : IHardwareProbe
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
     }
 
+    /// <inheritdoc />
+    public string? LastFailureReason { get; private set; }
+
     public HardwareFingerprint Detect()
     {
         try
         {
-            return _inner.Detect();
+            var fingerprint = _inner.Detect();
+            LastFailureReason = null;
+            return fingerprint;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Recovering silently would erase why the real probe failed, leaving
+            // the snapshot indistinguishable from a probe that simply found nothing.
+            LastFailureReason = $"hardware_probe_failed:{ex.GetType().Name}:{ex.Message}";
             return new FallbackHardwareProbe().Detect();
         }
     }

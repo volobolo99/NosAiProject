@@ -60,26 +60,48 @@ public sealed class RealClientConnector : IAsyncDisposable
     public IntPtr GameWindowHandle => _gameWindowHandle;
 
     /// <summary>
-    /// Re-observes the previously attached process. If it has exited, the
-    /// connector detaches and records an explicit disconnect instead of keeping
-    /// a stale attached=true snapshot.
+    /// Re-observes the client. A process that has exited is detached instead of
+    /// leaving a stale attached=true snapshot, and whenever nothing is attached
+    /// the scan is retried so a client started after the runtime is still found.
     /// </summary>
     public ClientBaselineSnapshot Observe()
     {
         ThrowIfDisposed();
         _lastObservedAtUtc = DateTime.UtcNow;
 
-        if (_gameProcess is { HasExited: true })
+        if (AttachedProcessHasExited())
         {
             _lastFailureReason = "client_process_exited";
             DetachCurrentProcess();
         }
-        else if (_gameProcess is { HasExited: false } && _gameWindowHandle == IntPtr.Zero && OperatingSystem.IsWindows())
+
+        // Rescan on every unattached observation. Matching only on an already
+        // held process meant a client absent at startup was never picked up
+        // again, because _gameProcess stayed null forever.
+        if (!IsClientAttached && OperatingSystem.IsWindows())
         {
             VerifyAndAttachClient();
         }
 
         return CaptureBaselineSnapshot();
+    }
+
+    /// <summary>
+    /// Whether the attached process is gone. A handle that can no longer answer
+    /// counts as gone: reporting a client we cannot confirm is the unsafe answer.
+    /// </summary>
+    private bool AttachedProcessHasExited()
+    {
+        if (_gameProcess is null)
+            return false;
+        try
+        {
+            return _gameProcess.HasExited;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return true;
+        }
     }
 
     /// <summary>
