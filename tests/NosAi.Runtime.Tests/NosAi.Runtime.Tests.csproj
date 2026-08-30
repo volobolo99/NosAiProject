@@ -20,5 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\NosAi.Runtime\NosAi.Runtime.csproj" />
+    <!-- Both ends of the canonical channel, so the handshake is tested against the
+         real server rather than against a description of it. -->
+    <ProjectReference Include="..\..\src\NosAi.GuardClient\NosAi.GuardClient.csproj" />
   </ItemGroup>
 </Project>

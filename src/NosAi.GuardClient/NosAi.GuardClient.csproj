@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>NosAi.GuardClient</RootNamespace>
+    <AssemblyName>NosAi.GuardClient</AssemblyName>
+    <!-- Plain net8.0, no Windows targeting: this library ships inside the Android
+         Guard AI application, so it must not acquire a desktop-only dependency. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The canonical wire primitives come from the one assembly both ends share.
+         Restating the format here, or compiling a second copy of the source, would
+         let the phone and the runtime drift apart with no build error to say so. -->
+    <ProjectReference Include="..\NosAi.Protocol\NosAi.Protocol.csproj" />
+  </ItemGroup>
+</Project>
