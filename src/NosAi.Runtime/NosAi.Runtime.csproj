@@ -8,9 +8,12 @@
     <RootNamespace>NosAi.Runtime</RootNamespace>
     <AssemblyName>NosAi.Runtime</AssemblyName>
     <UseWPF>false</UseWPF>
+    <!-- Several imported Gate/Host sources still declare their own Main.
+         The runtime entry point is explicit so the build is deterministic. -->
+    <StartupObject>NosAi.Runtime.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="8.0.1" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 </Project>
