@@ -66,6 +66,8 @@ La valutazione corrente è la seguente:
 - Controller Miniland tramite adapter.
 - Framing binario PC↔telefono con `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico del WorldState.
 - Fondazione deployment su storage dedicato e provisioning ADB di Guard AI.
+- Gate 2 completo a livello di codice: WorldStateSnapshot immutabile con stato iniziale non osservato, riduzione deterministica delle osservazioni (`WorldModelReducer`: upsert/rimozione entità, scadenza staleness, cambio mappa, campi non osservati preservati), BoundedEventBus con priorità e drain garantito alla chiusura, slimming errori/contesto per VRAM (parità con `nosai/runtime/context_slimming.py`), persistenza SQLite WAL reale (policy centralizzata allineata a `nosai/storage/sqlite_policy.py`, `foreign_keys=ON`), sessioni e traiettorie con vincolo di integrità (parità con `nosai/persistence/sqlite_logger.py`), delta encoding con ricostruzione (`ApplyDelta`), codec binario versionato `G2D` v1 con risparmio banda ≥70% misurato, `DeltaSyncTracker` con resync fail-closed e composizione `Gate2IntegratedEngine`.
+- Suite automatica `Gate2TestRunner` (22 check nominali) integrata nel runtime principale (`--gate2-test`) e agganciata a `NosAi.Runtime.Tests`.
 - Gate 4 integrato a livello di codice: Progression Engine V2, DAG missioni, sblocco SP, Beta-Binomiale, UCB1/MAUT e Knowledge Base.
 - Suite automatica `Gate4TestRunner` integrata nel runtime principale.
 - Gate 5 integrato a livello di codice: Provider Router local-first, Hardware Baseline, storage discovery e Eye AI View.
@@ -164,9 +166,9 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ---
 
-## Nota sui Gate 4 e 5
+## Nota sui Gate 2, 4 e 5
 
-Gate 4 e Gate 5 sono presenti nel repository come blocchi software e relative suite di certificazione invocabili. Non vengono marcati come **Verified** o **Operational** sul piano del progetto complessivo perché il criterio ufficiale richiede prima la validazione operativa del percorso Gate 1 e, per le integrazioni successive, prove pertinenti sul sistema reale.
+Gate 2, Gate 4 e Gate 5 sono presenti nel repository come blocchi software e relative suite di certificazione invocabili. Non vengono marcati come **Verified** o **Operational** sul piano del progetto complessivo perché il criterio ufficiale richiede prima la validazione operativa del percorso Gate 1 e, per le integrazioni successive, prove pertinenti sul sistema reale.
 
 ---
 

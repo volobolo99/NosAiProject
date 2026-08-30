@@ -33,10 +33,11 @@ dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release
 dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj --configuration Release
 ```
 
-The Gate 1 in-process suite can also be invoked directly:
+The gate in-process suites can also be invoked directly:
 
 ```bash
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate1-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate2-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
 ```
 
