@@ -1,7 +1,10 @@
 # Python
 __pycache__/
-build/
-dist/
+# Anchored: setuptools writes these at the repository root only, while an
+# unanchored pattern would also swallow any future build/ or dist/ source
+# directory nested under a package.
+/build/
+/dist/
 *.py[cod]
 *.egg-info/
 .venv/
@@ -11,12 +14,12 @@ venv/
 .ruff_cache/
 
 # Local runtime artifacts
-models/
+/models/
 *.gguf
 *.db
 *.sqlite
 *.sqlite3
-logs/
+/logs/
 # Anchored to the repository root: an unanchored pattern also matches the
 # nosai/telemetry source package and silently hides it from git and tooling.
 /telemetry/
@@ -24,10 +27,13 @@ logs/
 # IDE / OS
 .vscode/
 .idea/
+.cursor/
 .DS_Store
 Thumbs.db
 
-# .NET build artifacts
+# .NET build artifacts.
+# Deliberately NOT anchored: every .csproj directory gets its own bin/ and obj/
+# (e.g. src/NosAi.Runtime/bin), so these must match at any depth.
 bin/
 obj/
 *.user
