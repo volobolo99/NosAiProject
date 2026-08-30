@@ -14,31 +14,71 @@ namespace NosAi.Runtime.Gate1;
 
 public static class Gate1TestRunner
 {
+    /// <summary>
+    /// Runs every Gate 1 check and reports each one by name.
+    /// </summary>
+    /// <remarks>
+    /// Results are accumulated with <c>&amp;=</c> rather than short-circuited, so a
+    /// failing check never hides the ones after it. A test that throws is reported
+    /// as a failure carrying the exception message instead of tearing down the run:
+    /// the whole point is to say which invariant broke, not merely that one did.
+    /// </remarks>
     public static async Task<bool> RunAllAsync()
     {
-        var sync = new[]
-        {
-            TestCanonicalWireHeader(),
-            TestSequenceGuard(),
-            TestRsaChallengeIsSingleUse(),
-            TestMissingClientDoesNotInventGameplay(),
-            TestFailedHardwareProbeIsUnknownNotZero(),
-            TestRecoveredProbeKeepsItsFailureReason(),
-            TestAbsentHardwareLabelsNeedNoSentinelString(),
-            TestSimulatedIsNotATrustedProductionSource(),
-            TestConfigurationRejectsInvalidTimeout()
-        };
+        Console.WriteLine("=== Gate 1 checks ===");
 
-        var asyncResults = new[]
-        {
-            await TestSafetyCompositionIsReadOnlyAsync().ConfigureAwait(false),
-            await TestHeartbeatFailClosedAsync().ConfigureAwait(false),
-            await TestReconnectAfterHeartbeatTimeoutAsync().ConfigureAwait(false),
-            await TestAuthenticatedSessionReceivesClassifiedTelemetryAsync().ConfigureAwait(false),
-            await TestBootstrapWithoutClientIsDegradedAsync().ConfigureAwait(false)
-        };
+        var allPassed = true;
+        allPassed &= Run("Canonical NOSA wire header round-trips", TestCanonicalWireHeader);
+        allPassed &= Run("Sequence guard rejects replayed frames", TestSequenceGuard);
+        allPassed &= Run("RSA challenge is single use", TestRsaChallengeIsSingleUse);
+        allPassed &= Run("Missing client does not invent gameplay", TestMissingClientDoesNotInventGameplay);
+        allPassed &= Run("Failed hardware probe is UNKNOWN, not zero", TestFailedHardwareProbeIsUnknownNotZero);
+        allPassed &= Run("Recovered probe keeps its failure reason", TestRecoveredProbeKeepsItsFailureReason);
+        allPassed &= Run("Absent hardware needs no sentinel string", TestAbsentHardwareLabelsNeedNoSentinelString);
+        allPassed &= Run("SIMULATED is not a trusted production source", TestSimulatedIsNotATrustedProductionSource);
+        allPassed &= Run("Configuration rejects an invalid timeout", TestConfigurationRejectsInvalidTimeout);
 
-        return sync.All(x => x) && asyncResults.All(x => x);
+        allPassed &= await RunAsync("Safety composition stays read-only", TestSafetyCompositionIsReadOnlyAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Heartbeat timeout fails closed", TestHeartbeatFailClosedAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Reconnect accepted after heartbeat timeout", TestReconnectAfterHeartbeatTimeoutAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Authenticated session receives classified telemetry", TestAuthenticatedSessionReceivesClassifiedTelemetryAsync).ConfigureAwait(false);
+        allPassed &= await RunAsync("Bootstrap without a client reports DEGRADED", TestBootstrapWithoutClientIsDegradedAsync).ConfigureAwait(false);
+
+        Console.WriteLine(allPassed
+            ? "=== Gate 1 checks passed. Local only: this is not real-environment verification. ==="
+            : "=== Gate 1 checks FAILED. See the lines marked FAIL above. ===");
+        return allPassed;
+    }
+
+    private static bool Run(string name, Func<bool> check)
+    {
+        try
+        {
+            return Report(name, check(), null);
+        }
+        catch (Exception ex)
+        {
+            return Report(name, false, $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private static async Task<bool> RunAsync(string name, Func<Task<bool>> check)
+    {
+        try
+        {
+            return Report(name, await check().ConfigureAwait(false), null);
+        }
+        catch (Exception ex)
+        {
+            return Report(name, false, $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private static bool Report(string name, bool passed, string? error)
+    {
+        var detail = error is null ? string.Empty : $" [{error}]";
+        Console.WriteLine($"[{(passed ? "PASS" : "FAIL")}] {name}{detail}");
+        return passed;
     }
 
     private static bool TestCanonicalWireHeader()
