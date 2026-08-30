@@ -27,7 +27,9 @@ venv/
 # IDE / OS
 .vscode/
 .idea/
-.cursor/
+# Only the editor-local MCP config. NOT .cursor/ wholesale: .cursor/rules/*.mdc
+# are tracked project rules and the M005 deliverable (SOURCE_OF_TRUTH.md rank 10).
+.cursor/mcp.json
 .DS_Store
 Thumbs.db
 
