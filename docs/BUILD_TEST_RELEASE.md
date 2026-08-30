@@ -41,6 +41,7 @@ dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Rele
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate3-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate4-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate5-test
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate6-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --host-test
 ```
 

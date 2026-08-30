@@ -70,8 +70,10 @@ La valutazione corrente è la seguente:
 - Suite automatica `Gate2TestRunner` (22 check nominali) integrata nel runtime principale (`--gate2-test`) e agganciata a `NosAi.Runtime.Tests`.
 - Gate 4 integrato a livello di codice: Progression Engine V2, DAG missioni, sblocco SP, Beta-Binomiale, UCB1/MAUT e Knowledge Base.
 - Suite automatica `Gate4TestRunner` integrata nel runtime principale.
-- Gate 5 integrato a livello di codice: Provider Router local-first, Hardware Baseline, storage discovery e Eye AI View.
-- Control Center REST loopback e `Gate5IntegratedEngine`/`Gate5TestRunner` integrati nel runtime principale.
+- Gate 5 completo a livello di codice: Provider Router local-first con escalation cloud fail-closed dietro autorizzazione esplicita, provider di inferenza dichiarati SIMULATED (nessuno stub etichettato come inferenza reale), Hardware Baseline con provenienza per campo (LIVE/UNKNOWN, niente valori inventati), storage discovery che riporta onestamente il fallback quando `NOSAI-SSD` è assente, Eye AI View a 3 strati con provenienza per strato (UNKNOWN senza sorgente reale, mai `IsSafetyAuthorized` senza autorizzazione) e Control Center REST loopback con allowlist comandi e enum in forma wire.
+- Suite automatica `Gate5TestRunner` (13 check nominali) integrata nel runtime principale (`--gate5-test`) e agganciata a `NosAi.Runtime.Tests`.
+- Gate 6 completo a livello di codice: check di integrazione sui componenti canonici reali (wire format `NOSA` da NosAi.Protocol al posto della copia divergente `NOS1`, `SessionAuth` RSA-2048 monouso del Gate 1, DAG di progressione del Gate 4, router del Gate 5), ciclo chiuso Plan→Safety→Execute→Verify su `SimulatedGameWorld` esplicito con iniezione di discrepanza e recovery certificati, watchdog termico fail-closed su temperatura sconosciuta, messaggistica onesta (solo evidenza locale, nessuna dichiarazione di rilascio).
+- Suite automatica `Gate6ReleaseCertifier` (14 check nominali) integrata nel runtime principale (`--gate6-test`) e agganciata a `NosAi.Runtime.Tests`.
 - Sottosistema Navigation/Pathfinding presente nel repository con implementazione dedicata.
 - Sottosistema Economy/Inventory presente nel repository con implementazione dedicata.
 
@@ -166,9 +168,9 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ---
 
-## Nota sui Gate 2, 4 e 5
+## Nota sui Gate 2, 4, 5 e 6
 
-Gate 2, Gate 4 e Gate 5 sono presenti nel repository come blocchi software e relative suite di certificazione invocabili. Non vengono marcati come **Verified** o **Operational** sul piano del progetto complessivo perché il criterio ufficiale richiede prima la validazione operativa del percorso Gate 1 e, per le integrazioni successive, prove pertinenti sul sistema reale.
+Gate 2, Gate 4, Gate 5 e Gate 6 sono presenti nel repository come blocchi software e relative suite di certificazione invocabili. Non vengono marcati come **Verified** o **Operational** sul piano del progetto complessivo perché il criterio ufficiale richiede prima la validazione operativa del percorso Gate 1 e, per le integrazioni successive, prove pertinenti sul sistema reale.
 
 ---
 
