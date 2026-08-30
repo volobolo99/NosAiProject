@@ -1,65 +1,62 @@
 # NosAiProject — Master Roadmap
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-08-30
 **Target:** NosAiProject v1.0 — reale, integrato, testato e verificato
 **Repository:** `volobolo99/NosAiProject`
 
----
+## Current verified baseline
 
-## 1. Purpose
+### M001 — Repository audit
+**Status:** `DONE`
 
-This document is the master execution roadmap for NosAiProject. It is the operational source for planning, implementation, testing, integration, release and real-world verification.
+The repository audit identified an existing multi-component implementation spanning Runtime, Gate 1, Live Client Integration, Network/Gateway, Hardware, Storage, Navigation, Miniland, dashboard and tests.
 
-The project is considered **100% complete only when the required functionality is implemented, builds successfully, passes automated tests, passes integration/end-to-end validation, and is verified in the real target environment**.
+### M002 — Architecture baseline
+**Status:** `DONE`
 
-Code volume, number of files, or an agent's claim that a task is complete are not completion criteria.
+The canonical Gate 1 architecture is mapped by `docs/GATE1_COMPONENT_MAP.md`.
 
----
+Critical path:
 
-## 2. Status model
+`PC runtime bootstrap → real client connection → minimum real data acquisition → Guard AI smartphone → coherent dashboard → error/disconnect handling`
+
+Important finding: substantial implementation exists, but several components remain `Partial` or `Integrated/Partial` because real data sources and real end-to-end evidence are not complete. In particular, `RealClientConnector` provides a structured baseline snapshot but is not yet a complete gameplay-data source.
+
+Existing implementation must be classified separately as `Present`, `Integrated`, `DONE`, or `VERIFIED`. File existence never implies `VERIFIED`.
+
+## Status model
 
 | Status | Meaning |
 |---|---|
 | `TODO` | Not started |
 | `IN_PROGRESS` | Active implementation |
-| `BLOCKED` | Waiting for a dependency, environment or decision |
+| `BLOCKED` | Waiting for dependency/environment/decision |
 | `DONE` | Implemented and locally validated |
 | `VERIFIED` | Integrated and verified against acceptance criteria |
-| `DEFERRED` | Explicitly postponed from the current release |
+| `DEFERRED` | Explicitly postponed |
 
-### Completion rule
-
-A milestone may move to `VERIFIED` only when its acceptance criteria and required tests are satisfied.
-
----
-
-## 3. Engineering gates
+## Engineering gates
 
 Every implementation stream follows:
 
 `SPEC → PLAN → IMPLEMENT → BUILD → TEST → INTEGRATE → REVIEW → VERIFY`
 
-No milestone may bypass a failed build or required test without an explicit documented exception.
-
-### AI-agent safety rules
+AI-agent rules:
 
 - Do not silently change public APIs or protocols.
 - Do not remove or weaken tests to make a build pass.
 - Do not introduce dependencies without documenting the reason.
-- Do not change security boundaries without updating the relevant specification.
+- Do not change security boundaries without updating the specification.
 - Prefer small, reviewable commits.
-- Stop and report architectural contradictions instead of inventing undocumented behavior.
-- Preserve backward compatibility unless the specification explicitly requires a breaking change.
+- Stop on architectural contradictions instead of inventing undocumented behavior.
+- Preserve compatibility unless a breaking change is explicitly required.
 
----
-
-# 4. Master execution plan
+# Master execution plan
 
 ## Phase 0 — Baseline & AI-agent governance
-
-- [ ] `M001` — Audit repository structure, projects, dependencies, TODOs and obsolete code.
-- [ ] `M002` — Establish canonical architecture and component boundaries.
+- [x] `M001` — Audit repository structure, projects, dependencies, TODOs and obsolete code. **DONE**
+- [x] `M002` — Establish canonical architecture and component boundaries. **DONE**
 - [ ] `M003` — Establish source-of-truth technical specifications and ADRs.
 - [ ] `M004` — Add/validate `CLAUDE.md` for Claude Code.
 - [ ] `M005` — Add/validate Cursor project rules.
@@ -68,10 +65,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G0:** repository is understandable, buildable and safe for agent-assisted development.
 
----
-
 ## Phase 1 — Core Foundation
-
 - [ ] `M010` — Consolidate solution/project structure.
 - [ ] `M011` — Central configuration and environment validation.
 - [ ] `M012` — Structured logging and correlation identifiers.
@@ -81,10 +75,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G1:** core services compile and can be tested independently.
 
----
-
 ## Phase 2 — Security & Identity
-
 - [ ] `M020` — Complete RSA/key-management verification.
 - [ ] `M021` — Secure key storage and lifecycle.
 - [ ] `M022` — Onboarding/enrollment flow.
@@ -96,10 +87,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G2:** security-sensitive operations cannot be bypassed through normal application paths.
 
----
-
 ## Phase 3 — Runtime
-
 - [ ] `M030` — Complete Runtime Gate 1 implementation.
 - [ ] `M031` — Runtime startup/initialization lifecycle.
 - [ ] `M032` — Runtime shutdown lifecycle.
@@ -109,10 +97,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G3:** runtime state transitions are deterministic, observable and recoverable.
 
----
-
 ## Phase 4 — Real Client Integration
-
 - [ ] `M040` — Complete `RealClientConnector`.
 - [ ] `M041` — Target process discovery and validation.
 - [ ] `M042` — Window/session detection.
@@ -122,12 +107,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M046` — Failure and timeout handling.
 - [ ] `M047` — Real-environment integration tests.
 
-**Gate G4:** client integration is verified against the actual supported environment, not only mocks.
-
----
+**Gate G4:** client integration is verified against the actual supported environment.
 
 ## Phase 5 — Network Layer
-
 - [ ] `M050` — Network abstraction and transport boundaries.
 - [ ] `M051` — Protocol implementation.
 - [ ] `M052` — Message framing.
@@ -140,10 +122,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G5:** authenticated end-to-end communication works reliably under expected failure conditions.
 
----
-
 ## Phase 6 — Control Panel Gateway
-
 - [ ] `M060` — Gateway architecture.
 - [ ] `M061` — API endpoint contracts.
 - [ ] `M062` — Authentication middleware.
@@ -154,12 +133,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M067` — Rate limiting and abuse controls.
 - [ ] `M068` — Audit logging.
 
-**Gate G6:** Control Panel ↔ Gateway ↔ Runtime works end-to-end with security controls enforced.
-
----
+**Gate G6:** Control Panel ↔ Gateway ↔ Runtime works end-to-end.
 
 ## Phase 7 — Event System
-
 - [ ] `M070` — Canonical event model.
 - [ ] `M071` — Event bus.
 - [ ] `M072` — Event routing.
@@ -169,12 +145,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M076` — Replay/recovery semantics.
 - [ ] `M077` — Telemetry integration.
 
-**Gate G7:** component-to-component events are defined, observable and reliably delivered according to contract.
-
----
+**Gate G7:** component-to-component events are defined, observable and reliable.
 
 ## Phase 8 — Hardware Profiler
-
 - [ ] `M080` — Hardware discovery.
 - [ ] `M081` — CPU/RAM/GPU metrics.
 - [ ] `M082` — Storage metrics.
@@ -184,12 +157,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M086` — Continuous monitoring.
 - [ ] `M087` — Resource/performance validation.
 
-**Gate G8:** hardware profile is reliable and consumable by supported NosAi components.
-
----
+**Gate G8:** hardware profile is reliable and consumable by supported components.
 
 ## Phase 9 — Control Panel UI
-
 - [ ] `M090` — Dashboard shell.
 - [ ] `M091` — System status.
 - [ ] `M092` — Runtime status.
@@ -200,12 +170,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M097` — Configuration.
 - [ ] `M098` — Error/recovery UX.
 
-**Gate G9:** an operator can understand system state and perform supported operations without direct code access.
-
----
+**Gate G9:** operator can understand system state and perform supported operations without direct code access.
 
 ## Phase 10 — Mobile App
-
 - [ ] `M100` — Mobile architecture and API boundary.
 - [ ] `M101` — Authentication.
 - [ ] `M102` — Device pairing/onboarding.
@@ -219,12 +186,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M110` — Android release build.
 - [ ] `M111` — iOS release build, if included in scope.
 
-**Gate G10:** supported smartphone client connects to the real backend and behaves correctly across reconnect/failure scenarios.
-
----
+**Gate G10:** supported smartphone client connects to the real backend and survives reconnect/failure scenarios.
 
 ## Phase 11 — Automated Testing
-
 - [ ] `M120` — Unit-test coverage for critical logic.
 - [ ] `M121` — Integration tests.
 - [ ] `M122` — Network tests.
@@ -239,12 +203,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M131` — Regression suite.
 - [ ] `M132` — Automated CI test pipeline.
 
-**Gate G11:** all critical paths are covered by repeatable automated verification.
-
----
+**Gate G11:** critical paths have repeatable automated verification.
 
 ## Phase 12 — Observability & Operations
-
 - [ ] `M140` — Metrics.
 - [ ] `M141` — Structured logs.
 - [ ] `M142` — Distributed tracing where applicable.
@@ -254,12 +215,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M146` — Performance/resource monitoring.
 - [ ] `M147` — Operational alerts.
 
-**Gate G12:** failures can be diagnosed from telemetry without relying on ad-hoc debugging.
-
----
+**Gate G12:** failures can be diagnosed from telemetry.
 
 ## Phase 13 — Deployment & Release Engineering
-
 - [ ] `M150` — Reproducible build pipeline.
 - [ ] `M151` — Semantic/versioned release strategy.
 - [ ] `M152` — Release artifacts.
@@ -270,12 +228,9 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M157` — Backup/recovery procedure.
 - [ ] `M158` — Production configuration validation.
 
-**Gate G13:** a clean environment can be provisioned and upgraded using documented, repeatable steps.
-
----
+**Gate G13:** clean environment can be provisioned and upgraded repeatably.
 
 ## Phase 14 — Final Security & Reliability Audit
-
 - [ ] `M160` — Threat model review.
 - [ ] `M161` — Attack-surface review.
 - [ ] `M162` — Authentication review.
@@ -289,10 +244,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G14:** release candidate passes security and reliability acceptance criteria.
 
----
-
 ## Phase 15 — Real-World Validation
-
 - [ ] `M170` — Install on clean target environment.
 - [ ] `M171` — Cold-start validation.
 - [ ] `M172` — Real onboarding.
@@ -311,10 +263,7 @@ No milestone may bypass a failed build or required test without an explicit docu
 
 **Gate G15:** all critical workflows operate correctly in the real supported environment.
 
----
-
 ## Phase 16 — v1.0 Release
-
 - [ ] `M190` — Feature freeze.
 - [ ] `M191` — Final bug-fix cycle.
 - [ ] `M192` — Full regression.
@@ -326,112 +275,66 @@ No milestone may bypass a failed build or required test without an explicit docu
 - [ ] `M198` — Version/tag creation.
 - [ ] `M199` — NosAiProject v1.0 release.
 
-**Gate G16:** release is reproducible, documented and accepted as production-ready for the declared v1.0 scope.
+**Gate G16:** release is reproducible, documented and accepted for the declared v1.0 scope.
 
----
+# Definition of Done
 
-# 5. Definition of Done
+A milestone is `DONE` only if implementation is complete, code compiles, relevant tests pass, no known regression is introduced, required documentation/contracts are updated, and the change is traceable in Git.
 
-A milestone is `DONE` only if:
+A milestone is `VERIFIED` only if integration/end-to-end acceptance passes and, where applicable, real-environment validation and security/operational requirements are satisfied with evidence recorded in the associated issue/PR/documentation.
 
-1. implementation is complete;
-2. code compiles;
-3. relevant automated tests pass;
-4. no known regression is introduced;
-5. documentation/contracts are updated where required;
-6. the change is reviewable and traceable in Git.
-
-A milestone is `VERIFIED` only if, in addition:
-
-7. integration/end-to-end acceptance criteria pass;
-8. real-environment validation is complete when applicable;
-9. security and operational requirements are satisfied;
-10. evidence of verification is recorded in the associated issue/PR or project documentation.
-
----
-
-# 6. Dependency strategy
-
-The phases are intentionally ordered to minimize rework:
+# Dependency strategy
 
 `Foundation → Security → Runtime → Client/Network → Gateway/Events → Hardware → UI → Mobile → Testing → Operations → Deployment → Audit → Real Validation → Release`
 
-Parallel implementation is allowed only where dependency boundaries are explicit and contracts are stable.
+Parallel work is allowed only when dependency boundaries and contracts are stable.
 
----
+# AI development workflow
 
-# 7. AI development workflow
+For each task: read specification and existing implementation; identify dependencies; produce a plan; implement the smallest coherent change; add/update tests; build; run diagnostics; inspect the diff; update contracts/docs; report blockers instead of inventing undocumented architecture.
 
-Cursor and Claude Code may be used as implementation agents, but the repository specification remains authoritative.
+Recommended prompt:
 
-For each task:
+> Implement milestone `<ID>` from `NOSAI_MASTER_ROADMAP.md`. First inspect the repository and relevant specification. Do not change public APIs or protocols unless explicitly required. Implement the smallest coherent change, add/update tests, build affected projects, run relevant tests, and report exact files changed, verification results, remaining risks and blockers.
 
-1. Read the relevant specification and existing implementation.
-2. Identify dependencies and affected files.
-3. Produce a concise implementation plan.
-4. Implement the smallest coherent change.
-5. Add/update tests.
-6. Build the affected solution.
-7. Run relevant tests and diagnostics.
-8. Review the diff for accidental changes.
-9. Update documentation/contracts if behavior changed.
-10. Report blockers rather than making undocumented architectural decisions.
+# Progress tracking
 
-Recommended task prompt pattern:
+| Phase | Milestones | Done | Verified | Status |
+|---|---:|---:|---:|---|
+| 0 — Baseline & Governance | 7 | 2 | 0 | `IN_PROGRESS` |
+| 1 — Core Foundation | 6 | 0 | 0 | `TODO` |
+| 2 — Security & Identity | 8 | 0 | 0 | `TODO` |
+| 3 — Runtime | 6 | 0 | 0 | `TODO` |
+| 4 — Client Integration | 8 | 0 | 0 | `TODO` |
+| 5 — Network | 9 | 0 | 0 | `TODO` |
+| 6 — Gateway | 9 | 0 | 0 | `TODO` |
+| 7 — Events | 8 | 0 | 0 | `TODO` |
+| 8 — Hardware | 8 | 0 | 0 | `TODO` |
+| 9 — Control Panel UI | 9 | 0 | 0 | `TODO` |
+| 10 — Mobile | 12 | 0 | 0 | `TODO` |
+| 11 — Testing | 13 | 0 | 0 | `TODO` |
+| 12 — Observability | 8 | 0 | 0 | `TODO` |
+| 13 — Deployment | 9 | 0 | 0 | `TODO` |
+| 14 — Security Audit | 10 | 0 | 0 | `TODO` |
+| 15 — Real Validation | 15 | 0 | 0 | `TODO` |
+| 16 — v1.0 Release | 10 | 0 | 0 | `TODO` |
 
-> Implement milestone `<ID>` from `NOSAI_MASTER_ROADMAP.md`. First inspect the repository and the relevant specification. Do not change public APIs or protocols unless explicitly required. Implement the smallest coherent change, add/update tests, build the affected projects, run the relevant test suite, and report the exact files changed, verification results, remaining risks and blockers.
+**Overall completion:** `TBD` — implementation count is not a valid product-completion percentage.
 
----
+# Next execution priority
 
-# 8. Progress tracking
+1. `M003` — source-of-truth technical specifications and ADRs;
+2. `M004` — `CLAUDE.md`;
+3. `M005` — Cursor rules;
+4. `M006` — Git workflow;
+5. `M007` — reproducible build/test/release commands;
+6. execute the Gate 1 critical path with real-environment evidence;
+7. promote milestones to `VERIFIED` only after evidence.
 
-Current status is intentionally initialized as `TODO` until verified against the current repository state.
+# Change log
 
-| Phase | Milestones | Status |
-|---|---:|---|
-| 0 — Baseline & Governance | 7 | `TODO` |
-| 1 — Core Foundation | 6 | `TODO` |
-| 2 — Security & Identity | 8 | `TODO` |
-| 3 — Runtime | 6 | `TODO` |
-| 4 — Client Integration | 8 | `TODO` |
-| 5 — Network | 9 | `TODO` |
-| 6 — Gateway | 9 | `TODO` |
-| 7 — Events | 8 | `TODO` |
-| 8 — Hardware | 8 | `TODO` |
-| 9 — Control Panel UI | 9 | `TODO` |
-| 10 — Mobile | 12 | `TODO` |
-| 11 — Testing | 13 | `TODO` |
-| 12 — Observability | 8 | `TODO` |
-| 13 — Deployment | 9 | `TODO` |
-| 14 — Security Audit | 10 | `TODO` |
-| 15 — Real Validation | 15 | `TODO` |
-| 16 — v1.0 Release | 10 | `TODO` |
-
-**Overall completion:** `TBD` — baseline verification must be performed before assigning a percentage.
-
----
-
-# 9. Next execution priority
-
-The first execution sequence after adding this roadmap is:
-
-1. `M001` — repository audit;
-2. `M002` — architecture baseline;
-3. `M003` — source-of-truth specifications;
-4. `M004`/`M005` — Claude Code + Cursor governance;
-5. establish the verified baseline status of all existing components;
-6. select the first implementation milestone based on actual dependency state.
-
-**Important:** existing code must be classified as `DONE` or `VERIFIED` only after inspection and evidence. Previous implementation work is not automatically considered complete merely because files exist.
-
----
-
-## 10. Change log
-
-### 2026-08-30 — v1.0
-
-- Created the master 0% → 100% execution roadmap.
-- Added milestone IDs and status model.
-- Added engineering gates and Definition of Done.
-- Added AI-agent governance for Cursor and Claude Code.
-- Added explicit real-world verification and release gates.
+### 2026-08-30 — v1.1
+- Marked M001 repository audit `DONE`.
+- Marked M002 architecture baseline `DONE` using repository inspection and `docs/GATE1_COMPONENT_MAP.md`.
+- Added architectural baseline and explicit distinction between implementation and verification.
+- Updated progress tracking and execution priority.
