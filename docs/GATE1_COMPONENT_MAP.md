@@ -26,7 +26,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | Componente | File principali | Maturità | Usa dati reali? | Test esiste? | Blocco principale |
 |---|---|---|---|---|---|
 | **Bootstrap runtime** | `src/NosAi.Runtime/Program.cs`, `Gate1/Gate1BootstrapHost.cs` | **Integrated** | **Parziale** | **Sì** | avvio locale coperto; manca evidenza completa sul PC di produzione |
-| **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Integrated** | **Parziale** | **Sì** | auth/heartbeat/riconnessione locali coperti; manca sessione su dispositivo reale |
+| **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Protocol/WireProtocol.cs`, `SessionTranscript.cs`, `SessionCipher.cs`, `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Verified** su v2 (autenticazione e sessione); **Integrated** su v3 | **Sì** | **Sì** | v2 mutuo chiuso su dispositivo reale USB e Wi-Fi; v3 aggiunge AEAD sul payload (ADR-0009) ed è provato solo in locale, manca il giro sul telefono |
 | **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs`, `tests/NosAi.Runtime.Tests` | **Integrated** | **No** | **Sì** | copre invarianti locali, non il client NosTale reale |
 | **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs` | **Integrated** | **Parziale** | **Sì** | contratto `gate1.snapshot.v1` con classificazione LIVE/UNKNOWN |
 | **Client connector NosTale** | `src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs` | **Verified** (OS baseline) | **Sì** | **Sì** | validato su NosTale reale (PID 7932, finestra `Nostale`); gameplay HP/mappa ancora UNKNOWN |
@@ -35,7 +35,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | **Perception contracts** | `src/NosAi.Runtime/Perception/PerceptionContracts.cs` | **Present** | **No** | **Parziale** | il contratto esiste ma non basta senza backend produttivo |
 | **Perception null provider** | `src/NosAi.Runtime/Perception/NullPerceptionProvider.cs` | **Partial** | **No** | **Parziale** | è utile come fallback tecnico ma non contribuisce al Gate 1 reale |
 | **World state / world model** | area `src/NosAi.Runtime/WorldModel` | **Integrated** | **Parziale** | **Parziale** | dipende dal completamento delle sorgenti reali di input |
-| **Guard AI smartphone** | area `src/NosAi.Runtime/Guard` + `Gate1Runtime.cs` | **Partial** | **Parziale** | **Parziale** | handshake locale coperto; manca prova sul dispositivo reale |
+| **Guard AI smartphone** | `src/NosAi.GuardAi.App`, `src/NosAi.GuardClient`, area `src/NosAi.Runtime/Guard` + `Gate1Runtime.cs` | **Integrated** | **Sì** | **Sì** | eseguita su Android fisico: si abbina, si autentica in modo mutuo e mostra lo snapshot reale; la chiave del dispositivo non è in Key Store |
 | **Control center HTTP** | `Gate1OperatorServer`, `Host/NosAiMasterRuntimeHost.cs` | **Integrated** | **Parziale** | **Sì** | `/api/gate1` classificato; Host legacy non inventa più gold/mostri |
 | **Gateway eventi dashboard** | `src/NosAi.Runtime/Network/Gateway/ControlPanelGatewayEngine.cs` | **Integrated** | **No / misto** | **Sì** | l'infrastruttura esiste ma non dimostra ancora stream di dati reali del runtime |
 | **Safety / trust boundary** | `src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs`, `src/NosAi.Runtime/Contracts/RuntimeContracts.cs` | **Integrated** | **Parziale** | **Parziale** | necessita verifica con segnali reali e casi negativi reali |

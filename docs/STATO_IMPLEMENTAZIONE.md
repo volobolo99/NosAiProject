@@ -65,6 +65,7 @@ La valutazione corrente è la seguente:
 - Persistenza SQLite iniziale per sessioni/traiettorie.
 - Controller Miniland tramite adapter.
 - Framing binario PC↔telefono con `MAGIC/VERSION/TYPE/PAYLOAD_LEN/SEQ`, `SequenceGuard` e delta encoding deterministico del WorldState.
+- Canale Guard con **autenticazione mutua** (wire version 2, ADR-0008): transcript legato alla sessione e al ruolo, prova del runtime (`ServerAuthProof`) verificata dal telefono prima che firmi, versione 1 rifiutata. Contratto condiviso C#/Python, vettori pinnati dai test su entrambi i lati. Eseguito su dispositivo Android fisico su USB e su Wi-Fi: evidenza in `docs/GATE1_CHECKLIST.md`, sezione *Evidenza reale — autenticazione mutua, wire v2*.
 - Fondazione deployment su storage dedicato e provisioning ADB di Guard AI.
 - Gate 2 completo a livello di codice: WorldStateSnapshot immutabile con stato iniziale non osservato, riduzione deterministica delle osservazioni (`WorldModelReducer`: upsert/rimozione entità, scadenza staleness, cambio mappa, campi non osservati preservati), BoundedEventBus con priorità e drain garantito alla chiusura, slimming errori/contesto per VRAM (parità con `nosai/runtime/context_slimming.py`), persistenza SQLite WAL reale (policy centralizzata allineata a `nosai/storage/sqlite_policy.py`, `foreign_keys=ON`), sessioni e traiettorie con vincolo di integrità (parità con `nosai/persistence/sqlite_logger.py`), delta encoding con ricostruzione (`ApplyDelta`), codec binario versionato `G2D` v1 con risparmio banda ≥70% misurato, `DeltaSyncTracker` con resync fail-closed e composizione `Gate2IntegratedEngine`.
 - Suite automatica `Gate2TestRunner` (22 check nominali) integrata nel runtime principale (`--gate2-test`) e agganciata a `NosAi.Runtime.Tests`.
@@ -86,10 +87,9 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 - Collegamento reale NosAi ↔ client NosTale: **OS baseline verificato sul client reale**; gameplay HP/mappa/entità ancora UNKNOWN (manca il provider).
 - Lettura affidabile dei dati di base necessari dal client (OS baseline presente; manca ancora un provider gameplay).
 - Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
-- Avvio e collegamento reale di Guard AI sullo smartphone: l'app Android esiste (`src/NosAi.GuardAi.App`, .NET MAUI su `NosAi.GuardClient`) e compila, ma **non è ancora stata eseguita su un dispositivo fisico** contro il runtime su LAN. La chiave del dispositivo è ancora in memoria e non nell'Android Key Store.
-- Autenticazione e interoperabilità end-to-end PC ↔ smartphone.
-- Heartbeat, STATUS, gestione riconnessione e fail-closed nel trasporto completo.
-- Applicazione della cifratura autenticata al framing PC-Phone nel flusso completo.
+- Custodia delle chiavi: l'identità del runtime sta in `data/`, quella del dispositivo nello storage privato dell'app. Nessuna delle due è nell'Android Key Store o in un equivalente protetto da hardware.
+- Sessioni Guard concorrenti: il canale ne serve **una sola per volta**, quindi su LAN una connessione qualsiasi può occupare lo slot ed escludere il telefono legittimo.
+- Cifratura autenticata (AEAD) del payload di sessione: implementata e verificata in locale (wire v3, ADR-0009), **non ancora provata sul dispositivo fisico**. Il telefono va reinstallato: un APK v2 viene rifiutato all'header, come previsto.
 - Dashboard collegata solo al runtime reale e completa per il livello di sviluppo corrente.
 - Persistenza EventBus, audit/replay durevole e trasporto tra processi.
 - PredictionEvaluator e metriche produttive.
@@ -116,9 +116,9 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 | Componente critico | Maturità attuale | Nota |
 |---|---|---|
 | **Bootstrap runtime PC** | **Integrated** | Avvio e bootstrap esistono, ma manca prova operativa completa sul sistema reale. |
-| **Protocollo/sessione PC ↔ smartphone** | **Integrated** | Fondazione solida visibile a livello di codice, ma non ancora validata end-to-end nel sistema reale. |
+| **Protocollo/sessione PC ↔ smartphone** | **Verified** (autenticazione e sessione) | Wire v2 mutuo validato end-to-end su dispositivo fisico, USB e Wi-Fi. Il payload resta in chiaro. |
 | **Client connector NosTale** | **Verified** (OS baseline) | Validato contro NosTale reale: processo/PID/titolo/handle/responding/visible `LIVE`. Gameplay resta **Partial**: nessun provider. |
-| **Guard AI smartphone** | **Partial** | Fondazioni presenti, integrazione reale da provare sul campo. |
+| **Guard AI smartphone** | **Integrated** | Eseguita su dispositivo fisico: si abbina, si autentica in modo mutuo e riceve lo snapshot reale. Resta **Partial** la custodia della chiave, che non è in Key Store. |
 | **Dashboard / Control Center** | **Partial** | Base tecnica presente, ma va resa coerente esclusivamente con segnali reali. |
 | **Perception / acquisizione dati di gioco** | **Partial** | Contratti e fondazioni presenti; backend produttivi ancora incompleti. |
 | **WorldState reale** | **Integrated** | Struttura presente, ma ancora dipendente dal completamento delle sorgenti reali. |
@@ -134,9 +134,13 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ### Guard AI smartphone
 
+> Il registro autorevole di questi punti, con l'evidenza osservata, è
+> `docs/GATE1_CHECKLIST.md`. Qui sono segnati solo quelli per cui esiste già una
+> prova registrata; gli altri restano aperti finché non ne hanno una.
+
 - [ ] Avvio affidabile.
-- [ ] Connessione a NosAi sul PC.
-- [ ] Autenticazione della sessione.
+- [x] Connessione a NosAi sul PC. *(USB e Wi-Fi, indirizzo trovato per discovery.)*
+- [x] Autenticazione della sessione. *(Mutua, wire v2: il telefono verifica il runtime prima di firmare.)*
 - [ ] Scambio HELLO / CAPABILITIES / HEARTBEAT / STATUS.
 - [ ] Ricezione dei primi dati di base.
 - [ ] Verifica integrità, provenienza e freschezza.

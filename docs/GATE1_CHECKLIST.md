@@ -29,6 +29,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Guard AI smartphone | Avvio affidabile | [x] **reale** | APK installato e avviato su dispositivo Android `9125322104AC`; UI operativa |
 | Guard AI smartphone | Connessione reale | [x] **reale via Wi-Fi** | sessione autenticata su LAN, cavo USB staccato e tunnel rimosso; runtime trovato per discovery, nessun indirizzo inserito |
 | Guard AI smartphone | Autenticazione reale | [x] **reale, mutua** | wire v2: il telefono verifica la prova del runtime prima di firmare; `authenticated=True [LIVE]` su USB e su Wi-Fi |
+| Guard AI smartphone | Riservatezza del payload | [x] locale | wire v3 (ADR-0009): AES-256-GCM su chiavi effimere P-256 legate alle firme dell'handshake. Verificato contro il processo runtime reale, **non ancora sul telefono** |
 | Guard AI smartphone | Heartbeat reale | [x] **reale** | `lastHeartbeatUtc` aggiornato dal dispositivo fisico; silenzio > 2s → sessione chiusa |
 | Guard AI smartphone | Riconnessione controllata | [x] **reale** | app terminata → sessione caduta fail-closed; riavvio → **nuovo** sessionId `2730cc13…` (era `eb78f421…`) |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
@@ -40,7 +41,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | End-to-end | PC ↔ smartphone | [x] **reale via Wi-Fi** | NosTale reale → runtime → telefono su LAN senza USB: `authenticated=True`, heartbeat in avanzamento, `NostaleClientX [LIVE]` |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] **reale** | ciclo completo su dispositivo fisico: connesso → ucciso → fail-closed → riconnesso con nuova sessione |
-| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 87; `--gate1-test` 19/19; `--host-test` 7/7; `NosAi.Runtime.Tests` 5/5. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 159; `NosAi.Runtime.Tests` 93; 18 suite del runtime verdi. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---
@@ -183,8 +184,10 @@ Cosa prova: il circuito completo su rete reale, senza cavo e senza configurazion
 da parte dell'operatore.
 
 Cosa **non** prova: nessuna cifratura del payload; nessuna lettura di memoria di gioco.
-L'autenticazione mutua del canale (ADR-0008) è nel codice; il circuito Wi-Fi
-documentato sopra è stato chiuso su wire version 1 e va ripetuto dopo il re-pair.
+Il circuito Wi-Fi documentato sopra è stato chiuso su wire version 1, quando il
+runtime non era ancora autenticato verso il telefono. È stato ripetuto dopo il
+re-pair sul protocollo versione 2: vedi la sezione seguente, che è la prova
+autorevole e sostituisce questa quanto ad autenticazione.
 
 ## Evidenza reale — autenticazione mutua, wire v2 (2026-08-30)
 
@@ -237,7 +240,43 @@ verificato la prova del runtime prima di firmare, e il runtime ha verificato il
 telefono — nessuno dei due ha creduto all'altro sulla parola.
 
 Cosa **non** prova: nessuna cifratura del payload; nessuna lettura di memoria di
-gioco; nessun input o injection.
+gioco; nessun input o injection. La cifratura è arrivata dopo, con wire version 3,
+ed è documentata nella sezione seguente: **quel giro non è stato ripetuto sul
+telefono**, e questa evidenza non lo copre.
+
+## Verifica locale — cifratura del payload, wire v3 (2026-08-30)
+
+Non è evidenza su dispositivo reale, ed è segnata come locale apposta. È però
+più di un test unitario: il client di riferimento Python parla con il **processo
+runtime reale** su un socket reale, e la prova guarda i byte sul filo invece di
+fidarsi di quello che il client dichiara.
+
+```
+tests/test_guard_client_conformance.py::test_the_snapshot_is_not_readable_on_the_wire
+  frame TelemetrySnapshot catturato prima dell'apertura:
+    "contractVersion"  assente dal ciphertext
+    "gate1.snapshot"   assente
+    "UNKNOWN"          assente
+    nonce iniziale     000000000000000000000000  (contatore a zero)
+  lo snapshot aperto:  contractVersion = gate1.snapshot.v1
+```
+
+Parità fra i due linguaggi, pinnata da vettori identici sui due lati:
+
+```
+transcript client  C21C431996795F1008869B2F2F404788065FEBB2B4D540EBA6E10586EB81DCCB
+transcript server  4FA15241CCA7785A61BA9ADA88CD5C6C6C3330BDA4B9C7160D6F50E8F6E59047
+binding chiavi     EEA2EFAC25055CB73768C2C38E4150E682441F83A2D9EDF8056FEC37078DD397
+frame golden       sigillato in Python, aperto in C# byte per byte
+```
+
+Cosa prova: il payload è cifrato davvero, l'header resta leggibile ma
+autenticato (riscriverne il tipo fa fallire il tag), le due direzioni non
+condividono chiave, un nonce fuori ordine è rifiutato, e C# e Python producono
+gli stessi byte.
+
+Cosa **non** prova: niente sul dispositivo fisico. L'APK va reinstallato — la
+copia v2 sul telefono viene rifiutata all'header, che è il comportamento voluto.
 
 ---
 
@@ -286,26 +325,39 @@ Il Gate 1 è superato solo se:
 
 **Stato: tutti e sette i criteri sono soddisfatti con evidenza reale.**
 
-Il criterio 3 è chiuso **su rete Wi-Fi**, non solo su USB: la sessione è stata
-completata con il cavo staccato e il tunnel `adb reverse` rimosso, con il runtime
-trovato per discovery e nessun indirizzo inserito a mano (vedi *Evidenza reale —
-Wi-Fi*).
+Il criterio 3 è chiuso **su rete Wi-Fi e con autenticazione mutua**, non solo su
+USB: la sessione è stata completata con il tunnel `adb reverse` rimosso e il
+loopback dal telefono rifiutato, con il runtime trovato per discovery e nessun
+indirizzo inserito a mano (vedi *Evidenza reale — Wi-Fi* per il circuito e
+*Evidenza reale — autenticazione mutua, wire v2* per la ripetizione su wire v2,
+che è la prova autorevole).
+
+Quello che era il primo limite di questa lista — **il runtime non autenticato
+verso il telefono** — è chiuso. L'handshake wire version 2 (ADR-0008) è mutuo: il
+telefono verifica la prova del runtime prima di firmare, la versione 1 è
+rifiutata, e il circuito è stato verificato su dispositivo reale sia su USB sia su
+Wi-Fi (vedi *Evidenza reale — autenticazione mutua, wire v2*). Cade con esso la
+riserva di ADR-0007 sull'uso del Wi-Fi solo su rete controllata.
 
 Restano tre limiti dichiarati. **Nessuno blocca il Gate 1**, ma vanno chiusi prima
-di parlare di esercizio continuativo, e il primo prima di usare il Wi-Fi su una
-rete non controllata:
+di parlare di esercizio continuativo:
 
-1. **Il runtime non è autenticato verso il telefono.** Il canale prova il telefono
-   al PC, non il contrario: su una rete ostile un host può rispondere per primo
-   alla discovery e presentarsi come runtime, alimentando il telefono con stato
-   inventato o raccogliendo firme su challenge scelte da lui. Vedi ADR-0007.
+1. **Il payload è cifrato nel codice, ma non ancora provato sul telefono.**
+   Wire version 3 ([ADR-0009](adr/ADR-0009-session-payload-encryption.md)) sigilla
+   ogni frame dopo l'handshake con AES-256-GCM, sotto chiavi effimere P-256 che le
+   firme dell'handshake autenticano. È verificato in locale contro il processo
+   runtime reale — la telemetria sul filo non contiene più il testo dello snapshot
+   — ma il circuito **non è stato ripetuto sul dispositivo fisico**, che va
+   reinstallato: un APK v2 viene rifiutato all'header, come previsto.
+   Restano visibili dimensione e cadenza dei frame.
 2. **Il canale serve una sola sessione per volta**, quindi su LAN chiunque apra
    una connessione può occupare lo slot ed escludere il telefono legittimo.
-3. **Il payload non è cifrato**, e la chiave del dispositivo è in storage privato
-   dell'app, non nell'Android Key Store.
-
-Il punto 1 richiede autenticazione mutua nell'handshake, che modifica il contratto
-di wire e supera in parte ADR-0006. Non è stato fatto qui.
+3. **Le chiavi stanno in file, non in un Key Store.** L'identità del runtime è in
+   `data/`, quella del dispositivo nello storage privato dell'app: nessuna delle
+   due è protetta da hardware, e chi sa leggere il filesystem le ottiene. Le
+   chiavi di sessione ora sono effimere, quindi la perdita di un file di chiave
+   non svela più il traffico registrato — ma le chiavi di identità restano
+   esposte.
 
 ---
 

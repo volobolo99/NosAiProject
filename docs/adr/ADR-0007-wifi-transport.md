@@ -3,7 +3,8 @@
 **Status:** Accepted
 **Date:** 2026-08-30
 **Builds on:** [ADR-0006](ADR-0006-canonical-phone-channel.md)
-**Amended by:** [ADR-0008](ADR-0008-mutual-handshake.md) — closes consequence 1
+**Amended by:** [ADR-0008](ADR-0008-mutual-handshake.md) — closes consequence 1;
+[ADR-0009](ADR-0009-session-payload-encryption.md) — closes consequence 3
 
 ## Context
 

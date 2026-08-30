@@ -29,6 +29,10 @@ This index lists the documents that are authoritative for implementation, review
 - `ADR-0003` — runtime safety authority
 - `ADR-0004` — verification before release
 - `ADR-0005` — versioned contracts
+- `ADR-0006` — canonical PC↔phone channel (NOSA framing, RSA-2048, TCP/17471)
+- `ADR-0007` — Wi-Fi transport and LAN discovery (UDP/17472, `NOSD`)
+- `ADR-0008` — mutual handshake (wire version 2, signed session transcript)
+- `ADR-0009` — authenticated encryption of the session payload (wire version 3)
 
 ## Gate 1 contract
 
