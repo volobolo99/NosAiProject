@@ -12,10 +12,12 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
 
-        // Gate 1 limitation, stated rather than hidden: the key lives for the life of
-        // this page, so every launch enrolls anew. A real deployment keeps it in the
-        // Android key store. See README.md in this project.
-        _deviceKey = RSA.Create(2048);
+        // Persisted in app-private storage, so the identity survives a restart and
+        // the PC does not have to re-enroll on every launch. Not the Android Key
+        // Store: see DeviceIdentity and README.md for what that still costs.
+        _deviceKey = DeviceIdentity.LoadOrCreate();
+        DeviceIdentity.PublishPublicKey(_deviceKey);
+
         _connection = new GuardConnectionService(_deviceKey);
         _connection.StatusChanged += OnStatusChanged;
 

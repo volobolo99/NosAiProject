@@ -39,3 +39,10 @@ Thumbs.db
 bin/
 obj/
 *.user
+
+# Enrollment key material. A committed public key is a trust anchor nobody
+# enrolled deliberately: a runtime started from a fresh clone would accept the
+# device it belongs to. Keys live on the dedicated volume, per
+# docs/INTEGRAZIONE_RSA_SESSION_AUTH.md.
+*.pem
+data/

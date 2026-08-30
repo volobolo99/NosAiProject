@@ -60,11 +60,13 @@ esattamente ciò che questa app non deve fare.
 Questi limiti sono reali e vanno chiusi prima di dichiarare `VERIFIED` un punto
 smartphone del Gate 1:
 
-- **Ciclo di vita della chiave.** La chiave del dispositivo è generata a ogni
-  avvio della pagina e vive in memoria, quindi ogni avvio richiede una nuova
-  registrazione sul PC. Un deployment reale la conserva nell'Android Key Store.
-- **Nessuna validazione su dispositivo fisico.** L'app compila, ma non è ancora
-  stata eseguita su uno smartphone reale contro il runtime su LAN.
+- **Ciclo di vita della chiave.** La chiave è persistita nello storage privato
+  dell'app, quindi sopravvive ai riavvii, ma **non è nell'Android Key Store** e non
+  è hardware-backed: è leggibile con root o da un backup dei dati dell'app.
+  `DeviceIdentity` è il punto in cui va sostituita.
+- **Wi-Fi/LAN non provata.** L'app è stata validata su dispositivo fisico contro il
+  runtime reale, ma attraverso `adb reverse` su USB. Il percorso di rete —
+  indirizzamento LAN, firewall, latenza, perdita di pacchetti — non è stato provato.
 - **Trasporto in chiaro.** Il canale autentica il telefono ma non cifra il
   payload. `docs/INTEGRAZIONE_RSA_SESSION_AUTH.md` elenca la cifratura autenticata
   fra i limiti aperti. Usare solo su rete domestica fidata.
@@ -82,3 +84,15 @@ python -m nosai.phone.deploy
 Installa l'APK, apre `adb reverse tcp:17471 tcp:17471` e avvia l'app. Nell'app ci
 si collega a `127.0.0.1:17471`: il tunnel porta la connessione al runtime sul PC,
 quindi via USB non servono Wi-Fi né indirizzo LAN.
+
+Poi registra la chiave del dispositivo sul PC e avvia il runtime fidandosene:
+
+```bash
+python -m nosai.phone.enroll --out data/guard_public_key.pem
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll     --guard-public-key-path data/guard_public_key.pem
+```
+
+> Se l'app mostra `connect_failed (ConnectionRefused)`, controllare
+> `adb reverse --list` prima di sospettare il runtime: il tunnel non sopravvive
+> alla riconnessione del dispositivo né al riavvio del server ADB, e dall'app la
+> sua caduta è indistinguibile da un runtime spento.

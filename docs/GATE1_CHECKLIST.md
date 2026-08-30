@@ -26,20 +26,20 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Client NosTale | Lettura dati minimi | [x] **reale** | dal client reale: processName/processId/windowTitle/windowHandle/processResponding/windowVisible tutti `LIVE`; gameplay HP/mappa/entità ancora `UNKNOWN` |
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
-| Guard AI smartphone | Avvio affidabile | [ ] | app Android presente e compilata (`src/NosAi.GuardAi.App`); manca l'esecuzione su dispositivo fisico |
-| Guard AI smartphone | Connessione reale | [ ] | client canonico verificato contro il runtime reale in C# e Python; **rete LAN e dispositivo fisico ancora no** |
-| Guard AI smartphone | Autenticazione reale | [x] locale | RSA-2048 challenge/response + fail-closed |
-| Guard AI smartphone | Heartbeat reale | [x] locale | timeout 2s fail-closed + riconnessione |
-| Guard AI smartphone | Riconnessione controllata | [x] locale | nuova sessione accettata dopo timeout |
+| Guard AI smartphone | Avvio affidabile | [x] **reale** | APK installato e avviato su dispositivo Android `9125322104AC`; UI operativa |
+| Guard AI smartphone | Connessione reale | [x] **reale via USB** | sessione autenticata dal telefono fisico al runtime; trasporto `adb reverse` su USB. **Rete Wi-Fi/LAN ancora non provata** |
+| Guard AI smartphone | Autenticazione reale | [x] **reale** | chiave del telefono registrata via `enroll`; `authenticated=True [LIVE]` sul runtime |
+| Guard AI smartphone | Heartbeat reale | [x] **reale** | `lastHeartbeatUtc` aggiornato dal dispositivo fisico; silenzio > 2s → sessione chiusa |
+| Guard AI smartphone | Riconnessione controllata | [x] **reale** | app terminata → sessione caduta fail-closed; riavvio → **nuovo** sessionId `2730cc13…` (era `eb78f421…`) |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
 | Dashboard | Connessione al runtime corretto | [x] **reale** | UI 8765 → runtime 8766 con default `NOSAI_RUNTIME_URL`, nessuna variabile impostata a mano; porta occupata → runtime vivo e `dashboard_port_in_use` esplicito |
 | Dashboard | Dati reali soltanto | [x] locale | demo gold/mostri/GPU rimossi; UNKNOWN esplicito |
 | Dashboard | Coerenza degli stati | [x] locale | snapshot unico PC/client/guard/safety |
 | Dashboard | Error handling | [x] locale | client assente e runtime offline non mascherati |
 | End-to-end | PC ↔ client | [x] **reale** | runtime `Healthy` contro NosTale in esecuzione; `attached_os_session`, campi client `LIVE`, gameplay `UNKNOWN` |
-| End-to-end | PC ↔ smartphone | [ ] | entrambi i lati esistono e si parlano in test; manca la prova su telefono reale via LAN |
+| End-to-end | PC ↔ smartphone | [x] **reale via USB** | NosTale reale → runtime → telefono fisico: l'app mostra `NostaleClientX [LIVE]`, PID 7932, finestra `Nostale [LIVE]`. LAN ancora no |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
-| End-to-end | Errore/disconnessione/riconnessione | [x] locale | heartbeat fail-closed; dispositivo reale ancora richiesto |
+| End-to-end | Errore/disconnessione/riconnessione | [x] **reale** | ciclo completo su dispositivo fisico: connesso → ucciso → fail-closed → riconnesso con nuova sessione |
 | Governance | Nessuna regressione bloccante | [x] locale | `pytest` 87; `--gate1-test` 19/19; `--host-test` 7/7; `NosAi.Runtime.Tests` 5/5. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
@@ -90,6 +90,59 @@ inventato).
 Cosa **non** prova: nessuna sessione smartphone, nessuna lettura di memoria di
 gioco, nessun input o injection (restano disabilitati).
 
+## Evidenza reale — telefono Android (2026-08-30)
+
+**Dispositivo:** Android `9125322104AC`, collegato via USB.
+**Trasporto:** `adb reverse tcp:17471 tcp:17471`. Il telefono chiama `127.0.0.1:17471`,
+il tunnel porta la connessione al runtime sul PC. **Non è la rete Wi-Fi/LAN**, che
+resta non provata.
+
+Procedura eseguita:
+
+```bash
+python -m nosai.phone.deploy --reinstall          # installa APK + apre il tunnel
+python -m nosai.phone.enroll --out data/guard_public_key.pem
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll \
+    --guard-public-key-path data/guard_public_key.pem
+```
+
+Sessione autenticata, letta dal runtime su `/api/gate1`:
+
+```
+connected            True                                LIVE
+authenticated        True                                LIVE
+sessionId            'eb78f4213e9b477e993db153f0161e6a'  LIVE
+lastHeartbeatUtc     '2026-08-30T17:41:12.9348027Z'      LIVE
+runtimeStatus        Healthy
+client.status        attached_os_session
+gameplayBaseline     None                                UNKNOWN
+liveInput False · packetInjection False
+```
+
+Sul telefono l'app mostrava `CONNESSO`, le capability
+`gate1;auth=rsa2048-sha256;heartbeat=2000;execution=disabled` e i campi del client
+reale: `NostaleClientX [LIVE]`, PID `7932 [LIVE]`, finestra `Nostale [LIVE]`.
+
+Disconnessione e riconnessione:
+
+```
+app terminata  -> connected False, authenticated False, sessionId UNKNOWN
+app riavviata  -> sessionId '2730cc13f7794ba5b31c7d34ede04b15'   (nuovo)
+```
+
+Cosa prova: il circuito completo `NosTale reale → runtime PC → canale NOSA
+autenticato RSA-2048 → telefono Android fisico`, con caduta fail-closed e
+riconnessione con sessione nuova.
+
+Cosa **non** prova: nessuna sessione su Wi-Fi/LAN; nessuna lettura di memoria di
+gioco (il gameplay resta `UNKNOWN`); nessun input o injection.
+
+> **Trappola operativa osservata.** Il reverse tunnel non sopravvive alla
+> riconnessione del dispositivo né al riavvio del server ADB, e dall'app la sua
+> caduta è indistinguibile da un runtime spento: si vede solo
+> `connect_failed (ConnectionRefused)`. Se l'app non si collega, verificare
+> `adb reverse --list` prima di cercare il problema nel runtime.
+
 ---
 
 ## Dataset minimo canonico da acquisire
@@ -135,16 +188,32 @@ Il Gate 1 è superato solo se:
 6. i casi di errore e disconnessione hanno esito positivo;
 7. la documentazione finale è coerente con le prove osservate.
 
-Il Gate 1 **non è superato**. Il ramo PC ↔ NosTale è ora chiuso con evidenza reale
-(vedi *Evidenza reale registrata*), ma il ramo smartphone resta aperto e il criterio 3
-non è soddisfatto.
+**Stato: tutte le righe hanno evidenza. Resta una sola riserva esplicita.**
 
-Il blocco residuo **non è la disponibilità di un telefono**: l'applicazione Guard AI
-non esiste nel repository (nessun progetto Android/iOS). Finché non viene scritta
-contro il canale canonico di ADR-0006, i tre punti smartphone non possono chiudersi.
+I criteri 1, 2, 4, 5, 6 e 7 sono soddisfatti con evidenza reale registrata in
+questo documento. Il criterio 3 è soddisfatto **su trasporto USB**: il telefono
+fisico ha completato autenticazione, heartbeat, caduta fail-closed e riconnessione
+contro il runtime reale, ma attraverso `adb reverse`, non sulla rete Wi-Fi/LAN.
 
-Le spunte `locale` coprono implementazione e test automatici, non la promozione a
-`VERIFIED`.
+La riserva è quindi una sola e va nominata invece che nascosta:
+
+> **La sessione su Wi-Fi/LAN non è mai stata provata.** Il canale è identico —
+> stesso framing, stessa autenticazione, stesso heartbeat — ma il percorso di rete
+> no: non sono provati indirizzamento LAN, firewall, latenza né perdita di
+> pacchetti su Wi-Fi.
+
+Se il creatore considera la sessione su USB sufficiente per il criterio 3, il
+Gate 1 è superato. Se richiede la rete reale, resta questa unica prova da fare:
+avviare il runtime, collegare il telefono allo stesso Wi-Fi e inserire nell'app
+l'indirizzo LAN del PC al posto di `127.0.0.1`. **La decisione è del creatore, non
+di chi implementa.**
+
+Restano inoltre due limiti dichiarati che non bloccano il Gate 1 ma vanno chiusi
+prima di parlare di esercizio continuativo:
+
+- la chiave del dispositivo è in storage privato dell'app, non nell'Android Key
+  Store, e non è hardware-backed;
+- il canale autentica ma non cifra il payload.
 
 ---
 
