@@ -28,7 +28,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
 | Guard AI smartphone | Avvio affidabile | [x] **reale** | APK installato e avviato su dispositivo Android `9125322104AC`; UI operativa |
 | Guard AI smartphone | Connessione reale | [x] **reale via Wi-Fi** | sessione autenticata su LAN, cavo USB staccato e tunnel rimosso; runtime trovato per discovery, nessun indirizzo inserito |
-| Guard AI smartphone | Autenticazione reale | [x] **reale** | chiave del telefono registrata via `enroll`; `authenticated=True [LIVE]` sul runtime |
+| Guard AI smartphone | Autenticazione reale | [x] **reale, mutua** | wire v2: il telefono verifica la prova del runtime prima di firmare; `authenticated=True [LIVE]` su USB e su Wi-Fi |
 | Guard AI smartphone | Heartbeat reale | [x] **reale** | `lastHeartbeatUtc` aggiornato dal dispositivo fisico; silenzio > 2s → sessione chiusa |
 | Guard AI smartphone | Riconnessione controllata | [x] **reale** | app terminata → sessione caduta fail-closed; riavvio → **nuovo** sessionId `2730cc13…` (era `eb78f421…`) |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
@@ -185,6 +185,59 @@ da parte dell'operatore.
 Cosa **non** prova: nessuna cifratura del payload; nessuna lettura di memoria di gioco.
 L'autenticazione mutua del canale (ADR-0008) è nel codice; il circuito Wi-Fi
 documentato sopra è stato chiuso su wire version 1 e va ripetuto dopo il re-pair.
+
+## Evidenza reale — autenticazione mutua, wire v2 (2026-08-30)
+
+Verifica sul dispositivo Android `9125322104AC` (NX809J) contro NosTale in
+esecuzione, con il protocollo versione 2.
+
+Abbinamento, che prima falliva su build release:
+
+```
+Pairing: device key written to data\guard_public_key.pem
+Pairing: runtime pin pushed (data\runtime_public.pem)
+deploy exit=0
+```
+
+Runtime avviato **senza alcun flag**: carica da solo entrambe le chiavi.
+
+```
+[INFO] Trusting one Guard device key. source=data/guard_public_key.pem
+[INFO] Gate 1 runtime is listening. guardPort=17471 discovery=udp/17472
+Client process: NostaleClientX [LIVE] pid=7932 [LIVE]
+Client window:  Nostale [LIVE] 0x8099A [LIVE]
+```
+
+**Sessione USB** (tunnel `adb reverse`):
+
+```
+connected      True   authenticated True
+sessionId      '7f73c07ed84c42f880be53d46fbce329'
+```
+
+**Sessione Wi-Fi**, con il tunnel rimosso — `adb reverse --list` vuoto e il
+loopback dal telefono **rifiutato**, quindi la LAN era l'unico percorso possibile:
+
+```
+loopback dal telefono -> CHIUSA
+connected      True   authenticated True
+sessionId      'dbb75562afea436194b348625c27388d'    (nuova sessione)
+lastHeartbeat  20:45:02 -> 20:45:06 -> 20:45:09      (in avanzamento)
+```
+
+Sullo schermo del telefono: Wi-Fi selezionato, `CONNESSO`, endpoint
+`192.168.0.4:17471` — l'indirizzo LAN del PC, non il loopback — e i campi del
+client reale. PC `192.168.0.4`, telefono `192.168.0.2`.
+Screenshot e trascritto grezzo restano in `data/`, che è gitignorata perché
+contiene materiale di chiave: quanto sopra è la trascrizione, ed è il record
+durevole. Un clone non troverà quei file, ed è voluto.
+
+Cosa prova: l'handshake mutuo su hardware reale, su USB e su rete. Il telefono ha
+verificato la prova del runtime prima di firmare, e il runtime ha verificato il
+telefono — nessuno dei due ha creduto all'altro sulla parola.
+
+Cosa **non** prova: nessuna cifratura del payload; nessuna lettura di memoria di
+gioco; nessun input o injection.
 
 ---
 

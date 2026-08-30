@@ -50,3 +50,24 @@ A missing pin is fail-closed.
   phones and requires a re-pair. That is visible and recoverable.
 - The private identity lives in a file, not a hardware store. That limitation
   is unchanged from the phone's `DeviceIdentity` and remains recorded here.
+
+## Validazione su dispositivo reale
+
+Verificata il 2026-08-30 sul dispositivo Android `9125322104AC` contro il runtime
+reale, in entrambi i trasporti.
+
+Su Wi-Fi il tunnel `adb reverse` era rimosso e il loopback dal telefono risultava
+rifiutato, quindi la LAN era l'unico percorso possibile. L'app mostrava
+`192.168.0.4:17471`, l'indirizzo LAN del PC.
+
+```
+USB    authenticated True   sessionId 7f73c07ed84c42f880be53d46fbce329
+Wi-Fi  authenticated True   sessionId dbb75562afea436194b348625c27388d
+       heartbeat 20:45:02 -> 20:45:06 -> 20:45:09
+```
+
+Un difetto emerso solo qui: il pin del runtime veniva consegnato con `adb run-as`,
+che funziona unicamente su build debuggable. L'APK è release, quindi la chiave non
+arrivava mai e il Wi-Fi restava fail-closed senza modo di aprirlo. Il test che
+copriva quel percorso asseriva l'uso di `run-as` e sarebbe passato per sempre
+contro un command recorder. Ora la chiave passa dalla cartella esterna dell'app.
