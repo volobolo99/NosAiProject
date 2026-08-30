@@ -9,7 +9,12 @@ from typing import Any
 MAGIC = b"NOSA"
 VERSION = 1
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
-MAX_PAYLOAD = 64 * 1024
+# PAYLOAD_LEN is a uint16, so 65535 is the largest length the header can express.
+# This was 64 * 1024 (= 65536), one byte too generous: a payload of exactly that
+# size passed the guard and then failed inside struct.pack with an opaque
+# struct.error instead of the intended "payload troppo grande".
+# Matches WireHeader.MaxPayloadLength in src/NosAi.Runtime/Gate1/Gate1Runtime.cs.
+MAX_PAYLOAD = 0xFFFF
 
 # Canonical Gate 1 message types.
 # Source of truth: WireMessageType in src/NosAi.Runtime/Gate1/Gate1Runtime.cs.
