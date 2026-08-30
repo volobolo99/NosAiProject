@@ -244,7 +244,9 @@ namespace NosAi.Runtime.Gate6
 
         public async Task<ExecutionResult> ExecuteAsync(ActionCandidate candidate, SafetyToken token, CancellationToken ct = default)
         {
-            if (!ReferenceEquals(candidate.CandidateId, token.CandidateId) && candidate.CandidateId != token.CandidateId)
+            // CandidateId is a Guid: ReferenceEquals on boxed values is always false,
+            // so the value comparison alone is the effective (and intended) binding check.
+            if (candidate.CandidateId != token.CandidateId)
                 return new ExecutionResult(candidate.CandidateId, false, false, 0, "SafetyToken non associato al candidato.");
 
             if (!_safetyGate.ValidateToken(token))

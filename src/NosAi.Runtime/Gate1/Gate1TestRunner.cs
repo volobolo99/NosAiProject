@@ -55,7 +55,9 @@ public static class Gate1TestRunner
     private static async Task<bool> TestSafetyCompositionIsReadOnlyAsync()
     {
         var runtime = RuntimeComposition.CreateSafe();
-        var world = new WorldModel();
+        // Fully qualified: the simple name 'WorldModel' binds to the
+        // NosAi.Runtime.WorldModel namespace, not to the class.
+        var world = new NosAi.Runtime.WorldModel.WorldModel();
         using var key = RSA.Create(2048);
         using var auth = new SessionAuth(key.ExportRSAPublicKeyPem());
         await using var channel = new GuardAiNetworkChannel(0, auth);

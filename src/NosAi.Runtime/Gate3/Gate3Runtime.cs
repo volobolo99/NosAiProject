@@ -667,9 +667,13 @@ namespace NosAi.Runtime.Gate3
                     $"Ciclo completato con successo: {bestCandidate.Type} (Utility: {utilityScore:F2}). {verifResult.AnalysisReport}");
             }
 
+            // CurrentMode is a property and cannot be passed by reference.
+            // The recovery controller mutates the mode, so it is written back.
+            RuntimeMode recoveredMode = CurrentMode;
             RecoveryStrategy strategy = _recovery.HandleFailure(
                 verifResult,
-                ref CurrentMode);
+                ref recoveredMode);
+            CurrentMode = recoveredMode;
 
             return (
                 false,
