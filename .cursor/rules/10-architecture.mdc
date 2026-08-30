@@ -1,0 +1,16 @@
+---
+description: NosAiProject architecture and change discipline
+alwaysApply: false
+---
+
+# Architecture Rule
+
+Before changing architecture or cross-component behavior, inspect the existing architecture documentation and ADRs.
+
+- Prefer modular, testable components with explicit responsibilities.
+- Preserve established boundaries and public contracts unless the task explicitly changes them.
+- Trace dependencies before changing shared interfaces, DTOs, protocols, configuration, or lifecycle management.
+- Prefer the smallest coherent change over broad refactoring.
+- For concurrency, networking, IPC, and long-lived services, explicitly consider cancellation, timeouts, disposal, resource ownership, retries, and failure recovery.
+- For cross-project changes, update affected tests and documentation where required.
+- Do not introduce a new framework, package, protocol, or architectural pattern without a concrete project-level justification.
