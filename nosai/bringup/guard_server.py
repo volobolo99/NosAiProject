@@ -1,5 +1,11 @@
 """Minimal Play Guard TCP endpoint for Wi-Fi bring-up.
 
+NON-CANONICAL. ADR-0006 makes GuardAiNetworkChannel (NOSA binary framing,
+RSA-2048 challenge/response, TCP/17471) the only canonical PC <-> phone channel.
+This endpoint has no authentication and the Gate 1 runtime does not speak its
+protocol, so a phone client built against it cannot reach the runtime. It is kept
+for local transport experiments only and proves nothing about Gate 1.
+
 Binds to 127.0.0.1 by default for development. For a real phone connection,
 pass the PC's LAN address explicitly and keep the firewall scoped to the
 trusted home/LAN network. The server only exchanges protocol messages.
@@ -52,7 +58,9 @@ def serve(host: str, port: int) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="NosAi minimal Play Guard Wi-Fi bring-up server")
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8765)
+    # Not 8765: that port belongs to the Python operator UI, and sharing it meant
+    # whichever process started second could not bind.
+    parser.add_argument("--port", type=int, default=8769)
     args = parser.parse_args()
     serve(args.host, args.port)
 

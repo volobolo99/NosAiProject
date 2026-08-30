@@ -1,5 +1,17 @@
 # NosAi Minimal Wi-Fi Bring-up
 
+> **SUPERSEDED — do not implement a phone client against this document.**
+>
+> `docs/adr/ADR-0006-canonical-phone-channel.md` makes `GuardAiNetworkChannel`
+> (NOSA binary framing, RSA-2048 challenge/response, TCP/17471) the only canonical
+> PC ↔ phone channel. The JSON-lines transport described below has no
+> authentication and the Gate 1 runtime does not speak it, so a phone client built
+> from this document cannot connect to the runtime.
+>
+> This file is kept as a historical record of the first transport experiment. The
+> completion gate at the bottom is **not** a Gate 1 gate and passing it proves
+> nothing about Gate 1.
+
 ## Goal
 
 Prove the smallest reliable runtime path before adding vision, memory, local LLM optimization, or game-client integration:
@@ -23,14 +35,20 @@ The first transport is TCP with newline-delimited UTF-8 JSON. The protocol is tr
 From repository root:
 
 ```powershell
-python -m nosai.bringup.guard_server --host 0.0.0.0 --port 8765
+python -m nosai.bringup.guard_server --host 0.0.0.0 --port 8769
 ```
 
-For the first LAN test, restrict Windows Firewall to the trusted private network and TCP port 8765. Do not expose this endpoint to the public Internet.
+For the first LAN test, restrict Windows Firewall to the trusted private network and TCP port 8769. Do not expose this endpoint to the public Internet.
+
+The port is 8769, not 8765: 8765 belongs to the Python operator UI.
 
 ## Phone side
 
-The phone-side Guard AI client must implement the same JSON-lines contract and connect to the PC's private LAN IPv4 address on TCP/8765. The phone client is intentionally kept separate from Play Guard so that the protocol remains the stable boundary.
+**Do not build the phone client from this section.** Per ADR-0006 the Guard AI
+phone client implements NOSA binary framing with the RSA-2048 handshake and
+connects on TCP/17471 — see `src/NosAi.Runtime/Gate1/Gate1Runtime.cs`. The
+JSON-lines contract described here is unauthenticated and the Gate 1 runtime does
+not accept it.
 
 ## Completion gate
 
