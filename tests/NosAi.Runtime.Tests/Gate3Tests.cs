@@ -1,0 +1,262 @@
+using NosAi.Runtime.Gate3;
+using Xunit;
+
+// Aliased rather than imported wholesale: TrustTier, VerificationResult and
+// SafetyGate each exist in more than one namespace (Contracts, Gate3, Gate6,
+// Safety, Host), so a broad using makes every reference ambiguous. The
+// duplication is a real problem in its own right and is recorded in
+// docs/GATE3_PIPELINE.md; collapsing it touches shared contracts and other
+// gates, so it needs coordinating rather than doing halfway here.
+using DataSourceKind = NosAi.Runtime.Contracts.DataSourceKind;
+using RuntimeSafetyPolicy = NosAi.Runtime.Safety.RuntimeSafetyPolicy;
+
+namespace NosAi.Runtime.Tests;
+
+/// <summary>
+/// Gate 3 — the decision and safety closed loop.
+/// </summary>
+/// <remarks>
+/// These tests concentrate on the property the pipeline exists to guarantee: it
+/// must never report that something happened, or that a prediction held, unless
+/// it did. Two defects made that untrue and both are pinned here — an executor
+/// that slept and claimed completion, and a verifier handed a post-state derived
+/// from the very prediction it was checking.
+/// </remarks>
+public sealed class Gate3Tests
+{
+    private static readonly RuntimeSafetyPolicy ExecutionAllowed = new(
+        LiveInputEnabled: true, PacketInjectionEnabled: false, RequireClientHealthy: true, RequireGuardApproval: true);
+
+    private sealed class CountingEffector : IActionEffector
+    {
+        public int Applications { get; private set; }
+        public bool CanApply => true;
+        public string? UnavailableReason => null;
+
+        public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
+        {
+            Applications++;
+            return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
+        }
+    }
+
+    private sealed class FixedObserver : IWorldStateObserver
+    {
+        private readonly ObservedState _state;
+        public FixedObserver(ObservedState state) => _state = state;
+        public bool CanObserve => true;
+        public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default) => Task.FromResult(_state);
+    }
+
+    // -- the safety posture --------------------------------------------------
+
+    [Fact]
+    public void TheDefaultPolicyBindsNoEffector()
+    {
+        // SafeDefault keeps live input off, so the pipeline must come up unable to
+        // act rather than with something that stands in for acting.
+        var orchestrator = new Gate3ExecutionOrchestrator();
+
+        Assert.False(orchestrator.CanExecute);
+        Assert.False(orchestrator.CanVerify);
+    }
+
+    [Fact]
+    public void APolicyThatAllowsInputButSuppliesNoEffectorStillCannotAct()
+    {
+        // Fail closed on an incomplete configuration: a half-wired runtime must not
+        // become one that quietly invents an effector.
+        IActionEffector effector = ActionEffectorFactory.ForPolicy(ExecutionAllowed, liveEffector: null);
+
+        Assert.False(effector.CanApply);
+        Assert.Equal("no_live_effector_bound", effector.UnavailableReason);
+    }
+
+    [Fact]
+    public async Task DisabledExecutionIsNeverReportedAsSuccess()
+    {
+        // The regression: 50 ms of sleep reported as a completed action while
+        // nothing had touched the client.
+        var orchestrator = new Gate3ExecutionOrchestrator();
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, hasTarget: true, isInCombat: false);
+
+        Assert.Equal(CycleOutcome.ExecutionDisabled, result.Outcome);
+        Assert.False(result.IsConfirmed);
+        // And no recovery is triggered: nothing was attempted, so there is nothing
+        // to degrade trust over.
+        Assert.Equal(RuntimeMode.Normal, result.ModeAfter);
+        Assert.Null(result.Strategy);
+    }
+
+    // -- verification is a real comparison -----------------------------------
+
+    [Fact]
+    public async Task ExecutedButUnobservedIsUnverifiedRatherThanConfirmed()
+    {
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, new CountingEffector());
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+
+        Assert.Equal(CycleOutcome.Unverified, result.Outcome);
+        Assert.False(result.IsConfirmed);
+    }
+
+    [Fact]
+    public void VerificationWithoutAnObservationIsClassifiedUnknown()
+    {
+        var verifier = new ActionExecutionVerifier();
+        var candidate = new ActionCandidate(
+            Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "test");
+        var predicted = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "POST_HP_10_MP_10");
+        var executed = new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null);
+
+        VerificationResult result = verifier.Verify(
+            candidate, predicted, executed, ObservedState.Unobserved("no_perception"));
+
+        Assert.Equal(VerificationOutcome.Unverified, result.Outcome);
+        Assert.Equal(DataSourceKind.Unknown, result.Source);
+        Assert.False(result.IsConfirmed);
+        // Unverified is not a failure either: the action may well have worked, so it
+        // must not drive trust downwards on its own.
+        Assert.False(result.CountsAsFailure);
+    }
+
+    [Fact]
+    public void AnObservedMismatchIsADiscrepancyAndCountsAsFailure()
+    {
+        var verifier = new ActionExecutionVerifier();
+        var candidate = new ActionCandidate(
+            Guid.NewGuid(), ActionType.UseSkill, "T", 0, 0, 0, TrustTier.Tier2_SemiAutonomous, "test");
+        var predicted = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "POST_HP_900_MP_65");
+        var executed = new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null);
+
+        VerificationResult result = verifier.Verify(candidate, predicted, executed, ObservedState.Live(120, 65));
+
+        Assert.Equal(VerificationOutcome.Discrepant, result.Outcome);
+        Assert.Equal(DataSourceKind.Live, result.Source);
+        Assert.True(result.CountsAsFailure);
+    }
+
+    [Fact]
+    public async Task AnObservedMismatchDrivesRecovery()
+    {
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed, new CountingEffector(), new FixedObserver(ObservedState.Live(1, 1)));
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+
+        Assert.Equal(CycleOutcome.Failed, result.Outcome);
+        Assert.NotNull(result.Strategy);
+    }
+
+    [Fact]
+    public void AnUnobservedReadingIsNotZero()
+    {
+        // The distinction the whole classification model exists for. A verifier that
+        // read UNKNOWN as 0 would confirm a prediction of death whenever perception
+        // happened to be down.
+        ObservedState unobserved = ObservedState.Unobserved("probe_unavailable");
+
+        Assert.False(unobserved.IsFullyObserved);
+        Assert.Equal(DataSourceKind.Unknown, unobserved.Hp.Source);
+        Assert.False(unobserved.Hp.HasValue);
+        Assert.Equal("probe_unavailable", unobserved.Hp.FailureReason);
+    }
+
+    [Fact]
+    public async Task AFailingObserverLeavesTheCycleUnverifiedRatherThanThrowing()
+    {
+        var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, new CountingEffector(), observer);
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+
+        Assert.Equal(CycleOutcome.Unverified, result.Outcome);
+    }
+
+    // -- authorisation -------------------------------------------------------
+
+    [Fact]
+    public async Task ABlockedCycleNeverReachesTheEffector()
+    {
+        // Denial has to stop the action before the world is touched, not report a
+        // refusal after the fact.
+        var effector = new CountingEffector();
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false);
+
+        Assert.Equal(CycleOutcome.Blocked, result.Outcome);
+        Assert.Equal(0, effector.Applications);
+    }
+
+    [Fact]
+    public async Task ATokenBoundToAnotherCandidateIsRefusedAndNotBurned()
+    {
+        var gate = new SafetyGate(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
+        var executor = new AuthorizedActionExecutor(gate, new CountingEffector());
+
+        var mine = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "a");
+        var other = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "b");
+        var outcome = new PredictedOutcome(mine.CandidateId, 0, 0, 100, 1f, 0f, "SIG");
+
+        Assert.True(gate.TryAuthorize(mine, outcome, RuntimeMode.Normal, out SafetyToken? token, out _));
+
+        ExecutionResult refused = await executor.ExecuteAuthorizedAsync(other, token!);
+
+        Assert.Equal(ExecutionState.Refused, refused.State);
+        // The rightful holder's authorisation survives a misuse attempt.
+        Assert.True(token!.TryConsume());
+    }
+
+    [Fact]
+    public void AForgedTokenAuthorisesNothing()
+    {
+        var gate = new SafetyGate(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
+        var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
+
+        Assert.False(gate.ValidateToken(forged));
+    }
+
+    [Fact]
+    public void TrustOnlyEverMovesDown()
+    {
+        var trust = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
+
+        trust.DowngradeTrust(TrustTier.Tier0_ReadOnly);
+        trust.DowngradeTrust(TrustTier.Tier4_FullAutonomous);
+
+        Assert.Equal(TrustTier.Tier0_ReadOnly, trust.CurrentTier);
+    }
+
+    [Theory]
+    [InlineData(RuntimeMode.Stopped, ActionType.UseConsumable, false)]
+    [InlineData(RuntimeMode.Cooling, ActionType.UseBasicAttack, false)]
+    [InlineData(RuntimeMode.Cooling, ActionType.UseConsumable, true)]
+    [InlineData(RuntimeMode.Normal, ActionType.UseSkill, true)]
+    public void GuardAppliesTheModePolicy(RuntimeMode mode, ActionType action, bool expectedAllowed)
+    {
+        // Recovery must stay possible while cooling, or thermal throttling would stop
+        // the character from saving itself.
+        var guard = new GuardPolicyEngine();
+        var candidate = new ActionCandidate(Guid.NewGuid(), action, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "test");
+        var outcome = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "SIG");
+
+        Assert.Equal(expectedAllowed, guard.Evaluate(candidate, outcome, mode).IsAllowedByPolicy);
+    }
+
+    [Fact]
+    public void FleeingIsExemptFromTheRiskCeiling()
+    {
+        // It is the action taken *because* the situation is dangerous, so the ceiling
+        // that blocks risky actions must not block the escape.
+        var guard = new GuardPolicyEngine();
+        var flee = new ActionCandidate(Guid.NewGuid(), ActionType.EmergencyFlee, "SAFE", 0, 0, 0, TrustTier.Tier1_Assisted, "run");
+        var risky = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, "MOB", 0, 0, 0, TrustTier.Tier1_Assisted, "hit");
+
+        Assert.True(guard.Evaluate(flee, new PredictedOutcome(flee.CandidateId, 0, 0, 100, 1f, 0.9f, "S"), RuntimeMode.Normal).IsAllowedByPolicy);
+        Assert.False(guard.Evaluate(risky, new PredictedOutcome(risky.CandidateId, 0, 0, 100, 1f, 0.9f, "S"), RuntimeMode.Normal).IsAllowedByPolicy);
+    }
+}

@@ -3,6 +3,7 @@ using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Gate2;
+using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Gate4;
 using NosAi.Runtime.Gate5;
 using NosAi.Runtime.Observability;
@@ -17,6 +18,8 @@ public static class Program
             return await Gate1TestRunner.RunAllAsync().ConfigureAwait(false) ? 0 : 1;
         if (args.Any(a => string.Equals(a, "--gate2-test", StringComparison.OrdinalIgnoreCase)))
             return await Gate2TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
+        if (args.Any(a => string.Equals(a, "--gate3-test", StringComparison.OrdinalIgnoreCase)))
+            return await Gate3TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
         if (args.Any(a => string.Equals(a, "--gate4-test", StringComparison.OrdinalIgnoreCase)))
             return await Gate4TestRunner.RunAllTestsAsync().ConfigureAwait(false) ? 0 : 1;
         if (args.Any(a => string.Equals(a, "--gate5-test", StringComparison.OrdinalIgnoreCase)))

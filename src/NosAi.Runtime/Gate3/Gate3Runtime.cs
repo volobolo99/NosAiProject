@@ -12,6 +12,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate3
 {
@@ -105,18 +107,62 @@ namespace NosAi.Runtime.Gate3
             Interlocked.CompareExchange(ref _consumed, 1, 0) == 0;
     }
 
+    /// <param name="Reason">
+    /// Why the action ended in this state. Present for every state except
+    /// <see cref="ExecutionState.Completed"/>, where there is nothing to explain.
+    /// </param>
     public sealed record ExecutionResult(
         Guid CandidateId,
-        bool ExecutionInitiated,
-        bool ExecutionCompleted,
+        ExecutionState State,
         int ActualDurationMs,
-        string? ErrorMessage);
+        string? Reason)
+    {
+        /// <summary>True only when the action really was applied to the world.</summary>
+        public bool Completed => State == ExecutionState.Completed;
 
+        /// <summary>True when nothing was attempted because policy forbids it.</summary>
+        public bool SuppressedByPolicy => State == ExecutionState.Disabled;
+    }
+
+    /// <summary>What the verify step could establish about an executed action.</summary>
+    public enum VerificationOutcome : byte
+    {
+        /// <summary>The observed world matches the prediction.</summary>
+        Confirmed = 0,
+
+        /// <summary>The world was observed and does not match the prediction.</summary>
+        Discrepant = 1,
+
+        /// <summary>
+        /// Nothing could be observed, so the prediction is neither confirmed nor
+        /// refuted. Never treated as success.
+        /// </summary>
+        Unverified = 2,
+
+        /// <summary>The action did not complete, so there is nothing to verify.</summary>
+        NotExecuted = 3
+    }
+
+    /// <param name="Source">
+    /// Provenance of the comparison. <c>Live</c> only when a real observation was
+    /// used; <c>Unknown</c> when the verifier had nothing to compare against.
+    /// </param>
     public sealed record VerificationResult(
         Guid CandidateId,
-        bool IsSuccess,
+        VerificationOutcome Outcome,
         float DiscrepancyScore,
-        string AnalysisReport);
+        string AnalysisReport,
+        DataSourceKind Source)
+    {
+        /// <summary>
+        /// Confirmed and nothing else. An unverified cycle is not a successful one:
+        /// treating "could not check" as "worked" is how a closed loop stops being closed.
+        /// </summary>
+        public bool IsConfirmed => Outcome == VerificationOutcome.Confirmed;
+
+        /// <summary>Whether recovery should count this as a failure.</summary>
+        public bool CountsAsFailure => Outcome is VerificationOutcome.Discrepant or VerificationOutcome.NotExecuted;
+    }
 
     public sealed class SimulationEngine
     {
@@ -434,12 +480,32 @@ namespace NosAi.Runtime.Gate3
         }
     }
 
+    /// <summary>
+    /// Runs an authorised action through an <see cref="IActionEffector"/>.
+    /// </summary>
+    /// <remarks>
+    /// The executor owns authorisation, not effect. It checks the token signature,
+    /// binding and single use, and only then hands the action to the effector. It
+    /// never decides that an action succeeded: that answer comes from whatever
+    /// actually touched the world, and when nothing did, the result says so.
+    /// </remarks>
     public sealed class AuthorizedActionExecutor
     {
         private readonly SafetyGate _safetyGate;
+        private readonly IActionEffector _effector;
 
-        public AuthorizedActionExecutor(SafetyGate safetyGate) =>
+        /// <param name="effector">
+        /// Defaults to <see cref="DisabledActionEffector"/>, matching a safety policy
+        /// with live input off. Passing nothing yields a pipeline that refuses to
+        /// act, never one that pretends to.
+        /// </param>
+        public AuthorizedActionExecutor(SafetyGate safetyGate, IActionEffector? effector = null)
+        {
             _safetyGate = safetyGate;
+            _effector = effector ?? new DisabledActionEffector();
+        }
+
+        public IActionEffector Effector => _effector;
 
         public async Task<ExecutionResult> ExecuteAuthorizedAsync(
             ActionCandidate candidate,
@@ -450,42 +516,51 @@ namespace NosAi.Runtime.Gate3
             {
                 return new ExecutionResult(
                     candidate.CandidateId,
-                    false,
-                    false,
+                    ExecutionState.Refused,
                     0,
-                    "SafetyToken non valido o firma contraffatta.");
+                    "safety_token_invalid_or_forged");
             }
 
-            if (token.CandidateId != candidate.CandidateId || !token.TryConsume())
+            // Binding is checked before consumption: a token for another candidate
+            // must not be burned by the attempt to misuse it.
+            if (token.CandidateId != candidate.CandidateId)
             {
                 return new ExecutionResult(
                     candidate.CandidateId,
-                    false,
-                    false,
+                    ExecutionState.Refused,
                     0,
-                    "SafetyToken già consumato, scaduto o non associato al candidato.");
+                    "safety_token_bound_to_another_candidate");
+            }
+
+            if (!token.TryConsume())
+            {
+                return new ExecutionResult(
+                    candidate.CandidateId,
+                    ExecutionState.Refused,
+                    0,
+                    "safety_token_already_consumed_or_expired");
             }
 
             var sw = Stopwatch.StartNew();
-
             try
             {
-                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-                return new ExecutionResult(
-                    candidate.CandidateId,
-                    true,
-                    true,
-                    (int)sw.ElapsedMilliseconds,
-                    null);
+                ExecutionResult result = await _effector
+                    .ApplyAsync(candidate, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return result with { ActualDurationMs = (int)sw.ElapsedMilliseconds };
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 return new ExecutionResult(
                     candidate.CandidateId,
-                    true,
-                    false,
+                    ExecutionState.Failed,
                     (int)sw.ElapsedMilliseconds,
-                    ex.Message);
+                    $"effector_failed:{ex.GetType().Name}");
             }
             finally
             {
@@ -494,34 +569,67 @@ namespace NosAi.Runtime.Gate3
         }
     }
 
+    /// <summary>
+    /// Compares a prediction against the world as it was actually read back.
+    /// </summary>
+    /// <remarks>
+    /// The comparison must be against an observation. The previous implementation
+    /// was handed a post-state computed from the prediction's own deltas, so it
+    /// compared the prediction to itself and confirmed every cycle — the verify
+    /// step of the closed loop could not fail. Where there is no observation there
+    /// is now no confirmation: the result is <see cref="VerificationOutcome.Unverified"/>,
+    /// classified UNKNOWN.
+    /// </remarks>
     public sealed class ActionExecutionVerifier
     {
         public VerificationResult Verify(
             ActionCandidate candidate,
             PredictedOutcome predicted,
             ExecutionResult execution,
-            int actualHpAfter,
-            int actualMpAfter)
+            ObservedState observed)
         {
-            if (!execution.ExecutionCompleted)
+            if (execution.SuppressedByPolicy)
             {
                 return new VerificationResult(
                     candidate.CandidateId,
-                    false,
-                    1.0f,
-                    $"Esecuzione fallita con errore: {execution.ErrorMessage ?? "Sconosciuto"}");
+                    VerificationOutcome.NotExecuted,
+                    0.0f,
+                    $"Nessuna esecuzione: {execution.Reason ?? "inibita da policy"}. Nulla da verificare.",
+                    DataSourceKind.Unknown);
             }
 
-            string observed = $"POST_HP_{actualHpAfter}_MP_{actualMpAfter}";
-            bool matches = predicted.StateSignatureAfter == observed;
+            if (!execution.Completed)
+            {
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.NotExecuted,
+                    1.0f,
+                    $"Esecuzione non completata: {execution.Reason ?? "motivo sconosciuto"}.",
+                    DataSourceKind.Unknown);
+            }
+
+            if (!observed.IsFullyObserved)
+            {
+                string reason = observed.Hp.FailureReason ?? observed.Mp.FailureReason ?? "stato non osservato";
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.Unverified,
+                    0.0f,
+                    $"Azione eseguita ma non verificabile: {reason}. La previsione non è né confermata né smentita.",
+                    DataSourceKind.Unknown);
+            }
+
+            string observedSignature = $"POST_HP_{observed.Hp.Value}_MP_{observed.Mp.Value}";
+            bool matches = predicted.StateSignatureAfter == observedSignature;
 
             return new VerificationResult(
                 candidate.CandidateId,
-                matches,
+                matches ? VerificationOutcome.Confirmed : VerificationOutcome.Discrepant,
                 matches ? 0.0f : 0.45f,
                 matches
-                    ? "Verifica confermata: lo stato reale corrisponde alla simulazione."
-                    : $"Discrepanza rilevata: atteso {predicted.StateSignatureAfter}, osservato {observed}.");
+                    ? $"Verifica confermata su stato osservato: {observedSignature}."
+                    : $"Discrepanza: atteso {predicted.StateSignatureAfter}, osservato {observedSignature}.",
+                DataSourceKind.Live);
         }
     }
 
@@ -563,6 +671,55 @@ namespace NosAi.Runtime.Gate3
         public void ResetFailures() => _consecutiveFailures = 0;
     }
 
+    /// <summary>How a full Observe -> Plan -> Guard -> Execute -> Verify cycle ended.</summary>
+    public enum CycleOutcome : byte
+    {
+        /// <summary>Executed and confirmed against an observation.</summary>
+        Confirmed = 0,
+
+        /// <summary>Nothing was planned, or nothing survived ranking.</summary>
+        NoCandidate = 1,
+
+        /// <summary>The Safety Gate refused authorisation.</summary>
+        Blocked = 2,
+
+        /// <summary>Policy forbids live input, so nothing was attempted.</summary>
+        ExecutionDisabled = 3,
+
+        /// <summary>Executed, but nothing could be observed to confirm it.</summary>
+        Unverified = 4,
+
+        /// <summary>Executed and the world does not match the prediction, or execution failed.</summary>
+        Failed = 5
+    }
+
+    /// <param name="Strategy">Recovery decision, when one was taken.</param>
+    public sealed record Gate3CycleResult(
+        CycleOutcome Outcome,
+        string Summary,
+        ActionType SelectedAction,
+        RuntimeMode ModeAfter,
+        TrustTier TrustAfter,
+        RecoveryStrategy? Strategy)
+    {
+        /// <summary>Confirmed and nothing else.</summary>
+        /// <remarks>
+        /// Deliberately narrow. A disabled or unverified cycle is not a success, and
+        /// a caller that treats "did not fail" as "worked" is the reason the previous
+        /// pipeline reported healthy cycles while touching nothing.
+        /// </remarks>
+        public bool IsConfirmed => Outcome == CycleOutcome.Confirmed;
+    }
+
+    /// <summary>
+    /// The Gate 3 closed loop: plan, simulate, rank, guard, authorise, execute, verify.
+    /// </summary>
+    /// <remarks>
+    /// The canonical order is not negotiable and every step is fail-closed. What
+    /// this orchestrator will not do is fill a gap with an assumption: an action
+    /// that policy forbids is reported as not executed, and one that cannot be
+    /// observed afterwards is reported as unverified.
+    /// </remarks>
     public sealed class Gate3ExecutionOrchestrator
     {
         private readonly ActionPlanner _planner;
@@ -574,24 +731,47 @@ namespace NosAi.Runtime.Gate3
         private readonly AuthorizedActionExecutor _executor;
         private readonly ActionExecutionVerifier _verifier;
         private readonly RecoveryController _recovery;
+        private readonly IWorldStateObserver _observer;
 
         public RuntimeMode CurrentMode { get; private set; } = RuntimeMode.Normal;
         public TrustBoundary Trust => _trust;
+        public RuntimeSafetyPolicy Policy { get; }
 
-        public Gate3ExecutionOrchestrator()
+        /// <summary>Whether anything is bound that can actually act on the world.</summary>
+        public bool CanExecute => _executor.Effector.CanApply;
+
+        /// <summary>Whether anything is bound that can read the world back.</summary>
+        public bool CanVerify => _observer.CanObserve;
+
+        /// <param name="policy">
+        /// Defaults to <see cref="RuntimeSafetyPolicy.SafeDefault"/>, which keeps live
+        /// input and packet injection off.
+        /// </param>
+        /// <param name="effector">Bound only when the policy permits acting.</param>
+        /// <param name="observer">
+        /// Without one, every executed cycle ends unverified. That is the honest
+        /// result, not a degraded mode to be papered over.
+        /// </param>
+        public Gate3ExecutionOrchestrator(
+            RuntimeSafetyPolicy? policy = null,
+            IActionEffector? effector = null,
+            IWorldStateObserver? observer = null,
+            TrustTier initialTrust = TrustTier.Tier2_SemiAutonomous)
         {
+            Policy = policy ?? RuntimeSafetyPolicy.SafeDefault;
             _planner = new ActionPlanner();
             _simulation = new SimulationEngine();
             _ranking = new TacticalRankingEngine();
             _guard = new GuardPolicyEngine();
-            _trust = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
+            _trust = new TrustBoundary(initialTrust);
             _safetyGate = new SafetyGate(_trust, _guard);
-            _executor = new AuthorizedActionExecutor(_safetyGate);
+            _executor = new AuthorizedActionExecutor(_safetyGate, ActionEffectorFactory.ForPolicy(Policy, effector));
             _verifier = new ActionExecutionVerifier();
             _recovery = new RecoveryController(_trust);
+            _observer = observer ?? new UnavailableWorldStateObserver();
         }
 
-        public async Task<(bool Success, string Summary)> ExecuteCycleAsync(
+        public async Task<Gate3CycleResult> ExecuteCycleAsync(
             int playerHp,
             int maxHp,
             int playerMp,
@@ -600,203 +780,190 @@ namespace NosAi.Runtime.Gate3
             CancellationToken token = default)
         {
             List<ActionCandidate> candidates = _planner.PlanCandidates(
-                playerHp,
-                maxHp,
-                playerMp,
-                hasTarget,
-                isInCombat);
+                playerHp, maxHp, playerMp, hasTarget, isInCombat);
 
             if (candidates.Count == 0)
-                return (false, "Nessun candidato d'azione pianificato.");
+                return Result(CycleOutcome.NoCandidate, "Nessun candidato d'azione pianificato.", ActionType.None, null);
 
             var predictions = new Dictionary<Guid, PredictedOutcome>(candidates.Count);
             foreach (ActionCandidate candidate in candidates)
-            {
-                predictions[candidate.CandidateId] = _simulation.Simulate(
-                    candidate,
-                    playerHp,
-                    playerMp,
-                    maxHp);
-            }
+                predictions[candidate.CandidateId] = _simulation.Simulate(candidate, playerHp, playerMp, maxHp);
 
             IReadOnlyList<(ActionCandidate Candidate, float UtilityScore)> ranked =
                 _ranking.RankCandidates(candidates, predictions, playerHp, maxHp);
 
             if (ranked.Count == 0)
-                return (false, "Nessun candidato idoneo dopo il ranking tattico.");
+                return Result(CycleOutcome.NoCandidate, "Nessun candidato idoneo dopo il ranking tattico.", ActionType.None, null);
 
-            (ActionCandidate bestCandidate, float utilityScore) = ranked[0];
-            PredictedOutcome predictedOutcome = predictions[bestCandidate.CandidateId];
+            (ActionCandidate best, float utility) = ranked[0];
+            PredictedOutcome predicted = predictions[best.CandidateId];
 
-            if (!_safetyGate.TryAuthorize(
-                    bestCandidate,
-                    predictedOutcome,
-                    CurrentMode,
-                    out SafetyToken? safetyToken,
-                    out string? rejectReason))
+            if (!_safetyGate.TryAuthorize(best, predicted, CurrentMode, out SafetyToken? safetyToken, out string? rejection))
+                return Result(CycleOutcome.Blocked, $"Blocco Safety Gate: {rejection}", best.Type, null);
+
+            ExecutionResult execution = await _executor
+                .ExecuteAuthorizedAsync(best, safetyToken!, token)
+                .ConfigureAwait(false);
+
+            // Nothing was attempted, so there is nothing to recover from and nothing
+            // to verify. Reporting it as failure would drive the recovery controller
+            // to degrade trust over a configuration that is working as intended.
+            if (execution.SuppressedByPolicy)
             {
-                return (false, $"Blocco Safety Gate: {rejectReason}");
+                return Result(
+                    CycleOutcome.ExecutionDisabled,
+                    $"Azione autorizzata ma non eseguita: {execution.Reason}. Ciclo completo fino al gate, esecuzione inibita.",
+                    best.Type,
+                    null);
             }
 
-            ExecutionResult execResult = await _executor.ExecuteAuthorizedAsync(
-                bestCandidate,
-                safetyToken!,
-                token).ConfigureAwait(false);
+            // The world is read back, never derived from the prediction being checked.
+            ObservedState observed = await _observer.ObserveAsync(token).ConfigureAwait(false);
+            VerificationResult verification = _verifier.Verify(best, predicted, execution, observed);
 
-            int simulatedNewHp = Math.Clamp(
-                playerHp + predictedOutcome.ExpectedHpDelta,
-                0,
-                maxHp);
-            int simulatedNewMp = Math.Max(
-                0,
-                playerMp + predictedOutcome.ExpectedMpDelta);
-
-            VerificationResult verifResult = _verifier.Verify(
-                bestCandidate,
-                predictedOutcome,
-                execResult,
-                simulatedNewHp,
-                simulatedNewMp);
-
-            if (verifResult.IsSuccess)
+            if (verification.IsConfirmed)
             {
                 _recovery.ResetFailures();
                 CurrentMode = RuntimeMode.Normal;
-                return (
-                    true,
-                    $"Ciclo completato con successo: {bestCandidate.Type} (Utility: {utilityScore:F2}). {verifResult.AnalysisReport}");
+                return Result(
+                    CycleOutcome.Confirmed,
+                    $"Ciclo confermato: {best.Type} (utility {utility:F2}). {verification.AnalysisReport}",
+                    best.Type,
+                    null);
             }
 
-            // CurrentMode is a property and cannot be passed by reference.
-            // The recovery controller mutates the mode, so it is written back.
+            if (verification.Outcome == VerificationOutcome.Unverified)
+            {
+                // Executed but unconfirmed. Not counted as a failure -- the action may
+                // well have worked -- but never reported as success, and the failure
+                // counter is left untouched rather than reset.
+                return Result(CycleOutcome.Unverified, verification.AnalysisReport, best.Type, null);
+            }
+
             RuntimeMode recoveredMode = CurrentMode;
-            RecoveryStrategy strategy = _recovery.HandleFailure(
-                verifResult,
-                ref recoveredMode);
+            RecoveryStrategy strategy = _recovery.HandleFailure(verification, ref recoveredMode);
             CurrentMode = recoveredMode;
 
-            return (
-                false,
-                $"Fallimento ciclo: {verifResult.AnalysisReport} -> Strategia Recovery: {strategy}");
+            return Result(
+                CycleOutcome.Failed,
+                $"Fallimento ciclo: {verification.AnalysisReport} -> strategia recovery: {strategy}",
+                best.Type,
+                strategy);
         }
+
+        private Gate3CycleResult Result(CycleOutcome outcome, string summary, ActionType action, RecoveryStrategy? strategy)
+            => new(outcome, summary, action, CurrentMode, _trust.CurrentTier, strategy);
     }
 
+    /// <summary>
+    /// Gate 3 certification suite.
+    /// </summary>
+    /// <remarks>
+    /// Results are accumulated rather than short-circuited, so one failure never
+    /// hides the checks after it, and a test that throws is reported as a failure
+    /// carrying its message instead of tearing down the run.
+    /// </remarks>
     public static class Gate3TestRunner
     {
         public static async Task<bool> RunAllTestsAsync()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("=================================================================");
-            Console.WriteLine("    NosAi 1.0 Beta — Esecuzione Test di Certificazione Gate 3    ");
-            Console.WriteLine("=================================================================");
-            Console.ResetColor();
+            Console.WriteLine("=== Gate 3 checks — Decision & Safety Closed Loop ===");
 
             bool allPassed = true;
 
-            allPassed &= RunTest(
-                "Test 1: Simulazione Pura senza Effetti Collaterali",
-                TestSimulationPurity);
-            allPassed &= RunTest(
-                "Test 2: Tactical Ranking MAUT con Priorità HP Critico",
-                TestTacticalRankingPriorities);
-            allPassed &= RunTest(
-                "Test 3: Diniego Fail-Closed Safety Gate per Mancanza Trust",
-                TestSafetyGateTrustDenial);
-            allPassed &= RunTest(
-                "Test 4: Invariante Firma e Monouso SafetyToken",
-                TestSafetyTokenTamperAndReplay);
-            allPassed &= await RunTestAsync(
-                "Test 5: Esecuzione Autorizzata & Verifica Riuscita",
-                TestSuccessfulExecutionCycleAsync);
-            allPassed &= RunTest(
-                "Test 6: Invariante Recovery: Impossibilità Aumento Trust",
-                TestRecoveryTrustInvariant);
+            allPassed &= Run("Simulation is deterministic and side-effect free", TestSimulationPurity);
+            allPassed &= Run("Ranking puts survival first at critical HP", TestTacticalRankingPriorities);
+            allPassed &= Run("Safety Gate denies an action above the trust tier", TestSafetyGateTrustDenial);
+            allPassed &= Run("A forged safety token is rejected", TestForgedTokenRejected);
+            allPassed &= Run("A safety token is single use", TestTokenSingleUse);
+            allPassed &= Run("An expired token authorises nothing", TestExpiredTokenRejected);
+            allPassed &= Run("Guard blocks every action while STOPPED", TestGuardBlocksWhenStopped);
+            allPassed &= Run("Guard blocks combat while COOLING", TestGuardBlocksCombatWhileCooling);
+            allPassed &= Run("Guard blocks an over-risk action", TestGuardBlocksExcessiveRisk);
+            allPassed &= Run("Recovery never escalates trust", TestRecoveryNeverEscalatesTrust);
+            allPassed &= Run("Recovery degrades in order: retry, degraded, halt", TestRecoveryLadder);
+            allPassed &= Run("An unobserved reading is not read as zero", TestUnobservedIsNotZero);
 
-            Console.WriteLine();
+            allPassed &= await RunAsync("A token bound to another candidate is refused", TestTokenBindingEnforcedAsync);
+            allPassed &= await RunAsync("Disabled execution is not reported as success", TestDisabledExecutionIsNotSuccessAsync);
+            allPassed &= await RunAsync("Executed but unobserved is UNVERIFIED, not success", TestUnobservedExecutionIsUnverifiedAsync);
+            allPassed &= await RunAsync("An observed mismatch is a discrepancy", TestObservedMismatchIsDiscrepancyAsync);
+            allPassed &= await RunAsync("An observed match confirms the cycle", TestObservedMatchConfirmsAsync);
+            allPassed &= await RunAsync("A failing observer leaves the cycle unverified", TestFailingObserverIsUnverifiedAsync);
+            allPassed &= await RunAsync("A blocked cycle never reaches the effector", TestBlockedCycleNeverExecutesAsync);
 
-            if (allPassed)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DEL GATE 3 SONO STATI SUPERATI CON SUCCESSO.");
-                Console.WriteLine(">> Il Gate 3 è formalmente sbloccato. È possibile procedere al Gate 4.");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(">> [BLOCCO GATE 3]: UNO O PIÙ TEST SONO FALLITI. SVILUPPO BLOCCATO.");
-                Console.ResetColor();
-            }
+            Console.WriteLine(allPassed
+                ? "=== Gate 3 checks passed. Local only: this is not real-environment verification. ==="
+                : "=== Gate 3 checks FAILED. See the lines marked FAIL above. ===");
 
             return allPassed;
         }
 
-        private static bool RunTest(string testName, Func<bool> testFunc)
+        private static bool Run(string name, Func<bool> check)
         {
-            try
+            try { return Report(name, check(), null); }
+            catch (Exception ex) { return Report(name, false, $"{ex.GetType().Name}: {ex.Message}"); }
+        }
+
+        private static async Task<bool> RunAsync(string name, Func<Task<bool>> check)
+        {
+            try { return Report(name, await check().ConfigureAwait(false), null); }
+            catch (Exception ex) { return Report(name, false, $"{ex.GetType().Name}: {ex.Message}"); }
+        }
+
+        private static bool Report(string name, bool passed, string? error)
+        {
+            string detail = error is null ? string.Empty : $" [{error}]";
+            Console.WriteLine($"[{(passed ? "PASS" : "FAIL")}] {name}{detail}");
+            return passed;
+        }
+
+        // -- helpers ---------------------------------------------------------
+
+        private static ActionCandidate Candidate(
+            ActionType type = ActionType.MoveToPosition,
+            TrustTier required = TrustTier.Tier1_Assisted) =>
+            new(Guid.NewGuid(), type, "TARGET", 10, 10, 0, required, "test");
+
+        private static PredictedOutcome Outcome(Guid id, float risk = 0.0f, string signature = "SIG") =>
+            new(id, 0, 0, 200, 1.0f, risk, signature);
+
+        private static SafetyGate Gate(TrustTier tier) =>
+            new(new TrustBoundary(tier), new GuardPolicyEngine());
+
+        /// <summary>An effector that records whether it was ever reached.</summary>
+        private sealed class RecordingEffector : IActionEffector
+        {
+            public int Applications { get; private set; }
+            public bool CanApply => true;
+            public string? UnavailableReason => null;
+
+            public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
             {
-                bool result = testFunc();
-                PrintResult(testName, result);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                PrintResult(testName, false, ex.Message);
-                return false;
+                Applications++;
+                return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
             }
         }
 
-        private static async Task<bool> RunTestAsync(string testName, Func<Task<bool>> testFunc)
+        private sealed class FixedObserver : IWorldStateObserver
         {
-            try
-            {
-                bool result = await testFunc().ConfigureAwait(false);
-                PrintResult(testName, result);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                PrintResult(testName, false, ex.Message);
-                return false;
-            }
+            private readonly ObservedState _state;
+            public FixedObserver(ObservedState state) => _state = state;
+            public bool CanObserve => true;
+            public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default) => Task.FromResult(_state);
         }
 
-        private static void PrintResult(string name, bool passed, string? error = null)
-        {
-            Console.Write($"[{(passed ? "PASS" : "FAIL")}] {name,-58}");
-
-            if (passed)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" [OK]");
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($" [ERRORE: {error ?? "Fallimento asserzione"}]");
-            }
-
-            Console.ResetColor();
-        }
+        // -- checks ----------------------------------------------------------
 
         private static bool TestSimulationPurity()
         {
             var sim = new SimulationEngine();
-            var candidate = new ActionCandidate(
-                Guid.NewGuid(),
-                ActionType.UseSkill,
-                "MOB_1",
-                10,
-                10,
-                201,
-                TrustTier.Tier2_SemiAutonomous,
-                "Test");
+            ActionCandidate candidate = Candidate(ActionType.UseSkill, TrustTier.Tier2_SemiAutonomous);
 
-            PredictedOutcome outcome1 = sim.Simulate(candidate, 1000, 100, 1000);
-            PredictedOutcome outcome2 = sim.Simulate(candidate, 1000, 100, 1000);
+            PredictedOutcome first = sim.Simulate(candidate, 1000, 100, 1000);
+            PredictedOutcome second = sim.Simulate(candidate, 1000, 100, 1000);
 
-            return outcome1.ExpectedMpDelta == -35 &&
-                   outcome1.StateSignatureAfter == outcome2.StateSignatureAfter;
+            return first.ExpectedMpDelta == -35 && first.StateSignatureAfter == second.StateSignatureAfter;
         }
 
         private static bool TestTacticalRankingPriorities()
@@ -805,166 +972,260 @@ namespace NosAi.Runtime.Gate3
             var sim = new SimulationEngine();
             var ranking = new TacticalRankingEngine();
 
-            var candidates = planner.PlanCandidates(200, 1000, 50, true, true);
-            var predictions = candidates.ToDictionary(
-                c => c.CandidateId,
-                c => sim.Simulate(c, 200, 50, 1000));
+            List<ActionCandidate> candidates = planner.PlanCandidates(200, 1000, 50, true, true);
+            Dictionary<Guid, PredictedOutcome> predictions =
+                candidates.ToDictionary(c => c.CandidateId, c => sim.Simulate(c, 200, 50, 1000));
 
-            var ranked = ranking.RankCandidates(
-                candidates,
-                predictions,
-                200,
-                1000);
+            IReadOnlyList<(ActionCandidate Candidate, float UtilityScore)> ranked =
+                ranking.RankCandidates(candidates, predictions, 200, 1000);
 
-            return ranked.Count > 0 &&
-                   (ranked[0].Candidate.Type == ActionType.UseConsumable ||
-                    ranked[0].Candidate.Type == ActionType.EmergencyFlee);
+            return ranked.Count > 0
+                   && ranked[0].Candidate.Type is ActionType.UseConsumable or ActionType.EmergencyFlee;
         }
 
         private static bool TestSafetyGateTrustDenial()
         {
-            var trust = new TrustBoundary(TrustTier.Tier0_ReadOnly);
-            var guard = new GuardPolicyEngine();
-            var gate = new SafetyGate(trust, guard);
-
-            var candidate = new ActionCandidate(
-                Guid.NewGuid(),
-                ActionType.UseBasicAttack,
-                "MOB_1",
-                0,
-                0,
-                0,
-                TrustTier.Tier2_SemiAutonomous,
-                "Attack");
-
-            var outcome = new PredictedOutcome(
-                candidate.CandidateId,
-                -10,
-                0,
-                500,
-                0.9f,
-                0.1f,
-                "SIG");
+            SafetyGate gate = Gate(TrustTier.Tier0_ReadOnly);
+            ActionCandidate candidate = Candidate(ActionType.UseBasicAttack, TrustTier.Tier2_SemiAutonomous);
 
             bool authorized = gate.TryAuthorize(
-                candidate,
-                outcome,
-                RuntimeMode.Normal,
-                out _,
-                out string? reason);
+                candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal, out _, out string? reason);
 
-            return !authorized &&
-                   reason != null &&
-                   reason.Contains("Diniego Trust", StringComparison.Ordinal);
+            return !authorized && reason is not null && reason.Contains("Diniego Trust", StringComparison.Ordinal);
         }
 
-        private static bool TestSafetyTokenTamperAndReplay()
+        private static bool TestForgedTokenRejected()
         {
-            var trust = new TrustBoundary(TrustTier.Tier4_FullAutonomous);
+            // A token whose signature does not come from this gate's key must never
+            // authorise: without the check, anyone able to construct the type could act.
+            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
+
+            return !gate.ValidateToken(forged);
+        }
+
+        private static bool TestTokenSingleUse()
+        {
+            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionCandidate candidate = Candidate();
+
+            if (!gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal, out SafetyToken? token, out _))
+                return false;
+
+            return token!.TryConsume() && !token.TryConsume();
+        }
+
+        private static bool TestExpiredTokenRejected()
+        {
+            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionCandidate candidate = Candidate();
+
+            if (!gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal, out SafetyToken? issued, out _))
+                return false;
+
+            // Same candidate id, so the signature verifies; only the TTL is past.
+            var expired = new SafetyToken(
+                candidate.CandidateId, issued!.GrantedTier, issued.Signature, TimeSpan.FromMilliseconds(-1));
+
+            return !gate.ValidateToken(expired) && !expired.TryConsume();
+        }
+
+        private static bool TestGuardBlocksWhenStopped()
+        {
             var guard = new GuardPolicyEngine();
-            var gate = new SafetyGate(trust, guard);
+            ActionCandidate candidate = Candidate(ActionType.UseConsumable);
 
-            var candidate = new ActionCandidate(
-                Guid.NewGuid(),
-                ActionType.MoveToPosition,
-                "POS",
-                10,
-                10,
-                0,
-                TrustTier.Tier1_Assisted,
-                "Move");
+            GuardEvaluationResult result = guard.Evaluate(
+                candidate, Outcome(candidate.CandidateId), RuntimeMode.Stopped);
 
-            var outcome = new PredictedOutcome(
-                candidate.CandidateId,
-                0,
-                0,
-                200,
-                1.0f,
-                0.0f,
-                "SIG");
-
-            if (!gate.TryAuthorize(
-                    candidate,
-                    outcome,
-                    RuntimeMode.Normal,
-                    out SafetyToken? token,
-                    out _))
-                return false;
-
-            if (!token!.TryConsume())
-                return false;
-
-            return !token.TryConsume();
+            return !result.IsAllowedByPolicy && result.ViolatedConstraints.Length > 0;
         }
 
-        private static async Task<bool> TestSuccessfulExecutionCycleAsync()
+        private static bool TestGuardBlocksCombatWhileCooling()
         {
-            var orchestrator = new Gate3ExecutionOrchestrator();
-            (bool success, _) = await orchestrator.ExecuteCycleAsync(
-                800,
-                1000,
-                100,
-                true,
-                false).ConfigureAwait(false);
+            var guard = new GuardPolicyEngine();
+            ActionCandidate attack = Candidate(ActionType.UseBasicAttack);
+            ActionCandidate heal = Candidate(ActionType.UseConsumable);
 
-            return success;
+            bool combatBlocked = !guard.Evaluate(attack, Outcome(attack.CandidateId), RuntimeMode.Cooling).IsAllowedByPolicy;
+            // Recovery must stay possible while cooling, or thermal throttling would
+            // prevent the character from saving itself.
+            bool healAllowed = guard.Evaluate(heal, Outcome(heal.CandidateId), RuntimeMode.Cooling).IsAllowedByPolicy;
+
+            return combatBlocked && healAllowed;
         }
 
-        private static bool TestRecoveryTrustInvariant()
+        private static bool TestGuardBlocksExcessiveRisk()
+        {
+            var guard = new GuardPolicyEngine();
+            ActionCandidate risky = Candidate(ActionType.UseSkill);
+            ActionCandidate flee = Candidate(ActionType.EmergencyFlee);
+
+            bool riskyBlocked = !guard.Evaluate(risky, Outcome(risky.CandidateId, risk: 0.9f), RuntimeMode.Normal).IsAllowedByPolicy;
+            // Fleeing is the exception: it is the action taken *because* the situation
+            // is dangerous, so the risk ceiling must not forbid it.
+            bool fleeAllowed = guard.Evaluate(flee, Outcome(flee.CandidateId, risk: 0.9f), RuntimeMode.Normal).IsAllowedByPolicy;
+
+            return riskyBlocked && fleeAllowed;
+        }
+
+        private static bool TestRecoveryNeverEscalatesTrust()
+        {
+            var trust = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
+            trust.DowngradeTrust(TrustTier.Tier0_ReadOnly);
+            trust.DowngradeTrust(TrustTier.Tier4_FullAutonomous); // must be ignored
+
+            bool stayedLow = trust.CurrentTier == TrustTier.Tier0_ReadOnly;
+
+            bool hasEscalation = typeof(RecoveryController).GetMethods()
+                .Select(m => m.Name.ToLowerInvariant())
+                .Any(n => n.Contains("upgrade", StringComparison.Ordinal)
+                          || n.Contains("elevate", StringComparison.Ordinal)
+                          || n.Contains("grant", StringComparison.Ordinal));
+
+            return stayedLow && !hasEscalation;
+        }
+
+        private static bool TestRecoveryLadder()
         {
             var trust = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
             var recovery = new RecoveryController(trust);
             var mode = RuntimeMode.Normal;
 
-            var failVerif = new VerificationResult(
-                Guid.NewGuid(),
-                false,
-                1.0f,
-                "Errore critico simulato");
+            var failure = new VerificationResult(
+                Guid.NewGuid(), VerificationOutcome.Discrepant, 1.0f, "test", DataSourceKind.Live);
 
-            recovery.HandleFailure(failVerif, ref mode);
-            recovery.HandleFailure(failVerif, ref mode);
-            recovery.HandleFailure(failVerif, ref mode);
-            recovery.HandleFailure(failVerif, ref mode);
+            RecoveryStrategy first = recovery.HandleFailure(failure, ref mode);
+            RecoveryStrategy second = recovery.HandleFailure(failure, ref mode);
+            RecoveryStrategy third = recovery.HandleFailure(failure, ref mode);
+            RecoveryStrategy fourth = recovery.HandleFailure(failure, ref mode);
 
-            bool isDegraded =
-                trust.CurrentTier == TrustTier.Tier0_ReadOnly &&
-                mode == RuntimeMode.Stopped;
-
-            var recoveryMethods = typeof(RecoveryController)
-                .GetMethods()
-                .Select(m => m.Name.ToLowerInvariant());
-
-            bool hasEscalationMethod = recoveryMethods.Any(
-                m => m.Contains("upgrade", StringComparison.Ordinal) ||
-                     m.Contains("elevate", StringComparison.Ordinal) ||
-                     m.Contains("grant", StringComparison.Ordinal));
-
-            return isDegraded && !hasEscalationMethod;
+            return first == RecoveryStrategy.Retry
+                   && second == RecoveryStrategy.Retry
+                   && third == RecoveryStrategy.DegradedReplan
+                   && fourth == RecoveryStrategy.HaltAndAlert
+                   && mode == RuntimeMode.Stopped
+                   && trust.CurrentTier == TrustTier.Tier0_ReadOnly;
         }
-    }
 
-    public static class Program
-    {
-        public static async Task<int> Main(string[] args)
+        private static bool TestUnobservedIsNotZero()
         {
-            Console.Title = "NosAi Runtime — Gate 3 (1.0 Beta)";
+            // UNKNOWN must never collapse to a number. A verifier that read an absent
+            // observation as 0 would confirm a prediction of death whenever perception
+            // was simply unavailable.
+            ObservedState unobserved = ObservedState.Unobserved("no_perception_backend");
 
-            if (args.Length > 0 &&
-                args[0].Equals("--test", StringComparison.OrdinalIgnoreCase))
-            {
-                bool success = await Gate3TestRunner.RunAllTestsAsync().ConfigureAwait(false);
-                return success ? 0 : 1;
-            }
+            return !unobserved.IsFullyObserved
+                   && unobserved.Hp.Source == DataSourceKind.Unknown
+                   && !unobserved.Hp.HasValue
+                   && unobserved.Hp.FailureReason == "no_perception_backend";
+        }
 
-            Console.WriteLine("Inizializzazione NosAi Runtime Gate 3 (Decision & Safety Closed-Loop)...");
+        private static async Task<bool> TestTokenBindingEnforcedAsync()
+        {
+            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            var executor = new AuthorizedActionExecutor(gate, new RecordingEffector());
+
+            ActionCandidate authorised = Candidate();
+            ActionCandidate other = Candidate();
+
+            if (!gate.TryAuthorize(authorised, Outcome(authorised.CandidateId), RuntimeMode.Normal, out SafetyToken? token, out _))
+                return false;
+
+            ExecutionResult result = await executor.ExecuteAuthorizedAsync(other, token!).ConfigureAwait(false);
+
+            // Refused, and the token survives for its rightful owner: a misuse attempt
+            // must not burn the authorisation someone else legitimately holds.
+            return result.State == ExecutionState.Refused && token!.TryConsume();
+        }
+
+        private static async Task<bool> TestDisabledExecutionIsNotSuccessAsync()
+        {
+            // The regression this pins: the pipeline used to sleep 50 ms and report a
+            // completed action while nothing had touched the client.
             var orchestrator = new Gate3ExecutionOrchestrator();
-            _ = orchestrator;
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
 
-            Console.WriteLine("Runtime Gate 3 operativo. Esecuzione del test di certificazione integrato...");
-            bool passed = await Gate3TestRunner.RunAllTestsAsync().ConfigureAwait(false);
+            return result.Outcome == CycleOutcome.ExecutionDisabled
+                   && !result.IsConfirmed
+                   && !orchestrator.CanExecute
+                   && orchestrator.CurrentMode == RuntimeMode.Normal;
+        }
 
-            return passed ? 0 : 1;
+        private static async Task<bool> TestUnobservedExecutionIsUnverifiedAsync()
+        {
+            // Executed for real, but nothing can read the world back. The cycle must
+            // say so rather than claim the prediction held.
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector());
+
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.Unverified && !result.IsConfirmed && !orchestrator.CanVerify;
+        }
+
+        private static async Task<bool> TestObservedMismatchIsDiscrepancyAsync()
+        {
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var observer = new FixedObserver(ObservedState.Live(1, 1));
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.Failed && result.Strategy is not null;
+        }
+
+        private static async Task<bool> TestObservedMatchConfirmsAsync()
+        {
+            // The observation is built to match what the simulation predicts for the
+            // action ranking will choose, so a confirmed cycle is reachable at all.
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var sim = new SimulationEngine();
+            var planner = new ActionPlanner();
+            var ranking = new TacticalRankingEngine();
+
+            const int hp = 800, maxHp = 1000, mp = 100;
+            List<ActionCandidate> candidates = planner.PlanCandidates(hp, maxHp, mp, true, false);
+            Dictionary<Guid, PredictedOutcome> predictions =
+                candidates.ToDictionary(c => c.CandidateId, c => sim.Simulate(c, hp, mp, maxHp));
+            (ActionCandidate best, _) = ranking.RankCandidates(candidates, predictions, hp, maxHp)[0];
+            PredictedOutcome predicted = predictions[best.CandidateId];
+
+            var observer = new FixedObserver(ObservedState.Live(
+                Math.Clamp(hp + predicted.ExpectedHpDelta, 0, maxHp),
+                Math.Max(0, mp + predicted.ExpectedMpDelta)));
+
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(hp, maxHp, mp, true, false).ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.Confirmed && result.IsConfirmed;
+        }
+
+        private static async Task<bool> TestFailingObserverIsUnverifiedAsync()
+        {
+            // A perception fault must leave the cycle unverified, never tear down the
+            // pipeline and never look like a confirmation.
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.Unverified && !result.IsConfirmed;
+        }
+
+        private static async Task<bool> TestBlockedCycleNeverExecutesAsync()
+        {
+            // Guard denial has to stop the action before the effector, not merely
+            // report a refusal after the world was already touched.
+            var policy = new RuntimeSafetyPolicy(true, false, true, true);
+            var effector = new RecordingEffector();
+            var orchestrator = new Gate3ExecutionOrchestrator(
+                policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
+
+            Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, true, false).ConfigureAwait(false);
+
+            return result.Outcome == CycleOutcome.Blocked && effector.Applications == 0;
         }
     }
 }
