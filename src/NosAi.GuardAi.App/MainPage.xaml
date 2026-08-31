@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:app="clr-namespace:NosAi.GuardAi.App"
+             xmlns:guard="clr-namespace:NosAi.GuardClient;assembly=NosAi.GuardClient"
              x:Class="NosAi.GuardAi.App.MainPage"
              Title="NosAi Guard AI">
 
@@ -9,7 +9,7 @@
         <VerticalStackLayout Padding="20" Spacing="16">
 
             <Label Text="Guard AI" FontSize="26" FontAttributes="Bold" />
-            <Label Text="Gate 1 — sola osservazione. Nessun input, nessuna injection."
+            <Label Text="Sola osservazione. Lo stato di sicurezza qui sotto è quello dichiarato dal runtime, non da questa app."
                    FontSize="13" TextColor="Gray" />
 
             <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
@@ -31,6 +31,11 @@
                         <Button x:Name="DisconnectButton" Text="Disconnetti" Clicked="OnDisconnectClicked"
                                 IsEnabled="False" />
                     </HorizontalStackLayout>
+
+                    <!-- Where this device's private key lives (ADR-0010). Reported
+                         rather than assumed: a phone whose key store was unavailable
+                         must not look protected. -->
+                    <Label x:Name="CustodyLabel" FontSize="12" TextColor="Gray" />
                 </VerticalStackLayout>
             </Frame>
 
@@ -43,6 +48,26 @@
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- Read from the snapshot, never asserted here. The runtime is the
+                 safety authority (ADR-0003); this screen reports what it says. -->
+            <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Sicurezza (dal runtime)" FontAttributes="Bold" />
+                    <Label x:Name="ExecutionLabel" Text="Sconosciuto finché non c'è una sessione."
+                           FontSize="13" />
+                    <CollectionView x:Name="SafetyView" HeightRequest="96">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="guard:ClassifiedField">
+                                <Grid Padding="0,6" ColumnDefinitions="150,*">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" TextColor="Gray" />
+                                    <Label Grid.Column="1" Text="{Binding Display}" FontSize="14" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
             <Frame BorderColor="LightGray" Padding="14" CornerRadius="8">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Client NosTale" FontAttributes="Bold" />
@@ -50,7 +75,7 @@
                            FontSize="12" TextColor="Gray" />
                     <CollectionView x:Name="FieldsView" HeightRequest="220">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="app:ClassifiedField">
+                            <DataTemplate x:DataType="guard:ClassifiedField">
                                 <Grid Padding="0,6" ColumnDefinitions="120,*">
                                     <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" TextColor="Gray" />
                                     <Label Grid.Column="1" Text="{Binding Display}" FontSize="14" />

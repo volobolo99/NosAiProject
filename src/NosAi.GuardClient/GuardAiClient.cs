@@ -70,7 +70,7 @@ public sealed class GuardAiClient : IAsyncDisposable
 
     private readonly string _host;
     private readonly int _port;
-    private readonly RSA _key;
+    private readonly IDeviceSigner _signer;
     private readonly string _runtimePublicKeyPem;
     private readonly SequenceGuard _egress = new();
     private readonly SequenceGuard _ingress = new();
@@ -80,30 +80,41 @@ public sealed class GuardAiClient : IAsyncDisposable
     private bool _disposed;
 
     /// <param name="privateKey">
-    /// The device key. Not disposed by this client: on a phone it is owned by the
-    /// platform key store, which must outlive any single session.
+    /// The device key. Not disposed by this client: on a phone it is owned by
+    /// whatever created it and must outlive any single session.
     /// </param>
     /// <param name="runtimePublicKeyPem">
     /// The runtime's public key, pinned at pairing. Without it the phone cannot
     /// tell a genuine runtime from anything else on the network.
     /// </param>
     public GuardAiClient(string host, int port, RSA privateKey, string runtimePublicKeyPem)
+        : this(host, port, new RsaDeviceSigner(privateKey), runtimePublicKeyPem)
+    {
+    }
+
+    /// <param name="signer">
+    /// Whatever holds the device key. A key inside the platform key store cannot
+    /// be loaded into memory (ADR-0010), so the client asks for a signature rather
+    /// than for the key.
+    /// </param>
+    public GuardAiClient(string host, int port, IDeviceSigner signer, string runtimePublicKeyPem)
     {
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("A host is required.", nameof(host));
         if (port is < 1 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(port), port, "Port must be between 1 and 65535.");
-        ArgumentNullException.ThrowIfNull(privateKey);
-        if (privateKey.KeySize != 2048)
-            throw new ArgumentException("Gate 1 accepts RSA-2048 keys only.", nameof(privateKey));
+        ArgumentNullException.ThrowIfNull(signer);
         if (string.IsNullOrWhiteSpace(runtimePublicKeyPem))
             throw new ArgumentException("A pinned runtime public key is required; mutual authentication is fail-closed.", nameof(runtimePublicKeyPem));
 
         _host = host;
         _port = port;
-        _key = privateKey;
+        _signer = signer;
         _runtimePublicKeyPem = runtimePublicKeyPem;
     }
+
+    /// <summary>Where this device's private key lives, for the operator to see.</summary>
+    public DeviceKeyCustody KeyCustody => _signer.Custody;
 
     public bool IsConnected => _client?.Connected == true;
 
@@ -179,7 +190,11 @@ public sealed class GuardAiClient : IAsyncDisposable
         _cipher?.Dispose();
         _cipher = cipher;
 
-        var signature = SessionTranscript.Sign(_key, HandshakeRole.Client, clientNonce, serverNonce, clientEphemeral, serverEphemeral);
+        // Signed over the transcript message, not a digest computed here: a key in
+        // a hardware store hashes the message itself. The bytes are identical
+        // either way, which SessionTranscriptTests pins.
+        var signature = _signer.Sign(
+            SessionTranscript.Message(HandshakeRole.Client, clientNonce, serverNonce, clientEphemeral, serverEphemeral));
         await SendAsync(WireMessageType.AuthResponse, signature, cancellationToken).ConfigureAwait(false);
 
         var result = await ExpectAsync(WireMessageType.AuthResult, cancellationToken).ConfigureAwait(false);

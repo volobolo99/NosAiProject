@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text.Json;
 using NosAi.GuardClient;
 
 namespace NosAi.GuardAi.App;
@@ -16,40 +14,49 @@ public enum GuardLinkState
     Connecting,
     Connected,
 
+    /// <summary>
+    /// The session dropped for a reason that may pass, and the app is waiting to
+    /// try again on its own.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="Failed"/> on purpose: one asks the operator to do
+    /// something, the other asks them to wait. Showing a refused device as
+    /// "reconnecting" would hide the one failure that needs a person.
+    /// </remarks>
+    Reconnecting,
+
     /// <summary>The link failed or was refused. <see cref="GuardStatus.Detail"/> says why.</summary>
     Failed
 }
 
-/// <summary>
-/// One classified field as the runtime published it.
-/// </summary>
-/// <remarks>
-/// <see cref="Value"/> is null whenever <see cref="Source"/> is UNKNOWN. The app
-/// never substitutes a zero, a dash or an empty string for an unobserved reading:
-/// on an operator's phone those are indistinguishable from a real measurement.
-/// </remarks>
-public sealed record ClassifiedField(string Name, string? Value, string Source)
-{
-    public string Display => Source == "UNKNOWN" ? "UNKNOWN" : $"{Value} [{Source}]";
-}
-
 /// <summary>An immutable view of the link for the UI to render.</summary>
+/// <remarks>
+/// Every list is empty unless a snapshot is actually in hand. A dropped session
+/// must not leave the last good reading on screen: stale state that looks current
+/// is the one thing this application must never show.
+/// </remarks>
 public sealed record GuardStatus(
     GuardLinkState State,
     string? Detail,
     IReadOnlyList<ClassifiedField> Client,
+    IReadOnlyList<ClassifiedField> Safety,
     string? RuntimeStatus,
     string? Endpoint,
     DateTimeOffset? ObservedAt)
 {
+    private static readonly IReadOnlyList<ClassifiedField> None = Array.Empty<ClassifiedField>();
+
     public static GuardStatus Idle { get; } =
-        new(GuardLinkState.Idle, null, Array.Empty<ClassifiedField>(), null, null, null);
+        new(GuardLinkState.Idle, null, None, None, null, null, null);
 
     public static GuardStatus Busy(GuardLinkState state, string detail) =>
-        new(state, detail, Array.Empty<ClassifiedField>(), null, null, null);
+        new(state, detail, None, None, null, null, null);
 
     public static GuardStatus Failure(string detail) =>
-        new(GuardLinkState.Failed, detail, Array.Empty<ClassifiedField>(), null, null, null);
+        new(GuardLinkState.Failed, detail, None, None, null, null, null);
+
+    public static GuardStatus Waiting(string detail) =>
+        new(GuardLinkState.Reconnecting, detail, None, None, null, null, null);
 }
 
 /// <summary>
@@ -83,12 +90,25 @@ public sealed class GuardConnectionService : IAsyncDisposable
 
     private const int GuardPort = 17471;
 
-    private readonly RSA _deviceKey;
+    private readonly IDeviceSigner _deviceKey;
     private readonly string? _runtimePublicKeyPem;
+    private readonly GuardReconnectPolicy _policy = new();
     private GuardAiClient? _client;
     private CancellationTokenSource? _loop;
 
-    public GuardConnectionService(RSA deviceKey, string? runtimePublicKeyPem)
+    /// <summary>
+    /// The transport the operator chose, so a reconnect repeats their choice.
+    /// </summary>
+    /// <remarks>
+    /// Null while nothing is running, which is also what stops a stale loop from
+    /// reconnecting after the operator pressed Disconnetti.
+    /// </remarks>
+    private GuardTransport? _active;
+
+    /// <summary>Where the device key lives, for the operator to see (ADR-0010).</summary>
+    public DeviceKeyCustody KeyCustody => _deviceKey.Custody;
+
+    public GuardConnectionService(IDeviceSigner deviceKey, string? runtimePublicKeyPem)
     {
         _deviceKey = deviceKey;
         _runtimePublicKeyPem = runtimePublicKeyPem;
@@ -100,6 +120,14 @@ public sealed class GuardConnectionService : IAsyncDisposable
     public async Task ConnectAsync(GuardTransport transport, CancellationToken cancellationToken = default)
     {
         await StopAsync().ConfigureAwait(false);
+        _policy.OnSuccess();
+        await OpenAsync(transport, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Opens one session. Used by the operator's Connetti and by a retry.</summary>
+    private async Task OpenAsync(GuardTransport transport, CancellationToken cancellationToken)
+    {
+        _active = transport;
 
         string host;
         if (transport == GuardTransport.WiFi)
@@ -113,14 +141,18 @@ public sealed class GuardConnectionService : IAsyncDisposable
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                Publish(GuardStatus.Failure($"ricerca fallita ({ex.GetType().Name})"));
+                await AfterFailureAsync($"ricerca fallita ({ex.GetType().Name})", "discovery_failed", transport, cancellationToken)
+                    .ConfigureAwait(false);
                 return;
             }
 
             if (found is null)
             {
-                Publish(GuardStatus.Failure(
-                    "nessun runtime trovato sulla rete. Verificare che il PC sia sullo stesso Wi-Fi e che il runtime sia avviato."));
+                // The runtime may simply not be up yet, so this is worth waiting on
+                // rather than handing straight back to the operator.
+                await AfterFailureAsync(
+                    "nessun runtime trovato sulla rete. Verificare che il PC sia sullo stesso Wi-Fi e che il runtime sia avviato.",
+                    "discovery_empty", transport, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -136,6 +168,8 @@ public sealed class GuardConnectionService : IAsyncDisposable
 
         if (string.IsNullOrWhiteSpace(_runtimePublicKeyPem))
         {
+            // Terminal by nature: no amount of waiting produces a pairing.
+            _active = null;
             Publish(GuardStatus.Failure(
                 "chiave del runtime assente. Collegare il telefono via USB ed eseguire python -m nosai.phone.deploy."));
             return;
@@ -152,19 +186,59 @@ public sealed class GuardConnectionService : IAsyncDisposable
         catch (GuardProtocolException ex)
         {
             await client.DisposeAsync().ConfigureAwait(false);
-            Publish(GuardStatus.Failure(Explain(ex, transport)));
+            await AfterFailureAsync(Explain(ex, transport), ex.Reason, transport, cancellationToken).ConfigureAwait(false);
             return;
         }
         catch (OperationCanceledException)
         {
             await client.DisposeAsync().ConfigureAwait(false);
+            _active = null;
             Publish(GuardStatus.Idle);
             return;
         }
 
+        _policy.OnSuccess();
         Publish(Describe(session.TelemetryJson, endpoint));
         _loop = new CancellationTokenSource();
         _ = BeatAsync(endpoint, _loop.Token);
+    }
+
+    /// <summary>
+    /// Reports a failure, and retries it when waiting could plausibly help.
+    /// </summary>
+    /// <remarks>
+    /// The decision is <see cref="GuardReconnectPolicy"/>'s, not this method's: a
+    /// refused device is reported once and left alone, a runtime that is not up
+    /// yet is waited for. Retrying a refusal would turn the one message that needs
+    /// a person into a scrolling one.
+    /// </remarks>
+    private async Task AfterFailureAsync(string detail, string? reason, GuardTransport transport, CancellationToken cancellationToken)
+    {
+        if (_policy.OnFailure(reason, out var delay) == ReconnectDecision.Stop)
+        {
+            _active = null;
+            Publish(GuardStatus.Failure(detail));
+            return;
+        }
+
+        Publish(GuardStatus.Waiting($"{detail} Nuovo tentativo fra {delay.TotalSeconds:F0} s (tentativo {_policy.Attempt})."));
+
+        try
+        {
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            _active = null;
+            Publish(GuardStatus.Idle);
+            return;
+        }
+
+        // The operator may have pressed Disconnetti while we waited.
+        if (_active != transport)
+            return;
+
+        await OpenAsync(transport, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -210,53 +284,55 @@ public sealed class GuardConnectionService : IAsyncDisposable
             // A dropped session must be visible immediately. Leaving the last good
             // snapshot on screen would show the operator stale state as if it were
             // current, which is the one thing this app must never do.
-            Publish(GuardStatus.Failure(ex.Reason == "peer_disconnected"
+            var transport = _active;
+            var detail = ex.Reason == "peer_disconnected"
                 ? "sessione chiusa dal runtime."
-                : $"sessione interrotta ({ex.Reason})."));
-            await StopAsync().ConfigureAwait(false);
+                : $"sessione interrotta ({ex.Reason}).";
+
+            await StopKeepingTransportAsync().ConfigureAwait(false);
+
+            if (transport is { } chosen)
+                await AfterFailureAsync(detail, ex.Reason, chosen, CancellationToken.None).ConfigureAwait(false);
+            else
+                Publish(GuardStatus.Failure(detail));
         }
     }
 
+    /// <summary>
+    /// Turns a snapshot into what the screen shows.
+    /// </summary>
+    /// <remarks>
+    /// The parsing lives in <see cref="GuardSnapshotView"/>, in the client library,
+    /// so it can be tested without a device — the phone application has no test
+    /// host of its own, and rendering rules that only run on hardware are rules
+    /// nobody checks. The safety section in particular is <b>read</b> here: the
+    /// screen used to assert that input and injection were off, which is a claim
+    /// about a property only the runtime is authoritative for.
+    /// </remarks>
     private static GuardStatus Describe(string telemetryJson, string endpoint)
     {
-        using var document = JsonDocument.Parse(telemetryJson);
-        var root = document.RootElement;
-        var client = root.GetProperty("client");
-
-        var fields = new List<ClassifiedField>
-        {
-            Field(client, "processName", "Processo"),
-            Field(client, "processId", "PID"),
-            Field(client, "windowTitle", "Finestra"),
-            Field(client, "processResponding", "Risponde"),
-            Field(client, "windowVisible", "Visibile"),
-            Field(client, "gameplayBaseline", "Gameplay"),
-        };
-
+        var view = GuardSnapshotView.Parse(telemetryJson);
         return new GuardStatus(
             GuardLinkState.Connected,
-            client.TryGetProperty("status", out var clientStatus) ? clientStatus.GetString() : null,
-            fields,
-            root.TryGetProperty("runtimeStatus", out var status) ? status.GetString() : null,
+            view.ClientStatus,
+            view.Client,
+            view.Safety,
+            view.RuntimeStatus,
             endpoint,
-            DateTimeOffset.Now);
+            // The runtime's own capture time, not the phone's clock: a snapshot is
+            // as fresh as when it was taken, not as when it arrived.
+            view.CapturedAtUtc ?? DateTimeOffset.Now);
     }
 
-    private static ClassifiedField Field(JsonElement client, string property, string label)
-    {
-        if (!client.TryGetProperty(property, out var field))
-            return new ClassifiedField(label, null, "UNKNOWN");
-
-        var source = field.TryGetProperty("source", out var s) ? s.GetString() ?? "UNKNOWN" : "UNKNOWN";
-        var value = field.TryGetProperty("value", out var v) && v.ValueKind is not JsonValueKind.Null
-            ? v.ToString()
-            : null;
-
-        // A value without a source, or a source of UNKNOWN, is not a reading.
-        return value is null ? new ClassifiedField(label, null, "UNKNOWN") : new ClassifiedField(label, value, source);
-    }
-
+    /// <summary>Stops the session and forgets the operator's transport choice.</summary>
     public async Task StopAsync()
+    {
+        _active = null;
+        await StopKeepingTransportAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>Stops the session but keeps the choice, so a retry can repeat it.</summary>
+    private async Task StopKeepingTransportAsync()
     {
         _loop?.Cancel();
         _loop?.Dispose();
@@ -273,6 +349,6 @@ public sealed class GuardConnectionService : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
-        _deviceKey.Dispose();
+        (_deviceKey as IDisposable)?.Dispose();
     }
 }

@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using NosAi.GuardClient;
 
 namespace NosAi.GuardAi.App;
 
@@ -15,7 +15,7 @@ namespace NosAi.GuardAi.App;
 public partial class MainPage : ContentPage
 {
     private readonly GuardConnectionService _connection;
-    private readonly RSA _deviceKey;
+    private readonly IDeviceSigner _deviceKey;
     private GuardTransport _transport;
     private bool _applyingStoredChoice;
 
@@ -23,7 +23,7 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
 
-        _deviceKey = DeviceIdentity.LoadOrCreate();
+        _deviceKey = DeviceIdentity.LoadOrCreateSigner();
         DeviceIdentity.PublishPublicKey(_deviceKey);
 
         _connection = new GuardConnectionService(_deviceKey, RuntimePin.Load());
@@ -38,6 +38,14 @@ public partial class MainPage : ContentPage
         _applyingStoredChoice = false;
 
         UpdateTransportHint();
+        CustodyLabel.Text = _connection.KeyCustody switch
+        {
+            DeviceKeyCustody.PlatformKeyStore => "Chiave del dispositivo: Android Keystore.",
+            DeviceKeyCustody.AppPrivateFile =>
+                "Chiave del dispositivo: file nell'app. Il Keystore non è disponibile su questo telefono"
+                + (DeviceIdentity.KeyStoreUnavailableReason is { } why ? $" ({why})." : "."),
+            _ => "Chiave del dispositivo: custodia sconosciuta."
+        };
         Render(GuardStatus.Idle);
     }
 
@@ -79,6 +87,9 @@ public partial class MainPage : ContentPage
             GuardLinkState.Searching => "RICERCA…",
             GuardLinkState.Connecting => "CONNESSIONE…",
             GuardLinkState.Connected => "CONNESSO",
+            // Distinct from NON CONNESSO: the app is working on it and the
+            // operator has nothing to do. Failed means the opposite.
+            GuardLinkState.Reconnecting => "RICONNESSIONE…",
             _ => "NON CONNESSO"
         };
 
@@ -86,6 +97,7 @@ public partial class MainPage : ContentPage
         {
             GuardLinkState.Connected => Colors.Green,
             GuardLinkState.Failed => Colors.OrangeRed,
+            GuardLinkState.Reconnecting => Colors.DarkOrange,
             _ => Colors.Gray
         };
 
@@ -98,12 +110,51 @@ public partial class MainPage : ContentPage
             : string.Empty;
 
         FieldsView.ItemsSource = status.Client;
+        SafetyView.ItemsSource = status.Safety;
+        RenderExecution(status);
 
-        var busy = status.State is GuardLinkState.Searching or GuardLinkState.Connecting;
+        // Reconnecting counts as busy: the app is mid-attempt, so Connetti would
+        // start a second one. Disconnetti stays live, because giving up is the
+        // operator's decision to make at any time.
+        var busy = status.State is GuardLinkState.Searching or GuardLinkState.Connecting or GuardLinkState.Reconnecting;
         ConnectButton.IsEnabled = !busy && status.State != GuardLinkState.Connected;
-        DisconnectButton.IsEnabled = status.State is GuardLinkState.Connected;
+        DisconnectButton.IsEnabled = busy || status.State is GuardLinkState.Connected;
         UsbOption.IsEnabled = !busy && status.State != GuardLinkState.Connected;
         WiFiOption.IsEnabled = UsbOption.IsEnabled;
+    }
+
+    /// <summary>
+    /// States the execution mode the runtime reported, or says it is not known.
+    /// </summary>
+    /// <remarks>
+    /// Never "disabled" by default. Without a session there is no statement about
+    /// execution, and presenting silence as a safety guarantee is exactly the
+    /// error this screen used to make.
+    /// </remarks>
+    private void RenderExecution(GuardStatus status)
+    {
+        if (status.State != GuardLinkState.Connected)
+        {
+            ExecutionLabel.Text = "Sconosciuto: nessuna sessione in corso.";
+            ExecutionLabel.TextColor = Colors.Gray;
+            return;
+        }
+
+        var view = status.Safety;
+        var mode = view.FirstOrDefault(f => f.Name == GuardSnapshotView.ExecutionModeField);
+
+        if (mode is null || !mode.IsKnown)
+        {
+            ExecutionLabel.Text = "Il runtime non dichiara la modalità di esecuzione.";
+            ExecutionLabel.TextColor = Colors.OrangeRed;
+            return;
+        }
+
+        var disabled = mode.Value!.Contains("disabled", StringComparison.OrdinalIgnoreCase);
+        ExecutionLabel.Text = disabled
+            ? $"Esecuzione disabilitata dal runtime ({mode.Value})."
+            : $"Esecuzione ATTIVA sul runtime ({mode.Value}).";
+        ExecutionLabel.TextColor = disabled ? Colors.Green : Colors.OrangeRed;
     }
 
     private static string BuildDetail(GuardStatus status)
