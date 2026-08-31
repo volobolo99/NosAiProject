@@ -17,7 +17,7 @@ using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Perception.Network;
 
-public static class NetworkObservationTestRunner
+public static partial class NetworkObservationTestRunner
 {
     private static readonly GameEndpoint GameServer = new("nostale.gameforge.example", 4012);
 
@@ -40,9 +40,24 @@ public static class NetworkObservationTestRunner
         allPassed &= Run("Decoded sightings converge into the world model", TestConvergesIntoWorldModel);
         allPassed &= Run("Combat and death events are decoded for tactics", TestTacticalEventsDecoded);
         allPassed &= Run("Scoped-out packets are counted, not silently ignored", TestScopedOutAreCounted);
+        allPassed &= Run("Reassembler joins a message split across segments", TestReassemblerJoinsSplitMessages);
+        allPassed &= Run("Reassembler splits messages coalesced into one segment", TestReassemblerSplitsCoalescedMessages);
+        allPassed &= Run("Reassembler fails closed on an implausible length", TestReassemblerFailsClosedOnNonsense);
+        allPassed &= Run("Protocol map decodes fields from configuration", TestProtocolMapDecodesFromConfiguration);
+        allPassed &= Run("An unmapped opcode decodes to nothing, and is counted", TestUnmappedOpcodeDecodesNothing);
+        allPassed &= Run("A malformed message decodes to nothing, never to zero", TestMalformedMessageDecodesNothing);
+        allPassed &= Run("Map confidence caps the provenance of every reading", TestMapConfidenceCapsProvenance);
+        allPassed &= Run("A malformed protocol map is refused by name", TestMalformedMapRefused);
+        allPassed &= Run("A missing protocol map is reported, not assumed", TestMissingMapReported);
+        allPassed &= Run("Calibration finds the offset of a known value", TestCalibrationFindsKnownValue);
+        allPassed &= Run("Recorder is bounded and writes a readable capture", TestRecorderRoundTrip);
+        allPassed &= Run("Feed fans out and survives a faulty consumer", TestFeedFansOutToConsumers);
+        allPassed &= Run("Feed projects observations into decision facts", TestFeedProducesDecisionFacts);
+        allPassed &= Run("Without observation the facts are present as UNKNOWN", TestFeedFactsAreUnknownWithoutObservation);
+        allPassed &= Run("Network bytes drive a real decision end to end", TestFeedDrivesTheDecisionEngine);
 
         Console.WriteLine(allPassed
-            ? "=== Network observation checks passed. Local only: no real NosTale capture backend is attached. ==="
+            ? "=== Network observation checks passed. Local only: no capture backend and no NosTale protocol map. ==="
             : "=== Network observation checks FAILED. See the lines marked FAIL above. ===");
         return allPassed;
     }
