@@ -162,7 +162,7 @@ namespace NosAi.Raids.Dodekatheon
     {
         public static async Task<bool> RunAllTestsAsync()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan; Console.WriteLine("================================================================="); Console.WriteLine("    NosAi 1.0 Beta — Certificazione Dodekatheon Celestial Raid   "); Console.WriteLine("================================================================="); Console.ResetColor();
+            Console.WriteLine("=== Dodekatheon raid checks ===");
             bool allPassed = true;
             allPassed &= RunTest("Test 1: Transizioni di Fase Dodekatheon & Scudi Elementali", TestDodekaPhaseTransitions);
             allPassed &= RunTest("Test 2: Meccanica Stagger Gauge & Stordimento 8 Secondi", TestStaggerGaugeBreak);
@@ -170,7 +170,8 @@ namespace NosAi.Raids.Dodekatheon
             allPassed &= RunTest("Test 4: Calcolo Elemento Opposto di Contrasto (TeamCoordinator)", TestOppositeElementCounter);
             allPassed &= RunTest("Test 5: Abort Fail-Closed con 0 Vite Residue del Team", TestFailClosedZeroLivesAbort);
             allPassed &= RunTest("Test 6: Invariante Architetturale (Dodeka Non-Executable)", TestDodekaSecurityInvariant);
-            Console.WriteLine(); if (allPassed) { Console.ForegroundColor = ConsoleColor.Green; Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DEL MODULO DODEKATHEON SONO STATI SUPERATI."); } else { Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine(">> [ERRORE DODEKATHEON]: UNO O PIÙ TEST SONO FALLITI."); } Console.ResetColor(); await Task.CompletedTask; return allPassed;
+            Console.WriteLine(allPassed ? "=== Dodekatheon raid checks passed. Local only: this is not real-environment verification. ===" : "=== Dodekatheon raid checks FAILED. See the lines marked FAIL above. ===");
+            await Task.CompletedTask; return allPassed;
         }
         private static bool RunTest(string testName, Func<bool> testFunc) { try { bool result = testFunc(); PrintResult(testName, result); return result; } catch (Exception ex) { PrintResult(testName, false, ex.Message); return false; } }
         private static void PrintResult(string name, bool passed, string? error = null) { Console.Write($"[{(passed ? "PASS" : "FAIL")}] {name,-62}"); if (passed) { Console.ForegroundColor = ConsoleColor.Green; Console.WriteLine(" [OK]"); } else { Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine($" [ERRORE: {error ?? "Asserzione fallita"}]"); } Console.ResetColor(); }

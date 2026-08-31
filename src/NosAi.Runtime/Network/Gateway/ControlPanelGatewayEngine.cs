@@ -162,11 +162,7 @@ namespace NosAi.Network.Gateway
     {
         public static async Task<bool> RunAllTestsAsync()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("=================================================================");
-            Console.WriteLine("    NosAi 1.0 Beta — Certificazione Control Panel Gateway        ");
-            Console.WriteLine("=================================================================");
-            Console.ResetColor();
+            Console.WriteLine("=== Control Panel gateway checks ===");
 
             bool allPassed = true;
 
@@ -174,19 +170,9 @@ namespace NosAi.Network.Gateway
             allPassed &= await RunTestAsync("Test 2: Avvio e Chiusura Gateway HTTP/SSE", TestGatewayServerLifecycleAsync);
             allPassed &= RunTest("Test 3: Invariante Architetturale (Gateway Non-Executable)", TestGatewaySecurityInvariant);
 
-            Console.WriteLine();
-            if (allPassed)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DEL GATEWAY DI RETE SONO SUPERATI.");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(">> [ERRORE GATEWAY]: UNO O PIÙ TEST SONO FALLITI.");
-                Console.ResetColor();
-            }
+            Console.WriteLine(allPassed
+                ? "=== Control Panel gateway checks passed. Local only: this is not real-environment verification. ==="
+                : "=== Control Panel gateway checks FAILED. See the lines marked FAIL above. ===");
 
             return allPassed;
         }

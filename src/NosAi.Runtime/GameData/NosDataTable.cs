@@ -221,6 +221,17 @@ public static class NosDataTable
         NosTableResult table = Decode("language", payload);
         if (!table.Ok || table.Lines is null)
             return entries;
+
+        // These lines are "key TAB text" with no leading tab, so they are read here
+        // rather than through the record grouping, which exists for the data tables
+        // and would discard every one of them.
+        foreach (string line in table.Lines)
+        {
+            int tab = line.IndexOf('	');
+            if (tab <= 0 || tab == line.Length - 1)
+                continue;
+            entries.TryAdd(line[..tab], line[(tab + 1)..]);
+        }
         return entries;
     }
 

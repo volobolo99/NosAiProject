@@ -558,11 +558,7 @@ namespace NosAi.Storage.Infrastructure
     {
         public static async Task<bool> RunAllTestsAsync()
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("=================================================================");
-            Console.WriteLine("    NosAi 1.0 Beta — Certificazione Storage & Infrastructure     ");
-            Console.WriteLine("=================================================================");
-            Console.ResetColor();
+            Console.WriteLine("=== Storage infrastructure checks ===");
 
             bool allPassed = true;
 
@@ -573,19 +569,9 @@ namespace NosAi.Storage.Infrastructure
             allPassed &= await RunTestAsync("Test 5: Creazione Snapshot di Backup & Sigillo SHA-256", TestBackupSnapshotCreationAsync);
             allPassed &= await RunTestAsync("Test 6: Esecuzione Benchmark Prestazionale I/O (4K/Seq)", TestStorageBenchmarkExecutionAsync);
 
-            Console.WriteLine();
-            if (allPassed)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(">> [ESITO POSITIVO]: TUTTI I TEST DELL'INFRASTRUTTURA STORAGE SONO STATI SUPERATI.");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(">> [ERRORE STORAGE]: UNO O PIÙ TEST SONO FALLITI.");
-                Console.ResetColor();
-            }
+            Console.WriteLine(allPassed
+                ? "=== Storage infrastructure checks passed. Local only: this is not real-environment verification. ==="
+                : "=== Storage infrastructure checks FAILED. See the lines marked FAIL above. ===");
 
             return allPassed;
         }
