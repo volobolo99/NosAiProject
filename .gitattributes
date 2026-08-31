@@ -1,0 +1,56 @@
+# Line endings are decided here, by the repository, and not by whatever
+# core.autocrlf each machine happens to have set.
+#
+# Until now this repository relied on a local `core.autocrlf=true`. That works
+# for whoever set it and for nobody else: a fresh clone on a machine without it
+# commits CRLF into the index, and the next diff shows every line of the file as
+# changed. The index is currently uniform LF, and this file is what keeps it that
+# way without depending on a setting no clone inherits.
+#
+# It also stops a file being misclassified. `docs/BUILD_TEST_RELEASE.md` had
+# picked up three doubled CRs (`\r\r\n`, what a tool leaves when it rewrites an
+# already-CRLF file as though it were LF). Git reads a lone CR as a sign of
+# binary content, so it stopped diffing that document altogether — a build and
+# release procedure whose changes had become invisible in review.
+
+# The default: normalise to LF in the repository, check out in the platform's
+# own convention. Everything not named below is covered by this.
+* text=auto
+
+# LF in the working tree, on every platform. A shell script with CRLF fails as
+# `bad interpreter: /bin/bash^M`, and both CI workflows run steps with
+# `shell: bash`, including on windows-latest.
+*.sh text eol=lf
+
+# CRLF in the working tree. Visual Studio and PowerShell tooling rewrite these
+# files with CRLF whenever they touch them; without the rule, a developer whose
+# core.autocrlf is off gets a whole-file diff the first time they open one.
+*.sln  text eol=crlf
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+
+# Binary. Never converted, never diffed as text, never merged line by line.
+*.ttf  binary
+*.otf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.apk  binary
+*.keystore binary
+
+# The project's own binary formats. Gitignored today, declared here anyway: an
+# ignore rule is one `git add -f` away from being bypassed, and a conversion
+# applied to a capture file or a key would corrupt it silently.
+*.noscap binary
+*.NOS    binary
+*.gguf   binary
+*.db     binary
+*.sqlite binary
+*.sqlite3 binary
+*.dpapi  binary
+
+# Generated, and not worth reading in a review or counting as authored code.
+proto/**/*_pb2.py     linguist-generated=true
+proto/**/*_pb2.pyi    linguist-generated=true

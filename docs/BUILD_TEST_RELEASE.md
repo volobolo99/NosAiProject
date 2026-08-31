@@ -43,9 +43,9 @@ dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Rele
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate5-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --gate6-test
 dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --input-test
-dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --netobserve-test
-```
-
+dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --netobserve-test
+```
+
 Real-environment probes. These need an interactive desktop and validate what the
 local suites cannot: that capture and injection actually reach the OS.
 
