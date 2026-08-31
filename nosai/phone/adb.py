@@ -43,8 +43,13 @@ class Gate1Defaults:
     #: RuntimeIdentity.DefaultPublicPath — the half the phone pins.
     RUNTIME_PUBLIC_KEY_PATH = "data/runtime_public.pem"
 
-    #: RuntimeIdentity.DefaultPath
+    #: RuntimeIdentity.DefaultPath — legacy plaintext, migrated away on first load.
     RUNTIME_IDENTITY_PATH = "data/runtime_identity.pem"
+
+    #: RuntimeIdentity.DefaultProtectedPath — the DPAPI-wrapped private half
+    #: (ADR-0010). Never read by this tooling and never sent to the phone; named
+    #: here so the pairing flow can say where the identity actually lives.
+    RUNTIME_PROTECTED_IDENTITY_PATH = "data/runtime_identity.dpapi"
 
     #: DiscoveryProtocol.Port
     DISCOVERY_PORT = 17472

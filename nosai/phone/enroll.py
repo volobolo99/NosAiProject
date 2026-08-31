@@ -92,12 +92,17 @@ def collect(adb_path: str | Path | None = None, isolated_root: str | Path | None
 
 
 def ensure_runtime_public_pem(repo_root: str | Path | None = None) -> Path:
-    """Return the runtime public key, exporting it from the private identity if needed.
+    """Return the runtime public key that pairing pins on the phone.
 
-    Pairing must pin this on the phone. The runtime writes it on first start; if
-    only the private file exists (an identity created before the companion was
-    added), the public half is derived here rather than requiring a restart.
-    The private file is never copied to the phone.
+    The runtime writes the public companion every time it loads its identity, so
+    that file is the source. Only the public half is ever handled here, and only
+    the public half reaches the phone.
+
+    Since ADR-0010 the private key is wrapped with DPAPI and **cannot** be read
+    back by this tooling — deliberately. The legacy plaintext fallback below is
+    kept only for a repository that has not started the runtime since the
+    migration; once it has, the plaintext is gone and the companion is the only
+    way in, which is the intended end state rather than a gap.
     """
     root = Path(repo_root) if repo_root is not None else Path.cwd()
     public = root / Gate1Defaults.RUNTIME_PUBLIC_KEY_PATH
@@ -110,7 +115,7 @@ def ensure_runtime_public_pem(repo_root: str | Path | None = None) -> Path:
     if not private.is_file():
         raise EnrollmentError(
             "runtime_identity_missing",
-            "start the runtime once so it writes data/runtime_identity.pem, then pair again",
+            f"start the runtime once so it writes {Gate1Defaults.RUNTIME_PUBLIC_KEY_PATH}, then pair again",
         )
 
     try:

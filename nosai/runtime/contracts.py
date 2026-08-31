@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Mapping, Protocol, Sequence
 
 from nosai.core.contracts import Decision, Goal, WorldState
+from nosai.core.contracts import DecisionProvider as CoreDecisionProvider
 
 
 class PrivacyClass(str, Enum):
@@ -52,13 +53,17 @@ class ProviderCapabilities:
     max_context_tokens: int = 0
 
 
-class DecisionProvider(Protocol):
-    """A model/provider may propose a decision, but cannot execute it."""
+class DecisionProvider(CoreDecisionProvider, Protocol):
+    """A model/provider may propose a decision, but cannot execute it.
+
+    Extends the core protocol rather than restating it: the two declared the same
+    ``decide`` signature in two files, so nothing stopped one from being widened
+    without the other. What this adds is ``capabilities`` — what the provider can
+    actually do — which is the only difference there ever was between them.
+    """
 
     @property
     def capabilities(self) -> ProviderCapabilities: ...
-
-    def decide(self, world_state: WorldState, goal: Goal) -> Decision: ...
 
 
 @dataclass(frozen=True)

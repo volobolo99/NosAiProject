@@ -37,6 +37,22 @@ def test_runtime_public_path_matches_the_identity_companion():
     assert Gate1Defaults.RUNTIME_IDENTITY_PATH == private.group(1)
 
 
+def test_protected_identity_path_matches_where_the_runtime_wraps_it():
+    # ADR-0010. The pairing flow never reads this file, but it names it to the
+    # operator, and a name that drifts from the runtime's would send them looking
+    # for an identity that is not there.
+    source = (REPO_ROOT / "src" / "NosAi.Runtime" / "Gate1" / "RuntimeIdentity.cs").read_text(encoding="utf-8")
+    match = re.search(r'const string DefaultProtectedPath\s*=\s*"([^"]+)"', source)
+    assert match, "RuntimeIdentity.DefaultProtectedPath not found"
+    assert Gate1Defaults.RUNTIME_PROTECTED_IDENTITY_PATH == match.group(1)
+
+
+def test_the_wrapped_identity_is_not_the_plaintext_one():
+    # Two distinct files: the migration deletes the plaintext, and a name collision
+    # would mean the runtime overwriting a PEM with a DPAPI blob.
+    assert Gate1Defaults.RUNTIME_PROTECTED_IDENTITY_PATH != Gate1Defaults.RUNTIME_IDENTITY_PATH
+
+
 def test_discovery_port_matches_the_protocol():
     source = DISCOVERY_PROTOCOL.read_text(encoding="utf-8")
     match = re.search(r"public const int Port\s*=\s*(\d+)", source)
