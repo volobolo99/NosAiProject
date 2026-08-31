@@ -24,6 +24,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Runtime PC | Stato sessione osservabile | [x] locale | `gate1.snapshot.v1` include sessione Guard classificata |
 | Client NosTale | Rilevamento client | [x] **reale** | NosTale reale agganciato: `NostaleClientX` PID 7932, handle `0x8099A`; assenza → `client_unavailable` |
 | Client NosTale | Lettura dati minimi | [x] **reale** | dal client reale: processName/processId/windowTitle/windowHandle/processResponding/windowVisible tutti `LIVE`; gameplay HP/mappa/entità ancora `UNKNOWN` |
+| Client NosTale | Stato di rete del client | [x] **reale** | letto dalla tabella TCP di Windows sul PID del client: `networkConnected=True [LIVE]`, `serverEndpoint=79.110.84.175:4006 [LIVE]`, `connectionState=Established [LIVE]`. Nessun payload, nessun driver, nessuna elevazione. Con più sessioni remote l'endpoint resta `UNKNOWN`, non indovinato |
 | Client NosTale | Validazione dati | [x] locale | provenance `LIVE`/`UNKNOWN` nel snapshot |
 | Client NosTale | Gestione client assente | [x] locale | runtime resta DEGRADED, non inventa gameplay |
 | Guard AI smartphone | Avvio affidabile | [x] **reale** | APK installato e avviato su dispositivo Android `9125322104AC`; UI operativa |
@@ -32,6 +33,8 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | Guard AI smartphone | Riservatezza del payload | [x] locale | wire v3 (ADR-0009): AES-256-GCM su chiavi effimere P-256 legate alle firme dell'handshake. Verificato contro il processo runtime reale, **non ancora sul telefono** |
 | Guard AI smartphone | Heartbeat reale | [x] **reale** | `lastHeartbeatUtc` aggiornato dal dispositivo fisico; silenzio > 2s → sessione chiusa |
 | Guard AI smartphone | Riconnessione controllata | [x] **reale** | app terminata → sessione caduta fail-closed; riavvio → **nuovo** sessionId `2730cc13…` (era `eb78f421…`) |
+| Guard AI smartphone | Riconnessione automatica | [x] locale | l'app ritenta da sola con backoff 1→15 s quando la causa può passare (runtime spento, tunnel caduto, Wi-Fi); **non ritenta** ciò che richiede l'operatore (dispositivo non riconosciuto, versione wire diversa, frame che non si apre). Provato dai test, **non sul telefono** |
+| Guard AI smartphone | Stato di sicurezza mostrato | [x] locale | l'app **legge** `safety.executionMode` dallo snapshot invece di affermarlo: prima lo schermo dichiarava da sé «nessun input, nessuna injection». Senza sessione mostra `Sconosciuto`, mai «disabilitato» |
 | Dashboard | Avvio affidabile | [x] locale | operator server Gate 1 su loopback |
 | Dashboard | Connessione al runtime corretto | [x] **reale** | UI 8765 → runtime 8766 con default `NOSAI_RUNTIME_URL`, nessuna variabile impostata a mano; porta occupata → runtime vivo e `dashboard_port_in_use` esplicito |
 | Dashboard | Dati reali soltanto | [x] locale | demo gold/mostri/GPU rimossi; UNKNOWN esplicito |
@@ -41,7 +44,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | End-to-end | PC ↔ smartphone | [x] **reale via Wi-Fi** | NosTale reale → runtime → telefono su LAN senza USB: `authenticated=True`, heartbeat in avanzamento, `NostaleClientX [LIVE]` |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] **reale** | ciclo completo su dispositivo fisico: connesso → ucciso → fail-closed → riconnesso con nuova sessione |
-| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 159; `NosAi.Runtime.Tests` 93; 18 suite del runtime verdi. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 181; `NosAi.Runtime.Tests` 175; 18 suite del runtime verdi. Fra questi 15 test negativi sul confine del canale (peer v1/v2, magic estraneo, chiave non fidata, frame in chiaro, replay, punto fuori curva), ognuno con il motivo atteso. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---
@@ -278,6 +281,55 @@ gli stessi byte.
 Cosa **non** prova: niente sul dispositivo fisico. L'APK va reinstallato — la
 copia v2 sul telefono viene rifiutata all'header, che è il comportamento voluto.
 
+## Evidenza reale — wire v3 · **NON ESEGUITO**
+
+> **Modello da riempire.** Nessun campo qui sotto è stato osservato. Finché
+> restano `non eseguito`, wire v3 sul dispositivo è **Integrated/locale**, mai
+> `Verified`. Non compilare questa sezione senza output reale davanti.
+
+Procedura, con il telefono collegato via USB e il debug ADB autorizzato:
+
+```bash
+# 1. costruisce l'APK se il protocollo si è mosso, installa, abbina e spinge il pin
+python -m nosai.phone.deploy --reinstall
+
+# 2. avvia il runtime senza flag: carica da solo la chiave del telefono e la propria identità
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll
+
+# 3. sul telefono: premere Connetti (USB). Poi leggere lo stato dal PC:
+curl -s http://127.0.0.1:8766/api/gate1
+
+# 4. per il giro Wi-Fi: rimuovere il tunnel, così la LAN resta l'unico percorso
+adb reverse --remove-all && adb reverse --list      # deve essere vuoto
+# sul telefono: selezionare Wi-Fi, poi Connetti. Ripetere il punto 3.
+```
+
+`deploy` stampa la versione di wire che il PC si aspetta ed è ora **fail-closed
+su un APK vecchio**: se l'APK precede l'ultima modifica al protocollo lo
+ricostruisce, e con `--no-build` si rifiuta di installarlo invece di consegnare
+un telefono che non potrà collegarsi.
+
+| Campo | Come si ottiene | Valore osservato |
+|---|---|---|
+| Device id | `adb devices` | *non eseguito* |
+| Versione wire negoziata | header accettato dal runtime, nessun `unsupported_version` nel log | *non eseguito* |
+| `authenticated` (USB) | `/api/gate1` → `guard.authenticated` | *non eseguito* |
+| `sessionId` (USB) | `/api/gate1` → `guard.sessionId` | *non eseguito* |
+| `authenticated` (Wi-Fi) | come sopra, con il tunnel rimosso | *non eseguito* |
+| `sessionId` (Wi-Fi) | deve essere **diverso** da quello USB | *non eseguito* |
+| Endpoint mostrato dall'app | schermata dell'app: deve essere l'IP LAN del PC, non `127.0.0.1` | *non eseguito* |
+| Loopback dal telefono | `adb shell 'nc -w 2 -z 127.0.0.1 17471'` → deve essere **rifiutato** | *non eseguito* |
+| Heartbeat in avanzamento | tre letture successive di `guard.lastHeartbeatUtc` | *non eseguito* |
+| Payload non in chiaro | catturare un frame `TelemetrySnapshot`: non deve contenere `contractVersion` né `gate1.snapshot` | *non eseguito* |
+| Rifiuto di un APK v2 | installare la build precedente → il runtime logga `unsupported_version` e la sessione non si apre | *non eseguito* |
+
+L'ultima riga è la più informativa delle due direzioni: dimostra che il divieto
+di downgrade morde davvero, invece di essere solo dichiarato.
+
+Quando i campi sono compilati con output reale, questa sezione va rinominata
+togliendo **NON ESEGUITO**, e la riga *Riservatezza del payload* nella tabella di
+avanzamento passa da `[x] locale` a `[x] reale`.
+
 ---
 
 ## Dataset minimo canonico da acquisire
@@ -350,14 +402,21 @@ di parlare di esercizio continuativo:
    — ma il circuito **non è stato ripetuto sul dispositivo fisico**, che va
    reinstallato: un APK v2 viene rifiutato all'header, come previsto.
    Restano visibili dimensione e cadenza dei frame.
-2. **Il canale serve una sola sessione per volta**, quindi su LAN chiunque apra
-   una connessione può occupare lo slot ed escludere il telefono legittimo.
-3. **Le chiavi stanno in file, non in un Key Store.** L'identità del runtime è in
-   `data/`, quella del dispositivo nello storage privato dell'app: nessuna delle
-   due è protetta da hardware, e chi sa leggere il filesystem le ottiene. Le
-   chiavi di sessione ora sono effimere, quindi la perdita di un file di chiave
-   non svela più il traffico registrato — ma le chiavi di identità restano
-   esposte.
+2. **Il canale serve una sola sessione per volta**, ma non è più una connessione
+   sola: fino a quattro candidati fanno l'handshake in parallelo e vince chi si
+   autentica per primo ([ADR-0011](adr/ADR-0011-single-guard-session.md)). Uno
+   squatter silenzioso non tiene più fuori il telefono — viene sfrattato per
+   primo, e il telefono si autentica accanto a lui in 82 ms misurati. Una
+   sessione autenticata non è spodestabile. **Resta aperto**: chi *parla* e poi
+   si ferma può ancora occupare i quattro posti. Ridotto, non chiuso.
+3. **Le chiavi di identità non sono più in chiaro sul PC**, e sul telefono lo
+   sono solo se il dispositivo non offre di meglio
+   ([ADR-0010](adr/ADR-0010-key-custody.md)). L'identità del runtime è avvolta
+   con DPAPI in `data/runtime_identity.dpapi`; quella del dispositivo è generata
+   **dentro** l'Android Keystore, e dove il Keystore non c'è l'app ripiega su
+   file **dichiarandolo**, invece di sembrare protetta. Le chiavi **di sessione**
+   restano effimere. **Resta aperto**: DPAPI lega la chiave all'account Windows,
+   non a un TPM, e il giro Keystore **non è stato provato su dispositivo**.
 
 ---
 

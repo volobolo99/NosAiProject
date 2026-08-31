@@ -25,7 +25,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 
 | Componente | File principali | Maturità | Usa dati reali? | Test esiste? | Blocco principale |
 |---|---|---|---|---|---|
-| **Bootstrap runtime** | `src/NosAi.Runtime/Program.cs`, `Gate1/Gate1BootstrapHost.cs` | **Integrated** | **Parziale** | **Sì** | avvio locale coperto; manca evidenza completa sul PC di produzione |
+| **Bootstrap runtime** | `src/NosAi.Runtime/Program.cs`, `Gate1/Gate1BootstrapHost.cs` | **Verified** | **Sì** | **Sì** | avviato sul PC target con NosTale in esecuzione: `Health: Healthy`, Guard 17471, API operatore 8766 |
 | **Protocollo Gate 1 PC ↔ smartphone** | `src/NosAi.Protocol/WireProtocol.cs`, `SessionTranscript.cs`, `SessionCipher.cs`, `src/NosAi.Runtime/Gate1/Gate1Runtime.cs` | **Verified** su v2 (autenticazione e sessione); **Integrated** su v3 | **Sì** | **Sì** | v2 mutuo chiuso su dispositivo reale USB e Wi-Fi; v3 aggiunge AEAD sul payload (ADR-0009) ed è provato solo in locale, manca il giro sul telefono |
 | **Test runner Gate 1** | `src/NosAi.Runtime/Gate1/Gate1TestRunner.cs`, `tests/NosAi.Runtime.Tests` | **Integrated** | **No** | **Sì** | copre invarianti locali, non il client NosTale reale |
 | **Runtime snapshot provider** | `src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs` | **Integrated** | **Parziale** | **Sì** | contratto `gate1.snapshot.v1` con classificazione LIVE/UNKNOWN |
@@ -42,7 +42,7 @@ Il percorso minimo da chiudere e verificare è il seguente:
 | **Storage / session persistence** | area `src/NosAi.Runtime/Storage` | **Integrated** | **Parziale** | **Parziale** | va dimostrato l'uso reale lungo il percorso critico |
 | **Logging / telemetria** | Host, Gateway, Gate1 snapshot | **Integrated** | **Parziale** | **Sì** | snapshot Gate 1 classificato; debug end-to-end reale ancora incompleto |
 | **Dashboard error/disconnect handling** | Gate1 operator dashboard + Python dashboard | **Integrated** | **Parziale** | **Sì** | runtime offline e client assente restano UNKNOWN |
-| **Suite test Python legacy/ibrida** | `tests/` | **Partial** | **No / misto** | **Sì** | aggiunti test di classificazione Gate 1; e2e reale ancora assente |
+| **Suite test Python legacy/ibrida** | `tests/` | **Integrated** | **Sì / misto** | **Sì** | `test_guard_client_conformance.py` guida il processo runtime reale su socket reale e ispeziona i byte sul filo; resta assente un e2e che includa il telefono in CI |
 
 ---
 

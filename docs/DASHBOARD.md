@@ -10,7 +10,13 @@ Per l'uso quotidiano su Windows, senza riga di comando:
 .\scripts\windows\start_control_panel.ps1
 ```
 
-L'eseguibile è `src/NosAi.ControlPanel/bin/Release/net8.0-windows/NosAi.ControlPanel.exe`. Avvia o si collega al runtime da solo, con pulsanti per abbinamento telefono, probe DXGI, suite di certificazione e impostazioni. Dettaglio: `src/NosAi.ControlPanel/README.md`.
+L'eseguibile è `src/NosAi.ControlPanel/bin/Release/net8.0-windows/NosAi.ControlPanel.exe` (su questa macchina: `C:\Users\volob\Desktop\NosAiProject\src\NosAi.ControlPanel\bin\Release\net8.0-windows\NosAi.ControlPanel.exe`). `NosAi.Runtime.exe` nella stessa cartella è il runtime a console, non il pannello.
+
+Lo script `scripts/windows/start_control_panel.ps1` compila se l'exe manca; se la build fallisce non avvia nulla.
+
+Nella sezione Percezione il probe DXGI misura anche le barre HP/MP del ritaglio HUD: il riempimento è `DERIVED` solo se il profilo colonne sembra una barra (un transitorio pieno/vuoto, o piena nel colore atteso). Una zona scura o rumorosa resta `UNKNOWN`, non 0%. I numeri restano `UNKNOWN` finché non esiste un atlante di glifi addestrato. I ritagli finiscono in `data/perception/crops/` (gitignored) per ispezionare la ROI. Niente di questo entra nello snapshot `gate1.snapshot.v1`.
+
+Modalità: **OSPITATO** (questo processo è il runtime; Ferma lo spegne) oppure **COLLEGATO** (runtime già in ascolto; Scollega non lo spegne). Mostra la versione wire di **questo build** (oggi v3) e lo slot Guard derivato da collegato/autenticato: non inventa una versione letta dal filo. L'abbinamento richiede Python; senza Python non è riuscito. Il giro v3 sul telefono resta un promemoria, non Verified. Dettaglio: `src/NosAi.ControlPanel/README.md`.
 
 Il Centro di controllo web Python resta disponibile per chi preferisce il browser.
 
