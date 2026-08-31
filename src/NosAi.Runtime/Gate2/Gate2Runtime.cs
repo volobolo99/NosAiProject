@@ -238,17 +238,37 @@ namespace NosAi.Runtime.Gate2
         private readonly CancellationTokenSource _cts = new();
         private readonly Task _flushWorker;
         private readonly SqliteConnection _connection;
+
+        /// <summary>
+        /// Where to read the count of events that never reached this logger.
+        /// </summary>
+        /// <remarks>
+        /// The bus drops low-priority events when it is full and counts them in
+        /// memory. That counter dies with the process, so the next replay of the
+        /// store would look complete when it is not. Polling it here turns an
+        /// in-memory number into a durable gap record.
+        /// </remarks>
+        private readonly Func<long>? _upstreamDropCount;
+
         private long _persistedCount;
         private long _failedBatchCount;
+        private long _recordedUpstreamDrops;
 
         public long PersistedCount => Interlocked.Read(ref _persistedCount);
 
         /// <summary>Batches that failed to commit: observable instead of silently swallowed.</summary>
         public long FailedBatchCount => Interlocked.Read(ref _failedBatchCount);
 
-        public NosAiSqliteBatchLogger(SqliteStoragePolicy policy)
+        /// <param name="upstreamDropCount">
+        /// A monotonic count of events lost before reaching this logger, typically
+        /// <see cref="BoundedEventBus.DroppedEventsCount"/>. Optional, and when it
+        /// is absent the store simply records no upstream gaps — it never invents
+        /// completeness it cannot vouch for.
+        /// </param>
+        public NosAiSqliteBatchLogger(SqliteStoragePolicy policy, Func<long>? upstreamDropCount = null)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            _upstreamDropCount = upstreamDropCount;
             _connection = InitializeDatabase();
             _flushWorker = Task.Run(BatchFlushLoopAsync);
         }
@@ -260,20 +280,10 @@ namespace NosAi.Runtime.Gate2
             var connection = Gate2Sqlite.OpenAligned(_policy.DatabasePath, _policy.BusyTimeoutMs);
             try
             {
-                Gate2Sqlite.Execute(connection, """
-                    CREATE TABLE IF NOT EXISTS runtime_events (
-                        event_id      TEXT PRIMARY KEY,
-                        session_id    TEXT NOT NULL,
-                        frame_index   INTEGER NOT NULL,
-                        timestamp_utc TEXT NOT NULL,
-                        source_module TEXT NOT NULL,
-                        event_type    TEXT NOT NULL,
-                        priority      INTEGER NOT NULL,
-                        payload_json  TEXT NOT NULL
-                    )
-                    """);
-                Gate2Sqlite.Execute(connection, "CREATE INDEX IF NOT EXISTS idx_runtime_events_session ON runtime_events(session_id)");
-                Gate2Sqlite.Execute(connection, "CREATE INDEX IF NOT EXISTS idx_runtime_events_timestamp ON runtime_events(timestamp_utc)");
+                // The schema, and the migration onto the ordered one, live in
+                // Gate2EventSchema so the writer and the replay reader cannot
+                // disagree about what the table looks like.
+                Gate2EventSchema.EnsureSchema(connection);
                 return connection;
             }
             catch
@@ -300,6 +310,7 @@ namespace NosAi.Runtime.Gate2
                     batch.Clear();
                     while (batch.Count < _policy.MaxBatchSize && _pendingEvents.TryDequeue(out var ev)) batch.Add(ev);
                     if (batch.Count > 0) PersistBatch(batch);
+                    RecordUpstreamLosses();
                 }
                 catch (OperationCanceledException) { break; }
                 catch { Interlocked.Increment(ref _failedBatchCount); /* persistence failure must not block runtime */ }
@@ -311,6 +322,9 @@ namespace NosAi.Runtime.Gate2
             using var transaction = _connection.BeginTransaction();
             using var command = _connection.CreateCommand();
             command.Transaction = transaction;
+            // seq is assigned by SQLite on insert, which is what gives the log a
+            // total order: timestamps tie and frame indexes repeat, so neither can
+            // be replayed the same way twice.
             command.CommandText = """
                 INSERT OR IGNORE INTO runtime_events
                     (event_id, session_id, frame_index, timestamp_utc, source_module, event_type, priority, payload_json)
@@ -340,6 +354,52 @@ namespace NosAi.Runtime.Gate2
             Interlocked.Add(ref _persistedCount, batch.Count);
         }
 
+        /// <summary>
+        /// Writes a durable marker for events that never arrived.
+        /// </summary>
+        /// <remarks>
+        /// Best effort by necessity — if the store is unreachable the marker cannot
+        /// be written either — but the failure is counted rather than swallowed, and
+        /// a replay of a store that lost its markers is short rather than falsely
+        /// complete.
+        /// </remarks>
+        public void RecordGap(long lostCount, string reason)
+        {
+            if (lostCount <= 0) return;
+            ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+            try
+            {
+                using var command = _connection.CreateCommand();
+                command.CommandText = """
+                    INSERT INTO runtime_event_gaps (after_seq, lost_count, reason, detected_utc)
+                    VALUES (COALESCE((SELECT MAX(seq) FROM runtime_events), 0), $lost, $reason, $at)
+                    """;
+                AddParameter(command, "$lost").Value = lostCount;
+                AddParameter(command, "$reason").Value = reason;
+                AddParameter(command, "$at").Value = DateTime.UtcNow.ToString("O");
+                command.ExecuteNonQuery();
+            }
+            catch
+            {
+                Interlocked.Increment(ref _failedBatchCount);
+            }
+        }
+
+        /// <summary>Turns the bus's in-memory drop counter into durable gap records.</summary>
+        private void RecordUpstreamLosses()
+        {
+            if (_upstreamDropCount is null) return;
+
+            long total = _upstreamDropCount();
+            long alreadyRecorded = Interlocked.Read(ref _recordedUpstreamDrops);
+            long newlyLost = total - alreadyRecorded;
+            if (newlyLost <= 0) return;
+
+            RecordGap(newlyLost, "event_bus_full");
+            Interlocked.Add(ref _recordedUpstreamDrops, newlyLost);
+        }
+
         private static SqliteParameter AddParameter(SqliteCommand command, string name)
         {
             var parameter = command.CreateParameter();
@@ -357,8 +417,19 @@ namespace NosAi.Runtime.Gate2
             if (finalBatch.Count > 0)
             {
                 try { PersistBatch(finalBatch); }
-                catch { Interlocked.Increment(ref _failedBatchCount); /* fail closed: no fabricated persistence success */ }
+                catch
+                {
+                    Interlocked.Increment(ref _failedBatchCount);
+                    // Fail closed: the events are gone, so the log says so rather
+                    // than ending as if nothing had been in flight.
+                    RecordGap(finalBatch.Count, "final_batch_failed");
+                }
             }
+
+            // One last look at the bus, so events dropped just before shutdown are
+            // recorded instead of dying with the counter that held them.
+            try { RecordUpstreamLosses(); } catch { Interlocked.Increment(ref _failedBatchCount); }
+
             _connection.Dispose();
             _cts.Dispose();
         }
@@ -483,7 +554,11 @@ namespace NosAi.Runtime.Gate2
         public Gate2RuntimeEngine(string dbPath = "data/nosai_telemetry.db", string sessionId = "GATE2_ACTIVE_SESSION")
         {
             _eventBus = new BoundedEventBus(2000);
-            _sqliteLogger = new NosAiSqliteBatchLogger(new SqliteStoragePolicy(dbPath, batchIntervalMs: 50, maxBatchSize: 100));
+            // The logger polls the bus's drop counter so a full bus leaves a mark in
+            // the store instead of an invisible hole in the audit trail.
+            _sqliteLogger = new NosAiSqliteBatchLogger(
+                new SqliteStoragePolicy(dbPath, batchIntervalMs: 50, maxBatchSize: 100),
+                upstreamDropCount: () => _eventBus.DroppedEventsCount);
             _currentState = WorldStateSnapshot.CreateInitial(sessionId);
             _eventBus.Subscribe(_sqliteLogger.EnqueueEvent);
         }
@@ -551,6 +626,7 @@ namespace NosAi.Runtime.Gate2
             allPassed &= await RunAsync("Session and trajectory rows enforce integrity", TestSessionAndTrajectoryIntegrityAsync).ConfigureAwait(false);
             allPassed &= await RunAsync("World engine rejects frame regression and session mutation", TestWorldEngineInvariantsAsync).ConfigureAwait(false);
             allPassed &= await RunAsync("Integrated engine observes, persists and serves deltas", TestIntegratedEngineEndToEndAsync).ConfigureAwait(false);
+            allPassed &= await RunAsync("Runtime engine store replays in order and admits losses", TestDurableEventLogReplaysAsync).ConfigureAwait(false);
 
             Console.WriteLine(allPassed
                 ? "=== Gate 2 checks passed. Local only: this is not real-environment verification. ==="

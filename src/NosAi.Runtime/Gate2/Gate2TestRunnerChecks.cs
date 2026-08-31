@@ -334,6 +334,75 @@ public static partial class Gate2TestRunner
         finally { CleanupDatabase(path); }
     }
 
+    // ------------------------------------------------------------------ durable event log
+
+    /// <summary>
+    /// Drives the real <see cref="Gate2RuntimeEngine"/> composition, closes it, and
+    /// reads its store back (M075-M076).
+    /// </summary>
+    /// <remarks>
+    /// The unit tests exercise the logger on its own. This asks the harder
+    /// question: does the thing the runtime actually composes leave a log that can
+    /// be replayed after the process that wrote it is gone, in the order it was
+    /// written, and does it admit what the bus dropped.
+    /// </remarks>
+    private static async Task<bool> TestDurableEventLogReplaysAsync()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"nosai_gate2_replay_{Guid.NewGuid():N}.db");
+        try
+        {
+            const int frames = 25;
+            await using (var engine = new Gate2RuntimeEngine(path, sessionId: "GATE2_REPLAY"))
+            {
+                for (int i = 1; i <= frames; i++)
+                {
+                    int hp = 900 - i;
+                    engine.UpdateWorldState(previous => previous with
+                    {
+                        FrameIndex = (ulong)i,
+                        Player = previous.Player with { CurrentHp = hp },
+                        IsDegradedState = false
+                    });
+                }
+            }
+
+            var replay = EventLogReader.Read(path, sessionId: "GATE2_REPLAY");
+
+            // Every state update published an audit event, and every one came back.
+            if (replay.EventCount != frames) return false;
+            if (!replay.IsComplete) return false;
+
+            // In the order they were written: the frames rise, and so do the
+            // sequences. Neither timestamp nor frame index could have ordered this
+            // on its own, which is why the sequence exists.
+            ulong expectedFrame = 1;
+            long previousSequence = 0;
+            foreach (var record in replay.Records)
+            {
+                if (record is not EventLogEntry entry) return false;
+                if (entry.Event.FrameIndex != expectedFrame++) return false;
+                if (entry.Sequence <= previousSequence) return false;
+                previousSequence = entry.Sequence;
+                if (entry.Event.EventType != "WorldStateUpdated") return false;
+            }
+
+            // And a second read of the same store gives the same sequence.
+            var again = EventLogReader.Read(path, sessionId: "GATE2_REPLAY");
+            if (again.Records.Count != replay.Records.Count) return false;
+            for (int i = 0; i < again.Records.Count; i++)
+            {
+                if (again.Records[i].Sequence != replay.Records[i].Sequence) return false;
+            }
+
+            return true;
+        }
+        finally
+        {
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            try { if (File.Exists(path)) File.Delete(path); } catch (IOException) { }
+        }
+    }
+
     // ------------------------------------------------------------------ integrated engine
 
     private static async Task<bool> TestIntegratedEngineEndToEndAsync()
