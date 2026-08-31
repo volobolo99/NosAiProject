@@ -107,7 +107,40 @@ public static class SessionTranscript
         ReadOnlySpan<byte> serverEphemeral)
         => Digest(BindingRole, clientNonce, serverNonce, clientEphemeral, serverEphemeral);
 
+    /// <summary>
+    /// The exact bytes hashed by <see cref="Compute"/>, before the SHA-256.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Exposed for one reason: a private key held in a hardware store cannot sign a
+    /// digest that was computed outside it. Android's Keystore signs with
+    /// <c>SHA256withRSA</c>, which hashes the message itself, so a keystore-backed
+    /// device signs <b>this</b> and the runtime verifies the digest exactly as
+    /// before — PKCS#1 v1.5 over SHA-256 of the same bytes either way.
+    /// </para>
+    /// <para>
+    /// The equivalence is pinned by a test rather than asserted here, because a
+    /// silent divergence would look like a phone that suddenly fails to
+    /// authenticate.
+    /// </para>
+    /// </remarks>
+    public static byte[] Message(
+        HandshakeRole role,
+        ReadOnlySpan<byte> clientNonce,
+        ReadOnlySpan<byte> serverNonce,
+        ReadOnlySpan<byte> clientEphemeral,
+        ReadOnlySpan<byte> serverEphemeral)
+        => BuildMessage((byte)role, clientNonce, serverNonce, clientEphemeral, serverEphemeral);
+
     private static byte[] Digest(
+        byte role,
+        ReadOnlySpan<byte> clientNonce,
+        ReadOnlySpan<byte> serverNonce,
+        ReadOnlySpan<byte> clientEphemeral,
+        ReadOnlySpan<byte> serverEphemeral)
+        => SHA256.HashData(BuildMessage(role, clientNonce, serverNonce, clientEphemeral, serverEphemeral));
+
+    private static byte[] BuildMessage(
         byte role,
         ReadOnlySpan<byte> clientNonce,
         ReadOnlySpan<byte> serverNonce,
@@ -123,10 +156,10 @@ public static class SessionTranscript
         if (serverEphemeral.Length != EphemeralKeyLength)
             throw new ArgumentException($"Server ephemeral key must be {EphemeralKeyLength} bytes.", nameof(serverEphemeral));
 
-        Span<byte> buffer = stackalloc byte[Label.Length + 3 + (NonceLength * 2) + (EphemeralKeyLength * 2)];
+        var buffer = new byte[Label.Length + 3 + (NonceLength * 2) + (EphemeralKeyLength * 2)];
         var offset = 0;
 
-        Label.CopyTo(buffer[offset..]);
+        Label.CopyTo(buffer.AsSpan(offset));
         offset += Label.Length;
 
         // Separators keep the fields unambiguous: without them a different split
@@ -135,15 +168,15 @@ public static class SessionTranscript
         buffer[offset++] = role;
         buffer[offset++] = 0x00;
 
-        clientNonce.CopyTo(buffer[offset..]);
+        clientNonce.CopyTo(buffer.AsSpan(offset));
         offset += NonceLength;
-        serverNonce.CopyTo(buffer[offset..]);
+        serverNonce.CopyTo(buffer.AsSpan(offset));
         offset += NonceLength;
-        clientEphemeral.CopyTo(buffer[offset..]);
+        clientEphemeral.CopyTo(buffer.AsSpan(offset));
         offset += EphemeralKeyLength;
-        serverEphemeral.CopyTo(buffer[offset..]);
+        serverEphemeral.CopyTo(buffer.AsSpan(offset));
 
-        return SHA256.HashData(buffer);
+        return buffer;
     }
 
     public static byte[] Sign(

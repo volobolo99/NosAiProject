@@ -173,36 +173,79 @@ public sealed class SessionTranscriptTests
     }
 
     [Fact]
-    public void AnUnstartedSessionVerifiesNothing()
+    public void SigningTheMessageAndSigningTheDigestProduceTheSameBytes()
     {
-        // No hello, no nonces, so no signature can verify: a peer cannot skip
-        // straight to an auth response, and gets no key material either.
+        // The property that lets a key inside Android's Keystore sign at all
+        // (ADR-0010): a hardware store hashes the message itself and cannot be
+        // handed a digest computed outside it. If these two ever diverge, a
+        // keystore-backed phone would fail to authenticate with no visible cause,
+        // so the equivalence is pinned rather than assumed.
         using var device = RSA.Create(2048);
-        using var auth = new SessionAuth(device.ExportSubjectPublicKeyInfoPem());
+        byte[] clientNonce = SessionTranscript.CreateNonce();
+        byte[] serverNonce = SessionTranscript.CreateNonce();
 
-        Assert.False(auth.VerifyAndConsume(new byte[256], out byte[] material));
-        Assert.Empty(material);
-        Assert.False(auth.TryCreateServerProof(out _));
+        byte[] message = SessionTranscript.Message(
+            HandshakeRole.Client, clientNonce, serverNonce, ClientEphemeral(), ServerEphemeral());
+        byte[] digest = SessionTranscript.Compute(
+            HandshakeRole.Client, clientNonce, serverNonce, ClientEphemeral(), ServerEphemeral());
+
+        Assert.Equal(digest, SHA256.HashData(message));
+
+        // PKCS#1 v1.5 is deterministic, so equality here is exact, not merely
+        // "both verify".
+        Assert.Equal(
+            device.SignHash(digest, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1),
+            device.SignData(message, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
     }
 
     [Fact]
-    public void AMalformedClientHelloEndsTheHandshake()
+    public void AMessageSignatureVerifiesAgainstTheDigestTheRuntimeChecks()
+    {
+        // End to end: what a keystore-backed phone would send is what the runtime
+        // already verifies, with no change to the wire contract.
+        using var device = RSA.Create(2048);
+        byte[] clientNonce = SessionTranscript.CreateNonce();
+        byte[] serverNonce = SessionTranscript.CreateNonce();
+
+        byte[] signature = device.SignData(
+            SessionTranscript.Message(HandshakeRole.Client, clientNonce, serverNonce, ClientEphemeral(), ServerEphemeral()),
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        Assert.True(SessionTranscript.Verify(
+            device, HandshakeRole.Client, clientNonce, serverNonce, ClientEphemeral(), ServerEphemeral(), signature));
+    }
+
+    [Fact]
+    public void TheMessageIsTheBufferTheDocumentedLayoutDescribes()
+    {
+        byte[] message = SessionTranscript.Message(
+            HandshakeRole.Client, ClientNonce(), ServerNonce(), ClientEphemeral(), ServerEphemeral());
+
+        Assert.Equal("NOSAI-GUARD-HANDSHAKE-V3"u8.Length + 3 + 32 + 32 + 65 + 65, message.Length);
+        Assert.Equal("NOSAI-GUARD-HANDSHAKE-V3", System.Text.Encoding.ASCII.GetString(message, 0, 24));
+        Assert.Equal(0x00, message[24]);
+        Assert.Equal((byte)HandshakeRole.Client, message[25]);
+        Assert.Equal(0x00, message[26]);
+    }
+
+    [Fact]
+    public void AMalformedClientHelloStartsNoHandshake()
     {
         using var device = RSA.Create(2048);
         using var auth = new SessionAuth(device.ExportSubjectPublicKeyInfoPem());
         using var exchange = EphemeralKeyExchange.Create();
 
         // Too short, and the right length but not a point on the curve: both are
-        // refused before any key material exists.
-        Assert.False(auth.TryBeginHandshake(new byte[8], out _));
-        Assert.False(auth.TryBeginHandshake(new byte[SessionAuth.HandshakeHelloLength], out _));
+        // refused before any key material exists. A peer that never gets a
+        // handshake object cannot skip straight to an auth response.
+        Assert.Null(auth.TryBeginHandshake(new byte[8]));
+        Assert.Null(auth.TryBeginHandshake(new byte[SessionAuth.HandshakeHelloLength]));
 
-        byte[] hello = new byte[SessionAuth.HandshakeHelloLength];
-        SessionTranscript.CreateNonce().CopyTo(hello, 0);
-        exchange.PublicKey.CopyTo(hello, SessionTranscript.NonceLength);
+        var handshake = auth.TryBeginHandshake(Hello(exchange));
 
-        Assert.True(auth.TryBeginHandshake(hello, out byte[] serverHello));
-        Assert.Equal(SessionAuth.HandshakeHelloLength, serverHello.Length);
+        Assert.NotNull(handshake);
+        Assert.Equal(SessionAuth.HandshakeHelloLength, handshake!.ServerHello.Length);
     }
 
     [Fact]
@@ -218,14 +261,85 @@ public sealed class SessionTranscriptTests
         byte[] hello = new byte[SessionAuth.HandshakeHelloLength];
         clientNonce.CopyTo(hello, 0);
         exchange.PublicKey.CopyTo(hello, SessionTranscript.NonceLength);
-        Assert.True(auth.TryBeginHandshake(hello, out byte[] serverHello));
 
-        byte[] serverNonce = serverHello[..SessionTranscript.NonceLength];
-        byte[] serverEphemeral = serverHello[SessionTranscript.NonceLength..];
+        var handshake = auth.TryBeginHandshake(hello);
+        Assert.NotNull(handshake);
+
+        byte[] serverNonce = handshake!.ServerHello[..SessionTranscript.NonceLength];
+        byte[] serverEphemeral = handshake.ServerHello[SessionTranscript.NonceLength..];
         byte[] wrongSignature = SessionTranscript.Sign(
             other, HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral);
 
-        Assert.False(auth.VerifyAndConsume(wrongSignature, out byte[] material));
+        Assert.False(handshake.VerifyAndConsume(wrongSignature, out byte[] material));
         Assert.Empty(material);
+    }
+
+    [Fact]
+    public void TwoHandshakesAtOnceDoNotOverwriteEachOther()
+    {
+        // The property that made concurrent admission possible (ADR-0011). While
+        // this state lived on SessionAuth as fields, a second peer's hello wiped
+        // the first one's nonces and the first phone could no longer authenticate.
+        using var device = RSA.Create(2048);
+        using var auth = new SessionAuth(device.ExportSubjectPublicKeyInfoPem());
+        using var firstExchange = EphemeralKeyExchange.Create();
+        using var secondExchange = EphemeralKeyExchange.Create();
+
+        byte[] firstNonce = SessionTranscript.CreateNonce();
+        byte[] firstHello = new byte[SessionAuth.HandshakeHelloLength];
+        firstNonce.CopyTo(firstHello, 0);
+        firstExchange.PublicKey.CopyTo(firstHello, SessionTranscript.NonceLength);
+
+        var first = auth.TryBeginHandshake(firstHello);
+        var second = auth.TryBeginHandshake(Hello(secondExchange));
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.NotEqual(first!.ServerHello, second!.ServerHello);
+
+        // The first handshake still verifies after the second one started.
+        byte[] serverNonce = first.ServerHello[..SessionTranscript.NonceLength];
+        byte[] serverEphemeral = first.ServerHello[SessionTranscript.NonceLength..];
+        byte[] signature = SessionTranscript.Sign(
+            device, HandshakeRole.Client, firstNonce, serverNonce, firstExchange.PublicKey, serverEphemeral);
+
+        Assert.True(first.VerifyAndConsume(signature, out byte[] material));
+        Assert.Equal(EphemeralKeyExchange.SessionMaterialLength, material.Length);
+    }
+
+    [Fact]
+    public void AnAbandonedHandshakeReleasesNothingAfterwards()
+    {
+        // A candidate that loses the race for the session has its material dropped;
+        // a late signature must not resurrect it.
+        using var device = RSA.Create(2048);
+        using var auth = new SessionAuth(device.ExportSubjectPublicKeyInfoPem());
+        using var exchange = EphemeralKeyExchange.Create();
+
+        byte[] clientNonce = SessionTranscript.CreateNonce();
+        byte[] hello = new byte[SessionAuth.HandshakeHelloLength];
+        clientNonce.CopyTo(hello, 0);
+        exchange.PublicKey.CopyTo(hello, SessionTranscript.NonceLength);
+
+        var handshake = auth.TryBeginHandshake(hello);
+        Assert.NotNull(handshake);
+
+        byte[] serverNonce = handshake!.ServerHello[..SessionTranscript.NonceLength];
+        byte[] serverEphemeral = handshake.ServerHello[SessionTranscript.NonceLength..];
+        byte[] signature = SessionTranscript.Sign(
+            device, HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral);
+
+        handshake.Abandon();
+
+        Assert.False(handshake.VerifyAndConsume(signature, out byte[] material));
+        Assert.Empty(material);
+    }
+
+    private static byte[] Hello(EphemeralKeyExchange exchange)
+    {
+        byte[] hello = new byte[SessionAuth.HandshakeHelloLength];
+        SessionTranscript.CreateNonce().CopyTo(hello, 0);
+        exchange.PublicKey.CopyTo(hello, SessionTranscript.NonceLength);
+        return hello;
     }
 }
