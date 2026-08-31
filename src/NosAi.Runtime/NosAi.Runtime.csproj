@@ -40,4 +40,12 @@
          two ends cannot drift. See docs/adr/ADR-0006-canonical-phone-channel.md. -->
     <ProjectReference Include="..\NosAi.Protocol\NosAi.Protocol.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- The test project reaches a few internals on purpose. ScopedLiveCaptureBackend
+         keeps its raw-source constructor internal so no production caller can wrap a
+         replayed source in a class that labels its packets LIVE; the tests still have
+         to exercise it, and this is how without widening that door. -->
+    <InternalsVisibleTo Include="NosAi.Runtime.Tests" />
+  </ItemGroup>
 </Project>
