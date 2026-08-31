@@ -43,7 +43,7 @@ La valutazione corrente è la seguente:
 - il primo circuito reale `NosTale → runtime PC → telefono Android` è chiuso e osservato, su USB e su Wi-Fi;
 - molte aree oltre il Gate 1 sono **Present** o **Integrated**, nessuna è **Verified**;
 - restano tre limiti dichiarati sul canale, elencati sotto, **nessuno dei quali blocca il Gate 1**;
-- il gameplay del client (HP, mappa, entità) resta **UNKNOWN**: manca il provider, e nessun valore viene inventato al suo posto.
+- il gameplay del client (HP, mappa, entità) resta **UNKNOWN**, ma non più perché manca il percorso: il provider (`IGameplayProvider`) è implementato e collegato dallo snapshot Gate 1 fino a `Gate3WorldState`. Manca **la mappa di protocollo NosTale**, che è un dato che l'operatore deve ricavare dal traffico, non codice da scrivere. Finché non esiste, HP è `UNKNOWN` con `player_vitals_not_mapped` e nessun valore viene inventato al suo posto.
 
 Quel che resta dei tre limiti del canale Guard, ripreso dalla checklist:
 
@@ -66,6 +66,7 @@ Quel che resta dei tre limiti del canale Guard, ripreso dalla checklist:
 - Semantica dal client, non per inferenza (`ImportLanguage`): `NSlangData_IT.NOS` contiene 12 tabelle di lingua e **22 929 voci** che traducono le chiavi in ciò che il gioco mostra — `zts1e` → *Volpe*, e per le battle card → *Attacco Speciale*, *Impedisce l'Attacco Ravvicinato*, cioè il significato del sistema di effetti dichiarato dal client stesso. Una lingua non installata viene **riportata, mai sostituita** con un'altra. Limite dichiarato: oltre le chiavi che non richiedono impacchettamento, fra il numero e la `e` finale c'è un byte in più — costante nelle tabelle dati, variabile in quelle di lingua — e le due numerazioni non si allineano; oggi si risolve il nome di ~100 entità per tabella. Il test fissa ciò che funziona invece di affermare un tasso che sarebbe falso.
 - Cosa contiene, misurato sull'installazione reale: **15 279 record** (2 705 mostri, 7 726 oggetti, 1 958 abilità, 2 759 carte, 131 battle card) e **1 428 698 valori, di cui il 99,61% decodificato**. Il resto è `UNKNOWN` **con il motivo**, mai un numero plausibile messo lì per riempire: un totale di punti vita sbagliato è peggio di uno mancante, perché solo uno dei due si annuncia. Ogni riga porta la sua **provenienza** (archivio, tabella, hash del contenuto, quando, da quale installazione); una riga senza provenienza è un difetto che il controllo di integrità segnala. Ciò che i nomi dei campi dichiarano (`VNUM`, `LEVEL`) diventa colonna tipizzata; **quale slot di `ATTRIB` sia l'elemento non è dichiarato da nessuna parte e non viene indovinato** — quell'interpretazione appartiene a uno strato successivo che potrà essere confrontato con ciò che succede davvero in gioco.
 - Ciclo di apprendimento dagli errori propri (`PredictionLedger`). Registra **prima** di agire cosa si aspetta, poi confronta con l'osservato e aggiorna la credenza. Riusa `BetaBinomialEvidence` di Gate 4 invece di duplicarla: mancava il registro, non la matematica — Gate 4 impara quale strategia di quest funziona, e nessuno imparava se una previsione sul momento successivo fosse buona. **La regola che lo rende onesto: solo un esito `LIVE` muove una credenza.** Un esito simulato, derivato o sconosciuto viene contato e resta visibile ma non insegna nulla: un sistema che impara dalle proprie previsioni converge, in fretta e con sicurezza, sulla propria fantasia — e dall'interno è indistinguibile dal diventare molto bravi. Una previsione mai risolta viene abbandonata, non contata: non è né giusta né sbagliata. Le calibrazioni si leggono per contesto, ordinate dalla peggiore, perché la domanda utile è dove il modello sbaglia.
+- Backend di cattura reale per il canale di percezione (`ScopedLiveCaptureBackend`). Il canale di Cursor dichiara `IRawScopedCaptureBackend` e **non ne spedisce un'implementazione**, perché serve un driver e un endpoint vivo; questa la fornisce, senza scrivere un secondo decodificatore accanto al loro. **Vincolata a una sola connessione**: il filtro nomina indirizzo e porta del gioco, quindi nient'altro sulla macchina viene letto — è una proprietà del filtro dato al driver, non un controllo applicato dopo su traffico già raccolto. **Solo osservazione**: non esiste percorso di invio, iniezione o modifica; leggere il traffico e metterci qualcosa sopra sono capability diverse con decisioni diverse dietro (ADR-0014). Autorizza `RuntimeCapability.ReadGameTraffic` **prima** di cercare un handle, così un chiamante non autorizzato non scopre nemmeno se il driver c'è. Senza driver dichiara il motivo e non osserva nulla: un ripiego sintetico qui darebbe al world model byte inventati con l'etichetta LIVE, che è esattamente ciò che il canale esiste per impedire. Un ACK vuoto non è un'osservazione, e un pacchetto non interpretabile viene contato, non indovinato. Una classe separata (`ScopedCaptureBackendOverSource`) serve le sorgenti riprodotte o sintetiche e **rifiuta per costruzione** di dichiararsi LIVE.
 - World Model, Party, Pet e Partner.
 - Coordinated Action Manager.
 - Tactical Action Ranking e fondazioni Simulation/Lookahead.
@@ -109,7 +110,7 @@ Questa sezione indica presenza di codice o integrazione parziale/funzionale nel 
 
 ## 🟡 Aree Partial da integrare e verificare
 
-- Collegamento reale NosAi ↔ client NosTale: **OS baseline verificato sul client reale**; gameplay HP/mappa/entità ancora UNKNOWN (manca il provider). Da dove potrà arrivare è deciso in `docs/adr/ADR-0012-gameplay-observation-source.md`: percezione da schermo classificata **DERIVED**, mai LIVE; lettura della memoria del client non adottata.
+- Collegamento reale NosAi ↔ client NosTale: **OS baseline verificato sul client reale**; gameplay HP/mappa/entità ancora UNKNOWN (percorso presente, mappa di protocollo assente). Da dove potrà arrivare è deciso in `docs/adr/ADR-0012-gameplay-observation-source.md`: percezione da schermo classificata **DERIVED**, mai LIVE; lettura della memoria del client non adottata.
 - Lettura affidabile dei dati di base necessari dal client (OS baseline presente; manca ancora un provider gameplay).
 - Acquisizione dei dati di base del PC nel runtime operativo (RAM processo LIVE; CPU/GPU di sistema UNKNOWN se il probe non riporta valori).
 - Custodia delle chiavi di identità (`ADR-0010`): implementata su entrambi i lati. Sul PC l'identità è avvolta con DPAPI in `data/runtime_identity.dpapi` e la migrazione dal PEM in chiaro **conserva la stessa chiave**, quindi nessun telefono già abbinato deve rifare l'abbinamento — verificato sull'identità reale di questa macchina. Sul telefono la chiave è generata **dentro** l'Android Keystore. **Resta Partial**: DPAPI lega la chiave all'account Windows e non a un TPM, e il giro Keystore non è stato eseguito su dispositivo fisico; dove il Keystore manca l'app ripiega su file e **lo dichiara** invece di sembrare protetta.
@@ -164,7 +165,7 @@ giro sul sistema reale.
 - [x] Avvio affidabile sul PC. *(reale: `Health: Healthy` con NosTale in esecuzione.)*
 - [x] Acquisizione dati di base del PC. *(reale: CPU e RAM processo `LIVE`; GPU e RAM di sistema restano `UNKNOWN` quando il probe non riporta valori, e UNKNOWN non viene sostituito da zero.)*
 - [x] Collegamento controllato al client NosTale. *(reale: `NostaleClientX` PID 7932, handle `0x8099A`.)*
-- [x] Lettura dei dati di base necessari. *(reale per la baseline di sistema operativo; il gameplay HP/mappa/entità resta `UNKNOWN`, manca il provider.)*
+- [x] Lettura dei dati di base necessari. *(reale per la baseline di sistema operativo; il gameplay HP/mappa/entità resta `UNKNOWN`: il provider esiste ed è collegato, la mappa di protocollo no.)*
 - [x] Validazione provenienza, correttezza e freschezza dei dati. *(locale: provenienza per campo nel contratto `gate1.snapshot.v1`.)*
 - [x] Gestione client assente, dati incompleti e disconnessione. *(locale: il runtime resta DEGRADED e non inventa gameplay.)*
 
@@ -264,8 +265,15 @@ Il progetto possiede una base software ampia, comprendente fondazioni Gate 1, Ga
 
 Il primo circuito reale `PC ↔ NosTale ↔ smartphone` **è stato chiuso e verificato**, e con esso il Gate 1. Oltre il Gate 1 nessun blocco è **Verified**.
 
-Il vincolo che conta adesso non è più il circuito: è **la sorgente dei dati di gioco**. Finché nulla legge lo stato reale del personaggio, il gameplay resta `UNKNOWN` per costruzione, l'esecuzione resta disabilitata e i gate successivi possono al massimo dimostrare sé stessi su mondo simulato.
+Il vincolo che conta adesso non è più il circuito, ed è cambiato di natura. **Il percorso dei dati di gioco è costruito**: pacchetti → riassemblaggio TCP → framing → decodifica → `NetworkWorldFeed` → `IGameplayProvider` → snapshot Gate 1 → `Gate3WorldState`. Ogni strato è implementato e coperto da test.
+
+Quel che manca non è codice: è **la mappa di protocollo NosTale**, cioè il dato che dice dove si trovano HP, MP e le coordinate dentro i messaggi. Quella mappa non si scrive, si ricava — catturando traffico reale e correlandolo con valori letti sullo schermo del client — ed è per questo che restano aperte due precondizioni concrete:
+
+1. **installare WinDivert**: senza driver non è stato ancora catturato un solo byte di traffico reale;
+2. **derivare `ProtocolMap.PlayerVitals`** da quelle catture, con `TrafficRecorder.FindOffsetsMatching` come primitiva di calibrazione.
+
+Finché la mappa non esiste, il gameplay resta `UNKNOWN` con `player_vitals_not_mapped`, l'esecuzione resta disabilitata e i gate successivi possono al massimo dimostrare sé stessi su mondo simulato. **Questo è il comportamento corretto, non un difetto residuo**: un HP inventato per rendere pianificabile lo stato sarebbe esattamente il numero plausibile e sbagliato che `ADR-0012` ha rifiutato.
 
 La priorità operativa corrente è quindi:
 
-**dare al World Model una sorgente reale di gameplay** — alle condizioni fissate da `ADR-0012` — **e chiudere quel che resta dei tre limiti del canale Guard.**
+**catturare traffico reale e derivare la mappa di protocollo** — alle condizioni fissate da `ADR-0012` e `ADR-0014` — **e chiudere quel che resta dei tre limiti del canale Guard.**

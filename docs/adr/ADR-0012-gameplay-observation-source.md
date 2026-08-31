@@ -13,7 +13,24 @@ checks stays `UNKNOWN`, and a source that cannot tell a correct value from a
 wrong one is never `LIVE`. Read the comparison below as an account of failure
 modes, not as a list of what is permitted.
 
-**No provider is implemented.**
+**Implementation status (2026-08-31).** The seam is implemented and wired:
+`IGameplayProvider` / `GameplayObservation` in
+`src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs`, published by the Gate 1
+snapshot under the existing `gameplayBaseline` key and read by
+`Gate1SnapshotWorldStateSource` into `Gate3WorldState`. With no provider attached
+— still the default — the snapshot reports exactly what it reported before, so
+nothing changed for anyone who has not opted in.
+
+`NetworkGameplayProvider` is the first implementation, over the scoped network
+observation channel. **It cannot yet report vitals**, and the reason is not a
+missing feature: no NosTale protocol map exists. `ProtocolMap.PlayerVitals` is the
+optional entry an operator has to derive by correlating captured traffic against
+values read off the client's own screen. Until it exists, HP is `UNKNOWN` with
+`player_vitals_not_mapped` and Gate 3 keeps refusing to plan.
+
+That refusal is the decision below working, not a gap in it. A ratio is not an
+HP, and manufacturing a maximum to turn one into the other would be exactly the
+plausible-wrong-number this record rejected memory offsets over.
 
 **Builds on:** [ADR-0002](ADR-0002-real-demo-data-separation.md) (source
 classification), [ADR-0003](ADR-0003-runtime-safety-authority.md) (the runtime is
