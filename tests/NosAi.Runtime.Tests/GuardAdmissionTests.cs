@@ -81,7 +81,13 @@ public sealed class GuardAdmissionTests
         Assert.False(channel.IsAuthenticated);
         Assert.Null(channel.ActiveSessionId);
 
-        await WaitUntilAsync(() => !channel.IsClientConnected, GuardAiNetworkChannel.AuthenticationDeadline + Patience);
+        // Wait for the reason, not just for the socket. Drop() disposes the
+        // connection before it raises OnSessionTerminated, so !IsClientConnected
+        // is already true while reason is still null -- a window wide enough to
+        // fail under the load of the full suite. Waiting on the observable being
+        // asserted keeps the assertion exactly as strict.
+        await WaitUntilAsync(() => !channel.IsClientConnected && reason is not null,
+            GuardAiNetworkChannel.AuthenticationDeadline + Patience);
 
         Assert.False(channel.IsClientConnected);
         // Naming it a heartbeat timeout would send the reader after a network
