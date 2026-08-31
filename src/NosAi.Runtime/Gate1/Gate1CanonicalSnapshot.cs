@@ -9,8 +9,10 @@ public static class Gate1SnapshotContract
 {
     /// <summary>
     /// Additive fields on <c>client</c> (processName, windowHandle, windowTitle,
-    /// processResponding, windowVisible) stay on v1: unknown keys are ignored by
-    /// older readers, and the Python dashboard requires an exact version match.
+    /// processResponding, windowVisible, and the network group: networkConnected,
+    /// serverEndpoint, connectionState, remoteSessionCount) stay on v1: unknown
+    /// keys are ignored by older readers, and the Python dashboard requires an
+    /// exact version match.
     /// </summary>
     public const string Version = "gate1.snapshot.v1";
 }
@@ -50,7 +52,13 @@ public sealed record Gate1ClientView(
     ClassifiedValue<object> GameplayBaseline,
     string Status,
     string? Warning,
-    string? FailureReason);
+    string? FailureReason,
+    // Additive on v1 (see Gate1SnapshotContract): the client's own TCP state, read
+    // from the operating system. Unknown keys are ignored by older readers.
+    ClassifiedValue<bool> NetworkConnected,
+    ClassifiedValue<string> ServerEndpoint,
+    ClassifiedValue<string> ConnectionState,
+    ClassifiedValue<int?> RemoteSessionCount);
 
 public sealed record Gate1GuardSessionView(
     ClassifiedValue<bool> Connected,
@@ -109,6 +117,10 @@ public sealed record Gate1CanonicalSnapshot(
             windowVisible = Client.WindowVisible.ToWire(),
             availability = Client.Availability.ToWire(),
             gameplayBaseline = Client.GameplayBaseline.ToWire(),
+            networkConnected = Client.NetworkConnected.ToWire(),
+            serverEndpoint = Client.ServerEndpoint.ToWire(),
+            connectionState = Client.ConnectionState.ToWire(),
+            remoteSessionCount = Client.RemoteSessionCount.ToWire(),
             status = Client.Status,
             warning = Client.Warning,
             failureReason = Client.FailureReason
@@ -149,6 +161,8 @@ public static class Gate1SnapshotFactory
             "gameplay_provider_not_available",
             "Gate 1 does not extract gameplay memory. Process/window/title are the current client baseline.");
 
+        var network = client.Network;
+
         return new Gate1CanonicalSnapshot(
             ContractVersion: Gate1SnapshotContract.Version,
             RuntimeStatus: runtimeStatus,
@@ -181,7 +195,27 @@ public static class Gate1SnapshotFactory
                 GameplayBaseline: gameplayUnknown,
                 Status: client.Status,
                 Warning: client.Warning,
-                FailureReason: client.FailureReason),
+                FailureReason: client.FailureReason,
+                NetworkConnected: network is { Observed: true }
+                    ? ClassifiedValue<bool>.Live(network.RemoteSessions.Count > 0, clientObserved)
+                    : ClassifiedValue<bool>.Unknown(network?.FailureReason ?? "network_not_observed"),
+                // UNKNOWN when several remote sessions exist, not a guess: a
+                // launcher and the game look alike from outside the process.
+                ServerEndpoint: network?.Primary is { } primary
+                    ? ClassifiedValue<string>.Live(primary.Remote.ToString(), clientObserved)
+                    : ClassifiedValue<string>.Unknown(
+                        network is not { Observed: true } ? network?.FailureReason ?? "network_not_observed"
+                        : network.RemoteSessions.Count == 0 ? "no_remote_session"
+                        : "several_remote_sessions"),
+                ConnectionState: network?.Primary is { } state
+                    ? ClassifiedValue<string>.Live(state.State.ToString(), clientObserved)
+                    : ClassifiedValue<string>.Unknown(
+                        network is not { Observed: true } ? network?.FailureReason ?? "network_not_observed"
+                        : network.RemoteSessions.Count == 0 ? "no_remote_session"
+                        : "several_remote_sessions"),
+                RemoteSessionCount: network is { Observed: true }
+                    ? ClassifiedValue<int?>.Live(network.RemoteSessions.Count, clientObserved)
+                    : ClassifiedValue<int?>.Unknown(network?.FailureReason ?? "network_not_observed")),
             Guard: new Gate1GuardSessionView(
                 Connected: ClassifiedValue<bool>.Live(guard.Connected, guard.LastHeartbeatUtc == default ? now : guard.LastHeartbeatUtc),
                 Authenticated: ClassifiedValue<bool>.Live(guard.Authenticated, guard.LastHeartbeatUtc == default ? now : guard.LastHeartbeatUtc),
@@ -199,7 +233,15 @@ public static class Gate1SnapshotFactory
                 PacketInjectionEnabled: ClassifiedValue<bool>.Live(safety.PacketInjectionEnabled, now),
                 RequireClientHealthy: ClassifiedValue<bool>.Live(safety.RequireClientHealthy, now),
                 RequireGuardApproval: ClassifiedValue<bool>.Live(safety.RequireGuardApproval, now),
-                ExecutionMode: ClassifiedValue<string>.Live("disabled_in_gate1", now)),
+                // Derived from the policy in force, not a fixed string. It used to
+                // read "disabled_in_gate1" whatever the operator had set, so the
+                // snapshot could report execution off while input injection was
+                // armed — a safety label that did not track the safety state.
+                ExecutionMode: ClassifiedValue<string>.Live(
+                    safety.LiveInputEnabled || safety.PacketInjectionEnabled
+                        ? "enabled_by_operator"
+                        : "disabled_by_operator",
+                    now)),
             Warning: warning);
     }
 

@@ -21,30 +21,41 @@ public interface IHardwareProbeDiagnostics
 
 /// <summary>Windows hardware probe used by PlayAi on first run.</summary>
 [SupportedOSPlatform("windows")]
-public sealed class WindowsHardwareProbe : IHardwareProbe
+public sealed class WindowsHardwareProbe : IHardwareProbe, IHardwareProbeDiagnostics
 {
+    public string? LastFailureReason { get; private set; }
+
     public HardwareFingerprint Detect()
     {
+        LastFailureReason = null;
         if (!OperatingSystem.IsWindows())
             throw new PlatformNotSupportedException("WindowsHardwareProbe requires Windows WMI.");
 
         // Empty, not a sentinel label: absence is expressed by the value being
         // missing, so no caller has to pattern-match on the word "Unknown".
-        var cpu = GetSingle("Win32_Processor", "Name") ?? string.Empty;
-        var cores = int.TryParse(GetSingle("Win32_Processor", "NumberOfLogicalProcessors"), out var c) ? c : Environment.ProcessorCount;
-        var ram = long.TryParse(GetSingle("Win32_ComputerSystem", "TotalPhysicalMemory"), out var bytes) ? bytes / (1024 * 1024) : 0;
-        var gpu = GetSingle("Win32_VideoController", "Name") ?? string.Empty;
-        var vram = long.TryParse(GetSingle("Win32_VideoController", "AdapterRAM"), out var v) ? v / (1024 * 1024) : 0;
-        var hz = int.TryParse(GetSingle("Win32_VideoController", "CurrentRefreshRate"), out var r) ? r : 0;
+        var cpu = Read("Win32_Processor", "Name") ?? string.Empty;
+        var cores = int.TryParse(Read("Win32_Processor", "NumberOfLogicalProcessors"), out var c) ? c : 0;
+        var ram = long.TryParse(Read("Win32_ComputerSystem", "TotalPhysicalMemory"), out var bytes) ? bytes / (1024 * 1024) : 0;
+        var gpu = Read("Win32_VideoController", "Name") ?? string.Empty;
+        var vram = long.TryParse(Read("Win32_VideoController", "AdapterRAM"), out var v) ? v / (1024 * 1024) : 0;
+        var hz = int.TryParse(Read("Win32_VideoController", "CurrentRefreshRate"), out var r) ? r : 0;
         return new HardwareFingerprint("Windows", cpu.Trim(), cores, ram, gpu.Trim(), vram, hz, Environment.OSVersion.VersionString);
     }
 
-    private static string? GetSingle(string className, string property)
+    private string? Read(string className, string property)
     {
-        using var searcher = new ManagementObjectSearcher($"SELECT {property} FROM {className}");
-        using var results = searcher.Get();
-        foreach (ManagementObject item in results)
-            return item[property]?.ToString();
-        return null;
+        try
+        {
+            using var searcher = new ManagementObjectSearcher($"SELECT {property} FROM {className}");
+            using var results = searcher.Get();
+            foreach (ManagementObject item in results)
+                return item[property]?.ToString();
+            return null;
+        }
+        catch (Exception ex) when (ex is ManagementException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException)
+        {
+            LastFailureReason ??= $"wmi_{className}_{property}:{ex.GetType().Name}";
+            return null;
+        }
     }
 }

@@ -29,7 +29,8 @@ public sealed record ClientBaselineSnapshot(
     string? WindowTitle = null,
     bool? ProcessResponding = null,
     bool? WindowVisible = null,
-    string? WindowTitleFailureReason = null);
+    string? WindowTitleFailureReason = null,
+    ClientNetworkObservation? Network = null);
 
 /// <summary>
 /// Connects the runtime to the real NosTale process and exposes the existing
@@ -326,7 +327,13 @@ public sealed class RealClientConnector : IAsyncDisposable
             WindowTitle: windowTitle,
             ProcessResponding: responding,
             WindowVisible: windowVisible,
-            WindowTitleFailureReason: string.IsNullOrWhiteSpace(windowTitle) ? titleFailureReason : null);
+            WindowTitleFailureReason: string.IsNullOrWhiteSpace(windowTitle) ? titleFailureReason : null,
+            // Asks Windows which sockets the client owns. No payload is read and
+            // no capture is opened: this answers whether the client is talking to
+            // a server at all, which the snapshot could not say before.
+            Network: AttachedProcessId is int networkPid
+                ? ClientNetworkObserver.Observe(networkPid)
+                : ClientNetworkObservation.Failed("process_not_attached"));
     }
 
     /// <summary>
