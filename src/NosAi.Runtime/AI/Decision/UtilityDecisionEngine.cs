@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// AI — Motore decisionale a utilità e caricamento regole dal volume dedicato
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// AI — Utility decision engine and rule loading from the dedicated volume
 // ============================================================================
 
 using System;

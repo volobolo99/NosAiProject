@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Sicurezza — Suite di certificazione della sessione effimera X25519/AEAD
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Security — Certification suite for the X25519/AEAD ephemeral session
 // ============================================================================
 
 using System;

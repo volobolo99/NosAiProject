@@ -1,18 +1,17 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Observer del traffico di gioco: scope → decodifica → osservazioni
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Game traffic observer: scope → decode → observations
 // ============================================================================
 //
-// L'osservazione di rete converge nel World Model esattamente come la visione: i
-// pacchetti del gioco diventano EntitySighting (proiettabili in Detection) ed
-// eventi tattici, utili a combattimento, previsione e calcolo strategie.
+// Network observation converges into the World Model exactly as vision does: the
+// game's packets become EntitySighting (projectable into Detection) and tactical
+// events, usable by combat, prediction and strategy.
 //
-// Il formato wire reale di NosTale è proprietario e NON è incluso in questo
-// repository. Inventarne gli opcode significherebbe spacciare congetture per
-// osservazioni: il decoder è quindi un'interfaccia, con un decoder sintetico per
-// i test, mentre il decoder NosTale reale è un punto d'integrazione esplicito e
-// dichiarato mancante.
+// NosTale's real wire format is proprietary and is NOT included in this
+// repository. Inventing its opcodes would pass conjecture off as observation, so
+// the decoder is an interface, with a synthetic decoder for the tests, while the
+// real NosTale decoder is an explicit integration point declared missing.
 
 using System;
 using System.Collections.Generic;

@@ -1,14 +1,14 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Decoder del protocollo SINTETICO (solo test, non NosTale)
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — SYNTHETIC protocol decoder (tests only, not NosTale)
 // ============================================================================
 //
-// Questo decoder legge un formato inventato PER I TEST di questo modulo. NON è il
-// protocollo di NosTale e non pretende di esserlo: gli opcode qui sono nostri, la
-// pipeline reale userà un decoder fornito con la vera mappa opcode del gioco.
+// This decoder reads a format invented FOR THIS MODULE'S TESTS. It is NOT the
+// NosTale protocol and does not claim to be: the opcodes here are ours, and the
+// real pipeline will use a decoder supplied with the game's actual opcode map.
 //
-// Frame sintetico:  [opcode:1][entityId:4 BE][x:2 BE][y:2 BE][hp:1 (0..100)]
+// Synthetic frame:  [opcode:1][entityId:4 BE][x:2 BE][y:2 BE][hp:1 (0..100)]
 //   opcode 0x01 = EntitySighting, 0x02 = CombatHit, 0x03 = EntityDeath.
 
 using System;

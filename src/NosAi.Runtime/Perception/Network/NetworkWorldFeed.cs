@@ -1,8 +1,8 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Feed di rete verso qualsiasi consumatore, e registratore di
-//              traffico per la calibrazione della mappa di protocollo
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Network feed for any consumer, plus a traffic recorder for
+//              calibrating the protocol map
 // ============================================================================
 
 using System;

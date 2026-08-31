@@ -1,13 +1,13 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 5 — Provider Router local-first, Hardware Baseline, Storage Discovery,
-//          Eye AI View a 3 strati e Control Center REST loopback
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 5 — Local-first Provider Router, Hardware Baseline, Storage Discovery,
+//          3-layer Eye AI View and loopback REST Control Center
 // ============================================================================
 //
-// Ogni valore esposto da questo modulo dichiara la propria provenienza
-// (LIVE/DERIVED/CACHED/SIMULATED/UNKNOWN). Un dato non osservato è UNKNOWN,
-// mai zero, mai un valore plausibile inventato (ADR-0002).
+// Every value this module exposes declares its own provenance
+// (LIVE/DERIVED/CACHED/SIMULATED/UNKNOWN). An unobserved value is UNKNOWN,
+// never zero, never a plausible number invented to fill the gap (ADR-0002).
 
 using System;
 using System.Collections.Generic;
@@ -405,8 +405,8 @@ public sealed class ExternalStorageDiscoveryManager
 }
 
 // ---------------------------------------------------------------------------
-// Eye AI View a 3 strati. Ogni strato dichiara la propria provenienza; uno
-// strato privo di sorgente reale è UNKNOWN con motivo, mai un mock plausibile.
+// 3-layer Eye AI View. Each layer declares its own provenance; a layer with no
+// real source is UNKNOWN with a reason, never a plausible mock.
 // ---------------------------------------------------------------------------
 
 public sealed record EyeObservedLayer(ulong FrameIndex, DateTime TimestampUtc, int? PlayerHp, int? PlayerMp,

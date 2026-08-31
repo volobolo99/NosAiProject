@@ -1,18 +1,18 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// AI — Motore decisionale a utilità: contratti, contesto e regole
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// AI — Utility decision engine: contracts, context and rules
 // ============================================================================
 //
-// Sostituisce l'euristica a due regole con un motore data-driven senza limite di
-// regole: le regole vivono in un file sul volume dedicato (NOSAI-SSD), non nel
-// codice, e si ricaricano senza ricompilare.
+// Replaces the two-rule heuristic with a data-driven engine and no ceiling on
+// the rule count: the rules live in a file on the dedicated volume (NOSAI-SSD)
+// rather than in code, and reload without a recompile.
 //
-// Principio non negoziabile: una regola può leggere solo fatti OSSERVATI. Un
-// fatto UNKNOWN non vale zero e non vale falso — la condizione che lo richiede
-// non è valutabile, e la regola viene esclusa invece di decidere sul vuoto
-// (ADR-0002, e la stessa lezione del fix "refuse to plan on numbers nobody
-// observed" del Gate 3).
+// The non-negotiable principle: a rule may read only OBSERVED facts. An UNKNOWN
+// fact is not zero and is not false — the condition that needs it cannot be
+// evaluated, so the rule is excluded instead of deciding on nothing (ADR-0002,
+// and the same lesson as the Gate 3 fix "refuse to plan on numbers nobody
+// observed").
 
 using System;
 using System.Collections.Generic;

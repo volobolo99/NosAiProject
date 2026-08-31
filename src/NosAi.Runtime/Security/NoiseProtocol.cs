@@ -1,17 +1,18 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
 // Sicurezza — Noise_IK_25519_ChaChaPoly_SHA256: handshake conforme,
-//             trasporto con nonce espliciti e finestra anti-replay
+//             transport with explicit nonces and an anti-replay window
 // ============================================================================
 //
-// Implementazione del Noise Protocol Framework (rev. 34) limitata al pattern IK,
-// quello previsto dalla specifica v1.9 (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md).
+// An implementation of the Noise Protocol Framework (rev. 34) limited to the IK
+// pattern, the one the v1.9 specification calls for
+// (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md).
 //
-// Attenzione al nonce: Noise impone contatore little-endian negli 8 byte finali
-// del nonce a 12 byte. La sessione effimera legacy (EphemeralSession) usa invece
-// big-endian per parità con la controparte Python: sono due protocolli distinti e
-// i due formati non vanno mescolati.
+// Mind the nonce: Noise mandates a little-endian counter in the last 8 bytes of
+// the 12-byte nonce. The legacy ephemeral session (EphemeralSession) uses
+// big-endian instead, for parity with the Python counterpart: they are two
+// distinct protocols and the two formats must not be mixed.
 
 using System;
 using System.Buffers.Binary;

@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Riduzione deterministica delle osservazioni nel World Model canonico
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Deterministic reduction of observations into the canonical World Model
 // ============================================================================
 
 using System;

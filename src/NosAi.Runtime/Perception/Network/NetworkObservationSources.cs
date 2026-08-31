@@ -1,15 +1,15 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Sorgenti di osservazione di rete (sintetica, replay, assente)
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Network observation sources (synthetic, replay, absent)
 // ============================================================================
 //
-// Il backend di cattura reale scoped vive dietro IRawScopedCaptureBackend: deve
-// filtrare a livello di OS/pcap sul solo endpoint del gioco e non essere MAI
-// promiscuo. Non è implementato qui perché è lavoro di ambiente reale (richiede
-// una libreria di cattura e l'endpoint vivo del client), esattamente come il
-// backend DXGI reale è separato dalla pipeline di percezione. Senza backend, la
-// sorgente è UnavailableNetworkSource: nessun byte inventato.
+// The real scoped capture backend lives behind IRawScopedCaptureBackend: it must
+// filter at the OS/pcap level on the game's endpoint alone and must NEVER be
+// promiscuous. It is not implemented here because it is real-environment work
+// (it needs a capture library and the client's live endpoint), exactly as the
+// real DXGI backend is separate from the perception pipeline. With no backend
+// the source is UnavailableNetworkSource: no invented bytes.
 
 using System;
 using System.Collections.Generic;

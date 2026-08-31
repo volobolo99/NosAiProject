@@ -1,14 +1,14 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Framing dello stream TCP in messaggi applicativi
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Framing the TCP stream into application messages
 // ============================================================================
 //
-// TCP è uno stream, non un canale a messaggi: un pacchetto osservato può
-// contenere mezzo messaggio, tre messaggi, o la coda di uno e la testa del
-// successivo. Decodificare direttamente il payload di un pacchetto significa
-// leggere campi a offset sbagliati e produrre osservazioni false — che è il modo
-// peggiore di fallire, perché sembrano dati veri.
+// TCP is a stream, not a message channel: one observed packet may hold half a
+// message, three messages, or the tail of one and the head of the next.
+// Decoding a packet's payload directly means reading fields at the wrong offsets
+// and producing false observations — the worst way to fail, because they look
+// like real data.
 
 using System;
 using System.Buffers.Binary;

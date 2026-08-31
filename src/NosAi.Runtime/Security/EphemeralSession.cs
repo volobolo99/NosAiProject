@@ -1,17 +1,17 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
 // Sicurezza — Sessione cifrata a chiavi effimere: X25519 + HKDF-SHA256 +
-//             ChaCha20-Poly1305 (variante v1.9, controparte C# di
+//             ChaCha20-Poly1305 (v1.9 variant, the C# counterpart of
 //             nosai/security/ephemeral_session.py)
 // ============================================================================
 //
-// Questo modulo implementa il nucleo effimero (chiave statica server + chiave
-// effimera client, derivazione di sessione, AEAD). NON è un'implementazione
-// completa del Noise Protocol Framework: un handshake Noise KK/IK conforme
-// richiede una macchina a stati del pattern e test di interoperabilità
-// (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md). Il formato wire è compatibile
-// con la controparte Python: nonce(12) || ciphertext || tag(16).
+// This module implements the ephemeral core (server static key + client
+// ephemeral key, session derivation, AEAD). It is NOT a complete implementation
+// of the Noise Protocol Framework: a conformant Noise KK/IK handshake needs the
+// pattern's state machine and interoperability tests
+// (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md). The wire format is compatible
+// with the Python counterpart: nonce(12) || ciphertext || tag(16).
 
 using System;
 using System.Security.Cryptography;

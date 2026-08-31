@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Economia — Suite di certificazione di inventario, upgrade, bazaar e crafting
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Economy — Certification suite for inventory, upgrade, bazaar and crafting
 // ============================================================================
 
 using System;

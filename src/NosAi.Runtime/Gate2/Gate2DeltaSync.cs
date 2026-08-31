@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Codec binario versionato dei delta e tracker di sincronizzazione
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Versioned binary delta codec and synchronisation tracker
 // ============================================================================
 
 using System;

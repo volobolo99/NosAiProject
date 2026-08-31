@@ -1,12 +1,12 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// LowLevel — Risoluzione dei nomi di tasto in virtual-key code Windows
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// LowLevel — Resolving key names into Windows virtual-key codes
 // ============================================================================
 //
-// La mappatura precedente copriva solo A-Z, 0-9, SPACE, ENTER, ESC e TAB: le
-// skill di NosTale stanno su F1-F12, quindi "F1" sollevava ArgumentException e
-// l'intera barra delle abilità era irraggiungibile.
+// The previous mapping covered only A-Z, 0-9, SPACE, ENTER, ESC and TAB.
+// NosTale's skills sit on F1-F12, so "F1" raised ArgumentException and the whole
+// skill bar was unreachable.
 
 using System;
 using System.Collections.Generic;

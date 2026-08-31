@@ -1,18 +1,18 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Mappa di protocollo esterna e decoder configurabile
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — External protocol map and configurable decoder
 // ============================================================================
 //
-// Il formato wire di NosTale è proprietario e NON è in questo repository.
-// Cablare opcode "plausibili" nel codice produrrebbe HP e posizioni sbagliati
-// che *sembrano* osservazioni: il modo peggiore di sbagliare, perché il
-// pianificatore agirebbe su di essi.
+// NosTale's wire format is proprietary and is NOT in this repository. Hardcoding
+// "plausible" opcodes would produce wrong HP and wrong positions that *look*
+// like observations: the worst way to be wrong, because the planner would act on
+// them.
 //
-// Quindi la mappa è DATO, non codice: vive sul volume dedicato, la ricava
-// l'operatore dal traffico realmente osservato (vedi TrafficRecorder), e ogni
-// lettura è validata. Un campo fuori dal messaggio, un valore fuori scala o un
-// opcode non mappato NON producono un'osservazione.
+// So the map is DATA, not code: it lives on the dedicated volume, the operator
+// derives it from traffic actually observed (see TrafficRecorder), and every
+// read is validated. A field outside the message, a value out of range, or an
+// unmapped opcode produce NO observation.
 
 using System;
 using System.Buffers.Binary;

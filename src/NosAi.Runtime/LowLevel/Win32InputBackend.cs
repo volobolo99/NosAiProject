@@ -1,13 +1,13 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// LowLevel — Backend di input OS: tastiera e mouse dietro un confine autorizzato
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// LowLevel — OS input backend: keyboard and mouse behind an authorised boundary
 // ============================================================================
 //
-// Qui vive l'unica primitiva che tocca davvero il desktop. L'autorizzazione NON
-// è responsabilità del chiamante: GatedInputBackend avvolge questo backend e
-// rifiuta ogni iniezione finché la policy non la abilita, così un consumatore
-// che salta l'adapter non aggira il Safety Gate (ADR-0003).
+// The one primitive that really touches the desktop lives here. Authorisation is
+// NOT the caller's responsibility: GatedInputBackend wraps this backend and
+// refuses every injection until the policy allows it, so a consumer that skips
+// the adapter does not skip the Safety Gate (ADR-0003).
 
 using System;
 using System.Runtime.InteropServices;

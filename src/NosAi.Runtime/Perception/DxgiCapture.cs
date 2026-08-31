@@ -1,13 +1,13 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Acquisizione DXGI Desktop Duplication con triple buffer
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — DXGI Desktop Duplication capture with a triple buffer
 // ============================================================================
 //
-// Backend di cattura reale: i frame prodotti qui sono LIVE perché provengono
-// davvero dal compositore desktop. Se la duplicazione non è disponibile (sessione
-// non interattiva, accesso negato, adattatore assente) la sorgente resta UNKNOWN
-// con motivo: non esiste alcun percorso che fabbrichi pixel (ADR-0002).
+// A real capture backend: the frames produced here are LIVE because they really
+// do come from the desktop compositor. Where duplication is unavailable (a
+// non-interactive session, access denied, no adapter) the source stays UNKNOWN
+// with a reason: there is no path here that fabricates pixels (ADR-0002).
 
 using System;
 using System.Threading;

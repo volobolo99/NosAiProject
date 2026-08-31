@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Bootstrap SQLite condiviso: unico punto di applicazione della policy
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Shared SQLite bootstrap: the single place the policy is applied
 // ============================================================================
 
 using System;

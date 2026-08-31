@@ -1,11 +1,12 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// LowLevel — Suite di certificazione del controllo input (tastiera e mouse)
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// LowLevel — Certification suite for input control (keyboard and mouse)
 // ============================================================================
 //
-// Nessun check qui tocca il desktop reale: girano tutti su RecordingInputBackend,
-// quindi la suite è eseguibile in CI senza muovere il mouse della macchina.
+// No check here touches the real desktop: they all run over
+// RecordingInputBackend, so the suite is runnable in CI without moving the
+// machine's mouse.
 
 using System;
 using System.Linq;

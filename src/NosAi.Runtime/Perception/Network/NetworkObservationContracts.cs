@@ -1,19 +1,20 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Osservazione di rete: contratti del canale di traffico di gioco
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Network observation: contracts of the game traffic channel
 // ============================================================================
 //
-// Questo canale OSSERVA il traffico del client NosTale controllato dal runtime e
-// nient'altro. Non è un intercettore generico: per costruzione è vincolato
-// all'endpoint del gioco (ScopedGameTrafficFilter), non decifra TLS, non tocca
-// traffico di altre applicazioni e non inietta né modifica pacchetti. È la stessa
-// linea del boundary read-only già dichiarato da IPacketManipulator e del divieto
-// di automazione evasiva del progetto (docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md).
+// This channel OBSERVES the traffic of the NosTale client the runtime controls,
+// and nothing else. It is not a general interceptor: by construction it is bound
+// to the game's endpoint (ScopedGameTrafficFilter), does not decrypt TLS, does
+// not touch other applications' traffic, and neither injects nor modifies
+// packets. That is the same line as the read-only boundary IPacketManipulator
+// already declares, and as the project's ban on evasive automation
+// (docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md).
 //
-// Ogni osservazione dichiara la propria provenienza: cattura reale scoped = LIVE,
-// sorgente sintetica = SIMULATED, nessun backend = UNKNOWN. Mai pixel — qui, byte
-// — inventati (ADR-0002).
+// Every observation declares its own provenance: real scoped capture = LIVE,
+// synthetic source = SIMULATED, no backend = UNKNOWN. Never invented pixels —
+// here, bytes (ADR-0002).
 
 using System;
 using NosAi.Runtime.Contracts;

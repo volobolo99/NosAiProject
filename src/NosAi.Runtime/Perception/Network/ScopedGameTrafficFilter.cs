@@ -1,13 +1,13 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Filtro di scope: solo il traffico del client di gioco
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Scope filter: the game client's traffic and nothing else
 // ============================================================================
 //
-// Questo filtro è la barriera che impedisce al canale di diventare uno sniffer
-// generico. Non esiste modo di costruirlo "match-all": senza un endpoint di
-// gioco reale rifiuta la costruzione (fail closed), e ogni pacchetto che non
-// appartiene a quell'endpoint viene scartato prima di entrare nella pipeline.
+// This filter is the barrier that stops the channel becoming a general sniffer.
+// There is no way to construct it as "match-all": without a real game endpoint
+// it refuses construction (fail closed), and every packet that does not belong
+// to that endpoint is discarded before it enters the pipeline.
 
 using System;
 

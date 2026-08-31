@@ -1,8 +1,8 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Monitoraggio Hardware, Autoscale del Budget di Runtime,
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Hardware Monitoring subsystem, Runtime Budget Autoscale,
 //              Profiler Basato sul Profilo di Riferimento (Acer Nitro V 16 AI) e
 //              Watchdog Termico con Trigger a 80 °C
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed

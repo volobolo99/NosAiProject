@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
 // Descrizione: Sottosistema di Inferenza AI Locale (GGUF / On-Demand VRAM),
 //              CapBAC Sandboxing, Protezione Anti-Prompt-Injection,
 //              Validazione Output JSON Strutturato e Tool Calling di Sola Lettura
@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace NosAi.AI.LocalInference
 {
-    // Allegato importato integralmente nel progetto NosAi.
+    // Attachment imported into the NosAi project in full.
 
     public enum ModelQuantization : byte { Q4_K_M = 0, Q5_K_M = 1, Q8_0 = 2, FP16 = 3 }
 

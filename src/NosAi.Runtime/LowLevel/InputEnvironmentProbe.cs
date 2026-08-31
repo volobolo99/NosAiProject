@@ -1,19 +1,20 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// LowLevel — Validazione d'ambiente reale del layer di input
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// LowLevel — Real-environment validation of the input layer
 // ============================================================================
 //
-// La suite --input-test certifica il CONTRATTO su un backend di registrazione:
-// non prova che SendInput arrivi davvero alla coda di input del sistema. Questa
-// sonda lo prova sull'ambiente reale, come --dxgi-probe fa per la cattura.
+// The --input-test suite certifies the CONTRACT against a recording backend: it
+// does not prove that SendInput actually reaches the system input queue. This
+// probe proves that against the real environment, as --dxgi-probe does for
+// capture.
 //
-// Sicurezza della prova:
-//  - la tastiera è validata con un hook low-level che OSSERVA il tasto iniettato
-//    e lo INGHIOTTE, quindi nessuna applicazione lo riceve;
-//  - si usa VK_F24, che nessuna applicazione normale interpreta;
-//  - il mouse viene riportato esattamente dove stava;
-//  - nessun client di gioco viene toccato: la sonda valida l'OS, non NosTale.
+// What makes the probe safe to run:
+//  - the keyboard is validated with a low-level hook that OBSERVES the injected
+//    key and SWALLOWS it, so no application ever receives it;
+//  - it uses VK_F24, which no normal application interprets;
+//  - the mouse is put back exactly where it was;
+//  - no game client is touched: the probe validates the OS, not NosTale.
 
 using System;
 using System.Diagnostics;

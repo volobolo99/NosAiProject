@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Store WAL di sessioni e traiettorie con vincolo di integrità
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — WAL store for sessions and trajectories, with an integrity constraint
 // ============================================================================
 
 using System;

@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Motore integrato: osservazione → world model → bus → persistenza → delta
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Integrated engine: observation → world model → bus → persistence → delta
 // ============================================================================
 
 using System;

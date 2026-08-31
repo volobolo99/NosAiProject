@@ -1,14 +1,15 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// LowLevel — Confine autorizzato dell'iniezione di input
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// LowLevel — The authorised boundary for input injection
 // ============================================================================
 //
-// Il Safety Gate viveva soltanto dentro NosTaleGameAdapter: chiunque avesse in
-// mano RuntimeComponents.InputBackend o .Humanizer iniettava input reale con
-// LiveInputEnabled a false, aggirando l'autorizzazione. Il gate ora sta al
-// confine, dove non lo si può saltare (ADR-0003, "il runtime è autoritativo per
-// sicurezza, autorizzazione ed esecuzione privilegiata").
+// The Safety Gate used to live inside NosTaleGameAdapter alone: anyone holding
+// RuntimeComponents.InputBackend or .Humanizer injected real input with
+// LiveInputEnabled false, bypassing the authorisation entirely. The gate now
+// sits at the boundary, where it cannot be stepped around (ADR-0003, "the
+// runtime is authoritative for safety, authorization and privileged
+// execution").
 
 using System;
 using System.Threading;

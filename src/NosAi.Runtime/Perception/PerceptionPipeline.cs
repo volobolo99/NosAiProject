@@ -1,15 +1,15 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Pipeline: acquisizione classificata, segmentazione ROI, cache
-//              OCR a glifi, filtro di Kalman 2D e tracciamento temporale
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Pipeline: classified acquisition, ROI segmentation, glyph OCR
+//              cache, 2D Kalman filter and temporal tracking
 // ============================================================================
 //
-// La logica di visione (ROI, cache glifi, Kalman, tracker) è reale e
-// deterministica. L'acquisizione dei pixel vive dietro un confine classificato:
-// un backend DXGI zero-copy reale produce frame LIVE; senza backend la cattura è
-// UNKNOWN, mai pixel inventati (ADR-0002). Il percorso DXGI Desktop Duplication
-// triple-buffer è un traguardo di ambiente reale a parte.
+// The vision logic (ROI, glyph cache, Kalman, tracker) is real and
+// deterministic. Pixel acquisition lives behind a classified boundary: a real
+// zero-copy DXGI backend produces LIVE frames; with no backend the capture is
+// UNKNOWN, never invented pixels (ADR-0002). The triple-buffered DXGI Desktop
+// Duplication path is a separate real-environment milestone.
 
 using System;
 using System.Collections.Generic;

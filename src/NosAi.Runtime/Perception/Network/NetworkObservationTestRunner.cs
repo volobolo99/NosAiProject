@@ -1,14 +1,14 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Suite di certificazione dell'osservazione di rete
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Certification suite for network observation
 // ============================================================================
 //
-// I check dimostrano le due proprietà che rendono questo canale un osservatore
-// del gioco e non uno sniffer generico: (1) il traffico di altre applicazioni
-// viene scartato e non entra mai nella pipeline; (2) non esiste alcuna primitiva
-// di invio/iniezione. Più la provenienza onesta (LIVE/SIMULATED/CACHED/UNKNOWN)
-// e la convergenza nel World Model.
+// The checks demonstrate the two properties that make this channel an observer
+// of the game rather than a general sniffer: (1) other applications' traffic is
+// discarded and never enters the pipeline; (2) no send or inject primitive
+// exists at all. Plus honest provenance (LIVE/SIMULATED/CACHED/UNKNOWN) and
+// convergence into the World Model.
 
 using System;
 using System.Linq;

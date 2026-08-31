@@ -1,10 +1,10 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Orchestrazione Raid, Analisi Fasi Boss,
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Raid Orchestration subsystem, boss phase analysis,
 //              Schivata AoE, Risoluzione TimeSpace a Leve e Humanizer Comportamentale
-// Standard: C# 12 / .NET 8 — Zero-Allocation, Curve di Bézier, Fail-Closed
+// Standard: C# 12 / .NET 8 — Zero-Allocation, Bézier curves, Fail-Closed
 // ============================================================================
 
 using System;

@@ -1,8 +1,8 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — World Model Canonico, Bounded EventBus, Context Slimmer,
-//         Persistenza SQLite WAL e Delta-Encoding
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Canonical World Model, Bounded EventBus, Context Slimmer,
+//         SQLite WAL persistence and Delta-Encoding
 // ============================================================================
 
 using System;

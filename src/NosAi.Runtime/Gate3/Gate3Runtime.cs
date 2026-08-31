@@ -2,9 +2,9 @@ using SafetyGate = NosAi.Runtime.Autonomy.SafetyGate;
 using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
 using NosAi.Runtime.Autonomy;
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 3 — Pipeline Decisionale a Ciclo Chiuso
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 3 — Closed-Loop Decision Pipeline
 // ============================================================================
 
 using System;

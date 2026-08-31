@@ -1,13 +1,13 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// AI — Provider decisionale reale basato sul motore a utilità
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// AI — Real decision provider over the utility engine
 // ============================================================================
 //
-// Sostituisce HeuristicRuleProvider (due regole cablate: HP critico → pozione,
-// altrimenti continua) con il motore a utilità caricato da file. Le decisioni
-// restano DERIVED — logica deterministica reale su fatti osservati — e non
-// vengono mai promosse a LIVE, che è riservato a ciò che è stato osservato.
+// Replaces HeuristicRuleProvider (two hardcoded rules: critical HP → potion,
+// otherwise carry on) with the utility engine loaded from file. Decisions stay
+// DERIVED — real deterministic logic over observed facts — and are never
+// promoted to LIVE, which is reserved for what was actually observed.
 
 using System;
 using System.Collections.Immutable;

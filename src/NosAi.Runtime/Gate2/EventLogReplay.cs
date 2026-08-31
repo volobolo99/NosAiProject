@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Gate 2 — Registro eventi durevole: ordine totale, riproduzione deterministica
-//          e perdite dichiarate (M075–M076)
+// Project: NosAi — Controlled Automation Runtime
+// Gate 2 — Durable event log: total order, deterministic replay
+//          and declared losses (M075–M076)
 // ============================================================================
 
 using System;

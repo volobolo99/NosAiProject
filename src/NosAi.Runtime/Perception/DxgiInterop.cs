@@ -1,16 +1,16 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Interop DXGI Desktop Duplication (COM vtable diretto)
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — DXGI Desktop Duplication interop (direct COM vtable)
 // ============================================================================
 //
-// Interop minimale verso DXGI/D3D11 senza dipendenze esterne. Le chiamate COM
-// passano per puntatori a funzione sullo slot di vtable: ogni indice è una
-// costante nominata e commentata, perché uno slot sbagliato non è un errore di
-// compilazione ma un crash a runtime.
+// Minimal interop against DXGI/D3D11 with no external dependency. The COM calls
+// go through function pointers at a vtable slot: every index is a named,
+// commented constant, because a wrong slot is not a compile error but a runtime
+// crash.
 //
-// Nessuna di queste primitive inventa pixel: se l'acquisizione fallisce, il
-// chiamante riceve un esito negativo con motivo, mai un frame sintetico.
+// None of these primitives invents pixels: where acquisition fails, the caller
+// gets a negative result with a reason, never a synthetic frame.
 
 using System;
 using System.Runtime.InteropServices;

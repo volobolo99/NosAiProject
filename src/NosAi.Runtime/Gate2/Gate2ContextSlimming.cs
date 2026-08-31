@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Riduzione del contesto per VRAM: firma errori e vista world compatta
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Context slimming for VRAM: error signature and compact world view
 // ============================================================================
 
 using System;

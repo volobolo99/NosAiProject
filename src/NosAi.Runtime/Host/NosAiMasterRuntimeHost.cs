@@ -1,9 +1,9 @@
 using NosAi.Runtime.Autonomy;
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Master Runtime Host, Bootstrapper Centrale, Orchestratore del Ciclo
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Master Runtime Host, Central Bootstrapper, Cycle Orchestrator
 //              Operativo, Server Dashboard Integrato (Eye AI View) e Supervisore
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed
 // ============================================================================

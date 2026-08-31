@@ -1,11 +1,11 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Implementazione del Gate 4 (Progression Engine V2, DAG Missioni,
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Gate 4 implementation (Progression Engine V2, Quest DAG,
 //              Sblocco SP, Aggiornamenti Bayesiani Beta-Binomiali, UCB1/MAUT
-//              e Knowledge Base Strategica con Ciclo di Vita Mastery)
-// Standard: C# 12 / .NET 8 — Zero-Allocation, Determinismo, Clean Code
+//              and Strategic Knowledge Base with a Mastery lifecycle)
+// Standard: C# 12 / .NET 8 — Zero-Allocation, Determinism, Clean Code
 // ============================================================================
 
 using System;

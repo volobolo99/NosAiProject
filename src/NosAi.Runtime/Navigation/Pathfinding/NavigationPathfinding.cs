@@ -1,10 +1,10 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Navigazione Spaziale, Pathfinding A* 2D,
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Spatial Navigation subsystem, 2D A* pathfinding,
 //              Mappe di Collisione, Hazard Heatmap, Routing Portali Multi-Mappa
-//              e Path Smoother con Rilevamento Anti-Stallo
+//              and Path Smoother with stall detection
 // Standard: C# 12 / .NET 8 — Zero-Allocation, PriorityQueue, Clean Architecture
 // ============================================================================
 

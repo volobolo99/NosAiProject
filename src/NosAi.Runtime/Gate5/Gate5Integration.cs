@@ -1,8 +1,8 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 5 — Motore integrato (router, hardware, storage, Eye AI View, REST) e
-//          suite di certificazione nominale
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 5 — Integrated engine (router, hardware, storage, Eye AI View, REST) and
+//          its nominal certification suite
 // ============================================================================
 
 using System;

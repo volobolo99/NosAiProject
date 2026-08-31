@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// AI — Suite di certificazione del motore decisionale
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// AI — Certification suite for the decision engine
 // ============================================================================
 
 using System;

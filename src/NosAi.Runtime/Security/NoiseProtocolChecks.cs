@@ -1,6 +1,6 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
 // Sicurezza — Check di certificazione Noise IK: handshake, trasporto, replay
 // ============================================================================
 

@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Percezione — Suite di certificazione della pipeline di visione
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Perception — Certification suite for the vision pipeline
 // ============================================================================
 
 using System;

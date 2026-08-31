@@ -1,14 +1,14 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Humanizer — Pianificazione deterministica di traiettorie e pressioni tasto
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Humanizer — Deterministic planning of trajectories and key presses
 // ============================================================================
 //
-// I tempi sono FISSI e deterministici, non randomizzati: servono a rendere il
-// movimento riproducibile e verificabile, non a nascondere l'automazione. Il
+// The timings are FIXED and deterministic, not randomised: they exist to make
+// movement reproducible and verifiable, not to hide the automation. The
 // progetto esclude esplicitamente l'automazione evasiva verso i sistemi
 // anti-cheat (docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md), e introdurre jitter
-// casuale a fini di non rilevabilità ricadrebbe in quel divieto.
+// randomised jitter for the sake of evading detection would fall under it.
 
 using System;
 using System.Collections.Generic;

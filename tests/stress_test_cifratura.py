@@ -16,7 +16,7 @@ async def invia_macro(sessione: EphemeralSession, identificativo: int) -> float:
     payload = f"STRESS_TEST_MACRO_{identificativo}_TIMESTAMP_{time.time_ns()}".encode()
     inizio = time.perf_counter()
     packet = sessione.encrypt(payload)
-    # Simulazione locale del percorso cifratura/decrittazione.
+    # Local simulation of the encrypt/decrypt path.
     await asyncio.sleep(0)
     sessione.decrypt(packet)
     return time.perf_counter() - inizio
@@ -28,7 +28,7 @@ async def esegui_stress(numero_macro: int = 1000) -> dict[str, float | int]:
     sender = EphemeralSession.from_x25519(client, server.public_key().public_bytes_raw())
     receiver = EphemeralSession.from_x25519(server, client.public_key().public_bytes_raw())
 
-    # Ogni task usa una sessione propria per mantenere contatori nonce indipendenti.
+    # Each task uses its own session so the nonce counters stay independent.
     async def ciclo(i: int) -> float:
         payload = f"STRESS_TEST_MACRO_{i}_{time.time_ns()}".encode()
         start = time.perf_counter()

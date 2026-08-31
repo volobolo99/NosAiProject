@@ -1,18 +1,18 @@
 using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
 using NosAi.Runtime.Autonomy;
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Gate 6 — Integrazione di sistema end-to-end: confini di sicurezza unificati,
-//          ciclo chiuso su mondo dichiaratamente simulato, verifica dei vincoli
-//          non negoziabili e certificazione locale di integrazione
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Gate 6 — End-to-end system integration: unified safety boundaries, a closed
+//          loop over an explicitly simulated world, verification of the
+//          non-negotiable constraints, and local integration certification
 // ============================================================================
 //
-// Onestà dei dati: il ciclo chiuso di questo gate gira su un mondo SIMULATO ed
-// è etichettato come tale in ogni risultato. I check di protocollo e identità
-// usano i componenti canonici reali (NosAi.Protocol, Gate 1 SessionAuth): il
-// Gate 6 certifica l'integrazione, non una copia divergente dei contratti.
+// Data honesty: this gate's closed loop runs against a SIMULATED world and is
+// labelled as such in every result. The protocol and identity checks use the
+// real canonical components (NosAi.Protocol, Gate 1 SessionAuth): Gate 6
+// certifies the integration, not a divergent copy of the contracts.
 
 using System;
 using System.Collections.Generic;

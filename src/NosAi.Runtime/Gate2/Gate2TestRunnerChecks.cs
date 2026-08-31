@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Gate 2 — Check di certificazione: world model, slimming, delta sync, store
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Gate 2 — Certification checks: world model, slimming, delta sync, store
 // ============================================================================
 
 using System;

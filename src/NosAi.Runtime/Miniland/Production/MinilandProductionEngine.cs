@@ -1,8 +1,8 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Gestione e Automazione Miniland, Pianificazione
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
+// Description: Miniland management and automation subsystem, planning
 //              Stazioni Produttive, Simulatore Deterministico Minigiochi e Raccolta Risorse
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed
 // ============================================================================
