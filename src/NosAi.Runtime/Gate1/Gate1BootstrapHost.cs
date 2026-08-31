@@ -8,6 +8,9 @@ using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Observability;
+using NosAi.Runtime.Safety;
+using NosAi.Runtime.Testing;
+using NosAi.Runtime.Security;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.WorldModel;
 
@@ -29,6 +32,12 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private RuntimeHealthStatus _health = RuntimeHealthStatus.Bootstrapping;
     private RSA? _devKey;
     private bool _disposed;
+
+    /// <summary>The composed runtime, held so the safety switches stay reachable.</summary>
+    private readonly RuntimeComponents _runtime;
+
+    /// <summary>The test console behind /tests. Null when the repository is not on disk.</summary>
+    private readonly TestConsoleService? _testConsole;
 
     public RuntimeHealthStatus Health => _health;
     public int GuardPort => _channel.LocalPort;
@@ -59,8 +68,20 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _runtimeIdentity = RuntimeIdentity.LoadOrCreate();
         _logger.Info("Runtime identity loaded.", new Dictionary<string, object?>
         {
-            ["publicKeyPath"] = RuntimeIdentity.PublicPathFor(RuntimeIdentity.DefaultPath)
+            ["publicKeyPath"] = RuntimeIdentity.PublicPathFor(RuntimeIdentity.DefaultPath),
+            ["protectedKeyPath"] = RuntimeIdentity.ProtectedPathFor(RuntimeIdentity.DefaultPath)
         });
+        // A readable private key is what ADR-0010 removes. If migration could not
+        // delete the old one, the runtime still starts, but silence here would let
+        // the file sit there indefinitely with the decision looking applied.
+        if (_runtimeIdentity.UnprotectedRemnantPath is { } remnant)
+        {
+            _logger.Warning("A plaintext runtime identity is still on disk; delete it by hand.", new Dictionary<string, object?>
+            {
+                ["path"] = remnant,
+                ["reason"] = "identity_plaintext_not_removed"
+            });
+        }
         _auth = CreateAuth(_options, _logger, _runtimeIdentity, out _devKey);
         _channel = new GuardAiNetworkChannel(
             _options.GuardPort, _auth,
@@ -70,7 +91,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _client = new RealClientConnector(_channel, _options.ClientProcessName);
         var safeProbe = new SafeHardwareProbe(probe ?? CreateDefaultProbe());
         _hardware = new LiveHardwareTelemetry(safeProbe);
-        var runtime = RuntimeComposition.CreateSafe();
+        var runtime = _runtime = RuntimeComposition.CreateSafe();
         var world = new NosAi.Runtime.WorldModel.WorldModel();
         _snapshot = new Gate1RuntimeSnapshotProvider(
             runtime,
@@ -81,8 +102,10 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             () => _health,
             _correlationId);
         _channel.SetSnapshotSource(_snapshot.Capture);
+        _testConsole = BuildTestConsole();
         _dashboard = _options.StartDashboard
-            ? new Gate1OperatorServer(_options.DashboardPort, _snapshot.Capture, HandleOperatorCommand)
+            ? new Gate1OperatorServer(_options.DashboardPort, _snapshot.Capture, HandleOperatorCommand,
+                safetyState: SafetyState, safetySetter: SetSafetySwitch, tests: _testConsole)
             : null;
     }
 
@@ -96,6 +119,10 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             ["guardPort"] = _options.GuardPort,
             ["dashboardPort"] = _options.DashboardPort
         });
+
+        // Discovery runs alongside the bootstrap: the operator page must not wait
+        // on it, and the runtime must not wait on the page.
+        BeginTestDiscovery();
 
         var attached = _client.VerifyAndAttachClient();
         _logger.Info(attached ? "NosTale client attached." : "NosTale client not attached; snapshot remains explicit.", new Dictionary<string, object?>
@@ -197,19 +224,111 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// </summary>
     public void RequestEmergencyStop() => HandleOperatorCommand("EMERGENCY_STOP");
 
+    /// <summary>
+    /// Builds the test console, or nothing when the repository is not reachable.
+    /// </summary>
+    /// <remarks>
+    /// A published build running away from its sources cannot execute the suites,
+    /// and the page says so rather than showing an empty inventory that would read
+    /// as "there are no tests".
+    /// </remarks>
+    private static TestConsoleService? BuildTestConsole()
+    {
+        string? root = TestSuiteRunner.FindRepositoryRoot(Environment.CurrentDirectory)
+                       ?? TestSuiteRunner.FindRepositoryRoot();
+        if (root is null)
+            return null;
+
+        var catalog = new TestCatalog(Path.Combine(root, "data", "test_evidence.json"));
+        var suites = new TestSuiteRunner(root);
+        var gates = new GateCertificationRunner(CertificationSuites.Resolve);
+        return new TestConsoleService(catalog, suites, gates);
+    }
+
+    /// <summary>Starts test discovery without blocking the runtime's startup.</summary>
+    private void BeginTestDiscovery()
+    {
+        if (_testConsole is null)
+            return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _testConsole.DiscoverAllAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning("Test discovery failed; the console lists what it already knew.",
+                    new Dictionary<string, object?> { ["reason"] = $"{ex.GetType().Name}: {ex.Message}" });
+            }
+        });
+    }
+
     private void HandleOperatorCommand(string command)
     {
         if (command.Contains("EMERGENCY_STOP", StringComparison.OrdinalIgnoreCase)
             || command.Contains("\"action\":\"stop\"", StringComparison.OrdinalIgnoreCase))
         {
+            // Disarm first, then tear the session down: an emergency stop that
+            // dropped the session while input stayed armed would leave the
+            // dangerous half running.
+            _runtime.Safety.EmergencyStop("operator_emergency_stop");
             _health = RuntimeHealthStatus.Failed;
             _channel.TerminateSession("operator_emergency_stop");
-            _logger.Warning("Operator emergency stop accepted; execution remains disabled in Gate 1.", new Dictionary<string, object?>
+            _logger.Warning("Operator emergency stop accepted; every acting power disarmed.", new Dictionary<string, object?>
             {
-                ["health"] = _health.ToString()
+                ["health"] = _health.ToString(),
+                ["liveInput"] = _runtime.SafetyPolicy.LiveInputEnabled,
+                ["packetInjection"] = _runtime.SafetyPolicy.PacketInjectionEnabled
             });
         }
     }
+
+    /// <summary>
+    /// Applies an operator switch change and reports the decision.
+    /// </summary>
+    /// <remarks>
+    /// The operator surface may <i>ask</i>; the runtime decides (ADR-0003). The
+    /// principal is fixed to <see cref="SecurityPrincipal.Operator"/> here because
+    /// this endpoint is the person at the machine — a request arriving over the
+    /// Guard channel goes through a different path and does not reach it.
+    /// </remarks>
+    public AuthorizationDecision SetSafetySwitch(SafetySwitch which, bool value)
+    {
+        var decision = _runtime.Safety.Set(SecurityPrincipal.Operator, which, value, "operator_api");
+        _logger.Warning("Operator changed a safety switch.", new Dictionary<string, object?>
+        {
+            ["switch"] = which.ToString(),
+            ["requested"] = value,
+            ["allowed"] = decision.Allowed,
+            ["reason"] = decision.Reason,
+            ["executionMode"] = _runtime.Safety.ExecutionMode
+        });
+        return decision;
+    }
+
+    /// <summary>The current switch state and its history, for the operator surface.</summary>
+    public object SafetyState() => new
+    {
+        executionMode = _runtime.Safety.ExecutionMode,
+        switches = new
+        {
+            liveInput = _runtime.SafetyPolicy.LiveInputEnabled,
+            packetInjection = _runtime.SafetyPolicy.PacketInjectionEnabled,
+            requireClientHealthy = _runtime.SafetyPolicy.RequireClientHealthy,
+            requireGuardApproval = _runtime.SafetyPolicy.RequireGuardApproval
+        },
+        history = _runtime.Safety.History.Select(h => new
+        {
+            atUtc = h.AtUtc,
+            principal = h.Principal.ToString(),
+            @switch = h.Switch.ToString(),
+            from = h.From,
+            to = h.To,
+            reason = h.Reason
+        }).ToArray()
+    };
 
     private static IHardwareProbe CreateDefaultProbe()
     {
@@ -297,6 +416,15 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
 
     private readonly Func<Gate1CanonicalSnapshot> _snapshot;
     private readonly Action<string> _commandHandler;
+
+    /// <summary>Reads the current switch state. Null when the host wired none.</summary>
+    private readonly Func<object>? _safetyState;
+
+    /// <summary>Applies a switch change and returns the decision, reason included.</summary>
+    private readonly Func<SafetySwitch, bool, AuthorizationDecision>? _safetySetter;
+
+    /// <summary>The test console, when one was wired. Null leaves /tests reporting why.</summary>
+    private readonly TestConsoleService? _tests;
     private readonly int _requestedPort;
     private HttpListener? _listener;
     private CancellationTokenSource? _cts;
@@ -314,8 +442,17 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
 
     public bool IsListening => _listener?.IsListening == true;
 
-    public Gate1OperatorServer(int port, Func<Gate1CanonicalSnapshot> snapshot, Action<string> commandHandler)
+    public Gate1OperatorServer(
+        int port,
+        Func<Gate1CanonicalSnapshot> snapshot,
+        Action<string> commandHandler,
+        Func<object>? safetyState = null,
+        Func<SafetySwitch, bool, AuthorizationDecision>? safetySetter = null,
+        TestConsoleService? tests = null)
     {
+        _safetyState = safetyState;
+        _safetySetter = safetySetter;
+        _tests = tests;
         if (port is < 0 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(port), port, "Dashboard port must be between 0 and 65535.");
         _requestedPort = port;
@@ -509,11 +646,75 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
                 });
             }
 
+            // The operator's test page: every known test and what it observed.
+            if (method == "GET" && path == "/tests")
+            {
+                return (200, "text/html; charset=utf-8", Encoding.UTF8.GetBytes(TestConsoleHtml.Render()));
+            }
+
+            if (method == "GET" && path == "/api/tests")
+            {
+                return _tests is null
+                    ? Json(503, new { error = "test_console_unavailable" })
+                    : Json(200, _tests.Snapshot());
+            }
+
+            if (method == "POST" && path == "/api/tests/run")
+            {
+                if (_tests is null)
+                    return Json(503, new { started = false, reason = "test_console_unavailable" });
+
+                using var body = new StreamReader(context.Request.InputStream, Encoding.UTF8);
+                var request = JsonSerializer.Deserialize<TestRunRequest>(
+                    body.ReadToEnd(),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                string target = request?.Target ?? "all";
+                bool started = _tests.TryStart(target, out string reason);
+                return Json(started ? 202 : 409, new { started, reason, target });
+            }
+
+            if (method == "GET" && path == "/api/safety")
+            {
+                return _safetyState is null
+                    ? Json(503, new { error = "safety_state_unavailable" })
+                    : Json(200, _safetyState());
+            }
+
+            // The operator arms and disarms here. The runtime decides, and a refusal
+            // comes back with its reason rather than as a silent no-op.
+            if (method == "POST" && path == "/api/safety")
+            {
+                if (_safetySetter is null)
+                    return Json(503, new { error = "safety_switch_unavailable" });
+
+                using var body = new StreamReader(context.Request.InputStream, Encoding.UTF8);
+                var request = JsonSerializer.Deserialize<SafetySwitchRequest>(
+                    body.ReadToEnd(),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (request is null || !Enum.TryParse(request.Switch, ignoreCase: true, out SafetySwitch which))
+                    return Json(400, new { error = "unknown_switch", accepted = Enum.GetNames<SafetySwitch>() });
+
+                var decision = _safetySetter(which, request.Enabled);
+                return Json(decision.Allowed ? 200 : 403, new
+                {
+                    allowed = decision.Allowed,
+                    reason = decision.Reason,
+                    @switch = which.ToString(),
+                    enabled = request.Enabled,
+                    state = _safetyState?.Invoke()
+                });
+            }
+
             if (method == "POST" && path == "/api/command")
             {
                 using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
                 _commandHandler(reader.ReadToEnd());
-                return Json(202, new { status = "ACCEPTED", execution = "disabled_in_gate1" });
+                // Report the state the command actually left behind. The fixed
+                // "disabled_in_gate1" here was true only while execution could not
+                // be turned on; as an unconditional claim it would now be wrong.
+                return Json(202, new { status = "ACCEPTED", state = _safetyState?.Invoke() });
             }
 
             return (200, "text/html; charset=utf-8", Encoding.UTF8.GetBytes(Gate1DashboardHtml.Render()));
@@ -523,6 +724,12 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
             return Json(500, new { error = "operator_endpoint_failed", reason = $"{ex.GetType().Name}: {ex.Message}" });
         }
     }
+
+    /// <summary>What a switch request carries. Deliberately tiny and explicit.</summary>
+    private sealed record SafetySwitchRequest(string? Switch, bool Enabled);
+
+    /// <summary>Which suite the operator asked to run.</summary>
+    private sealed record TestRunRequest(string? Target);
 
     private static (int Status, string ContentType, byte[] Body) Json(int status, object value)
         => (status,
@@ -568,6 +775,16 @@ internal static class Gate1DashboardHtml
     .warn { color:#fbbf24; font-size:12px; }
     pre { background:#020617; padding:12px; border-radius:8px; overflow:auto; font-size:12px; }
     button { background:#ef4444; color:white; border:0; padding:10px 16px; border-radius:6px; cursor:pointer; font-weight:700; }
+    .switches { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:12px; }
+    .sw { background:#0b1220; border:1px solid #334155; border-radius:8px; padding:12px; }
+    .sw .name { font-weight:700; font-size:13px; }
+    .sw .desc { color:#94a3b8; font-size:11px; margin:4px 0 8px; }
+    .sw .state { font-size:12px; font-weight:700; letter-spacing:.5px; }
+    .on { color:#f87171; } .off { color:#4ade80; }
+    .sw button { background:#334155; padding:6px 12px; font-size:12px; font-weight:600; }
+    .sw button.arm { background:#b45309; }
+    .hist { font-size:11px; color:#94a3b8; margin-top:6px; }
+    .deny { color:#fbbf24; font-size:12px; min-height:16px; }
   </style>
 </head>
 <body>
@@ -581,7 +798,17 @@ internal static class Gate1DashboardHtml
     <div class="card"><h2>Guard AI session</h2><div class="value" id="guard-status">—</div><div class="src" id="guard-src"></div></div>
   </div>
   <p class="warn" id="warning"></p>
-  <p><button onclick="fetch('/api/command',{method:'POST',body:'EMERGENCY_STOP'})">EMERGENCY STOP</button></p>
+
+  <div class="card" style="margin-top:20px">
+    <h2>Controlli di esecuzione</h2>
+    <p class="muted">Ogni interruttore e' deciso dal runtime, non da questa pagina: una richiesta rifiutata torna col suo motivo. Lo stato qui sotto e' quello reale, riletto ogni 2 secondi.</p>
+    <p>Modalita': <span class="value" id="exec-mode">…</span></p>
+    <div class="switches" id="switches"></div>
+    <p class="deny" id="deny"></p>
+    <p class="hist" id="history"></p>
+  </div>
+
+  <p><button onclick="stopAll()">EMERGENCY STOP — disarma tutto</button></p>
   <pre id="raw">Loading classified snapshot…</pre>
   <script>
     function field(obj, fallback) {
@@ -610,8 +837,61 @@ internal static class Gate1DashboardHtml
         document.getElementById('warning').textContent = 'Dashboard cannot reach the Gate 1 snapshot.';
       }
     }
+    // Each switch is described by what it actually permits, so the operator is
+    // arming a known power rather than a label.
+    const SWITCHES = [
+      { key:'LiveInput',            field:'liveInput',            name:'Input diretto',
+        desc:'Permette a tastiera e mouse sintetici di raggiungere il client.' },
+      { key:'PacketInjection',      field:'packetInjection',      name:'Injection pacchetti',
+        desc:'Permette di mettere pacchetti sul filo verso il server di gioco.' },
+      { key:'RequireClientHealthy', field:'requireClientHealthy', name:'Richiedi client sano',
+        desc:'Rifiuta le azioni quando il client non e\u0027 agganciato e reattivo.' },
+      { key:'RequireGuardApproval', field:'requireGuardApproval', name:'Richiedi approvazione Guard',
+        desc:'Rifiuta le azioni senza il telefono abbinato in sessione.' }
+    ];
+
+    async function setSwitch(key, enabled) {
+      const res = await fetch('/api/safety', { method:'POST', body: JSON.stringify({ switch:key, enabled }) });
+      const body = await res.json();
+      // A refusal is shown with its reason: a control that silently did nothing
+      // would leave the operator guessing whether it worked.
+      document.getElementById('deny').textContent = body.allowed ? '' : ('Rifiutato: ' + body.reason);
+      refreshSafety();
+    }
+
+    async function stopAll() {
+      await fetch('/api/command', { method:'POST', body:'EMERGENCY_STOP' });
+      refreshSafety();
+    }
+
+    async function refreshSafety() {
+      try {
+        const s = await (await fetch('/api/safety')).json();
+        document.getElementById('exec-mode').textContent = s.executionMode;
+        document.getElementById('switches').innerHTML = SWITCHES.map(function (sw) {
+          const on = s.switches[sw.field] === true;
+          return '<div class="sw"><div class="name">' + sw.name + '</div>' +
+                 '<div class="desc">' + sw.desc + '</div>' +
+                 '<div class="state ' + (on ? 'on' : 'off') + '">' + (on ? 'ATTIVO' : 'SPENTO') + '</div>' +
+                 '<p><button class="' + (on ? '' : 'arm') + '" onclick="setSwitch(\'' + sw.key + '\',' + (!on) + ')">' +
+                 (on ? 'Disattiva' : 'Attiva') + '</button></p></div>';
+        }).join('');
+        const h = s.history.slice(-5).reverse();
+        document.getElementById('history').textContent = h.length
+          ? 'Ultimi cambi: ' + h.map(function (x) {
+              return x.switch + ' ' + x.from + '\u2192' + x.to + ' (' + x.reason + ')';
+            }).join(' · ')
+          : 'Nessun cambio registrato in questa sessione.';
+      } catch (e) {
+        document.getElementById('exec-mode').textContent = 'UNKNOWN';
+        document.getElementById('switches').innerHTML = '<p class="warn">Stato di sicurezza non raggiungibile.</p>';
+      }
+    }
+
     refresh();
+    refreshSafety();
     setInterval(refresh, 2000);
+    setInterval(refreshSafety, 2000);
   </script>
 </body>
 </html>
