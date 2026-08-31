@@ -157,29 +157,56 @@ public sealed class GameTrafficObserver
     }
 
     /// <summary>
-    /// Folds the network sightings into a world state. HP and liveness come from
-    /// the observed player sighting when present; entity id 0 is the controlled
-    /// player by convention.
+    /// Folds the network sightings into a world state, when the player was seen.
     /// </summary>
-    public NosAi.Runtime.WorldModel.WorldState ToWorldState(NetworkObservationReport report)
+    /// <remarks>
+    /// <para>
+    /// Entity id 0 is the controlled player by convention. When no sighting
+    /// carries it, there is no observed HP, and this returns false with a reason
+    /// rather than a state.
+    /// </para>
+    /// <para>
+    /// It used to default to <c>playerHp = 1.0, playerAlive = true</c> and return
+    /// the state anyway. Those are not neutral placeholders: full health and alive
+    /// are the two values a policy is least likely to intervene on, so a channel
+    /// that had decoded nothing at all produced the world state most likely to be
+    /// acted upon. <see cref="WorldModel.WorldState"/> carries no provenance, so
+    /// nothing downstream could have told that apart from a real reading — which
+    /// is why the refusal has to happen here, at the last point that still knows.
+    /// </para>
+    /// </remarks>
+    public bool TryToWorldState(
+        NetworkObservationReport report,
+        out NosAi.Runtime.WorldModel.WorldState worldState,
+        out string? failureReason)
     {
         ArgumentNullException.ThrowIfNull(report);
+        worldState = null!;
+        failureReason = null;
 
-        double playerHp = 1.0;
-        bool playerAlive = true;
+        EntitySighting? player = null;
         var entities = new List<NosAi.Runtime.WorldModel.EntityState>();
         foreach (EntitySighting sighting in report.Sightings)
         {
             if (sighting.EntityId == 0)
             {
-                playerHp = sighting.HpRatio;
-                playerAlive = sighting.HpRatio > 0.0;
+                player = sighting;
                 continue;
             }
             entities.Add(new NosAi.Runtime.WorldModel.EntityState(
                 $"{sighting.Kind}#{sighting.EntityId}", sighting.Kind, sighting.X, sighting.Y, sighting.HpRatio));
         }
 
-        return new NosAi.Runtime.WorldModel.WorldState(report.Frame, playerAlive, playerHp, entities);
+        if (player is null)
+        {
+            failureReason = report.Source == DataSourceKind.Unknown
+                ? "no_network_observation"
+                : "player_not_sighted";
+            return false;
+        }
+
+        worldState = new NosAi.Runtime.WorldModel.WorldState(
+            report.Frame, player.HpRatio > 0.0, player.HpRatio, entities);
+        return true;
     }
 }

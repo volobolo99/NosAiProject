@@ -66,9 +66,19 @@ public sealed class NetworkWorldFeed
         return report;
     }
 
-    /// <summary>The world state implied by the latest report.</summary>
-    public NosAi.Runtime.WorldModel.WorldState ToWorldState()
-        => _observer.ToWorldState(_latest ?? _observer.ObservePending(0));
+    /// <summary>
+    /// The world state implied by the latest report, when there is one.
+    /// </summary>
+    /// <remarks>
+    /// False when the player has not been sighted. The caller must keep the
+    /// previous state or wait, not substitute a default: <c>WorldState</c> carries
+    /// no provenance, so a placeholder inserted here is indistinguishable from an
+    /// observation for the rest of its life.
+    /// </remarks>
+    public bool TryToWorldState(
+        out NosAi.Runtime.WorldModel.WorldState worldState,
+        out string? failureReason)
+        => _observer.TryToWorldState(_latest ?? _observer.ObservePending(1), out worldState, out failureReason);
 
     /// <summary>
     /// Projects the latest report into decision-engine facts.

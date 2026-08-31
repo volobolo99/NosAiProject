@@ -195,7 +195,8 @@ public static partial class NetworkObservationTestRunner
         });
         var observer = new GameTrafficObserver(source, new ScopedGameTrafficFilter(GameServer), new SyntheticProtocolDecoder());
         NetworkObservationReport report = observer.ObservePending();
-        NosAi.Runtime.WorldModel.WorldState world = observer.ToWorldState(report);
+        if (!observer.TryToWorldState(report, out NosAi.Runtime.WorldModel.WorldState world, out _))
+            return false;
 
         var model = new NosAi.Runtime.WorldModel.WorldModel();
         model.Update(world);
