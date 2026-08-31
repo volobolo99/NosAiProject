@@ -28,6 +28,11 @@
          the C# counterpart of nosai/security/ephemeral_session.py. AEAD (ChaCha20-
          Poly1305) and HKDF come from the BCL. -->
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+    <!-- DPAPI for the runtime identity (docs/adr/ADR-0010-key-custody.md). .NET 8
+         moved ProtectedData out of the BCL into this first-party package, and it is
+         the only way to reach DPAPI from managed code; the runtime is already
+         Windows-only, so nothing portable is given up. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
