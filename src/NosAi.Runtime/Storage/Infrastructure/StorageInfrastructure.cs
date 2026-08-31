@@ -2,7 +2,7 @@
 // Project: NosAi — Controlled Automation Runtime
 // Version: 1.0 Beta
 // Author: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Infrastruttura Storage, Provisioning Volume NOSAI-SSD,
+// Description: Storage infrastructure subsystem, NOSAI-SSD volume provisioning,
 //              Centralized SQLite WAL Policy, Schema Migration Engine,
 //              Automated Snapshot Backups e Storage Health Benchmark
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed
@@ -27,7 +27,7 @@ namespace NosAi.Storage.Infrastructure
     #region 1. Contratti di Dominio per Storage, Percorsi e Volumi
 
     /// <summary>
-    /// Tipologie di cartelle canoniche nel volume NosAi.
+    /// The canonical directory kinds on the NosAi volume.
     /// </summary>
     public enum StorageDirectoryKind : byte
     {
@@ -43,7 +43,7 @@ namespace NosAi.Storage.Infrastructure
     }
 
     /// <summary>
-    /// Stato di integrità e salute del volume dedicato.
+    /// Integrity and health of the dedicated volume.
     /// </summary>
     public sealed record StorageDriveDescriptor(
         bool IsDetected,
@@ -62,7 +62,7 @@ namespace NosAi.Storage.Infrastructure
     }
 
     /// <summary>
-    /// Metriche prestazionali misurate durante il benchmark I/O del disco.
+    /// Performance measured during the disk I/O benchmark.
     /// </summary>
     public sealed record StorageBenchmarkResult(
         string TargetDriveLetter,
@@ -75,7 +75,7 @@ namespace NosAi.Storage.Infrastructure
     );
 
     /// <summary>
-    /// Metadati di un pacchetto di backup snapshot certificato.
+    /// Metadata for one certified backup snapshot package.
     /// </summary>
     public sealed record BackupSnapshotManifest(
         Guid BackupId,
@@ -91,8 +91,8 @@ namespace NosAi.Storage.Infrastructure
     #region 2. Storage Path Resolver & Volume Provisioning (NOSAI-SSD)
 
     /// <summary>
-    /// Risolve dinamicamente la radice del volume dedicato indipendente dalla lettera di unità Windows.
-    /// Crea e valida l'albero delle directory canoniche.
+    /// Resolves the dedicated volume's root dynamically, independently of the
+    /// Windows drive letter, then creates and validates the canonical directory tree.
     /// </summary>
     public sealed class StoragePathResolver
     {
@@ -209,26 +209,27 @@ namespace NosAi.Storage.Infrastructure
     #region 3. Centralized SQLite WAL Policy & Database Manager
 
     /// <summary>
-    /// Parametri di configurazione della policy SQLite centralizzata sul volume dedicato.
+    /// Configuration of the centralised SQLite policy on the dedicated volume.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Non è la policy autorevole.</b> Lo è
-    /// <see cref="NosAi.Runtime.Gate2.SqliteStoragePolicy"/>, che è quella
-    /// realmente applicata a una connessione da <c>Gate2Sqlite.Configure</c> e che
-    /// ha parità con <c>nosai/storage/sqlite_policy.py</c>. Questa classe genera
-    /// uno <i>script</i> di PRAGMA: descrive la configurazione, non la impone, e
-    /// il suo test verificava soltanto che la stringa contenesse le righe attese.
+    /// <b>This is not the authoritative policy.</b>
+    /// <see cref="NosAi.Runtime.Gate2.SqliteStoragePolicy"/> is: that is the one
+    /// actually applied to a connection by <c>Gate2Sqlite.Configure</c>, and the one
+    /// kept at parity with <c>nosai/storage/sqlite_policy.py</c>. This class renders
+    /// a PRAGMA <i>script</i>: it describes the configuration rather than enforcing
+    /// it, and its test only checked that the string contained the lines it had
+    /// itself just written.
     /// </para>
     /// <para>
-    /// L'audit del 2026-08-30 ha registrato le due implementazioni come debito da
-    /// risolvere insieme, e infatti erano già divergenti: qui la cache era
+    /// The audit of 2026-08-30 recorded the two implementations as debt to be
+    /// settled jointly, and they had in fact already diverged: the cache here was
     /// <c>64000</c> KiB contro i <c>65536</c> di Gate 2 e di Python, mancava
-    /// <c>foreign_keys=ON</c> — che è ciò che fa fallire un inserimento con una
-    /// chiave esterna rotta invece di accettarlo — e mancava
-    /// <c>journal_size_limit</c>. Nessuna delle due implementazioni è stata
-    /// cancellata: i valori vengono ora letti da Gate 2, così non possono più
-    /// divergere in silenzio, e il modulo resta di chi lo ha scritto.
+    /// <c>foreign_keys=ON</c> — which is what makes an insert with a broken foreign
+    /// key fail instead of being accepted — and <c>journal_size_limit</c> was absent.
+    /// Neither implementation was deleted: the values are now read from Gate 2, so
+    /// they can no longer diverge in silence, and the module stays with whoever
+    /// wrote it.
     /// </para>
     /// </remarks>
     public sealed class CentralizedSqlitePolicy
@@ -244,8 +245,9 @@ namespace NosAi.Storage.Infrastructure
         public string BuildPragmaInitializationScript()
         {
             var sb = new StringBuilder();
-            // Prima riga, come in sqlite_policy.py: senza questa un inserimento con
-            // una chiave esterna inesistente riesce, e il danno si scopre a lettura.
+            // First line, as in sqlite_policy.py: without it an insert with a
+            // foreign key pointing at nothing succeeds, and the damage is found on
+            // the read instead.
             sb.AppendLine("PRAGMA foreign_keys = ON;");
             sb.AppendLine($"PRAGMA journal_mode = {JournalMode};");
             sb.AppendLine($"PRAGMA synchronous = {SynchronousMode};");
@@ -262,7 +264,7 @@ namespace NosAi.Storage.Infrastructure
     }
 
     /// <summary>
-    /// Gestore dei database SQLite con inizializzazione controllata e checkpoint periodici.
+    /// Manages the SQLite databases with controlled initialisation and periodic checkpoints.
     /// </summary>
     public sealed class CentralDatabaseEngine : IAsyncDisposable
     {
@@ -287,7 +289,7 @@ namespace NosAi.Storage.Infrastructure
 
         private void InitializeDatabaseSchema()
         {
-            // Scrittura iniziale del file o del journal WAL canonico
+            // Initial write of the file or of the canonical WAL journal
             if (!File.Exists(_mainDatabasePath))
             {
                 File.WriteAllText(_mainDatabasePath, "NOSAI_SQLITE_HEADER_V1\n");
@@ -301,7 +303,7 @@ namespace NosAi.Storage.Infrastructure
         {
             Interlocked.Increment(ref _executedQueriesCount);
 
-            // Scrittura append-only atomica in formato transazionale
+            // Atomic append-only write in transactional form
             string row = $"{DateTime.UtcNow:O}|{tableName}|{jsonPayload}\n";
             byte[] bytes = Encoding.UTF8.GetBytes(row);
 
@@ -316,7 +318,7 @@ namespace NosAi.Storage.Infrastructure
             {
                 try
                 {
-                    // Checkpoint WAL ogni 30 secondi
+                    // WAL checkpoint every 30 seconds
                     await Task.Delay(TimeSpan.FromSeconds(30), token).ConfigureAwait(false);
                     ExecuteWalCheckpoint();
                 }
@@ -327,7 +329,7 @@ namespace NosAi.Storage.Infrastructure
 
         public void ExecuteWalCheckpoint()
         {
-            // Esecuzione PRAGMA wal_checkpoint(TRUNCATE) per compattare il journal
+            // PRAGMA wal_checkpoint(TRUNCATE) to compact the journal
             Trace.WriteLine("[CentralDatabaseEngine] PRAGMA wal_checkpoint(TRUNCATE) completato.");
         }
 
@@ -345,7 +347,7 @@ namespace NosAi.Storage.Infrastructure
     #region 4. Schema Migration & Relational Integrity Engine
 
     /// <summary>
-    /// Rappresenta un passaggio di migrazione dello schema del database.
+    /// One migration step of the database schema.
     /// </summary>
     public sealed record DatabaseMigrationStep(
         int StepVersion,
@@ -355,7 +357,7 @@ namespace NosAi.Storage.Infrastructure
     );
 
     /// <summary>
-    /// Esegue in modo atomico le migrazioni dello schema e verifica l'integrità del database.
+    /// Runs the schema migrations atomically and verifies the database's integrity.
     /// </summary>
     public sealed class DatabaseSchemaMigrationManager
     {
@@ -367,7 +369,7 @@ namespace NosAi.Storage.Infrastructure
 
         public void ApplyPendingMigrations()
         {
-            // Migrazione 1: Creazione tabelle base (sessions, world_states, telemetry)
+            // Migration 1: base tables (sessions, world_states, telemetry)
             if (_currentSchemaVersion < 1)
             {
                 _appliedMigrations.Add(new DatabaseMigrationStep(
@@ -379,7 +381,7 @@ namespace NosAi.Storage.Infrastructure
                 _currentSchemaVersion = 1;
             }
 
-            // Migrazione 2: Creazione tabelle strategiche (strategy_knowledge, episodic_traces)
+            // Migration 2: strategy tables (strategy_knowledge, episodic_traces)
             if (_currentSchemaVersion < 2)
             {
                 _appliedMigrations.Add(new DatabaseMigrationStep(
@@ -394,7 +396,7 @@ namespace NosAi.Storage.Infrastructure
 
         public bool VerifyDatabaseIntegrity()
         {
-            // Verifica conformità strutturale (PRAGMA integrity_check)
+            // Structural conformance check (PRAGMA integrity_check)
             return _currentSchemaVersion >= 2;
         }
     }
@@ -404,8 +406,9 @@ namespace NosAi.Storage.Infrastructure
     #region 5. Servizio di Backup Snapshot & Sigillo Crittografico SHA-256
 
     /// <summary>
-    /// Crea snapshot completi e non distruttivi del database e delle configurazioni,
-    /// sigillando il manifest con hash SHA-256 per la replica su archivio secondario.
+    /// Takes complete, non-destructive snapshots of the database and the
+    /// configuration, sealing the manifest with a SHA-256 hash for replication to
+    /// secondary storage.
     /// </summary>
     public sealed class AutomatedBackupSnapshotService
     {
@@ -427,7 +430,7 @@ namespace NosAi.Storage.Infrastructure
                 Directory.CreateDirectory(snapshotDir);
             }
 
-            // Copia non bloccante dei database e delle configurazioni attive
+            // Non-blocking copy of the active databases and configuration
             string dbSource = _pathResolver.GetPath(StorageDirectoryKind.Databases, "nosai_primary.db");
             string dbDest = Path.Combine(snapshotDir, "nosai_primary.snapshot.db");
 
@@ -439,7 +442,7 @@ namespace NosAi.Storage.Infrastructure
                 includedFiles.Add(Path.GetFileName(dbDest));
             }
 
-            // Scrittura manifest JSON con metadati di consistenza
+            // Writes the JSON manifest with its consistency metadata
             string manifestPath = Path.Combine(snapshotDir, "backup_manifest.json");
             byte[] manifestBytes = JsonSerializer.SerializeToUtf8Bytes(new
             {
@@ -452,7 +455,7 @@ namespace NosAi.Storage.Infrastructure
             await File.WriteAllBytesAsync(manifestPath, manifestBytes, token).ConfigureAwait(false);
             includedFiles.Add(Path.GetFileName(manifestPath));
 
-            // Calcolo hash SHA-256 globale del pacchetto
+            // SHA-256 hash over the whole package
             byte[] globalHash = SHA256.HashData(manifestBytes);
             string hexHash = Convert.ToHexString(globalHash);
 
@@ -474,7 +477,7 @@ namespace NosAi.Storage.Infrastructure
     #region 6. Storage Health Monitor & Benchmark I/O Engine
 
     /// <summary>
-    /// Esegue test di benchmark e misura latenza di lettura/scrittura sul volume SSD dedicato (Crucial X6 baseline).
+    /// Benchmarks the dedicated SSD volume and measures read/write latency (Crucial X6 baseline).
     /// </summary>
     public sealed class StorageBenchmarkEngine
     {
@@ -495,7 +498,7 @@ namespace NosAi.Storage.Infrastructure
 
             var sw = new Stopwatch();
 
-            // 1. Scrittura Sequenziale
+            // 1. Sequential write
             sw.Start();
             await using (var fs = new FileStream(testFile, FileMode.Create, FileAccess.Write, FileShare.None, 65536, FileOptions.WriteThrough))
             {
@@ -516,7 +519,7 @@ namespace NosAi.Storage.Infrastructure
             double seqReadSec = Math.Max(0.001, sw.Elapsed.TotalSeconds);
             double seqReadMBs = (BenchmarkFileSize / (1024.0 * 1024.0)) / seqReadSec;
 
-            // 3. Latenza Scrittura Random 4K
+            // 3. Random 4K write latency
             byte[] chunk4k = new byte[Chunk4K];
             sw.Restart();
             await using (var fs = new FileStream(testFile, FileMode.Open, FileAccess.Write, FileShare.None, Chunk4K, FileOptions.WriteThrough))
@@ -552,7 +555,7 @@ namespace NosAi.Storage.Infrastructure
     #region 7. Suite di Test Automatica per l'Infrastruttura Storage
 
     /// <summary>
-    /// Esecutore dei test di certificazione per il modulo Storage & Infrastructure.
+    /// Runs the certification tests for the Storage & Infrastructure module.
     /// </summary>
     public static class StorageInfrastructureTestRunner
     {

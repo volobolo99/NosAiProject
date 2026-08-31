@@ -51,6 +51,16 @@ public static class Program
             return 0;
         }
 
+        // Which modules the runtime actually reaches. --list-suites answers "what
+        // can be run"; this answers the question the audit of 2026-08-30 asked and
+        // a document could not keep answering: what is wired, what is only
+        // reachable from its own suite, and what nothing reaches at all.
+        if (args.Any(a => string.Equals(a, "--module-report", StringComparison.OrdinalIgnoreCase)))
+        {
+            Console.Write(NosAi.Runtime.Observability.ModuleReachability.Report());
+            return 0;
+        }
+
         // Real-environment probe for the DXGI capture backend. The perception suite
         // certifies the contract without a desktop; only a real interactive session
         // can say whether Desktop Duplication actually yields live pixels here.

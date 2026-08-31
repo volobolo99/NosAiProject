@@ -2,8 +2,8 @@
 // Project: NosAi — Controlled Automation Runtime
 // Version: 1.0 Beta
 // Author: Volodymyr Ryzhuk
-// Descrizione: Sottosistema di Gateway per il Centro di Controllo, Real-Time Event Bridge,
-//              Rate Limiter per la Telemetria e Streamer di Audit e Decision Trace
+// Description: Control Center gateway subsystem, real-time event bridge,
+//              telemetry rate limiter, and audit and decision-trace streamer
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed
 // ============================================================================
 
@@ -34,7 +34,7 @@ namespace NosAi.Network.Gateway
     #region 2. Rate Limiter & Telemetry Throttler
 
     /// <summary>
-    /// Regola la frequenza di invio dei pacchetti di telemetria per prevenire congestioni sulla dashboard.
+    /// Paces telemetry packets so the dashboard is not flooded.
     /// </summary>
     public sealed class TelemetryRateLimiter
     {
@@ -67,7 +67,7 @@ namespace NosAi.Network.Gateway
     #region 3. Control Panel Gateway & Event Streamer
 
     /// <summary>
-    /// Gestisce i flussi di dati in tempo reale tra il runtime e la dashboard locale.
+    /// Carries the real-time data streams between the runtime and the local dashboard.
     /// </summary>
     public sealed class ControlPanelGatewayEngine : IAsyncDisposable
     {
