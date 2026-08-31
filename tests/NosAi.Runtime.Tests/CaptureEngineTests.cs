@@ -4,6 +4,7 @@ using System.Text;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -19,6 +20,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class CaptureEngineTests : IDisposable
 {
+    private readonly ITestOutputHelper _output;
+
+    public CaptureEngineTests(ITestOutputHelper output) => _output = output;
+
     private static readonly IPAddress Server = IPAddress.Parse("79.110.84.175");
     private const int ServerPort = 4006;
     private const string Client = "192.168.0.4";
@@ -84,6 +89,12 @@ public sealed class CaptureEngineTests : IDisposable
         var frames = new List<CaptureFrame>();
         engine.FrameProduced += frames.Add;
         var summary = engine.Run();
+
+        Evidence.Live(_output, "pacchettiLetti", summary.PacketsRead);
+        Evidence.Live(_output, "pacchettiInterpretati", summary.PacketsParsed);
+        Evidence.Live(_output, "pacchettiRifiutati", summary.PacketsRejected);
+        Evidence.Live(_output, "byteInEntrata", summary.InboundBytes);
+        Evidence.Live(_output, "byteInUscita", summary.OutboundBytes);
 
         Assert.Equal(3, summary.PacketsRead);
         Assert.Equal(3, summary.PacketsParsed);

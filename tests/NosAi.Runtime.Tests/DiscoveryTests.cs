@@ -1,6 +1,7 @@
 using NosAi.GuardClient;
 using NosAi.Runtime.Gate1;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -14,6 +15,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class DiscoveryTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public DiscoveryTests(ITestOutputHelper output) => _output = output;
+
     [Fact]
     public void RequestAndResponseRoundTrip()
     {
@@ -22,6 +27,11 @@ public sealed class DiscoveryTests
 
         var response = DiscoveryProtocol.CreateResponse(17471, "NOSAI-PC");
         Assert.True(DiscoveryProtocol.TryReadResponse(response, out var port, out var host));
+
+        Evidence.Live(_output, "portaAnnunciata", port);
+        Evidence.Live(_output, "nomeHost", host);
+        Evidence.Live(_output, "byteRisposta", response.Length);
+
         Assert.Equal(17471, port);
         Assert.Equal("NOSAI-PC", host);
     }

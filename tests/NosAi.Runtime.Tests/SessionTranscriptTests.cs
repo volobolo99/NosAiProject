@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using NosAi.Runtime.Gate1;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -15,6 +16,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class SessionTranscriptTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public SessionTranscriptTests(ITestOutputHelper output) => _output = output;
+
     // Chosen so the vectors are reproducible by hand: 0..31 and 255..224 for the
     // nonces, and a 0x04-prefixed ramp for each ephemeral key. Those stand in for
     // real P-256 points on purpose — the transcript hashes the encoded bytes and
@@ -38,6 +43,9 @@ public sealed class SessionTranscriptTests
     [Fact]
     public void PinnedVectorsMatchThePythonImplementation()
     {
+        Evidence.Live(_output, "digestClient", Convert.ToHexString(Compute(HandshakeRole.Client)));
+        Evidence.Live(_output, "digestServer", Convert.ToHexString(Compute(HandshakeRole.Server)));
+
         Assert.Equal(ClientDigest, Convert.ToHexString(Compute(HandshakeRole.Client)));
         Assert.Equal(ServerDigest, Convert.ToHexString(Compute(HandshakeRole.Server)));
         Assert.Equal(BindingDigest, Convert.ToHexString(

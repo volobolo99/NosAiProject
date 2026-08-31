@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using NosAi.LiveIntegration.Capture;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -17,6 +18,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class CaptureAnalyzerTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public CaptureAnalyzerTests(ITestOutputHelper output) => _output = output;
+
     private static readonly IPAddress Server = IPAddress.Parse("79.110.84.175");
     private const int ServerPort = 4006;
     private const string Client = "192.168.0.4";
@@ -58,6 +63,9 @@ public sealed class CaptureAnalyzerTests
             Cap(t0, true, 99, Array.Empty<byte>(), syn: true),
             Cap(t0.AddSeconds(1), true, 100, Encoding.ASCII.GetBytes("hello")),
             Cap(t0.AddSeconds(2), false, 50, Encoding.ASCII.GetBytes("ab"))));
+
+        Evidence.Live(_output, "entrata", $"{analysis.Inbound.PacketCount} pacchetti / {analysis.Inbound.TotalBytes} byte");
+        Evidence.Live(_output, "uscita", $"{analysis.Outbound.PacketCount} pacchetti / {analysis.Outbound.TotalBytes} byte");
 
         Assert.Equal(1, analysis.Inbound.PacketCount);
         Assert.Equal(5, analysis.Inbound.TotalBytes);
@@ -101,6 +109,9 @@ public sealed class CaptureAnalyzerTests
         var analysis = CaptureAnalyzer.Analyze(Source(packets.ToArray()));
 
         // The stream is one contiguous run, so its first delivered byte is 0x42.
+        Evidence.Live(_output, "primoBytePrevalente", $"0x{analysis.Inbound.DominantFirstByte:X2}",
+            "indizio per ricavare l'inquadramento del protocollo");
+
         Assert.Equal((byte)0x42, analysis.Inbound.DominantFirstByte);
         Assert.Contains("candidato", analysis.Describe());
         Assert.Contains("nessuna interpretazione", analysis.Describe());

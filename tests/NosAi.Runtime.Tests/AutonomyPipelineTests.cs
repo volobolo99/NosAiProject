@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using NosAi.Runtime.Autonomy;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -15,6 +16,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class AutonomyPipelineTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public AutonomyPipelineTests(ITestOutputHelper output) => _output = output;
+
     private static SafetyGate NewGate(TrustTier tier = TrustTier.Tier4_FullAutonomous) =>
         new(new TrustBoundary(tier), new GuardPolicyEngine());
 
@@ -44,7 +49,14 @@ public sealed class AutonomyPipelineTests
             RuntimeMode.Normal, out SafetyToken? token, out _));
         Assert.True(gate.ValidateToken(token!));
 
+        Evidence.Live(_output, "durataToken", gate.TokenLifetime.TotalMilliseconds + " ms");
+        Evidence.Live(_output, "validoAppenaEmesso", true);
+
         Thread.Sleep(60);
+
+        Evidence.Live(_output, "scaduto", token!.IsExpired);
+        Evidence.Live(_output, "validoDopoLaScadenza", gate.ValidateToken(token),
+            "la firma e' ancora buona: a cadere e' solo il tempo");
 
         // Same gate, same key, same token: only time has passed.
         Assert.True(token!.IsExpired);

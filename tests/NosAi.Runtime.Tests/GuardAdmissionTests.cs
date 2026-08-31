@@ -5,6 +5,7 @@ using NosAi.GuardClient;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Orchestration;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -19,6 +20,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class GuardAdmissionTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public GuardAdmissionTests(ITestOutputHelper output) => _output = output;
+
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(5);
 
     /// <summary>A channel that can complete a handshake and answer with a snapshot.</summary>

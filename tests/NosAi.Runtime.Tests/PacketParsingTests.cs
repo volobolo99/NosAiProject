@@ -4,6 +4,7 @@ using System.Text;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -18,6 +19,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class PacketParsingTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public PacketParsingTests(ITestOutputHelper output) => _output = output;
+
     /// <summary>Builds a minimal IPv4 + TCP packet with the given payload.</summary>
     private static byte[] BuildPacket(
         string source, int sourcePort, string destination, int destinationPort,
@@ -50,6 +55,11 @@ public sealed class PacketParsingTests
             Encoding.ASCII.GetBytes("hi"));
 
         var parsed = Ipv4TcpParser.Parse(packet);
+
+        Evidence.Live(_output, "sorgente", $"{parsed.Source}:{parsed.SourcePort}");
+        Evidence.Live(_output, "destinazione", $"{parsed.Destination}:{parsed.DestinationPort}");
+        Evidence.Live(_output, "numeroSequenza", parsed.SequenceNumber);
+        Evidence.Live(_output, "bytePayload", parsed.Payload.Length);
 
         Assert.True(parsed.Ok);
         Assert.Equal(IPAddress.Parse("192.168.0.4"), parsed.Source);

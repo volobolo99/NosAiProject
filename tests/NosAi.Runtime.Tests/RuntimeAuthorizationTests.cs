@@ -2,6 +2,7 @@ using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Security;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -16,6 +17,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class RuntimeAuthorizationTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public RuntimeAuthorizationTests(ITestOutputHelper output) => _output = output;
+
     private static readonly Gate1AuthorizationPolicy Policy = new();
 
     private static AuthorizationDecision Ask(
@@ -35,6 +40,9 @@ public sealed class RuntimeAuthorizationTests
         foreach (RuntimeCapability capability in Enum.GetValues<RuntimeCapability>())
         {
             var decision = Ask(SecurityPrincipal.Unknown, capability);
+            Evidence.Live(_output, "esito", decision.Allowed);
+            Evidence.Live(_output, "motivo", decision.Reason, "fail-closed su principal ignoto");
+
             Assert.False(decision.Allowed);
             Assert.Equal("unknown_principal", decision.Reason);
         }
@@ -44,6 +52,11 @@ public sealed class RuntimeAuthorizationTests
     public void AnUnknownCapabilityIsRefused()
     {
         var decision = Ask(SecurityPrincipal.Operator, RuntimeCapability.Unknown);
+
+        Evidence.Live(_output, "principal", SecurityPrincipal.Operator, "il piu' privilegiato");
+        Evidence.Live(_output, "esito", decision.Allowed);
+        Evidence.Live(_output, "motivo", decision.Reason,
+            "nemmeno l'operatore ottiene una capability che il runtime non conosce");
 
         Assert.False(decision.Allowed);
         Assert.Equal("unknown_capability", decision.Reason);

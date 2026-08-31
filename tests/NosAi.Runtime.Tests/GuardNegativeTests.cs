@@ -6,6 +6,7 @@ using NosAi.GuardClient;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Orchestration;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -30,6 +31,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class GuardNegativeTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public GuardNegativeTests(ITestOutputHelper output) => _output = output;
+
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(5);
 
     private sealed record Harness(

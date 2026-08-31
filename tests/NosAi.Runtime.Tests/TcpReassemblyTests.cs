@@ -3,6 +3,7 @@ using System.Text;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -17,6 +18,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class TcpReassemblyTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public TcpReassemblyTests(ITestOutputHelper output) => _output = output;
+
     private static TcpSegment Data(uint seq, string text, StreamDirection dir = StreamDirection.Inbound) =>
         new(dir, seq, Encoding.ASCII.GetBytes(text), Syn: false, Fin: false, Reset: false);
 
@@ -32,6 +37,10 @@ public sealed class TcpReassemblyTests
 
         Assert.Equal("hello", Ascii(r.Accept(Data(1000, "hello"))));
         Assert.Equal(" world", Ascii(r.Accept(Data(1005, " world"))));
+
+        Evidence.Live(_output, "byteConsegnati", r.DeliveredBytes);
+        Evidence.Live(_output, "byteInAttesa", r.PendingBytes, "zero: niente trattenuto");
+
         Assert.Equal(11, r.DeliveredBytes);
         Assert.Equal(0, r.PendingBytes);
     }

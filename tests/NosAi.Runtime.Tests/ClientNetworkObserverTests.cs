@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using NosAi.LiveIntegration;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -18,6 +19,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class ClientNetworkObserverTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public ClientNetworkObserverTests(ITestOutputHelper output) => _output = output;
+
     /// <summary>A listener plus a connected client, on loopback, for the duration of a test.</summary>
     private sealed class LoopbackPair : IDisposable
     {
@@ -67,6 +72,9 @@ public sealed class ClientNetworkObserverTests
         // Distinct from a failure, and it has to be.
         var observation = ClientNetworkObserver.Observe(0x7FFFFFF0);
 
+        Evidence.Live(_output, "tabellaLetta", observation.Observed, "vuota non e' fallita");
+        Evidence.Live(_output, "connessioni", observation.Connections.Count);
+
         Assert.True(observation.Observed);
         Assert.Null(observation.FailureReason);
         Assert.Empty(observation.Connections);
@@ -82,6 +90,11 @@ public sealed class ClientNetworkObserverTests
         using var pair = new LoopbackPair();
 
         var observation = ClientNetworkObserver.Observe(SelfPid);
+
+        Evidence.Live(_output, "portaAttesa", pair.Port);
+        Evidence.Live(_output, "connessioniLette", observation.Connections.Count);
+        Evidence.Live(_output, "porteViste",
+            string.Join(", ", observation.Connections.Take(6).Select(c => $"{c.Local.Port}->{c.Remote.Port}")));
 
         Assert.True(observation.Observed);
         Assert.Contains(observation.Connections, c =>

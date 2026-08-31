@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using NosAi.Runtime.Gate1;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -16,6 +17,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class SessionCipherTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public SessionCipherTests(ITestOutputHelper output) => _output = output;
+
     // Fixed P-256 material. Test vectors, not credentials: they protect nothing
     // and exist so a mismatch between the two languages is visible.
     private const string ClientPublic =
@@ -78,6 +83,11 @@ public sealed class SessionCipherTests
         using var phone = SessionCipher.ForPhone(Material());
 
         byte[] frame = phone.SealFrame(WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        Evidence.Live(_output, "intestazione", Convert.ToHexString(frame[..WireHeader.HeaderSize]),
+            "vettore fisso: un cambiamento qui e' un cambiamento di protocollo");
+        Evidence.Live(_output, "payloadCifrato", Convert.ToHexString(frame[WireHeader.HeaderSize..]));
+        Evidence.Live(_output, "byteTotaliFrame", frame.Length);
 
         Assert.Equal(GoldenHeader, Convert.ToHexString(frame[..WireHeader.HeaderSize]));
         Assert.Equal(GoldenPayload, Convert.ToHexString(frame[WireHeader.HeaderSize..]));

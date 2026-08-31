@@ -3,6 +3,7 @@ using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Security;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -16,6 +17,10 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class ProcessMemoryReaderTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public ProcessMemoryReaderTests(ITestOutputHelper output) => _output = output;
+
     // ------------------------------------------------- who may read at all
 
     [Theory]
@@ -97,6 +102,11 @@ public sealed class ProcessMemoryReaderTests
 
             var result = reader!.Read(address, sizeof(int));
 
+            Evidence.Live(_output, "processo", Environment.ProcessId);
+            Evidence.Live(_output, "byteLetti", result.Bytes.Length);
+            Evidence.Live(_output, "classificazione", result.Source);
+            Evidence.Live(_output, "valoreRiletto", $"0x{BitConverter.ToInt32(result.Bytes):X8}");
+
             Assert.True(result.Ok, result.FailureReason);
             Assert.Equal(DataSourceKind.Live, result.Source);
             Assert.Equal(written, BitConverter.ToInt32(result.Bytes));
@@ -118,6 +128,9 @@ public sealed class ProcessMemoryReaderTests
                 Environment.ProcessId, SecurityPrincipal.Operator, out _);
 
             var hp = reader!.ReadValidatedInt32(address, v => v is >= 0 and <= 100_000, DateTime.UtcNow);
+
+            Evidence.Live(_output, "valore", hp.Value);
+            Evidence.Live(_output, "classificazione", hp.Source, "supera il controllo di plausibilita");
 
             Assert.Equal(DataSourceKind.Live, hp.Source);
             Assert.Equal(4_212, hp.Value);
@@ -143,6 +156,10 @@ public sealed class ProcessMemoryReaderTests
                 Environment.ProcessId, SecurityPrincipal.Operator, out _);
 
             var hp = reader!.ReadValidatedInt32(address, v => v is >= 0 and <= 100_000, DateTime.UtcNow);
+
+            Evidence.Live(_output, "byteInMemoria", int.MaxValue);
+            Evidence.Unknown(_output, "valorePubblicato", hp.FailureReason ?? "senza motivo");
+            Evidence.Live(_output, "classificazione", hp.Source, "leggibile ma non plausibile");
 
             Assert.Equal(DataSourceKind.Unknown, hp.Source);
             Assert.Null(hp.Value);
@@ -184,6 +201,9 @@ public sealed class ProcessMemoryReaderTests
             Environment.ProcessId, SecurityPrincipal.Operator, out _);
 
         var result = reader!.Read(new IntPtr(0x10), 64);
+
+        Evidence.Unknown(_output, "letturaIndirizzoBasso", result.FailureReason ?? "senza motivo");
+        Evidence.Live(_output, "byteRestituiti", result.Bytes.Length, "zero: nessun mezzo valore");
 
         Assert.False(result.Ok);
         Assert.Equal(DataSourceKind.Unknown, result.Source);
