@@ -26,6 +26,24 @@ public static class Program
                 return await suite().ConfigureAwait(false) ? 0 : 1;
         }
 
+        // A mistyped suite flag used to fall through to the normal bootstrap and
+        // start the whole runtime: "--1-test" instead of "--gate1-test" left a
+        // host running for as long as nobody noticed, holding the build's output
+        // files. Anything shaped like a suite or probe flag that is not one is a
+        // typo, and a typo must not boot the runtime.
+        string? mistyped = args.FirstOrDefault(a =>
+            a.StartsWith("--", StringComparison.Ordinal) &&
+            (a.EndsWith("-test", StringComparison.OrdinalIgnoreCase) ||
+             a.EndsWith("-probe", StringComparison.OrdinalIgnoreCase)) &&
+            !suites.ContainsKey(a) &&
+            !KnownProbeFlags.Contains(a));
+        if (mistyped is not null)
+        {
+            Console.Error.WriteLine($"Unknown suite or probe flag: {mistyped}");
+            Console.Error.WriteLine("Run --list-suites to see the available suites, or use --dxgi-probe / --input-probe.");
+            return 2;
+        }
+
         if (args.Any(a => string.Equals(a, "--list-suites", StringComparison.OrdinalIgnoreCase)))
         {
             foreach (string flag in suites.Keys.OrderBy(f => f, StringComparer.Ordinal))
@@ -145,6 +163,10 @@ public static class Program
         => !field.HasValue
             ? $"UNKNOWN ({field.FailureReason})"
             : $"{field.Value} [{field.Source.ToWire()}]";
+
+    /// <summary>Probe flags, which live outside the suite table.</summary>
+    private static readonly HashSet<string> KnownProbeFlags =
+        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe" };
 
     private static int RunDxgiProbe()
     {
