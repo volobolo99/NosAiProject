@@ -1,11 +1,11 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
 // Descrizione: Sottosistema Specializzato per Raid Celestiali ed Endgame
 //              (Dodekatheon / Atto 8): Meccaniche Boss, Barra Stagger, Scudi
 //              Elementali, Schivata Laser e Coordinamento Sinergico di Squadra
-// Standard: C# 12 / .NET 8 — Zero-Allocation, Determinismo, Fail-Closed Security
+// Standard: C# 12 / .NET 8 — Zero-Allocation, Determinism, Fail-Closed Security
 // ============================================================================
 
 using System;

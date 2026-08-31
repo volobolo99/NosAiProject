@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
 // Descrizione: Sottosistema di Gateway per il Centro di Controllo, Real-Time Event Bridge,
 //              Rate Limiter per la Telemetria e Streamer di Audit e Decision Trace
 // Standard: C# 12 / .NET 8 — Zero-Allocation, Clean Architecture, Fail-Closed

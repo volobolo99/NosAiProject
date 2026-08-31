@@ -1,7 +1,7 @@
 // ============================================================================
-// Progetto: NosAi — Runtime di Automazione Controllata
-// Versione: 1.0 Beta
-// Autore: Volodymyr Ryzhuk
+// Project: NosAi — Controlled Automation Runtime
+// Version: 1.0 Beta
+// Author: Volodymyr Ryzhuk
 // Descrizione: Sottosistema di Infrastruttura Storage, Provisioning Volume NOSAI-SSD,
 //              Centralized SQLite WAL Policy, Schema Migration Engine,
 //              Automated Snapshot Backups e Storage Health Benchmark
