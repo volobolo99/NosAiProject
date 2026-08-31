@@ -115,11 +115,12 @@ public static class Gate1TestRunner
         byte[] clientNonce = SessionTranscript.CreateNonce();
         using var exchange = EphemeralKeyExchange.Create();
         byte[] clientHello = Concat(clientNonce, exchange.PublicKey);
-        if (!auth.TryBeginHandshake(clientHello, out byte[] serverHello))
+        var handshake = auth.TryBeginHandshake(clientHello);
+        if (handshake is null)
             return false;
 
-        byte[] serverNonce = serverHello[..SessionTranscript.NonceLength];
-        byte[] serverEphemeral = serverHello[SessionTranscript.NonceLength..];
+        byte[] serverNonce = handshake.ServerHello[..SessionTranscript.NonceLength];
+        byte[] serverEphemeral = handshake.ServerHello[SessionTranscript.NonceLength..];
 
         byte[] signature = key.SignHash(
             SessionTranscript.Compute(HandshakeRole.Client, clientNonce, serverNonce, exchange.PublicKey, serverEphemeral),
@@ -129,9 +130,9 @@ public static class Gate1TestRunner
         // Accepted once, then the transcript is consumed: replaying the same valid
         // signature must not open a second session, and must not hand out a second
         // copy of the session key material.
-        if (!auth.VerifyAndConsume(signature, out byte[] first) || first.Length != EphemeralKeyExchange.SessionMaterialLength)
+        if (!handshake.VerifyAndConsume(signature, out byte[] first) || first.Length != EphemeralKeyExchange.SessionMaterialLength)
             return false;
-        return !auth.VerifyAndConsume(signature, out byte[] second) && second.Length == 0;
+        return !handshake.VerifyAndConsume(signature, out byte[] second) && second.Length == 0;
     }
 
     private static byte[] Concat(byte[] first, byte[] second)
@@ -331,9 +332,15 @@ public static class Gate1TestRunner
         await using var channel = new GuardAiNetworkChannel(0, auth);
         var provider = new Gate1RuntimeSnapshotProvider(runtime, world, channel);
         var json = JsonSerializer.Serialize(provider.GetSnapshot());
+        // The composed runtime must come up unable to act, and must say so in the
+        // snapshot. The literal changed when execution became an operator switch
+        // (ADR-0014); what is being certified did not: nothing is armed at start,
+        // and the input backend is the gated one rather than the raw Win32 backend.
         return !runtime.SafetyPolicy.LiveInputEnabled &&
                !runtime.SafetyPolicy.PacketInjectionEnabled &&
-               json.Contains("disabled_in_gate1", StringComparison.OrdinalIgnoreCase);
+               !runtime.Safety.ExecutionEnabled &&
+               runtime.InputBackend is NosAi.Runtime.LowLevel.GatedInputBackend &&
+               json.Contains("disabled_by_operator", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<bool> TestHeartbeatFailClosedAsync()
@@ -456,7 +463,7 @@ public static class Gate1TestRunner
                && snapshot.Client.GameplayBaseline.Source == DataSourceKind.Unknown
                && snapshot.Hardware.LogicalCores.Source == DataSourceKind.Live
                && !snapshot.Guard.Connected.Value
-               && snapshot.Safety.ExecutionMode.Value == "disabled_in_gate1";
+               && snapshot.Safety.ExecutionMode.Value == "disabled_by_operator";
     }
 
     private static async Task WriteFrameAsync(NetworkStream stream, WireMessageType type, byte[] payload, uint sequence)

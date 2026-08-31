@@ -14,21 +14,34 @@ namespace NosAi.Runtime.Orchestration;
 public static class RuntimeComposition
 {
     /// <summary>
-    /// Builds the runtime graph under <see cref="RuntimeSafetyPolicy.SafeDefault"/>,
-    /// which keeps live input disabled.
+    /// Builds the runtime graph with the safety switches under operator control.
     /// </summary>
-    public static RuntimeComponents CreateSafe()
+    /// <remarks>
+    /// <para>
+    /// The policy used to be a fixed <c>SafeDefault</c> captured at construction, so
+    /// nothing could turn live input on later — the operator had a refusal, not a
+    /// switch. The graph is now built around a <see cref="RuntimeSafetyController"/>
+    /// and every consumer reads the state in force at the moment it acts.
+    /// </para>
+    /// <para>
+    /// It still starts with everything off. A runtime that came up already able to
+    /// inject input would act before the operator had decided it should, and the
+    /// switch is one call away.
+    /// </para>
+    /// </remarks>
+    public static RuntimeComponents CreateSafe(RuntimeSafetyController? controller = null)
     {
-        var policy = RuntimeSafetyPolicy.SafeDefault;
-        // The raw Win32 backend is never handed out directly: it is wrapped so
-        // that a consumer holding RuntimeComponents.InputBackend or .Humanizer
-        // still cannot inject input while the policy forbids it.
-        var input = new GatedInputBackend(new Win32InputBackend(), policy);
-        var humanizer = new DeterministicHumanizer(input);
-        var guard = new GuardAi();
-        var safety = new SafetyGate();
+        var safety = controller ?? new RuntimeSafetyController();
 
-        return new RuntimeComponents(policy, input, humanizer, guard, safety);
+        // The raw Win32 backend is never handed out directly: it is wrapped so that
+        // a consumer holding RuntimeComponents.InputBackend or .Humanizer still
+        // cannot inject input while the policy forbids it. The policy is read per
+        // call, so flipping the switch takes effect immediately and so does
+        // flipping it back — which is what makes an emergency stop worth having.
+        var input = new GatedInputBackend(new Win32InputBackend(), () => safety.Policy);
+        var humanizer = new DeterministicHumanizer(input);
+
+        return new RuntimeComponents(safety, input, humanizer, new GuardAi(), new SafetyGate());
     }
 
     /// <summary>
@@ -40,14 +53,29 @@ public static class RuntimeComposition
     {
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(rawInput);
-        var input = new GatedInputBackend(rawInput, policy);
-        return new RuntimeComponents(policy, input, new DeterministicHumanizer(input), new GuardAi(), new SafetyGate());
+
+        var safety = new RuntimeSafetyController(policy);
+        var input = new GatedInputBackend(rawInput, () => safety.Policy);
+        return new RuntimeComponents(safety, input, new DeterministicHumanizer(input), new GuardAi(), new SafetyGate());
     }
 }
 
+/// <summary>The composed runtime, with its live safety state.</summary>
 public sealed record RuntimeComponents(
-    RuntimeSafetyPolicy SafetyPolicy,
+    RuntimeSafetyController Safety,
     IInputBackend InputBackend,
     IHumanizer Humanizer,
     IGuardAi GuardAi,
-    ISafetyGate SafetyGate);
+    ISafetyGate SafetyGate)
+{
+    /// <summary>
+    /// The safety state in force right now.
+    /// </summary>
+    /// <remarks>
+    /// A property rather than a stored value on purpose: a snapshot that captured
+    /// the policy once would keep reporting the state at startup while the operator
+    /// had since changed it, which is the sort of stale safety label this project
+    /// treats as a defect.
+    /// </remarks>
+    public RuntimeSafetyPolicy SafetyPolicy => Safety.Policy;
+}
