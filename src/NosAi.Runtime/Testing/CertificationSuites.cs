@@ -57,6 +57,8 @@ public static class CertificationSuites
             NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner.RunAllTestsAsync),
         new("input", "--input-test", "Controllo input di basso livello",
             NosAi.Runtime.LowLevel.InputControlTestRunner.RunAllTestsAsync),
+        new("decision", "--decision-test", "Motore decisionale a utilita",
+            NosAi.Runtime.AI.Decision.DecisionEngineTestRunner.RunAllTestsAsync),
 
         // Synchronous RunAll(), adapted here rather than by editing their files.
         new("netobserve", "--netobserve-test", "Osservazione di rete",
