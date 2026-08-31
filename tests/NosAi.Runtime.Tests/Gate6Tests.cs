@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Gate6;
 using Xunit;
 

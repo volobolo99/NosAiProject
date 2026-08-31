@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Progetto: NosAi — Runtime di Automazione Controllata
 // Versione: 1.0 Beta
@@ -39,14 +40,6 @@ namespace NosAi.Host
         Terminating = 4
     }
 
-    public enum TrustTier : byte
-    {
-        Tier0_ReadOnly = 0,
-        Tier1_Assisted = 1,
-        Tier2_SemiAutonomous = 2,
-        Tier3_AutonomousRestricted = 3,
-        Tier4_FullAutonomous = 4
-    }
 
     public sealed record MasterSystemTelemetry(
         string SessionId,

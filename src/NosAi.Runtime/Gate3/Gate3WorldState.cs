@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 // Aliased rather than importing the whole Gate 1 namespace: several type names
 // are duplicated across gates, so a broad using here would make them ambiguous.

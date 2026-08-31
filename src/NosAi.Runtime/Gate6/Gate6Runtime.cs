@@ -1,3 +1,5 @@
+using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Progetto: NosAi — Runtime di Automazione Controllata
 // Versione: 1.0 Beta
@@ -26,36 +28,6 @@ namespace NosAi.Runtime.Gate6
 {
     #region 1. Contratti canonici unificati e invarianti di sicurezza
 
-    public enum TrustTier : byte
-    {
-        Tier0_ReadOnly = 0,
-        Tier1_Assisted = 1,
-        Tier2_SemiAutonomous = 2,
-        Tier3_AutonomousRestricted = 3,
-        Tier4_FullAutonomous = 4
-    }
-
-    public enum RuntimeMode : byte
-    {
-        Normal = 0,
-        Degraded = 1,
-        Recovery = 2,
-        Cooling = 3,
-        Stopped = 4
-    }
-
-    public enum ActionType : byte
-    {
-        None = 0,
-        MoveToPosition = 1,
-        TargetEntity = 2,
-        UseBasicAttack = 3,
-        UseSkill = 4,
-        UseConsumable = 5,
-        CollectGroundItem = 6,
-        RestAndRecover = 7,
-        EmergencyFlee = 8
-    }
 
     public readonly record struct Position2D(int X, int Y)
     {
@@ -67,61 +39,6 @@ namespace NosAi.Runtime.Gate6
         }
     }
 
-    public sealed record ActionCandidate(
-        Guid CandidateId,
-        ActionType Type,
-        string TargetId,
-        int TargetX,
-        int TargetY,
-        int SkillOrItemId,
-        TrustTier RequiredTrust,
-        string Rationale
-    );
-
-    public sealed record PredictedOutcome(
-        Guid CandidateId,
-        int ExpectedHpDelta,
-        int ExpectedMpDelta,
-        int ExpectedTimeMs,
-        float SuccessProbability,
-        float RiskScore,
-        string StateSignatureAfter
-    );
-
-    public sealed class SafetyToken
-    {
-        public Guid TokenId { get; }
-        public Guid CandidateId { get; }
-        public DateTime IssuedAtUtc { get; }
-        public DateTime ExpiresAtUtc { get; }
-        public TrustTier GrantedTier { get; }
-        public byte[] Signature { get; }
-
-        private bool _consumed;
-        private readonly object _lock = new();
-
-        public SafetyToken(Guid candidateId, TrustTier grantedTier, byte[] signature, TimeSpan ttl)
-        {
-            TokenId = Guid.NewGuid();
-            CandidateId = candidateId;
-            IssuedAtUtc = DateTime.UtcNow;
-            ExpiresAtUtc = IssuedAtUtc + ttl;
-            GrantedTier = grantedTier;
-            Signature = signature;
-        }
-
-        public bool TryConsume()
-        {
-            lock (_lock)
-            {
-                if (_consumed || DateTime.UtcNow > ExpiresAtUtc)
-                    return false;
-
-                _consumed = true;
-                return true;
-            }
-        }
-    }
 
     /// <summary>
     /// Execution outcome. <see cref="Source"/> declares where the execution really
@@ -148,103 +65,6 @@ namespace NosAi.Runtime.Gate6
 
     #region 2. Confini di sicurezza e modello delle autorità
 
-    public sealed class TrustBoundary
-    {
-        private TrustTier _currentTrust;
-        private readonly object _lock = new();
-
-        public TrustTier CurrentTier
-        {
-            get { lock (_lock) { return _currentTrust; } }
-        }
-
-        public TrustBoundary(TrustTier initialTier = TrustTier.Tier2_SemiAutonomous)
-        {
-            _currentTrust = initialTier;
-        }
-
-        public bool IsAuthorized(TrustTier requiredTier)
-        {
-            lock (_lock) { return _currentTrust >= requiredTier; }
-        }
-
-        public void DowngradeTrust(TrustTier newTier)
-        {
-            lock (_lock)
-            {
-                if (newTier < _currentTrust)
-                    _currentTrust = newTier;
-            }
-        }
-    }
-
-    public sealed class GuardPolicyEngine
-    {
-        public bool EvaluatePolicy(ActionCandidate candidate, PredictedOutcome outcome, RuntimeMode currentMode, out string? violation)
-        {
-            violation = null;
-
-            if (currentMode == RuntimeMode.Stopped)
-            {
-                violation = "Stato runtime STOPPED: azioni inibite dal Watchdog fail-closed.";
-                return false;
-            }
-
-            if (currentMode == RuntimeMode.Cooling && candidate.Type is ActionType.UseSkill or ActionType.UseBasicAttack)
-            {
-                violation = "Stato runtime COOLING: throttling termico attivo, inibito combattimento non essenziale.";
-                return false;
-            }
-
-            if (outcome.RiskScore > 0.75f && candidate.Type != ActionType.EmergencyFlee)
-            {
-                violation = $"Rischio stimato eccessivo ({outcome.RiskScore:P1} > 75%).";
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    public sealed class SafetyGate
-    {
-        private readonly TrustBoundary _trustBoundary;
-        private readonly GuardPolicyEngine _guardPolicy;
-        private readonly byte[] _hmacKey;
-
-        public SafetyGate(TrustBoundary trustBoundary, GuardPolicyEngine guardPolicy)
-        {
-            _trustBoundary = trustBoundary;
-            _guardPolicy = guardPolicy;
-            _hmacKey = new byte[32];
-            RandomNumberGenerator.Fill(_hmacKey);
-        }
-
-        public bool TryAuthorize(ActionCandidate candidate, PredictedOutcome outcome, RuntimeMode currentMode, out SafetyToken? token, out string? rejectionReason)
-        {
-            token = null;
-
-            if (!_guardPolicy.EvaluatePolicy(candidate, outcome, currentMode, out rejectionReason))
-                return false;
-
-            if (!_trustBoundary.IsAuthorized(candidate.RequiredTrust))
-            {
-                rejectionReason = $"Trust insufficiente: Richiesto {candidate.RequiredTrust}, Corrente {_trustBoundary.CurrentTier}.";
-                return false;
-            }
-
-            byte[] signature = HMACSHA256.HashData(_hmacKey, candidate.CandidateId.ToByteArray());
-            token = new SafetyToken(candidate.CandidateId, _trustBoundary.CurrentTier, signature, TimeSpan.FromMilliseconds(1500));
-            rejectionReason = null;
-            return true;
-        }
-
-        public bool ValidateToken(SafetyToken token)
-        {
-            byte[] expected = HMACSHA256.HashData(_hmacKey, token.CandidateId.ToByteArray());
-            return CryptographicOperations.FixedTimeEquals(expected, token.Signature);
-        }
-    }
 
     /// <summary>
     /// Executes an authorized action against the simulated world. Token binding,
@@ -299,35 +119,6 @@ namespace NosAi.Runtime.Gate6
         }
     }
 
-    public sealed class RecoveryController
-    {
-        private readonly TrustBoundary _trustBoundary;
-        private int _consecutiveFailures;
-
-        public int ConsecutiveFailures => _consecutiveFailures;
-
-        public RecoveryController(TrustBoundary trustBoundary) => _trustBoundary = trustBoundary;
-
-        public void HandleFailure(VerificationResult verification, ref RuntimeMode mode)
-        {
-            _consecutiveFailures++;
-
-            if (_consecutiveFailures <= 2)
-                mode = RuntimeMode.Recovery;
-            else if (_consecutiveFailures == 3)
-            {
-                _trustBoundary.DowngradeTrust(TrustTier.Tier1_Assisted);
-                mode = RuntimeMode.Degraded;
-            }
-            else
-            {
-                _trustBoundary.DowngradeTrust(TrustTier.Tier0_ReadOnly);
-                mode = RuntimeMode.Stopped;
-            }
-        }
-
-        public void Reset() => _consecutiveFailures = 0;
-    }
 
     #endregion
 
@@ -473,7 +264,7 @@ namespace NosAi.Runtime.Gate6
                 return (true, $"[SIMULATED] Ciclo {_cycleCounter} eseguito: {candidate.Type}. {verif.AnalysisReport}");
             }
 
-            _recovery.HandleFailure(verif, ref _currentMode);
+            _recovery.HandleFailure(ref _currentMode);
             return (false, $"[SIMULATED] Fallimento verifica: {verif.AnalysisReport} -> Stato Runtime: {_currentMode}");
         }
 
@@ -583,10 +374,11 @@ namespace NosAi.Runtime.Gate6
             byte[] clientHello = new byte[NosAi.Runtime.Gate1.SessionAuth.HandshakeHelloLength];
             clientNonce.CopyTo(clientHello, 0);
             exchange.PublicKey.CopyTo(clientHello, NosAi.Runtime.Gate1.SessionTranscript.NonceLength);
-            if (!auth.TryBeginHandshake(clientHello, out byte[] serverHello)) return false;
+            var handshake = auth.TryBeginHandshake(clientHello);
+            if (handshake is null) return false;
 
-            byte[] serverNonce = serverHello[..NosAi.Runtime.Gate1.SessionTranscript.NonceLength];
-            byte[] serverEphemeral = serverHello[NosAi.Runtime.Gate1.SessionTranscript.NonceLength..];
+            byte[] serverNonce = handshake.ServerHello[..NosAi.Runtime.Gate1.SessionTranscript.NonceLength];
+            byte[] serverEphemeral = handshake.ServerHello[NosAi.Runtime.Gate1.SessionTranscript.NonceLength..];
 
             byte[] signature = deviceKey.SignHash(
                 NosAi.Runtime.Gate1.SessionTranscript.Compute(
@@ -594,10 +386,10 @@ namespace NosAi.Runtime.Gate6
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
-            if (!auth.VerifyAndConsume(signature, out byte[] material)) return false;
+            if (!handshake.VerifyAndConsume(signature, out byte[] material)) return false;
             if (material.Length != NosAi.Runtime.Gate1.EphemeralKeyExchange.SessionMaterialLength) return false;
             // Replaying the same valid signature must fail: the challenge is consumed.
-            return !auth.VerifyAndConsume(signature, out _);
+            return !handshake.VerifyAndConsume(signature, out _);
         }
 
         // -------------------------------------------------------- safety boundary
@@ -703,10 +495,9 @@ namespace NosAi.Runtime.Gate6
             var trust = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
             var recovery = new RecoveryController(trust);
             var mode = RuntimeMode.Normal;
-            var failVerif = new VerificationResult(Guid.NewGuid(), false, 1.0f, "Fallimento simulato");
 
             for (int i = 0; i < 5; i++)
-                recovery.HandleFailure(failVerif, ref mode);
+                recovery.HandleFailure(ref mode);
 
             if (trust.CurrentTier != TrustTier.Tier0_ReadOnly || mode != RuntimeMode.Stopped) return false;
 

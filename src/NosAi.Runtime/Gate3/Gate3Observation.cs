@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate3;

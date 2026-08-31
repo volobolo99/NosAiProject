@@ -1,3 +1,6 @@
+using SafetyGate = NosAi.Runtime.Autonomy.SafetyGate;
+using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Progetto: NosAi — Runtime di Automazione Controllata
 // Versione: 1.0 Beta
@@ -17,95 +20,7 @@ using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate3
 {
-    public enum TrustTier : byte
-    {
-        Tier0_ReadOnly = 0,
-        Tier1_Assisted = 1,
-        Tier2_SemiAutonomous = 2,
-        Tier3_AutonomousRestricted = 3,
-        Tier4_FullAutonomous = 4
-    }
 
-    public enum ActionType : byte
-    {
-        None = 0,
-        MoveToPosition = 1,
-        TargetEntity = 2,
-        UseBasicAttack = 3,
-        UseSkill = 4,
-        UseConsumable = 5,
-        CollectGroundItem = 6,
-        RestAndRecover = 7,
-        EmergencyFlee = 8
-    }
-
-    public enum RuntimeMode : byte
-    {
-        Normal = 0,
-        Degraded = 1,
-        Recovery = 2,
-        Cooling = 3,
-        Stopped = 4
-    }
-
-    public enum RecoveryStrategy : byte
-    {
-        Retry = 0,
-        Replan = 1,
-        DegradedReplan = 2,
-        Cooling = 3,
-        HaltAndAlert = 4
-    }
-
-    public sealed record ActionCandidate(
-        Guid CandidateId,
-        ActionType Type,
-        string TargetId,
-        int TargetX,
-        int TargetY,
-        int SkillOrItemId,
-        TrustTier RequiredTrust,
-        string Rationale);
-
-    public sealed record PredictedOutcome(
-        Guid CandidateId,
-        int ExpectedHpDelta,
-        int ExpectedMpDelta,
-        int ExpectedTimeMs,
-        float SuccessProbability,
-        float RiskScore,
-        string StateSignatureAfter);
-
-    public sealed record GuardEvaluationResult(
-        bool IsAllowedByPolicy,
-        float AssessedRisk,
-        string Rationale,
-        ImmutableArray<string> ViolatedConstraints);
-
-    public sealed class SafetyToken
-    {
-        public Guid TokenId { get; } = Guid.NewGuid();
-        public Guid CandidateId { get; }
-        public DateTime IssuedAtUtc { get; }
-        public DateTime ExpiresAtUtc { get; }
-        public TrustTier GrantedTier { get; }
-        public byte[] Signature { get; }
-
-        private int _consumed;
-
-        public SafetyToken(Guid candidateId, TrustTier grantedTier, byte[] signature, TimeSpan ttl)
-        {
-            CandidateId = candidateId;
-            GrantedTier = grantedTier;
-            Signature = signature;
-            IssuedAtUtc = DateTime.UtcNow;
-            ExpiresAtUtc = IssuedAtUtc + ttl;
-        }
-
-        public bool TryConsume() =>
-            DateTime.UtcNow <= ExpiresAtUtc &&
-            Interlocked.CompareExchange(ref _consumed, 1, 0) == 0;
-    }
 
     /// <param name="Reason">
     /// Why the action ended in this state. Present for every state except
@@ -339,146 +254,6 @@ namespace NosAi.Runtime.Gate3
         }
     }
 
-    public sealed class GuardPolicyEngine
-    {
-        public GuardEvaluationResult Evaluate(
-            ActionCandidate candidate,
-            PredictedOutcome outcome,
-            RuntimeMode currentMode)
-        {
-            var violations = new List<string>();
-
-            if (currentMode == RuntimeMode.Stopped)
-            {
-                violations.Add("Runtime in stato STOPPED: tutte le azioni sono inibite.");
-                return new GuardEvaluationResult(
-                    false,
-                    1.0f,
-                    "Blocco fail-closed Watchdog.",
-                    violations.ToImmutableArray());
-            }
-
-            if (currentMode == RuntimeMode.Cooling &&
-                candidate.Type is ActionType.UseSkill or ActionType.UseBasicAttack)
-            {
-                violations.Add("Runtime in stato COOLING: inibite azioni di combattimento non necessarie.");
-                return new GuardEvaluationResult(
-                    false,
-                    0.8f,
-                    "Throttling termico attivo.",
-                    violations.ToImmutableArray());
-            }
-
-            if (outcome.RiskScore > 0.75f && candidate.Type != ActionType.EmergencyFlee)
-            {
-                violations.Add($"Rischio stimato eccessivo ({outcome.RiskScore:P1} > 75%).");
-                return new GuardEvaluationResult(
-                    false,
-                    outcome.RiskScore,
-                    "Violazione soglia rischio massimo.",
-                    violations.ToImmutableArray());
-            }
-
-            return new GuardEvaluationResult(
-                true,
-                outcome.RiskScore,
-                "Azione conforme alle policy operative.",
-                ImmutableArray<string>.Empty);
-        }
-    }
-
-    public sealed class TrustBoundary
-    {
-        private TrustTier _currentTrust;
-        private readonly object _lock = new();
-
-        public TrustTier CurrentTier
-        {
-            get
-            {
-                lock (_lock)
-                    return _currentTrust;
-            }
-        }
-
-        public TrustBoundary(TrustTier initialTier = TrustTier.Tier2_SemiAutonomous) =>
-            _currentTrust = initialTier;
-
-        public bool IsAuthorized(TrustTier requiredTier)
-        {
-            lock (_lock)
-                return _currentTrust >= requiredTier;
-        }
-
-        public void DowngradeTrust(TrustTier newTier)
-        {
-            lock (_lock)
-            {
-                if (newTier < _currentTrust)
-                    _currentTrust = newTier;
-            }
-        }
-    }
-
-    public sealed class SafetyGate
-    {
-        private readonly TrustBoundary _trustBoundary;
-        private readonly GuardPolicyEngine _guardPolicy;
-        private readonly byte[] _gateSigningKey;
-
-        public SafetyGate(TrustBoundary trustBoundary, GuardPolicyEngine guardPolicy)
-        {
-            _trustBoundary = trustBoundary;
-            _guardPolicy = guardPolicy;
-            _gateSigningKey = RandomNumberGenerator.GetBytes(32);
-        }
-
-        public bool TryAuthorize(
-            ActionCandidate candidate,
-            PredictedOutcome outcome,
-            RuntimeMode currentMode,
-            out SafetyToken? token,
-            out string? rejectionReason)
-        {
-            token = null;
-            rejectionReason = null;
-
-            GuardEvaluationResult guard = _guardPolicy.Evaluate(candidate, outcome, currentMode);
-            if (!guard.IsAllowedByPolicy)
-            {
-                rejectionReason = $"Diniego Guard AI: {guard.Rationale} [{string.Join(", ", guard.ViolatedConstraints)}]";
-                return false;
-            }
-
-            if (!_trustBoundary.IsAuthorized(candidate.RequiredTrust))
-            {
-                rejectionReason = $"Diniego Trust: Richiesto {candidate.RequiredTrust}, livello corrente {_trustBoundary.CurrentTier}.";
-                return false;
-            }
-
-            byte[] signature = HMACSHA256.HashData(
-                _gateSigningKey,
-                candidate.CandidateId.ToByteArray());
-
-            token = new SafetyToken(
-                candidate.CandidateId,
-                _trustBoundary.CurrentTier,
-                signature,
-                TimeSpan.FromMilliseconds(1500));
-
-            return true;
-        }
-
-        public bool ValidateToken(SafetyToken token)
-        {
-            byte[] expected = HMACSHA256.HashData(
-                _gateSigningKey,
-                token.CandidateId.ToByteArray());
-
-            return CryptographicOperations.FixedTimeEquals(expected, token.Signature) &&
-                   token.ExpiresAtUtc >= DateTime.UtcNow;
-        }
-    }
 
     /// <summary>
     /// Runs an authorised action through an <see cref="IActionEffector"/>.
@@ -633,43 +408,6 @@ namespace NosAi.Runtime.Gate3
         }
     }
 
-    public sealed class RecoveryController
-    {
-        private readonly TrustBoundary _trustBoundary;
-        private readonly int _maxRetries = 2;
-        private int _consecutiveFailures;
-
-        public int ConsecutiveFailures => _consecutiveFailures;
-
-        public RecoveryController(TrustBoundary trustBoundary) =>
-            _trustBoundary = trustBoundary;
-
-        public RecoveryStrategy HandleFailure(
-            VerificationResult verification,
-            ref RuntimeMode runtimeMode)
-        {
-            _consecutiveFailures++;
-
-            if (_consecutiveFailures <= _maxRetries)
-            {
-                runtimeMode = RuntimeMode.Recovery;
-                return RecoveryStrategy.Retry;
-            }
-
-            if (_consecutiveFailures == _maxRetries + 1)
-            {
-                _trustBoundary.DowngradeTrust(TrustTier.Tier1_Assisted);
-                runtimeMode = RuntimeMode.Degraded;
-                return RecoveryStrategy.DegradedReplan;
-            }
-
-            _trustBoundary.DowngradeTrust(TrustTier.Tier0_ReadOnly);
-            runtimeMode = RuntimeMode.Stopped;
-            return RecoveryStrategy.HaltAndAlert;
-        }
-
-        public void ResetFailures() => _consecutiveFailures = 0;
-    }
 
     /// <summary>How a full Observe -> Plan -> Guard -> Execute -> Verify cycle ended.</summary>
     public enum CycleOutcome : byte
@@ -899,7 +637,7 @@ namespace NosAi.Runtime.Gate3
             }
 
             RuntimeMode recoveredMode = CurrentMode;
-            RecoveryStrategy strategy = _recovery.HandleFailure(verification, ref recoveredMode);
+            RecoveryStrategy strategy = _recovery.HandleFailure(ref recoveredMode);
             CurrentMode = recoveredMode;
 
             return Result(
@@ -1152,13 +890,10 @@ namespace NosAi.Runtime.Gate3
             var recovery = new RecoveryController(trust);
             var mode = RuntimeMode.Normal;
 
-            var failure = new VerificationResult(
-                Guid.NewGuid(), VerificationOutcome.Discrepant, 1.0f, "test", DataSourceKind.Live);
-
-            RecoveryStrategy first = recovery.HandleFailure(failure, ref mode);
-            RecoveryStrategy second = recovery.HandleFailure(failure, ref mode);
-            RecoveryStrategy third = recovery.HandleFailure(failure, ref mode);
-            RecoveryStrategy fourth = recovery.HandleFailure(failure, ref mode);
+            RecoveryStrategy first = recovery.HandleFailure(ref mode);
+            RecoveryStrategy second = recovery.HandleFailure(ref mode);
+            RecoveryStrategy third = recovery.HandleFailure(ref mode);
+            RecoveryStrategy fourth = recovery.HandleFailure(ref mode);
 
             return first == RecoveryStrategy.Retry
                    && second == RecoveryStrategy.Retry
