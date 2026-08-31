@@ -46,3 +46,6 @@ obj/
 # docs/INTEGRAZIONE_RSA_SESSION_AUTH.md.
 *.pem
 data/
+
+# WinDivert driver e binari di cattura (scaricati localmente, mai committati)
+tools/windivert/

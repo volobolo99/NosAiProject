@@ -1,0 +1,47 @@
+name: NosAi .NET (Windows)
+
+# The Gate 1 runtime is a Windows component: it wraps its identity with DPAPI
+# (ADR-0010), reads the client's TCP table through iphlpapi, and profiles hardware
+# through WMI. Those behaviours only run — and only fail honestly — on Windows.
+# The Linux job in ci.yml still builds the runtime and runs the platform-neutral
+# tests; this one is where the Windows-only behaviour is actually exercised.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  dotnet-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore the runtime
+        run: dotnet restore src/NosAi.Runtime/NosAi.Runtime.csproj
+
+      - name: Build the runtime
+        run: dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release --no-restore
+
+      # find, not a glob: a glob without globstar silently misses a test project
+      # nested more than one level deep and reports success. Mirrors ci.yml so the
+      # two workflows discover the same set.
+      - name: Run every .NET test project
+        shell: bash
+        run: |
+          mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*')
+          if [ ${#tests[@]} -eq 0 ]; then
+            echo "No .NET test projects found; nothing to run."
+            exit 0
+          fi
+          for test_project in "${tests[@]}"; do
+            echo "== $test_project =="
+            dotnet test "$test_project" --configuration Release
+          done
+
+      # The runtime's own --gateN-test suites are deliberately NOT run here. They
+      # declare themselves "Local only", and some (DXGI perception) touch a display
+      # a headless runner does not have, so forcing them into CI would produce false
+      # failures — the opposite of what a gate is for. They stay a local check.
