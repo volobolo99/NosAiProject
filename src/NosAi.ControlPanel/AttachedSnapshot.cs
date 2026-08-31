@@ -14,11 +14,22 @@ internal static class AttachedSnapshot
             return SnapshotView.Empty($"unsupported_contract_version:{version.GetString() ?? "missing"}");
         }
 
+        var guard = root.TryGetProperty("guard", out var guardNode) && guardNode.ValueKind == JsonValueKind.Object
+            ? guardNode
+            : default(JsonElement?);
+        var (slot, hint) = ChannelView.Slot(
+            ReadClassifiedBool(guard, "connected"),
+            ReadClassifiedBool(guard, "authenticated"),
+            ReadClassifiedText(guard, "terminationReason"));
+
         return new SnapshotView
         {
             RuntimeStatus = root.TryGetProperty("runtimeStatus", out var status) ? status.GetString() ?? "UNKNOWN" : "UNKNOWN",
             Warning = root.TryGetProperty("warning", out var warning) ? warning.GetString() ?? "" : "",
             CapturedAt = root.TryGetProperty("capturedAtUtc", out var at) ? at.ToString() : "",
+            ContractVersion = root.TryGetProperty("contractVersion", out var cv) ? cv.GetString() ?? "" : "gate1.snapshot.v1",
+            SlotLabel = slot,
+            SlotHint = hint,
             Client = ReadObject(root, "client",
                 ("status", "Stato"),
                 ("processName", "Processo"),
@@ -28,12 +39,14 @@ internal static class AttachedSnapshot
                 ("processResponding", "Risponde"),
                 ("windowVisible", "Visibile"),
                 ("gameplayBaseline", "Gameplay")),
-            Guard = ReadObject(root, "guard",
-                ("connected", "Collegato"),
-                ("authenticated", "Autenticato"),
-                ("sessionId", "Sessione"),
-                ("lastHeartbeatUtc", "Heartbeat"),
-                ("terminationReason", "Chiusura")),
+            Guard = PrependChannel(
+                ReadObject(root, "guard",
+                    ("connected", "Collegato"),
+                    ("authenticated", "Autenticato"),
+                    ("sessionId", "Sessione"),
+                    ("lastHeartbeatUtc", "Heartbeat"),
+                    ("terminationReason", "Chiusura")),
+                slot),
             Hardware = ReadObject(root, "hardware",
                 ("platform", "Piattaforma"),
                 ("cpu", "CPU"),
@@ -87,5 +100,44 @@ internal static class AttachedSnapshot
         }
 
         return list;
+    }
+
+    private static IReadOnlyList<DisplayField> PrependChannel(IReadOnlyList<DisplayField> guard, string slot)
+        =>
+        [
+            new DisplayField("Wire (questo build)", ChannelView.WireLabel, "DERIVED"),
+            new DisplayField("Slot", slot, slot == "UNKNOWN" ? "UNKNOWN" : "DERIVED"),
+            .. guard
+        ];
+
+    private static bool? ReadClassifiedBool(JsonElement? obj, string key)
+    {
+        if (obj is not { } root || !root.TryGetProperty(key, out var node) || node.ValueKind != JsonValueKind.Object)
+            return null;
+        var source = node.TryGetProperty("source", out var s) ? s.GetString() : null;
+        if (source == "UNKNOWN")
+            return null;
+        if (!node.TryGetProperty("value", out var v) || v.ValueKind is JsonValueKind.Null)
+            return null;
+        return v.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String when bool.TryParse(v.GetString(), out var parsed) => parsed,
+            _ => null
+        };
+    }
+
+    private static string? ReadClassifiedText(JsonElement? obj, string key)
+    {
+        if (obj is not { } root || !root.TryGetProperty(key, out var node) || node.ValueKind != JsonValueKind.Object)
+            return null;
+        var source = node.TryGetProperty("source", out var s) ? s.GetString() : null;
+        if (source == "UNKNOWN")
+            return null;
+        if (!node.TryGetProperty("value", out var v) || v.ValueKind is JsonValueKind.Null)
+            return null;
+        var text = v.ToString();
+        return string.IsNullOrWhiteSpace(text) ? null : text;
     }
 }

@@ -21,8 +21,10 @@ public static class AutoSetup
 
         var phoneKey = Path.Combine(repoRoot, Gate1HostOptions.DefaultTrustedKeyPath);
         var identity = Path.Combine(repoRoot, RuntimeIdentity.DefaultPath);
+        var wrapped = Path.Combine(repoRoot, RuntimeIdentity.DefaultProtectedPath);
         var pin = Path.Combine(repoRoot, RuntimeIdentity.DefaultPublicPath);
         var data = Path.Combine(repoRoot, "data");
+        var hasIdentity = File.Exists(pin) || File.Exists(wrapped) || File.Exists(identity);
 
         return
         [
@@ -34,9 +36,14 @@ public static class AutoSetup
             new SetupItem("Chiave telefono", File.Exists(phoneKey),
                 File.Exists(phoneKey) ? phoneKey : Gate1HostOptions.DefaultTrustedKeyPath,
                 File.Exists(phoneKey) ? null : "Premere Abbina telefono con il cavo USB."),
-            new SetupItem("Identità runtime", File.Exists(identity) || File.Exists(pin),
-                File.Exists(pin) ? pin : (File.Exists(identity) ? identity : RuntimeIdentity.DefaultPublicPath),
-                File.Exists(identity) || File.Exists(pin) ? null : "Si crea da sola al primo avvio del runtime.")
+            new SetupItem("Identità runtime", hasIdentity,
+                File.Exists(wrapped) ? wrapped : (File.Exists(pin) ? pin : (File.Exists(identity) ? identity : RuntimeIdentity.DefaultProtectedPath)),
+                hasIdentity
+                    ? (File.Exists(identity) && !File.Exists(wrapped) ? "Al prossimo avvio il runtime avvolge il PEM in DPAPI." : null)
+                    : "Si crea da sola al primo avvio del runtime."),
+            new SetupItem("Canale Guard (questo build)", true,
+                $"wire {NosAi.Runtime.Gate1.WireHeader.CurrentVersion}. Un APK più vecchio viene rifiutato all'header.",
+                "Giro v3 sul telefono ancora aperto: non è Verified. Lo sviluppo continua lo stesso.")
         ];
     }
 }

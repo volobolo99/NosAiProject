@@ -19,4 +19,8 @@
          authority: this project is a WinExe shell, not a second orchestrator. -->
     <ProjectReference Include="..\NosAi.Runtime\NosAi.Runtime.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NosAi.ControlPanel.Tests" />
+  </ItemGroup>
 </Project>

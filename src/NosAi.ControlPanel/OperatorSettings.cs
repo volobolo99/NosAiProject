@@ -37,6 +37,37 @@ public sealed class OperatorSettings
         }
     }
 
+    /// <summary>Same bounds as <see cref="Gate1HostOptions"/>, before we write the file.</summary>
+    public static bool TryValidate(int dashboardPort, int guardPort, int timeoutMs, string processName, out string error)
+    {
+        if (dashboardPort is < 0 or > 65535)
+        {
+            error = "La porta API deve essere tra 0 e 65535.";
+            return false;
+        }
+
+        if (guardPort is < 0 or > 65535)
+        {
+            error = "La porta Guard deve essere tra 0 e 65535.";
+            return false;
+        }
+
+        if (timeoutMs is < 100 or > 120_000)
+        {
+            error = "Il timeout deve essere tra 100 e 120000 ms.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(processName))
+        {
+            error = "Il nome processo client è obbligatorio.";
+            return false;
+        }
+
+        error = "";
+        return true;
+    }
+
     public void Save(string repoRoot)
     {
         var path = Path.Combine(repoRoot, RelativePath);

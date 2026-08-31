@@ -39,6 +39,9 @@ public sealed class RuntimeSession : IAsyncDisposable
     public int? DashboardPort { get; private set; }
     public int GuardPort { get; private set; }
     public string? Detail { get; private set; }
+    public string? LastFailure { get; private set; }
+
+    public void NoteFailure(string reason) => LastFailure = reason;
 
     public async Task<bool> ProbeExistingAsync(int dashboardPort, CancellationToken token = default)
     {
@@ -69,6 +72,7 @@ public sealed class RuntimeSession : IAsyncDisposable
                 : host.DashboardFailureReason ?? "API operatore non disponibile";
         }
 
+        LastFailure = null;
         _logger.Operator($"Runtime avviato. Guard {host.GuardPort}.");
     }
 
@@ -82,6 +86,7 @@ public sealed class RuntimeSession : IAsyncDisposable
             Detail = $"collegato a un runtime già in ascolto su http://127.0.0.1:{dashboardPort}/";
         }
 
+        LastFailure = null;
         _logger.Operator($"Collegato al runtime esistente sulla porta {dashboardPort}.");
     }
 
@@ -115,7 +120,8 @@ public sealed class RuntimeSession : IAsyncDisposable
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or FormatException)
             {
-                return SnapshotView.Empty($"runtime_unreachable: {ex.GetType().Name}");
+                LastFailure = $"runtime_unreachable: {ex.GetType().Name}";
+                return SnapshotView.Empty(LastFailure);
             }
         }
 

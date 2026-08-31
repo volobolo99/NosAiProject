@@ -71,6 +71,8 @@
           <Button x:Name="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
+          <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
+          <Button x:Name="NavSecurity" Style="{StaticResource NavButton}" Content="Sicurezza" Click="OnNav"/>
           <Button x:Name="NavSuites" Style="{StaticResource NavButton}" Content="Certificazione" Click="OnNav"/>
           <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Content="Impostazioni" Click="OnNav"/>
           <Button x:Name="NavLog" Style="{StaticResource NavButton}" Content="Diario" Click="OnNav"/>
@@ -86,8 +88,10 @@
 
       <DockPanel Margin="0,0,0,16">
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+          <Button Style="{StaticResource GhostButton}" Content="Apri cartella exe" Click="OnOpenExeFolder" Margin="0,0,8,0"/>
           <Button Style="{StaticResource LiveButton}" Content="Avvia runtime" Click="OnStartRuntime" Margin="0,0,8,0"/>
-          <Button Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopRuntime" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource GhostButton}" Content="Ricollega" Click="OnReconnect" Margin="0,0,8,0"/>
+          <Button x:Name="StopButton" Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopRuntime" Margin="0,0,8,0"/>
           <Button Style="{StaticResource DangerButton}" Content="STOP" Click="OnEmergencyStop"/>
         </StackPanel>
         <StackPanel>
@@ -100,6 +104,33 @@
         <!-- Overview -->
         <ScrollViewer x:Name="ViewOverview" VerticalScrollBarVisibility="Auto">
           <StackPanel>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="MODALITÀ"/>
+                <TextBlock x:Name="OverviewMode" FontSize="18" FontWeight="SemiBold" Text="OFFLINE"/>
+                <TextBlock x:Name="OverviewModeHint" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"
+                           Text="Nessun runtime. Premere Avvia, oppure lasciare l'auto-avvio attivo."/>
+              </StackPanel>
+            </Border>
+            <UniformGrid Columns="2" Margin="0,0,0,14">
+              <Border Style="{StaticResource CardChrome}" Margin="0,0,10,0">
+                <StackPanel>
+                  <TextBlock Style="{StaticResource CardLabel}" Text="CANALE (QUESTO BUILD)"/>
+                  <TextBlock x:Name="OverviewWire" FontSize="18" FontWeight="SemiBold" Text="v3"/>
+                  <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"
+                             Text="Wire v3. Un APK v2 viene rifiutato all'header. Non è una lettura dal filo."/>
+                </StackPanel>
+              </Border>
+              <Border Style="{StaticResource CardChrome}">
+                <StackPanel>
+                  <TextBlock Style="{StaticResource CardLabel}" Text="SLOT GUARD"/>
+                  <TextBlock x:Name="OverviewSlot" FontSize="18" FontWeight="SemiBold" Text="UNKNOWN"/>
+                  <TextBlock x:Name="OverviewSlotHint" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+            </UniformGrid>
+            <TextBlock x:Name="OverviewPhoneReminder" Foreground="{StaticResource WarnBrush}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+            <TextBlock x:Name="OverviewRecovery" Foreground="{StaticResource DangerBrush}" Margin="0,0,0,14" TextWrapping="Wrap"/>
             <UniformGrid Columns="4" Margin="0,0,0,14">
               <Border Style="{StaticResource CardChrome}" Margin="0,0,10,0">
                 <StackPanel>
@@ -141,21 +172,41 @@
 
         <ScrollViewer x:Name="ViewPhone" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
           <StackPanel>
-            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Abbinamento via USB. Nessun indirizzo da digitare: il telefono trova il PC in discovery. Lo handshake v2 è fail-closed senza pin.</TextBlock>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Abbinamento via USB. Nessun indirizzo da digitare: il telefono trova il PC in discovery. Questo build parla wire v3: un APK v2 viene rifiutato all'header. Senza Python l'abbinamento non è riuscito.</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
               <Button Style="{StaticResource PrimaryButton}" Content="Abbina telefono" Click="OnPairPhone" Margin="0,0,8,0"/>
               <Button Style="{StaticResource GhostButton}" Content="Solo raccogli chiave" Click="OnEnrollPhone"/>
             </StackPanel>
+            <TextBlock x:Name="PairingStatus" Foreground="{StaticResource WarnBrush}" Margin="0,0,0,16" TextWrapping="Wrap"/>
             <ItemsControl x:Name="GuardFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 
         <ScrollViewer x:Name="ViewPerception" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
           <StackPanel>
-            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">DXGI cattura pixel LIVE dal desktop. Se la sessione non è interattiva, la sorgente resta UNKNOWN: nessun fotogramma inventato.</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">ADR-0012: barra HP/MP da schermo, DERIVED solo se la firma della barra combacia, altrimenti UNKNOWN. I numeri restano UNKNOWN finché i glifi non sono addestrati. Il probe non entra nello snapshot Gate 1. I ritagli finiscono in data/perception/crops (gitignored) per controllare la ROI.</TextBlock>
             <Button Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Esegui probe DXGI" Click="OnDxgiProbe"/>
-            <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Hardware osservato</TextBlock>
+            <TextBlock x:Name="PerceptionSummary" Foreground="{StaticResource MutedBrush}" Margin="0,10,0,8" TextWrapping="Wrap"
+                       Text="Nessun probe in questa sessione. Il risultato non entra nello snapshot Gate 1."/>
+            <ItemsControl x:Name="PerceptionFields" ItemTemplate="{StaticResource FieldTemplate}" Margin="0,0,0,16"/>
+            <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Hardware osservato</TextBlock>
             <ItemsControl x:Name="HardwareFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewNetwork" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Porte di questa console e ascolto su 127.0.0.1. Non è uno scan LAN e non è politica di sicurezza.</TextBlock>
+            <ItemsControl x:Name="NetworkFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
+            <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewSecurity" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Osserva i file di identità. Il wrap DPAPI lo fa il runtime (ADR-0010). UNKNOWN se un file manca.</TextBlock>
+            <ItemsControl x:Name="SecurityFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 
@@ -185,11 +236,14 @@
         </ScrollViewer>
 
         <DockPanel x:Name="ViewLog" Visibility="Collapsed">
-          <Button DockPanel.Dock="Top" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Svuota diario" Click="OnClearLog" Margin="0,0,0,8"/>
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Style="{StaticResource GhostButton}" Content="Svuota diario" Click="OnClearLog" Margin="0,0,8,0"/>
+            <Button Style="{StaticResource GhostButton}" Content="Apri diario su disco" Click="OnOpenOperatorLog"/>
+          </StackPanel>
           <Border Background="{StaticResource CardBrush}" CornerRadius="10" Padding="12">
             <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
-              <TextBox x:Name="LogBox" IsReadOnly="True" BorderThickness="0" Background="Transparent"
-                       FontFamily="Cascadia Mono, Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True"/>
+              <RichTextBox x:Name="LogBox" IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                           FontFamily="Cascadia Mono, Consolas" FontSize="12" IsDocumentEnabled="True"/>
             </ScrollViewer>
           </Border>
         </DockPanel>
