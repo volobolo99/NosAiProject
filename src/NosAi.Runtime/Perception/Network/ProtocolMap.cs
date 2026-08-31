@@ -110,7 +110,8 @@ public sealed record ProtocolMap(
     FramingSpec Framing,
     FieldSpec OpcodeField,
     ImmutableArray<MessageSpec> Messages,
-    DataSourceKind Confidence = DataSourceKind.Derived)
+    DataSourceKind Confidence = DataSourceKind.Derived,
+    PlayerVitalsSpec? PlayerVitals = null)
 {
     public void Validate()
     {
@@ -125,9 +126,52 @@ public sealed record ProtocolMap(
                 throw new InvalidDataException($"Protocol map '{Name}': opcode {message.Opcode} is mapped twice.");
             message.Validate();
         }
+        if (PlayerVitals is { } vitals)
+        {
+            vitals.Validate(Name);
+            if (seen.Contains(vitals.Opcode))
+                throw new InvalidDataException(
+                    $"Protocol map '{Name}': opcode {vitals.Opcode} is mapped both as a message and as the player vitals.");
+        }
         if (Confidence is DataSourceKind.Live)
             throw new InvalidDataException(
                 "A protocol map is never LIVE: it describes how to read observations, it is not one.");
+    }
+}
+
+/// <summary>
+/// Where the controlled character's own vitals are, in absolute units.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Optional, and absent from every map until an operator finds the message that
+/// carries these numbers and correlates the offsets against values read off the
+/// client's own screen. Until then Gate 3 keeps refusing to plan, which is the
+/// correct outcome and the only honest one: HP as a ratio is not HP.
+/// </para>
+/// <para>
+/// <see cref="HasTarget"/> and <see cref="InCombat"/> are flags read as non-zero.
+/// They are separately optional because a map may well pin the vitals long before
+/// anyone works out where the combat state lives, and a partial map should give
+/// what it has rather than nothing.
+/// </para>
+/// </remarks>
+public sealed record PlayerVitalsSpec(
+    long Opcode,
+    FieldSpec Hp,
+    FieldSpec MaxHp,
+    FieldSpec Mp,
+    FieldSpec? HasTarget = null,
+    FieldSpec? InCombat = null)
+{
+    public void Validate(string mapName)
+    {
+        string owner = $"{mapName}.playerVitals";
+        Hp.Validate(owner, nameof(Hp));
+        MaxHp.Validate(owner, nameof(MaxHp));
+        Mp.Validate(owner, nameof(Mp));
+        HasTarget?.Validate(owner, nameof(HasTarget));
+        InCombat?.Validate(owner, nameof(InCombat));
     }
 }
 
@@ -185,6 +229,9 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
         }
 
+        if (_map.PlayerVitals is { } vitalsSpec && (long)rawOpcode == vitalsSpec.Opcode)
+            return DecodeVitals(message, vitalsSpec, packetSource);
+
         if (!_byOpcode.TryGetValue((long)rawOpcode, out MessageSpec? spec))
         {
             // Not knowing an opcode is normal and honest; guessing it is not.
@@ -230,6 +277,63 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
         }
 
         return new DecodedObservations(sightings, events);
+    }
+
+    /// <summary>
+    /// Reads the controlled character's vitals out of the message the map names.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Every check below exists because the failure it catches produces a number
+    /// rather than an error. A misplaced offset yields bytes that read perfectly
+    /// well as an integer, and the only thing separating a real HP from a stray
+    /// one is whether it makes sense as HP.
+    /// </para>
+    /// <para>
+    /// So: max HP of zero or less is not a character, it is the wrong offset —
+    /// and it would also make every ratio computed downstream a division by zero.
+    /// HP above max HP is the same evidence. Negative HP is not a corpse, it is a
+    /// field read as signed that is not. None of these are clamped: clamping is
+    /// how a wrong map goes on producing plausible readings forever.
+    /// </para>
+    /// </remarks>
+    private DecodedObservations DecodeVitals(
+        ReadOnlySpan<byte> message, PlayerVitalsSpec spec, DataSourceKind packetSource)
+    {
+        if (!spec.Hp.TryRead(message, out double hp)
+            || !spec.MaxHp.TryRead(message, out double maxHp)
+            || !spec.Mp.TryRead(message, out double mp))
+        {
+            _malformedMessages++;
+            return DecodedObservations.Empty;
+        }
+
+        if (maxHp <= 0 || hp < 0 || hp > maxHp + 0.5 || mp < 0)
+        {
+            _malformedMessages++;
+            return DecodedObservations.Empty;
+        }
+
+        bool? hasTarget = null;
+        if (spec.HasTarget is { } targetField)
+        {
+            if (!targetField.TryRead(message, out double flag)) { _malformedMessages++; return DecodedObservations.Empty; }
+            hasTarget = Math.Abs(flag) > 0.5;
+        }
+
+        bool? inCombat = null;
+        if (spec.InCombat is { } combatField)
+        {
+            if (!combatField.TryRead(message, out double flag)) { _malformedMessages++; return DecodedObservations.Empty; }
+            inCombat = Math.Abs(flag) > 0.5;
+        }
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            new PlayerVitals(
+                (int)hp, (int)maxHp, (int)mp, hasTarget, inCombat,
+                Weaker(packetSource, _map.Confidence)));
     }
 
     private static DataSourceKind Weaker(DataSourceKind a, DataSourceKind b)

@@ -42,15 +42,41 @@ public sealed record EntitySighting(long EntityId, string Kind, double X, double
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>
 public sealed record GameEvent(GameEventKind Kind, long EntityId, string Descriptor, DataSourceKind Source);
 
+/// <summary>
+/// The controlled character's own vitals, in absolute units.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Kept apart from <see cref="EntitySighting"/>, which carries an HP
+/// <i>ratio</i>. A ratio is what a sighting of somebody else yields; it is not
+/// enough to plan on. Gate 3 asks for HP and max HP as numbers, and a ratio
+/// cannot be turned into them without inventing one of the two.
+/// </para>
+/// <para>
+/// So these come from their own message in the operator's map, and when the map
+/// does not describe that message they are simply absent. Absent is the honest
+/// answer: it makes Gate 3 refuse to plan, which is correct, where a manufactured
+/// max HP would have made it plan on a number nobody observed.
+/// </para>
+/// </remarks>
+public sealed record PlayerVitals(
+    int Hp,
+    int MaxHp,
+    int Mp,
+    bool? HasTarget,
+    bool? InCombat,
+    DataSourceKind Source);
+
 /// <summary>The observations decoded from one packet.</summary>
 public sealed record DecodedObservations(
     ImmutableArray<EntitySighting> Sightings,
-    ImmutableArray<GameEvent> Events)
+    ImmutableArray<GameEvent> Events,
+    PlayerVitals? Vitals = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
 
-    public bool IsEmpty => Sightings.IsEmpty && Events.IsEmpty;
+    public bool IsEmpty => Sightings.IsEmpty && Events.IsEmpty && Vitals is null;
 }
 
 /// <summary>
@@ -84,7 +110,10 @@ public sealed record NetworkObservationReport(
     long ScopedOutPackets,
     long DecodedPackets,
     long UndecodablePackets,
-    DataSourceKind Source);
+    DataSourceKind Source,
+    // The most recent vitals decoded in this batch, or null when the map does not
+    // describe them. Null is not "full health": it is "nobody said".
+    PlayerVitals? Vitals = null);
 
 /// <summary>
 /// Pulls packets from a source, keeps only the game's own traffic, decodes them
@@ -121,6 +150,7 @@ public sealed class GameTrafficObserver
         var sightings = ImmutableArray.CreateBuilder<EntitySighting>();
         var events = ImmutableArray.CreateBuilder<GameEvent>();
         long observed = 0, scopedOut = 0, decoded = 0, undecodable = 0;
+        PlayerVitals? vitals = null;
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
@@ -146,6 +176,9 @@ public sealed class GameTrafficObserver
             decoded++;
             sightings.AddRange(result.Sightings);
             events.AddRange(result.Events);
+            // Last one wins: within a batch the later message is the more recent
+            // state, and keeping the first would report a stale HP as current.
+            if (result.Vitals is not null) vitals = result.Vitals;
         }
 
         return new NetworkObservationReport(
@@ -153,7 +186,8 @@ public sealed class GameTrafficObserver
             sightings.ToImmutable(),
             events.ToImmutable(),
             observed, scopedOut, decoded, undecodable,
-            _source.Source);
+            _source.Source,
+            vitals);
     }
 
     /// <summary>

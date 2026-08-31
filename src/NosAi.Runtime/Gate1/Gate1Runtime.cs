@@ -915,9 +915,16 @@ public sealed class Gate1RuntimeSnapshotProvider
     private readonly GuardAiNetworkChannel _channel;
     private readonly LiveHardwareTelemetry _hardware;
     private readonly RealClientConnector? _client;
+    private readonly IGameplayProvider _gameplay;
     private readonly Func<RuntimeHealthStatus> _health;
     private readonly string _correlationId;
 
+    /// <param name="gameplay">
+    /// Reads the game's own state. Optional, and absent by default: no provider
+    /// means the snapshot keeps publishing gameplay as UNKNOWN with a reason,
+    /// which is exactly what it published before one existed. Attaching a provider
+    /// is the operator's decision and carries the operator's risk (ADR-0014).
+    /// </param>
     public Gate1RuntimeSnapshotProvider(
         RuntimeComponents runtime,
         IWorldModel worldModel,
@@ -925,13 +932,15 @@ public sealed class Gate1RuntimeSnapshotProvider
         LiveHardwareTelemetry? hardware = null,
         RealClientConnector? client = null,
         Func<RuntimeHealthStatus>? health = null,
-        string? correlationId = null)
+        string? correlationId = null,
+        IGameplayProvider? gameplay = null)
     {
         _runtime = runtime;
         _worldModel = worldModel;
         _channel = channel;
         _hardware = hardware ?? new LiveHardwareTelemetry(new FallbackHardwareProbe());
         _client = client;
+        _gameplay = gameplay ?? UnavailableGameplayProvider.Instance;
         // No health source means the state is not established. Bootstrapping, not
         // Healthy: an unreported health must never read as a passing one.
         _health = health ?? (() => RuntimeHealthStatus.Bootstrapping);
@@ -954,6 +963,20 @@ public sealed class Gate1RuntimeSnapshotProvider
             Warning: "No RealClientConnector is bound to this snapshot provider.",
             FailureReason: "connector_not_bound");
         _ = _worldModel.Current;
+
+        // A provider that throws must not take the snapshot down with it: the
+        // snapshot is how the operator finds out something is wrong, so it has to
+        // survive the thing that went wrong.
+        GameplayObservation gameplay;
+        try
+        {
+            gameplay = _gameplay.Observe();
+        }
+        catch (Exception ex)
+        {
+            gameplay = GameplayObservation.Unobserved($"gameplay_provider_failed:{ex.GetType().Name}");
+        }
+
         return Gate1SnapshotFactory.Create(
             _health(),
             _correlationId,
@@ -961,7 +984,8 @@ public sealed class Gate1RuntimeSnapshotProvider
             client,
             _channel.GetSnapshot(),
             _runtime.SafetyPolicy,
-            hardware.FailureReason);
+            hardware.FailureReason,
+            gameplay);
     }
 
     public object GetSnapshot() => Capture().ToWire();

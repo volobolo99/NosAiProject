@@ -58,7 +58,13 @@ public sealed record Gate1ClientView(
     ClassifiedValue<bool> NetworkConnected,
     ClassifiedValue<string> ServerEndpoint,
     ClassifiedValue<string> ConnectionState,
-    ClassifiedValue<int?> RemoteSessionCount);
+    ClassifiedValue<int?> RemoteSessionCount,
+    // The same reading as GameplayBaseline, kept typed for consumers inside the
+    // process. GameplayBaseline is its wire form and stays the only thing
+    // serialised; two serialised copies would be two things to keep in step.
+    // Null means no provider is attached, which is not the same as a provider
+    // that is attached and reading nothing.
+    GameplayObservation? Gameplay = null);
 
 public sealed record Gate1GuardSessionView(
     ClassifiedValue<bool> Connected,
@@ -153,13 +159,27 @@ public static class Gate1SnapshotFactory
         ClientBaselineSnapshot client,
         Gate1ConnectionSnapshot guard,
         RuntimeSafetyPolicy safety,
-        string? warning = null)
+        string? warning = null,
+        GameplayObservation? gameplay = null)
     {
         var now = DateTime.UtcNow;
         var clientObserved = client.ObservedAtUtc;
-        var gameplayUnknown = ClassifiedValue<object>.Unknown(
-            "gameplay_provider_not_available",
-            "Gate 1 does not extract gameplay memory. Process/window/title are the current client baseline.");
+
+        // The key is the one gate1.snapshot.v1 already published, so a reader that
+        // does not know about the inner fields sees what it always saw. With no
+        // provider attached the value stays UNKNOWN with the same reason as before;
+        // with one attached it carries a per-field classified reading, and a field
+        // the provider could not read stays UNKNOWN inside it rather than becoming
+        // a zero.
+        ClassifiedValue<object> gameplayBaseline = gameplay is null
+            ? ClassifiedValue<object>.Unknown(
+                "gameplay_provider_not_available",
+                "Gate 1 does not extract gameplay memory. Process/window/title are the current client baseline.")
+            : gameplay.HasVitals
+                ? ClassifiedValue<object>.Derived(gameplay.ToWire(), gameplay.ObservedAtUtc)
+                : ClassifiedValue<object>.Unknown(
+                    gameplay.UnusableReason ?? "gameplay_incomplete",
+                    "A gameplay provider is attached but could not read the vitals.");
 
         var network = client.Network;
 
@@ -192,7 +212,8 @@ public static class Gate1SnapshotFactory
                     : ClassifiedValue<bool>.Unknown(
                         client.WindowHandle == IntPtr.Zero ? "window_not_attached" : "window_visibility_unavailable"),
                 Availability: ClassifiedValue<string>.Live(client.Availability.ToString(), clientObserved),
-                GameplayBaseline: gameplayUnknown,
+                GameplayBaseline: gameplayBaseline,
+                Gameplay: gameplay,
                 Status: client.Status,
                 Warning: client.Warning,
                 FailureReason: client.FailureReason,

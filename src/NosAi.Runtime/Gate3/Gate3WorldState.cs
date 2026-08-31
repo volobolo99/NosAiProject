@@ -97,17 +97,25 @@ public interface IWorldStateSource
 /// </summary>
 /// <remarks>
 /// <para>
-/// This is the adapter that joins Gate 3 to the real runtime. Today it returns
-/// UNKNOWN, because the Gate 1 snapshot classifies gameplay as
-/// <c>gameplay_provider_not_available</c>: the runtime observes the client's
-/// process, window and title, not its HP.
+/// This is the adapter that joins Gate 3 to the real runtime. It reads the
+/// gameplay observation the Gate 1 snapshot carries and converts it field by
+/// field, preserving each field's classification: what the provider read stays
+/// read, what it could not stays UNKNOWN with the provider's own reason.
 /// </para>
 /// <para>
-/// That is the correct result, not a stub. Gate 3 cannot plan against the live
-/// game until something can read the game, and wiring the adapter now makes the
-/// dependency explicit and enforced instead of leaving it to be discovered by
-/// someone feeding the planner numbers by hand. The moment a gameplay provider
-/// exists, this adapter starts returning LIVE and nothing else has to change.
+/// With no provider attached — the default — every field is UNKNOWN with
+/// <c>gameplay_provider_not_available</c> and Gate 3 refuses to plan, exactly as
+/// before. That is the correct result, not a stub: Gate 3 cannot plan against the
+/// live game until something reads the game, and the refusal is what stops
+/// someone feeding the planner numbers by hand.
+/// </para>
+/// <para>
+/// A partially mapped provider is the interesting case and it is handled the same
+/// way. If the operator's protocol map pins HP and MP but not the combat flag,
+/// three fields carry values and two say <c>combat_flag_not_mapped</c>, and
+/// <see cref="Gate3WorldState.IsPlannable"/> is false because of the two. Filling
+/// them with false to get a plannable state is precisely the invention this chain
+/// exists to prevent.
 /// </para>
 /// </remarks>
 public sealed class Gate1SnapshotWorldStateSource : IWorldStateSource
@@ -136,8 +144,19 @@ public sealed class Gate1SnapshotWorldStateSource : IWorldStateSource
             return Task.FromResult(Gate3WorldState.Unobserved(
                 snapshot.Client.Attached.FailureReason ?? "client_not_attached"));
 
-        ClassifiedValue<object> gameplay = snapshot.Client.GameplayBaseline;
-        return Task.FromResult(Gate3WorldState.Unobserved(
-            gameplay.FailureReason ?? "gameplay_provider_not_available"));
+        if (snapshot.Client.Gameplay is not { } gameplay)
+        {
+            // No provider bound. The snapshot's own reason is preferred over a
+            // literal here so the two can never disagree about why.
+            return Task.FromResult(Gate3WorldState.Unobserved(
+                snapshot.Client.GameplayBaseline.FailureReason ?? "gameplay_provider_not_available"));
+        }
+
+        return Task.FromResult(new Gate3WorldState(
+            Hp: gameplay.Hp,
+            MaxHp: gameplay.MaxHp,
+            Mp: gameplay.Mp,
+            HasTarget: gameplay.HasTarget,
+            InCombat: gameplay.InCombat));
     }
 }
