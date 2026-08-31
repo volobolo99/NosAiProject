@@ -211,22 +211,47 @@ namespace NosAi.Storage.Infrastructure
     /// <summary>
     /// Parametri di configurazione della policy SQLite centralizzata sul volume dedicato.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Non è la policy autorevole.</b> Lo è
+    /// <see cref="NosAi.Runtime.Gate2.SqliteStoragePolicy"/>, che è quella
+    /// realmente applicata a una connessione da <c>Gate2Sqlite.Configure</c> e che
+    /// ha parità con <c>nosai/storage/sqlite_policy.py</c>. Questa classe genera
+    /// uno <i>script</i> di PRAGMA: descrive la configurazione, non la impone, e
+    /// il suo test verificava soltanto che la stringa contenesse le righe attese.
+    /// </para>
+    /// <para>
+    /// L'audit del 2026-08-30 ha registrato le due implementazioni come debito da
+    /// risolvere insieme, e infatti erano già divergenti: qui la cache era
+    /// <c>64000</c> KiB contro i <c>65536</c> di Gate 2 e di Python, mancava
+    /// <c>foreign_keys=ON</c> — che è ciò che fa fallire un inserimento con una
+    /// chiave esterna rotta invece di accettarlo — e mancava
+    /// <c>journal_size_limit</c>. Nessuna delle due implementazioni è stata
+    /// cancellata: i valori vengono ora letti da Gate 2, così non possono più
+    /// divergere in silenzio, e il modulo resta di chi lo ha scritto.
+    /// </para>
+    /// </remarks>
     public sealed class CentralizedSqlitePolicy
     {
-        public string JournalMode { get; } = "WAL";
-        public string SynchronousMode { get; } = "FULL";
+        public string JournalMode { get; } = NosAi.Runtime.Gate2.SqliteStoragePolicy.JournalMode;
+        public string SynchronousMode { get; } = NosAi.Runtime.Gate2.SqliteStoragePolicy.Synchronous;
         public int BusyTimeoutMs { get; } = 5000;
-        public int CacheSizeKiloBytes { get; } = 64000; // 64 MB di cache in RAM
+        public int CacheSizeKiloBytes { get; } = NosAi.Runtime.Gate2.SqliteStoragePolicy.CacheSizeKiB;
+        public long JournalSizeLimitBytes { get; } = NosAi.Runtime.Gate2.SqliteStoragePolicy.JournalSizeLimitBytes;
         public int WalAutoCheckpointPages { get; } = 1000; // 4 MB WAL limit prima del checkpoint automatico
         public bool EnableIncrementalVacuum { get; } = true;
 
         public string BuildPragmaInitializationScript()
         {
             var sb = new StringBuilder();
+            // Prima riga, come in sqlite_policy.py: senza questa un inserimento con
+            // una chiave esterna inesistente riesce, e il danno si scopre a lettura.
+            sb.AppendLine("PRAGMA foreign_keys = ON;");
             sb.AppendLine($"PRAGMA journal_mode = {JournalMode};");
             sb.AppendLine($"PRAGMA synchronous = {SynchronousMode};");
             sb.AppendLine($"PRAGMA busy_timeout = {BusyTimeoutMs};");
             sb.AppendLine($"PRAGMA cache_size = -{CacheSizeKiloBytes};");
+            sb.AppendLine($"PRAGMA journal_size_limit = {JournalSizeLimitBytes};");
             sb.AppendLine($"PRAGMA wal_autocheckpoint = {WalAutoCheckpointPages};");
             if (EnableIncrementalVacuum)
             {

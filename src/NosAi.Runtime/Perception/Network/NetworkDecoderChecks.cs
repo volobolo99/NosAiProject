@@ -33,7 +33,7 @@ public static partial class NetworkObservationTestRunner
 
     private static bool TestReassemblerJoinsSplitMessages()
     {
-        var reassembler = new TcpStreamReassembler(TestFraming);
+        var reassembler = new MessageFramer(TestFraming);
         byte[] message = Framed(0x01, 1, 2, 3, 4);
 
         // A message split across two TCP segments must not decode as two.
@@ -48,7 +48,7 @@ public static partial class NetworkObservationTestRunner
 
     private static bool TestReassemblerSplitsCoalescedMessages()
     {
-        var reassembler = new TcpStreamReassembler(TestFraming);
+        var reassembler = new MessageFramer(TestFraming);
         byte[] first = Framed(0x01, 9), second = Framed(0x02, 8, 7), third = Framed(0x03);
 
         // Three messages arriving in one segment, plus a trailing partial one.
@@ -63,7 +63,7 @@ public static partial class NetworkObservationTestRunner
 
     private static bool TestReassemblerFailsClosedOnNonsense()
     {
-        var reassembler = new TcpStreamReassembler(TestFraming with { MaxMessageLength = 128 });
+        var reassembler = new MessageFramer(TestFraming with { MaxMessageLength = 128 });
         // A length far beyond the cap means the framing is wrong or the capture
         // started mid-message. Guessing a resync point would fabricate messages.
         var messages = reassembler.Push(new byte[] { 0xFF, 0xFF, 0x01 });
@@ -74,7 +74,7 @@ public static partial class NetworkObservationTestRunner
             && Resets(reassembler);
     }
 
-    private static bool Resets(TcpStreamReassembler reassembler)
+    private static bool Resets(MessageFramer reassembler)
     {
         reassembler.Reset();
         return !reassembler.IsDesynchronised && reassembler.Push(Framed(0x01, 1)).Count == 1;

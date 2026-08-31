@@ -1,7 +1,7 @@
 // ============================================================================
 // Progetto: NosAi — Runtime di Automazione Controllata
 // Versione: 1.0 Beta
-// Percezione — Riassemblaggio dello stream TCP in messaggi applicativi
+// Percezione — Framing dello stream TCP in messaggi applicativi
 // ============================================================================
 //
 // TCP è uno stream, non un canale a messaggi: un pacchetto osservato può
@@ -37,9 +37,23 @@ public sealed record FramingSpec(
 }
 
 /// <summary>
-/// Reassembles a single TCP direction into whole application messages.
+/// Frames a single TCP direction's byte stream into whole application messages.
 /// </summary>
 /// <remarks>
+/// <para>
+/// This used to be called <c>TcpStreamReassembler</c>, which is also the name of
+/// <c>NosAi.LiveIntegration.Capture.TcpStreamReassembler</c>. The two were never
+/// the same thing and neither was redundant, but sharing a name across namespaces
+/// invited exactly the drift the audit of 2026-08-30 warned about: two classes
+/// that look interchangeable in a call site and are not.
+/// </para>
+/// <para>
+/// They are consecutive layers. The capture one turns TCP <i>segments</i> into an
+/// ordered contiguous byte stream — sequence numbers, out-of-order arrival,
+/// overlapping retransmissions, wrap. This one takes that stream and cuts it into
+/// messages. Run this one on raw arrival-order payloads and it frames nonsense;
+/// run that one and stop there and there are no messages at all.
+/// </para>
 /// <para>
 /// One instance per direction: inbound and outbound are independent streams and
 /// mixing them would interleave two byte sequences into nonsense.
@@ -52,7 +66,7 @@ public sealed record FramingSpec(
 /// a resynchronisation guess would fabricate observations.
 /// </para>
 /// </remarks>
-public sealed class TcpStreamReassembler
+public sealed class MessageFramer
 {
     private readonly FramingSpec _framing;
     private readonly List<byte> _buffer = new();
@@ -66,7 +80,7 @@ public sealed class TcpStreamReassembler
 
     public string? DesyncReason { get; private set; }
 
-    public TcpStreamReassembler(FramingSpec framing)
+    public MessageFramer(FramingSpec framing)
     {
         ArgumentNullException.ThrowIfNull(framing);
         framing.Validate();
