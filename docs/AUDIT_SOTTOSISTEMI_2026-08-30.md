@@ -81,6 +81,24 @@ La distinzione va tenuta ferma quando si aggiorna `STATO_IMPLEMENTAZIONE.md`:
 **Present** e **Integrated** non sono la stessa cosa, e oggi il documento non le
 separa.
 
+> **Aggiornamento 2026-08-31 — questo conteggio non va più aggiornato a mano.**
+>
+> I numeri qui sopra sono la fotografia del 30 agosto e restano tali: un audit
+> datato è un documento storico, non un cruscotto. La misura viva sta ora in
+> `src/NosAi.Runtime/Observability/ModuleReachability.cs`, dichiarata, e in
+> `tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs`, che la ricava dal
+> sorgente e fallisce quando le due divergono — un namespace non dichiarato, un
+> `Integrated` che nessuno raggiunge, o un `Unreferenced` rimasto su qualcosa
+> nel frattempo collegato. `--module-report` la stampa.
+>
+> La misura del 31 agosto è **8 246 righe su 30 134, il 27,4%**, più alta di
+> quella qui sopra perché conta anche il lavoro aggiunto dopo — motore di
+> cattura, database di riferimento e registro delle previsioni sono tutti
+> `Unreferenced`, e ciascuno dichiara perché.
+>
+> `SuiteOnly` è uno stato a sé proprio per la ragione registrata in questo
+> audit: una suite verde su un modulo che niente richiama non è integrazione.
+
 ## Duplicazione da risolvere: due implementazioni SQLite
 
 | | |
