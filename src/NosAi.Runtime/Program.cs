@@ -7,6 +7,7 @@ using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Gate4;
 using NosAi.Runtime.Gate5;
 using NosAi.Runtime.Observability;
+using NosAi.Runtime.Testing;
 
 namespace NosAi.Runtime;
 
@@ -14,38 +15,10 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        // Every certification suite the runtime carries, in one table.
-        //
-        // Pinning StartupObject makes every other Main in the assembly unreachable,
-        // so a subsystem's own entry point cannot run it. Seven suites were written
-        // and then never executed once for exactly that reason -- Gate 3 hid two
-        // defects behind it, and the Gate 4 suite sat failing. A table beats a
-        // ladder of ifs here: adding a runner without wiring it is the failure mode,
-        // and one list makes the omission obvious.
-        IReadOnlyDictionary<string, Func<Task<bool>>> suites = new Dictionary<string, Func<Task<bool>>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["--gate1-test"] = Gate1TestRunner.RunAllAsync,
-            ["--gate2-test"] = Gate2TestRunner.RunAllTestsAsync,
-            ["--gate3-test"] = Gate3TestRunner.RunAllTestsAsync,
-            ["--gate4-test"] = Gate4TestRunner.RunAllTestsAsync,
-            ["--gate5-test"] = Gate5TestRunner.RunAllTestsAsync,
-            ["--gate6-test"] = NosAi.Runtime.Gate6.Gate6ReleaseCertifier.RunFullReleaseCertificationAsync,
-            ["--host-test"] = NosAi.Host.MasterHostTestRunner.RunAllTestsAsync,
-            ["--storage-test"] = NosAi.Storage.Infrastructure.StorageInfrastructureTestRunner.RunAllTestsAsync,
-            ["--navigation-test"] = NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner.RunAllTestsAsync,
-            ["--gateway-test"] = NosAi.Network.Gateway.ControlPanelGatewayTestRunner.RunAllTestsAsync,
-            ["--raids-test"] = NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner.RunAllTestsAsync,
-            ["--miniland-test"] = NosAi.Miniland.Production.MinilandProductionTestRunner.RunAllTestsAsync,
-            ["--localai-test"] = NosAi.AI.LocalInference.LocalAiInferenceTestRunner.RunAllTestsAsync,
-            ["--hardware-test"] = NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner.RunAllTestsAsync,
-            ["--input-test"] = NosAi.Runtime.LowLevel.InputControlTestRunner.RunAllTestsAsync,
-            ["--netobserve-test"] = () => Task.FromResult(NosAi.Runtime.Perception.Network.NetworkObservationTestRunner.RunAll()),
-            // Synchronous RunAll(), adapted here rather than by editing their files.
-            ["--economy-test"] = () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll()),
-            ["--perception-test"] = () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll()),
-            ["--security-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
-            ["--crypto-test"] = () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()),
-        };
+        // Every certification suite the runtime carries lives in CertificationSuites,
+        // because the operator's test page needs the same list. Two copies would have
+        // diverged the first time a suite was added to one and not the other.
+        IReadOnlyDictionary<string, Func<Task<bool>>> suites = CertificationSuites.ByFlag;
 
         foreach (string argument in args)
         {
@@ -65,6 +38,28 @@ public static class Program
         // can say whether Desktop Duplication actually yields live pixels here.
         if (args.Any(a => string.Equals(a, "--dxgi-probe", StringComparison.OrdinalIgnoreCase)))
             return RunDxgiProbe();
+
+        // Real-environment probe for the input layer. --input-test certifies the
+        // contract against a recording backend; only a real desktop can say
+        // whether SendInput actually reaches the OS input queue.
+        if (args.Any(a => string.Equals(a, "--input-probe", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.LowLevel.InputEnvironmentProbe.RunConsoleProbe();
+
+        // Diagnostic read of the durable event log (M075-M076). Sola lettura: it
+        // reports how complete the audit trail is, gaps included, so a missing
+        // event is visible rather than silently absent. An optional path follows.
+        int eventLogFlag = Array.FindIndex(args, a => string.Equals(a, "--event-log-report", StringComparison.OrdinalIgnoreCase));
+        if (eventLogFlag >= 0)
+        {
+            string? path = eventLogFlag + 1 < args.Length && !args[eventLogFlag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[eventLogFlag + 1]
+                : null;
+            var health = NosAi.Runtime.Gate2.EventLogDiagnostics.Inspect(path);
+            Console.WriteLine(NosAi.Runtime.Gate2.EventLogDiagnostics.Describe(health));
+            // Exit non-zero when the log is present but incomplete, so a script can
+            // notice a lossy audit trail without parsing the text.
+            return health.Readable && health.IsComplete ? 0 : 1;
+        }
 
         var logger = new ConsoleRuntimeLogger();
         Gate1HostOptions options;
