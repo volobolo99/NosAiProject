@@ -244,14 +244,36 @@ domanda è arrivata per prima.
    in archivio ne contiene uno, perché nessuna cattura è stata fatta *attraversando un
    portale*. Una cattura etichettata durante un cambio di mappa dà l'id dalla sorgente che
    lo nomina, e diventa poi l'etichetta con cui corroborare qualunque offset di memoria.
-2. **Le 777 griglie come oracolo.** Un candidato in memoria è plausibile solo se esiste un
-   `.grid` con quell'id **e** le coordinate del personaggio cadono dentro le sue dimensioni.
-   È un filtro falsificabile su una scansione, non un'ipotesi: ripetuto su due mappe diverse
-   sopravvive un solo candidato. Non richiede cattura e usa dati che già esistono.
+2. **Le 777 griglie come oracolo** — comando `--find-mapid`. Un candidato in memoria è
+   plausibile solo se esiste un `.grid` con quell'id **e** le coordinate del personaggio
+   cadono dentro le sue dimensioni. È un filtro falsificabile su una scansione, non
+   un'ipotesi: si lancia, si attraversa un portale, si rilancia. Ripetuto su due mappe
+   diverse sopravvive un solo candidato. Non richiede cattura e usa dati che già esistono.
 
 Un puntatore a `+0x30` suggerisce che l'id stia dietro di esso. Seguirlo a offset piccoli è
 la terza via, ed è la peggiore: è indovinare due volte invece di una, e produce numeri
 plausibili prima di produrre quello giusto.
+
+**L'oracolo funziona, e ha lasciato un candidato solo** (`--find-mapid`, 1 settembre 2026).
+Ma il valore che restituisce è un **indirizzo assoluto**, costruito come
+`region.BaseAddress + offset` e stampato tale: `0x1DB2FF7C`, la stessa fascia di memoria del
+puntatore che aveva ingannato il tentativo precedente.
+
+**Un indirizzo non è un offset.** Un indirizzo di heap non sopravvive al riavvio del client:
+alla sessione successiva quella locazione non esiste più, o contiene qualcos'altro di
+plausibile — che è il caso peggiore, perché è quello che non fallisce. Ciò che l'oracolo ha
+dimostrato è *dove* sta il campo in questa istanza del processo, ed è il presupposto della
+risposta, non la risposta.
+
+La forma durevole è la distanza da una base che il runtime sa già risolvere: il player
+manager della catena confermata, che è la stessa base nel cui sistema di riferimento era
+stato ipotizzato `+0x30`. Si sottrae, e se la differenza è piccola e costante quello è
+l'offset.
+
+E la prova che distingue le due cose è una sola: **riavviare il client.** Un offset regge, un
+indirizzo no. Attraversare un portale corrobora che il campo sia il mapId; riavviare
+corrobora che ciò che si è scritto sia un offset. Sono due proprietà diverse e servono due
+prove diverse — `passes >= 2` copre la prima e nessuno copre ancora la seconda.
 
 *Testo precedente, superato dalla misura:*
 ~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della
