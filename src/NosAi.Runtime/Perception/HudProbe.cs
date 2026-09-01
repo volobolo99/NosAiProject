@@ -26,9 +26,41 @@ public static class HudProbe
     /// <summary>Frames to wait for. A still desktop can take a moment to produce one.</summary>
     private const int AcquireAttempts = 40;
 
-    public static int RunConsoleProbe(string? repoRoot = null)
+    /// <param name="processName">Client process to locate the client area from.</param>
+    public static int RunConsoleProbe(string? repoRoot = null, string processName = "NostaleClientX")
     {
         repoRoot ??= Directory.GetCurrentDirectory();
+
+        // Where the game actually draws. Without this the regions are fractions of
+        // the whole desktop, which is only the client area when the client is
+        // fullscreen -- T-03 measured the editor behind it instead.
+        PixelRect? clientArea = null;
+        if (OperatingSystem.IsWindows())
+        {
+            foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
+            {
+                using (process)
+                {
+                    ClientWindow? window = ClientWindowLocator.TryFind(process.Id, out string? why);
+                    if (window is null)
+                        continue;
+
+                    clientArea = window.ClientArea;
+                    Console.WriteLine(
+                        $"Client window: 0x{window.Handle.ToInt64():X} class={window.ClassName} " +
+                        $"client={window.ClientArea.Width}x{window.ClientArea.Height}" +
+                        $"@{window.ClientArea.X},{window.ClientArea.Y}");
+                    break;
+                }
+            }
+        }
+
+        if (clientArea is null)
+        {
+            Console.WriteLine($"Client window: not found for '{processName}'.");
+            Console.WriteLine("  Regions fall back to fractions of the whole frame, which is right only");
+            Console.WriteLine("  for a fullscreen client. A windowed one will read the wrong pixels.");
+        }
 
         if (!DxgiDesktopDuplicationSource.TryCreate(out DxgiDesktopDuplicationSource? capture, out var unavailable))
         {
@@ -49,7 +81,7 @@ public static class HudProbe
                     continue;
                 }
 
-                ScreenVitalObservation observation = new ScreenVitalReader().Read(frame);
+                ScreenVitalObservation observation = new ScreenVitalReader().Read(frame, clientArea: clientArea);
                 string? directory = HudCropWriter.TrySave(repoRoot, frame, observation);
 
                 Console.WriteLine($"Frame: {frame.Width}x{frame.Height} [{frame.Source.ToWire()}] after {attempt} attempt(s)");

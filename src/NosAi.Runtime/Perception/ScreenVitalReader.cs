@@ -30,12 +30,18 @@ public sealed class ScreenVitalReader
         _ocr = ocr;
     }
 
+    /// <param name="clientArea">
+    /// Where the game's client area sits inside the frame. Null means it fills the
+    /// frame, which is only true of a fullscreen client -- a windowed one measured
+    /// without this reads whatever is at those screen coordinates instead.
+    /// </param>
     public ScreenVitalObservation Read(
         CaptureFrame frame,
         ScreenBarFill? previousHpBar = null,
         ScreenBarFill? previousMpBar = null,
         ScreenVitalPair? previousHp = null,
-        ScreenVitalPair? previousMp = null)
+        ScreenVitalPair? previousMp = null,
+        PixelRect? clientArea = null)
     {
         ArgumentNullException.ThrowIfNull(frame);
 
@@ -55,7 +61,7 @@ public sealed class ScreenVitalReader
                 _ocr?.TrainedGlyphCount ?? 0);
         }
 
-        var regions = RoiSegmenter.Segment(frame.Width, frame.Height);
+        var regions = RoiSegmenter.Segment(frame.Width, frame.Height, clientArea);
         var hpRoi = Find(regions, RoiKind.PlayerHpBar).Rect;
         var mpRoi = Find(regions, RoiKind.PlayerMpBar).Rect;
 

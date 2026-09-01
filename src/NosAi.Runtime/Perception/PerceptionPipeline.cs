@@ -113,30 +113,71 @@ public enum RoiKind : byte { PlayerHpBar, PlayerMpBar, Minimap, TargetHpBar, Cha
 public sealed record RegionOfInterest(RoiKind Kind, PixelRect Rect);
 
 /// <summary>
-/// Maps frame dimensions to the fixed HUD regions. Proportional, so it holds
+/// Maps the client area to the fixed HUD regions. Proportional, so it holds
 /// across resolutions; every region is clamped inside the frame.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>The regions are fractions of the game's client area, not of the captured
+/// frame.</b> Those are the same rectangle only when the client fills the screen,
+/// and T-03 found what happens when it does not: a windowed client at 1024x768
+/// inside a 1920x1200 desktop put the HP region a thousand pixels away from the
+/// HUD, over the editor behind it. The reader then measured a real bar ratio of
+/// entirely the wrong pixels -- which is exactly the plausible-wrong-number that
+/// ADR-0012 rejects, arrived at through geometry instead of a bad offset.
+/// </para>
+/// <para>
+/// The fractions below were measured on the real client (1024x768 client area,
+/// window class <c>TNosTaleMainF</c>): the HP bar occupies x 115..237, y 28..38
+/// and the MP bar x 114..237, y 48..58. NosTale's HUD is at the <i>top</i> of its
+/// window; the previous values placed both bars at the bottom left, which is
+/// where a different game keeps them.
+/// </para>
+/// </remarks>
 public static class RoiSegmenter
 {
-    public static ImmutableArray<RegionOfInterest> Segment(int frameWidth, int frameHeight)
+    /// <summary>
+    /// Segments the HUD regions.
+    /// </summary>
+    /// <param name="frameWidth">Captured frame width, used for clamping.</param>
+    /// <param name="frameHeight">Captured frame height, used for clamping.</param>
+    /// <param name="clientArea">
+    /// Where the game's client area sits inside the frame. When null the client is
+    /// taken to fill the frame, which is right for a fullscreen client and wrong
+    /// for every windowed one -- so a caller that can locate the window should
+    /// pass it.
+    /// </param>
+    public static ImmutableArray<RegionOfInterest> Segment(
+        int frameWidth, int frameHeight, PixelRect? clientArea = null)
     {
         if (frameWidth <= 0 || frameHeight <= 0)
             throw new ArgumentOutOfRangeException(nameof(frameWidth));
 
+        PixelRect area = clientArea ?? new PixelRect(0, 0, frameWidth, frameHeight);
+        if (area.Width <= 0 || area.Height <= 0)
+            throw new ArgumentOutOfRangeException(nameof(clientArea), "The client area has no extent.");
+
         RegionOfInterest Roi(RoiKind kind, double x, double y, double w, double h)
         {
-            int rx = (int)Math.Round(x * frameWidth);
-            int ry = (int)Math.Round(y * frameHeight);
-            int rw = Math.Max(1, (int)Math.Round(w * frameWidth));
-            int rh = Math.Max(1, (int)Math.Round(h * frameHeight));
+            int rx = area.X + (int)Math.Round(x * area.Width);
+            int ry = area.Y + (int)Math.Round(y * area.Height);
+            int rw = Math.Max(1, (int)Math.Round(w * area.Width));
+            int rh = Math.Max(1, (int)Math.Round(h * area.Height));
+
+            // Clamped against the frame, not the client area: a window partly off
+            // the screen still yields a readable region for the part that is on it,
+            // and a region running past the frame would read whatever follows in
+            // the pixel buffer.
+            rx = Math.Clamp(rx, 0, Math.Max(0, frameWidth - 1));
+            ry = Math.Clamp(ry, 0, Math.Max(0, frameHeight - 1));
             rw = Math.Min(rw, frameWidth - rx);
             rh = Math.Min(rh, frameHeight - ry);
             return new RegionOfInterest(kind, new PixelRect(rx, ry, rw, rh));
         }
 
         return ImmutableArray.Create(
-            Roi(RoiKind.PlayerHpBar, 0.02, 0.92, 0.18, 0.02),
-            Roi(RoiKind.PlayerMpBar, 0.02, 0.95, 0.18, 0.02),
+            Roi(RoiKind.PlayerHpBar, 0.112, 0.036, 0.121, 0.015),
+            Roi(RoiKind.PlayerMpBar, 0.111, 0.062, 0.122, 0.015),
             Roi(RoiKind.Minimap, 0.84, 0.02, 0.14, 0.20),
             Roi(RoiKind.TargetHpBar, 0.40, 0.06, 0.20, 0.02),
             Roi(RoiKind.ChatLog, 0.02, 0.70, 0.30, 0.18));
