@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** 2026-08-30
-**Status:** ACTIVE
+**Status:** SUPERSEDED for new work as of 2026-09-01 (see `docs/adr/ADR-0015-adopt-roadmap-esecutiva-as-canonical-architecture.md`). Still the accurate description of the existing `NosAi.Runtime`/`NosAi.Protocol` implementation, which keeps building and keeps its tests; new work follows `docs/ROADMAP_ESECUTIVA.md` instead.
 
 ## 1. Purpose
 

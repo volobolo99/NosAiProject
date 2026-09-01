@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>NosAi.Host</RootNamespace>
+    <AssemblyName>NosAi.Host</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NosAi.Core\NosAi.Core.csproj" />
+    <ProjectReference Include="..\NosAi.Storage\NosAi.Storage.csproj" />
+    <ProjectReference Include="..\NosAi.Security\NosAi.Security.csproj" />
+    <ProjectReference Include="..\NosAi.Adapter\NosAi.Adapter.csproj" />
+  </ItemGroup>
+</Project>

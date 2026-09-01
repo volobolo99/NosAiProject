@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Windows-only: Win32ProcessAdapter is process/window P-Invoke. -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>NosAi.Adapter</RootNamespace>
+    <AssemblyName>NosAi.Adapter</AssemblyName>
+    <!-- AllowUnsafeBlocks is set for this project by the repository-root
+         Directory.Build.props (docs/ROADMAP_ESECUTIVA.md S:2.4: unsafe pointers
+         are needed here, and only here, for ReadProcessMemory). -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NosAi.Core\NosAi.Core.csproj" />
+  </ItemGroup>
+</Project>

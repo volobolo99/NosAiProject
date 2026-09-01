@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>NosAi.Storage</RootNamespace>
+    <AssemblyName>NosAi.Storage</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NosAi.Core\NosAi.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pinned exact version, already used by NosAi.Runtime (ADR-0015 S:1.6): reused, not reintroduced. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
+</Project>
