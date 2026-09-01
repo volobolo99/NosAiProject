@@ -245,6 +245,28 @@ ha trovato il difetto.
    calibrazioni già memorizzate sono state stimate nell'unità vecchia e vanno invalidate,
    non riusate.
 
+   **Applicata il 1 settembre 2026** — `app.manifest` con `PerMonitorV2` su `NosAi.Runtime`,
+   più `ClientWindowDpiProbe` e il comando `--window-probe`. Due cose emerse applicandola,
+   entrambe da chiudere in P2a:
+
+   - **Il regime di consapevolezza dipende da come si avvia il processo.** Il manifest è
+     incorporato nell'apphost: `NosAi.Runtime.exe` riporta `PerMonitorV2`, ma
+     `dotnet exec NosAi.Runtime.dll` gira sotto l'host `dotnet` e riporta `PerMonitor`.
+     Nessuno dei due è *unaware*, quindi l'unità di coordinate non cambia e non c'è un
+     danno immediato — ma il regime sotto cui una calibrazione è stata stimata è ora una
+     funzione del comando usato per lanciare, e niente la registra. **La calibrazione deve
+     portare con sé il regime sotto cui è stata stimata e rifiutarsi di essere riusata sotto
+     un altro.** Costa poco adesso e non si retrofitta dopo che le calibrazioni si sono
+     accumulate.
+   - **Il controllo che oggi invalida non può esprimere questo caso.**
+     `CalibratedScreenProjection` confronta larghezza e altezza del client
+     (`screen_projection_client_size_changed`). Su scala diversa dal 100 % il passaggio da
+     non consapevole a consapevole cambia quelle dimensioni, e il controllo scatta: è la
+     ragione per cui il cambio di manifest non produce silenziosamente una calibrazione
+     sbagliata. **Al 100 % le dimensioni non cambiano**, quindi una calibrazione stimata
+     prima del manifest verrebbe accettata dopo. È innocua solo perché al 100 % le due
+     unità coincidono: siamo protetti da una coincidenza, non da un controllo.
+
 3. ~~L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor?~~
    **Chiuso il 1 settembre 2026: l'epoca non esiste.** `ClientWindowLocator` è statico e
    senza stato: rilegge e restituisce un rect nuovo a ogni chiamata, senza conservare il

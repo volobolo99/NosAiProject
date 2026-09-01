@@ -102,11 +102,12 @@ d'ambiente mai dichiarata.
 | Contenuto | Chi |
 |---|---|
 | Decisione sull'unità di coordinate e sulla invalidazione delle calibrazioni memorizzate | Claude |
+| Registrazione del **regime di consapevolezza DPI** dentro la calibrazione, e rifiuto del riuso sotto un regime diverso: il manifest sta sull'apphost, quindi `dotnet exec` dà un regime diverso da `NosAi.Runtime.exe` | Claude |
 | `GeometryEpoch`: che cosa la fa incrementare, chi la possiede, come viaggia nell'envelope | Claude |
 | Osservazione di cambio DPI e cambio monitor, oltre a spostamento e ridimensionamento | Claude |
 | Sostituzione del campo `_geometry` mai aggiornato di `Win32ProcessAdapter` | Claude |
-| `app.manifest` con `PerMonitorV2` su `NosAi.Runtime` e `ApplicationManifest` nel csproj | Cursor |
-| Comando che stampa rect, dpi, monitor ed epoca corrente | Cursor |
+| ~~`app.manifest` con `PerMonitorV2` e `ApplicationManifest` nel csproj~~ **fatto** | Cursor |
+| ~~Comando che stampa rect, dpi, monitor~~ **fatto** (`--window-probe`); manca l'epoca | Cursor |
 | Test: cambio scala e spostamento fra monitor con scale diverse | Cursor |
 
 **DoD** — con il client su un monitor al 100 % e uno al 150 %, il rect letto è in pixel
