@@ -159,13 +159,13 @@ public static class ModuleReachability
         new("NosAi.Events.InstantBattle", ModuleReach.Unreferenced,
             "Instant Combat and timed events. No caller and no suite."),
 
-        new("NosAi.LiveIntegration.Capture", ModuleReach.Unreferenced,
+        new("NosAi.LiveIntegration.Capture", ModuleReach.Integrated,
             "The traffic capture engine: WinDivert source, IPv4/TCP parser, "
-            + "reassembly, .noscap record and replay, analyser. Complete and "
-            + "tested, and no production path constructs it — attaching a capture "
-            + "backend is the operator's decision under ADR-0014, and no operator "
-            + "surface makes it yet. WinDivert is also not installed, so no real "
-            + "traffic has ever been captured."),
+            + "reassembly, .noscap record and replay, analyser. Reached from "
+            + "Gate1ObservationChannel, which the bootstrap host builds when the "
+            + "operator names an endpoint with --observe-game. Attaching it stays "
+            + "the operator's decision under ADR-0014: with no endpoint the "
+            + "channel is not built and gameplay keeps reporting UNKNOWN."),
 
         new("NosAi.Raids.Orchestration", ModuleReach.Unreferenced,
             "A second raid module beside NosAi.Raids.Dodekatheon, and the one "

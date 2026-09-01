@@ -931,6 +931,7 @@ public sealed class Gate1RuntimeSnapshotProvider
     private readonly LiveHardwareTelemetry _hardware;
     private readonly RealClientConnector? _client;
     private readonly IGameplayProvider _gameplay;
+    private readonly Gate1ObservationChannel? _observation;
     private readonly Func<RuntimeHealthStatus> _health;
     private readonly string _correlationId;
 
@@ -948,14 +949,16 @@ public sealed class Gate1RuntimeSnapshotProvider
         RealClientConnector? client = null,
         Func<RuntimeHealthStatus>? health = null,
         string? correlationId = null,
-        IGameplayProvider? gameplay = null)
+        IGameplayProvider? gameplay = null,
+        Gate1ObservationChannel? observation = null)
     {
         _runtime = runtime;
         _worldModel = worldModel;
         _channel = channel;
         _hardware = hardware ?? new LiveHardwareTelemetry(new FallbackHardwareProbe());
         _client = client;
-        _gameplay = gameplay ?? UnavailableGameplayProvider.Instance;
+        _observation = observation;
+        _gameplay = gameplay ?? observation?.Provider ?? UnavailableGameplayProvider.Instance;
         // No health source means the state is not established. Bootstrapping, not
         // Healthy: an unreported health must never read as a passing one.
         _health = health ?? (() => RuntimeHealthStatus.Bootstrapping);
@@ -1000,7 +1003,8 @@ public sealed class Gate1RuntimeSnapshotProvider
             _channel.GetSnapshot(),
             _runtime.SafetyPolicy,
             hardware.FailureReason,
-            gameplay);
+            gameplay,
+            _observation?.Describe(gameplay) ?? Gate1GameObservationView.NotConfigured());
     }
 
     public object GetSnapshot() => Capture().ToWire();

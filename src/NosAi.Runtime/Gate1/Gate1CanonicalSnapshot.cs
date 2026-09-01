@@ -89,7 +89,11 @@ public sealed record Gate1CanonicalSnapshot(
     Gate1ClientView Client,
     Gate1GuardSessionView Guard,
     Gate1SafetyView Safety,
-    string? Warning)
+    string? Warning,
+    // Additive on v1: the world-channel observation surface. Unknown keys are
+    // ignored by older readers. Absent configuration is UNKNOWN with a reason,
+    // never a quiet zero.
+    Gate1GameObservationView GameObservation)
 {
     public object ToWire() => new
     {
@@ -146,7 +150,8 @@ public sealed record Gate1CanonicalSnapshot(
             requireClientHealthy = Safety.RequireClientHealthy.ToWire(),
             requireGuardApproval = Safety.RequireGuardApproval.ToWire(),
             executionMode = Safety.ExecutionMode.ToWire()
-        }
+        },
+        gameObservation = GameObservation.ToWire()
     };
 }
 
@@ -160,7 +165,8 @@ public static class Gate1SnapshotFactory
         Gate1ConnectionSnapshot guard,
         RuntimeSafetyPolicy safety,
         string? warning = null,
-        GameplayObservation? gameplay = null)
+        GameplayObservation? gameplay = null,
+        Gate1GameObservationView? gameObservation = null)
     {
         var now = DateTime.UtcNow;
         var clientObserved = client.ObservedAtUtc;
@@ -263,7 +269,8 @@ public static class Gate1SnapshotFactory
                         ? "enabled_by_operator"
                         : "disabled_by_operator",
                     now)),
-            Warning: warning);
+            Warning: warning,
+            GameObservation: gameObservation ?? Gate1GameObservationView.NotConfigured());
     }
 
     private static ClassifiedValue<string> ClassifyText(string? value, DateTime observedAtUtc, string missingReason)
