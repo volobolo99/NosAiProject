@@ -13,6 +13,10 @@
 
 ### Documentazione
 
+- Aggiunta la documentazione del controllo del personaggio: `CONTROLLO_PERSONAGGIO_ARCHITETTURA.md` (confine di dominio, canale di attuazione, invarianti `DOMAIN-xx`), `CONTROLLO_PERSONAGGIO_ATTUAZIONE.md` (commit point, occlusione, precedenza dell'operatore, griglia di mappa, finestre di verifica) e `CONTROLLO_PERSONAGGIO_ROADMAP.md` (ordine dei lavori e ripartizione Claude/Cursor).
+- Aggiunto `ADR-0019`: l'attuazione del controllo del personaggio avviene per input del sistema operativo. Scopre una scelta che `ADR-0014` aveva lasciato aperta e non revoca alcun permesso; l'evasione delle rilevazioni resta fuori come da `ADR-0014`.
+- Corretto `SOURCE_OF_TRUTH.md`: l'elenco degli ADR accettati si fermava a `ADR-0014` e ora copre fino a `ADR-0019`.
+- Registrato che la calpestabilità statica delle mappe è un dato del client e non un'inferenza percettiva, con la semantica dei bit di cella e la regola di invalidazione sulla build.
 - Documentazione principale resa italiana.
 - Aggiunti metadati, requisiti, strategia di test, sicurezza, contributi e glossario.
 - Consolidata l'architettura di sistema.

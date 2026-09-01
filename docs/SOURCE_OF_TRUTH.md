@@ -40,6 +40,11 @@ This index lists the documents that are authoritative for implementation, review
 - `ADR-0012` — comparison of gameplay observation sources and their failure modes (amended by ADR-0014; traffic capture and process memory reads are now implemented, **no gameplay provider is wired to a real client**)
 - `ADR-0013` — **superseded by ADR-0014**, kept for the record
 - `ADR-0014` — the operator chooses the data path: traffic capture, memory reads and client control are available; Safety and classification still bind
+- `ADR-0015` — adopt `ROADMAP_ESECUTIVA` as the canonical architecture
+- `ADR-0016` — planning and acting on partial observation: the planner skips every rule that reads an `UNKNOWN` fact
+- `ADR-0017` — the wire teaches the screen to read: network readings label the HUD glyph atlas
+- `ADR-0018` — the screen establishes `HasTarget`, the wire confirms it and never creates it
+- `ADR-0019` — operating system input is the actuation channel for character control (scopes a choice ADR-0014 left open; revokes nothing)
 
 ## Gate 1 contract
 
@@ -50,6 +55,17 @@ The first operational circuit is:
 The canonical Gate 1 snapshot is version `gate1.snapshot.v1`. Unknown values must be emitted as `UNKNOWN` with a null value. Zero, false and empty are not substitutes for unknown.
 
 `safety.executionMode` is **derived** from the live switch state (`enabled_by_operator` / `disabled_by_operator`) and is no longer the fixed literal `disabled_in_gate1`. Execution, live input and packet injection are operator switches, off at start, changeable only by `SecurityPrincipal.Operator`, and every change is recorded with its before/after value and reason.
+
+## Character control
+
+Three supporting documents cover the control of the character inside the client. They are
+subordinate to `NOSAI_ARCHITECTURE_BASELINE.md` and to the ADRs, and they say so.
+
+| Document | Covers |
+|---|---|
+| `docs/CONTROLLO_PERSONAGGIO_ARCHITETTURA.md` | Domain boundary, actuation channel, `DOMAIN-xx` invariants |
+| `docs/CONTROLLO_PERSONAGGIO_ATTUAZIONE.md` | Commit point, occlusion, human precedence, map grid, verification windows |
+| `docs/CONTROLLO_PERSONAGGIO_ROADMAP.md` | Order of work and the Claude / Cursor split |
 
 ## Non-authoritative by themselves
 
