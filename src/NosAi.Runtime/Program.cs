@@ -73,6 +73,12 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--input-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.LowLevel.InputEnvironmentProbe.RunConsoleProbe();
 
+        // Real-environment probe for the HUD reader (T-03). The Control Panel has
+        // had this behind a button; running it here makes the test repeatable and
+        // quotable instead of clicked and described.
+        if (args.Any(a => string.Equals(a, "--hud-probe", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe();
+
         // Offset discovery for the memory provider (ADR-0014). Read-only, and it
         // answers nothing on its own: an address is identified by narrowing across
         // several changes of the value, which is why the candidate set persists
@@ -187,7 +193,7 @@ public static class Program
 
     /// <summary>Probe flags, which live outside the suite table.</summary>
     private static readonly HashSet<string> KnownProbeFlags =
-        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump" };
+        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump", "--hud-probe" };
 
     private static int RunDxgiProbe()
     {
