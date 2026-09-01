@@ -604,35 +604,32 @@ fatto per *«è successo qualcosa a un'entità»*, e il `Descriptor` è un'etich
 stringa costringerebbe ogni lettore a riparsarla, e un numero passato in
 `EntityId` sarebbe un id che non è un id.
 
-Ma il punto vero è un altro: **la velocità non è un evento, è uno stato.** È una
-proprietà del personaggio nel tempo, esattamente come gli HP. Va dove stanno le
-altre proprietà del personaggio:
+Ma il punto vero è un altro: **la velocità non è un evento, è uno stato.**
+
+Non va però in `PlayerVitals`, e la ragione è che un `cond` **non porta gli HP**:
+`PlayerVitals(int Hp, int MaxHp, int Mp, …)` vuole tre interi che quel pacchetto
+non ha. Costruirne una riusando gli ultimi HP noti ripubblicherebbe una lettura
+vecchia con l'aria di una fresca, ed è la cosa che ADR-0016 misura e che il
+provider distingue con `CACHED`.
+
+Va quindi dove sta ciò che **questo** pacchetto ha detto:
 
 ```csharp
-public sealed record PlayerVitals(
-    int Hp,
-    int MaxHp,
-    int Mp,
-    bool? HasTarget,
-    bool? InCombat,
-    DataSourceKind Source,
-    DateTime? ObservedAtUtc = null,
-    int? MaxMp = null);
+public sealed record DecodedObservations(
+    ImmutableArray<EntitySighting> Sightings,
+    ImmutableArray<GameEvent> Events,
+    PlayerVitals? Vitals,
+    DateTime? PlayerAttackedAtUtc = null);   // firma attuale: leggila dal file
 ```
 
-Aggiungi `int? MovementSpeed = null` **in coda**, dopo `MaxMp`, con la stessa
-regola di C7: in coda e con un default, così nessun chiamante posizionale
-esistente va toccato.
+Aggiungi **`int? PlayerMovementSpeed = null` in coda**, con la stessa regola di
+C7: in coda e con un default, così nessun chiamante posizionale esistente va
+toccato. Un `cond` valido produce una `DecodedObservations` con quel solo campo
+valorizzato — niente sightings, niente eventi, `Vitals` nullo.
 
-Il record si chiama *Vitals* ma porta già `HasTarget` e `InCombat`, che vitali non
-sono: è già lo stato del personaggio sotto un nome stretto. Aggiornane il commento
-di sintesi per dire ciò che è diventato, senza rinominarlo — un rinominamento qui
-sarebbe un refactoring ampio dentro una milestone mirata, e `CLAUDE.md` lo vieta.
-
-Un `cond` da solo non porta gli HP, quindi non può costruire una `PlayerVitals`
-intera: **emetti l'aggiornamento della sola velocità nel modo che il decoder usa
-già per un aggiornamento parziale.** Se non esiste un modo del genere, fermati e
-segnalalo — è una scelta di forma e la prende Claude.
+A conservare l'ultimo valore ci pensa `NetworkWorldFeed`, che già accumula lo
+stato nel tempo. Il decoder resta quello che è: un traduttore di un pacchetto per
+volta, che non ricorda e non riempie i vuoti.
 
 ## Criteri di accettazione
 
@@ -641,7 +638,8 @@ segnalalo — è una scelta di forma e la prende Claude.
 3. Velocità non numerica, negativa o assente → nessuna osservazione.
 4. I campi 3 e 4 non compaiono in nessun punto del codice aggiunto.
 5. `GameEventKind` non è toccato, e nessun `GameEvent` è emesso per `cond`.
-6. Un commento nel codice cita la specifica e il livello `probable`.
+6. `PlayerVitals` non è toccato: un `cond` non porta HP e non ne costruisce uno.
+7. Un commento nel codice cita la specifica e il livello `probable`.
 
 ## Chi la legge
 

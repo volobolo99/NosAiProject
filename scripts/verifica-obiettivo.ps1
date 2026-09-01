@@ -129,9 +129,9 @@ Report 'C7' 'stat porta gli MP massimi' `
     'test StatCarriesMaxMp'
 
 Report 'C6' 'cond legge la velocita'' del giocatore' `
-    ((Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'MovementSpeed') -and
+    ((Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'PlayerMovementSpeed') -and
      (Test-TextUnder 'tests' 'CondReadsSpeedForPlayerOnly')) `
-    'PlayerVitals.MovementSpeed e il test CondReadsSpeedForPlayerOnly'
+    'DecodedObservations.PlayerMovementSpeed e il test CondReadsSpeedForPlayerOnly'
 
 # C5 (sr) e' ritirata e C8 (lev) rinviata: vedi docs/TASKS_CURSOR.md. Non sono
 # contate fra le schede aperte, perche' un elenco che chiede lavoro deciso di
