@@ -23,9 +23,9 @@ La regola di ordinamento resta una sola:
 > prima di poter garantire che finisca nella finestra giusta.
 
 ```
-P0 verifiche ──► P1 griglia ──┐
-                              ├─► P4 PRIMO PASSO ─► P5 percorso ─► P6 bersaglio ─► P7 skill
-P2 commit point ─► P3 autorità┘                          │
+P0 verifiche ──► P1 griglia ─────────┐
+                                     ├─► P4 PRIMO PASSO ─► P5 percorso ─► P6 bersaglio ─► P7 skill
+P2a geometria ─► P2 commit point ─► P3 autorità┘                          │
                                                           └─► P8 resilienza
 ```
 
@@ -83,9 +83,32 @@ coincide, la griglia non è promossa.
 
 ---
 
+### P2a — Geometria: consapevolezza DPI ed epoca
+
+Emersa da P0 e **prerequisito di P2**: il commit point confronta un'epoca di geometria che
+oggi non esiste, e la misura da cui parte è in un'unità che dipende da un'assunzione
+d'ambiente mai dichiarata.
+
+| Contenuto | Chi |
+|---|---|
+| Decisione sull'unità di coordinate e sulla invalidazione delle calibrazioni memorizzate | Claude |
+| `GeometryEpoch`: che cosa la fa incrementare, chi la possiede, come viaggia nell'envelope | Claude |
+| Osservazione di cambio DPI e cambio monitor, oltre a spostamento e ridimensionamento | Claude |
+| Sostituzione del campo `_geometry` mai aggiornato di `Win32ProcessAdapter` | Claude |
+| `app.manifest` con `PerMonitorV2` su `NosAi.Runtime` e `ApplicationManifest` nel csproj | Cursor |
+| Comando che stampa rect, dpi, monitor ed epoca corrente | Cursor |
+| Test: cambio scala e spostamento fra monitor con scale diverse | Cursor |
+
+**DoD** — con il client su un monitor al 100 % e uno al 150 %, il rect letto è in pixel
+fisici su entrambi, l'epoca incrementa passando dall'uno all'altro, e ogni calibrazione
+stimata prima del passaggio risulta scaduta.
+
+---
+
 ### P2 — Commit point, occlusione, precedenza umana
 
 I tre buchi dell'atto. È la tappa che rende sicuro tutto ciò che viene dopo.
+Dipende da P2a per l'epoca.
 
 | Contenuto | Chi |
 |---|---|
@@ -96,6 +119,7 @@ I tre buchi dell'atto. È la tappa che rende sicuro tutto ciò che viene dopo.
 | Innesto in `GatedInputBackend` senza aprire una via che lo aggiri | Claude + Cursor |
 | P/Invoke, wiring, comando `--input-guards` che stampa lo stato delle quattro condizioni | Cursor |
 | Test: occlusione, presa umana, geometria mutata a metà atto | Cursor |
+| Sostituzione del `Math.Clamp` finale di `Win32InputBackend.MoveAbsolute` con un rifiuto motivato: un punto fuori dal desktop virtuale è impossibile, non da riportare al bordo | Claude |
 
 **DoD** — sposti la finestra durante un atto ⇒ nessun pixel emesso. Porti un'altra finestra
 davanti ⇒ abort. Tocchi il mouse ⇒ abort entro la finestra di cortesia. Ogni abort con il

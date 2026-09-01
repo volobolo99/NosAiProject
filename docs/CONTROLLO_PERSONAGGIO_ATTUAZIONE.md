@@ -183,11 +183,46 @@ Punti su cui questo documento **non** afferma uno stato, perché non è stato mi
    contatore, dieci successi intervallati da nove fallimenti riportano il sistema a piena
    velocità, che è lo scenario che l'arresto esiste per impedire. Se è un contatore, va
    sostituito con una finestra e uno stato di prova a una azione per volta.
-2. Il processo dichiara la consapevolezza DPI per monitor nel manifest? Se non la dichiara,
-   `GetClientRect` restituisce coordinate virtualizzate e l'intera calibrazione misura la
-   finestra sbagliata su schermi con scala diversa da 100 %.
-3. L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor, o solo su
-   spostamento e ridimensionamento?
+2. ~~Il processo dichiara la consapevolezza DPI per monitor nel manifest?~~
+   **Chiuso il 1 settembre 2026: no, e nemmeno a runtime.** `NosAi.Runtime` — il processo
+   che chiama `GetClientRect`, calibra la proiezione ed emette l'input — non ha
+   `ApplicationManifest`, non ha un `app.manifest`, e in `src/` non compare nessuna API di
+   consapevolezza DPI. La dichiara solo `NosAi.ControlPanel`, che è l'unico processo a cui
+   non serve.
+
+   Conseguenza. Per un processo non consapevole Windows **virtualizza** le coordinate:
+   `GetClientRect` e `ClientToScreen` rispondono nello spazio logico a 96 DPI. La cattura
+   dello schermo, invece, non è virtualizzata: arriva in pixel fisici. Su uno schermo al
+   125 % le due unità differiscono di un quarto, e ogni ritaglio dell'HUD calcolato come
+   frazione del client rect cade sui pixel sbagliati. Non fallisce: **misura davvero i pixel
+   sbagliati**, che è la distinzione su cui ADR-0018 è costruito, e la calibrazione affine
+   ci si adatterebbe sopra restituendo un residuo buono su una trasformazione senza
+   contenuto — l'errore che `ScreenProjectionCalibration` documenta per la forma assoluta.
+
+   Perché allora T-03 ha confermato la lettura dell'HUD contro un client reale? Quasi
+   certamente perché lo schermo dell'operatore è al 100 %, dove virtuale e fisico
+   coincidono. È un'assunzione d'ambiente su cui poggia tutta la percezione, che nessuna
+   riga di codice verifica e nessun test dichiara.
+
+   La correzione ha una proprietà utile: dichiarare la consapevolezza per monitor **non
+   cambia nulla al 100 %**, quindi si può fare subito senza rompere ciò che oggi funziona,
+   e diventa corretta appena lo schermo cambia. Ha però una conseguenza obbligatoria: le
+   calibrazioni già memorizzate sono state stimate nell'unità vecchia e vanno invalidate,
+   non riusate.
+
+3. ~~L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor?~~
+   **Chiuso il 1 settembre 2026: l'epoca non esiste.** `ClientWindowLocator` è statico e
+   senza stato: rilegge e restituisce un rect nuovo a ogni chiamata, senza conservare il
+   precedente. `CalibratedScreenProjection` confronta solo larghezza e altezza e ignora
+   deliberatamente lo spostamento — il che è giusto per la *forma* della trasformazione, ma
+   significa che un cambio di DPI, che per un processo non consapevole non cambia le
+   dimensioni virtualizzate, non viene visto da nessuno. `Win32ProcessAdapter` è l'unico che
+   conserva la geometria, in un campo scritto all'attach e **mai aggiornato**.
+
+   Conseguenza. `DOMAIN-08` e `DOMAIN-19` oggi non sono applicabili: non c'è niente contro
+   cui far decadere una calibrazione, e la prima condizione del commit point — « epoca di
+   geometria invariata dall'autorizzazione » — non ha un valore da confrontare. **L'epoca è
+   quindi un prerequisito di P2, non un dettaglio di P2.**
 4. ~~La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
    monitor primario?~~ **Chiuso il 1 settembre 2026: copre il desktop virtuale.**
    `Win32InputBackend.MoveAbsolute` prende origine ed estensione da
