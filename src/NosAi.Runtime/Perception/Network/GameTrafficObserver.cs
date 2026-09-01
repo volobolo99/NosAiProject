@@ -95,7 +95,8 @@ public sealed record PlayerVitals(
     bool? HasTarget,
     bool? InCombat,
     DataSourceKind Source,
-    DateTime? ObservedAtUtc = null);
+    DateTime? ObservedAtUtc = null,
+    int? MaxMp = null);
 
 /// <summary>The observations decoded from one packet.</summary>
 /// <param name="PlayerAttackedAtUtc">
@@ -104,16 +105,22 @@ public sealed record PlayerVitals(
 /// rather than a flag because the only question asked of it is whether a hit
 /// landed after the screen looked. Null is not "the player is not attacking".
 /// </param>
+/// <param name="PlayerMovementSpeed">
+/// Movement speed from a player <c>cond</c>, or null when this packet did not
+/// carry one. Null is not speed zero.
+/// </param>
 public sealed record DecodedObservations(
     ImmutableArray<EntitySighting> Sightings,
     ImmutableArray<GameEvent> Events,
     PlayerVitals? Vitals = null,
-    DateTime? PlayerAttackedAtUtc = null)
+    DateTime? PlayerAttackedAtUtc = null,
+    int? PlayerMovementSpeed = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
 
-    public bool IsEmpty => Sightings.IsEmpty && Events.IsEmpty && Vitals is null;
+    public bool IsEmpty =>
+        Sightings.IsEmpty && Events.IsEmpty && Vitals is null && PlayerMovementSpeed is null;
 }
 
 /// <summary>

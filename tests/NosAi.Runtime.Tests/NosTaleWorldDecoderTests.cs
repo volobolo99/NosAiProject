@@ -1,3 +1,5 @@
+using System.Text;
+using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception.Network;
 using Xunit;
 
@@ -108,4 +110,60 @@ public sealed class NosTaleWorldDecoderTests
 
         Assert.Equal("345", decoded);
     }
+
+    [Fact]
+    public void A_valid_stat_keeps_the_max_mp_it_already_validated()
+    {
+        PlayerVitals? vitals = new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("stat 7305 7305 1420 1420 0 1184")).Vitals;
+
+        Assert.NotNull(vitals);
+        Assert.Equal(1420, vitals.MaxMp);
+        Assert.Equal(1420, vitals.Mp);
+        Assert.Equal(7305, vitals.Hp);
+    }
+
+    [Fact]
+    public void A_stat_with_mp_above_max_mp_is_refused()
+    {
+        Assert.True(new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("stat 7305 7305 2000 1420 0 1184")).IsEmpty);
+    }
+
+    [Fact]
+    public void Cond_of_the_player_carries_movement_speed_eleven()
+    {
+        DecodedObservations decoded = new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("cond 1 3443217 0 0 11"));
+
+        Assert.Equal(11, decoded.PlayerMovementSpeed);
+        Assert.Empty(decoded.Events);
+        Assert.Empty(decoded.Sightings);
+        Assert.Null(decoded.Vitals);
+    }
+
+    [Fact]
+    public void Cond_of_entity_type_three_is_not_the_player()
+    {
+        Assert.True(new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("cond 3 3194 0 0 11")).IsEmpty);
+    }
+
+    [Theory]
+    [InlineData("cond 1 3443217 0 0")]
+    [InlineData("cond 1 3443217 0 0 x")]
+    [InlineData("cond 1 3443217 0 0 -1")]
+    public void Cond_without_a_usable_speed_produces_nothing(string line)
+    {
+        Assert.True(new NosTaleWorldProtocolDecoder().Decode(Ascii(line)).IsEmpty);
+    }
+
+    private static ObservedPacket Ascii(string packet)
+        => new(
+            new DateTime(2026, 9, 1, 10, 0, 0, DateTimeKind.Utc),
+            NetworkDirection.Inbound,
+            "79.110.84.175",
+            4002,
+            Encoding.ASCII.GetBytes(packet),
+            DataSourceKind.Live);
 }

@@ -84,6 +84,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "mv" => DecodeMove(fields, source),
             "die" => DecodeDeath(fields, source),
             "su" => DecodeHit(fields, source, packet.CapturedUtc),
+            "cond" => DecodeCondition(fields),
             _ => DecodedObservations.Empty,
         };
     }
@@ -108,7 +109,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
             ImmutableArray<GameEvent>.Empty,
-            new PlayerVitals(hp, maxHp, mp, HasTarget: null, InCombat: null, source, capturedUtc));
+            new PlayerVitals(hp, maxHp, mp, HasTarget: null, InCombat: null, source, capturedUtc, MaxMp: maxMp));
     }
 
     /// <summary>
@@ -226,6 +227,28 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source)),
             Vitals: null,
             PlayerAttackedAtUtc: attackerType == PlayerEntityType ? capturedUtc : null);
+    }
+
+    /// <summary>
+    /// <c>cond type id ? ? speed</c> — the player's movement speed, entity type 1
+    /// only. Speed is <c>probable</c> in docs/PROTOCOLLO_NOSTALE.md (11 for a
+    /// level-56 character). The two fields between id and speed are also marked
+    /// probable there and have never been observed asserted; they are not read.
+    /// This is state, not an event: no <see cref="GameEvent"/> is emitted.
+    /// </summary>
+    private static DecodedObservations DecodeCondition(string[] fields)
+    {
+        if (fields.Length < 6)
+            return DecodedObservations.Empty;
+        if (!TryInt(fields[1], out int entityType) || entityType != PlayerEntityType)
+            return DecodedObservations.Empty;
+        if (!TryInt(fields[5], out int speed) || speed < 0)
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            PlayerMovementSpeed: speed);
     }
 
     private static DecodedObservations Sighting(
