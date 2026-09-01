@@ -10,6 +10,7 @@
 // the adapter does not skip the Safety Gate (ADR-0003).
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -21,6 +22,34 @@ public enum MouseButton : byte
     Left = 0,
     Right = 1,
     Middle = 2,
+}
+
+/// <summary>
+/// Releasing what was already pressed, as a capability separate from pressing.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Additive rather than folded into <see cref="IInputBackend"/>, and the split is the
+/// safety property. A backend that can only press cannot be asked to undo; a caller
+/// holding this can <b>only</b> release, so handing it to the abort path opens no way
+/// to actuate anything new. That is what lets the release bypass the policy gate
+/// without the bypass being a hole: the worst a compromised release path can do is
+/// let go of a key.
+/// </para>
+/// <para>
+/// The press primitives balance themselves — <see cref="IInputBackend.Click"/> and
+/// <see cref="IInputBackend.KeyPress"/> both send their own release — but only when
+/// they run to completion. A release that fails is reported and then forgotten, and a
+/// key that stays down survives the process that pressed it.
+/// </para>
+/// </remarks>
+public interface IInputReleaseBackend
+{
+    /// <summary>Sends a button-up. Harmless when the button was not down.</summary>
+    bool ReleaseMouseButton(MouseButton button);
+
+    /// <summary>Sends a key-up. Harmless when the key was not down.</summary>
+    bool ReleaseKey(ushort virtualKey);
 }
 
 /// <summary>
@@ -50,8 +79,24 @@ public interface IInputBackend
 }
 
 /// <summary>Real Windows input injection through <c>SendInput</c>.</summary>
-public sealed class Win32InputBackend : IInputBackend
+public sealed class Win32InputBackend : IInputBackend, IInputReleaseBackend
 {
+    /// <summary>Reported when a point does not exist on the virtual desktop.</summary>
+    public const string PointOffVirtualDesktopReason = "point_outside_virtual_desktop";
+
+    /// <summary>Reported when the desktop metrics could not be read.</summary>
+    public const string DesktopMetricsUnreadableReason = "virtual_desktop_metrics_unreadable";
+
+    /// <summary>
+    /// Why the last call returned false, or null. Diagnostic only.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="IInputBackend"/> returns a bare bool, and widening it would touch
+    /// every implementer for the sake of one refusal. The reason is recorded here
+    /// instead so a refusal is still nameable in a report.
+    /// </remarks>
+    public string? LastFailureReason { get; private set; }
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint nInputs, INPUT[] inputs, int cbSize);
 
@@ -123,11 +168,35 @@ public sealed class Win32InputBackend : IInputBackend
         int originY = GetSystemMetrics(SM_YVIRTUALSCREEN);
         int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-        if (width <= 0 || height <= 0) return false;
+        if (width <= 1 || height <= 1)
+        {
+            LastFailureReason = DesktopMetricsUnreadableReason;
+            return false;
+        }
+
+        // A point off the virtual desktop is refused, not clamped.
+        //
+        // Clamping was the last line of this method and it was the one place on the
+        // whole path where a coordinate error became an act instead of a refusal: a
+        // point that does not exist was carried to the nearest edge and clicked there,
+        // which is a real click at a place nobody chose. It is the same mistake the
+        // project forbids everywhere else — unknown does not become a plausible value,
+        // and a source that fails says so. The guards upstream refuse points outside
+        // the client area, so this does not bite today; a last line of defence that
+        // silently corrects is worse than none, because it removes the evidence that
+        // the earlier guards were wrong.
+        if (x < originX || y < originY || x >= originX + width || y >= originY + height)
+        {
+            LastFailureReason = string.Create(CultureInfo.InvariantCulture,
+                $"{PointOffVirtualDesktopReason}:{x},{y}_outside_{originX},{originY}_{width}x{height}");
+            return false;
+        }
 
         int normalisedX = (int)Math.Round((x - originX) * 65535.0 / (width - 1));
         int normalisedY = (int)Math.Round((y - originY) * 65535.0 / (height - 1));
-        return Send(Mouse(Math.Clamp(normalisedX, 0, 65535), Math.Clamp(normalisedY, 0, 65535),
+
+        LastFailureReason = null;
+        return Send(Mouse(normalisedX, normalisedY,
             MouseMove | MouseAbsolute | MouseVirtualDesk));
     }
 
@@ -181,6 +250,23 @@ public sealed class Win32InputBackend : IInputBackend
         for (int i = held - 1; i >= 0; i--) ok &= Send(Key(modifiers[i], KeyUp));
         return ok;
     }
+
+    /// <inheritdoc />
+    public bool ReleaseMouseButton(MouseButton button)
+    {
+        uint flag = button switch
+        {
+            MouseButton.Left => MouseLeftUp,
+            MouseButton.Right => MouseRightUp,
+            MouseButton.Middle => MouseMiddleUp,
+            _ => throw new ArgumentOutOfRangeException(nameof(button)),
+        };
+
+        return Send(Mouse(0, 0, flag));
+    }
+
+    /// <inheritdoc />
+    public bool ReleaseKey(ushort virtualKey) => Send(Key(virtualKey, KeyUp));
 
     private static INPUT Mouse(int dx, int dy, uint flags) => new()
     {

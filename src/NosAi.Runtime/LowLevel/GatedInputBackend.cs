@@ -34,11 +34,44 @@ public sealed record InputRefusal(string Reason, DateTime AtUtc);
 /// Read-only queries (<see cref="TryGetCursorPosition"/>) are always allowed:
 /// observing the desktop is not actuating it.
 /// </para>
+/// <para>
+/// <b>The commit point (§ 2.1), and why it cannot be walked around.</b> The policy
+/// answers "is live input enabled"; it says nothing about the physical world in the
+/// instant of emission. When a <see cref="CommitPointValidator"/> is supplied, this
+/// gate additionally requires an open <see cref="ActuationScope"/> for every
+/// actuating call, and revalidates the five conditions immediately before each
+/// irreversible one. There is no call that reaches the inner backend without passing
+/// both, and no way to obtain the inner backend from here: a scope is the only route
+/// through, and opening one costs a <see cref="CommitRequest"/>, which costs a
+/// geometry stamp taken at authorisation.
+/// </para>
+/// <para>
+/// A gate built <i>without</i> a validator is policy-only, exactly as before, and
+/// <see cref="RequiresCommitPoint"/> reports which of the two it is rather than
+/// leaving the difference to be inferred. That is a construction-time choice made in
+/// one place — the composition root wires the validator for the autonomous path — and
+/// it is not a runtime switch, because a runtime switch is what a bypass looks like.
+/// The auto-calibrator is the one deliberate exception and states its own reason: it
+/// is producing the calibration a commit point would need, under explicit operator
+/// arming, with its own foreground check.
+/// </para>
 /// </remarks>
 public sealed class GatedInputBackend : IInputBackend
 {
+    /// <summary>Reported when an act was attempted with no scope open.</summary>
+    public const string CommitScopeRequiredReason = "commit_scope_required";
+
+    /// <summary>Reported when a scope is already open. One act at a time (DOMAIN-17).</summary>
+    public const string ScopeAlreadyOpenReason = "commit_scope_already_open";
+
+    /// <summary>Reported when the inner backend cannot be asked to release.</summary>
+    public const string ReleaseUnsupportedReason = "release_not_supported_by_backend";
+
     private readonly IInputBackend _inner;
     private readonly Func<RuntimeSafetyPolicy> _policySource;
+    private readonly CommitPointValidator? _commitPoint;
+    private readonly object _scopeLock = new();
+    private ActuationScope? _scope;
     private long _refusedCount;
     private long _allowedCount;
     private InputRefusal? _lastRefusal;
@@ -65,9 +98,96 @@ public sealed class GatedInputBackend : IInputBackend
     /// run time is obeyed immediately, with no stale copy to re-inject through.
     /// </summary>
     public GatedInputBackend(IInputBackend inner, Func<RuntimeSafetyPolicy> policySource)
+        : this(inner, policySource, null)
+    {
+    }
+
+    /// <param name="commitPoint">
+    /// When supplied, every actuating call needs an open <see cref="ActuationScope"/>
+    /// and every irreversible one is revalidated against the desktop in the instant
+    /// before it is emitted. Null keeps the policy-only behaviour and says so through
+    /// <see cref="RequiresCommitPoint"/>.
+    /// </param>
+    public GatedInputBackend(
+        IInputBackend inner,
+        Func<RuntimeSafetyPolicy> policySource,
+        CommitPointValidator? commitPoint)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _policySource = policySource ?? throw new ArgumentNullException(nameof(policySource));
+        _commitPoint = commitPoint;
+    }
+
+    /// <summary>Whether this gate enforces the commit point as well as the policy.</summary>
+    public bool RequiresCommitPoint => _commitPoint is not null;
+
+    /// <summary>The scope currently open, or null.</summary>
+    public ActuationScope? CurrentScope
+    {
+        get { lock (_scopeLock) return _scope; }
+    }
+
+    /// <summary>
+    /// Opens the one act this gate will carry, against the geometry and scale it was
+    /// authorised under.
+    /// </summary>
+    /// <remarks>
+    /// One at a time by construction. Two concurrent acts would each be revalidating a
+    /// world the other was changing, and DOMAIN-17 allows one irreversible step, not
+    /// two interleaved.
+    /// </remarks>
+    public bool TryBeginActuation(in CommitRequest request, out ActuationScope? scope, out string? refusalReason)
+    {
+        lock (_scopeLock)
+        {
+            if (_scope is not null)
+            {
+                scope = null;
+                refusalReason = ScopeAlreadyOpenReason;
+                Refuse(refusalReason);
+                return false;
+            }
+
+            scope = new ActuationScope(this, request);
+            _scope = scope;
+        }
+
+        refusalReason = null;
+        return true;
+    }
+
+    internal void CloseScope(ActuationScope scope)
+    {
+        lock (_scopeLock)
+        {
+            if (ReferenceEquals(_scope, scope))
+                _scope = null;
+        }
+    }
+
+    /// <summary>
+    /// Releases one press the open scope recorded. Not policy-gated, and cannot press.
+    /// </summary>
+    /// <remarks>
+    /// The single deliberate exception to the gate, and it is bounded by what it can
+    /// express rather than by who calls it: <see cref="IInputReleaseBackend"/> has no
+    /// method that presses anything, so the worst this path can do is let go of a key.
+    /// Gating it would mean that switching the policy off mid-act left a button held
+    /// down, which is the failure the exception exists to prevent — a refused release
+    /// is worse than an ungated one.
+    /// </remarks>
+    internal void ReleaseHeld(HeldInput input)
+    {
+        if (_inner is not IInputReleaseBackend releasable)
+        {
+            _lastRefusal = new InputRefusal(ReleaseUnsupportedReason, DateTime.UtcNow);
+            return;
+        }
+
+        if (input.IsKey)
+            releasable.ReleaseKey(input.VirtualKey);
+        else
+            releasable.ReleaseMouseButton(input.Button);
     }
 
     private bool Allowed()
@@ -84,20 +204,132 @@ public sealed class GatedInputBackend : IInputBackend
         return false;
     }
 
+    private void Refuse(string reason)
+    {
+        Interlocked.Increment(ref _refusedCount);
+        _lastRefusal = new InputRefusal(reason, DateTime.UtcNow);
+    }
+
+    /// <summary>
+    /// The gate for a reversible call: policy, and the scope being open and unaborted.
+    /// </summary>
+    private bool MayMove(out ActuationScope? scope)
+    {
+        scope = null;
+
+        if (!Allowed())
+            return false;
+
+        if (_commitPoint is null)
+            return true;
+
+        lock (_scopeLock)
+            scope = _scope;
+
+        if (scope is null)
+        {
+            Refuse(CommitScopeRequiredReason);
+            return false;
+        }
+
+        if (!scope.TryEnter(out string? aborted))
+        {
+            Refuse(aborted!);
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The gate for the irreversible step: everything <see cref="MayMove"/> asks, plus
+    /// the five conditions re-read now, plus the emission latency measured against them.
+    /// </summary>
+    /// <remarks>
+    /// A refusal here aborts the scope rather than merely returning false, because
+    /// § 2.3 requires the act in flight to be abandoned and not retried: whatever
+    /// pressed anything gets released on the way out.
+    /// </remarks>
+    private bool MayCommit(out ActuationScope? scope)
+    {
+        if (!MayMove(out scope))
+            return false;
+
+        if (_commitPoint is null || scope is null)
+            return true;
+
+        CommitDecision decision = _commitPoint.Validate(scope.Request);
+        if (!decision.IsAuthorised)
+        {
+            Refuse(decision.RefusalReason!);
+            scope.Abort(decision.RefusalReason!);
+            return false;
+        }
+
+        // The last thing before the irreversible step, so the interval this measures
+        // is the one nothing else covers.
+        if (!_commitPoint.MayEmit(decision, out string? tooLate, out _))
+        {
+            Refuse(tooLate!);
+            scope.Abort(tooLate!);
+            return false;
+        }
+
+        return true;
+    }
+
     // Observation, not actuation: never gated.
     public bool TryGetCursorPosition(out int x, out int y) => _inner.TryGetCursorPosition(out x, out y);
 
-    public bool MoveRelative(int dx, int dy) => Allowed() && _inner.MoveRelative(dx, dy);
+    // Moving the cursor is reversible: it is not the step DOMAIN-17 protects, so it
+    // asks the policy and the scope and not the five conditions.
+    public bool MoveRelative(int dx, int dy) => MayMove(out _) && _inner.MoveRelative(dx, dy);
 
-    public bool MoveAbsolute(int x, int y) => Allowed() && _inner.MoveAbsolute(x, y);
+    public bool MoveAbsolute(int x, int y) => MayMove(out _) && _inner.MoveAbsolute(x, y);
 
     public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)
-        => Allowed() && _inner.Click(button, delayBetweenDownUpMs);
+    {
+        if (!MayCommit(out ActuationScope? scope))
+            return false;
+
+        // Recorded before the press and struck off after it returns, so a call that
+        // fails between the down and the up leaves the record the abort path reads.
+        scope?.RecordButton(button);
+        try
+        {
+            return _inner.Click(button, delayBetweenDownUpMs);
+        }
+        finally
+        {
+            scope?.Forget(new HeldInput(false, 0, button));
+        }
+    }
 
     public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)
-        => Allowed() && _inner.KeyPress(virtualKey, pressDurationMs, modifiers);
+    {
+        if (!MayCommit(out ActuationScope? scope))
+            return false;
 
-    public bool ScrollWheel(int detents) => Allowed() && _inner.ScrollWheel(detents);
+        if (scope is null)
+            return _inner.KeyPress(virtualKey, pressDurationMs, modifiers);
+
+        foreach (ushort modifier in modifiers)
+            scope.RecordKey(modifier);
+        scope.RecordKey(virtualKey);
+
+        try
+        {
+            return _inner.KeyPress(virtualKey, pressDurationMs, modifiers);
+        }
+        finally
+        {
+            scope.Forget(new HeldInput(true, virtualKey, default));
+            foreach (ushort modifier in modifiers)
+                scope.Forget(new HeldInput(true, modifier, default));
+        }
+    }
+
+    public bool ScrollWheel(int detents) => MayCommit(out _) && _inner.ScrollWheel(detents);
 }
 
 /// <summary>
@@ -105,7 +337,7 @@ public sealed class GatedInputBackend : IInputBackend
 /// stand-in for tests and dry runs: nothing reaches the desktop, and
 /// <see cref="IsLive"/> says so rather than implying a real actuation happened.
 /// </summary>
-public sealed class RecordingInputBackend : IInputBackend
+public sealed class RecordingInputBackend : IInputBackend, IInputReleaseBackend
 {
     private readonly List<string> _events = new();
     private int _cursorX;
@@ -160,6 +392,18 @@ public sealed class RecordingInputBackend : IInputBackend
     public bool ScrollWheel(int detents)
     {
         _events.Add($"scroll:{detents}");
+        return true;
+    }
+
+    public bool ReleaseMouseButton(MouseButton button)
+    {
+        _events.Add($"release-button:{button}");
+        return true;
+    }
+
+    public bool ReleaseKey(ushort virtualKey)
+    {
+        _events.Add($"release-key:{virtualKey}");
         return true;
     }
 }
