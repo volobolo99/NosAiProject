@@ -141,11 +141,22 @@ public sealed class ClientMemorySession : IDisposable
         return _layout.TryReadPlayer(_reader, out reading, out failureReason);
     }
 
-    /// <summary>Reads the map id the player manager holds, or says where it broke.</summary>
+    /// <summary>
+    /// The player manager and the character's map object, as this attach resolves
+    /// them. They are the frame of reference an address found by scanning has to
+    /// be restated in before it can outlive the process it was found in.
+    /// </summary>
+    public bool TryResolveBases(out IntPtr playerManager, out IntPtr playerObject, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryResolveBases(_reader, out playerManager, out playerObject, out failureReason);
+    }
+
+    /// <summary>The map id is not mapped; see <see cref="NosTaleClientLayout.MapIdUnmapped"/>.</summary>
     public bool TryReadMapId(out int mapId, out string? failureReason)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        return _layout.TryReadMapId(_reader, out mapId, out failureReason);
+        return NosTaleClientLayout.TryReadMapId(out mapId, out failureReason);
     }
 
     /// <summary>Reads one of the client's entity lists for the current map.</summary>

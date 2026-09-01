@@ -145,8 +145,12 @@ public sealed class MapGridCheckTests
     }
 
     [Fact]
-    public void TheMapIdOffsetIsPinnedSoAMovedValueIsADeliberateEdit()
-        => Assert.Equal(0x30, NosTaleClientLayout.MapIdOffset);
+    public void MapIdIsUnmappedUntilFindMapIdEstablishesAnAddress()
+    {
+        Assert.False(NosTaleClientLayout.TryReadMapId(out int mapId, out string? reason));
+        Assert.Equal(0, mapId);
+        Assert.Equal(NosTaleClientLayout.MapIdUnmapped, reason);
+    }
 
     [Fact]
     public void TheRuntimeWiresTheGridCheckFlag()

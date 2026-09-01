@@ -57,23 +57,15 @@ public sealed class NosTaleClientLayout
     /// <summary>Player manager → the character id the client is holding.</summary>
     public const int PlayerIdOffset = 0x24;
 
-    /// <summary>Player manager → the id of the map the character is on.</summary>
+    /// <summary>
+    /// Why <see cref="TryReadMapId"/> refuses: there is no mapped offset.
+    /// </summary>
     /// <remarks>
-    /// <para>
-    /// Not confirmed the way the character id is. The wire never named this field
-    /// in the captures — they started mid-session, so neither <c>at</c> nor
-    /// <c>c_map</c> appears in the catalogue — and nothing independent has agreed
-    /// with the number the way <c>cond</c> agreed with <see cref="PlayerIdOffset"/>.
-    /// </para>
-    /// <para>
-    /// It is the remaining int in the same manager the other offsets already
-    /// describe, and it is what <c>--grid-check</c> uses to pick the file. A wrong
-    /// value either finds no <c>.grid</c> or prints a 3×3 that does not match the
-    /// screen. Neither is silently walked. The standing-cell command is the
-    /// confirmation, not this constant.
-    /// </para>
+    /// <c>+0x30</c> was tried and produced <c>506534864</c> (<c>0x1E311BD0</c>), a
+    /// heap pointer, not a map id. The field is unmapped until
+    /// <c>--find-mapid</c> identifies an address that tracks two different maps.
     /// </remarks>
-    public const int MapIdOffset = 0x30;
+    public const string MapIdUnmapped = "map_id_unmapped";
 
     /// <summary>
     /// Player manager → the square the character is walking to.
@@ -292,41 +284,41 @@ public sealed class NosTaleClientLayout
     }
 
     /// <summary>
-    /// Reads the map id the player manager holds, or says why it could not.
+    /// Follows the chain far enough to hand back the two bases it resolves, so a
+    /// caller can express an address it found as a distance from one of them.
     /// </summary>
     /// <remarks>
-    /// Followed on every call, never cached, for the same reason as
-    /// <see cref="TryReadPlayer"/>: the client replaces the manager's contents on
-    /// a map change. Unconfirmed: see <see cref="MapIdOffset"/>.
+    /// An address found by scanning is a fact about one run of the process; a
+    /// distance from a base that is resolved again on every attach is a fact
+    /// about the client. This is what turns the first into the second, and it is
+    /// why nothing here is cached: both bases move, and the manager is replaced
+    /// on a map change.
     /// </remarks>
-    public bool TryReadMapId(
+    public bool TryResolveBases(
         ProcessMemoryReader reader,
-        out int mapId,
+        out IntPtr playerManager,
+        out IntPtr playerObject,
         out string? failureReason)
     {
         ArgumentNullException.ThrowIfNull(reader);
+        playerObject = IntPtr.Zero;
+
+        if (!TryFollow(reader, _pointerHolder, "player_manager", out playerManager, out failureReason))
+            return false;
+
+        return TryFollow(
+            reader, playerManager + PlayerObjectOffset, "player_object", out playerObject, out failureReason);
+    }
+
+    /// <summary>
+    /// The map id is not mapped. <c>+0x30</c> was a pointer; see
+    /// <see cref="MapIdUnmapped"/>.
+    /// </summary>
+    public static bool TryReadMapId(out int mapId, out string? failureReason)
+    {
         mapId = 0;
-
-        if (!TryFollow(reader, _pointerHolder, "player_manager", out IntPtr manager, out failureReason))
-            return false;
-
-        MemoryReadResult bytes = reader.Read(manager + MapIdOffset, sizeof(int));
-        if (!bytes.Ok)
-        {
-            failureReason = bytes.FailureReason ?? "map_id_unreadable";
-            return false;
-        }
-
-        int value = BitConverter.ToInt32(bytes.Bytes);
-        if (value < 0)
-        {
-            failureReason = $"map_id_implausible:{value.ToString(CultureInfo.InvariantCulture)}";
-            return false;
-        }
-
-        mapId = value;
-        failureReason = null;
-        return true;
+        failureReason = MapIdUnmapped;
+        return false;
     }
 
     /// <summary>

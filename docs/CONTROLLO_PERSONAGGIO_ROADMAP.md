@@ -87,6 +87,7 @@ negativa diventa un lavoro in P2.
 | ~~Loader del formato, `--extract-maps`, `--map-info <mapId>`~~ **fatto** — 777 mappe, 0 rifiutate | Cursor |
 | ~~Test di caricamento su tutte le mappe estratte~~ **fatto** | Cursor |
 | `--extract-maps` sul volume `NOSAI-SSD` vero, una volta | operatore |
+| **Trovare `mapId`** — `--find-mapid`, poi un portale, poi di nuovo, **poi un riavvio del client**: deve sopravvivere un solo candidato, e ancorato a una base che il runtime risolve. Il comando esce `0` solo con entrambe le prove | operatore |
 | **Prova della cella su cui si sta** — `--grid-check` col client aperto; la cella sotto il personaggio deve risultare calpestabile | operatore |
 
 **Stato: contenitore verificato, semantica dei bit no.** Il vincolo

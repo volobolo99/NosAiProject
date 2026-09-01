@@ -273,7 +273,35 @@ l'offset.
 E la prova che distingue le due cose è una sola: **riavviare il client.** Un offset regge, un
 indirizzo no. Attraversare un portale corrobora che il campo sia il mapId; riavviare
 corrobora che ciò che si è scritto sia un offset. Sono due proprietà diverse e servono due
-prove diverse — `passes >= 2` copre la prima e nessuno copre ancora la seconda.
+prove diverse.
+
+**Entrambe sono ora chieste dal comando** *(2 settembre 2026)*. `--find-mapid` non stampa più
+un indirizzo: lo **ancora**, cioè lo riscrive come distanza da una base che il runtime risolve
+di nuovo a ogni attach — l'immagine del client, il player manager, l'oggetto del personaggio —
+e lascia « indirizzo nudo » solo ciò che non cade dentro nessuna di quelle finestre. Tre
+conseguenze:
+
+- il file dei candidati registra `manager 2A8 2004`, non `1DB2FF7C 2004`, e con esso il **pid**
+  del client che l'ha prodotto;
+- a ogni passaggio il candidato è riletto **attraverso la sua ancora**, non al vecchio
+  indirizzo. Serviva: il client sostituisce il contenuto del manager al cambio di mappa, e un
+  campione inseguito per indirizzo verrebbe letto da qualunque cosa occupi quella memoria dopo;
+- se il pid è cambiato, il comando sa che il client è stato riavviato: gli indirizzi nudi
+  cadono, gli ancorati sono ririsolti, e `restarts` sale di uno. Un file senza pid — quelli
+  scritti prima di questo formato — vale come ignoranza, non come « stesso processo », e i suoi
+  indirizzi cadono lo stesso.
+
+Una rilettura sulla **stessa cella** non conta come mappa nuova e non pretende che il valore
+cambi: pretenderlo cancellerebbe l'insieme per essere rimasti fermi, contarlo rivendicherebbe
+una prova che nessuno ha raccolto. L'uscita è `0` solo con **un** candidato, ancorato,
+`passes >= 2` e `restarts >= 1`; finché manca una delle due prove il comando nomina quella che
+manca.
+
+**La scansione copre ora anche l'immagine scrivibile del client**, oltre alle regioni private.
+Se il mapId fosse un globale — la forma più durevole che potrebbe avere — la scansione
+precedente non avrebbe potuto trovarlo, perché `MEM_IMAGE` non è `MEM_PRIVATE`, e l'unico esito
+possibile sarebbe stato un indirizzo che muore al riavvio. Le pagine di sola lettura di
+quell'immagine restano fuori: contengono costanti compilate, non stato.
 
 *Testo precedente, superato dalla misura:*
 ~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della

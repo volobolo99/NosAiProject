@@ -12,6 +12,14 @@ namespace NosAi.Runtime.Navigation;
 /// <summary>One extracted map, or why it could not be written.</summary>
 public sealed record MapGridExtractedFile(int MapId, string Path, string Sha256, int Width, int Height);
 
+/// <summary>The rectangle of one extracted grid, without its cells.</summary>
+public readonly record struct MapGridSize(int MapId, int Width, int Height)
+{
+    /// <summary>Whether a cell exists in this rectangle. Outside is not a map id.</summary>
+    public bool Contains(int x, int y) =>
+        x >= 0 && y >= 0 && x < Width && y < Height;
+}
+
 /// <summary>The outcome of extracting every map archive in a client install.</summary>
 public sealed record MapGridExtractReport(
     string ClientDataDirectory,
@@ -175,6 +183,72 @@ public static class MapGridExtractor
 
         return new MapGridExtractReport(
             clientDataDirectory, outputDirectory, fingerprint, written, refused, null);
+    }
+
+    /// <summary>
+    /// Width and height of every <c>.grid</c> in <paramref name="mapsDirectory"/>,
+    /// taken from the four-byte header. The cells are not loaded: this is the
+    /// oracle <c>--find-mapid</c> uses, and it only needs the rectangle.
+    /// </summary>
+    public static bool TryLoadCatalog(
+        string mapsDirectory,
+        out IReadOnlyList<MapGridSize> maps,
+        out string? failureReason)
+    {
+        maps = Array.Empty<MapGridSize>();
+        failureReason = null;
+        ArgumentException.ThrowIfNullOrWhiteSpace(mapsDirectory);
+
+        if (!Directory.Exists(mapsDirectory))
+        {
+            failureReason = $"maps_directory_not_found:{mapsDirectory}";
+            return false;
+        }
+
+        string[] files = Directory.GetFiles(mapsDirectory, "*.grid");
+        if (files.Length == 0)
+        {
+            failureReason = NoMapArchives;
+            return false;
+        }
+
+        var found = new List<MapGridSize>(files.Length);
+        var header = new byte[MapGridFormat.HeaderBytes];
+        foreach (string path in files)
+        {
+            string stem = Path.GetFileNameWithoutExtension(path);
+            if (!int.TryParse(stem, NumberStyles.Integer, CultureInfo.InvariantCulture, out int mapId))
+                continue;
+
+            int read;
+            try
+            {
+                using FileStream stream = File.OpenRead(path);
+                read = stream.Read(header, 0, header.Length);
+            }
+            catch (IOException ex)
+            {
+                failureReason = $"grid_unreadable:{ex.GetType().Name}";
+                return false;
+            }
+
+            if (read < MapGridFormat.HeaderBytes)
+                continue;
+
+            int width = BinaryPrimitives.ReadUInt16LittleEndian(header);
+            int height = BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(2));
+            found.Add(new MapGridSize(mapId, width, height));
+        }
+
+        if (found.Count == 0)
+        {
+            failureReason = NoMapArchives;
+            return false;
+        }
+
+        found.Sort(static (a, b) => a.MapId.CompareTo(b.MapId));
+        maps = found;
+        return true;
     }
 
     /// <summary>Loads one extracted map by id, or says why it cannot.</summary>

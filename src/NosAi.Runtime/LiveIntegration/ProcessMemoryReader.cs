@@ -305,4 +305,15 @@ public sealed record MemoryRegion(IntPtr BaseAddress, long Size, uint Protect, u
     /// changes and never means anything.
     /// </remarks>
     public bool IsPrivate => Type == TypePrivate;
+
+    /// <summary>
+    /// Whether the process can write here.
+    /// </summary>
+    /// <remarks>
+    /// A value the game maintains lives on a writable page whatever kind of
+    /// region holds it. Read-only pages of a mapped image carry constants and
+    /// code, and a scan that includes them reports matches that were compiled in
+    /// rather than computed.
+    /// </remarks>
+    public bool IsWritable => (Protect & 0xFF) is 0x04 or 0x08 or 0x40 or 0x80;
 }

@@ -135,6 +135,12 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--grid-check", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Navigation.MapGridCheck.Run();
 
+        // The 777 grids as an oracle: a word in memory is a map id only while it
+        // names a .grid that contains the character, and only while that word
+        // changes across a portal. +0x30 was a pointer; this does not follow it.
+        if (args.Any(a => string.Equals(a, "--find-mapid", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Navigation.MapIdFinder.Run();
+
         // Map coordinate to window pixel (F2-3). Two commands because a
         // calibration is gathered across several moments in the game, so the
         // samples have to outlive one invocation, exactly as --memory-scan's
