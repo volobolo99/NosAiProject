@@ -69,6 +69,7 @@ from nosai.network.session_transcript import (
 )
 from nosai.network.wire_protocol import (
     HEADER,
+    HEARTBEAT_PAYLOAD,
     MAX_PAYLOAD,
     SequenceGuard,
     is_handshake,
@@ -348,7 +349,9 @@ class GuardAiClient:
 
     def heartbeat(self) -> dict[str, Any]:
         """Send one heartbeat and return the telemetry snapshot that follows it."""
-        self._send(TYPE_HEARTBEAT)
+        # Not an empty payload: a sealed frame over an empty plaintext aborts
+        # the Android client's process. See HEARTBEAT_PAYLOAD.
+        self._send(TYPE_HEARTBEAT, HEARTBEAT_PAYLOAD)
         self._expect(TYPE_HEARTBEAT_ACK)
         return self._read_telemetry()
 

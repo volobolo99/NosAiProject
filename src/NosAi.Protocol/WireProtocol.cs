@@ -61,6 +61,39 @@ public static class WireMessageTypes
         WireMessageType.ServerAuthProof => true,
         _ => false
     };
+
+    /// <summary>
+    /// The single byte a heartbeat and its ack carry, so that neither is sealed
+    /// over an empty plaintext.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Heartbeats used to carry nothing at all, which is the natural encoding for
+    /// a message whose whole content is that it arrived. It also made the phone
+    /// abort the process on the first ack of every session:
+    /// </para>
+    /// <code>
+    /// Fatal signal 6 (SIGABRT) in tid (.NET TP Worker), pid com.nosai.guardai
+    /// pal_cipher.c:258 (AndroidCryptoNative_CipherUpdate):
+    ///     Parameter 'in' must be a valid pointer
+    /// </code>
+    /// <para>
+    /// A heartbeat is not a handshake message, so ADR-0009 seals it, and sealing
+    /// nothing means handing ChaCha20-Poly1305 a zero-length span. In C# a
+    /// zero-length span always pins to a null pointer -- that is what the language
+    /// guarantees, not an accident of one buffer -- and the Android crypto PAL
+    /// rejects null rather than treating it as the empty input AEAD defines. The
+    /// desktop BCL accepts it, so every local test on Windows passed while no real
+    /// device ever survived its first heartbeat.
+    /// </para>
+    /// <para>
+    /// Carrying one byte keeps the fix in the one place the problem is: no frame on
+    /// this channel is ever sealed over an empty plaintext. The value is not read
+    /// by either end -- it is padding, and <c>HeartbeatCarriesPayload</c> in the
+    /// protocol tests is what stops it becoming empty again.
+    /// </para>
+    /// </remarks>
+    public static ReadOnlyMemory<byte> HeartbeatPayload { get; } = new byte[] { 0x01 };
 }
 
 public readonly record struct WireHeader(WireMessageType MessageType, ushort PayloadLength, uint SequenceNumber)
@@ -68,17 +101,28 @@ public readonly record struct WireHeader(WireMessageType MessageType, ushort Pay
     public const uint ExpectedMagic = 0x4E4F5341; // NOSA
     /// <summary>
     /// Wire version. Bumped to 2 by mutual authentication, to 3 by payload
-    /// encryption (ADR-0009).
+    /// encryption (ADR-0009), to 4 by giving heartbeats a payload
+    /// (<see cref="WireMessageTypes.HeartbeatPayload"/>).
     /// </summary>
     /// <remarks>
+    /// <para>
     /// An older peer is refused rather than downgraded. Version 1 cannot prove the
     /// runtime to the phone and version 2 sends the payload in clear, so accepting
     /// either would leave exactly the hole the bump exists to close. There is no
     /// negotiation: a channel that agrees to skip encryption when asked is a
     /// channel with no encryption. Both ends ship together, so there is nothing to
     /// stay compatible with.
+    /// </para>
+    /// <para>
+    /// Version 4 changes the length of one frame and nothing else, so it looks
+    /// small enough to slip in without a bump. It is not: a version-3 runtime
+    /// answers a heartbeat with an empty ack, and a phone that receives one aborts
+    /// its own process. Refusing that pairing at the header (ADR-0005) turns a
+    /// native crash with no message into <c>unsupported_version</c>, which names
+    /// what is wrong.
+    /// </para>
     /// </remarks>
-    public const byte CurrentVersion = 3;
+    public const byte CurrentVersion = 4;
     public const int HeaderSize = 12;
     public const int MaxPayloadLength = ushort.MaxValue;
 

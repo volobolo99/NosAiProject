@@ -670,7 +670,9 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
 
             case WireMessageType.Heartbeat:
                 connection.LastHeartbeatUtc = DateTime.UtcNow;
-                await SendAsync(connection, WireMessageType.HeartbeatAck, Array.Empty<byte>(), token).ConfigureAwait(false);
+                // Not Array.Empty: sealing an empty plaintext aborts the Android
+                // client. See WireMessageTypes.HeartbeatPayload.
+                await SendAsync(connection, WireMessageType.HeartbeatAck, WireMessageTypes.HeartbeatPayload, token).ConfigureAwait(false);
                 if (connection.IsAuthenticated)
                     await SendTelemetrySnapshotAsync(connection, token).ConfigureAwait(false);
                 break;
@@ -742,7 +744,7 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
     /// connection ended. Sending it in clear would defeat ADR-0009 at exactly the
     /// moment something went wrong, which is when it matters.
     /// </remarks>
-    private async Task SendAsync(GuardConnection connection, WireMessageType type, byte[] payload, CancellationToken token)
+    private async Task SendAsync(GuardConnection connection, WireMessageType type, ReadOnlyMemory<byte> payload, CancellationToken token)
     {
         bool handshake = WireMessageTypes.IsHandshake(type);
         int limit = handshake ? WireHeader.MaxPayloadLength : SessionCipher.MaxPlaintextLength;
@@ -762,11 +764,11 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
             if (handshake)
             {
                 new WireHeader(type, checked((ushort)payload.Length), sequence).WriteTo(frame.Span);
-                payload.CopyTo(frame.Span[WireHeader.HeaderSize..]);
+                payload.Span.CopyTo(frame.Span[WireHeader.HeaderSize..]);
             }
             else
             {
-                cipher!.SealFrameInto(frame.Span, type, sequence, payload);
+                cipher!.SealFrameInto(frame.Span, type, sequence, payload.Span);
             }
 
             await connection.Stream.WriteAsync(frame.Memory, token).ConfigureAwait(false);

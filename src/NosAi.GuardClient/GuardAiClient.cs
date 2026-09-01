@@ -232,7 +232,9 @@ public sealed class GuardAiClient : IAsyncDisposable
     /// <summary>Sends one heartbeat and returns the snapshot that follows the ack.</summary>
     public async Task<string> HeartbeatAsync(CancellationToken cancellationToken = default)
     {
-        await SendAsync(WireMessageType.Heartbeat, ReadOnlyMemory<byte>.Empty, cancellationToken).ConfigureAwait(false);
+        // Not Empty: sealing an empty plaintext aborts this process on Android.
+        // See WireMessageTypes.HeartbeatPayload.
+        await SendAsync(WireMessageType.Heartbeat, WireMessageTypes.HeartbeatPayload, cancellationToken).ConfigureAwait(false);
         await ExpectAsync(WireMessageType.HeartbeatAck, cancellationToken).ConfigureAwait(false);
         return await ReadTelemetryAsync(cancellationToken).ConfigureAwait(false);
     }

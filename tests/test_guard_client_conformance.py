@@ -38,15 +38,15 @@ STARTUP_TIMEOUT_S = 30.0
 # --------------------------------------------------------------------------
 
 def test_frame_bytes_match_the_csharp_header_layout():
-    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 3, TYPE, then
+    # Golden bytes for WireHeader.WriteTo: MAGIC "NOSA", VERSION 4, TYPE, then
     # PAYLOAD_LEN as uint16 big-endian and SEQ as uint32 big-endian. A silent
     # endianness or field-order change on either side breaks the phone client,
     # so the layout is pinned to literal bytes rather than to a round-trip.
     frame = Frame(message_type=0x11, sequence=0x01020304, payload=b"hi")
-    assert frame.encode() == b"NOSA" + b"\x03" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
+    assert frame.encode() == b"NOSA" + b"\x04" + b"\x11" + b"\x00\x02" + b"\x01\x02\x03\x04" + b"hi"
 
 
-@pytest.mark.parametrize("version", [0x01, 0x02, 0x04])
+@pytest.mark.parametrize("version", [0x01, 0x02, 0x03, 0x05])
 def test_decode_refuses_any_other_wire_version(version):
     # No downgrade (ADR-0009). Version 1 cannot prove the runtime to the phone and
     # version 2 sends the payload in clear, so an older peer is refused at the

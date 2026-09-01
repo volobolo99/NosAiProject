@@ -33,9 +33,9 @@ public sealed class SessionCipherTests
         "8C86BE6149B84DB5EAB8C5C38C8C5C36DC3261EB26CAE85E63872F392F18384B";
 
     // A TelemetrySnapshot frame: NOSA, version 3, type 0x11, payload 0x2A, sequence 7.
-    private const string GoldenHeader = "4E4F53410311002A00000007";
+    private const string GoldenHeader = "4E4F53410411002A00000007";
     private const string GoldenPayload =
-        "000000000000000000000000803FC5ED76FBFF5E0AEB85DCAE312A4ACD2BFDFE1D57628D1C92FBC16466";
+        "000000000000000000000000803FC5ED76FBFF5E0AEB85DCAE313832A57013386CFE79224650B2FC5E9B";
     private static readonly byte[] GoldenPlaintext = "gate1-snapshot"u8.ToArray();
 
     private static byte[] ClientNonce() => Enumerable.Range(0, 32).Select(i => (byte)i).ToArray();

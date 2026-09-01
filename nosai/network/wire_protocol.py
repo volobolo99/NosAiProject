@@ -8,11 +8,20 @@ from typing import Any
 
 MAGIC = b"NOSA"
 # Version 2 added mutual authentication; version 3 encrypts the session payload
-# (ADR-0009). An older peer is refused rather than downgraded: version 1 cannot
-# prove the runtime to the phone and version 2 sends the payload in clear, so
-# accepting either leaves exactly the hole the bump exists to close. There is no
-# negotiation. Source of truth: WireHeader.CurrentVersion.
-VERSION = 3
+# (ADR-0009); version 4 gives heartbeats a payload so that no sealed frame is ever
+# built over an empty plaintext. An older peer is refused rather than downgraded:
+# version 1 cannot prove the runtime to the phone, version 2 sends the payload in
+# clear, and a version 3 peer answers a heartbeat with an empty ack that aborts the
+# Android client's own process. There is no negotiation.
+# Source of truth: WireHeader.CurrentVersion.
+VERSION = 4
+
+#: The single byte a heartbeat and its ack carry. Sealing an empty plaintext hands
+#: ChaCha20-Poly1305 a zero-length buffer, which the Android crypto PAL rejects as a
+#: null pointer -- it aborts the process rather than treating it as the empty input
+#: AEAD defines. Never read; it exists so the frame is never empty.
+#: Source of truth: WireMessageTypes.HeartbeatPayload.
+HEARTBEAT_PAYLOAD = b"\x01"
 HEADER = struct.Struct(">4sBBHI")  # magic, version, type, payload_len, seq
 # PAYLOAD_LEN is a uint16, so 65535 is the largest length the header can express.
 # This was 64 * 1024 (= 65536), one byte too generous: a payload of exactly that
