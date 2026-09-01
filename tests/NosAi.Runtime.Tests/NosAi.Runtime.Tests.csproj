@@ -19,6 +19,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <!-- Crops of the real client's HUD, taken during T-03. They are the only
+         evidence in the repository of what a NosTale bar is actually made of;
+         data/ is gitignored, so a copy lives here or the reader goes back to
+         being tested exclusively against bars this project painted itself. -->
+    <None Include="Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\NosAi.Runtime\NosAi.Runtime.csproj" />
     <!-- Both ends of the canonical channel, so the handshake is tested against the
          real server rather than against a description of it. -->
