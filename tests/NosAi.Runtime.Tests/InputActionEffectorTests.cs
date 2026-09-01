@@ -94,9 +94,33 @@ public sealed class InputActionEffectorTests
     // Host at once, and a file importing two of those namespaces cannot say which
     // it means. That is the shared-boundary debt the roadmap records, met here.
     private static ActionCandidate Candidate(
-        ActionType type, int skillOrItemId = 0, int x = 0, int y = 0) => new(
-        Guid.NewGuid(), type, "TARGET", x, y, skillOrItemId,
+        ActionType type,
+        int skillOrItemId = 0,
+        int x = 0,
+        int y = 0,
+        int slot = 1,
+        long entityId = 101) => new(
+        Guid.NewGuid(), type, TargetFor(type, x, y, slot, entityId), skillOrItemId,
         NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted, "test");
+
+    /// <summary>
+    /// A target of the shape each action type requires; <c>0,0</c> means the
+    /// position was not supplied, which an entity is allowed to say and a
+    /// position is not.
+    /// </summary>
+    private static ActionTarget TargetFor(ActionType type, int x, int y, int slot, long entityId)
+    {
+        MapPoint? at = x == 0 && y == 0 ? null : new MapPoint(x, y);
+        return type switch
+        {
+            ActionType.UseBasicAttack or ActionType.TargetEntity or ActionType.UseSkill
+                => new ActionTarget.Entity(entityId, at),
+            ActionType.MoveToPosition or ActionType.EmergencyFlee or ActionType.CollectGroundItem
+                => new ActionTarget.Position(at ?? new MapPoint(0, 0)),
+            ActionType.UseConsumable => new ActionTarget.InventorySlot(slot),
+            _ => ActionTarget.None.Instance,
+        };
+    }
 
     private static (InputActionEffector Effector, RecordingInputBackend Backend) Build(
         RuntimeSafetyPolicy policy,
@@ -114,10 +138,10 @@ public sealed class InputActionEffectorTests
     public async Task A_consumable_presses_the_key_the_operator_bound_to_its_slot()
     {
         (InputActionEffector effector, RecordingInputBackend backend) =
-            Build(Open, Binds(("consumable.101", 49)));
+            Build(Open, Binds(("consumable.4", 49)));
 
         ExecutionResult result = await effector.ApplyAsync(
-            Candidate(ActionType.UseConsumable, skillOrItemId: 101));
+            Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Completed, result.State);
         Assert.Equal("key:49", Assert.Single(backend.Events));
@@ -168,10 +192,10 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) = Build(Open);
 
         ExecutionResult result = await effector.ApplyAsync(
-            Candidate(ActionType.UseConsumable, skillOrItemId: 101));
+            Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Refused, result.State);
-        Assert.Equal("keybind_not_configured:consumable.101", result.Reason);
+        Assert.Equal("keybind_not_configured:consumable.4", result.Reason);
         Assert.Empty(backend.Events);
     }
 
@@ -231,6 +255,45 @@ public sealed class InputActionEffectorTests
     }
 
     /// <summary>
+    /// The planner knows there is a target and not which one until F2-2 picks the
+    /// nearest observed sighting. Clicking where a placeholder pointed is the
+    /// mistake the typed target exists to prevent, so it is refused by name.
+    /// </summary>
+    [Fact]
+    public async Task An_entity_nobody_has_identified_is_refused_before_the_projection()
+    {
+        (InputActionEffector effector, RecordingInputBackend backend) =
+            Build(Open, projection: new FakeProjection());
+        var candidate = new ActionCandidate(
+            Guid.NewGuid(), ActionType.UseBasicAttack, ActionTarget.Entity.Unidentified, 0,
+            NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted, "test");
+
+        ExecutionResult result = await effector.ApplyAsync(candidate);
+
+        Assert.Equal(ExecutionState.Refused, result.State);
+        Assert.Equal("target_entity_unresolved", result.Reason);
+        Assert.Empty(backend.Events);
+    }
+
+    /// <summary>
+    /// An entity seen without a position is a different refusal from one nobody
+    /// identified, and both are different from a click at 0,0.
+    /// </summary>
+    [Fact]
+    public async Task An_identified_entity_without_a_position_is_refused_by_its_own_name()
+    {
+        (InputActionEffector effector, RecordingInputBackend backend) =
+            Build(Open, projection: new FakeProjection());
+
+        ExecutionResult result = await effector.ApplyAsync(
+            Candidate(ActionType.UseBasicAttack, entityId: 313816, x: 0, y: 0));
+
+        Assert.Equal(ExecutionState.Refused, result.State);
+        Assert.Equal("target_position_unknown", result.Reason);
+        Assert.Empty(backend.Events);
+    }
+
+    /// <summary>
     /// Named, not silently unhandled. An effector that quietly did nothing would
     /// have the cycle reported as executed with nothing behind it.
     /// </summary>
@@ -273,14 +336,14 @@ public sealed class InputActionEffectorTests
     {
         var policy = Open;
         var gate = new GatedInputBackend(new RejectingInputBackend(), () => policy);
-        var effector = new InputActionEffector(gate, Binds(("consumable.101", 49)), () => policy);
+        var effector = new InputActionEffector(gate, Binds(("consumable.4", 49)), () => policy);
 
         ExecutionResult result = await effector.ApplyAsync(
-            Candidate(ActionType.UseConsumable, skillOrItemId: 101));
+            Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Failed, result.State);
         Assert.False(result.Completed);
-        Assert.Equal("input_not_accepted:consumable.101", result.Reason);
+        Assert.Equal("input_not_accepted:consumable.4", result.Reason);
     }
 
     [Fact]
@@ -316,7 +379,7 @@ public sealed class InputActionEffectorTests
     {
         (InputActionEffector effector, RecordingInputBackend backend) = Build(
             Closed,
-            Binds(("consumable.0", 49), ("skill.0", 112)),
+            Binds(("consumable.1", 49), ("skill.0", 112)),
             new FakeProjection());
 
         ExecutionResult result = await effector.ApplyAsync(Candidate(type, x: 125, y: 85));
@@ -338,16 +401,16 @@ public sealed class InputActionEffectorTests
         var backend = new RecordingInputBackend();
         var gate = new GatedInputBackend(backend, () => policy);
         var effector = new InputActionEffector(
-            gate, Binds(("consumable.101", 49)), () => policy);
+            gate, Binds(("consumable.4", 49)), () => policy);
 
         Assert.Equal(
             ExecutionState.Completed,
-            (await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101))).State);
+            (await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4))).State);
 
         policy = Closed;
 
         ExecutionResult afterClosing =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101));
+            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Disabled, afterClosing.State);
         Assert.Single(backend.Events);
@@ -384,19 +447,19 @@ public sealed class InputActionEffectorTests
         var gate = new GatedInputBackend(backend, () => policy);
         IActionEffector effector = ActionEffectorFactory.ForPolicy(
             () => policy,
-            new InputActionEffector(gate, Binds(("consumable.101", 49)), () => policy));
+            new InputActionEffector(gate, Binds(("consumable.4", 49)), () => policy));
 
         // Composed while everything is off, exactly as the host does it.
         Assert.False(effector.CanApply);
         ExecutionResult beforeArming =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101));
+            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
         Assert.Equal(ExecutionState.Disabled, beforeArming.State);
         Assert.Empty(backend.Events);
 
         policy = Open;
 
         ExecutionResult afterArming =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101));
+            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Completed, afterArming.State);
         Assert.Equal("key:49", Assert.Single(backend.Events));
@@ -415,12 +478,12 @@ public sealed class InputActionEffectorTests
             () => policy,
             new InputActionEffector(
                 new GatedInputBackend(backend, () => policy),
-                Binds(("consumable.101", 49)),
+                Binds(("consumable.4", 49)),
                 () => policy));
 
-        await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101));
+        await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
         policy = Closed;
-        ExecutionResult stopped = await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101));
+        ExecutionResult stopped = await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Disabled, stopped.State);
         Assert.Single(backend.Events);

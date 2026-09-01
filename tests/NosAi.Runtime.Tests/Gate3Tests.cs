@@ -25,6 +25,20 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class Gate3Tests
 {
+    // A target of the shape each action type requires. The pairing is checked by
+    // ActionCandidate itself now, so a test cannot quietly build an attack on
+    // nothing the way "T", 0, 0 used to let it.
+    private static readonly ActionTarget.Position Somewhere = new(new MapPoint(10, 10));
+    private static readonly ActionTarget.Entity SomeMob = new(101, new MapPoint(10, 10));
+
+    private static ActionTarget TargetFor(ActionType type) => type switch
+    {
+        ActionType.UseBasicAttack or ActionType.TargetEntity or ActionType.UseSkill => SomeMob,
+        ActionType.MoveToPosition or ActionType.EmergencyFlee or ActionType.CollectGroundItem => Somewhere,
+        ActionType.UseConsumable => new ActionTarget.InventorySlot(1),
+        _ => ActionTarget.None.Instance,
+    };
+
     private static readonly RuntimeSafetyPolicy ExecutionAllowed = new(
         LiveInputEnabled: true, PacketInjectionEnabled: false, RequireClientHealthy: true, RequireGuardApproval: true);
 
@@ -108,7 +122,7 @@ public sealed class Gate3Tests
     {
         var verifier = new ActionExecutionVerifier();
         var candidate = new ActionCandidate(
-            Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "test");
+            Guid.NewGuid(), ActionType.MoveToPosition, Somewhere, 0, TrustTier.Tier1_Assisted, "test");
         var predicted = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "POST_HP_10_MP_10");
         var executed = new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null);
 
@@ -128,7 +142,7 @@ public sealed class Gate3Tests
     {
         var verifier = new ActionExecutionVerifier();
         var candidate = new ActionCandidate(
-            Guid.NewGuid(), ActionType.UseSkill, "T", 0, 0, 0, TrustTier.Tier2_SemiAutonomous, "test");
+            Guid.NewGuid(), ActionType.UseSkill, SomeMob, 0, TrustTier.Tier2_SemiAutonomous, "test");
         var predicted = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "POST_HP_900_MP_65");
         var executed = new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null);
 
@@ -313,8 +327,8 @@ public sealed class Gate3Tests
         var gate = new SafetyGate(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
         var executor = new AuthorizedActionExecutor(gate, new CountingEffector());
 
-        var mine = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "a");
-        var other = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "b");
+        var mine = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, Somewhere, 0, TrustTier.Tier1_Assisted, "a");
+        var other = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, Somewhere, 0, TrustTier.Tier1_Assisted, "b");
         var outcome = new PredictedOutcome(mine.CandidateId, 0, 0, 100, 1f, 0f, "SIG");
 
         Assert.True(gate.TryAuthorize(mine, outcome, RuntimeMode.Normal, out SafetyToken? token, out _));
@@ -356,7 +370,7 @@ public sealed class Gate3Tests
         // Recovery must stay possible while cooling, or thermal throttling would stop
         // the character from saving itself.
         var guard = new GuardPolicyEngine();
-        var candidate = new ActionCandidate(Guid.NewGuid(), action, "T", 0, 0, 0, TrustTier.Tier1_Assisted, "test");
+        var candidate = new ActionCandidate(Guid.NewGuid(), action, TargetFor(action), 0, TrustTier.Tier1_Assisted, "test");
         var outcome = new PredictedOutcome(candidate.CandidateId, 0, 0, 100, 1f, 0f, "SIG");
 
         Assert.Equal(expectedAllowed, guard.Evaluate(candidate, outcome, mode).IsAllowedByPolicy);
@@ -368,8 +382,8 @@ public sealed class Gate3Tests
         // It is the action taken *because* the situation is dangerous, so the ceiling
         // that blocks risky actions must not block the escape.
         var guard = new GuardPolicyEngine();
-        var flee = new ActionCandidate(Guid.NewGuid(), ActionType.EmergencyFlee, "SAFE", 0, 0, 0, TrustTier.Tier1_Assisted, "run");
-        var risky = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, "MOB", 0, 0, 0, TrustTier.Tier1_Assisted, "hit");
+        var flee = new ActionCandidate(Guid.NewGuid(), ActionType.EmergencyFlee, Somewhere, 0, TrustTier.Tier1_Assisted, "run");
+        var risky = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, SomeMob, 0, TrustTier.Tier1_Assisted, "hit");
 
         Assert.True(guard.Evaluate(flee, new PredictedOutcome(flee.CandidateId, 0, 0, 100, 1f, 0.9f, "S"), RuntimeMode.Normal).IsAllowedByPolicy);
         Assert.False(guard.Evaluate(risky, new PredictedOutcome(risky.CandidateId, 0, 0, 100, 1f, 0.9f, "S"), RuntimeMode.Normal).IsAllowedByPolicy);

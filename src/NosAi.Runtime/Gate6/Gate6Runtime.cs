@@ -223,6 +223,17 @@ namespace NosAi.Runtime.Gate6
         /// One closed-loop step (Plan → Safety → Execute → Verify) against the
         /// simulated world. Every report is prefixed with the world's provenance.
         /// </summary>
+        /// <summary>
+        /// The entity Gate 6's simulated world contains.
+        /// </summary>
+        /// <remarks>
+        /// A real id in the type system and a made-up one in the world, which is
+        /// the honest description of everything in Gate 6: the whole world here is
+        /// SIMULATED and labelled as such, and nothing it produces reaches a live
+        /// effector.
+        /// </remarks>
+        private const long SimulatedTargetEntityId = 101;
+
         public async Task<(bool Success, string Report)> ExecuteStepAsync(CancellationToken ct = default)
         {
             _cycleCounter++;
@@ -230,12 +241,16 @@ namespace NosAi.Runtime.Gate6
             int currentMp = _world.CurrentMp;
             int maxHp = _world.MaxHp;
 
+            bool healing = currentHp < maxHp * 0.35;
             var candidate = new ActionCandidate(
                 Guid.NewGuid(),
-                currentHp < maxHp * 0.35 ? ActionType.UseConsumable : ActionType.UseSkill,
-                "SIM_TARGET_MOB_01",
-                120, 85,
-                currentHp < maxHp * 0.35 ? 101 : 201,
+                healing ? ActionType.UseConsumable : ActionType.UseSkill,
+                healing
+                    ? new ActionTarget.InventorySlot(1)
+                    // Simulated world, simulated entity: the id is the one Gate 6's
+                    // own world model uses, not one read off a wire.
+                    : new ActionTarget.Entity(SimulatedTargetEntityId, new MapPoint(120, 85)),
+                healing ? 101 : 201,
                 TrustTier.Tier2_SemiAutonomous,
                 "Azione pianificata sul mondo simulato del Gate 6."
             );
@@ -277,6 +292,9 @@ namespace NosAi.Runtime.Gate6
 
     public static class Gate6ReleaseCertifier
     {
+        /// <summary>The entity these checks aim at, in Gate 6's simulated world.</summary>
+        private const long SimulatedTargetEntityId = 101;
+
         /// <summary>
         /// Runs every Gate 6 integration check and reports each one by name.
         /// </summary>
@@ -399,7 +417,7 @@ namespace NosAi.Runtime.Gate6
             var trust = new TrustBoundary(TrustTier.Tier3_AutonomousRestricted);
             var gate = new SafetyGate(trust, new GuardPolicyEngine());
 
-            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, "MOB", 0, 0, 201, TrustTier.Tier2_SemiAutonomous, "Test");
+            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, new ActionTarget.Entity(SimulatedTargetEntityId), 201, TrustTier.Tier2_SemiAutonomous, "Test");
             var outcome = new PredictedOutcome(candidate.CandidateId, 0, -35, 200, 0.95f, 0.1f, "SIG");
 
             if (!gate.TryAuthorize(candidate, outcome, RuntimeMode.Normal, out SafetyToken? token, out _))
@@ -416,7 +434,7 @@ namespace NosAi.Runtime.Gate6
             var gateA = new SafetyGate(trust, new GuardPolicyEngine());
             var gateB = new SafetyGate(trust, new GuardPolicyEngine());
 
-            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, "MOB", 0, 0, 201, TrustTier.Tier2_SemiAutonomous, "Test");
+            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, new ActionTarget.Entity(SimulatedTargetEntityId), 201, TrustTier.Tier2_SemiAutonomous, "Test");
             var outcome = new PredictedOutcome(candidate.CandidateId, 0, -35, 200, 0.95f, 0.1f, "SIG");
             if (!gateA.TryAuthorize(candidate, outcome, RuntimeMode.Normal, out SafetyToken? token, out _))
                 return false;
@@ -433,7 +451,7 @@ namespace NosAi.Runtime.Gate6
         private static bool TestGuardPolicyBoundaries()
         {
             var policy = new GuardPolicyEngine();
-            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, "MOB", 0, 0, 201, TrustTier.Tier2_SemiAutonomous, "Test");
+            var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, new ActionTarget.Entity(SimulatedTargetEntityId), 201, TrustTier.Tier2_SemiAutonomous, "Test");
             var safeOutcome = new PredictedOutcome(candidate.CandidateId, -10, -35, 200, 0.95f, 0.1f, "SIG");
             var riskyOutcome = safeOutcome with { RiskScore = 0.9f };
             var flee = candidate with { Type = ActionType.EmergencyFlee };

@@ -203,6 +203,30 @@ non difetti nascosti. Il primo si è ristretto a metà: la tastiera arriva al
 client, il mouse no, e manca la trasformazione coordinata → pixel (F2-3) perché
 è la sola che non si può dedurre — va calibrata su un client reale.
 
+## Debito noto: il token firma l'identificativo, non l'azione
+
+`SafetyGate.TryAuthorize` calcola `HMACSHA256(chiave, candidate.CandidateId)`.
+La firma copre **solo il Guid**: non il tipo d'azione, non il bersaglio, non il
+livello di trust richiesto.
+
+Verificato mentre si passava `ActionCandidate` a un bersaglio tipizzato (F2-1),
+perché era la domanda da farsi prima di cambiare la forma del record. La risposta
+ha una conseguenza buona e una cattiva:
+
+- **Buona:** cambiare la forma del bersaglio non cambia ciò che viene firmato, e
+  infatti i test su riuso, scadenza e contraffazione del token sono passati
+  invariati dopo la modifica. Il legame regge.
+- **Cattiva:** `candidate with { Target = ... }` produce un candidato diverso con
+  lo stesso `CandidateId`, e il token continua a validarlo. Il token autorizza
+  *un identificativo*, non *un'azione*: fra l'autorizzazione e l'esecuzione il
+  bersaglio può cambiare senza che la firma se ne accorga.
+
+Non è stato corretto qui. Cambiare ciò che entra nell'HMAC è una modifica al
+comportamento di sicurezza e merita la propria decisione, non di essere infilata
+in un refactoring di tipi — ed è esattamente la classe di modifica che
+`CLAUDE.md` vieta durante una milestone mirata. Resta scritto qui perché il
+prossimo che tocca il Safety Gate lo trovi.
+
 ## Debito noto: tipi duplicati
 
 `TrustTier` è definito in `Contracts`, `Gate3`, `Gate6` e `Host`. `SafetyGate`

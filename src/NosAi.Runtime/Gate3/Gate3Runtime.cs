@@ -230,6 +230,30 @@ namespace NosAi.Runtime.Gate3
             bool isInCombat)
             => Plan(playerHp, maxHp, playerMp, hasTarget);
 
+        /// <summary>
+        /// The quickbar slot the HP potion sits in, as far as the planner knows.
+        /// </summary>
+        /// <remarks>
+        /// A number the planner asserts and nobody has confirmed, exactly as the
+        /// waypoint below is. It reaches no key on its own: the effector looks the
+        /// slot up in the operator's keybinds and refuses by name when it is not
+        /// configured, so an unconfirmed slot costs a named refusal rather than a
+        /// keypress during a fight.
+        /// </remarks>
+        private const int HpPotionSlot = 1;
+
+        /// <summary>
+        /// Where exploration heads when there is no target.
+        /// </summary>
+        /// <remarks>
+        /// Still a constant nobody observed — the same <c>130, 90</c> the old
+        /// <c>"WAYPOINT_A"</c> carried. It is a real map point in the type system
+        /// now, which is not the same as a real map point: turning it into one is
+        /// navigation's job, not this card's. Until the screen projection is
+        /// calibrated (F2-3) the effector refuses to click it at all.
+        /// </remarks>
+        private static readonly MapPoint ExplorationWaypoint = new(130, 90);
+
         /// <param name="hasTarget">Null when nobody has established it.</param>
         private static List<ActionCandidate> Plan(
             int playerHp,
@@ -246,9 +270,7 @@ namespace NosAi.Runtime.Gate3
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
                     ActionType.UseConsumable,
-                    "ITEM_POTION_HP",
-                    0,
-                    0,
+                    new ActionTarget.InventorySlot(HpPotionSlot),
                     101,
                     TrustTier.Tier1_Assisted,
                     "HP critico: uso pozione di recupero"));
@@ -256,9 +278,7 @@ namespace NosAi.Runtime.Gate3
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
                     ActionType.EmergencyFlee,
-                    "SAFE_POS",
-                    100,
-                    80,
+                    new ActionTarget.Position(new MapPoint(100, 80)),
                     0,
                     TrustTier.Tier1_Assisted,
                     "HP critico: riposizionamento difensivo"));
@@ -271,9 +291,7 @@ namespace NosAi.Runtime.Gate3
                     list.Add(new ActionCandidate(
                         Guid.NewGuid(),
                         ActionType.UseSkill,
-                        "TARGET_MOB_01",
-                        125,
-                        85,
+                        ActionTarget.Entity.Unidentified,
                         201,
                         TrustTier.Tier2_SemiAutonomous,
                         "Bersaglio attivo: skill ad alto impatto"));
@@ -282,9 +300,7 @@ namespace NosAi.Runtime.Gate3
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
                     ActionType.UseBasicAttack,
-                    "TARGET_MOB_01",
-                    125,
-                    85,
+                    ActionTarget.Entity.Unidentified,
                     0,
                     TrustTier.Tier2_SemiAutonomous,
                     "Bersaglio attivo: attacco base"));
@@ -294,9 +310,7 @@ namespace NosAi.Runtime.Gate3
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
                     ActionType.MoveToPosition,
-                    "WAYPOINT_A",
-                    130,
-                    90,
+                    new ActionTarget.Position(ExplorationWaypoint),
                     0,
                     TrustTier.Tier1_Assisted,
                     "Esplorazione verso waypoint"));
@@ -845,7 +859,18 @@ namespace NosAi.Runtime.Gate3
         private static ActionCandidate Candidate(
             ActionType type = ActionType.MoveToPosition,
             TrustTier required = TrustTier.Tier1_Assisted) =>
-            new(Guid.NewGuid(), type, "TARGET", 10, 10, 0, required, "test");
+            new(Guid.NewGuid(), type, TargetFor(type), 0, required, "test");
+
+        /// <summary>A target of the shape the action type requires.</summary>
+        private static ActionTarget TargetFor(ActionType type) => type switch
+        {
+            ActionType.UseBasicAttack or ActionType.TargetEntity or ActionType.UseSkill
+                => new ActionTarget.Entity(101, new MapPoint(10, 10)),
+            ActionType.MoveToPosition or ActionType.EmergencyFlee or ActionType.CollectGroundItem
+                => new ActionTarget.Position(new MapPoint(10, 10)),
+            ActionType.UseConsumable => new ActionTarget.InventorySlot(1),
+            _ => ActionTarget.None.Instance,
+        };
 
         private static PredictedOutcome Outcome(Guid id, float risk = 0.0f, string signature = "SIG") =>
             new(id, 0, 0, 200, 1.0f, risk, signature);

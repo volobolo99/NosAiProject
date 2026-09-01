@@ -26,7 +26,23 @@ public sealed class AutonomyPipelineTests
     private static ActionCandidate Candidate(
         ActionType type = ActionType.UseBasicAttack,
         TrustTier required = TrustTier.Tier1_Assisted) =>
-        new(Guid.NewGuid(), type, "mob-1", 0, 0, 0, required, "test");
+        new(Guid.NewGuid(), type, TargetFor(type), 0, required, "test");
+
+    /// <summary>
+    /// A target of the shape each action type requires. The pairing is checked by
+    /// <see cref="ActionCandidate"/> itself now, so a helper that handed every
+    /// action an entity would fail at construction rather than quietly building a
+    /// flight aimed at a monster.
+    /// </summary>
+    private static ActionTarget TargetFor(ActionType type) => type switch
+    {
+        ActionType.UseBasicAttack or ActionType.TargetEntity or ActionType.UseSkill
+            => new ActionTarget.Entity(101, new MapPoint(10, 10)),
+        ActionType.MoveToPosition or ActionType.EmergencyFlee or ActionType.CollectGroundItem
+            => new ActionTarget.Position(new MapPoint(10, 10)),
+        ActionType.UseConsumable => new ActionTarget.InventorySlot(1),
+        _ => ActionTarget.None.Instance,
+    };
 
     private static PredictedOutcome Outcome(Guid id, float risk = 0.1f) =>
         new(id, -5, 0, 100, 0.9f, risk, "POST_HP_95_MP_50");
@@ -100,6 +116,45 @@ public sealed class AutonomyPipelineTests
         token!.Signature[0] ^= 0xFF;
 
         Assert.False(gate.ValidateToken(token));
+    }
+
+    /// <summary>
+    /// What the signature actually covers, written down because F2-1 had to ask
+    /// before changing the shape of the target.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>TryAuthorize</c> signs <c>candidate.CandidateId</c> and nothing else —
+    /// not the action type, not the target, not the trust required. So changing
+    /// the target's shape does not change what is signed, which is why the reuse,
+    /// expiry and forgery tests above passed unchanged through that refactor.
+    /// </para>
+    /// <para>
+    /// The other half of the same fact is a real limit: a candidate copied with a
+    /// different target keeps its id, and this token still validates it. The token
+    /// authorises <i>an identifier</i>, not <i>an action</i>. Recorded in
+    /// docs/GATE3_PIPELINE.md; widening the HMAC is a change to security
+    /// behaviour and needs its own decision, not a refactor's coat-tails.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void TheTokenBindsTheCandidateIdAndNotTheActionItAuthorised()
+    {
+        var gate = NewGate();
+        ActionCandidate candidate = Candidate(ActionType.UseBasicAttack);
+        gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal,
+            out SafetyToken? token, out _);
+
+        // A different target, the same id.
+        ActionCandidate elsewhere = candidate with
+        {
+            Target = new ActionTarget.Entity(999_999, new MapPoint(1, 1))
+        };
+
+        Assert.Equal(candidate.CandidateId, elsewhere.CandidateId);
+        Assert.NotEqual(candidate.Target, elsewhere.Target);
+        Assert.True(gate.ValidateToken(token!));
+        Assert.Equal(token!.CandidateId, elsewhere.CandidateId);
     }
 
     [Fact]

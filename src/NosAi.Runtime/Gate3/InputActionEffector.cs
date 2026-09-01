@@ -158,7 +158,13 @@ public sealed class InputActionEffector : IActionEffector
         var clock = Stopwatch.StartNew();
         ExecutionResult result = candidate.Type switch
         {
-            ActionType.UseConsumable => PressKey(candidate, $"consumable.{candidate.SkillOrItemId}", clock),
+            // The slot is the target for a consumable, so the intent names the
+            // slot the operator configured rather than the item id, which is a
+            // catalogue number and not something on their quickbar.
+            ActionType.UseConsumable => candidate.Target is ActionTarget.InventorySlot slot
+                ? PressKey(candidate, $"consumable.{slot.Slot}", clock)
+                : Result(candidate, ExecutionState.Refused, clock, "target_slot_unknown"),
+
             ActionType.UseSkill => PressKey(candidate, $"skill.{candidate.SkillOrItemId}", clock),
 
             ActionType.UseBasicAttack or ActionType.TargetEntity
@@ -216,26 +222,51 @@ public sealed class InputActionEffector : IActionEffector
     /// The map coordinate this action is aimed at, or why there is none.
     /// </summary>
     /// <remarks>
-    /// <c>0,0</c> is how <see cref="ActionCandidate"/> already spells "no
-    /// position" — the planner builds <see cref="ActionType.UseConsumable"/> with
-    /// exactly that — so it is read as absent rather than as the corner of the
-    /// map. F2-1 replaces the two loose integers with a target that can say so in
-    /// its own type, and this check goes with it.
+    /// <para>
+    /// The target says this itself now. It used to be two loose integers where
+    /// <c>0,0</c> stood for "no position", which is also a real corner of the map
+    /// — the ambiguity F2-1 removed.
+    /// </para>
+    /// <para>
+    /// An entity nobody has identified is refused by name rather than clicked at
+    /// wherever a placeholder would have pointed. The planner knows <i>that</i>
+    /// there is a target and not <i>which</i> until F2-2 picks the nearest
+    /// observed sighting, and acting on the difference is the mistake this whole
+    /// card exists to prevent.
+    /// </para>
     /// </remarks>
     private static bool TryTargetPoint(
         ActionCandidate candidate, out int mapX, out int mapY, out string? failureReason)
     {
-        mapX = candidate.TargetX;
-        mapY = candidate.TargetY;
+        mapX = 0;
+        mapY = 0;
 
-        if (mapX == 0 && mapY == 0)
+        switch (candidate.Target)
         {
-            failureReason = "target_position_unknown";
-            return false;
-        }
+            case ActionTarget.Position position:
+                mapX = position.At.X;
+                mapY = position.At.Y;
+                failureReason = null;
+                return true;
 
-        failureReason = null;
-        return true;
+            case ActionTarget.Entity { IsResolved: false }:
+                failureReason = "target_entity_unresolved";
+                return false;
+
+            case ActionTarget.Entity { At: null }:
+                failureReason = "target_position_unknown";
+                return false;
+
+            case ActionTarget.Entity { At: { } at }:
+                mapX = at.X;
+                mapY = at.Y;
+                failureReason = null;
+                return true;
+
+            default:
+                failureReason = "target_position_unknown";
+                return false;
+        }
     }
 
     private static ExecutionResult Result(
