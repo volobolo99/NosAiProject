@@ -396,6 +396,49 @@ corretto una volta.
 
 ---
 
+## Decisione — `GameEventKind` non viene esteso (1 settembre 2026)
+
+Cursor si è fermato su C5 e C6 chiedendo quale valore di `GameEventKind` usare per
+`sr` e per `cond`. Le schede gli dicevano di fermarsi lì, e ha fatto bene. La
+risposta è che l'enum non c'entra: la domanda era la spia di due schede scritte
+male, non di un buco nel contratto.
+
+`GameEvent(GameEventKind Kind, long EntityId, string Descriptor, DataSourceKind
+Source)` è fatto per *«è successo qualcosa a un'entità»*. Il `Descriptor` è
+un'etichetta — nel codice esistente vale `"die"` e `"su"` — non un contenitore di
+valori. Non c'è posto per un numero che non sia un id di entità, e infilarcelo in
+una stringa lascerebbe ogni lettore a riparsarla.
+
+Ma il difetto vero sta sopra la forma:
+
+- **La velocità di `cond` non è un evento, è uno stato.** È una proprietà del
+  personaggio nel tempo, come gli HP, e va in `PlayerVitals` — che porta già
+  `HasTarget` e `InCombat`, ed è quindi già lo stato del personaggio sotto un nome
+  stretto. C6 riscritta di conseguenza. Ha un consumatore reale: il controllo di
+  continuità di F1-10.
+- **`sr` non è leggibile, e nessun contenitore lo aggiusterebbe.** Dice quando una
+  skill torna pronta; niente sul wire dice quando smette di esserlo. Un insieme di
+  slot pronti partirebbe vuoto e crescerebbe soltanto, e nessun pacchetto lo
+  correggerebbe — lo stesso identico difetto per cui `docs/PROTOCOLLO_NOSTALE.md`
+  rifiuta di dedurre `HasTarget` da `ct`. **C5 ritirata**, con la condizione di
+  riapertura scritta nella scheda.
+- **`lev` non ha un lettore.** Sei campi in più su un contratto condiviso per un
+  valore che nessuna regola consulta. **C8 rinviata**, per lo stesso principio con
+  cui ADR-0016 ha smesso di far bloccare il ciclo su `InCombat`.
+
+**Perché non un ADR.** Nessuna di queste tre cambia una decisione registrata: sono
+l'applicazione di regole che ADR-0012, ADR-0014 e ADR-0016 hanno già preso, a tre
+casi nuovi. Restano qui, dove chi riprende il lavoro le trova accanto alle schede
+che governano.
+
+**Se in futuro un opcode richiedesse davvero un evento nuovo** — uno con un vero
+soggetto e un vero istante — allora `GameEventKind` si estende **in coda**, mai
+rinumerando: `MessageSpec` in `ProtocolMap.cs` lo serializza per valore nelle
+mappe ricostruite dall'operatore, e un valore spostato reinterpreterebbe una mappa
+già scritta su disco.
+
+---
+
 ## Debito noto, da non lasciare crescere
 
 `TrustTier` è definito in `Contracts`, `Gate3`, `Gate6` e `Host`. `SafetyGate` in

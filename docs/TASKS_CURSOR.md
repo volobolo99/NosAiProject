@@ -61,10 +61,27 @@ compensata a intuito.
 | **C2** | F1-2 | `mv` pubblica la posizione dei mob senza `in`/`st` precedente | sapere dove sono i bersagli |
 | **C3** | F2-4 | `KeybindMap` — gli slot dell'operatore da configurazione | l'esecuzione delle azioni |
 | **C4** | F4-1 | `NetworkWorldStateObserver` — rileggere lo stato dopo l'azione | la chiusura del ciclo |
-| **C5** | F1-5 | `sr` — quali skill sono pronte | scelte di combattimento non sprecate |
-| **C6** | F1-4 | `cond` — la velocità di movimento del giocatore | la verifica dello spostamento |
-| **C7** | F1-3 | `stat` campo 4 — gli MP massimi | completezza dei vitali |
-| **C8** | F1-6 | `lev` — livello ed esperienza | progressione |
+| **C6** | F1-4 | `cond` — la velocità di movimento del giocatore | il controllo di continuità della posizione |
+| ~~C5~~ | F1-5 | ~~`sr` — quali skill sono pronte~~ | **ritirata**: il wire non dice mai quando una skill *entra* in ricarica |
+| ~~C7~~ | F1-3 | ~~`stat` campo 4 — gli MP massimi~~ | **risulta già fatta**: `PlayerVitals` porta `int? MaxMp` |
+| ~~C8~~ | F1-6 | ~~`lev` — livello ed esperienza~~ | **rinviata**: nessuna regola la consuma |
+
+### Le tre decisioni del 1 settembre, in breve
+
+Cursor si è fermato su C5 e C6 chiedendo quale valore aggiungere a
+`GameEventKind`, ed era il comportamento chiesto dalle schede. La risposta è che
+**`GameEventKind` non va esteso**, e che la domanda era la spia di un errore nelle
+schede, non di un buco nell'enum:
+
+- **C6 non è un evento, è uno stato.** La velocità va in `PlayerVitals`, dove
+  stanno già `HasTarget` e `InCombat`.
+- **C5 non è leggibile.** `sr` dice quando una skill torna pronta e niente dice
+  quando smette di esserlo: l'insieme sarebbe appiccicoso e falso, come sarebbe
+  stato `HasTarget` dedotto da `ct`. Ritirata, non rimandata a un enum più grande.
+- **C8 non ha un lettore.** Rinviata finché qualcosa non la consuma.
+
+Nessuna delle tre tocca la zona riservata. Il blocco si scioglie senza modifiche
+ai contratti condivisi.
 
 **C2 dipende da F1-1, che fa Claude.** Non iniziarla finché `EntitySighting` non
 porta una salute opzionale: la scheda lo dice e il codice non compilerebbe comunque.
@@ -85,10 +102,9 @@ caso facile: è il caso che sbaglia in silenzio se qualcuno prende una scorciato
 | C2 | *(file esistente del decoder)* | `MoveReportsPositionWithoutHealth` |
 | C3 | `KeybindMapTests` | `MissingFileIsRefusedNotEmpty` |
 | C4 | `NetworkWorldStateObserverTests` | `UnobservedProviderDoesNotBecomeZero` |
-| C5 | *(file esistente del decoder)* | `SkillReadyReportsSlot` |
 | C6 | *(file esistente del decoder)* | `CondReadsSpeedForPlayerOnly` |
 | C7 | *(file esistente del decoder)* | `StatCarriesMaxMp` |
-| C8 | *(file esistente del decoder)* | `LevRejectsXpAboveMax` |
+| ~~C5~~, ~~C8~~ | — | ritirata e rinviata: vedi le rispettive schede |
 
 Questi sono il **minimo**, non l'elenco completo: ogni scheda chiede un test per
 criterio di accettazione, e quelli restano dovuti. Questo è solo quello che si
@@ -508,58 +524,35 @@ feat(gate3): read the world back through the provider that observed it
 
 ---
 
-# C5 — `sr`: quali skill sono pronte
+# C5 — `sr`: quali skill sono pronte — **RITIRATA**
 
-**ID:** F1-5
+**ID:** F1-5 · **Stato:** ritirata il 1 settembre 2026 · **Non eseguirla.**
 
-## Perché
+La scheda chiedeva di emettere un evento per `sr`, e diceva di fermarsi se
+nessun valore di `GameEventKind` fosse stato onesto. Cursor si è fermato lì, ed
+era la risposta giusta. La conclusione però non è che serva un valore nuovo: è
+che **la lettura sarebbe sbagliata**, e nessun posto dove metterla la
+aggiusterebbe.
 
-Il planner propone `UseSkill` quando gli MP bastano, senza sapere se la skill sia
-in ricarica. Sul wire l'informazione c'è.
+`sr <slot>` dice *«lo slot N è tornato pronto»*. **Niente sul wire dice che uno
+slot è andato in ricarica.** Un insieme di slot pronti costruito da questi
+pacchetti partirebbe vuoto — lasciando credere che nulla sia pronto, falso — e
+poi crescerebbe soltanto, lasciando credere che tutto resti pronto per sempre,
+falso anch'esso. Nessun pacchetto lo correggerebbe mai.
 
-## File
+È lo stesso identico difetto che `docs/PROTOCOLLO_NOSTALE.md` registra per `ct`:
 
-- `src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs` — aggiungere
-  il ramo `"sr"` allo `switch` di `Decode` e il metodo che lo tratta
-- il file di test esistente del decoder
+> *neither has an observed "target cleared" counterpart, so a flag derived from
+> them would be sticky and wrong in a way nothing on the wire would correct.*
 
-## Specifica — da `docs/PROTOCOLLO_NOSTALE.md`
+Un evento isolato — «lo slot 0 è tornato pronto alle 14:03:11» — resta un fatto
+vero, ma il planner non chiede quello: chiede *«è pronta adesso?»*, ed è
+esattamente la domanda a cui questi pacchetti non sanno rispondere.
 
-```
-sr 0     sr 2     sr 6
-   slot
-```
-
-> 17 occorrenze. **probable** — skill pronta / ricarica terminata, per slot.
-
-## Cosa fare
-
-Emetti un `GameEvent` con un `GameEventKind` adatto fra quelli **già definiti**
-in `GameTrafficObserver.cs` e un `Descriptor` che porta lo slot. **Non aggiungere
-valori all'enum `GameEventKind`**: è un contratto condiviso e sta nella zona
-riservata. Se nessun valore esistente è onesto per questo evento, fermati e
-segnalalo: la scelta è di Claude.
-
-## Criteri di accettazione
-
-1. `sr <n>` con `n` intero non negativo → un evento con lo slot nel descrittore.
-2. `sr` senza campo, o con campo non numerico, o negativo → nessuna osservazione.
-3. Il valore è `probable` nella specifica: il commento nel codice lo dice, con il
-   rimando a `docs/PROTOCOLLO_NOSTALE.md`. Non spacciarlo per confermato.
-4. Nessuna regressione sugli opcode già letti.
-
-## Comandi
-
-```bash
-dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release
-dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --filter Decoder
-```
-
-## Commit
-
-```
-feat(perception): read which skill slot came off cooldown
-```
+**Quando riaprirla.** Quando una cattura nuova stabilisce il passaggio inverso —
+il pacchetto che dice che uno slot è entrato in ricarica, o le durate di ricarica
+per vnum. Allora l'insieme si chiude e diventa leggibile. Fino ad allora la
+regola `UseSkill` continua a decidere sugli MP, che sono osservati e confermati.
 
 ---
 
@@ -601,8 +594,45 @@ Un flag "non può muoversi" ricavato da un campo mai osservato diverso da zero �
 un'ipotesi con l'aspetto di un'osservazione, ed è precisamente ciò che
 `docs/PROTOCOLLO_NOSTALE.md` vieta per i campi marcati *unknown*.
 
-Emetti un evento con la velocità nel descrittore, come in C5, senza aggiungere
-valori all'enum.
+### Dove va la velocità — e perché non è un evento
+
+**Non emettere un `GameEvent`, e non toccare `GameEventKind`.**
+
+`GameEvent(Kind, long EntityId, string Descriptor, DataSourceKind Source)` è
+fatto per *«è successo qualcosa a un'entità»*, e il `Descriptor` è un'etichetta —
+`"die"`, `"su"` — non un contenitore di valori. Una velocità infilata in una
+stringa costringerebbe ogni lettore a riparsarla, e un numero passato in
+`EntityId` sarebbe un id che non è un id.
+
+Ma il punto vero è un altro: **la velocità non è un evento, è uno stato.** È una
+proprietà del personaggio nel tempo, esattamente come gli HP. Va dove stanno le
+altre proprietà del personaggio:
+
+```csharp
+public sealed record PlayerVitals(
+    int Hp,
+    int MaxHp,
+    int Mp,
+    bool? HasTarget,
+    bool? InCombat,
+    DataSourceKind Source,
+    DateTime? ObservedAtUtc = null,
+    int? MaxMp = null);
+```
+
+Aggiungi `int? MovementSpeed = null` **in coda**, dopo `MaxMp`, con la stessa
+regola di C7: in coda e con un default, così nessun chiamante posizionale
+esistente va toccato.
+
+Il record si chiama *Vitals* ma porta già `HasTarget` e `InCombat`, che vitali non
+sono: è già lo stato del personaggio sotto un nome stretto. Aggiornane il commento
+di sintesi per dire ciò che è diventato, senza rinominarlo — un rinominamento qui
+sarebbe un refactoring ampio dentro una milestone mirata, e `CLAUDE.md` lo vieta.
+
+Un `cond` da solo non porta gli HP, quindi non può costruire una `PlayerVitals`
+intera: **emetti l'aggiornamento della sola velocità nel modo che il decoder usa
+già per un aggiornamento parziale.** Se non esiste un modo del genere, fermati e
+segnalalo — è una scelta di forma e la prende Claude.
 
 ## Criteri di accettazione
 
@@ -610,7 +640,15 @@ valori all'enum.
 2. `cond 3 <id> …` → nessuna osservazione: non è il giocatore.
 3. Velocità non numerica, negativa o assente → nessuna osservazione.
 4. I campi 3 e 4 non compaiono in nessun punto del codice aggiunto.
-5. Un commento nel codice cita la specifica e il livello `probable`.
+5. `GameEventKind` non è toccato, e nessun `GameEvent` è emesso per `cond`.
+6. Un commento nel codice cita la specifica e il livello `probable`.
+
+## Chi la legge
+
+`MemoryGameplayProvider` (F1-10, Claude): il controllo di continuità usa la
+velocità per distinguere un personaggio che ha camminato da un offset di memoria
+che si è spostato. Non è un campo aggiunto per completezza — ha un consumatore
+già scritto nel piano.
 
 ## Comandi
 
@@ -692,9 +730,32 @@ feat(perception): keep the max MP the decoder already validates
 
 ---
 
-# C8 — `lev`: livello ed esperienza
+# C8 — `lev`: livello ed esperienza — **RINVIATA**
 
-**ID:** F1-6 · **Priorità:** bassa
+**ID:** F1-6 · **Stato:** rinviata il 1 settembre 2026 · **Non eseguirla ora.**
+
+Stessa domanda di C5 e C6 — dove va un fatto che non è un evento — ma qui la
+risposta è che **per adesso non va da nessuna parte**, perché nessuno lo legge.
+
+Il livello e l'esperienza sono stato del personaggio, come la velocità di C6. A
+differenza della velocità però non hanno un consumatore: la velocità serve al
+controllo di continuità di `MemoryGameplayProvider` (F1-10), la progressione non
+serve a muoversi né a combattere. Sei campi opzionali in più su `PlayerVitals`, o
+un record nuovo in `DecodedObservations`, per un valore che nessuna regola
+consulta, allargherebbero un contratto condiviso per niente.
+
+È lo stesso ragionamento con cui ADR-0016 ha smesso di far bloccare il ciclo su
+`InCombat`: un campo che nessuna regola legge non merita di costare nulla a
+nessuno. Il campo lì è rimasto perché c'era già; questo non c'è ancora, e non si
+aggiunge in anticipo.
+
+**Quando riaprirla.** Quando qualcosa la consuma davvero — una regola che smette
+di combattere a un livello, un rapporto di sessione, il pannello dell'operatore.
+La forma del pacchetto è già catalogata in `docs/PROTOCOLLO_NOSTALE.md` e non si
+perde: la scheda sotto resta scritta e pronta.
+
+<details>
+<summary>Scheda originale, da riusare quando ci sarà un consumatore</summary>
 
 ## Perché
 
@@ -744,3 +805,5 @@ dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --fi
 ```
 feat(perception): read level and experience from lev
 ```
+
+</details>

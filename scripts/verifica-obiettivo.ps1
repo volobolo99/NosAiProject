@@ -129,25 +129,24 @@ Report 'C7' 'stat porta gli MP massimi' `
     'test StatCarriesMaxMp'
 
 Report 'C6' 'cond legge la velocita'' del giocatore' `
-    (Test-TextUnder 'tests' 'CondReadsSpeedForPlayerOnly') `
-    'test CondReadsSpeedForPlayerOnly'
+    ((Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'MovementSpeed') -and
+     (Test-TextUnder 'tests' 'CondReadsSpeedForPlayerOnly')) `
+    'PlayerVitals.MovementSpeed e il test CondReadsSpeedForPlayerOnly'
 
-Report 'C5' 'sr legge lo slot skill pronto' `
-    (Test-TextUnder 'tests' 'SkillReadyReportsSlot') `
-    'test SkillReadyReportsSlot'
-
-Report 'C8' 'lev legge livello ed esperienza' `
-    (Test-TextUnder 'tests' 'LevRejectsXpAboveMax') `
-    'test LevRejectsXpAboveMax'
+# C5 (sr) e' ritirata e C8 (lev) rinviata: vedi docs/TASKS_CURSOR.md. Non sono
+# contate fra le schede aperte, perche' un elenco che chiede lavoro deciso di
+# non fare smette di essere un elenco di cui fidarsi.
 
 Report 'C1' 'TargetFrameReader legge il riquadro bersaglio' `
     ((Test-FilePresent 'src/NosAi.Runtime/Perception/TargetFrameReader.cs') -and
      (Test-TextUnder 'tests' 'NoiseIsUnreadableNotAbsent')) `
     'TargetFrameReader.cs e il test NoiseIsUnreadableNotAbsent'
 
+# Il nome esatto dell'ADR non e' fissato in anticipo: conta che esista.
+$adr18 = @(Get-ChildItem -LiteralPath (Join-Path $repo 'docs/adr') -Filter 'ADR-0018-*.md' -ErrorAction SilentlyContinue)
 Report 'F1-8' 'HasTarget stabilito, con il suo ADR' `
-    (Test-FilePresent 'docs/adr/ADR-0018-establishing-the-target.md') `
-    'docs/adr/ADR-0018-establishing-the-target.md'
+    ($adr18.Count -gt 0) `
+    'un docs/adr/ADR-0018-*.md'
 
 Report 'F1-10' 'posizione propria letta dalla memoria' `
     (Test-FilePresent 'src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs') `
