@@ -187,6 +187,16 @@ public static class ModuleReachability
             + "there are no LIVE gameplay outcomes to learn from yet, so wiring it "
             + "now would give it nothing to do."),
 
+        new("NosAi.Runtime.Navigation", ModuleReach.Unreferenced,
+            "The client's static map geometry: MapGrid, the rule that composes it "
+            + "with the observed layer, and the set identity that invalidates it on "
+            + "a client patch. Contract and semantics only \u2014 the loader that turns a "
+            + ".grid file into a MapGrid is not written, so nothing constructs a "
+            + "grid and nothing yet calls any of this. It is what would move "
+            + "NosAi.Navigation.Pathfinding off its own entry above, which says it "
+            + "refuses to plan across ground nobody mapped and that nothing maps "
+            + "ground yet."),
+
         new("NosAi.Runtime.PlayAi", ModuleReach.Unreferenced,
             "Fifteen lines with no caller."),
 
