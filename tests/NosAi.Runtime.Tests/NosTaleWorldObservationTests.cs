@@ -429,4 +429,89 @@ public sealed class NosTaleWorldObservationTests
         Assert.Equal(7305, first.Vitals!.Hp);
         Assert.Equal(7218, second.Vitals!.Hp);
     }
+
+    // ---------------------------------------------------------------- cond ----
+    //
+    // The player's movement speed. It is state rather than an event, so it rides
+    // on DecodedObservations and emits no GameEvent: a speed pushed through
+    // GameEvent's Descriptor would be a number in a label, and its EntityId is
+    // not an entity. The continuity check in the memory position provider is what
+    // reads it — a jump larger than this speed allows in the elapsed time is an
+    // offset that moved, not a character that walked.
+
+    /// <summary>
+    /// The binding test for card C6.
+    /// </summary>
+    /// <remarks>
+    /// Entity type 1 is the player, confirmed in docs/PROTOCOLLO_NOSTALE.md by the
+    /// session's own character id appearing as type 1 in <c>su</c>, <c>cond</c> and
+    /// <c>sayi</c>. A type-3 <c>cond</c> is a monster's, and reading its speed as
+    /// the player's would attribute somebody else's movement to the character the
+    /// runtime is about to move.
+    /// </remarks>
+    [Fact]
+    public void CondReadsSpeedForPlayerOnly()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        DecodedObservations player = decoder.Decode(Ascii("cond 1 3443217 0 0 11"));
+        Assert.Equal(11, player.PlayerMovementSpeed);
+
+        DecodedObservations monster = decoder.Decode(Ascii("cond 3 313816 0 0 11"));
+        Assert.Null(monster.PlayerMovementSpeed);
+    }
+
+    /// <summary>
+    /// A <c>cond</c> carries no health, so it must not produce vitals, a sighting
+    /// or an event — only the one fact it holds.
+    /// </summary>
+    [Fact]
+    public void Cond_reports_the_speed_and_nothing_else()
+    {
+        DecodedObservations observed = new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("cond 1 3443217 0 0 11"));
+
+        Assert.Equal(11, observed.PlayerMovementSpeed);
+        Assert.Null(observed.Vitals);
+        Assert.Empty(observed.Sightings);
+        Assert.Empty(observed.Events);
+        Assert.Null(observed.PlayerAttackedAtUtc);
+    }
+
+    /// <summary>
+    /// Fields 3 and 4 are marked probable in docs/PROTOCOLLO_NOSTALE.md with the
+    /// candidates cannot-attack and cannot-move, and are <c>0</c> in every packet
+    /// of both captures — so nobody has ever seen what a set one means.
+    /// </summary>
+    /// <remarks>
+    /// A packet asserting them must therefore read exactly like one that does not.
+    /// If a later change starts deriving a flag from them, this test fails, which
+    /// is the point: the fields are an offset with a number in it until a capture
+    /// establishes otherwise, and a runtime that believed a guessed "cannot move"
+    /// would refuse to move for a reason nobody observed.
+    /// </remarks>
+    [Fact]
+    public void Cond_does_not_read_the_two_fields_nobody_has_established()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        DecodedObservations quiet = decoder.Decode(Ascii("cond 1 3443217 0 0 11"));
+        DecodedObservations asserted = decoder.Decode(Ascii("cond 1 3443217 1 1 11"));
+
+        Assert.Equal(quiet, asserted);
+    }
+
+    [Theory]
+    [InlineData("cond 1 3443217 0 0")]        // no speed field at all
+    [InlineData("cond 1 3443217 0 0 x")]      // speed is not a number
+    [InlineData("cond 1 3443217 0 0 -1")]     // no character moves at a negative speed
+    [InlineData("cond x 3443217 0 0 11")]     // entity type is not a number
+    [InlineData("cond")]
+    public void A_malformed_cond_reports_nothing(string packet)
+    {
+        DecodedObservations observed = new NosTaleWorldProtocolDecoder().Decode(Ascii(packet));
+
+        Assert.Null(observed.PlayerMovementSpeed);
+        Assert.True(observed.IsEmpty);
+    }
 }
