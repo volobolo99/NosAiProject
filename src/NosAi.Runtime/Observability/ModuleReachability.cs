@@ -103,6 +103,9 @@ public static class ModuleReachability
         new("NosAi.Runtime.Tactical", ModuleReach.Integrated),
         new("NosAi.Runtime.Testing", ModuleReach.Integrated),
         new("NosAi.Runtime.WorldModel", ModuleReach.Integrated),
+        new("NosAi.Runtime.GameData", ModuleReach.Integrated),
+        new("NosAi.Runtime.Navigation", ModuleReach.Integrated),
+        new("NosAi.Navigation.Pathfinding", ModuleReach.Integrated),
 
         // -- reachable only through the certification suite registry ---------
         new("NosAi.AI.LocalInference", ModuleReach.SuiteOnly,
@@ -129,11 +132,6 @@ public static class ModuleReachability
 
         new("NosAi.Miniland.Production", ModuleReach.SuiteOnly,
             "Miniland automation over an adapter that has no live game behind it."),
-
-        new("NosAi.Navigation.Pathfinding", ModuleReach.SuiteOnly,
-            "Same transitive story as Economy: reached only from "
-            + "NosAiCapabilityKernel. It also refuses to plan across ground nobody "
-            + "mapped, and nothing maps ground yet."),
 
         new("NosAi.Network.Gateway", ModuleReach.SuiteOnly,
             "A second gateway alongside the Gate 1 operator API that the dashboard "
@@ -176,26 +174,10 @@ public static class ModuleReachability
             + "the reason both of those look integrated from a direct reference "
             + "count and are not: nothing composes the composer."),
 
-        new("NosAi.Runtime.GameData", ModuleReach.Unreferenced,
-            "The reference database read out of the client's .NOS archives: "
-            + "15,279 records over 1,428,698 values, fully decoded. Nothing reads "
-            + "it back yet. It is what a decoded observation would be interpreted "
-            + "against, which is a step past having observations at all."),
-
         new("NosAi.Runtime.Learning", ModuleReach.Unreferenced,
             "PredictionLedger. It only learns from LIVE outcomes by design, and "
             + "there are no LIVE gameplay outcomes to learn from yet, so wiring it "
             + "now would give it nothing to do."),
-
-        new("NosAi.Runtime.Navigation", ModuleReach.Unreferenced,
-            "The client's static map geometry: MapGrid, the rule that composes it "
-            + "with the observed layer, and the set identity that invalidates it on "
-            + "a client patch. Contract and semantics only \u2014 the loader that turns a "
-            + ".grid file into a MapGrid is not written, so nothing constructs a "
-            + "grid and nothing yet calls any of this. It is what would move "
-            + "NosAi.Navigation.Pathfinding off its own entry above, which says it "
-            + "refuses to plan across ground nobody mapped and that nothing maps "
-            + "ground yet."),
 
         new("NosAi.Runtime.PlayAi", ModuleReach.Unreferenced,
             "Fifteen lines with no caller."),
