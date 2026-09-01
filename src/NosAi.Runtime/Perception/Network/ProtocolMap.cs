@@ -194,6 +194,14 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
     public string ProtocolName => _map.Name;
     public ProtocolMap Map => _map;
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Only when the operator has found the message that carries them. Until then
+    /// this decoder can never produce vitals, and saying so is what lets a consumer
+    /// report <c>player_vitals_not_mapped</c> rather than blaming a quiet batch.
+    /// </remarks>
+    public bool ReadsPlayerVitals => _map.PlayerVitals is not null;
+
     /// <summary>Messages whose opcode the map does not describe.</summary>
     public long UnmappedOpcodeCount => _unmappedOpcodes;
 
@@ -217,11 +225,15 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
     public DecodedObservations Decode(ObservedPacket packet)
     {
         ArgumentNullException.ThrowIfNull(packet);
-        return DecodeMessage(packet.Payload.Span, packet.Source);
+        return DecodeMessage(packet.Payload.Span, packet.Source, packet.CapturedUtc);
     }
 
-    /// <summary>Decodes one reassembled message.</summary>
-    public DecodedObservations DecodeMessage(ReadOnlySpan<byte> message, DataSourceKind packetSource)
+    /// <param name="capturedUtc">
+    /// When the message crossed the wire. Carried through to the vitals so a
+    /// replayed recording is not mistaken for a reading taken now (ADR-0016).
+    /// </param>
+    public DecodedObservations DecodeMessage(
+        ReadOnlySpan<byte> message, DataSourceKind packetSource, DateTime? capturedUtc = null)
     {
         if (!_map.OpcodeField.TryRead(message, out double rawOpcode))
         {
@@ -230,7 +242,7 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
         }
 
         if (_map.PlayerVitals is { } vitalsSpec && (long)rawOpcode == vitalsSpec.Opcode)
-            return DecodeVitals(message, vitalsSpec, packetSource);
+            return DecodeVitals(message, vitalsSpec, packetSource, capturedUtc);
 
         if (!_byOpcode.TryGetValue((long)rawOpcode, out MessageSpec? spec))
         {
@@ -298,7 +310,7 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
     /// </para>
     /// </remarks>
     private DecodedObservations DecodeVitals(
-        ReadOnlySpan<byte> message, PlayerVitalsSpec spec, DataSourceKind packetSource)
+        ReadOnlySpan<byte> message, PlayerVitalsSpec spec, DataSourceKind packetSource, DateTime? capturedUtc = null)
     {
         if (!spec.Hp.TryRead(message, out double hp)
             || !spec.MaxHp.TryRead(message, out double maxHp)
@@ -333,7 +345,7 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
             ImmutableArray<GameEvent>.Empty,
             new PlayerVitals(
                 (int)hp, (int)maxHp, (int)mp, hasTarget, inCombat,
-                Weaker(packetSource, _map.Confidence)));
+                Weaker(packetSource, _map.Confidence), capturedUtc));
     }
 
     private static DataSourceKind Weaker(DataSourceKind a, DataSourceKind b)

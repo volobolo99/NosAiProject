@@ -16,6 +16,17 @@ namespace NosAi.LiveIntegration.Capture;
 /// hands the packets to the decoder as <see cref="DataSourceKind.Live"/>.
 /// </para>
 /// <para>
+/// <b>Superseded as a gameplay source.</b> The live gameplay path is
+/// <see cref="ReassembledObservationSource.ForNosTaleWorld"/> composed in
+/// <c>Gate1BootstrapHost</c>. This class is not that path. <see cref="TryObserve"/>
+/// still returns the payload of one TCP segment in arrival order, labelled LIVE —
+/// exactly the failure the reassembled source was written to close (a field read
+/// at a wrong offset, wearing LIVE). Changing that behaviour here would break the
+/// perception-channel contract this type still satisfies, so the class is kept
+/// for that contract and is not wired into Gate 1 observation. Two live roads
+/// of which one is wrong is worse than one unused backend with this comment.
+/// </para>
+/// <para>
 /// <b>Scoped, not promiscuous.</b> The filter names the game's own address and port,
 /// so nothing else on the machine is read. That is a property of the filter handed
 /// to the driver, not a check applied afterwards to traffic already collected.

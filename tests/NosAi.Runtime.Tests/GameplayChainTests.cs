@@ -1,4 +1,5 @@
 using NosAi.LiveIntegration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Gate3;
@@ -152,16 +153,28 @@ public sealed class GameplayChainTests
     }
 
     /// <summary>
-    /// The partially mapped case, carried all the way to the planner. Three fields
-    /// read, two unknown, and Gate 3 refuses on the two rather than defaulting
-    /// them to false to get a plannable state.
+    /// The partially read case, carried all the way to the planner.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This used to assert that the whole state was unplannable, which is what the
+    /// runtime did before ADR-0016: three fields read, two unknown, refuse
+    /// everything. The property that mattered was never the blanket refusal — it
+    /// was that an unknown fact must not be defaulted into a decision — and the
+    /// blanket refusal also threw away the decisions that only needed the fields
+    /// that <i>were</i> read.
+    /// </para>
+    /// <para>
+    /// So the assertion moves to where the property lives: the state plans, the
+    /// unknown flag stays unknown, and no candidate that depends on it is produced.
+    /// </para>
+    /// </remarks>
     [Fact]
-    public async Task A_partial_reading_still_refuses_and_names_the_missing_field()
+    public async Task A_partial_reading_plans_what_it_can_and_defaults_nothing()
     {
         DateTime at = DateTime.UtcNow;
         var partial = new GameplayObservation(
-            ClassifiedValue<int>.Derived(4200, at),
+            ClassifiedValue<int>.Derived(1200, at),      // 24% of max: survival applies
             ClassifiedValue<int>.Derived(5000, at),
             ClassifiedValue<int>.Derived(900, at),
             ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
@@ -172,9 +185,49 @@ public sealed class GameplayChainTests
 
         Gate3WorldState state = await source.ReadAsync();
 
-        Assert.False(state.IsPlannable);
-        Assert.Equal("target_flag_not_mapped", state.UnusableReason);
-        Assert.Equal(4200, state.Hp.Value);
+        Assert.True(state.IsPlannable);
+        Assert.Null(state.UnusableReason);
+        Assert.Equal(1200, state.Hp.Value);
+
+        // Nothing was invented to get there.
+        Assert.False(state.HasTarget.HasValue);
+        Assert.Equal("target_flag_not_mapped", state.HasTarget.FailureReason);
+        Assert.False(state.InCombat.HasValue);
+
+        List<ActionCandidate> candidates = new ActionPlanner().PlanCandidates(state);
+
+        // The rules that read only the vitals apply.
+        Assert.Contains(candidates, c => c.Type == ActionType.UseConsumable);
+        // The rules that read the unknown flag do not — in either direction. The
+        // waypoint move is the dangerous one: it is what "no target" means, and
+        // "nobody knows" is not that.
+        Assert.DoesNotContain(candidates, c => c.Type == ActionType.UseSkill);
+        Assert.DoesNotContain(candidates, c => c.Type == ActionType.UseBasicAttack);
+        Assert.DoesNotContain(candidates, c => c.Type == ActionType.MoveToPosition);
+    }
+
+    /// <summary>
+    /// The same partial reading with healthy HP: nothing applies, and the honest
+    /// answer is that there was no candidate — not that the world was unknown.
+    /// </summary>
+    [Fact]
+    public async Task A_partial_reading_with_nothing_to_do_yields_no_candidate()
+    {
+        DateTime at = DateTime.UtcNow;
+        var partial = new GameplayObservation(
+            ClassifiedValue<int>.Derived(4800, at),      // 96% of max: no survival rule
+            ClassifiedValue<int>.Derived(5000, at),
+            ClassifiedValue<int>.Derived(900, at),
+            ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
+            ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
+            ClassifiedValue<int>.Derived(0, at),
+            at);
+        var source = new Gate1SnapshotWorldStateSource(() => Snapshot(partial));
+
+        Gate3WorldState state = await source.ReadAsync();
+
+        Assert.True(state.IsPlannable);
+        Assert.Empty(new ActionPlanner().PlanCandidates(state));
     }
 
     [Fact]

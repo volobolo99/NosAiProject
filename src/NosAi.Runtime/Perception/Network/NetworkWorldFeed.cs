@@ -70,7 +70,7 @@ public sealed class NetworkWorldFeed
     /// The world state implied by the latest report, when there is one.
     /// </summary>
     /// <remarks>
-    /// False when the player has not been sighted. The caller must keep the
+    /// False when the player's health is not known. The caller must keep the
     /// previous state or wait, not substitute a default: <c>WorldState</c> carries
     /// no provenance, so a placeholder inserted here is indistinguishable from an
     /// observation for the rest of its life.
@@ -102,9 +102,27 @@ public sealed class NetworkWorldFeed
             return context;
         }
 
-        EntitySighting? player = report.Sightings.FirstOrDefault(s => s.EntityId == 0);
-        if (player is not null) context.With("player.hp_ratio", Classify(player.HpRatio, player.Source));
-        else context.WithUnknown("player.hp_ratio", "player_not_sighted");
+        // The player's own health comes from the vitals message, not from a
+        // sighting. The server never sights the player: every movement packet in
+        // 117 KB of real capture is another entity, because position is
+        // client-authoritative (docs/PROTOCOLLO_NOSTALE.md). Reading the ratio off
+        // a sighting with entity id 0 therefore found nothing on the real wire,
+        // while the exact HP and max HP sat unused in the same report.
+        if (report.Vitals is { } vitals && vitals.MaxHp > 0)
+        {
+            context.With("player.hp_ratio", Classify((double)vitals.Hp / vitals.MaxHp, vitals.Source));
+        }
+        else if (report.Sightings.FirstOrDefault(s => s.EntityId == 0) is { } player)
+        {
+            // A channel whose decoder does sight the player keeps working.
+            context.With("player.hp_ratio", Classify(player.HpRatio, player.Source));
+        }
+        else
+        {
+            context.WithUnknown("player.hp_ratio", report.VitalsReadable
+                ? "player_vitals_not_in_batch"
+                : "player_not_sighted");
+        }
 
         var monsters = report.Sightings.Where(s => s.EntityId != 0).ToArray();
         context.With("monsters.count", Classify(monsters.Length, report.Source));

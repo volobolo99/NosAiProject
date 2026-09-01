@@ -29,6 +29,10 @@ public sealed class SyntheticProtocolDecoder : IGamePacketDecoder
 
     public string ProtocolName => "nosai-synthetic-v1";
 
+    /// <inheritdoc />
+    /// <remarks>The synthetic protocol has no vitals message; it never invented one.</remarks>
+    public bool ReadsPlayerVitals => false;
+
     public bool CanDecode(ObservedPacket packet)
     {
         ArgumentNullException.ThrowIfNull(packet);

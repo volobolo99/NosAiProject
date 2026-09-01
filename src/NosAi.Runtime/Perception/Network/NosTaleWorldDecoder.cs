@@ -86,6 +86,49 @@ public static class NosTaleWorldDecoder
         return packets;
     }
 
+    /// <summary>
+    /// Measures the first complete packet in <paramref name="stream"/>, in bytes,
+    /// terminator included.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// For the framer, which has to cut the reassembled stream into packets before
+    /// anything decodes them. Splitting on the first <c>0xFF</c> byte would be
+    /// wrong: <c>0xFF</c> is a terminator only where a length byte is expected, and
+    /// inside a run of literal or packed bytes it is ordinary data. Cutting there
+    /// would hand the decoder two half packets, and half a packet parses into
+    /// fields that look like values.
+    /// </para>
+    /// <para>
+    /// So this walks the same structure <see cref="Decode"/> does — length byte,
+    /// then that many literal bytes or half as many packed ones — and returns false
+    /// while the packet is still arriving.
+    /// </para>
+    /// </remarks>
+    public static bool TryMeasurePacket(ReadOnlySpan<byte> stream, out int length)
+    {
+        length = 0;
+        int index = 0;
+
+        while (index < stream.Length)
+        {
+            byte header = stream[index++];
+
+            if (header == PacketTerminator)
+            {
+                length = index;
+                return true;
+            }
+
+            int declared = header & 0x7F;
+            // Packed fields carry two nibbles per byte, so an odd count still costs
+            // a whole byte; literal fields cost one byte each.
+            index += (header & 0x80) != 0 ? (declared + 1) / 2 : declared;
+        }
+
+        return false;
+    }
+
     /// <summary>Literal bytes, each complemented.</summary>
     private static int ReadLiteral(ReadOnlySpan<byte> stream, int index, int length, StringBuilder into)
     {

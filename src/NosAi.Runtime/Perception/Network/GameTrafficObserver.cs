@@ -8,14 +8,15 @@
 // game's packets become EntitySighting (projectable into Detection) and tactical
 // events, usable by combat, prediction and strategy.
 //
-// NosTale's real wire format is proprietary and is NOT included in this
-// repository. Inventing its opcodes would pass conjecture off as observation, so
-// the decoder is an interface, with a synthetic decoder for the tests, while the
-// real NosTale decoder is an explicit integration point declared missing.
+// The decoder is an interface. Tests use a synthetic protocol that does not
+// claim to be NosTale. The observed world-channel decoder is
+// NosTaleWorldProtocolDecoder, which reads the packets NosTaleWorldDecoder
+// produces and nothing marked unknown in docs/PROTOCOLLO_NOSTALE.md.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using NosAi.Runtime.Contracts;
 
@@ -58,13 +59,23 @@ public sealed record GameEvent(GameEventKind Kind, long EntityId, string Descrip
 /// max HP would have made it plan on a number nobody observed.
 /// </para>
 /// </remarks>
+/// <param name="ObservedAtUtc">
+/// When the packet these came from crossed the wire, or null when the decoder did
+/// not know. Without it every consumer stamps its own clock, and a reading
+/// replayed from a recording made two days ago looks exactly as fresh as one that
+/// arrived a moment ago — both CACHED, both "observed now". The recording's own
+/// timestamp is on the packet, and carrying it is what lets a freshness rule tell
+/// a retained live reading from a replayed old one with no special case for
+/// either (ADR-0016).
+/// </param>
 public sealed record PlayerVitals(
     int Hp,
     int MaxHp,
     int Mp,
     bool? HasTarget,
     bool? InCombat,
-    DataSourceKind Source);
+    DataSourceKind Source,
+    DateTime? ObservedAtUtc = null);
 
 /// <summary>The observations decoded from one packet.</summary>
 public sealed record DecodedObservations(
@@ -91,6 +102,19 @@ public interface IGamePacketDecoder
 {
     string ProtocolName { get; }
 
+    /// <summary>
+    /// Whether this decoder is able to read the player's own vitals at all.
+    /// </summary>
+    /// <remarks>
+    /// Not "did it read them", which is per batch, but "can it ever". A consumer
+    /// that finds no vitals in a report needs the difference: a decoder that does
+    /// not know where they are will never produce them, while one that does simply
+    /// saw no such packet in this batch. Reporting the first case as the second
+    /// would hide an unfinished protocol map behind a quiet wire, and the second as
+    /// the first would blame the map for a gap of a few hundred milliseconds.
+    /// </remarks>
+    bool ReadsPlayerVitals { get; }
+
     /// <summary>Whether this decoder can attempt to read the given packet at all.</summary>
     bool CanDecode(ObservedPacket packet);
 
@@ -112,7 +136,10 @@ public sealed record NetworkObservationReport(
     DataSourceKind Source,
     // The most recent vitals decoded in this batch, or null when the map does not
     // describe them. Null is not "full health": it is "nobody said".
-    PlayerVitals? Vitals = null);
+    PlayerVitals? Vitals = null,
+    // Whether the decoder behind this report can read the player's vitals at all,
+    // so a consumer can tell "not mapped" from "not in this batch".
+    bool VitalsReadable = false);
 
 /// <summary>
 /// Pulls packets from a source, keeps only the game's own traffic, decodes them
@@ -138,13 +165,43 @@ public sealed class GameTrafficObserver
     }
 
     /// <summary>
+    /// How long one poll may spend draining the source.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The count alone is not a bound on a live wire. A real capture of the game
+    /// delivers packets continuously — around 90 a second in the recordings — so a
+    /// loop that keeps going "while a packet is available" keeps going as fast as
+    /// the game keeps talking. Draining 4096 messages that way took 52 seconds on
+    /// the first real session, during which the Gate 1 snapshot could not be
+    /// produced and the operator API answered nothing at all.
+    /// </para>
+    /// <para>
+    /// So a poll takes what has arrived and returns. What it did not take stays
+    /// queued for the next one; the counters say how much was read, and a caller
+    /// that wants more calls again.
+    /// </para>
+    /// </remarks>
+    public static readonly TimeSpan DefaultPollBudget = TimeSpan.FromMilliseconds(250);
+
+    /// <summary>
     /// Drains the source, decoding every in-scope packet into observations.
     /// Out-of-scope packets are counted and dropped without being decoded, so
     /// non-game traffic never even reaches the decoder.
     /// </summary>
-    public NetworkObservationReport ObservePending(int maxPackets = 4096)
+    /// <param name="maxPackets">Most packets one poll may take.</param>
+    /// <param name="budget">
+    /// Most time one poll may spend. <see cref="DefaultPollBudget"/> when omitted;
+    /// <see cref="Timeout.InfiniteTimeSpan"/> to drain a finite source to its end.
+    /// </param>
+    public NetworkObservationReport ObservePending(int maxPackets = 4096, TimeSpan? budget = null)
     {
         if (maxPackets < 1) throw new ArgumentOutOfRangeException(nameof(maxPackets));
+
+        TimeSpan limit = budget ?? DefaultPollBudget;
+        bool bounded = limit != Timeout.InfiniteTimeSpan;
+        if (bounded && limit < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(budget));
+        long started = Stopwatch.GetTimestamp();
 
         var sightings = ImmutableArray.CreateBuilder<EntitySighting>();
         var events = ImmutableArray.CreateBuilder<GameEvent>();
@@ -153,23 +210,36 @@ public sealed class GameTrafficObserver
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
+            // Checked after taking the packet, never before: a packet already read
+            // out of the source would otherwise be dropped on the floor.
+            if (bounded && i > 0 && Stopwatch.GetElapsedTime(started) >= limit)
+            {
+                Accumulate(packet);
+                break;
+            }
+
+            Accumulate(packet);
+        }
+
+        void Accumulate(ObservedPacket packet)
+        {
             observed++;
             if (!_filter.Admit(packet))
             {
                 scopedOut++;
-                continue;
+                return;
             }
             if (!_decoder.CanDecode(packet))
             {
                 undecodable++;
-                continue;
+                return;
             }
 
             DecodedObservations result = _decoder.Decode(packet);
             if (result.IsEmpty)
             {
                 undecodable++;
-                continue;
+                return;
             }
 
             decoded++;
@@ -186,17 +256,23 @@ public sealed class GameTrafficObserver
             events.ToImmutable(),
             observed, scopedOut, decoded, undecodable,
             _source.Source,
-            vitals);
+            vitals,
+            _decoder.ReadsPlayerVitals);
     }
 
     /// <summary>
-    /// Folds the network sightings into a world state, when the player was seen.
+    /// Folds the network observations into a world state, when the player's health
+    /// is known.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Entity id 0 is the controlled player by convention. When no sighting
-    /// carries it, there is no observed HP, and this returns false with a reason
-    /// rather than a state.
+    /// The player's health comes from the vitals message when the decoder produced
+    /// one, and from a sighting with entity id 0 otherwise — that id is the
+    /// channel's convention for the controlled player. The order matters on the
+    /// real wire: the NosTale server never sights the player at all, so a state
+    /// built only from sightings was unreachable while the exact HP and max HP sat
+    /// in the same report, unused. With neither, there is no observed HP and this
+    /// returns false with a reason rather than a state.
     /// </para>
     /// <para>
     /// It used to default to <c>playerHp = 1.0, playerAlive = true</c> and return
@@ -230,16 +306,25 @@ public sealed class GameTrafficObserver
                 $"{sighting.Kind}#{sighting.EntityId}", sighting.Kind, sighting.X, sighting.Y, sighting.HpRatio));
         }
 
-        if (player is null)
+        // Max HP of zero would make this a division by zero, and it is also the
+        // signature of a misread field; the decoder refuses it upstream, and this
+        // does not assume that check stayed there.
+        double? playerHp = report.Vitals is { MaxHp: > 0 } vitals
+            ? (double)vitals.Hp / vitals.MaxHp
+            : player?.HpRatio;
+
+        if (playerHp is not { } hpRatio)
         {
             failureReason = report.Source == DataSourceKind.Unknown
                 ? "no_network_observation"
-                : "player_not_sighted";
+                : report.VitalsReadable
+                    ? "player_vitals_not_in_batch"
+                    : "player_not_sighted";
             return false;
         }
 
         worldState = new NosAi.Runtime.WorldModel.WorldState(
-            report.Frame, player.HpRatio > 0.0, player.HpRatio, entities);
+            report.Frame, hpRatio > 0.0, hpRatio, entities);
         return true;
     }
 }

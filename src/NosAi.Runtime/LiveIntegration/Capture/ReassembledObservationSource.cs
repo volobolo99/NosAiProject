@@ -84,10 +84,22 @@ public sealed class ReassembledObservationSource : INetworkObservationSource, ID
         ProtocolMap map,
         DataSourceKind streamSource,
         TimeSpan? readTimeout = null)
+        : this(packets, FramerFrom(map, streamSource), streamSource, readTimeout)
+    {
+    }
+
+    /// <summary>
+    /// Same chain, with a caller-supplied framer — the world-channel decoder
+    /// rather than a reconstructed binary map.
+    /// </summary>
+    public ReassembledObservationSource(
+        IPacketSource packets,
+        Func<StreamDirection, IGameStreamFramer> framerFactory,
+        DataSourceKind streamSource,
+        TimeSpan? readTimeout = null)
     {
         ArgumentNullException.ThrowIfNull(packets);
-        ArgumentNullException.ThrowIfNull(map);
-        map.Validate();
+        ArgumentNullException.ThrowIfNull(framerFactory);
 
         _packets = packets;
         _remoteHost = packets.ServerAddress.ToString();
@@ -95,10 +107,26 @@ public sealed class ReassembledObservationSource : INetworkObservationSource, ID
         _readTimeout = readTimeout ?? TimeSpan.FromMilliseconds(250);
         Source = streamSource;
 
-        _engine = new GameTrafficCaptureEngine(
-            packets,
-            direction => new ProtocolMapFramer(map, direction, streamSource));
+        _engine = new GameTrafficCaptureEngine(packets, framerFactory);
         _engine.FrameProduced += OnFrame;
+    }
+
+    /// <summary>
+    /// Frames the world channel with <see cref="NosTaleWorldFramer"/> so
+    /// inbound packets that verify their terminator can be LIVE.
+    /// </summary>
+    public static ReassembledObservationSource ForNosTaleWorld(
+        IPacketSource packets,
+        DataSourceKind streamSource,
+        TimeSpan? readTimeout = null)
+        => new(packets, NosTaleWorldFramer.Factory(streamSource), streamSource, readTimeout);
+
+    private static Func<StreamDirection, IGameStreamFramer> FramerFrom(
+        ProtocolMap map, DataSourceKind streamSource)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        map.Validate();
+        return direction => new ProtocolMapFramer(map, direction, streamSource);
     }
 
     private void OnFrame(CaptureFrame frame)

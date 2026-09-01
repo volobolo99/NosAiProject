@@ -49,22 +49,19 @@ public interface IGameStreamFramer
 }
 
 /// <summary>
-/// The framer in use until a real NosTale decoder is written against captured
-/// traffic.
+/// The default framer: bytes flow, nothing is claimed about their meaning.
 /// </summary>
 /// <remarks>
 /// <para>
 /// It is not a stub that pretends. It accumulates the stream faithfully and
-/// reports every byte as <see cref="DataSourceKind.Unknown"/>, because that is
-/// the truthful classification of bytes from a protocol this code does not yet
-/// know how to read. ADR-0014 lifted the prohibition on reading the traffic; it
-/// did not grant the ability to interpret it, and inventing a decoder would be
-/// the "plausible number" the same decision forbids.
+/// reports every byte as <see cref="DataSourceKind.Unknown"/>. The world-channel
+/// decoder is <see cref="NosTaleWorldFramer"/>, opted in through the capture
+/// engine's factory — this class stays the default so a capture that has not
+/// chosen a decoder cannot start looking decoded.
 /// </para>
 /// <para>
-/// Swapping in a real framer is the whole point of the interface: the capture
-/// path, the reassembler and the classification are all real and tested now, so
-/// the decoder is the only piece that has to wait for data.
+/// Outbound traffic still belongs here even after that opt-in: client-to-server
+/// uses a session-keyed encoding this runtime does not read.
 /// </para>
 /// </remarks>
 public sealed class UnknownGameStreamFramer : IGameStreamFramer

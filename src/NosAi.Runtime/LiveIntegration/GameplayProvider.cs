@@ -102,29 +102,81 @@ public interface IGameplayProvider
 /// </summary>
 /// <remarks>
 /// <para>
-/// Reads what the operator's protocol map describes and nothing else. With no map
-/// entry for the player vitals, HP, max HP and MP come back UNKNOWN with
-/// <c>player_vitals_not_mapped</c> — and Gate 3 goes on refusing to plan, which
-/// is right: a ratio is not an HP, and manufacturing a max HP to turn one into
-/// the other would be the invented number this whole path exists to prevent.
+/// Reads whatever the feed's decoder produced and nothing else. Two decoders
+/// sit behind that feed: a reconstructed binary <see cref="ProtocolMap"/>, whose
+/// readings can never be LIVE (the map itself is DERIVED), and
+/// <see cref="NosTaleWorldProtocolDecoder"/>, which reads the world channel after
+/// <see cref="NosTaleWorldDecoder"/> verified its framing. The second path is
+/// the one that can publish HP as LIVE.
 /// </para>
 /// <para>
-/// Entities in view is reported separately because it is genuinely known whenever
-/// the channel decodes at all, and it is useful before the vitals are pinned.
+/// With no vitals ever read, HP, max HP and MP come back UNKNOWN — and Gate 3
+/// goes on refusing to plan, which is right: a ratio is not an HP, and
+/// manufacturing a max HP to turn one into the other would be the invented
+/// number this whole path exists to prevent.
+/// </para>
+/// <para>
+/// <b>Between two vitals packets the last reading is republished CACHED.</b> The
+/// wire sends <c>stat</c> when the number changes, not on a schedule: 62 packets
+/// in 90 s of real combat, 22 in an idle capture. Polling in small bites
+/// therefore finds nothing in most batches — 63% of 64-message polls on both
+/// recordings — and dropping to UNKNOWN each time would make an HP that is
+/// perfectly well known unusable two polls out of three. ADR-0012 already names
+/// the honest answer for a real value that is no longer fresh: CACHED, carrying
+/// the time it was observed. Past <see cref="MaxVitalsAge"/> it becomes UNKNOWN
+/// with <c>player_vitals_stale</c>, because an HP old enough to have been fought
+/// through is not a reading any more. A consumer that needs a current number
+/// checks the source and the timestamp; both are on every field.
+/// </para>
+/// <para>
+/// <b>Entities in view is never a claimed zero.</b> A batch with no sighting in it
+/// does not establish that nothing is in view — far more often the poll window
+/// carried no packet that speaks about entities, which on the idle recording is
+/// every single batch while 2468 movement packets go by. So zero is published as
+/// UNKNOWN, and a count only when something was actually seen. It counts distinct
+/// entities, not sightings: one entity moving twice in a batch is one entity.
 /// </para>
 /// </remarks>
 public sealed class NetworkGameplayProvider : IGameplayProvider
 {
+    /// <summary>
+    /// How long a vitals reading stays publishable as CACHED after it was observed.
+    /// </summary>
+    /// <remarks>
+    /// Comfortably longer than the gaps between <c>stat</c> packets in the
+    /// recordings, so an ordinary quiet moment does not expire a good reading,
+    /// and short enough that a channel which has actually stopped delivering goes
+    /// UNKNOWN rather than repeating itself.
+    /// </remarks>
+    public static readonly TimeSpan DefaultMaxVitalsAge = TimeSpan.FromSeconds(5);
+
     private readonly NetworkWorldFeed _feed;
     private readonly TimeProvider _clock;
+    private PlayerVitals? _lastVitals;
+    private DateTime _lastVitalsAtUtc;
 
     /// <inheritdoc />
     public string Name => "network_observation";
 
-    public NetworkGameplayProvider(NetworkWorldFeed feed, TimeProvider? clock = null)
+    /// <summary>How old a reading may be and still be republished as CACHED.</summary>
+    public TimeSpan MaxVitalsAge { get; }
+
+    /// <param name="feed">The network channel to read.</param>
+    /// <param name="clock">Time source; the system clock unless a test supplies one.</param>
+    /// <param name="maxVitalsAge">
+    /// How long the last reading stays publishable as CACHED once no new one
+    /// arrives. <see cref="DefaultMaxVitalsAge"/> when omitted;
+    /// <see cref="TimeSpan.Zero"/> turns retention off, so a batch without vitals
+    /// reports UNKNOWN at once.
+    /// </param>
+    public NetworkGameplayProvider(
+        NetworkWorldFeed feed, TimeProvider? clock = null, TimeSpan? maxVitalsAge = null)
     {
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
         _clock = clock ?? TimeProvider.System;
+        TimeSpan age = maxVitalsAge ?? DefaultMaxVitalsAge;
+        if (age < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(maxVitalsAge));
+        MaxVitalsAge = age;
     }
 
     /// <inheritdoc />
@@ -136,31 +188,83 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         if (report.Source == DataSourceKind.Unknown)
             return GameplayObservation.Unobserved("no_capture_backend_attached", now);
 
-        // The channel is attached and running. Entities are known even when the
-        // vitals are not, so they are reported rather than withheld along with them.
-        int entities = report.Sightings.Count(s => s.EntityId != 0);
-        ClassifiedValue<int> entitiesInView = Classify(entities, report.Source, now);
+        ClassifiedValue<int> entitiesInView = CountEntities(report, now);
 
-        if (report.Vitals is not { } vitals)
+        if (report.Vitals is { } fresh)
         {
-            string reason = report.DecodedPackets == 0
-                ? "nothing_decoded"
-                : "player_vitals_not_mapped";
-            return GameplayObservation.Unobserved(reason, now) with { EntitiesInView = entitiesInView };
+            // The time the packet crossed the wire, not the time this poll ran.
+            // They are the same thing on a live capture and hours apart on a
+            // replay, and the difference is exactly what a freshness rule needs to
+            // tell a current reading from a recorded one (ADR-0016).
+            DateTime observedAt = fresh.ObservedAtUtc ?? now;
+            _lastVitals = fresh;
+            _lastVitalsAtUtc = observedAt;
+            return Publish(fresh, fresh.Source, observedAt, now, entitiesInView);
         }
 
-        return new GameplayObservation(
-            Hp: Classify(vitals.Hp, vitals.Source, now),
-            MaxHp: Classify(vitals.MaxHp, vitals.Source, now),
-            Mp: Classify(vitals.Mp, vitals.Source, now),
+        // Nothing in this batch. The last reading is still a reading, for a while,
+        // and it is published as what it is: observed, and no longer current.
+        if (_lastVitals is { } remembered && now - _lastVitalsAtUtc <= MaxVitalsAge)
+            return Publish(remembered, DataSourceKind.Cached, _lastVitalsAtUtc, now, entitiesInView);
+
+        return GameplayObservation.Unobserved(MissingVitalsReason(report), now)
+            with { EntitiesInView = entitiesInView };
+    }
+
+    /// <summary>
+    /// Why this batch has no usable vitals, distinguishing cases that look
+    /// identical from the outside and are not.
+    /// </summary>
+    private string MissingVitalsReason(NetworkObservationReport report)
+    {
+        // The decoder cannot read them at all — an unfinished protocol map. No
+        // amount of waiting will produce one.
+        if (!report.VitalsReadable) return "player_vitals_not_mapped";
+        // It can, it had one, and the one it had is too old to stand for now.
+        if (_lastVitals is not null) return "player_vitals_stale";
+        // It can, and nothing has carried them yet on this channel.
+        return report.DecodedPackets == 0 ? "nothing_decoded" : "player_vitals_not_seen_yet";
+    }
+
+    private static GameplayObservation Publish(
+        PlayerVitals vitals,
+        DataSourceKind source,
+        DateTime observedAtUtc,
+        DateTime now,
+        ClassifiedValue<int> entitiesInView)
+        => new(
+            Hp: Classify(vitals.Hp, source, observedAtUtc),
+            MaxHp: Classify(vitals.MaxHp, source, observedAtUtc),
+            Mp: Classify(vitals.Mp, source, observedAtUtc),
             HasTarget: vitals.HasTarget is bool target
-                ? Classify(target, vitals.Source, now)
+                ? Classify(target, source, observedAtUtc)
                 : ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
             InCombat: vitals.InCombat is bool combat
-                ? Classify(combat, vitals.Source, now)
+                ? Classify(combat, source, observedAtUtc)
                 : ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
             EntitiesInView: entitiesInView,
             ObservedAtUtc: now);
+
+    /// <summary>
+    /// How many distinct entities this batch actually showed, or why it cannot say.
+    /// </summary>
+    /// <remarks>
+    /// Entity id 0 is the controlled player by the channel's convention, so it is
+    /// not one of the entities in view. A batch with nothing left after that is not
+    /// evidence of an empty screen — see the class remarks — so it reports UNKNOWN
+    /// rather than a zero that reads exactly like an observation.
+    /// </remarks>
+    private static ClassifiedValue<int> CountEntities(NetworkObservationReport report, DateTime now)
+    {
+        int entities = report.Sightings
+            .Where(s => s.EntityId != 0)
+            .Select(s => s.EntityId)
+            .Distinct()
+            .Count();
+
+        return entities == 0
+            ? ClassifiedValue<int>.Unknown("no_entities_reported")
+            : Classify(entities, report.Source, now);
     }
 
     private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime at) => source switch
