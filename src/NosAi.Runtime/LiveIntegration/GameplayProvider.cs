@@ -26,6 +26,7 @@ public sealed record GameplayObservation(
     ClassifiedValue<int> Hp,
     ClassifiedValue<int> MaxHp,
     ClassifiedValue<int> Mp,
+    ClassifiedValue<int> MaxMp,
     ClassifiedValue<bool> HasTarget,
     ClassifiedValue<bool> InCombat,
     ClassifiedValue<int> EntitiesInView,
@@ -36,12 +37,18 @@ public sealed record GameplayObservation(
         ClassifiedValue<int>.Unknown(reason),
         ClassifiedValue<int>.Unknown(reason),
         ClassifiedValue<int>.Unknown(reason),
+        ClassifiedValue<int>.Unknown(reason),
         ClassifiedValue<bool>.Unknown(reason),
         ClassifiedValue<bool>.Unknown(reason),
         ClassifiedValue<int>.Unknown(reason),
         atUtc ?? DateTime.UtcNow);
 
     /// <summary>Whether the vitals a planner needs are all present.</summary>
+    /// <remarks>
+    /// <see cref="MaxMp"/> is deliberately not among them. No rule reads it yet,
+    /// and requiring it would make every decoder that does not map it unable to
+    /// plan — a behaviour change smuggled in behind a published field.
+    /// </remarks>
     public bool HasVitals => Hp.HasValue && MaxHp.HasValue && Mp.HasValue;
 
     /// <summary>
@@ -60,11 +67,24 @@ public sealed record GameplayObservation(
     /// before. Every field keeps its own classification on the wire, because a
     /// consumer that flattens them cannot tell an unread field from a zero.
     /// </remarks>
+    /// <remarks>
+    /// <para>
+    /// <c>maxMp</c> was added by F4-1b and is why the version did not move.
+    /// ADR-0005 requires a contract change to be versioned <i>when compatibility
+    /// can be affected</i>, and an added key inside a value a reader already
+    /// treats as opaque cannot affect it: <c>GuardSnapshotView</c> and
+    /// <c>AttachedSnapshot</c> both read <c>gameplayBaseline</c> as one
+    /// classified value and never enumerate what is inside it. Contract tests
+    /// hold that open, so the day a reader does start enumerating, the version
+    /// has to move with it.
+    /// </para>
+    /// </remarks>
     public object ToWire() => new
     {
         hp = Hp.ToWire(),
         maxHp = MaxHp.ToWire(),
         mp = Mp.ToWire(),
+        maxMp = MaxMp.ToWire(),
         hasTarget = HasTarget.ToWire(),
         inCombat = InCombat.ToWire(),
         entitiesInView = EntitiesInView.ToWire(),
@@ -236,6 +256,12 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
             Hp: Classify(vitals.Hp, source, observedAtUtc),
             MaxHp: Classify(vitals.MaxHp, source, observedAtUtc),
             Mp: Classify(vitals.Mp, source, observedAtUtc),
+            // Absent when the map does not describe the field, which is not the
+            // same as a maximum of zero: a decoder that cannot read it says so,
+            // and the snapshot carries the reason rather than a number.
+            MaxMp: vitals.MaxMp is { } maxMp
+                ? Classify(maxMp, source, observedAtUtc)
+                : ClassifiedValue<int>.Unknown("max_mp_not_mapped"),
             HasTarget: vitals.HasTarget is bool target
                 ? Classify(target, source, observedAtUtc)
                 : ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),

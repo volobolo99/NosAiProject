@@ -42,6 +42,7 @@ public sealed class GameplayChainTests
             ClassifiedValue<int>.Derived(hp, at),
             ClassifiedValue<int>.Derived(maxHp, at),
             ClassifiedValue<int>.Derived(mp, at),
+            ClassifiedValue<int>.Derived(1420, at),
             ClassifiedValue<bool>.Derived(hasTarget, at),
             ClassifiedValue<bool>.Derived(inCombat, at),
             ClassifiedValue<int>.Derived(3, at),
@@ -177,6 +178,7 @@ public sealed class GameplayChainTests
             ClassifiedValue<int>.Derived(1200, at),      // 24% of max: survival applies
             ClassifiedValue<int>.Derived(5000, at),
             ClassifiedValue<int>.Derived(900, at),
+            ClassifiedValue<int>.Unknown("max_mp_not_mapped"),
             ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
             ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
             ClassifiedValue<int>.Derived(0, at),
@@ -218,6 +220,7 @@ public sealed class GameplayChainTests
             ClassifiedValue<int>.Derived(4800, at),      // 96% of max: no survival rule
             ClassifiedValue<int>.Derived(5000, at),
             ClassifiedValue<int>.Derived(900, at),
+            ClassifiedValue<int>.Unknown("max_mp_not_mapped"),
             ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
             ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
             ClassifiedValue<int>.Derived(0, at),

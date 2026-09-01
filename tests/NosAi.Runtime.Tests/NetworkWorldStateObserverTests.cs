@@ -15,6 +15,7 @@ public sealed class NetworkWorldStateObserverTests
             ClassifiedValue<int>.Live(7305, at),
             ClassifiedValue<int>.Live(7305, at),
             ClassifiedValue<int>.Cached(1420, at),
+            ClassifiedValue<int>.Cached(1420, at),
             ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
             ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
             ClassifiedValue<int>.Unknown("no_entities_reported"),

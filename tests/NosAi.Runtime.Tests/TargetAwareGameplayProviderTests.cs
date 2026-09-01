@@ -49,6 +49,7 @@ public sealed class TargetAwareGameplayProviderTests
         Hp: ClassifiedValue<int>.Live(7305, At),
         MaxHp: ClassifiedValue<int>.Live(7305, At),
         Mp: ClassifiedValue<int>.Live(1420, At),
+        MaxMp: ClassifiedValue<int>.Live(1420, At),
         HasTarget: hasTarget ?? ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
         InCombat: ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
         EntitiesInView: ClassifiedValue<int>.Live(3, At),

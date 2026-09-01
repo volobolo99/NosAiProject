@@ -223,8 +223,8 @@ Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
 
 - **Own vitals** — HP, max HP, MP from `stat`, updating per hit.
   Published `LIVE` when the capture itself is live. Max MP is confirmed on the
-  packet and used to reject a malformed `stat`, but `GameplayObservation` does
-  not yet carry it. HasTarget and InCombat are **not** read from `stat` (fields 5
+  packet, used to reject a malformed `stat`, e ora pubblicato sullo snapshot
+  come `maxMp` (F4-1b). HasTarget and InCombat are **not** read from `stat` (fields 5
   and 6 are unknown); `HasTarget` is established from the screen instead
   (ADR-0018, below), and `InCombat` stays `UNKNOWN`.
 - **Target vitals** — absolute HP and max HP of any entity in view, from `st`
