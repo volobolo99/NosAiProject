@@ -55,10 +55,11 @@ public static class PlayerObjectProbe
         if (reader is null)
         {
             Console.WriteLine($"[REFUSED] {openFailure}");
-            Console.WriteLine("  The client runs at a higher integrity level than this process.");
-            Console.WriteLine("  NostaleLauncher.exe asks for 'asInvoker', so it does not need to:");
-            Console.WriteLine("  restart the game from a normal (non-elevated) shell and this works");
-            Console.WriteLine("  with no elevation at all. Elevating this console also works.");
+            Console.WriteLine("  The client runs at a higher integrity level than this process, and");
+            Console.WriteLine("  it always will: NostaleClientX.exe's own manifest asks for");
+            Console.WriteLine("  requireAdministrator, so how it is launched makes no difference.");
+            Console.WriteLine("  Run this from an elevated console. That is not a workaround; a");
+            Console.WriteLine("  process cannot read one above it, and nothing here tries to.");
             return 1;
         }
 

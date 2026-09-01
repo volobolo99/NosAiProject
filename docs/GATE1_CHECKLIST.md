@@ -94,6 +94,66 @@ inventato).
 Cosa **non** prova: nessuna sessione smartphone, nessuna lettura di memoria di
 gioco, nessun input o injection (restano disabilitati).
 
+## Evidenza reale — posizione propria dalla memoria del client (2026-09-01)
+
+**Chiude T-11.** L'unico fatto di gioco che il filo non porta: la posizione è
+client-authoritative e quella direzione dello stream è cifrata, quindi il server
+non la manda mai (`docs/PROTOCOLLO_NOSTALE.md`).
+
+**Ambiente:** PC target Windows 11, `NostaleClientX.exe` PID 30404, modulo base
+`0x400000`, 5738496 byte. Console **elevata**: il manifest del client dichiara
+`requestedExecutionLevel level="requireAdministrator"`, quindi gira sempre a
+integrità High e un processo Medium non può leggerlo. Non è un anti-cheat: è il
+confine di integrità di Windows, e nulla qui prova ad aggirarlo.
+
+**Come è stato trovato l'oggetto del personaggio.** Non per offset ricordato, ma
+per firma di codice, ricercata a ogni avvio:
+
+```
+33 C9 8B 55 FC A1 ?? ?? ?? ?? E8 ?? ?? ?? ??    trovata in 3 ms
+  +6, deref → PlayerManager @ 0x91FE00
+  +0x20 deref → MapPlayerObj      +0x24 → character id      +0x0C → x,y (due uint16)
+```
+
+Numeri da `NosSmooth.Local` (Rutherther, MIT), usati come ipotesi e non sulla
+fiducia.
+
+**Il riscontro che rende questa una conferma e non una lettura:**
+
+```
+dotnet ... --player-probe --expect-id 3443217
+
+  character id : 3443217
+  entity id    : 3443217
+  position     : 157, 102
+  [CONFIRMED] the client and the server agree on character 3443217.
+```
+
+`3443217` è l'id che il **server** aveva mandato su `cond` nella cattura live
+delle 17:55 dello stesso giorno (`data/nostale_live.noscap`, 1913 messaggi). Due
+sorgenti indipendenti sullo stesso numero. Una catena di puntatori sbagliata
+restituisce byte leggibili e una coordinata plausibile — è il fallimento che
+ADR-0012 descriveva e che ADR-0014 ha trattenuto come requisito — ma non
+restituisce anche l'id di questa sessione.
+
+**E che segua il personaggio, non un numero fermo.** Dieci letture in 20 secondi
+mentre il personaggio camminava:
+
+```
+157,101  157,101  154,96  157,95  158,96  158,96  159,99  160,100  160,100  160,98
+```
+
+Passi continui, nessun salto, tutti nell'intervallo a due e tre cifre che le
+catture mostrano. Lo spostamento massimo fra due letture è ~5,8 caselle in 1,8 s,
+contro un limite di 11 × 1,8 + 4 = 23,8 dalla velocità che `cond` ha riportato
+(11): il controllo di continuità di F1-10 passa con margine.
+
+**Cosa resta UNKNOWN.** La lettura è `LIVE` solo mentre passano tutti e quattro i
+controlli — identità, intervallo, coerenza con la mappa, continuità. Appena uno
+cede il provider restituisce `UNKNOWN` col motivo, **mai l'ultimo valore buono**.
+
+---
+
 ## Evidenza reale — telefono Android (2026-08-30)
 
 **Dispositivo:** Android `9125322104AC`, collegato via USB.
