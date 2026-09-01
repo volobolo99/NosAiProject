@@ -109,18 +109,38 @@ public sealed record PlayerVitals(
 /// Movement speed from a player <c>cond</c>, or null when this packet did not
 /// carry one. Null is not speed zero.
 /// </param>
+/// <param name="PlayerEntityId">
+/// The controlled character's own entity id, when this packet named it.
+/// </param>
+/// <remarks>
+/// <para>
+/// The id closes the gap ADR-0018 named and left open. The target composer uses
+/// a <c>su</c> whose attacker is a player to contradict a screen that saw no
+/// target frame, and entity type <c>1</c> alone does not separate the controlled
+/// character from another player fighting nearby — so a stranger's attack could
+/// produce a false disagreement. With the own id known, the check can ask
+/// whether <i>this</i> character attacked.
+/// </para>
+/// <para>
+/// It is observed, not configured: <c>cond</c> carries type and id, both
+/// confirmed in docs/PROTOCOLLO_NOSTALE.md, and the server sends it for the
+/// controlled character. Null until a packet says so, and never guessed.
+/// </para>
+/// </remarks>
 public sealed record DecodedObservations(
     ImmutableArray<EntitySighting> Sightings,
     ImmutableArray<GameEvent> Events,
     PlayerVitals? Vitals = null,
     DateTime? PlayerAttackedAtUtc = null,
-    int? PlayerMovementSpeed = null)
+    int? PlayerMovementSpeed = null,
+    long? PlayerEntityId = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
 
     public bool IsEmpty =>
-        Sightings.IsEmpty && Events.IsEmpty && Vitals is null && PlayerMovementSpeed is null;
+        Sightings.IsEmpty && Events.IsEmpty && Vitals is null
+        && PlayerMovementSpeed is null && PlayerEntityId is null;
 }
 
 /// <summary>
@@ -177,7 +197,14 @@ public sealed record NetworkObservationReport(
     // The most recent hit in this batch where the player was the attacker, or null
     // when the batch showed none. The wire's contribution to HasTarget (ADR-0018);
     // it contradicts the screen and never establishes the fact on its own.
-    DateTime? PlayerAttackedAtUtc = null);
+    DateTime? PlayerAttackedAtUtc = null,
+    // The character's movement speed from cond, or null when this batch carried
+    // none. The bound F1-10's continuity check measures a step against; without it
+    // that check cannot run and the position reads UNKNOWN rather than LIVE.
+    int? PlayerMovementSpeed = null,
+    // The controlled character's own entity id, once a packet has named it. Null
+    // until then, never guessed.
+    long? PlayerEntityId = null);
 
 /// <summary>
 /// Pulls packets from a source, keeps only the game's own traffic, decodes them
@@ -246,6 +273,8 @@ public sealed class GameTrafficObserver
         long observed = 0, scopedOut = 0, decoded = 0, undecodable = 0;
         PlayerVitals? vitals = null;
         DateTime? playerAttackedAt = null;
+        int? playerSpeed = null;
+        long? playerEntityId = null;
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
@@ -295,6 +324,12 @@ public sealed class GameTrafficObserver
             {
                 playerAttackedAt = attackedAt;
             }
+            // Last one wins: speed changes during a session, and the most recent
+            // cond is the one a continuity check should be measured against.
+            if (result.PlayerMovementSpeed is { } speed) playerSpeed = speed;
+            // The id does not change within a session, so the first packet that
+            // names it is as good as the last.
+            playerEntityId ??= result.PlayerEntityId;
         }
 
         return new NetworkObservationReport(
@@ -305,7 +340,9 @@ public sealed class GameTrafficObserver
             _source.Source,
             vitals,
             _decoder.ReadsPlayerVitals,
-            playerAttackedAt);
+            playerAttackedAt,
+            playerSpeed,
+            playerEntityId);
     }
 
     /// <summary>

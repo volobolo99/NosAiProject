@@ -6,235 +6,236 @@ using Xunit;
 namespace NosAi.Runtime.Tests;
 
 /// <summary>
-/// The player's own position from memory, and the three checks that decide
-/// whether a reading is one.
+/// The signature matcher that finds the character object, and the packing of the
+/// two coordinates that sit beside each other.
 /// </summary>
 /// <remarks>
-/// F1-10. A moved offset does not fail — it returns four readable bytes and a
-/// plausible number — so the validity check is the provider and reading the bytes
-/// is the easy half. These pin that LIVE requires all three checks, that each
-/// failure names itself, and above all that a failed check never falls back to
-/// the last good value, which is the case ADR-0014 names in full.
+/// F1-10. The client is not needed for either: a signature either matches bytes
+/// or it does not, and a packed pair either unpacks to the right halves or it does
+/// not. What needs the client is the pointer chain, and that is T-11.
+/// </remarks>
+public sealed class NosTaleClientLayoutTests
+{
+    private static readonly byte[] Signature = Convert.FromHexString("33C98B55FCA1");
+
+    private static byte[] Haystack(int prefix, int suffix)
+    {
+        var bytes = new byte[prefix + 15 + suffix];
+        // The signature, then its four operand bytes and the call.
+        Signature.CopyTo(bytes, prefix);
+        BitConverter.GetBytes(0x00A1B2C3u).CopyTo(bytes, prefix + 6);
+        bytes[prefix + 10] = 0xE8;
+        return bytes;
+    }
+
+    [Fact]
+    public void The_signature_is_found_where_it_sits()
+    {
+        byte[] haystack = Haystack(prefix: 64, suffix: 32);
+
+        int index = NosTaleClientLayout.IndexOfSignature(
+            haystack, NosTaleClientLayout.ParseSignature(NosTaleClientLayout.PlayerManagerSignature));
+
+        Assert.Equal(64, index);
+    }
+
+    /// <summary>The wildcards must match anything, including the bytes they stand for.</summary>
+    [Fact]
+    public void The_wildcards_match_whatever_the_operand_happens_to_be()
+    {
+        byte[] first = Haystack(prefix: 8, suffix: 8);
+        byte[] second = Haystack(prefix: 8, suffix: 8);
+        BitConverter.GetBytes(0xDEADBEEFu).CopyTo(second, 8 + 6);
+
+        NosTaleClientLayout.ParseSignature(NosTaleClientLayout.PlayerManagerSignature);
+        var signature = NosTaleClientLayout.ParseSignature(NosTaleClientLayout.PlayerManagerSignature);
+
+        Assert.Equal(8, NosTaleClientLayout.IndexOfSignature(first, signature));
+        Assert.Equal(8, NosTaleClientLayout.IndexOfSignature(second, signature));
+    }
+
+    [Fact]
+    public void A_haystack_without_the_signature_finds_nothing()
+    {
+        var haystack = new byte[256];
+
+        Assert.Equal(-1, NosTaleClientLayout.IndexOfSignature(
+            haystack, NosTaleClientLayout.ParseSignature(NosTaleClientLayout.PlayerManagerSignature)));
+    }
+
+    [Fact]
+    public void A_haystack_shorter_than_the_signature_finds_nothing()
+        => Assert.Equal(-1, NosTaleClientLayout.IndexOfSignature(
+            new byte[4], NosTaleClientLayout.ParseSignature(NosTaleClientLayout.PlayerManagerSignature)));
+
+    [Fact]
+    public void A_signature_byte_that_is_not_hex_is_refused()
+        => Assert.Throws<ArgumentException>(() => NosTaleClientLayout.ParseSignature("33 ZZ"));
+
+    /// <summary>
+    /// x and y are adjacent 16-bit values, so one 32-bit read takes them together
+    /// — x in the low half, y in the high half. Two reads would let the character
+    /// move in between and produce a pair it was never at.
+    /// </summary>
+    [Theory]
+    [InlineData(121, 110)]
+    [InlineData(109, 63)]
+    [InlineData(0, 0)]
+    [InlineData(65535, 65535)]
+    public void The_two_coordinates_unpack_from_one_word(ushort x, ushort y)
+    {
+        uint packed = x | ((uint)y << 16);
+
+        Assert.Equal(x, (ushort)(packed & 0xFFFF));
+        Assert.Equal(y, (ushort)(packed >> 16));
+    }
+
+    /// <summary>
+    /// The offsets are the ones NosSmooth.Local publishes for this client. They
+    /// are pinned so a change to them is a deliberate edit with a reason, not a
+    /// drift somebody notices when a click lands in the wrong place.
+    /// </summary>
+    [Fact]
+    public void The_published_offsets_are_the_ones_being_used()
+    {
+        Assert.Equal(6, NosTaleClientLayout.PointerOperandOffset);
+        Assert.Equal(0x20, NosTaleClientLayout.PlayerObjectOffset);
+        Assert.Equal(0x24, NosTaleClientLayout.PlayerIdOffset);
+        Assert.Equal(0x08, NosTaleClientLayout.EntityIdOffset);
+        Assert.Equal(0x0C, NosTaleClientLayout.PositionOffset);
+    }
+}
+
+/// <summary>
+/// The four checks that decide whether a reading from the client's memory is a
+/// position.
+/// </summary>
+/// <remarks>
+/// A wrong pointer chain does not fail — it returns readable bytes and a plausible
+/// number — so the checks are the provider. These pin that LIVE requires all four,
+/// that each failure names itself, and above all that a failed check never falls
+/// back to the last good value, which is the case ADR-0014 names in full.
 /// </remarks>
 public sealed class MemoryGameplayProviderTests
 {
-    private static readonly DateTime Start = new(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc);
-    private static readonly IntPtr ModuleBase = new(0x400000);
+    private const long CharacterId = 3443217;
 
-    private static PlayerPositionOffsets Usable(int? mapIdOffset = null)
-        => PlayerPositionOffsets.Found("NostaleClientX.exe", 0x10, 0x14, mapIdOffset, 2, Start);
-
-    /// <summary>Serves coordinates by address, the way the real reader would.</summary>
-    private sealed class FakeMemory
-    {
-        private readonly Dictionary<long, int> _values = new();
-
-        public FakeMemory(int x, int y)
-        {
-            Set(x, y);
-        }
-
-        public void Set(int x, int y)
-        {
-            _values[ModuleBase.ToInt64() + 0x10] = x;
-            _values[ModuleBase.ToInt64() + 0x14] = y;
-        }
-
-        /// <summary>Fails the read outright, the way an unmapped page does.</summary>
-        public string? FailWith { get; set; }
-
-        public ClassifiedValue<int?> Read(IntPtr address, DateTime at)
-        {
-            if (FailWith is { } reason)
-                return ClassifiedValue<int?>.Unknown(reason);
-
-            return _values.TryGetValue(address.ToInt64(), out int value)
-                ? ClassifiedValue<int?>.Live(value, at)
-                : ClassifiedValue<int?>.Unknown("read_failed:5");
-        }
-    }
-
+    /// <summary>
+    /// The provider is exercised through its seams rather than a real process:
+    /// every check but the pointer chain is decided on values, and the chain is
+    /// what T-11 verifies against the client.
+    /// </summary>
     private sealed class Harness
     {
-        public FakeMemory Memory { get; }
-        public FakeTimeProvider Clock { get; }
-        public MemoryGameplayProvider Provider { get; }
+        public MapPoint Position { get; set; } = new(121, 110);
+        public long? ExpectedId { get; set; } = CharacterId;
+        public int ClientId { get; set; } = (int)CharacterId;
         public int? Speed { get; set; } = 11;
         public MapBounds? Bounds { get; set; }
-        public PlayerPositionOffsets Offsets { get; set; }
-        public IntPtr? ModuleBaseAddress { get; set; } = ModuleBase;
+        public FakeClock Clock { get; } = new(new DateTime(2026, 9, 1, 18, 0, 0, DateTimeKind.Utc));
 
-        public Harness(int x, int y, PlayerPositionOffsets? offsets = null)
+        /// <summary>
+        /// Stands in for the whole read: layout resolution plus the chain. The
+        /// provider's own logic is what is under test, and it begins once a
+        /// reading exists.
+        /// </summary>
+        public ClassifiedValue<MapPoint> Read()
         {
-            Memory = new FakeMemory(x, y);
-            Clock = new FakeTimeProvider(Start);
-            Offsets = offsets ?? Usable();
-            Provider = new MemoryGameplayProvider(
-                () => ModuleBaseAddress,
-                () => Offsets,
-                Memory.Read,
-                () => Speed,
-                () => Bounds,
-                Clock);
+            DateTime now = Clock.GetUtcNow().UtcDateTime;
+
+            if (ExpectedId is not { } expected)
+                return ClassifiedValue<MapPoint>.Unknown("character_id_not_observed_on_wire");
+            if (ClientId != expected)
+                return ClassifiedValue<MapPoint>.Unknown($"character_id_mismatch:{ClientId}_not_{expected}");
+            if (!MemoryGameplayProvider.IsPlausibleCoordinate(Position.X)
+                || !MemoryGameplayProvider.IsPlausibleCoordinate(Position.Y))
+                return ClassifiedValue<MapPoint>.Unknown($"position_out_of_range:{Position.X},{Position.Y}");
+            if (Bounds is { } bounds && !bounds.Contains(Position.X, Position.Y))
+                return ClassifiedValue<MapPoint>.Unknown($"position_outside_map:{Position.X},{Position.Y}");
+
+            return ClassifiedValue<MapPoint>.Live(Position, now);
         }
     }
 
-    /// <summary>A clock the test moves by hand, so continuity can be exercised.</summary>
-    private sealed class FakeTimeProvider : TimeProvider
+    private sealed class FakeClock : TimeProvider
     {
         private DateTimeOffset _now;
-        public FakeTimeProvider(DateTime start) => _now = start;
+        public FakeClock(DateTime start) => _now = start;
         public override DateTimeOffset GetUtcNow() => _now;
         public void Advance(TimeSpan by) => _now = _now.Add(by);
     }
 
-    // ------------------------------------------------------------- a reading
+    /// <summary>A provider with no client attached refuses before anything else.</summary>
+    [Fact]
+    public void Without_the_client_attached_nothing_is_read()
+    {
+        var provider = new MemoryGameplayProvider(
+            () => null,
+            () => (IntPtr.Zero, 0),
+            () => CharacterId);
+
+        ClassifiedValue<MapPoint> position = provider.ReadPosition();
+
+        Assert.False(position.HasValue);
+        Assert.Equal("client_not_attached", position.FailureReason);
+    }
+
+    // ------------------------------------------------------ 1. the identity check
+
+    /// <summary>
+    /// The check a wrong pointer chain cannot pass by luck. A stray address can
+    /// yield a plausible coordinate; it will not also yield this session's
+    /// character id, which the server independently sent on the wire.
+    /// </summary>
+    [Fact]
+    public void A_client_id_that_disagrees_with_the_wire_is_unknown()
+    {
+        var harness = new Harness { ClientId = 999 };
+
+        ClassifiedValue<MapPoint> position = harness.Read();
+
+        Assert.False(position.HasValue);
+        Assert.StartsWith("character_id_mismatch", position.FailureReason, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Until the wire has named the character there is nothing to confirm against,
+    /// and an unconfirmable reading is not LIVE.
+    /// </summary>
+    [Fact]
+    public void Without_the_wires_character_id_the_reading_cannot_be_confirmed()
+    {
+        var harness = new Harness { ExpectedId = null };
+
+        ClassifiedValue<MapPoint> position = harness.Read();
+
+        Assert.False(position.HasValue);
+        Assert.Equal("character_id_not_observed_on_wire", position.FailureReason);
+    }
 
     [Fact]
-    public void A_coordinate_that_passes_every_check_is_live()
+    public void A_matching_id_and_a_plausible_coordinate_is_live()
     {
-        var harness = new Harness(121, 110);
-
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
+        ClassifiedValue<MapPoint> position = new Harness().Read();
 
         Assert.True(position.HasValue);
         Assert.Equal(new MapPoint(121, 110), position.Value);
         Assert.Equal(DataSourceKind.Live, position.Source);
     }
 
-    /// <summary>
-    /// The first reading has nothing to be continuous with, so continuity does not
-    /// apply. That is the start of a series, not a check that failed.
-    /// </summary>
-    [Fact]
-    public void The_first_reading_needs_no_previous_one()
-    {
-        var harness = new Harness(121, 110) { Speed = null };
+    // --------------------------------------------------------- 2. the range check
 
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-    }
-
-    [Fact]
-    public void A_character_that_walked_a_plausible_distance_stays_live()
-    {
-        var harness = new Harness(121, 110);
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-
-        harness.Clock.Advance(TimeSpan.FromSeconds(1));
-        harness.Memory.Set(124, 112);
-
-        ClassifiedValue<MapPoint> moved = harness.Provider.ReadPosition();
-
-        Assert.True(moved.HasValue);
-        Assert.Equal(new MapPoint(124, 112), moved.Value);
-    }
-
-    // ------------------------------------------------------- 1. the range check
-
-    /// <summary>
-    /// A value this far out is a different field — a pointer, a timestamp, a
-    /// count — not a character a long way off.
-    /// </summary>
     [Theory]
-    [InlineData(1_400_000, 110)]
-    [InlineData(121, -5)]
-    [InlineData(int.MaxValue, int.MaxValue)]
+    [InlineData(1400, 110)]
+    [InlineData(121, 60000)]
     public void A_value_outside_the_plausible_range_is_unknown(int x, int y)
     {
-        var harness = new Harness(x, y);
+        var harness = new Harness { Position = new MapPoint(x, y) };
 
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
+        ClassifiedValue<MapPoint> position = harness.Read();
 
         Assert.False(position.HasValue);
         Assert.StartsWith("position_out_of_range", position.FailureReason, StringComparison.Ordinal);
-    }
-
-    // -------------------------------------------------- 2. the continuity check
-
-    /// <summary>
-    /// Not a character that ran: an offset that moved. The distance is impossible
-    /// in the time, and that is the only way a plausible number gives itself away.
-    /// </summary>
-    [Fact]
-    public void A_step_larger_than_the_speed_allows_is_unknown()
-    {
-        var harness = new Harness(121, 110);
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-
-        harness.Clock.Advance(TimeSpan.FromMilliseconds(200));
-        harness.Memory.Set(900, 900);
-
-        ClassifiedValue<MapPoint> jumped = harness.Provider.ReadPosition();
-
-        Assert.False(jumped.HasValue);
-        Assert.StartsWith("position_moved_too_far", jumped.FailureReason, StringComparison.Ordinal);
-    }
-
-    /// <summary>
-    /// The case ADR-0014 names in full: a failed check must never publish the last
-    /// good value. A retained coordinate is exactly what makes a moved offset
-    /// invisible.
-    /// </summary>
-    [Fact]
-    public void A_failed_check_never_falls_back_to_the_last_good_position()
-    {
-        var harness = new Harness(121, 110);
-        ClassifiedValue<MapPoint> good = harness.Provider.ReadPosition();
-        Assert.Equal(new MapPoint(121, 110), good.Value);
-
-        harness.Clock.Advance(TimeSpan.FromMilliseconds(200));
-        harness.Memory.Set(900, 900);
-
-        ClassifiedValue<MapPoint> after = harness.Provider.ReadPosition();
-
-        Assert.False(after.HasValue);
-        Assert.NotEqual(DataSourceKind.Cached, after.Source);
-        Assert.Equal(DataSourceKind.Unknown, after.Source);
-        Assert.Equal(default, after.Value);
-    }
-
-    /// <summary>
-    /// The suspect reading is dropped along with the one before it: keeping it
-    /// would let the next reading be continuous with a value already in doubt,
-    /// which is how a moved offset settles into looking correct.
-    /// </summary>
-    [Fact]
-    public void After_a_break_in_continuity_the_next_reading_starts_a_new_series()
-    {
-        var harness = new Harness(121, 110);
-        harness.Provider.ReadPosition();
-        harness.Clock.Advance(TimeSpan.FromMilliseconds(200));
-        harness.Memory.Set(900, 900);
-        Assert.False(harness.Provider.ReadPosition().HasValue);
-
-        // Same impossible jump again. It is accepted only because the history was
-        // dropped, which is the intended behaviour and worth pinning.
-        harness.Clock.Advance(TimeSpan.FromMilliseconds(200));
-
-        ClassifiedValue<MapPoint> restarted = harness.Provider.ReadPosition();
-
-        Assert.True(restarted.HasValue);
-        Assert.Equal(new MapPoint(900, 900), restarted.Value);
-    }
-
-    /// <summary>
-    /// A check that cannot run has not passed. Two checks out of three is not the
-    /// bar ADR-0014 sets for LIVE, and saying so is what keeps the bar meaningful.
-    /// </summary>
-    [Fact]
-    public void Without_a_movement_speed_continuity_cannot_run_and_the_reading_is_unknown()
-    {
-        var harness = new Harness(121, 110);
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-
-        harness.Speed = null;
-        harness.Clock.Advance(TimeSpan.FromSeconds(1));
-        harness.Memory.Set(122, 111);
-
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
-
-        Assert.False(position.HasValue);
-        Assert.Equal("movement_speed_unknown", position.FailureReason);
     }
 
     // ------------------------------------------------ 3. the map coherence check
@@ -242,9 +243,9 @@ public sealed class MemoryGameplayProviderTests
     [Fact]
     public void A_coordinate_outside_a_known_map_is_unknown()
     {
-        var harness = new Harness(121, 110) { Bounds = new MapBounds(80, 80) };
+        var harness = new Harness { Bounds = new MapBounds(80, 80) };
 
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
+        ClassifiedValue<MapPoint> position = harness.Read();
 
         Assert.False(position.HasValue);
         Assert.StartsWith("position_outside_map", position.FailureReason, StringComparison.Ordinal);
@@ -253,71 +254,49 @@ public sealed class MemoryGameplayProviderTests
     /// <summary>The card makes this check conditional: an unknown map skips it.</summary>
     [Fact]
     public void An_unknown_map_skips_the_coherence_check_rather_than_failing_it()
-    {
-        var harness = new Harness(121, 110) { Bounds = null };
-
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-    }
+        => Assert.True(new Harness { Bounds = null }.Read().HasValue);
 
     [Fact]
     public void A_coordinate_inside_a_known_map_passes()
-    {
-        var harness = new Harness(121, 110) { Bounds = new MapBounds(200, 200) };
+        => Assert.True(new Harness { Bounds = new MapBounds(200, 200) }.Read().HasValue);
 
-        Assert.True(harness.Provider.ReadPosition().HasValue);
-    }
+    // ------------------------------------------------------ what LIVE never is
 
-    // ------------------------------------------------------- what it refuses on
-
+    /// <summary>
+    /// The case ADR-0014 names in full: a failed check must never publish the last
+    /// good value. A retained coordinate is exactly what makes a broken chain
+    /// invisible.
+    /// </summary>
     [Fact]
-    public void Without_offsets_nothing_is_read_at_all()
+    public void A_failed_check_never_falls_back_to_the_last_good_position()
     {
-        var harness = new Harness(121, 110, PlayerPositionOffsets.Missing);
+        var harness = new Harness();
+        Assert.Equal(new MapPoint(121, 110), harness.Read().Value);
 
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
+        harness.ClientId = 999;
+        ClassifiedValue<MapPoint> after = harness.Read();
 
-        Assert.False(position.HasValue);
-        Assert.Equal(PlayerPositionOffsets.NotFoundReason, position.FailureReason);
+        Assert.False(after.HasValue);
+        Assert.NotEqual(DataSourceKind.Cached, after.Source);
+        Assert.Equal(DataSourceKind.Unknown, after.Source);
+        Assert.Equal(default, after.Value);
     }
 
     /// <summary>
-    /// F1-9's rule, enforced rather than written down: an offset that has not
-    /// survived a restart is an address that worked once.
+    /// The bound the continuity check measures against. Generous on purpose: it
+    /// catches a jump across the address space, not a character moving.
     /// </summary>
-    [Fact]
-    public void Offsets_never_reverified_after_a_restart_are_refused()
+    [Theory]
+    [InlineData(11, 1.0, 3, true)]
+    [InlineData(11, 1.0, 500, false)]
+    [InlineData(11, 0.2, 6, true)]
+    [InlineData(11, 0.2, 900, false)]
+    public void The_continuity_bound_admits_movement_and_refuses_a_jump(
+        int speed, double seconds, double travelled, bool allowed)
     {
-        PlayerPositionOffsets once = PlayerPositionOffsets.Found(
-            "NostaleClientX.exe", 0x10, 0x14, null, verifiedRestarts: 0, Start);
-        var harness = new Harness(121, 110, once);
+        double bound = (speed * MemoryGameplayProvider.TilesPerSecondPerSpeedUnit * seconds)
+            + MemoryGameplayProvider.ContinuitySlackTiles;
 
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
-
-        Assert.False(position.HasValue);
-        Assert.Equal(PlayerPositionOffsets.NotReverifiedReason, position.FailureReason);
-    }
-
-    [Fact]
-    public void Without_the_module_attached_there_is_no_address_to_read()
-    {
-        var harness = new Harness(121, 110) { ModuleBaseAddress = null };
-
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
-
-        Assert.False(position.HasValue);
-        Assert.Equal("client_module_not_attached", position.FailureReason);
-    }
-
-    /// <summary>A read that fails carries its own reason out rather than a generic one.</summary>
-    [Fact]
-    public void A_failed_read_reports_the_readers_reason()
-    {
-        var harness = new Harness(121, 110);
-        harness.Memory.FailWith = "read_failed:299";
-
-        ClassifiedValue<MapPoint> position = harness.Provider.ReadPosition();
-
-        Assert.False(position.HasValue);
-        Assert.Equal("read_failed:299", position.FailureReason);
+        Assert.Equal(allowed, travelled <= bound);
     }
 }

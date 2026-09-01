@@ -132,6 +132,32 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--screen-samples-clear", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.ScreenProjectionProbe.RunClear(null);
 
+        // What a recording says, read by the runtime's own decoder and needing no
+        // driver. WinDivertProbe --world does the same, but it has to sit beside a
+        // staged WinDivert.dll and it holds the runtime assembly open while it
+        // runs; this reads a capture with nothing staged and nothing locked.
+        int worldReplayFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--world-replay", StringComparison.OrdinalIgnoreCase));
+        if (worldReplayFlag >= 0)
+        {
+            string? capture = worldReplayFlag + 1 < args.Length ? args[worldReplayFlag + 1] : null;
+            if (string.IsNullOrWhiteSpace(capture))
+            {
+                Console.Error.WriteLine("--world-replay <file.noscap> requires a recording path.");
+                return 2;
+            }
+
+            if (!File.Exists(capture))
+            {
+                Console.Error.WriteLine($"Recording not found: {capture}");
+                return 2;
+            }
+
+            Console.WriteLine(
+                NosAi.LiveIntegration.Capture.WorldChannelReplay.ReplayFile(capture).Describe());
+            return 0;
+        }
+
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides
         // about it, which is the half nothing exercised before.

@@ -31,7 +31,7 @@ public static class ScreenProjectionProbe
     public const string SamplesRelativePath = "data/perception/screen-samples.txt";
 
     /// <summary>Records one pair: the map coordinate typed, the cursor where it is.</summary>
-    public static int RunSample(string? repoRoot, int mapX, int mapY, string processName = "NostaleClientX")
+    public static int RunSample(string? repoRoot, int mapX, int mapY, string? processName = null)
     {
         repoRoot ??= Directory.GetCurrentDirectory();
 
@@ -199,30 +199,46 @@ public static class ScreenProjectionProbe
         return samples;
     }
 
-    private static bool TryClientArea(string processName, out PixelRect area, out string? failureReason)
+    /// <summary>
+    /// Finds the client window, trying every name the runtime knows the client by.
+    /// </summary>
+    /// <remarks>
+    /// The same list <see cref="NosAi.LiveIntegration.RealClientConnector"/> uses,
+    /// rather than one name here and three there: the operator should not have to
+    /// discover that calibration looks for a different process than attachment
+    /// does.
+    /// </remarks>
+    private static bool TryClientArea(string? processName, out PixelRect area, out string? failureReason)
     {
         area = default;
         failureReason = null;
 
         if (!OperatingSystem.IsWindows())
         {
-            failureReason = "client_window_not_located";
+            failureReason = "client_window_not_located:not_windows";
             return false;
         }
 
-        foreach (System.Diagnostics.Process process in System.Diagnostics.Process.GetProcessesByName(processName))
+        string[] names = string.IsNullOrWhiteSpace(processName)
+            ? NosAi.LiveIntegration.RealClientConnector.DefaultProcessNames
+            : [processName];
+
+        foreach (string name in names)
         {
-            using (process)
+            foreach (System.Diagnostics.Process process in System.Diagnostics.Process.GetProcessesByName(name))
             {
-                if (ClientWindowLocator.TryFind(process.Id, out _) is { } window)
+                using (process)
                 {
-                    area = window.ClientArea;
-                    return true;
+                    if (ClientWindowLocator.TryFind(process.Id, out _) is { } window)
+                    {
+                        area = window.ClientArea;
+                        return true;
+                    }
                 }
             }
         }
 
-        failureReason = $"client_window_not_located:{processName}";
+        failureReason = $"client_window_not_located:{string.Join('/', names)}";
         return false;
     }
 }

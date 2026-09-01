@@ -28,30 +28,33 @@ public interface IPlayerPositionProvider
 /// <remarks>
 /// <para>
 /// F1-10, and the reason ADR-0014 could lift ADR-0012's prohibition without
-/// lifting its argument. A moved offset does not fail: it returns four readable
+/// lifting its argument. A wrong pointer chain does not fail: it returns readable
 /// bytes and a plausible number. The classification is only honest if something
-/// can tell the two apart, so the validity check <b>is</b> the provider — reading
-/// the bytes is the easy half.
+/// can tell the two apart, so the checks <b>are</b> the provider — reading the
+/// bytes is the easy half.
 /// </para>
 /// <para>
-/// Three checks, all three required:
+/// Four checks, in the order that costs least to disprove:
 /// </para>
 /// <list type="number">
-/// <item><b>Range.</b> NosTale map coordinates run to two and three digits — the
-/// captures show <c>121 110</c> and <c>109 63</c>. A value outside
-/// <see cref="MaxPlausibleCoordinate"/> is a different field, not a distant
-/// character.</item>
-/// <item><b>Continuity.</b> A step between consecutive readings larger than the
-/// character's speed allows in the time between them is an offset that moved, not
-/// somebody who ran. The speed comes from <c>cond</c>.</item>
+/// <item><b>Identity.</b> The character id the client holds must equal the id the
+/// <i>server</i> sent on the wire. Two independent sources agreeing on one number
+/// is the strongest thing available here, and it is the one check a wrong pointer
+/// chain cannot pass by luck: a stray address yielding a plausible coordinate
+/// will not also yield this session's character id.</item>
+/// <item><b>Range.</b> NosTale coordinates run to two and three digits — the
+/// captures show <c>121 110</c> and <c>109 63</c>. Outside the bound is a
+/// different field, not a distant character.</item>
 /// <item><b>Map coherence.</b> When the current map is known, a coordinate
 /// outside it is not a position.</item>
+/// <item><b>Continuity.</b> A step larger than the speed from <c>cond</c> allows
+/// in the elapsed time is a pointer that moved, not somebody who ran.</item>
 /// </list>
 /// <para>
 /// <c>LIVE</c> while all of them hold; <c>UNKNOWN</c> with the failing check's own
 /// reason the moment one gives. <b>Never the last good value</b> — the case
 /// ADR-0014 names in full, because a retained coordinate is exactly what makes a
-/// moved offset invisible.
+/// broken chain invisible.
 /// </para>
 /// </remarks>
 public sealed class MemoryGameplayProvider : IPlayerPositionProvider
@@ -60,18 +63,18 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     /// The largest coordinate a NosTale map is taken to have.
     /// </summary>
     /// <remarks>
-    /// The captures show two and three digits, and no map in them approaches this.
-    /// It is deliberately loose: the check is here to reject a field that is not a
-    /// coordinate at all — a pointer, a timestamp, an item count — not to police
-    /// the edges of a map, which is what the map-bounds check is for.
+    /// Deliberately loose. This rejects a field that is not a coordinate at all;
+    /// policing the edges of a map is the map-bounds check's job. The client
+    /// stores both coordinates as <c>uint16</c>, so the type alone already rules
+    /// out anything above 65535.
     /// </remarks>
     public const int MaxPlausibleCoordinate = 1000;
 
     /// <summary>Tiles per second at speed 1, used to turn <c>cond</c> into a bound.</summary>
     /// <remarks>
-    /// Deliberately generous. This check exists to catch a reading that jumped
-    /// across the address space, which is orders of magnitude out, not to measure
-    /// movement precisely — and a bound that is too tight would reject a real
+    /// Deliberately generous. This catches a reading that jumped across the
+    /// address space, which is orders of magnitude out, not a character moving
+    /// slightly faster than expected — and a tight bound would reject a real
     /// character after a lag spike.
     /// </remarks>
     public const double TilesPerSecondPerSpeedUnit = 1.0;
@@ -79,24 +82,29 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     /// <summary>Allowed on top of speed × elapsed, for a reading either side of a jitter.</summary>
     public const double ContinuitySlackTiles = 4.0;
 
-    private readonly Func<IntPtr?> _moduleBase;
-    private readonly Func<PlayerPositionOffsets> _offsets;
-    private readonly Func<IntPtr, DateTime, ClassifiedValue<int?>> _readCoordinate;
+    private readonly Func<ProcessMemoryReader?> _reader;
+    private readonly Func<(IntPtr Base, long Size)?> _module;
+    private readonly Func<long?> _expectedCharacterId;
     private readonly Func<int?> _movementSpeed;
     private readonly Func<MapBounds?> _mapBounds;
     private readonly TimeProvider _clock;
 
+    private NosTaleClientLayout? _layout;
     private MapPoint? _previous;
     private DateTime _previousAtUtc;
 
-    /// <param name="moduleBase">
-    /// Base address of the module the offsets are relative to, or null when the
-    /// client is not attached. Re-read every time: ASLR moves it on every start.
+    /// <param name="reader">
+    /// An open read handle to the client, or null when it is not attached.
     /// </param>
-    /// <param name="readCoordinate">
-    /// Reads one validated 32-bit value, normally
-    /// <see cref="ProcessMemoryReader.ReadValidatedInt32"/> with the range check
-    /// already bound in.
+    /// <param name="module">
+    /// Base and size of the client's main module, re-read because ASLR moves it
+    /// on every start of the client.
+    /// </param>
+    /// <param name="expectedCharacterId">
+    /// The character id the server sent, normally
+    /// <c>NetworkObservationReport.PlayerEntityId</c>. Null until the wire has
+    /// named it, and null means this reading cannot be confirmed — which is a
+    /// refusal, not a reason to skip the check.
     /// </param>
     /// <param name="movementSpeed">
     /// The character's speed from <c>cond</c>, or null when nothing has reported
@@ -104,21 +112,19 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     /// </param>
     /// <param name="mapBounds">
     /// The current map's limits, or null when the map is not known. The card makes
-    /// this check conditional in so many words — an unknown map skips it, where an
-    /// unknown speed does not, because a speed of "unknown" still leaves a check
-    /// that ought to have run.
+    /// this check conditional in so many words, so an unknown map skips it.
     /// </param>
     public MemoryGameplayProvider(
-        Func<IntPtr?> moduleBase,
-        Func<PlayerPositionOffsets> offsets,
-        Func<IntPtr, DateTime, ClassifiedValue<int?>> readCoordinate,
+        Func<ProcessMemoryReader?> reader,
+        Func<(IntPtr Base, long Size)?> module,
+        Func<long?> expectedCharacterId,
         Func<int?>? movementSpeed = null,
         Func<MapBounds?>? mapBounds = null,
         TimeProvider? clock = null)
     {
-        _moduleBase = moduleBase ?? throw new ArgumentNullException(nameof(moduleBase));
-        _offsets = offsets ?? throw new ArgumentNullException(nameof(offsets));
-        _readCoordinate = readCoordinate ?? throw new ArgumentNullException(nameof(readCoordinate));
+        _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        _module = module ?? throw new ArgumentNullException(nameof(module));
+        _expectedCharacterId = expectedCharacterId ?? throw new ArgumentNullException(nameof(expectedCharacterId));
         _movementSpeed = movementSpeed ?? (static () => null);
         _mapBounds = mapBounds ?? (static () => null);
         _clock = clock ?? TimeProvider.System;
@@ -127,43 +133,79 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     /// <inheritdoc />
     public ClassifiedValue<MapPoint> ReadPosition()
     {
-        PlayerPositionOffsets offsets = _offsets();
-        if (offsets.UnusableReason is { } offsetsReason)
-            return Unknown(offsetsReason);
+        if (_reader() is not { } reader)
+        {
+            Forget();
+            return Unknown("client_not_attached");
+        }
 
-        if (_moduleBase() is not { } moduleBase || moduleBase == IntPtr.Zero)
-            return Unknown("client_module_not_attached");
+        if (_module() is not { } module)
+        {
+            Forget();
+            return Unknown("client_module_not_located");
+        }
+
+        // Resolved once and kept: the signature is in the image, which does not
+        // move while the process lives. The pointer chain behind it is followed
+        // fresh on every read, because that does move.
+        if (_layout is null
+            && !NosTaleClientLayout.TryResolve(
+                reader, module.Base, module.Size, out _layout, out string? resolveFailure))
+        {
+            Forget();
+            return Unknown(resolveFailure ?? "player_manager_not_resolved");
+        }
 
         DateTime now = _clock.GetUtcNow().UtcDateTime;
 
-        ClassifiedValue<int?> x = _readCoordinate(moduleBase + offsets.OffsetX, now);
-        if (!x.HasValue || x.Value is not { } mapX)
-            return Unknown(x.FailureReason ?? "player_x_unreadable");
+        if (!_layout!.TryReadPlayer(reader, out PlayerObjectReading player, out string? readFailure))
+        {
+            // A broken chain invalidates the layout as well: the next read
+            // re-scans rather than following a pointer that has stopped meaning
+            // what it meant.
+            _layout = null;
+            Forget();
+            return Unknown(readFailure ?? "player_object_unreadable");
+        }
 
-        ClassifiedValue<int?> y = _readCoordinate(moduleBase + offsets.OffsetY, now);
-        if (!y.HasValue || y.Value is not { } mapY)
-            return Unknown(y.FailureReason ?? "player_y_unreadable");
+        // 1. Identity, first, because it is the check a wrong chain cannot pass by
+        //    luck and it costs one comparison.
+        if (_expectedCharacterId() is not { } expectedId)
+        {
+            Forget();
+            return Unknown("character_id_not_observed_on_wire");
+        }
 
-        // 1. Range. A value this far out is a different field, not a far-off
-        //    character: a pointer, a timestamp, a count.
-        if (!IsPlausibleCoordinate(mapX) || !IsPlausibleCoordinate(mapY))
-            return Unknown($"position_out_of_range:{mapX},{mapY}");
+        if (player.CharacterId != expectedId)
+        {
+            _layout = null;
+            Forget();
+            return Unknown($"character_id_mismatch:{player.CharacterId}_not_{expectedId}");
+        }
 
-        var position = new MapPoint(mapX, mapY);
+        // 2. Range.
+        if (!IsPlausibleCoordinate(player.X) || !IsPlausibleCoordinate(player.Y))
+        {
+            Forget();
+            return Unknown($"position_out_of_range:{player.X},{player.Y}");
+        }
 
-        // 3. Map coherence, checked before continuity because it needs no history:
-        //    a coordinate off the map is not a position whatever it was before.
-        if (_mapBounds() is { } bounds && !bounds.Contains(mapX, mapY))
-            return Unknown($"position_outside_map:{mapX},{mapY}");
+        var position = new MapPoint(player.X, player.Y);
 
-        // 2. Continuity, against the previous accepted reading.
+        // 3. Map coherence, before continuity because it needs no history.
+        if (_mapBounds() is { } bounds && !bounds.Contains(player.X, player.Y))
+        {
+            Forget();
+            return Unknown($"position_outside_map:{player.X},{player.Y}");
+        }
+
+        // 4. Continuity, against the previous accepted reading.
         if (_previous is { } previous)
         {
             if (_movementSpeed() is not { } speed)
             {
                 // The check cannot run, so it has not passed. A reading validated
-                // by two checks out of three is not LIVE by ADR-0014's bar, and
-                // saying so is what keeps that bar meaningful.
+                // by three checks out of four is not LIVE by ADR-0014's bar.
                 Forget();
                 return Unknown("movement_speed_unknown");
             }
@@ -174,9 +216,6 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
 
             if (travelled > allowed)
             {
-                // Not a character that ran: an offset that moved. The previous
-                // reading is dropped too, because one of the two is wrong and
-                // there is no way to tell which.
                 Forget();
                 return Unknown($"position_moved_too_far:{travelled:F1}_over_{allowed:F1}");
             }
@@ -203,7 +242,7 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     /// </summary>
     /// <remarks>
     /// Keeping it would make the next reading continuous with a value already
-    /// under suspicion, which is how a moved offset settles into looking correct.
+    /// under suspicion, which is how a broken chain settles into looking correct.
     /// </remarks>
     private void Forget()
     {

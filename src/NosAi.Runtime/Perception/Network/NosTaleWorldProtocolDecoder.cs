@@ -41,6 +41,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 {
     private readonly Dictionary<long, TrackedEntity> _entities = new();
 
+    /// <summary>
+    /// The controlled character's own entity id, once <c>cond</c> has named it.
+    /// </summary>
+    /// <remarks>
+    /// Null until the wire says so. It is never guessed and never configured: an
+    /// id supplied by hand would be a number nobody observed deciding whether a
+    /// hit was the player's, which is the shape of mistake this decoder exists to
+    /// avoid.
+    /// </remarks>
+    private long? _playerEntityId;
+
     /// <inheritdoc />
     public string ProtocolName => "nostale-world-observed";
 
@@ -214,19 +225,29 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// <c>HasTarget</c> — it contradicts a screen that saw no target frame, and it
     /// never establishes the fact on its own (ADR-0018).
     /// </remarks>
-    private static DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    private DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 5
             || !TryLong(fields[4], out long targetId)
             || !TryInt(fields[1], out int attackerType)
+            || !TryLong(fields[2], out long attackerId)
             || !TryInt(fields[3], out _))
             return DecodedObservations.Empty;
+
+        // Type 1 alone says "a player attacked", not "this character attacked".
+        // Once cond has named the controlled character, the id decides, and a
+        // stranger fighting nearby stops contradicting the screen. Until then the
+        // type is all there is, and a false disagreement costs a fact the planner
+        // skips rather than a confident wrong answer (ADR-0018).
+        bool playerAttacked = _playerEntityId is { } own
+            ? attackerId == own
+            : attackerType == PlayerEntityType;
 
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
             ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source)),
             Vitals: null,
-            PlayerAttackedAtUtc: attackerType == PlayerEntityType ? capturedUtc : null);
+            PlayerAttackedAtUtc: playerAttacked ? capturedUtc : null);
     }
 
     /// <summary>
@@ -236,19 +257,26 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// probable there and have never been observed asserted; they are not read.
     /// This is state, not an event: no <see cref="GameEvent"/> is emitted.
     /// </summary>
-    private static DecodedObservations DecodeCondition(string[] fields)
+    private DecodedObservations DecodeCondition(string[] fields)
     {
         if (fields.Length < 6)
             return DecodedObservations.Empty;
         if (!TryInt(fields[1], out int entityType) || entityType != PlayerEntityType)
             return DecodedObservations.Empty;
+        if (!TryLong(fields[2], out long entityId) || entityId <= 0)
+            return DecodedObservations.Empty;
         if (!TryInt(fields[5], out int speed) || speed < 0)
             return DecodedObservations.Empty;
+
+        // The server sends cond for the controlled character, so field 2 is this
+        // session's own entity id — the fact ADR-0018 needed and did not have.
+        _playerEntityId = entityId;
 
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
             ImmutableArray<GameEvent>.Empty,
-            PlayerMovementSpeed: speed);
+            PlayerMovementSpeed: speed,
+            PlayerEntityId: entityId);
     }
 
     private static DecodedObservations Sighting(

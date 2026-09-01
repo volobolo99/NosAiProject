@@ -28,7 +28,12 @@ public sealed record WorldChannelReplaySummary(
     long DistinctEntities,
     long CombatHits,
     long Deaths,
-    DataSourceKind Source)
+    DataSourceKind Source,
+    // What the wire said about the controlled character itself. Both are null
+    // until a packet named them, and neither is guessed: the own entity id comes
+    // from cond's field 2, the speeds are every distinct cond speed observed.
+    long? PlayerEntityId = null,
+    IReadOnlyList<int>? PlayerSpeeds = null)
 {
     /// <summary>Packets carrying an opcode the decoder reads.</summary>
     public long ReadablePackets => Opcodes.Where(o => ReadOpcodes.Contains(o.Key)).Sum(o => o.Value);
@@ -67,6 +72,12 @@ public sealed record WorldChannelReplaySummary(
         }
 
         sb.AppendLine($"  avvistamenti           : {Sightings} su {DistinctEntities} entita' distinte");
+        sb.AppendLine(PlayerEntityId is { } ownId
+            ? $"  entity id proprio      : {ownId} (da cond, tipo 1)"
+            : "  entity id proprio      : non osservato (nessun cond del giocatore)");
+        sb.AppendLine(PlayerSpeeds is { Count: > 0 } observed
+            ? $"  velocita' osservate    : {string.Join(", ", observed)} (da cond)"
+            : "  velocita' osservate    : nessuna (cond assente o non letto)");
         sb.AppendLine($"  eventi                 : {CombatHits} colpi, {Deaths} morti");
         return sb.ToString();
     }
@@ -98,7 +109,10 @@ public sealed record WorldChannelReplaySummary(
 public static class WorldChannelReplay
 {
     /// <summary>The opcodes <see cref="NosTaleWorldProtocolDecoder"/> reads.</summary>
-    private static readonly string[] ReadOpcodes = { "stat", "st", "in", "mv", "die", "su" };
+    // cond joined the list when the decoder learned to read it; a display list
+    // that drifts from the decoder reports packets as ignored while they are being
+    // read, which is the sort of quiet inaccuracy this whole report exists against.
+    private static readonly string[] ReadOpcodes = { "stat", "st", "in", "mv", "die", "su", "cond" };
 
     /// <summary>Reads a recording file and reports what the world channel said.</summary>
     public static WorldChannelReplaySummary ReplayFile(string path)
@@ -159,6 +173,8 @@ public static class WorldChannelReplay
         int minHp = int.MaxValue, maxHp = 0, minMp = int.MaxValue, maxMp = 0;
         var maxHpValues = new SortedSet<int>();
         var entities = new HashSet<long>();
+        var speeds = new SortedSet<int>();
+        long? playerEntityId = null;
 
         while (true)
         {
@@ -183,6 +199,10 @@ public static class WorldChannelReplay
                 if (gameEvent.Kind == GameEventKind.EntityDeath) deaths++;
             }
 
+            playerEntityId ??= report.PlayerEntityId;
+            if (report.PlayerMovementSpeed is { } speed)
+                speeds.Add(speed);
+
             if (report.Vitals is { } vitals)
             {
                 vitalsReadings++;
@@ -201,6 +221,8 @@ public static class WorldChannelReplay
             vitalsReadings == 0 ? 0 : minHp, maxHp, maxHpValues.ToList(),
             vitalsReadings == 0 ? 0 : minMp, maxMp,
             sightings, entities.Count, hits, deaths,
-            source);
+            source,
+            playerEntityId,
+            speeds.Order().ToList());
     }
 }
