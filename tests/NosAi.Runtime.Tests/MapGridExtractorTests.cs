@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using NosAi.Runtime.Navigation;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NosAi.Runtime.Tests;
 
@@ -12,6 +13,45 @@ namespace NosAi.Runtime.Tests;
 /// </summary>
 public sealed class MapGridExtractorTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public MapGridExtractorTests(ITestOutputHelper output) => _output = output;
+
+    [NosTaleClientFact]
+    public void EveryRealNStcDataMapLoadsThroughTheBinaryLoader()
+    {
+        string client = NosTaleClientFactAttribute.ResolveDirectory()!;
+        string output = Path.Combine(Path.GetTempPath(), "nosai-nstc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+        try
+        {
+            MapGridExtractReport report = MapGridExtractor.Extract(client, output);
+            Assert.True(report.Ok, report.FailureReason);
+            Assert.True(report.Written.Count > 0, "NStcData produced no .grid files.");
+            Assert.True(File.Exists(Path.Combine(output, MapGridExtractor.ManifestFileName)));
+
+            Evidence.Live(_output, "griglieScritte", report.Written.Count);
+            Evidence.Live(_output, "rifiutate", report.Refused.Count);
+
+            var loader = new BinaryMapGridLoader();
+            string[] files = Directory.GetFiles(output, "*.grid");
+            Assert.Equal(report.Written.Count, files.Length);
+
+            foreach (string path in files)
+            {
+                int mapId = int.Parse(Path.GetFileNameWithoutExtension(path)!);
+                byte[] bytes = File.ReadAllBytes(path);
+                Assert.True(loader.TryLoad(mapId, bytes, out MapGrid grid, out string? reason), $"{path}: {reason}");
+                Assert.True(grid.IsLoaded);
+                Assert.Equal(mapId, grid.MapId);
+            }
+        }
+        finally
+        {
+            try { Directory.Delete(output, recursive: true); }
+            catch (IOException) { }
+        }
+    }
     [Fact]
     public void AWellFormedArchiveEntryIsWrittenAndReloads()
     {

@@ -38,6 +38,9 @@ public sealed record MapGridExtractReport(
 /// map would plan across walls the client never had.
 /// </para>
 /// <para>
+/// The archive is <c>NStcData</c>, not <c>NSmpData</c>: that one holds sprites.
+/// </para>
+/// <para>
 /// Destination: <c>&lt;NOSAI-SSD&gt;\NosAi\data\maps\&lt;mapId&gt;.grid</c> when
 /// the dedicated volume is present. Tests pass an output directory of their own
 /// rather than inventing a drive letter.
