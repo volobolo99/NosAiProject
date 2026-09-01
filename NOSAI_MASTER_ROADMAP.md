@@ -4,6 +4,7 @@
 **Date:** 2026-08-30
 **Target:** NosAiProject v1.0 — reale, integrato, testato e verificato
 **Repository:** `volobolo99/NosAiProject`
+**Status:** SUPERSEDED for new work as of 2026-09-01 — see `docs/adr/ADR-0015-adopt-roadmap-esecutiva-as-canonical-architecture.md` and `docs/ROADMAP_ESECUTIVA.md`. This document still tracks the existing `NosAi.Runtime` milestones (kept running, kept tested); it is not extended with new milestones going forward.
 
 ## Current verified baseline
 
@@ -67,7 +68,7 @@ AI-agent rules:
 
 ## Phase 1 — Core Foundation
 - [ ] `M010` — Consolidate solution/project structure.
-- [ ] `M011` — Central configuration and environment validation.
+- [x] `M011` — Central configuration and environment validation. **DONE** (`RuntimeEnvironmentValidator` in `src/NosAi.Runtime/Configuration/RuntimeEnvironmentValidator.cs`, enforced fail-closed in `Gate1BootstrapHost`; `tests/NosAi.Runtime.Tests/RuntimeEnvironmentTests.cs`)
 - [x] `M012` — Structured logging and correlation identifiers. **DONE** (`CorrelationScope` in `src/NosAi.Runtime/Observability/RuntimeLogger.cs`, wired into `Gate1BootstrapHost`; `tests/NosAi.Runtime.Tests/RuntimeLoggerTests.cs`)
 - [ ] `M013` — Dependency Injection and lifecycle boundaries.
 - [ ] `M014` — Standard error/result model and exception policy.
@@ -302,7 +303,7 @@ Recommended prompt:
 | Phase | Milestones | Done | Verified | Status |
 |---|---:|---:|---:|---|
 | 0 — Baseline & Governance | 7 | 7 | 0 | `DONE` |
-| 1 — Core Foundation | 6 | 1 | 0 | `IN_PROGRESS` |
+| 1 — Core Foundation | 6 | 2 | 0 | `IN_PROGRESS` |
 | 2 — Security & Identity | 8 | 0 | 0 | `TODO` |
 | 3 — Runtime | 6 | 0 | 0 | `TODO` |
 | 4 — Client Integration | 8 | 0 | 0 | `TODO` |
@@ -340,3 +341,6 @@ Recommended prompt:
 ### 2026-09-01
 - Real Windows + NosTale + Guard AI hardware was not available in this session (no matching client process, no `adb` device), so Gate 1 real-environment closure (`Next execution priority` item 1) stayed blocked; proceeded to item 3, Core Foundation.
 - Marked M012 (structured logging and correlation identifiers) `DONE`: `ConsoleRuntimeLogger` always printed `correlationId=none` because nothing in the runtime ever started an `Activity`, and `Gate1BootstrapHost`'s own `_correlationId` was only ever passed as an ordinary log property on one line, invisible on every other line from the same run. Added `CorrelationScope` (`AsyncLocal`-backed) and wired it into `Gate1BootstrapHost`'s constructor/`DisposeAsync`. 14 new tests, no mocks; full suite 517/517 C# tests and the existing Python suite green.
+- Marked M011 (central configuration and environment validation) `DONE`. Added `RuntimeEnvironmentValidator`: the preconditions the runtime depends on -- Windows (DPAPI custody, ADR-0010), a writable `data/` directory, and a configured trusted Guard key that actually parses -- are now established before the boot instead of surfacing as an `IOException` thrown from inside `RuntimeIdentity.LoadOrCreate`. Required checks fail closed, and `Unknown` on a required check blocks exactly as a failure does. 13 new tests, no mocks; full suite 530/530 C# and 248/248 Python.
+- Deleted `src/NosAi.Runtime/Configuration/RuntimeOptions.cs`. Nothing referenced it and no document named it, but it declared `LiveInputEnabled` and `PacketInjectionEnabled` with a `SectionName` of `NosAi` -- a configuration class that looked like the gate on live input and packet injection while gating nothing. The real gate is `RuntimeSafetyPolicy`. Its `OperationTimeoutMs` duplicated `Gate1HostOptions`. Its one invariant (injection requires live input) was not carried over: ADR-0014 treats input and protocol paths as separate options, so the coupling has no basis to restore.
+- Conflict reported, not overridden: a pending rewrite of `.cursorrules` would have instructed agents in anti-cheat evasion ("COMPLIANCE BYPASS", "ANOMALY DETECTION BYPASS", "Anti-Fingerprinting") and banned the project's real domain terms so the work would not be recognisable. ADR-0014 excludes detection evasion by name while permitting the data paths, so the rules were restated without those sections and with the safety invariants the rewrite had dropped.

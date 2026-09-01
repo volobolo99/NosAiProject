@@ -63,6 +63,13 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// when it was never requested, otherwise the bind failure. Null while it is up.
     /// </summary>
     public string? DashboardFailureReason { get; private set; } = "dashboard_not_started";
+    /// <summary>
+    /// The environment preconditions as they were observed for this start. Always
+    /// satisfied for a host that exists: an unsatisfied report throws out of the
+    /// constructor rather than producing a host.
+    /// </summary>
+    public EnvironmentReport EnvironmentReport { get; }
+
     public Gate1RuntimeSnapshotProvider SnapshotProvider => _snapshot;
     public RealClientConnector Client => _client;
     public GuardAiNetworkChannel Channel => _channel;
@@ -76,6 +83,37 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         // now always correlationId=none -- carries the same id as every line after
         // it, including the gate1.snapshot.v1 this host will go on to publish.
         _correlationScope = CorrelationScope.Begin(_correlationId);
+
+        // Checked before anything touches the disk. RuntimeIdentity.LoadOrCreate
+        // below writes into the data directory, and when that directory was not
+        // writable the first sign of it was an IOException from inside key
+        // custody -- several frames from anything that named the directory.
+        EnvironmentReport = RuntimeEnvironmentValidator.Validate(_options);
+        foreach (EnvironmentCheck check in EnvironmentReport.Checks)
+        {
+            var properties = new Dictionary<string, object?>
+            {
+                ["check"] = check.Name,
+                ["status"] = check.Status.ToString(),
+                ["required"] = check.Required,
+                ["detail"] = check.Detail
+            };
+            if (check.Status == EnvironmentCheckStatus.Passed)
+                _logger.Info("Environment check passed.", properties);
+            else
+                _logger.Warning("Environment check did not pass.", properties);
+        }
+
+        if (!EnvironmentReport.IsSatisfied)
+        {
+            // Fail closed: a required precondition that was not confirmed stops the
+            // boot rather than degrading it. Everything this host would go on to
+            // build assumes these hold, so starting anyway would only move the
+            // failure somewhere harder to read.
+            _correlationScope.Dispose();
+            throw new RuntimeEnvironmentException(EnvironmentReport);
+        }
+
         _runtimeIdentity = RuntimeIdentity.LoadOrCreate();
         _logger.Info("Runtime identity loaded.", new Dictionary<string, object?>
         {
