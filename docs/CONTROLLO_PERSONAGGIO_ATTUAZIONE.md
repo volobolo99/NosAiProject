@@ -362,11 +362,14 @@ ha trovato il difetto.
    manifest esistesse. La frase qui sopra sul processo « non consapevole » vale per
    l'apphost senza manifest, non per il comando con cui la percezione è stata verificata.
 
-   La correzione ha una proprietà utile: dichiarare la consapevolezza per monitor **non
-   cambia nulla al 100 %**, quindi si può fare subito senza rompere ciò che oggi funziona,
-   e diventa corretta appena lo schermo cambia. Ha però una conseguenza obbligatoria: le
-   calibrazioni già memorizzate sono state stimate nell'unità vecchia e vanno invalidate,
-   non riusate.
+   ~~La correzione ha una proprietà utile: dichiarare la consapevolezza per monitor non
+   cambia nulla al 100 %, quindi si può fare subito senza rompere ciò che oggi funziona.~~
+   **Superata dalla misura sopra.** Lo schermo è al 125 % e il processo era già consapevole
+   attraverso l'host `dotnet`, quindi né la premessa né la ragione erano quelle scritte. Ciò
+   che resta valido è la conseguenza, e per un motivo più forte di quello con cui era stata
+   scritta: le calibrazioni già memorizzate sono state stimate in un'unità che nessuno aveva
+   registrato, e vanno invalidate invece che riusate. È il campo `DpiAwarenessRegime` che
+   ora lo stabilisce.
 
    **Applicata il 1 settembre 2026** — `app.manifest` con `PerMonitorV2` su `NosAi.Runtime`,
    più `ClientWindowDpiProbe` e il comando `--window-probe`. Due cose sono emerse
@@ -410,7 +413,7 @@ ha trovato il difetto.
    | | Che cosa domanda | Quando | Che cosa coglie che gli altri non colgono |
    |---|---|---|---|
    | **Regime** | in quale **unità** sono i numeri | a ogni proiezione, prima di tutto il resto | il cambio di consapevolezza fra stima e riuso. È **invisibile** alle dimensioni quando queste coincidono: al 100 % coincidono sempre, e fra i due regimi consapevoli coincidono a ogni scala |
-   | **Epoca** (§ 6.3, non ancora implementata) | è ancora **la stessa** geometria | continuo, al commit point | spostamento della finestra, cambio di DPI a parità di dimensioni, cambio di monitor — cioè tutto ciò che cambia *durante* una sessione senza cambiare i numeri confrontati |
+   | **Epoca** (punto 3 di questa sezione, non ancora implementata) | è ancora **la stessa** geometria | continuo, al commit point | spostamento della finestra, cambio di DPI a parità di dimensioni, cambio di monitor — cioè tutto ciò che cambia *durante* una sessione senza cambiare i numeri confrontati |
    | **Dimensioni** (riga 103) | la **forma** della trasformata è ancora valida | a ogni proiezione | ridimensionamento e passaggio a schermo intero: zoom e layout diversi dentro un solo regime |
 
    L'ordine non è arbitrario: il regime è giudicato **per primo**, perché è l'unità in cui
