@@ -12,6 +12,7 @@ never have connected no matter how long anyone waited for a device.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import subprocess
@@ -162,6 +163,43 @@ class Adb:
         result = self.run("-s", serial, "shell", "pm", "list", "packages", package, check=False)
         return any(line.strip() == f"package:{package}" for line in result.stdout.splitlines())
 
+    def installed_apk_md5(self, serial: str, package: str = PACKAGE_NAME) -> str | None:
+        """MD5 of the APK actually installed, or None when it cannot be read.
+
+        `adb install` stores the pushed file verbatim as the package's base.apk, so
+        this equals the md5 of the local APK exactly when the device is running that
+        build. Compared against a hash rather than a timestamp on purpose: the
+        device clock and the PC clock need not share a timezone, or agree at all.
+
+        None means "could not establish", never "up to date" -- the caller
+        reinstalls rather than assuming, because assuming is what left a stale build
+        on the phone in the first place.
+        """
+        path_result = self.run("-s", serial, "shell", "pm", "path", package, check=False)
+        paths = [
+            line.strip()[len("package:"):]
+            for line in path_result.stdout.splitlines()
+            if line.strip().startswith("package:")
+        ]
+        # A split APK reports several paths; there is no single file to compare, so
+        # the answer is "unknown" and the caller reinstalls.
+        if len(paths) != 1:
+            return None
+
+        md5_result = self.run("-s", serial, "shell", "md5sum", paths[0], check=False)
+        parts = md5_result.stdout.split()
+        return parts[0].lower() if parts and len(parts[0]) == 32 else None
+
+    def installed_matches(self, serial: str, apk: str | Path, package: str = PACKAGE_NAME) -> bool:
+        """Whether the installed app is byte-for-byte the APK at `apk`."""
+        apk_path = Path(apk)
+        if not apk_path.is_file():
+            return False
+        installed = self.installed_apk_md5(serial, package)
+        if installed is None:
+            return False
+        return installed == hashlib.md5(apk_path.read_bytes()).hexdigest()
+
     def install(self, serial: str, apk: str | Path, timeout: float = 180.0) -> None:
         apk_path = Path(apk)
         if not apk_path.is_file():
@@ -255,8 +293,13 @@ def deploy(
         states = ", ".join(f"{d.serial}={d.state}" for d in adb.devices()) or "none attached"
         raise AdbError("no_authorized_device", states)
 
+    # Presence of the package is not freshness. Installing only when the package is
+    # missing left the Aug 30 build on a phone talking to a wire-v3 runtime: it
+    # launched, connected, and was refused with `unsupported_version` logged on the
+    # PC, which is exactly the failure deploy.py exists to prevent. What is
+    # installed is compared against the APK being deployed, not merely counted.
     installed = False
-    if reinstall or not adb.is_installed(device.serial):
+    if reinstall or not adb.installed_matches(device.serial, apk):
         adb.install(device.serial, apk)
         installed = True
 

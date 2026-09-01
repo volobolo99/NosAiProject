@@ -6,6 +6,7 @@ plausible and issued the wrong ones.
 """
 from __future__ import annotations
 
+import hashlib
 import re
 import subprocess
 from pathlib import Path
@@ -100,10 +101,8 @@ def test_deploy_opens_a_reverse_tunnel_never_a_forward(monkeypatch, fake_apk, fa
     # The bug this pins: `adb forward` makes the PC reach the phone, but the
     # runtime is the listener and the phone dials it. The tunnel must be reverse
     # or the app can never connect, however long anyone waits.
-    recorder = _install_recorder(monkeypatch, {
-        "devices": "List of devices attached\nR58M12345\tdevice\n",
-        "-s R58M12345 shell pm list packages": f"package:{PACKAGE_NAME}\n",
-    })
+    recorder = _install_recorder(
+        monkeypatch, _present_device(hashlib.md5(fake_apk.read_bytes()).hexdigest()))
 
     result = deploy(apk=fake_apk, adb_path=fake_adb_binary)
 
@@ -113,16 +112,74 @@ def test_deploy_opens_a_reverse_tunnel_never_a_forward(monkeypatch, fake_apk, fa
     assert "forward" not in recorder.flat()
 
 
-def test_deploy_skips_install_when_the_package_is_already_present(monkeypatch, fake_apk, fake_adb_binary):
-    recorder = _install_recorder(monkeypatch, {
+INSTALLED_PATH = "/data/app/~~abc==/com.nosai.guardai-xyz==/base.apk"
+
+
+def _present_device(apk_md5, path_line=None):
+    """Responses for a device that already has the package installed."""
+    responses = {
         "devices": "List of devices attached\nR58M12345\tdevice\n",
         "-s R58M12345 shell pm list packages": f"package:{PACKAGE_NAME}\n",
-    })
+        "-s R58M12345 shell pm path": (
+            path_line if path_line is not None else f"package:{INSTALLED_PATH}\n"
+        ),
+    }
+    if apk_md5 is not None:
+        responses["-s R58M12345 shell md5sum"] = f"{apk_md5}  {INSTALLED_PATH}\n"
+    # The reinstall cases below actually issue an install, and Adb.install
+    # fails closed unless adb says Success.
+    responses["-s R58M12345 install"] = "Success\n"
+    return responses
+
+
+def test_deploy_skips_install_when_the_installed_apk_is_the_same_build(monkeypatch, fake_apk, fake_adb_binary):
+    same = hashlib.md5(fake_apk.read_bytes()).hexdigest()
+    recorder = _install_recorder(monkeypatch, _present_device(same))
 
     result = deploy(apk=fake_apk, adb_path=fake_adb_binary)
 
     assert result.installed is False
     assert "install" not in recorder.flat()
+
+
+def test_deploy_reinstalls_when_the_installed_apk_is_a_different_build(monkeypatch, fake_apk, fake_adb_binary):
+    # The bug this pins. Presence of the package used to count as up to date, so a
+    # build from a previous day stayed on the phone while the runtime had moved on
+    # a wire version: the app installed cleanly, launched, and was then refused at
+    # the header with `unsupported_version` logged on the PC, where nobody looks.
+    recorder = _install_recorder(monkeypatch, _present_device("0" * 32))
+
+    result = deploy(apk=fake_apk, adb_path=fake_adb_binary)
+
+    assert result.installed is True
+    assert "install" in recorder.flat()
+
+
+def test_deploy_reinstalls_when_the_installed_hash_cannot_be_read(monkeypatch, fake_apk, fake_adb_binary):
+    # Unreadable is not up to date. Nothing was established, so the deploy
+    # reinstalls rather than assuming -- assuming is what left the stale build on.
+    recorder = _install_recorder(monkeypatch, _present_device(apk_md5=None))
+
+    result = deploy(apk=fake_apk, adb_path=fake_adb_binary)
+
+    assert result.installed is True
+    assert "install" in recorder.flat()
+
+
+def test_deploy_reinstalls_when_the_package_is_split_across_several_apks(monkeypatch, fake_apk, fake_adb_binary):
+    # A split install has no single file to compare against, so no hash could say
+    # "same build"; the deploy reinstalls instead of guessing.
+    split = (
+        f"package:{INSTALLED_PATH}\n"
+        "package:/data/app/~~abc==/com.nosai.guardai-xyz==/split_config.arm64_v8a.apk\n"
+    )
+    recorder = _install_recorder(monkeypatch, _present_device("0" * 32, path_line=split))
+
+    result = deploy(apk=fake_apk, adb_path=fake_adb_binary)
+
+    assert result.installed is True
+    assert "install" in recorder.flat()
+
 
 
 def test_deploy_installs_when_the_package_is_absent(monkeypatch, fake_apk, fake_adb_binary):

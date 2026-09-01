@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(f"Device:   {result.serial}")
-    print(f"Package:  {PACKAGE_NAME} ({'installed' if result.installed else 'already present'})")
+    print(f"Package:  {PACKAGE_NAME} ({'installed' if result.installed else 'already current'})")
     print(f"Tunnel:   phone 127.0.0.1:{result.reversed_port} -> PC {result.reversed_port} (adb reverse)")
 
     if args.no_enroll:
