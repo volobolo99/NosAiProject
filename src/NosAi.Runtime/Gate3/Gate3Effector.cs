@@ -6,7 +6,17 @@ namespace NosAi.Runtime.Gate3;
 /// <summary>How an authorised action actually ended.</summary>
 public enum ExecutionState : byte
 {
-    /// <summary>The token was invalid, replayed or not for this candidate. Nothing was attempted.</summary>
+    /// <summary>
+    /// Nothing was attempted, and the reason says what was missing.
+    /// </summary>
+    /// <remarks>
+    /// Either the safety token was invalid, replayed or bound to another
+    /// candidate, or the effector had no way to carry the action out — an
+    /// unconfigured keybind, an uncalibrated screen projection, a target with no
+    /// known position (<see cref="InputActionEffector"/>). Both are "nothing
+    /// happened, and here is what to fix", which is why they share a state and
+    /// are told apart by the reason.
+    /// </remarks>
     Refused = 0,
 
     /// <summary>
@@ -93,5 +103,74 @@ public static class ActionEffectorFactory
             return new DisabledActionEffector("live_input_disabled_by_policy");
 
         return liveEffector ?? new DisabledActionEffector("no_live_effector_bound");
+    }
+
+    /// <summary>
+    /// The same choice, taken on every action rather than once.
+    /// </summary>
+    /// <remarks>
+    /// The overload above reads the policy at composition time, which is right
+    /// for a fixed policy and wrong for the live runtime: the host builds its
+    /// orchestrator while everything is still off, so an effector selected then
+    /// would stay disabled for the process's whole life and the operator's switch
+    /// would do nothing. Taking a source defers the decision to the moment of
+    /// acting, which is also what makes turning the switch back off an emergency
+    /// stop rather than a request.
+    /// </remarks>
+    public static IActionEffector ForPolicy(
+        Func<RuntimeSafetyPolicy> policySource, IActionEffector? liveEffector = null)
+    {
+        ArgumentNullException.ThrowIfNull(policySource);
+
+        return liveEffector is null
+            ? new DisabledActionEffector("no_live_effector_bound")
+            : new PolicyGatedActionEffector(policySource, liveEffector);
+    }
+}
+
+/// <summary>
+/// Defers to a live effector only while the policy allows live input.
+/// </summary>
+/// <remarks>
+/// Fails closed on every call, not once: a policy read at construction cannot
+/// express an operator who arms the runtime after it started, or disarms it in
+/// the middle of a fight.
+/// </remarks>
+public sealed class PolicyGatedActionEffector : IActionEffector
+{
+    private readonly Func<RuntimeSafetyPolicy> _policySource;
+    private readonly IActionEffector _inner;
+
+    public PolicyGatedActionEffector(Func<RuntimeSafetyPolicy> policySource, IActionEffector inner)
+    {
+        _policySource = policySource ?? throw new ArgumentNullException(nameof(policySource));
+        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+    }
+
+    private bool LiveInputAllowed => (_policySource()
+        ?? throw new InvalidOperationException("The safety policy source returned null; refusing to act."))
+        .LiveInputEnabled;
+
+    /// <inheritdoc />
+    public bool CanApply => LiveInputAllowed && _inner.CanApply;
+
+    /// <inheritdoc />
+    public string? UnavailableReason => LiveInputAllowed
+        ? _inner.UnavailableReason
+        : "live_input_disabled_by_policy";
+
+    /// <inheritdoc />
+    public Task<ExecutionResult> ApplyAsync(
+        ActionCandidate candidate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+
+        return LiveInputAllowed
+            ? _inner.ApplyAsync(candidate, cancellationToken)
+            : Task.FromResult(new ExecutionResult(
+                candidate.CandidateId,
+                ExecutionState.Disabled,
+                ActualDurationMs: 0,
+                Reason: "live_input_disabled_by_policy"));
     }
 }

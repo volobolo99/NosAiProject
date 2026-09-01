@@ -591,15 +591,24 @@ namespace NosAi.Runtime.Gate3
         /// <see cref="DefaultMaxObservationAge"/> when omitted.
         /// </param>
         /// <param name="clock">Time source; the system clock unless a test supplies one.</param>
+        /// <param name="policySource">
+        /// The live policy, read on every action instead of once here. The host
+        /// builds this orchestrator while every switch is still off, so an
+        /// effector chosen from <paramref name="policy"/> alone would stay
+        /// disabled for the life of the process and the operator's switch would
+        /// do nothing. Supplying this is what makes arming — and disarming —
+        /// take effect on the next action.
+        /// </param>
         public Gate3ExecutionOrchestrator(
             RuntimeSafetyPolicy? policy = null,
             IActionEffector? effector = null,
             IWorldStateObserver? observer = null,
             TrustTier initialTrust = TrustTier.Tier2_SemiAutonomous,
             TimeSpan? maxObservationAge = null,
-            TimeProvider? clock = null)
+            TimeProvider? clock = null,
+            Func<RuntimeSafetyPolicy>? policySource = null)
         {
-            Policy = policy ?? RuntimeSafetyPolicy.SafeDefault;
+            Policy = policy ?? policySource?.Invoke() ?? RuntimeSafetyPolicy.SafeDefault;
             TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
             if (maxAge < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(maxObservationAge));
             MaxObservationAge = maxAge;
@@ -610,7 +619,9 @@ namespace NosAi.Runtime.Gate3
             _guard = new GuardPolicyEngine();
             _trust = new TrustBoundary(initialTrust);
             _safetyGate = new SafetyGate(_trust, _guard);
-            _executor = new AuthorizedActionExecutor(_safetyGate, ActionEffectorFactory.ForPolicy(Policy, effector));
+            _executor = new AuthorizedActionExecutor(_safetyGate, policySource is null
+                ? ActionEffectorFactory.ForPolicy(Policy, effector)
+                : ActionEffectorFactory.ForPolicy(policySource, effector));
             _verifier = new ActionExecutionVerifier();
             _recovery = new RecoveryController(_trust);
             _observer = observer ?? new UnavailableWorldStateObserver();

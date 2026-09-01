@@ -11,6 +11,7 @@ using NosAi.Runtime.Observability;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.Security;
+using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.WorldModel;
 
@@ -181,7 +182,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _decisions = _options.RunDecisionLoop
             ? new Gate3.Gate3DecisionLoop(
                 new Gate3.Gate1SnapshotWorldStateSource(_snapshot.Capture),
-                new Gate3.Gate3ExecutionOrchestrator(),
+                new Gate3.Gate3ExecutionOrchestrator(
+                    effector: BuildLiveEffector(runtime),
+                    policySource: () => runtime.Safety.Policy),
                 _logger,
                 TimeSpan.FromMilliseconds(_options.DecisionIntervalMs))
             : null;
@@ -190,6 +193,58 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             ? new Gate1OperatorServer(_options.DashboardPort, _snapshot.Capture, HandleOperatorCommand,
                 safetyState: SafetyState, safetySetter: SetSafetySwitch, tests: _testConsole)
             : null;
+    }
+
+    /// <summary>
+    /// Binds the effector that turns a planned action into a real gesture, or
+    /// nothing when this runtime cannot do that honestly.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// F3-1. Binding it does not arm anything: the orchestrator is given the live
+    /// policy, and every switch starts off, so nothing reaches the client until
+    /// the operator turns <c>LiveInputEnabled</c> on.
+    /// </para>
+    /// <para>
+    /// The backend must be the gated one. A runtime composed without the gate
+    /// gets no live effector at all rather than one holding a raw backend: the
+    /// gate sits at the boundary so it cannot be walked around (ADR-0003), and an
+    /// effector that took the concrete backend would be the walk around it.
+    /// </para>
+    /// <para>
+    /// Missing or malformed keybinds are not an error here. The effector refuses
+    /// each action by name — <c>keybind_not_configured:consumable.101</c> — which
+    /// tells the operator exactly what to add, where a failure at startup would
+    /// only say that something is wrong.
+    /// </para>
+    /// </remarks>
+    private Gate3.IActionEffector? BuildLiveEffector(RuntimeComponents runtime)
+    {
+        if (runtime.InputBackend is not GatedInputBackend gated)
+        {
+            _logger.Warning("No gated input backend; Gate 3 cannot act on the client.", new Dictionary<string, object?>
+            {
+                ["backend"] = runtime.InputBackend.GetType().Name
+            });
+            return null;
+        }
+
+        string keybindPath = Path.Combine(
+            AppContext.BaseDirectory, Gate3.InputActionEffector.KeybindsRelativePath);
+        if (!KeybindMap.TryLoad(keybindPath, out KeybindMap keybinds, out string? keybindFailure))
+        {
+            _logger.Warning("Keybinds not loaded; keyed actions will be refused by name.", new Dictionary<string, object?>
+            {
+                ["path"] = keybindPath,
+                ["reason"] = keybindFailure
+            });
+            keybinds = KeybindMap.Empty;
+        }
+
+        // The screen projection is left at its uncalibrated default until F2-3.
+        // Every action needing a point on the screen is refused with
+        // screen_projection_not_calibrated rather than clicked approximately.
+        return new Gate3.InputActionEffector(gated, keybinds, () => runtime.Safety.Policy);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)

@@ -170,17 +170,38 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
 
 ## Cosa Gate 3 **non** fa ancora
 
-- **Nessun effector reale è collegato.** Con `SafeDefault` non deve esserci, ma
-  anche abilitando l'input live non esiste ancora un'implementazione che agisca
-  sul client NosTale. Finché non c'è, ogni ciclo termina `ExecutionDisabled`.
+- **L'effector reale è collegato, ma può solo premere tasti.**
+  `InputActionEffector` (F3-1) traduce un `ActionCandidate` in un gesto e passa
+  sempre da `GatedInputBackend`, mai da `Win32InputBackend` diretto. È collegato
+  nella composizione di `Gate1BootstrapHost` e resta spento finché l'operatore
+  non accende `LiveInputEnabled`: l'orchestratore riceve la policy **viva**, non
+  una copia letta all'avvio, quindi accendere e spegnere l'interruttore vale
+  dall'azione successiva.
+
+  Ciò che sa fare oggi: `UseConsumable` e `UseSkill`, premendo il tasto che
+  l'operatore ha configurato in `data/keybinds.json` (C3/F2-4).
+
+  Ciò che rifiuta, per nome, finché non arriva F2-3: `UseBasicAttack`,
+  `TargetEntity`, `MoveToPosition` ed `EmergencyFlee` terminano `Refused` con
+  motivo `screen_projection_not_calibrated`. Non esiste una trasformazione da coordinata
+  di mappa a pixel, e una di ripiego cliccherebbe in un punto qualsiasi della
+  finestra: il ciclo lo scoprirebbe solo alla verifica, dopo aver già agito.
+  `CollectGroundItem` e `RestAndRecover` non hanno un gesto e sono rifiuti
+  nominati.
+
+  `Completed` significa che l'input è stato accettato: `SendInput` riporta quanti
+  eventi ha accodato, il backend restituisce `false` quando non è quello atteso, e
+  l'esito è `Failed` con motivo. È il difetto qui sopra, e non rientra da questo lato.
 - **Nessun osservatore reale è collegato.** Serve il backend di percezione. Finché
   non c'è, un'eventuale esecuzione termina `Unverified`.
 - **L'aggancio a Gate 1 esiste ma non ha dati.** `Gate1SnapshotWorldStateSource`
   legge lo snapshot reale, che però classifica il gameplay come non disponibile.
   Finché non c'è un provider, ogni ciclo termina `NoWorldState`.
 
-Questi tre punti sono la vera distanza dall'operatività, e sono limiti dichiarati,
-non difetti nascosti.
+Questi punti sono la vera distanza dall'operatività, e sono limiti dichiarati,
+non difetti nascosti. Il primo si è ristretto a metà: la tastiera arriva al
+client, il mouse no, e manca la trasformazione coordinata → pixel (F2-3) perché
+è la sola che non si può dedurre — va calibrata su un client reale.
 
 ## Debito noto: tipi duplicati
 
