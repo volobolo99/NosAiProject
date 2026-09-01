@@ -96,7 +96,28 @@ Qui il come.
 `NSmpData`, che contiene sprite — verso `<NOSAI-SSD>\NosAi\data\maps\<mapId>.grid`, con
 manifesto e hash per file.
 
-**Il layout non è ancora verificato contro un file vero.** Viene dalla documentazione della
+**Il contenitore è verificato, la semantica dei bit no** *(1 settembre 2026)*. Su
+un'installazione reale: 777 mappe estratte, nessuna rifiutata, tutte ricaricate dal loader,
+e il vincolo `larghezza × altezza + 4 == lunghezza` regge su ogni entrata. Dimensioni
+campione `49×51`, `160×180`, `150×150`, `180×220`.
+
+Questo stabilisce **dove stanno i numeri**, non **cosa vogliono dire**. Che il bit `0x01`
+significhi « camminata vietata » su questa build viene dalla stessa documentazione da cui
+veniva il layout, e una griglia con le dimensioni giuste può portare bit invertiti o spostati
+senza che nulla se ne accorga. Due prove, in ordine di costo:
+
+1. **La cella su cui si sta.** Il personaggio è fermo, `player.x` e `player.y` sono noti dalla
+   percezione: quella cella **deve** risultare calpestabile. Se risulta bloccata, o i bit sono
+   invertiti o le righe sono trasposte. Costa un comando, falsifica in un campione, e su una
+   mappa quadrata è l'unica delle due che coglie la trasposizione — le dimensioni non la
+   colgono mai. Ripetuta su qualche posizione asimmetrica diventa una prova forte.
+2. **Il bordo bloccato**, che è la DoD di P1: camminare fino al bordo di una zona che la
+   griglia dichiara bloccata, su almeno tre mappe, e verificare che il client fermi il
+   personaggio **esattamente lì**. Fino a questo commit non era eseguibile perché non
+   esistevano griglie contro cui camminare.
+
+*Testo precedente, superato dalla misura:*
+~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della
 comunità e ha superato solo griglie sintetiche. Se un'entrata di `NStcData` non si decodifica
 con questo layout, la regola è la stessa del framing in `SPEC_GAMEPLAY_DATASET` § 5: **si
 misura, non si indovina una seconda volta.** Si estraggono i primi 64 byte di alcune entrate,
