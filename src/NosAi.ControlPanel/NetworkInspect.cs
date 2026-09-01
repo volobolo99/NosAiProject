@@ -9,7 +9,8 @@ internal static class NetworkInspect
         string? sessionDetail,
         string? lastFailure,
         bool? apiListening,
-        bool? guardListening)
+        bool? guardListening,
+        bool? processElevated = null)
     {
         var discovery = settings.Discovery ? "attiva (UDP discovery, il telefono trova il PC)" : "disattivata";
         var bind = settings.GuardLoopbackOnly ? "solo loopback (USB/tunnel)" : "LAN consentita";
@@ -17,6 +18,7 @@ internal static class NetworkInspect
         [
             new DisplayField("Sessione console", Mode(kind), "DERIVED"),
             new DisplayField("Dettaglio sessione", string.IsNullOrWhiteSpace(sessionDetail) ? "UNKNOWN" : sessionDetail, string.IsNullOrWhiteSpace(sessionDetail) ? "UNKNOWN" : "DERIVED"),
+            Elevation(processElevated),
             new DisplayField("API operatore", settings.DashboardPort.ToString(), "DERIVED"),
             Listen("API in ascolto (127.0.0.1)", apiListening),
             new DisplayField("Porta Guard", settings.GuardPort.ToString(), "DERIVED"),
@@ -25,9 +27,20 @@ internal static class NetworkInspect
             new DisplayField("Discovery", discovery, "DERIVED"),
             new DisplayField("Bind Guard", bind, "DERIVED"),
             new DisplayField("Processo client cercato", settings.ClientProcessName, "DERIVED"),
+            ObserveGame(settings.ObserveGame),
             new DisplayField("Ultimo errore rete", string.IsNullOrWhiteSpace(lastFailure) ? "nessuno in questa sessione" : lastFailure, "DERIVED")
         ];
     }
+
+    private static DisplayField Elevation(bool? elevated)
+        => elevated is null
+            ? new DisplayField("Processo elevato", "UNKNOWN · non ancora rilevato", "UNKNOWN")
+            : ElevationInspect.Field(elevated.Value);
+
+    private static DisplayField ObserveGame(string? endpoint)
+        => string.IsNullOrWhiteSpace(endpoint)
+            ? new DisplayField("Endpoint osservazione gioco", "UNKNOWN · observation_not_configured", "UNKNOWN")
+            : new DisplayField("Endpoint osservazione gioco", endpoint.Trim(), "DERIVED");
 
     private static DisplayField Listen(string label, bool? listening)
         => listening is null

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.ControlPanel;
 
@@ -21,6 +22,12 @@ internal static class AttachedSnapshot
             ReadClassifiedBool(guard, "connected"),
             ReadClassifiedBool(guard, "authenticated"),
             ReadClassifiedText(guard, "terminationReason"));
+        JsonElement? client = root.TryGetProperty("client", out var clientNode) && clientNode.ValueKind == JsonValueKind.Object
+            ? clientNode
+            : default(JsonElement?);
+        JsonElement? gameObservation = root.TryGetProperty("gameObservation", out var goNode) && goNode.ValueKind == JsonValueKind.Object
+            ? goNode
+            : default(JsonElement?);
 
         return new SnapshotView
         {
@@ -62,8 +69,43 @@ internal static class AttachedSnapshot
                 ("packetInjectionEnabled", "Iniezione pacchetti"),
                 ("requireClientHealthy", "Client sano richiesto"),
                 ("requireGuardApproval", "Guard richiesto"),
-                ("executionMode", "Esecuzione"))
+                ("executionMode", "Esecuzione")),
+            GameObservation = ReadObservation(root),
+            ClientProcessId = ReadClassifiedNullableInt(client, "processId", "process_not_attached"),
+            ObservationLastHp = ReadClassifiedInt(gameObservation, "lastHp", "game_observation_absent"),
+            ObservationLastMaxHp = ReadClassifiedInt(gameObservation, "lastMaxHp", "game_observation_absent")
         };
+    }
+
+    private static IReadOnlyList<DisplayField> ReadObservation(JsonElement root)
+    {
+        if (!root.TryGetProperty("gameObservation", out var obj) || obj.ValueKind != JsonValueKind.Object)
+        {
+            const string reason = "game_observation_absent";
+            return
+            [
+                new DisplayField("Canale osservazione gioco", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Endpoint osservato", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Pacchetti osservati", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Pacchetti decodificati", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Pacchetti non decodificabili", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Ultimo HP", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Ultimo HP massimo", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Ultimo MP", $"UNKNOWN · {reason}", "UNKNOWN"),
+                new DisplayField("Timestamp vitals", $"UNKNOWN · {reason}", "UNKNOWN")
+            ];
+        }
+
+        return ReadObject(root, "gameObservation",
+            ("active", "Canale osservazione gioco"),
+            ("endpoint", "Endpoint osservato"),
+            ("packetsObserved", "Pacchetti osservati"),
+            ("packetsDecoded", "Pacchetti decodificati"),
+            ("packetsUndecodable", "Pacchetti non decodificabili"),
+            ("lastHp", "Ultimo HP"),
+            ("lastMaxHp", "Ultimo HP massimo"),
+            ("lastMp", "Ultimo MP"),
+            ("lastVitalsAtUtc", "Timestamp vitals"));
     }
 
     private static IReadOnlyList<DisplayField> ReadObject(JsonElement root, string name, params (string Key, string Label)[] fields)
@@ -140,4 +182,68 @@ internal static class AttachedSnapshot
         var text = v.ToString();
         return string.IsNullOrWhiteSpace(text) ? null : text;
     }
+
+    private static ClassifiedValue<int> ReadClassifiedInt(JsonElement? obj, string key, string missing)
+    {
+        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason))
+            return ClassifiedValue<int>.Unknown(reason);
+        return Classify(value, source);
+    }
+
+    private static ClassifiedValue<int?> ReadClassifiedNullableInt(JsonElement? obj, string key, string missing)
+    {
+        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason))
+            return ClassifiedValue<int?>.Unknown(reason);
+        return Classify((int?)value, source);
+    }
+
+    private static bool TryReadClassifiedNumber(
+        JsonElement? obj, string key, string missing, out int value, out DataSourceKind source, out string reason)
+    {
+        value = 0;
+        source = DataSourceKind.Unknown;
+        reason = missing;
+        if (obj is not { } root || !root.TryGetProperty(key, out var node) || node.ValueKind != JsonValueKind.Object)
+            return false;
+
+        var sourceText = node.TryGetProperty("source", out var s) ? s.GetString() : null;
+        if (node.TryGetProperty("failureReason", out var r) && r.GetString() is { Length: > 0 } named)
+            reason = named;
+
+        if (string.IsNullOrWhiteSpace(sourceText) || sourceText == "UNKNOWN")
+            return false;
+        if (!node.TryGetProperty("value", out var v) || v.ValueKind is JsonValueKind.Null)
+            return false;
+        if (v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out value))
+        {
+            source = ParseSource(sourceText);
+            return source != DataSourceKind.Unknown;
+        }
+
+        if (v.ValueKind == JsonValueKind.String && int.TryParse(v.GetString(), out value))
+        {
+            source = ParseSource(sourceText);
+            return source != DataSourceKind.Unknown;
+        }
+
+        return false;
+    }
+
+    private static DataSourceKind ParseSource(string source) => source switch
+    {
+        "LIVE" => DataSourceKind.Live,
+        "DERIVED" => DataSourceKind.Derived,
+        "CACHED" => DataSourceKind.Cached,
+        "SIMULATED" => DataSourceKind.Simulated,
+        _ => DataSourceKind.Unknown
+    };
+
+    private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source) => source switch
+    {
+        DataSourceKind.Live => ClassifiedValue<T>.Live(value),
+        DataSourceKind.Derived => ClassifiedValue<T>.Derived(value),
+        DataSourceKind.Cached => ClassifiedValue<T>.Cached(value, DateTime.UtcNow),
+        DataSourceKind.Simulated => ClassifiedValue<T>.Simulated(value),
+        _ => ClassifiedValue<T>.Unknown("unclassified_source")
+    };
 }

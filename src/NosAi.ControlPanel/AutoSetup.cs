@@ -12,7 +12,7 @@ public sealed record SetupItem(string Name, bool Ready, string Detail, string? A
 /// <summary>What the machine already has, so the operator does not have to guess.</summary>
 public static class AutoSetup
 {
-    public static IReadOnlyList<SetupItem> Inspect(string repoRoot)
+    public static IReadOnlyList<SetupItem> Inspect(string repoRoot, string? observeGame = null, bool? elevated = null)
     {
         var python = ToolRunner.FindPython();
         var runtimeDll = Path.Combine(AppContext.BaseDirectory, "NosAi.Runtime.dll");
@@ -26,8 +26,8 @@ public static class AutoSetup
         var data = Path.Combine(repoRoot, "data");
         var hasIdentity = File.Exists(pin) || File.Exists(wrapped) || File.Exists(identity);
 
-        return
-        [
+        var items = new List<SetupItem>
+        {
             new SetupItem("Cartella dati", Directory.Exists(data), data, Directory.Exists(data) ? null : "Verrà creata all'avvio."),
             new SetupItem("Runtime", File.Exists(runtimeDll), File.Exists(runtimeDll) ? runtimeDll : "non compilato",
                 File.Exists(runtimeDll) ? null : "Premere Compila runtime."),
@@ -44,6 +44,17 @@ public static class AutoSetup
             new SetupItem("Canale Guard (questo build)", true,
                 $"wire {NosAi.Runtime.Gate1.WireHeader.CurrentVersion}. Un APK più vecchio viene rifiutato all'header.",
                 "Giro v3 sul telefono ancora aperto: non è Verified. Lo sviluppo continua lo stesso.")
-        ];
+        };
+
+        if (!string.IsNullOrWhiteSpace(observeGame) && elevated == false)
+        {
+            items.Add(new SetupItem(
+                "Cattura traffico (WinDivert)",
+                false,
+                "Questa console non è elevata: WinDivert restituirà access_denied_run_elevated e l'osservazione del gioco non partirà.",
+                "Riavviare il Control Panel come amministratore prima di accendere --observe-game."));
+        }
+
+        return items;
     }
 }

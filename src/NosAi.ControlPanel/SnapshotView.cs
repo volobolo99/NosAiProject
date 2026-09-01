@@ -15,6 +15,10 @@ public sealed class SnapshotView
     public IReadOnlyList<DisplayField> Guard { get; init; } = Array.Empty<DisplayField>();
     public IReadOnlyList<DisplayField> Hardware { get; init; } = Array.Empty<DisplayField>();
     public IReadOnlyList<DisplayField> Safety { get; init; } = Array.Empty<DisplayField>();
+    public IReadOnlyList<DisplayField> GameObservation { get; init; } = Array.Empty<DisplayField>();
+    public ClassifiedValue<int?> ClientProcessId { get; init; } = ClassifiedValue<int?>.Unknown("runtime_not_connected");
+    public ClassifiedValue<int> ObservationLastHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
+    public ClassifiedValue<int> ObservationLastMaxHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
     public string WireLabel { get; init; } = ChannelView.WireLabel;
     public string SlotLabel { get; init; } = "UNKNOWN";
     public string SlotHint { get; init; } = "";
@@ -37,6 +41,10 @@ public sealed class SnapshotView
             ],
             Hardware = [new DisplayField("Piattaforma", "UNKNOWN", "UNKNOWN")],
             Safety = [new DisplayField("Esecuzione", "UNKNOWN", "UNKNOWN")],
+            GameObservation = ObservationUnknown("runtime_not_connected"),
+            ClientProcessId = ClassifiedValue<int?>.Unknown("runtime_not_connected"),
+            ObservationLastHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
+            ObservationLastMaxHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
             SlotLabel = slot,
             SlotHint = hint
         };
@@ -96,9 +104,39 @@ public sealed class SnapshotView
             Field("Client sano richiesto", snapshot.Safety.RequireClientHealthy),
             Field("Guard richiesto", snapshot.Safety.RequireGuardApproval),
             Field("Esecuzione", snapshot.Safety.ExecutionMode)
-        ]
+        ],
+        GameObservation = Observation(snapshot.GameObservation),
+        ClientProcessId = snapshot.Client.ProcessId,
+        ObservationLastHp = snapshot.GameObservation.LastHp,
+        ObservationLastMaxHp = snapshot.GameObservation.LastMaxHp
         };
     }
+
+    private static IReadOnlyList<DisplayField> Observation(Gate1GameObservationView view) =>
+    [
+        Field("Canale osservazione gioco", view.Active),
+        Field("Endpoint osservato", view.Endpoint),
+        Field("Pacchetti osservati", view.PacketsObserved),
+        Field("Pacchetti decodificati", view.PacketsDecoded),
+        Field("Pacchetti non decodificabili", view.PacketsUndecodable),
+        Field("Ultimo HP", view.LastHp),
+        Field("Ultimo HP massimo", view.LastMaxHp),
+        Field("Ultimo MP", view.LastMp),
+        Field("Timestamp vitals", view.LastVitalsAtUtc)
+    ];
+
+    private static IReadOnlyList<DisplayField> ObservationUnknown(string reason) =>
+    [
+        new DisplayField("Canale osservazione gioco", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Endpoint osservato", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Pacchetti osservati", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Pacchetti decodificati", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Pacchetti non decodificabili", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Ultimo HP", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Ultimo HP massimo", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Ultimo MP", $"UNKNOWN · {reason}", "UNKNOWN"),
+        new DisplayField("Timestamp vitals", $"UNKNOWN · {reason}", "UNKNOWN")
+    ];
 
     private static DisplayField Field<T>(string label, ClassifiedValue<T> classified)
     {

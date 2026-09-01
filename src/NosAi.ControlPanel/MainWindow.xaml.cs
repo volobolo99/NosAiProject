@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
+using NosAi.LiveIntegration;
 using NosAi.Runtime.Configuration;
 
 namespace NosAi.ControlPanel;
@@ -14,6 +15,7 @@ public partial class MainWindow : Window
     private readonly string _repoRoot;
     private readonly UiLogger _log = new();
     private readonly RuntimeSession _session;
+    private readonly bool _elevated;
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly DispatcherTimer _poll = new() { Interval = TimeSpan.FromSeconds(1) };
     private OperatorSettings _settings;
@@ -29,6 +31,7 @@ public partial class MainWindow : Window
         _repoRoot = Directory.GetCurrentDirectory();
         _session = new RuntimeSession(_log);
         _settings = OperatorSettings.Load(_repoRoot);
+        _elevated = ElevationInspect.IsElevated();
         _log.Written += entry =>
         {
             OperatorLogFile.Append(_repoRoot, entry);
@@ -205,8 +208,10 @@ public partial class MainWindow : Window
         HardwareFields.ItemsSource = snapshot.Hardware;
         SecurityFields.ItemsSource = SecurityInspect.Inspect(_repoRoot);
         NetworkFields.ItemsSource = NetworkInspect.Inspect(
-            _settings, _session.Kind, _session.Detail, _session.LastFailure, _apiListening, _guardListening);
+            _settings, _session.Kind, _session.Detail, _session.LastFailure, _apiListening, _guardListening, _elevated);
+        GameObservationFields.ItemsSource = snapshot.GameObservation;
         HealthFields.ItemsSource = OperatorHealth.From(snapshot, _session.Kind);
+        DecisionFields.ItemsSource = DecisionInspect.Inspect(_session.Kind, _session.DescribeDecisions());
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
@@ -237,7 +242,7 @@ public partial class MainWindow : Window
     private static string FirstValue(IReadOnlyList<DisplayField> fields, string label)
         => fields.FirstOrDefault(f => f.Label == label)?.Value ?? "UNKNOWN";
 
-    private void RefreshSetup() => SetupList.ItemsSource = AutoSetup.Inspect(_repoRoot);
+    private void RefreshSetup() => SetupList.ItemsSource = AutoSetup.Inspect(_repoRoot, _settings.ObserveGame, _elevated);
 
     private void OnNav(object sender, RoutedEventArgs e)
     {
@@ -249,6 +254,7 @@ public partial class MainWindow : Window
         NavPhone.Style = (Style)FindResource("NavButton");
         NavPerception.Style = (Style)FindResource("NavButton");
         NavNetwork.Style = (Style)FindResource("NavButton");
+        NavDecision.Style = (Style)FindResource("NavButton");
         NavSecurity.Style = (Style)FindResource("NavButton");
         NavSuites.Style = (Style)FindResource("NavButton");
         NavSettings.Style = (Style)FindResource("NavButton");
@@ -260,6 +266,7 @@ public partial class MainWindow : Window
         ViewPhone.Visibility = Visibility.Collapsed;
         ViewPerception.Visibility = Visibility.Collapsed;
         ViewNetwork.Visibility = Visibility.Collapsed;
+        ViewDecision.Visibility = Visibility.Collapsed;
         ViewSecurity.Visibility = Visibility.Collapsed;
         ViewSuites.Visibility = Visibility.Collapsed;
         ViewSettings.Visibility = Visibility.Collapsed;
@@ -276,6 +283,12 @@ public partial class MainWindow : Window
             _lastListenProbeUtc = DateTime.MinValue;
             _ = RefreshListenThenShowAsync();
         }
+        else if (ReferenceEquals(button, NavDecision))
+        {
+            ViewDecision.Visibility = Visibility.Visible;
+            PageTitle.Text = "Decisione";
+            DecisionFields.ItemsSource = DecisionInspect.Inspect(_session.Kind, _session.DescribeDecisions());
+        }
         else if (ReferenceEquals(button, NavSecurity)) { ViewSecurity.Visibility = Visibility.Visible; PageTitle.Text = "Sicurezza"; }
         else if (ReferenceEquals(button, NavSuites)) { ViewSuites.Visibility = Visibility.Visible; PageTitle.Text = "Certificazione"; }
         else if (ReferenceEquals(button, NavSettings)) { ViewSettings.Visibility = Visibility.Visible; PageTitle.Text = "Impostazioni"; }
@@ -286,7 +299,8 @@ public partial class MainWindow : Window
     {
         await RefreshListenAsync().ConfigureAwait(true);
         NetworkFields.ItemsSource = NetworkInspect.Inspect(
-            _settings, _session.Kind, _session.Detail, _session.LastFailure, _apiListening, _guardListening);
+            _settings, _session.Kind, _session.Detail, _session.LastFailure, _apiListening, _guardListening, _elevated);
+        GameObservationFields.ItemsSource = _lastSnapshot.GameObservation;
         HealthFields.ItemsSource = OperatorHealth.From(_lastSnapshot, _session.Kind);
     }
 
@@ -299,6 +313,9 @@ public partial class MainWindow : Window
         SettingDiscovery.IsChecked = _settings.Discovery;
         SettingLoopback.IsChecked = _settings.GuardLoopbackOnly;
         SettingAutoStart.IsChecked = _settings.AutoStartRuntime;
+        SettingObserveGame.Text = _settings.ObserveGame ?? "";
+        SettingRunDecisionLoop.IsChecked = _settings.RunDecisionLoop;
+        SettingDecisionIntervalMs.Text = _settings.DecisionIntervalMs.ToString();
     }
 
     private void OnSaveSettings(object sender, RoutedEventArgs e)
@@ -314,7 +331,14 @@ public partial class MainWindow : Window
         var process = string.IsNullOrWhiteSpace(SettingClientProcess.Text)
             ? new Gate1HostOptions().ClientProcessName
             : SettingClientProcess.Text.Trim();
-        if (!OperatorSettings.TryValidate(dashboard, guard, timeout, process, out var invalid))
+        var observeGame = SettingObserveGame.Text?.Trim() ?? "";
+        if (!int.TryParse(SettingDecisionIntervalMs.Text, out var decisionInterval))
+        {
+            Status("L'intervallo di decisione deve essere un numero.");
+            return;
+        }
+
+        if (!OperatorSettings.TryValidate(dashboard, guard, timeout, process, observeGame, decisionInterval, out var invalid))
         {
             Status(invalid);
             return;
@@ -327,6 +351,9 @@ public partial class MainWindow : Window
         _settings.Discovery = SettingDiscovery.IsChecked == true;
         _settings.GuardLoopbackOnly = SettingLoopback.IsChecked == true;
         _settings.AutoStartRuntime = SettingAutoStart.IsChecked == true;
+        _settings.ObserveGame = observeGame;
+        _settings.RunDecisionLoop = SettingRunDecisionLoop.IsChecked == true;
+        _settings.DecisionIntervalMs = decisionInterval;
         try
         {
             _settings.ToHostOptions();
@@ -338,6 +365,7 @@ public partial class MainWindow : Window
         }
 
         _settings.Save(_repoRoot);
+        RefreshSetup();
         Status("Impostazioni salvate. Si applicano al prossimo avvio del runtime.");
     }
 
@@ -392,7 +420,7 @@ public partial class MainWindow : Window
         Status("Probe DXGI in corso…");
         try
         {
-            var result = await Task.Run(() => PerceptionProbe.Run(_repoRoot)).ConfigureAwait(true);
+            var result = await Task.Run(() => PerceptionProbe.Run(_repoRoot, _settings.ClientProcessName)).ConfigureAwait(true);
             PerceptionFields.ItemsSource = result.Fields;
             PerceptionSummary.Text = result.Summary;
             Status(result.Summary);
@@ -408,6 +436,56 @@ public partial class MainWindow : Window
         {
             _busy = false;
         }
+    }
+
+    private async void OnTrainGlyphs(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        _busy = true;
+        Status("Addestramento glifi HUD dal wire…");
+        try
+        {
+            var hp = _lastSnapshot.ObservationLastHp;
+            var maxHp = _lastSnapshot.ObservationLastMaxHp;
+            var result = await Task.Run(() =>
+                PerceptionProbe.TrainFromWire(_repoRoot, _settings.ClientProcessName, hp, maxHp)).ConfigureAwait(true);
+            PerceptionFields.ItemsSource = result.Fields;
+            PerceptionSummary.Text = result.Summary;
+            Status(result.Summary);
+            _log.Operator(result.Summary);
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Addestramento glifi HUD fallito.", ex);
+            PerceptionSummary.Text = ex.Message;
+            Status($"Addestramento glifi HUD fallito: {ex.Message}");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void OnDetectObserveGame(object sender, RoutedEventArgs e)
+    {
+        if (!_lastSnapshot.ClientProcessId.HasValue || _lastSnapshot.ClientProcessId.Value is not int pid || pid <= 0)
+        {
+            var reason = string.IsNullOrWhiteSpace(_lastSnapshot.ClientProcessId.FailureReason)
+                ? "process_not_attached"
+                : _lastSnapshot.ClientProcessId.FailureReason;
+            Status($"UNKNOWN · {reason}. Casella invariata: senza PID del client non si legge la tabella TCP.");
+            return;
+        }
+
+        ClientNetworkObservation observation = ClientNetworkObserver.Observe(pid);
+        if (ObserveGameDetector.TrySuggest(observation, out var endpoint, out var status))
+            SettingObserveGame.Text = endpoint;
+        Status(status);
     }
 
     private async void OnPairPhone(object sender, RoutedEventArgs e)

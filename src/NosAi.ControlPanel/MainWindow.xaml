@@ -72,6 +72,7 @@
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
           <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
+          <Button x:Name="NavDecision" Style="{StaticResource NavButton}" Content="Decisione" Click="OnNav"/>
           <Button x:Name="NavSecurity" Style="{StaticResource NavButton}" Content="Sicurezza" Click="OnNav"/>
           <Button x:Name="NavSuites" Style="{StaticResource NavButton}" Content="Certificazione" Click="OnNav"/>
           <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Content="Impostazioni" Click="OnNav"/>
@@ -184,8 +185,11 @@
 
         <ScrollViewer x:Name="ViewPerception" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
           <StackPanel>
-            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">ADR-0012: barra HP/MP da schermo, DERIVED solo se la firma della barra combacia, altrimenti UNKNOWN. I numeri restano UNKNOWN finché i glifi non sono addestrati. Il probe non entra nello snapshot Gate 1. I ritagli finiscono in data/perception/crops (gitignored) per controllare la ROI.</TextBlock>
-            <Button Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Esegui probe DXGI" Click="OnDxgiProbe"/>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">ADR-0012: barra HP/MP da schermo, DERIVED solo se la firma della barra combacia, altrimenti UNKNOWN. I numeri restano UNKNOWN finché i glifi non sono addestrati. L'addestramento prende HP LIVE dal canale world, non dalla schermata: senza osservazione di rete il rifiuto è label_not_live. Il probe non entra nello snapshot Gate 1. I ritagli finiscono in data/perception/crops (gitignored) per controllare la ROI.</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+              <Button Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Esegui probe DXGI" Click="OnDxgiProbe" Margin="0,0,8,0"/>
+              <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Addestra glifi HUD dal wire" Click="OnTrainGlyphs"/>
+            </StackPanel>
             <TextBlock x:Name="PerceptionSummary" Foreground="{StaticResource MutedBrush}" Margin="0,10,0,8" TextWrapping="Wrap"
                        Text="Nessun probe in questa sessione. Il risultato non entra nello snapshot Gate 1."/>
             <ItemsControl x:Name="PerceptionFields" ItemTemplate="{StaticResource FieldTemplate}" Margin="0,0,0,16"/>
@@ -198,8 +202,18 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Porte di questa console e ascolto su 127.0.0.1. Non è uno scan LAN e non è politica di sicurezza.</TextBlock>
             <ItemsControl x:Name="NetworkFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Osservazione gioco</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap">Canale world del client: attivo solo con endpoint impostato e driver aperto. UNKNOWN col motivo, mai 0 al posto di un dato non letto.</TextBlock>
+            <ItemsControl x:Name="GameObservationFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewDecision" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Ciclo Gate 3 sullo snapshot canonico. ActingEnabled=false è la politica sicura (ADR-0016): decide, non agisce. In modalità COLLEGATO il ciclo vive in un altro processo e questa vista è UNKNOWN, non zero. Gli esiti si elencano per tipo: NoWorldState, NoCandidate e RefusedStaleInput non sono lo stesso fallimento.</TextBlock>
+            <ItemsControl x:Name="DecisionFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 
@@ -231,6 +245,14 @@
             <CheckBox x:Name="SettingDiscovery" Content="Discovery LAN (il telefono trova il PC da solo)"/>
             <CheckBox x:Name="SettingLoopback" Content="Solo loopback (disabilita Wi-Fi)"/>
             <CheckBox x:Name="SettingAutoStart" Content="Avvia il runtime all'apertura di questa console"/>
+            <Label Content="Endpoint osservazione gioco (host:porta, vuoto = spento)" Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0"/>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Rileva endpoint" Click="OnDetectObserveGame" Margin="8,0,0,0"/>
+              <TextBox x:Name="SettingObserveGame"/>
+            </DockPanel>
+            <CheckBox x:Name="SettingRunDecisionLoop" Content="Avvia il ciclo di decisione Gate 3 (decide, non agisce)" Margin="0,12,0,0"/>
+            <Label Content="Intervallo decisione (ms)" Foreground="{StaticResource MutedBrush}"/>
+            <TextBox x:Name="SettingDecisionIntervalMs"/>
             <Button Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,16,0,0" Content="Salva impostazioni" Click="OnSaveSettings"/>
           </StackPanel>
         </ScrollViewer>

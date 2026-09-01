@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Gate1;
+using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Observability;
 
 namespace NosAi.ControlPanel;
@@ -126,6 +127,16 @@ public sealed class RuntimeSession : IAsyncDisposable
         }
 
         return SnapshotView.Empty("runtime non avviato");
+    }
+
+    /// <summary>
+    /// Gate 3 loop state. Null unless this process hosts the runtime: an attached
+    /// console cannot see another process's loop, and inventing zeros would hide that.
+    /// </summary>
+    public Gate3LoopView? DescribeDecisions()
+    {
+        lock (_gate)
+            return _host?.Decisions?.Describe();
     }
 
     public async Task EmergencyStopAsync()

@@ -20,6 +20,18 @@ public sealed class OperatorSettings
     public string ClientProcessName { get; set; } = new Gate1HostOptions().ClientProcessName;
     public bool AutoStartRuntime { get; set; } = true;
 
+    /// <summary>
+    /// World-channel endpoint as <c>host:port</c>, or empty when observation is off.
+    /// Passed to the runtime as <c>--observe-game</c> on the next start.
+    /// </summary>
+    public string ObserveGame { get; set; } = "";
+
+    /// <summary>Start the Gate 3 decision loop on the next runtime. It decides; it does not act.</summary>
+    public bool RunDecisionLoop { get; set; }
+
+    /// <summary>How often a decision cycle runs, in milliseconds.</summary>
+    public int DecisionIntervalMs { get; set; } = 500;
+
     public static OperatorSettings Load(string repoRoot)
     {
         var path = Path.Combine(repoRoot, RelativePath);
@@ -39,6 +51,10 @@ public sealed class OperatorSettings
 
     /// <summary>Same bounds as <see cref="Gate1HostOptions"/>, before we write the file.</summary>
     public static bool TryValidate(int dashboardPort, int guardPort, int timeoutMs, string processName, out string error)
+        => TryValidate(dashboardPort, guardPort, timeoutMs, processName, observeGame: null, out error);
+
+    public static bool TryValidate(
+        int dashboardPort, int guardPort, int timeoutMs, string processName, string? observeGame, out string error)
     {
         if (dashboardPort is < 0 or > 65535)
         {
@@ -61,6 +77,36 @@ public sealed class OperatorSettings
         if (string.IsNullOrWhiteSpace(processName))
         {
             error = "Il nome processo client è obbligatorio.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(observeGame))
+        {
+            try
+            {
+                Gate1HostOptionsLoader.ParseObserveGame(observeGame);
+            }
+            catch (InvalidOperationException ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        error = "";
+        return true;
+    }
+
+    public static bool TryValidate(
+        int dashboardPort, int guardPort, int timeoutMs, string processName, string? observeGame,
+        int decisionIntervalMs, out string error)
+    {
+        if (!TryValidate(dashboardPort, guardPort, timeoutMs, processName, observeGame, out error))
+            return false;
+
+        if (decisionIntervalMs is < 50 or > 60_000)
+        {
+            error = "L'intervallo di decisione deve essere tra 50 e 60000 ms.";
             return false;
         }
 
@@ -88,6 +134,15 @@ public sealed class OperatorSettings
             args.Add("--no-discovery");
         if (GuardLoopbackOnly)
             args.Add("--guard-loopback-only");
+        if (!string.IsNullOrWhiteSpace(ObserveGame))
+        {
+            args.Add("--observe-game");
+            args.Add(ObserveGame.Trim());
+        }
+        if (RunDecisionLoop)
+            args.Add("--decide");
+        args.Add("--decide-interval-ms");
+        args.Add(DecisionIntervalMs.ToString());
 
         return Gate1HostOptionsLoader.Load(ReadEnvironment(), args);
     }
