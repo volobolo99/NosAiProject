@@ -1,28 +1,27 @@
 using System.Globalization;
 using NosAi.Runtime.Autonomy;
-using NosAi.Runtime.LowLevel;
 
 namespace NosAi.Runtime.Perception;
 
 /// <summary>
-/// The operator's side of F2-3: collect map/pixel pairs, then solve them.
+/// The storage half of F2-3: hold the collected pairs, then solve them.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Two commands, for the reason <c>--memory-scan</c> and <c>--memory-narrow</c>
-/// are two: a calibration is produced across several moments in the game, so the
-/// samples have to outlive one invocation. They persist in
-/// <see cref="SamplesRelativePath"/> until the operator solves or clears them.
+/// Solving is separate from collecting, for the reason <c>--memory-scan</c> and
+/// <c>--memory-narrow</c> are two commands: a calibration is produced across
+/// several moments in the game, so the samples have to outlive one invocation.
+/// They persist in <see cref="SamplesRelativePath"/> until they are solved or
+/// cleared.
 /// </para>
 /// <para>
-/// The screen half of each pair is the cursor. The operator puts the pointer on
-/// their character and types the coordinates the game's own interface is showing,
-/// which is the same independent reading T-03 used for the HUD: a number the
-/// runtime did not produce.
-/// </para>
-/// <para>
-/// Reading the cursor is not injection — <see cref="GatedInputBackend"/> allows
-/// it with every switch off — so calibrating never requires arming the runtime.
+/// <b>Who fills the file.</b> Not a person any more.
+/// <see cref="ScreenProjectionAutoCalibrator"/> clicks pixels it chooses and reads
+/// the square the client resolved each one to, and
+/// <see cref="ScreenProjectionWatcher"/> does the same by watching the operator
+/// click. Both record an <i>offset from the character</i>, which is the only
+/// quantity a camera that follows the character leaves measurable;
+/// <see cref="RunSample"/> recorded absolute coordinates and now refuses.
 /// </para>
 /// </remarks>
 public static class ScreenProjectionProbe
@@ -30,60 +29,40 @@ public static class ScreenProjectionProbe
     /// <summary>Where the pending samples live, relative to the repository root.</summary>
     public const string SamplesRelativePath = "data/perception/screen-samples.txt";
 
-    /// <summary>Records one pair: the map coordinate typed, the cursor where it is.</summary>
+    /// <summary>
+    /// The hand-aimed sample, which is refused: it records the wrong quantity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This wrote an absolute map coordinate against a cursor pixel, and no
+    /// transform between those two exists — the camera follows the character, so
+    /// the same square is drawn wherever the character happens to be standing.
+    /// The samples it produced fitted a transform with a residual of 0.00 that
+    /// described nothing, which is why the model is now an offset from the
+    /// character and the file format carries a version that refuses the old one.
+    /// </para>
+    /// <para>
+    /// It is refused rather than deleted so that following an older note produces
+    /// an explanation instead of a sample file that solves into a calibration
+    /// aimed somewhere nobody chose.
+    /// </para>
+    /// </remarks>
     public static int RunSample(string? repoRoot, int mapX, int mapY, string? processName = null)
     {
-        repoRoot ??= Directory.GetCurrentDirectory();
+        _ = repoRoot;
+        _ = processName;
 
-        if (!TryClientArea(processName, out PixelRect area, out string? why))
-        {
-            Console.WriteLine($"[REFUSED] {why}");
-            Console.WriteLine("  Without the client area a pixel cannot be made relative to the window,");
-            Console.WriteLine("  and a calibration in desktop coordinates dies the first time it moves.");
-            return 1;
-        }
-
-        var backend = new Win32InputBackend();
-        if (!backend.TryGetCursorPosition(out int cursorX, out int cursorY))
-        {
-            Console.WriteLine("[REFUSED] cursor_position_unavailable");
-            return 1;
-        }
-
-        int relativeX = cursorX - area.X;
-        int relativeY = cursorY - area.Y;
-        if (relativeX < 0 || relativeX >= area.Width || relativeY < 0 || relativeY >= area.Height)
-        {
-            Console.WriteLine($"[REFUSED] cursor_outside_client_area ({cursorX},{cursorY})");
-            Console.WriteLine("  Put the pointer on the character inside the game window, then run this again.");
-            return 1;
-        }
-
-        string path = Path.Combine(repoRoot, SamplesRelativePath);
-        string? directory = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-
-        File.AppendAllText(path, string.Create(
-            CultureInfo.InvariantCulture,
-            $"{mapX} {mapY} {relativeX} {relativeY} {area.Width} {area.Height}\n"));
-
-        int count = ReadSamples(path, out _, out _).Count;
-        Console.WriteLine($"Sample recorded: map ({mapX},{mapY}) -> client pixel ({relativeX},{relativeY}).");
-        Console.WriteLine($"  Client area: {area.Width}x{area.Height}. Samples so far: {count}.");
-        if (count < ScreenProjectionCalibration.MinimumSamples)
-        {
-            Console.WriteLine(
-                $"  {ScreenProjectionCalibration.MinimumSamples - count} more needed. Move the character so the");
-            Console.WriteLine("  three points do not fall on one line — walk in two different directions.");
-        }
-        else
-        {
-            Console.WriteLine("  Enough to solve. A fourth sample is not fitted: it checks the result.");
-        }
-
-        Console.WriteLine($"  {path}");
-        return 0;
+        Console.WriteLine("[REFUSED] absolute_samples_are_not_measurable");
+        Console.WriteLine($"  A pair of map ({mapX},{mapY}) with a cursor pixel cannot calibrate anything:");
+        Console.WriteLine("  the camera follows the character, so that square is drawn at a different");
+        Console.WriteLine("  pixel every time the character moves.");
+        Console.WriteLine();
+        Console.WriteLine("  What is measurable is the offset from the character to the target, and the");
+        Console.WriteLine("  client itself will state one — a click to walk makes it resolve a pixel into");
+        Console.WriteLine("  a square and write the answer down. Either command collects those:");
+        Console.WriteLine("    --screen-autocalibrate --arm-input   the runtime clicks, nobody aims");
+        Console.WriteLine("    --screen-watch <seconds>             you click, it watches");
+        return 1;
     }
 
     /// <summary>Solves the recorded samples into a calibration, or says why not.</summary>
@@ -96,7 +75,8 @@ public static class ScreenProjectionProbe
         if (samples.Count == 0)
         {
             Console.WriteLine($"[REFUSED] no_samples_recorded ({samplePath})");
-            Console.WriteLine("  Record them with --screen-sample <mapX> <mapY>.");
+            Console.WriteLine("  Collect them with --screen-autocalibrate --arm-input, or with");
+            Console.WriteLine("  --screen-watch <seconds> to record your own clicks instead.");
             return 1;
         }
 
@@ -107,7 +87,7 @@ public static class ScreenProjectionProbe
             Console.WriteLine($"[REFUSED] {reason}");
             Console.WriteLine("  Nothing was written. The old calibration, if any, is untouched.");
             if (reason is not null && reason.StartsWith("samples_are_collinear", StringComparison.Ordinal))
-                Console.WriteLine("  The three map points lie on a line: walk in a second direction and sample again.");
+                Console.WriteLine("  The offsets lie on a line: one of them has to cross the others' direction.");
             return 1;
         }
 
@@ -116,9 +96,12 @@ public static class ScreenProjectionProbe
 
         Console.WriteLine($"Screen projection calibrated from {samples.Count} samples.");
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"  screenX = {calibration.A:F4}·mapX + {calibration.B:F4}·mapY + {calibration.C:F1}"));
+            $"  screenX = {calibration.A:F4}*dx + {calibration.B:F4}*dy + {calibration.C:F1}"));
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"  screenY = {calibration.D:F4}·mapX + {calibration.E:F4}·mapY + {calibration.F:F1}"));
+            $"  screenY = {calibration.D:F4}*dx + {calibration.E:F4}*dy + {calibration.F:F1}"));
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"  Character drawn at {calibration.Anchor.X:F0},{calibration.Anchor.Y:F0}"
+            + $" of {clientWidth}x{clientHeight}."));
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"  Worst residual: {calibration.WorstResidualPixels:F2} px over {samples.Count} samples"
             + $" ({calibration.VerifiedAgainstSamples} held back as a check)."));

@@ -1,4 +1,5 @@
 using NosAi.Runtime.Autonomy;
+using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception;
 using Xunit;
 
@@ -15,6 +16,14 @@ namespace NosAi.Runtime.Tests;
 /// wrong solve is caught here rather than by a click on a real client.
 /// </para>
 /// <para>
+/// <b>The fit is on offsets from the character, not on map coordinates.</b> The
+/// camera follows the character, so no transform from an absolute coordinate to a
+/// pixel exists — the same square is drawn wherever the character is standing.
+/// That is not a refinement: it is why the earlier version produced a calibration
+/// with a residual of 0.00 that described nothing, and several of the tests below
+/// exist only to state properties the absolute model could not express.
+/// </para>
+/// <para>
 /// Three samples, not two: two pairs give four equations and a general affine map
 /// has six unknowns, so two fix it only once something is assumed about its
 /// shape. The projection is isometric, which is precisely the assumption that
@@ -26,6 +35,14 @@ public sealed class ScreenProjectionTests : IDisposable
     private static readonly DateTime At = new(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc);
     private const int ClientWidth = 1024;
     private const int ClientHeight = 768;
+
+    /// <summary>Where the character stands in the projection tests.</summary>
+    /// <remarks>
+    /// Deliberately not the map origin. With the character at 0,0 an offset and an
+    /// absolute coordinate are the same number, and every one of these tests would
+    /// pass against the old model too.
+    /// </remarks>
+    private static readonly MapPoint Standing = new(100, 100);
 
     private readonly string _directory = Path.Combine(
         Path.GetTempPath(), "nosai-screen-projection-" + Guid.NewGuid().ToString("N"));
@@ -40,31 +57,36 @@ public sealed class ScreenProjectionTests : IDisposable
 
     /// <summary>Samples generated from a known transform, so the solve has a right answer.</summary>
     private static ScreenProjectionSample Sample(
-        int mapX, int mapY, double a, double b, double c, double d, double e, double f)
+        int deltaX, int deltaY, double a, double b, double c, double d, double e, double f)
         => new(
-            new MapPoint(mapX, mapY),
-            (int)Math.Round((a * mapX) + (b * mapY) + c),
-            (int)Math.Round((d * mapX) + (e * mapY) + f));
+            new MapPoint(deltaX, deltaY),
+            (int)Math.Round((a * deltaX) + (b * deltaY) + c),
+            (int)Math.Round((d * deltaX) + (e * deltaY) + f));
 
     /// <summary>
     /// An isometric layout: the axes mix, which is exactly what a two-point
-    /// axis-aligned calibration would get wrong.
+    /// axis-aligned calibration would get wrong. The translation is the pixel the
+    /// character is drawn at, near the middle of the window.
     /// </summary>
     private static (double A, double B, double C, double D, double E, double F) Isometric
-        => (16.0, -16.0, 512.0, 8.0, 8.0, 100.0);
+        => (16.0, -16.0, 512.0, 8.0, 8.0, 380.0);
 
-    private static List<ScreenProjectionSample> IsometricSamples(params (int X, int Y)[] points)
+    private static List<ScreenProjectionSample> IsometricSamples(params (int X, int Y)[] offsets)
     {
         (double a, double b, double c, double d, double e, double f) = Isometric;
-        return points.Select(p => Sample(p.X, p.Y, a, b, c, d, e, f)).ToList();
+        return offsets.Select(p => Sample(p.X, p.Y, a, b, c, d, e, f)).ToList();
     }
+
+    /// <summary>Offsets small enough to stay on screen and spread enough to fit.</summary>
+    private static List<ScreenProjectionSample> ThreeOffsets()
+        => IsometricSamples((6, 2), (-4, 5), (1, -7));
 
     // -------------------------------------------------------------- the solve
 
     [Fact]
     public void Three_samples_recover_the_transform_that_produced_them()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25));
+        List<ScreenProjectionSample> samples = ThreeOffsets();
 
         Assert.True(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At,
@@ -80,21 +102,40 @@ public sealed class ScreenProjectionTests : IDisposable
     }
 
     /// <summary>
-    /// The point of measuring rather than assuming: the recovered map predicts a
-    /// coordinate that was never sampled.
+    /// The zero offset is the character itself, so the translation is the pixel it
+    /// is drawn at rather than an arbitrary constant.
     /// </summary>
     [Fact]
-    public void The_solved_transform_predicts_a_point_it_never_saw()
+    public void The_translation_is_the_pixel_the_character_is_drawn_at()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25));
         Assert.True(ScreenProjectionCalibration.TrySolve(
-            samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration calibration, out _));
+            ThreeOffsets(), ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration calibration, out _));
 
-        (double x, double y) = calibration.Project(new MapPoint(33, 7))!.Value;
+        (double x, double y) = calibration.ProjectDelta(new MapPoint(0, 0))!.Value;
+
+        Assert.Equal(calibration.Anchor.X, x, 6);
+        Assert.Equal(calibration.Anchor.Y, y, 6);
+        Assert.Equal(Isometric.C, x, 6);
+        Assert.Equal(Isometric.F, y, 6);
+    }
+
+    /// <summary>
+    /// The point of measuring rather than assuming: the recovered map predicts an
+    /// offset that was never sampled.
+    /// </summary>
+    [Fact]
+    public void The_solved_transform_predicts_an_offset_it_never_saw()
+    {
+        Assert.True(ScreenProjectionCalibration.TrySolve(
+            ThreeOffsets(), ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration calibration, out _));
+
+        (double x, double y) = calibration.ProjectDelta(new MapPoint(9, -3))!.Value;
 
         (double a, double b, double c, double d, double e, double f) = Isometric;
-        Assert.Equal((a * 33) + (b * 7) + c, x, 6);
-        Assert.Equal((d * 33) + (e * 7) + f, y, 6);
+        Assert.Equal((a * 9) + (b * -3) + c, x, 6);
+        Assert.Equal((d * 9) + (e * -3) + f, y, 6);
     }
 
     /// <summary>
@@ -104,7 +145,7 @@ public sealed class ScreenProjectionTests : IDisposable
     [Fact]
     public void A_fourth_sample_is_held_back_as_a_check_and_agrees()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25), (30, 30));
+        List<ScreenProjectionSample> samples = IsometricSamples((6, 2), (-4, 5), (1, -7), (8, 8));
 
         Assert.True(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration calibration, out _));
@@ -114,14 +155,15 @@ public sealed class ScreenProjectionTests : IDisposable
     }
 
     /// <summary>
-    /// And when it does not agree, nothing is written. A mistyped coordinate or a
-    /// sample taken after the view scrolled must not become a transform.
+    /// And when it does not agree, nothing is written. A click that hit an
+    /// obstacle walked somewhere other than where it was aimed, and that pair must
+    /// not become a transform.
     /// </summary>
     [Fact]
     public void A_disagreeing_sample_refuses_the_whole_calibration()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25));
-        samples.Add(new ScreenProjectionSample(new MapPoint(30, 30), 5, 5));
+        List<ScreenProjectionSample> samples = ThreeOffsets();
+        samples.Add(new ScreenProjectionSample(new MapPoint(8, 8), 5, 5));
 
         Assert.False(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration calibration, out string? reason));
@@ -131,13 +173,13 @@ public sealed class ScreenProjectionTests : IDisposable
     }
 
     /// <summary>
-    /// Three points on a line cannot fix a mapping of the plane: the operator
-    /// walked in one direction and has to walk in another.
+    /// Three offsets on a line cannot fix a mapping of the plane: every sample
+    /// walked along the same axis and one has to cross it.
     /// </summary>
     [Fact]
     public void Collinear_samples_are_refused_with_a_reason_that_says_what_to_do()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 20), (30, 30));
+        List<ScreenProjectionSample> samples = IsometricSamples((2, 2), (4, 4), (6, 6));
 
         Assert.False(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At, out _, out string? reason));
@@ -148,7 +190,7 @@ public sealed class ScreenProjectionTests : IDisposable
     [Fact]
     public void Fewer_than_three_samples_is_refused_and_says_how_many_are_missing()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12));
+        List<ScreenProjectionSample> samples = IsometricSamples((6, 2), (-4, 5));
 
         Assert.False(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At, out _, out string? reason));
@@ -156,12 +198,55 @@ public sealed class ScreenProjectionTests : IDisposable
         Assert.Equal("not_enough_samples:2_of_3", reason);
     }
 
+    /// <summary>
+    /// The check the absolute model had no way to state. A zero offset is the
+    /// character, the character is visibly on screen, so a fit that draws it off
+    /// the window is describing something other than this client.
+    /// </summary>
+    [Fact]
+    public void A_fit_that_draws_the_character_off_the_window_is_refused()
+    {
+        List<ScreenProjectionSample> samples =
+        [
+            Sample(6, 2, 16, -16, 5000, 8, 8, 380),
+            Sample(-4, 5, 16, -16, 5000, 8, 8, 380),
+            Sample(1, -7, 16, -16, 5000, 8, 8, 380),
+        ];
+
+        Assert.False(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration calibration, out string? reason));
+
+        Assert.False(calibration.IsCalibrated);
+        Assert.StartsWith("character_anchor_outside_client", reason, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Samples that all land on the same pixel measure no scale. This is what the
+    /// character's own position produced when it was sampled against its own
+    /// pixel, and it is the failure that ended the absolute model.
+    /// </summary>
+    [Fact]
+    public void Samples_whose_pixels_do_not_move_are_refused()
+    {
+        List<ScreenProjectionSample> samples =
+        [
+            new(new MapPoint(6, 2), 511, 373),
+            new(new MapPoint(-4, 5), 512, 374),
+            new(new MapPoint(1, -7), 513, 380),
+        ];
+
+        Assert.False(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At, out _, out string? reason));
+
+        Assert.StartsWith("screen_points_do_not_move", reason, StringComparison.Ordinal);
+    }
+
     // ------------------------------------------------------------ persistence
 
     [Fact]
     public void A_calibration_survives_a_round_trip()
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25), (30, 30));
+        List<ScreenProjectionSample> samples = IsometricSamples((6, 2), (-4, 5), (1, -7), (8, 8));
         Assert.True(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration written, out _));
         string path = PathFor("screen-projection.calibration");
@@ -188,13 +273,48 @@ public sealed class ScreenProjectionTests : IDisposable
         Assert.Equal(ScreenProjectionCalibration.NotCalibratedReason, reason);
     }
 
-    /// <summary>A degenerate transform maps the whole map to one pixel; it is not one.</summary>
+    /// <summary>
+    /// A file from the absolute model must not be reinterpreted as offsets. Its
+    /// coefficients are wrong by the character's whole distance from the map
+    /// origin, and the click would still land inside the window — so nothing
+    /// downstream would notice, and only the version can catch it.
+    /// </summary>
+    [Fact]
+    public void A_calibration_from_the_absolute_model_is_refused_by_version()
+    {
+        string path = PathFor("v1");
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            path, "nosai-screen-projection 1\n16 -16 512 8 8 380 1024 768 0 1 2026-09-01T12:00:00Z\n");
+
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.False(loaded.IsCalibrated);
+        Assert.Equal("screen_projection_version_unsupported:1", reason);
+    }
+
+    /// <summary>A degenerate transform maps every offset to one pixel; it is not one.</summary>
     [Fact]
     public void A_file_whose_transform_collapses_the_plane_is_refused()
     {
         string path = PathFor("degenerate");
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(path, "nosai-screen-projection 1\n0 0 0 0 0 0 1024 768 0 0 2026-09-01T12:00:00Z\n");
+        File.WriteAllText(path, "nosai-screen-projection 2\n0 0 0 0 0 0 1024 768 0 0 2026-09-01T12:00:00Z\n");
+
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.False(loaded.IsCalibrated);
+        Assert.Equal("screen_projection_entry_malformed", reason);
+    }
+
+    /// <summary>A hand-edited file has had no solver check its anchor.</summary>
+    [Fact]
+    public void A_file_whose_anchor_is_off_the_window_is_refused()
+    {
+        string path = PathFor("anchor");
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            path, "nosai-screen-projection 2\n16 -16 5000 8 8 380 1024 768 0 1 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 
@@ -209,17 +329,23 @@ public sealed class ScreenProjectionTests : IDisposable
 
     [Fact]
     public void An_uncalibrated_transform_projects_nothing_rather_than_guessing()
-        => Assert.Null(ScreenProjectionCalibration.Uncalibrated.Project(new MapPoint(10, 10)));
+        => Assert.Null(ScreenProjectionCalibration.Uncalibrated.ProjectDelta(new MapPoint(10, 10)));
 
     // ------------------------------------------------------- the projection
 
     private static CalibratedScreenProjection Projection(
-        PixelRect? clientArea, int clientWidth = ClientWidth, int clientHeight = ClientHeight)
+        PixelRect? clientArea,
+        int clientWidth = ClientWidth,
+        int clientHeight = ClientHeight,
+        ClassifiedValue<MapPoint>? player = null)
     {
-        List<ScreenProjectionSample> samples = IsometricSamples((10, 10), (20, 12), (14, 25));
         Assert.True(ScreenProjectionCalibration.TrySolve(
-            samples, clientWidth, clientHeight, At, out ScreenProjectionCalibration calibration, out _));
-        return new CalibratedScreenProjection(calibration, () => clientArea);
+            ThreeOffsets(), clientWidth, clientHeight, At,
+            out ScreenProjectionCalibration calibration, out _));
+        return new CalibratedScreenProjection(
+            calibration,
+            () => clientArea,
+            () => player ?? ClassifiedValue<MapPoint>.Live(Standing, At));
     }
 
     /// <summary>
@@ -233,15 +359,61 @@ public sealed class ScreenProjectionTests : IDisposable
         (double a, double b, double c, double d, double e, double f) = Isometric;
         var moved = new PixelRect(300, 200, ClientWidth, ClientHeight);
 
-        Assert.True(Projection(moved).TryProject(20, 12, out int x, out int y, out string? reason), reason);
+        Assert.True(
+            Projection(moved).TryProject(Standing.X + 6, Standing.Y + 2, out int x, out int y, out string? reason),
+            reason);
 
-        Assert.Equal(300 + (int)Math.Round((a * 20) + (b * 12) + c), x);
-        Assert.Equal(200 + (int)Math.Round((d * 20) + (e * 12) + f), y);
+        Assert.Equal(300 + (int)Math.Round((a * 6) + (b * 2) + c), x);
+        Assert.Equal(200 + (int)Math.Round((d * 6) + (e * 2) + f), y);
     }
 
     /// <summary>
-    /// The domain check the card asks for. Clamping would turn "that coordinate is
-    /// not on screen" into a real click at a place nobody chose.
+    /// The property the whole rewrite is for: the camera follows the character, so
+    /// the same square is a different pixel once the character has moved. Under the
+    /// absolute model this returned the same point both times, and a click aimed at
+    /// a monster landed wherever the character used to be standing.
+    /// </summary>
+    [Fact]
+    public void The_same_square_projects_elsewhere_once_the_character_has_moved()
+    {
+        var area = new PixelRect(0, 0, ClientWidth, ClientHeight);
+        int targetX = Standing.X + 3, targetY = Standing.Y + 3;
+
+        Assert.True(Projection(area).TryProject(targetX, targetY, out int before, out int beforeY, out _));
+
+        CalibratedScreenProjection moved = Projection(
+            area, player: ClassifiedValue<MapPoint>.Live(new MapPoint(Standing.X + 5, Standing.Y), At));
+        Assert.True(moved.TryProject(targetX, targetY, out int after, out int afterY, out _));
+
+        Assert.NotEqual(before, after);
+        Assert.NotEqual(beforeY, afterY);
+    }
+
+    /// <summary>
+    /// An unknown position is not the map origin. Treating it as one would aim
+    /// every click at a real point on screen with nothing behind it — ADR-0014's
+    /// rule at the exact place where breaking it becomes an action in the world.
+    /// </summary>
+    [Fact]
+    public void An_unknown_character_position_is_refused_and_carries_why()
+    {
+        CalibratedScreenProjection projection = Projection(
+            new PixelRect(0, 0, ClientWidth, ClientHeight),
+            player: ClassifiedValue<MapPoint>.Unknown("player_manager_null"));
+
+        Assert.False(projection.TryProject(Standing.X + 6, Standing.Y + 2, out int x, out int y, out string? reason));
+
+        Assert.Equal(
+            $"{CalibratedScreenProjection.PlayerPositionUnknownReason}:player_manager_null", reason);
+        Assert.Equal(0, x);
+        Assert.Equal(0, y);
+    }
+
+    /// <summary>
+    /// The domain check the card asks for. Clamping would turn "that square is not
+    /// on screen" into a real click at a place nobody chose — and with a camera
+    /// that follows the character, a target far away is simply not drawn, which is
+    /// an ordinary event rather than an error.
     /// </summary>
     [Fact]
     public void A_point_outside_the_client_area_is_refused_not_clamped()
@@ -257,14 +429,17 @@ public sealed class ScreenProjectionTests : IDisposable
 
     /// <summary>
     /// A resized client is a different zoom and a different layout, so the measured
-    /// transform no longer describes what is on screen.
+    /// transform no longer describes what is on screen. This is what makes going
+    /// full screen safe rather than silently wrong: it refuses, and the
+    /// auto-calibration can then measure the new size.
     /// </summary>
     [Fact]
     public void A_client_resized_since_the_calibration_is_refused()
     {
         var resized = new PixelRect(0, 0, 1280, 1024);
 
-        Assert.False(Projection(resized).TryProject(20, 12, out _, out _, out string? reason));
+        Assert.False(
+            Projection(resized).TryProject(Standing.X + 6, Standing.Y + 2, out _, out _, out string? reason));
 
         Assert.Equal(CalibratedScreenProjection.ClientResizedReason, reason);
     }
@@ -272,7 +447,9 @@ public sealed class ScreenProjectionTests : IDisposable
     [Fact]
     public void Without_the_window_there_is_nothing_to_be_inside_of()
     {
-        Assert.False(Projection(clientArea: null).TryProject(20, 12, out _, out _, out string? reason));
+        Assert.False(
+            Projection(clientArea: null).TryProject(
+                Standing.X + 6, Standing.Y + 2, out _, out _, out string? reason));
 
         Assert.Equal(CalibratedScreenProjection.WindowNotLocatedReason, reason);
     }
@@ -286,7 +463,8 @@ public sealed class ScreenProjectionTests : IDisposable
     {
         var projection = new CalibratedScreenProjection(
             ScreenProjectionCalibration.Uncalibrated,
-            () => new PixelRect(0, 0, ClientWidth, ClientHeight));
+            () => new PixelRect(0, 0, ClientWidth, ClientHeight),
+            () => ClassifiedValue<MapPoint>.Live(Standing, At));
 
         Assert.False(projection.TryProject(20, 12, out _, out _, out string? reason));
 

@@ -1,17 +1,36 @@
+using NosAi.Runtime.Autonomy;
+using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate3;
+using NosAi.LiveIntegration;
 
 namespace NosAi.Runtime.Perception;
 
 /// <summary>
-/// Turns a map coordinate into a desktop pixel, using the transform the operator
-/// measured.
+/// Turns a map coordinate into a desktop pixel, using the transform that was
+/// measured and the square the character is standing on right now.
 /// </summary>
 /// <remarks>
 /// <para>
 /// F2-3, and the place where a mistake makes the runtime click somewhere it was
 /// not asked to. Every step that could go wrong refuses by name instead of
 /// producing a point: no calibration, no client window, a client resized since
-/// the calibration, or a point that lands outside the client area.
+/// the calibration, an unknown character position, or a point that lands outside
+/// the client area.
+/// </para>
+/// <para>
+/// <b>Two moving parts, not one.</b> The calibration alone cannot place a map
+/// coordinate on screen, because the camera follows the character: the same
+/// square is drawn wherever the character's own position puts it. So the
+/// calibration supplies the <i>shape</i> of the projection and the character's
+/// live position supplies its <i>origin</i>, and the second is re-read on every
+/// call. A cached position would aim at the square the target occupied when the
+/// character was somewhere else.
+/// </para>
+/// <para>
+/// <b>An unknown position is a refusal.</b> It cannot be treated as the map
+/// origin, which is what a zero default would silently mean — ADR-0014's rule
+/// that unknown is not zero, applied at the point where the mistake would become
+/// a real click.
 /// </para>
 /// <para>
 /// The calibration is stored in client-relative pixels and the window's position
@@ -30,19 +49,34 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     /// <summary>The client window could not be found, so there is nothing to be inside of.</summary>
     public const string WindowNotLocatedReason = "client_window_not_located";
 
+    /// <summary>
+    /// Where the character is standing is not known, so no offset can be formed.
+    /// </summary>
+    public const string PlayerPositionUnknownReason = "player_position_unknown";
+
     private readonly ScreenProjectionCalibration _calibration;
     private readonly Func<PixelRect?> _clientArea;
+    private readonly Func<ClassifiedValue<MapPoint>> _playerPosition;
 
     /// <param name="clientArea">
     /// Re-read on every call, because a window moves and is resized while the
     /// runtime is running.
     /// </param>
+    /// <param name="playerPosition">
+    /// The square the character is on, normally
+    /// <see cref="NosAi.LiveIntegration.MemoryGameplayProvider.ReadPosition"/>. Classified rather than
+    /// nullable so the refusal can carry <i>why</i> it is unknown — a broken
+    /// pointer chain and a client sitting at the login screen are different
+    /// problems and the operator has to be able to tell them apart.
+    /// </param>
     public CalibratedScreenProjection(
         ScreenProjectionCalibration calibration,
-        Func<PixelRect?> clientArea)
+        Func<PixelRect?> clientArea,
+        Func<ClassifiedValue<MapPoint>> playerPosition)
     {
         _calibration = calibration ?? throw new ArgumentNullException(nameof(calibration));
         _clientArea = clientArea ?? throw new ArgumentNullException(nameof(clientArea));
+        _playerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
     }
 
     /// <inheritdoc />
@@ -72,7 +106,17 @@ public sealed class CalibratedScreenProjection : IScreenProjection
             return false;
         }
 
-        if (_calibration.Project(new NosAi.Runtime.Autonomy.MapPoint(mapX, mapY)) is not { } relative)
+        ClassifiedValue<MapPoint> player = _playerPosition();
+        if (!player.HasValue)
+        {
+            failureReason = player.FailureReason is { Length: > 0 } why
+                ? $"{PlayerPositionUnknownReason}:{why}"
+                : PlayerPositionUnknownReason;
+            return false;
+        }
+
+        var offset = new MapPoint(mapX - player.Value.X, mapY - player.Value.Y);
+        if (_calibration.ProjectDelta(offset) is not { } relative)
         {
             failureReason = ScreenProjectionCalibration.NotCalibratedReason;
             return false;
@@ -83,7 +127,10 @@ public sealed class CalibratedScreenProjection : IScreenProjection
 
         // The domain check the card asks for: a point outside the client area is a
         // refusal, not a click on the nearest border. Clamping would turn "that
-        // coordinate is not on screen" into a real click at a place nobody chose.
+        // coordinate is not on screen" into a real click at a place nobody chose,
+        // and with a camera that follows the character an off-screen target is an
+        // ordinary event rather than an error — something far away is simply not
+        // drawn, and walking closer is the answer, not clicking the edge.
         if (candidateX < area.X || candidateX >= area.Right
             || candidateY < area.Y || candidateY >= area.Bottom)
         {

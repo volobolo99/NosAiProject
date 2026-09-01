@@ -126,6 +126,31 @@ public static class Program
             return NosAi.Runtime.Perception.ScreenProjectionProbe.RunSample(null, mapX, mapY);
         }
 
+        // The calibration with nobody in it: the runtime picks the pixels, clicks
+        // them and reads back which square the client resolved each one to. It
+        // walks the character, so the gate stays shut without --arm-input.
+        if (args.Any(a => string.Equals(a, "--screen-autocalibrate", StringComparison.OrdinalIgnoreCase)))
+        {
+            bool armInput = args.Any(a => string.Equals(a, "--arm-input", StringComparison.OrdinalIgnoreCase));
+            return NosAi.Runtime.Perception.ScreenProjectionAutoCalibrator.Run(armInput);
+        }
+
+        // Collects samples by watching the operator click to walk. The character's
+        // own position cannot calibrate this: the camera follows it, so it stays
+        // drawn in the same place and the samples describe nothing.
+        int watchFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--screen-watch", StringComparison.OrdinalIgnoreCase));
+        if (watchFlag >= 0)
+        {
+            int seconds = watchFlag + 1 < args.Length
+                          && int.TryParse(args[watchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedSeconds)
+                          && parsedSeconds > 0
+                ? parsedSeconds
+                : 60;
+
+            return NosAi.Runtime.Perception.ScreenProjectionWatcher.Run(seconds, wanted: 5);
+        }
+
         if (args.Any(a => string.Equals(a, "--screen-calibrate", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.ScreenProjectionProbe.RunSolve(null);
 
@@ -323,7 +348,8 @@ public static class Program
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--decide-replay", "--player-probe", "--world-replay",
-            "--screen-sample", "--screen-calibrate", "--screen-samples-clear"
+            "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
+            "--screen-autocalibrate", "--arm-input"
         };
 
     private static int RunDxgiProbe()

@@ -263,8 +263,31 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             gated,
             keybinds,
             () => runtime.Safety.Policy,
-            new CalibratedScreenProjection(projection, LocateClientArea));
+            new CalibratedScreenProjection(projection, LocateClientArea, ReadPlayerPosition));
     }
+
+    /// <summary>
+    /// The square the character is standing on, which the projection needs as its
+    /// origin.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Unknown here, and deliberately so. The reading exists —
+    /// <see cref="NosAi.LiveIntegration.MemoryGameplayProvider"/> produces it and
+    /// T-11 confirmed it against the id the server sent — but it only counts as a
+    /// reading once it can be checked against that id, and the wire observer that
+    /// supplies it is not connected to this host yet. Returning a position the
+    /// identity check has not passed would be the exact failure ADR-0014 names: a
+    /// pointer chain that produces a plausible coordinate for the wrong character.
+    /// </para>
+    /// <para>
+    /// So every click is refused by name until that is wired, which is the safe
+    /// direction to be wrong in: a click needs somewhere to aim, and an unknown
+    /// origin silently treated as the map origin aims at a real point on screen.
+    /// </para>
+    /// </remarks>
+    private static ClassifiedValue<Autonomy.MapPoint> ReadPlayerPosition()
+        => ClassifiedValue<Autonomy.MapPoint>.Unknown("player_position_source_not_wired");
 
     /// <summary>
     /// Where the attached client is drawing right now, or null when it cannot be

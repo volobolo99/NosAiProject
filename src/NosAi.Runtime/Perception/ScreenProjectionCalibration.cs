@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Globalization;
 using System.Text;
 using NosAi.Runtime.Autonomy;
@@ -5,17 +6,23 @@ using NosAi.Runtime.Autonomy;
 namespace NosAi.Runtime.Perception;
 
 /// <summary>
-/// One pairing of a map coordinate with the client pixel it was seen at.
+/// One pairing of a map <i>offset from the character</i> with the client pixel
+/// that offset is drawn at.
 /// </summary>
-/// <param name="Screen">
+/// <param name="MapDelta">
+/// Tiles away from the square the character is standing on, not an absolute map
+/// coordinate. See <see cref="ScreenProjectionCalibration"/> for why the absolute
+/// form cannot be measured at all.
+/// </param>
+/// <param name="ScreenX">
 /// Relative to the client area's top-left corner, not the desktop. A window that
 /// moves must not invalidate a calibration: the shape of the mapping belongs to
 /// the client, its position on the desktop does not.
 /// </param>
-public readonly record struct ScreenProjectionSample(MapPoint Map, int ScreenX, int ScreenY);
+public readonly record struct ScreenProjectionSample(MapPoint MapDelta, int ScreenX, int ScreenY);
 
 /// <summary>
-/// The measured transform from a map coordinate to a pixel of the client area.
+/// The measured transform from a map offset to a pixel of the client area.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -25,16 +32,32 @@ public readonly record struct ScreenProjectionSample(MapPoint Map, int ScreenX, 
 /// only at verification — after having acted.
 /// </para>
 /// <para>
+/// <b>Why an offset and not a map coordinate.</b> The first version of this fitted
+/// <c>screen = A·mapCoordinate + C</c>, and no such transform exists: the camera
+/// follows the character, so the same square is drawn at a different pixel every
+/// time the character moves. Measured on the real client, walking twelve tiles
+/// moved the character's own pixel by seven — it stays at the anchor and the map
+/// scrolls underneath. Fitting the absolute form to samples that all land in the
+/// same place gave a residual of 0.00 on a transform that described nothing,
+/// which is the worst possible outcome: a confident answer with no content.
+/// </para>
+/// <para>
+/// What does hold still is the relation between an <i>offset</i> from the
+/// character and the pixel that offset appears at, so this fits
+/// <c>screen = A·Δmap + anchor</c>. The consequence worth stating: <c>C</c> and
+/// <c>F</c> are no longer an arbitrary translation, they are the pixel the
+/// character itself is drawn at, and the fit is rejected when they land outside
+/// the window — a check the absolute form could not express.
+/// </para>
+/// <para>
 /// <b>Why three samples and not two.</b> F2-3 specifies a two-point calibration.
 /// Two pairs give four equations and a general affine map has six unknowns
-/// (<c>sx = a·mx + b·my + c</c>, <c>sy = d·mx + e·my + f</c>), so two points fix
+/// (<c>sx = a·Δx + b·Δy + c</c>, <c>sy = d·Δx + e·Δy + f</c>), so two points fix
 /// it only once something is assumed about its structure — that the axes do not
 /// mix, say, which is exactly false for an isometric projection, the one the card
-/// names. Three non-collinear pairs determine all six and assume nothing. The
-/// operator's procedure grows by one stop, and the shape of the projection stops
-/// being a guess. Samples beyond the third are not fitted: they are held back and
-/// used to check the solution, which is the only way this file can carry its own
-/// validity check.
+/// names. Three non-collinear pairs determine all six and assume nothing. Samples
+/// beyond the third are not fitted: they are held back and used to check the
+/// solution, which is the only way this file can carry its own validity check.
 /// </para>
 /// <para>
 /// <b>Machine-specific, and therefore not committed.</b> It belongs in gitignored
@@ -65,8 +88,28 @@ public sealed record ScreenProjectionCalibration
     /// </remarks>
     public const double MaxVerificationResidualPixels = 6.0;
 
+    /// <summary>
+    /// How far apart the sampled pixels must lie before a transform can be fitted.
+    /// </summary>
+    /// <remarks>
+    /// Generous, because it is not measuring precision: it separates "the screen
+    /// points moved" from "they did not". A camera that follows the character
+    /// keeps every sample of the character within a few pixels of the same spot,
+    /// and no amount of map movement makes that measurable.
+    /// </remarks>
+    public const double MinScreenSpanPixels = 40.0;
+
+    /// <summary>Reported when a file from before the offset model is found.</summary>
+    /// <remarks>
+    /// The bump from 1 to 2 is not cosmetic. A v1 file holds coefficients fitted
+    /// to absolute map coordinates; read as offsets they project to a pixel that
+    /// is wrong by the character's whole distance from the map origin, and the
+    /// click still lands inside the window, so nothing downstream would notice.
+    /// Refusing by version is what stops a stale file from being silently
+    /// reinterpreted into a real click somewhere nobody chose.
+    /// </remarks>
     private const string Magic = "nosai-screen-projection";
-    private const int Version = 1;
+    private const int Version = 2;
 
     private ScreenProjectionCalibration(
         bool isCalibrated,
@@ -90,15 +133,27 @@ public sealed record ScreenProjectionCalibration
     /// <summary>Whether a real calibration was loaded. False is not "guess one".</summary>
     public bool IsCalibrated { get; }
 
-    /// <summary>Coefficients of <c>screenX = A·mapX + B·mapY + C</c>.</summary>
+    /// <summary>Coefficients of <c>screenX = A·Δx + B·Δy + C</c>.</summary>
     public double A { get; }
     public double B { get; }
     public double C { get; }
 
-    /// <summary>Coefficients of <c>screenY = D·mapX + E·mapY + F</c>.</summary>
+    /// <summary>Coefficients of <c>screenY = D·Δx + E·Δy + F</c>.</summary>
     public double D { get; }
     public double E { get; }
     public double F { get; }
+
+    /// <summary>
+    /// The pixel the character itself is drawn at, which is where a zero offset
+    /// projects.
+    /// </summary>
+    /// <remarks>
+    /// Not a spare name for <see cref="C"/> and <see cref="F"/>: it is the one
+    /// coefficient of the fit that can be checked against something outside the
+    /// arithmetic, because the character is visibly on screen and so the anchor
+    /// has to be inside the client area.
+    /// </remarks>
+    public (double X, double Y) Anchor => (C, F);
 
     /// <summary>The client area the samples were taken against, in pixels.</summary>
     /// <remarks>
@@ -159,16 +214,30 @@ public sealed record ScreenProjectionCalibration
 
         ScreenProjectionSample s0 = samples[0], s1 = samples[1], s2 = samples[2];
 
-        // Twice the signed area of the triangle the three map points make. Zero
+        // Twice the signed area of the triangle the three offsets make. Zero
         // means they lie on a line, and a line cannot fix a mapping of the plane:
-        // the operator walked in one direction and has to walk in another.
+        // every sample walked along the same axis and one has to cross it.
         double determinant =
-            (s1.Map.X - s0.Map.X) * (double)(s2.Map.Y - s0.Map.Y) -
-            (s2.Map.X - s0.Map.X) * (double)(s1.Map.Y - s0.Map.Y);
+            (s1.MapDelta.X - s0.MapDelta.X) * (double)(s2.MapDelta.Y - s0.MapDelta.Y) -
+            (s2.MapDelta.X - s0.MapDelta.X) * (double)(s1.MapDelta.Y - s0.MapDelta.Y);
 
         if (Math.Abs(determinant) < 1e-9)
         {
             failureReason = "samples_are_collinear";
+            return false;
+        }
+
+        // The screen points have to move too, or there is nothing to measure a
+        // scale against. This survives from the absolute model, where it was the
+        // check that finally caught it: the samples were the character's own
+        // pixel, which the camera holds still, and three of them fit six unknowns
+        // exactly so the residual saw nothing wrong.
+        double screenSpanX = samples.Max(s => (double)s.ScreenX) - samples.Min(s => (double)s.ScreenX);
+        double screenSpanY = samples.Max(s => (double)s.ScreenY) - samples.Min(s => (double)s.ScreenY);
+        if (screenSpanX < MinScreenSpanPixels && screenSpanY < MinScreenSpanPixels)
+        {
+            failureReason =
+                $"screen_points_do_not_move:{screenSpanX:F0}x{screenSpanY:F0}px";
             return false;
         }
 
@@ -177,14 +246,14 @@ public sealed record ScreenProjectionCalibration
         (double d, double e, double f) = SolveComponent(
             s0, s1, s2, determinant, static s => s.ScreenY);
 
-        // Every pair the operator recorded, including the three that were fitted:
-        // a residual on those means the arithmetic went wrong rather than that the
-        // samples disagree, and either way the transform must not be written.
+        // Every pair recorded, including the three that were fitted: a residual on
+        // those means the arithmetic went wrong rather than that the samples
+        // disagree, and either way the transform must not be written.
         double worst = 0;
         foreach (ScreenProjectionSample sample in samples)
         {
-            double px = (a * sample.Map.X) + (b * sample.Map.Y) + c;
-            double py = (d * sample.Map.X) + (e * sample.Map.Y) + f;
+            double px = (a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c;
+            double py = (d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f;
             double residual = Math.Sqrt(
                 ((px - sample.ScreenX) * (px - sample.ScreenX)) +
                 ((py - sample.ScreenY) * (py - sample.ScreenY)));
@@ -194,6 +263,17 @@ public sealed record ScreenProjectionCalibration
         if (worst > MaxVerificationResidualPixels)
         {
             failureReason = $"samples_disagree:{worst:F1}px";
+            return false;
+        }
+
+        // The one coefficient with a meaning outside the fit: a zero offset is the
+        // character, and the character is on screen. An anchor off the window is a
+        // fit that happens to reproduce its own samples and nothing else — the
+        // failure the absolute model had no way to express, so it is expressed
+        // here.
+        if (!AnchorIsInside(c, f, clientWidth, clientHeight))
+        {
+            failureReason = $"character_anchor_outside_client:{c:F0},{f:F0}";
             return false;
         }
 
@@ -208,16 +288,22 @@ public sealed record ScreenProjectionCalibration
     }
 
     /// <summary>
-    /// Projects a map coordinate into a pixel of the client area, in
+    /// Projects an offset from the character into a pixel of the client area, in
     /// client-relative coordinates.
     /// </summary>
+    /// <param name="mapDelta">
+    /// Tiles from the character's square to the target's, target minus character.
+    /// An absolute map coordinate passed here projects to a point that is wrong
+    /// by the character's own distance from the origin, which is why the parameter
+    /// is named for what it is.
+    /// </param>
     /// <remarks>
     /// Null when there is no calibration. Not a fallback: falling back is how a
     /// click lands in an arbitrary part of the window.
     /// </remarks>
-    public (double X, double Y)? Project(MapPoint map)
+    public (double X, double Y)? ProjectDelta(MapPoint mapDelta)
         => IsCalibrated
-            ? ((A * map.X) + (B * map.Y) + C, (D * map.X) + (E * map.Y) + F)
+            ? ((A * mapDelta.X) + (B * mapDelta.Y) + C, (D * mapDelta.X) + (E * mapDelta.Y) + F)
             : null;
 
     /// <summary>Loads the calibration, or returns <see cref="Uncalibrated"/> with a reason.</summary>
@@ -283,10 +369,13 @@ public sealed record ScreenProjectionCalibration
             return Uncalibrated;
         }
 
-        // A transform that maps every map coordinate to the same pixel is not a
-        // transform, and it is what an all-zero or corrupted file decodes to.
+        // A transform that maps every offset to the same pixel is not a transform,
+        // and it is what an all-zero or corrupted file decodes to. The anchor is
+        // checked on the way in as well as on the way out: a file edited by hand
+        // has had no solver look at it.
         if (clientWidth <= 0 || clientHeight <= 0
-            || Math.Abs((a * e) - (b * d)) < 1e-9)
+            || Math.Abs((a * e) - (b * d)) < 1e-9
+            || !AnchorIsInside(c, f, clientWidth, clientHeight))
         {
             failureReason = "screen_projection_entry_malformed";
             return Uncalibrated;
@@ -327,7 +416,7 @@ public sealed record ScreenProjectionCalibration
 
     /// <summary>
     /// Solves one row of the affine map by Cramer's rule over the three sampled
-    /// map points.
+    /// offsets.
     /// </summary>
     private static (double A, double B, double C) SolveComponent(
         ScreenProjectionSample s0,
@@ -338,11 +427,15 @@ public sealed record ScreenProjectionCalibration
     {
         double v0 = screen(s0), v1 = screen(s1), v2 = screen(s2);
 
-        double a = (((v1 - v0) * (s2.Map.Y - s0.Map.Y)) - ((v2 - v0) * (s1.Map.Y - s0.Map.Y))) / determinant;
-        double b = (((v2 - v0) * (s1.Map.X - s0.Map.X)) - ((v1 - v0) * (s2.Map.X - s0.Map.X))) / determinant;
-        double c = v0 - (a * s0.Map.X) - (b * s0.Map.Y);
+        double a = (((v1 - v0) * (s2.MapDelta.Y - s0.MapDelta.Y)) - ((v2 - v0) * (s1.MapDelta.Y - s0.MapDelta.Y))) / determinant;
+        double b = (((v2 - v0) * (s1.MapDelta.X - s0.MapDelta.X)) - ((v1 - v0) * (s2.MapDelta.X - s0.MapDelta.X))) / determinant;
+        double c = v0 - (a * s0.MapDelta.X) - (b * s0.MapDelta.Y);
         return (a, b, c);
     }
+
+    /// <summary>Whether the character's own pixel falls inside the window.</summary>
+    private static bool AnchorIsInside(double x, double y, int clientWidth, int clientHeight)
+        => x >= 0 && x < clientWidth && y >= 0 && y < clientHeight;
 
     private static bool TryNumber(string field, out double value)
         => double.TryParse(field, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
