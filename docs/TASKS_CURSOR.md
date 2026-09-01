@@ -110,6 +110,16 @@ Questi sono il **minimo**, non l'elenco completo: ogni scheda chiede un test per
 criterio di accettazione, e quelli restano dovuti. Questo è solo quello che si
 può cercare da fuori.
 
+**Se il test esiste con un altro nome**, lo script lo segna `parziale` e non
+`aperto`: dice che il codice c'è e che manca solo il nome. È successo davvero il
+1 settembre — quattro schede finite, con test che coprivano ogni criterio,
+risultavano aperte perché seguivano lo stile del repository invece del nome
+concordato. Chiuderle è un rinominamento, non una scheda da rifare.
+
+Il nome vincolante rompe di proposito la convenzione del file che lo ospita: è
+l'unico modo perché qualcuno che non ha seguito il lavoro possa dire da fuori che
+quel test è stato scritto. Vale la stonatura.
+
 ---
 
 ## Prompt di avvio — da incollare in Cursor, una scheda per chat

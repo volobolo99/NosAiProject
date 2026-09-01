@@ -41,6 +41,7 @@ Push-Location $repo
 try {
 
 $script:Done = 0
+$script:Partial = 0
 $script:Open = 0
 
 function Write-Head {
@@ -61,13 +62,50 @@ function Report {
 
     if ($Ok) {
         $script:Done++
-        Write-Host ('  [fatto]  {0,-6} {1}' -f $Id, $Title) -ForegroundColor Green
+        Write-Host ('  [fatto]    {0,-6} {1}' -f $Id, $Title) -ForegroundColor Green
     }
     else {
         $script:Open++
-        Write-Host ('  [aperto] {0,-6} {1}' -f $Id, $Title) -ForegroundColor Yellow
-        if ($Detail) { Write-Host ('           manca: {0}' -f $Detail) -ForegroundColor DarkGray }
+        Write-Host ('  [aperto]   {0,-6} {1}' -f $Id, $Title) -ForegroundColor Yellow
+        if ($Detail) { Write-Host ('             manca: {0}' -f $Detail) -ForegroundColor DarkGray }
     }
+}
+
+# Riporta una scheda che ha due artefatti distinti: il codice e il test
+# vincolante che lo chiude.
+#
+# Tenerli separati non e' pedanteria. La prima versione di questo script li
+# univa con un AND, e quattro schede realmente finite risultavano aperte solo
+# perche' il test portava un nome diverso da quello concordato: uno strumento di
+# verifica che grida al lupo su lavoro fatto smette di essere letto, e a quel
+# punto e' peggio di niente. "parziale" dice esattamente cosa manca, e quel che
+# manca -- un nome -- e' un lavoro di un minuto, non una scheda da rifare.
+function ReportCard {
+    param(
+        [string] $Id,
+        [string] $Title,
+        [bool]   $CodeOk,
+        [bool]   $TestOk,
+        [string] $CodeDetail,
+        [string] $TestName
+    )
+
+    if (-not $CodeOk) {
+        $script:Open++
+        Write-Host ('  [aperto]   {0,-6} {1}' -f $Id, $Title) -ForegroundColor Yellow
+        Write-Host ('             manca: {0}' -f $CodeDetail) -ForegroundColor DarkGray
+        return
+    }
+
+    if ($TestOk) {
+        $script:Done++
+        Write-Host ('  [fatto]    {0,-6} {1}' -f $Id, $Title) -ForegroundColor Green
+        return
+    }
+
+    $script:Partial++
+    Write-Host ('  [parziale] {0,-6} {1}' -f $Id, $Title) -ForegroundColor DarkCyan
+    Write-Host ('             codice presente; manca il test vincolante {0}' -f $TestName) -ForegroundColor DarkGray
 }
 
 # Vero quando il file esiste.
@@ -124,23 +162,24 @@ Report 'C2' 'mv pubblica la posizione senza la salute' `
     (Test-TextUnder 'tests' 'MoveReportsPositionWithoutHealth') `
     'test MoveReportsPositionWithoutHealth'
 
-Report 'C7' 'stat porta gli MP massimi' `
+ReportCard 'C7' 'stat porta gli MP massimi' `
+    (Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'int? MaxMp') `
     (Test-TextUnder 'tests' 'StatCarriesMaxMp') `
-    'test StatCarriesMaxMp'
+    'int? MaxMp su PlayerVitals' 'StatCarriesMaxMp'
 
-Report 'C6' 'cond legge la velocita'' del giocatore' `
-    ((Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'PlayerMovementSpeed') -and
-     (Test-TextUnder 'tests' 'CondReadsSpeedForPlayerOnly')) `
-    'DecodedObservations.PlayerMovementSpeed e il test CondReadsSpeedForPlayerOnly'
+ReportCard 'C6' 'cond legge la velocita'' del giocatore' `
+    (Test-TextIn 'src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs' 'PlayerMovementSpeed') `
+    (Test-TextUnder 'tests' 'CondReadsSpeedForPlayerOnly') `
+    'DecodedObservations.PlayerMovementSpeed' 'CondReadsSpeedForPlayerOnly'
 
 # C5 (sr) e' ritirata e C8 (lev) rinviata: vedi docs/TASKS_CURSOR.md. Non sono
 # contate fra le schede aperte, perche' un elenco che chiede lavoro deciso di
 # non fare smette di essere un elenco di cui fidarsi.
 
-Report 'C1' 'TargetFrameReader legge il riquadro bersaglio' `
-    ((Test-FilePresent 'src/NosAi.Runtime/Perception/TargetFrameReader.cs') -and
-     (Test-TextUnder 'tests' 'NoiseIsUnreadableNotAbsent')) `
-    'TargetFrameReader.cs e il test NoiseIsUnreadableNotAbsent'
+ReportCard 'C1' 'TargetFrameReader legge il riquadro bersaglio' `
+    (Test-FilePresent 'src/NosAi.Runtime/Perception/TargetFrameReader.cs') `
+    (Test-TextUnder 'tests' 'NoiseIsUnreadableNotAbsent') `
+    'TargetFrameReader.cs' 'NoiseIsUnreadableNotAbsent'
 
 # Il nome esatto dell'ADR non e' fissato in anticipo: conta che esista.
 $adr18 = @(Get-ChildItem -LiteralPath (Join-Path $repo 'docs/adr') -Filter 'ADR-0018-*.md' -ErrorAction SilentlyContinue)
@@ -166,10 +205,10 @@ Report 'F2-3' 'coordinate di gioco -> pixel, calibrate' `
     (Test-FilePresent 'src/NosAi.Runtime/Perception/ScreenProjection.cs') `
     'ScreenProjection.cs'
 
-Report 'C3' 'KeybindMap legge gli slot dell''operatore' `
-    ((Test-FilePresent 'src/NosAi.Runtime/LowLevel/KeybindMap.cs') -and
-     (Test-TextUnder 'tests' 'MissingFileIsRefusedNotEmpty')) `
-    'KeybindMap.cs e il test MissingFileIsRefusedNotEmpty'
+ReportCard 'C3' 'KeybindMap legge gli slot dell''operatore' `
+    (Test-FilePresent 'src/NosAi.Runtime/LowLevel/KeybindMap.cs') `
+    (Test-TextUnder 'tests' 'MissingFileIsRefusedNotEmpty') `
+    'KeybindMap.cs' 'MissingFileIsRefusedNotEmpty'
 
 # -----------------------------------------------------------------------------
 Write-Head 'F3 e F4 - esecuzione e verifica'
@@ -178,10 +217,10 @@ Report 'F3-1' 'InputActionEffector applica l''azione al client' `
     (Test-FilePresent 'src/NosAi.Runtime/Gate3/InputActionEffector.cs') `
     'InputActionEffector.cs'
 
-Report 'C4' 'NetworkWorldStateObserver rilegge lo stato' `
-    ((Test-FilePresent 'src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs') -and
-     (Test-TextUnder 'tests' 'UnobservedProviderDoesNotBecomeZero')) `
-    'NetworkWorldStateObserver.cs e il test UnobservedProviderDoesNotBecomeZero'
+ReportCard 'C4' 'NetworkWorldStateObserver rilegge lo stato' `
+    (Test-FilePresent 'src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs') `
+    (Test-TextUnder 'tests' 'UnobservedProviderDoesNotBecomeZero') `
+    'NetworkWorldStateObserver.cs' 'UnobservedProviderDoesNotBecomeZero'
 
 Report 'F4-1b' 'gli MP massimi sono pubblicati sullo snapshot' `
     (Test-TextIn 'src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs' 'maxMp') `
@@ -220,10 +259,13 @@ if ($Test) {
 # -----------------------------------------------------------------------------
 Write-Head 'Riepilogo'
 
-$totale = $script:Done + $script:Open
-Write-Host ("  schede con l'artefatto presente: {0} su {1}" -f $script:Done, $totale)
+$totale = $script:Done + $script:Partial + $script:Open
+Write-Host ("  schede chiuse:                {0} su {1}" -f $script:Done, $totale) -ForegroundColor Green
+if ($script:Partial -gt 0) {
+    Write-Host ("  con il solo test da nominare: {0}" -f $script:Partial) -ForegroundColor DarkCyan
+}
 if ($script:Open -gt 0) {
-    Write-Host ("  schede ancora aperte:            {0}" -f $script:Open) -ForegroundColor Yellow
+    Write-Host ("  ancora aperte:                {0}" -f $script:Open) -ForegroundColor Yellow
 }
 
 Write-Head 'Cio'' che questo script non puo'' dirti'
