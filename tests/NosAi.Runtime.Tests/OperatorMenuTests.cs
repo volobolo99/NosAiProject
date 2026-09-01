@@ -189,6 +189,41 @@ public sealed class OperatorMenuTests
         Assert.Contains("RUNDIR", Assert.Single(launching), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ATranscriptEntryNamesWhatRanWhenAndHowItEnded()
+    {
+        string entry = OperatorMenu.FormatEntry(
+            "Prova della cella su cui sei",
+            0,
+            "map=2 160x180 player=66,5" + Environment.NewLine,
+            new DateTime(2026, 9, 2, 1, 15, 0));
+
+        Assert.Contains("2026-09-02 01:15:00", entry, StringComparison.Ordinal);
+        Assert.Contains("Prova della cella su cui sei", entry, StringComparison.Ordinal);
+        Assert.Contains("map=2 160x180 player=66,5", entry, StringComparison.Ordinal);
+        Assert.Contains("esito: 0", entry, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OutputWithoutATrailingNewlineDoesNotSwallowTheVerdict()
+    {
+        // A probe that ends mid-line would otherwise leave "esito:" glued to its
+        // last word, which is exactly the line someone reads to know what happened.
+        string entry = OperatorMenu.FormatEntry(
+            "sonda", 1, "ultima riga senza a capo", new DateTime(2026, 9, 2, 1, 15, 0));
+
+        string[] lines = entry.Split(Environment.NewLine);
+
+        Assert.Contains("ultima riga senza a capo", lines);
+        Assert.Contains("esito: 1", lines);
+    }
+
+    [Fact]
+    public void TheTranscriptLivesBesideTheOtherOperatorData()
+    {
+        Assert.StartsWith("data/", OperatorMenu.TranscriptPath, StringComparison.Ordinal);
+    }
+
     private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -56,6 +56,20 @@ public readonly record struct MapIdProgress(
 public static class OperatorMenu
 {
     /// <summary>
+    /// Where every action's output is kept, verbatim.
+    /// </summary>
+    /// <remarks>
+    /// A console scrolls and then it is gone, so the outcome of a run existed
+    /// only for as long as the operator could see it - and reporting it meant
+    /// retyping it. The transcript is what makes an outcome readable after the
+    /// fact by anyone, including whoever is writing the code it came from.
+    /// </remarks>
+    public const string TranscriptPath = "data/banco.log";
+
+    /// <summary>Past this size the transcript starts again, keeping nothing.</summary>
+    private const long TranscriptLimitBytes = 2 * 1024 * 1024;
+
+    /// <summary>
     /// The one thing to do next, given where the proof has got to.
     /// </summary>
     /// <remarks>
@@ -284,6 +298,8 @@ public static class OperatorMenu
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Tutto qui dentro e' in sola lettura: niente muove il personaggio.");
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"Ogni esito finisce in {Path.GetFullPath(TranscriptPath)}"));
         Console.WriteLine();
     }
 
@@ -353,9 +369,15 @@ public static class OperatorMenu
     {
         Console.WriteLine();
         Console.WriteLine($"=== {title} ===");
+
+        TextWriter console = Console.Out;
+        TextWriter error = Console.Error;
+        var captured = new StringWriter(CultureInfo.InvariantCulture);
         int code;
         try
         {
+            Console.SetOut(new TeeTextWriter(console, captured));
+            Console.SetError(new TeeTextWriter(error, captured));
             code = action();
         }
         catch (Exception ex)
@@ -365,10 +387,92 @@ public static class OperatorMenu
             Console.WriteLine($"[ERRORE] {ex.GetType().Name}: {ex.Message}");
             code = 3;
         }
+        finally
+        {
+            Console.SetOut(console);
+            Console.SetError(error);
+        }
 
         Console.WriteLine();
         Console.WriteLine(code == 0 ? "esito: riuscito (0)" : $"esito: non concluso ({code})");
+        Record(title, code, captured.ToString());
         Pause();
+    }
+
+    /// <summary>One transcript entry: what was run, when, what it said, how it ended.</summary>
+    internal static string FormatEntry(string title, int code, string output, DateTime at)
+    {
+        var entry = new StringBuilder();
+        entry.Append("=== ")
+             .Append(at.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))
+             .Append(" - ").Append(title).AppendLine(" ===");
+        entry.Append(output);
+        if (output.Length > 0 && !output.EndsWith(Environment.NewLine, StringComparison.Ordinal))
+            entry.AppendLine();
+        entry.Append("esito: ").AppendLine(code.ToString(CultureInfo.InvariantCulture));
+        entry.AppendLine();
+        return entry.ToString();
+    }
+
+    private static void Record(string title, int code, string output)
+    {
+        try
+        {
+            string? directory = Path.GetDirectoryName(TranscriptPath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+
+            // Starting again beats trimming: a half-truncated entry reads like a
+            // run that stopped, which is a thing that can actually happen.
+            if (File.Exists(TranscriptPath) && new FileInfo(TranscriptPath).Length > TranscriptLimitBytes)
+                File.Delete(TranscriptPath);
+
+            File.AppendAllText(TranscriptPath, FormatEntry(title, code, output, DateTime.Now));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The transcript is a convenience. Losing it must not lose the run.
+            Console.WriteLine($"(esito non registrato: {ex.GetType().Name})");
+        }
+    }
+
+    /// <summary>Writes to the console and to the transcript at the same time.</summary>
+    private sealed class TeeTextWriter : TextWriter
+    {
+        private readonly TextWriter _console;
+        private readonly TextWriter _capture;
+
+        public TeeTextWriter(TextWriter console, TextWriter capture)
+        {
+            _console = console;
+            _capture = capture;
+        }
+
+        public override Encoding Encoding => _console.Encoding;
+
+        public override void Write(char value)
+        {
+            _console.Write(value);
+            _capture.Write(value);
+        }
+
+        public override void Write(string? value)
+        {
+            _console.Write(value);
+            _capture.Write(value);
+        }
+
+        public override void WriteLine(string? value)
+        {
+            _console.WriteLine(value);
+            _capture.WriteLine(value);
+        }
+
+        public override void Flush()
+        {
+            _console.Flush();
+            _capture.Flush();
+        }
     }
 
     private static void Pause()
