@@ -23,20 +23,38 @@
 
 ## 3. SOFTWARE ARCHITECTURE (MODULAR & COMPARTMENTALIZED)
 - **Model-View-Controller (MVC) Decoupling:**
-  - `VisionEngine (View)`: Handles high-speed window capture via win32 API or
-    DXCAM, converting pixel buffers into clean NumPy arrays. No business logic
-    allowed here.
-  - `DecisionMatrix (Model)`: Implements the state machine, predictive models,
-    probability trees, and learning matrices. Pure math, zero OS-level
-    dependencies.
-  - `InputEmulator (Controller)`: Handles low-level hardware virtualization
-    (DirectInput/Scancodes via Interception driver or SendMessage APIs). Must
-    isolate all timing configuration behind one boundary rather than scattering
-    it across call sites.
-- **Black-Box Supervision:** The framework must not hook into the target process
-  memory. It operates purely as a black-box supervisor via vision and
-  keyboard/mouse simulation - the less invasive of the available designs, and the
-  one that keeps perception honest about what it can actually observe.
+  - `Perception (View)`: Handles high-speed window capture through the Win32 and
+    DXGI duplication interop in `src/NosAi.Runtime/Perception/`, turning pixel
+    buffers into frames and classified readings. No business logic allowed here.
+  - `Decision (Model)`: Implements the state machine, predictive models,
+    probability trees, and learning matrices, in `src/NosAi.Runtime/Gate3/` and
+    the autonomy pipeline. Pure logic, zero OS-level dependencies.
+  - `Input (Controller)`: Handles low-level hardware virtualization behind
+    `IInputBackend` (`src/NosAi.Runtime/LowLevel/`). Must isolate all timing
+    configuration behind one boundary rather than scattering it across call
+    sites, and must reach the OS through `GatedInputBackend`, never through
+    `Win32InputBackend` directly.
+- **The operator chooses the data path.** ADR-0014 lifted the earlier ban on
+  reading the target process memory. Capturing and decoding the client's traffic,
+  reading its memory, and driving it through input are all available, chosen on
+  their merits. Reading memory is the path chosen for the player's own position:
+  the wire does not carry it, and the minimap yields a ratio, not a coordinate.
+- **Every source carries its own validity check.** A wire value is `LIVE` only
+  while its framing verifies; a memory value only while a bounded range,
+  continuity against the previous read, or a known signature holds; a screen
+  value stays `DERIVED` with its confidence. A read that fails its check is
+  `UNKNOWN` - never the last good value, never a plausible-looking number. This
+  is the requirement ADR-0012 was right about, and widening the inputs does not
+  relax it.
+- **No source acquires the right to act.** Every path feeds the same
+  `Observe -> WorldState -> Decision -> Safety -> Execute -> Verify` sequence, and
+  Safety still refuses what it must (ADR-0003). Widening the input does not widen
+  the authority.
+- **Detection evasion stays out** (ADR-0014, *Detection evasion*). Making the
+  runtime hard for an anti-cheat to notice is aimed at defeating someone else's
+  security control, which is a different activity from reading data or driving a
+  client. This is one named technique left out, not a reinstated category:
+  everything else above is available.
 
 ## 4. CRITICAL PATH & SAFETY INVARIANTS
 - **Mandatory ordering.** No LLM or decision provider may execute actions
@@ -54,6 +72,10 @@
 - **Fail closed** wherever safety depends on the outcome.
 
 ## 5. IMPLEMENTATION LANGUAGE
-- Runtime, protocol and client: C# / .NET 8, strongly typed.
-- Perception, tactical decision and simulation layers: Python, strictly typed.
+- Runtime, protocol, perception, tactical decision, simulation and client:
+  C# / .NET 8, strongly typed. Perception is `src/NosAi.Runtime/Perception/`,
+  decision is `src/NosAi.Runtime/Gate3/`; new work on either belongs there, in C#.
+- Python under `nosai/` covers research, prototyping and tooling, and is kept as
+  such by `docs/CSHARP_MIGRATION.md`. It is not where a production perception or
+  decision boundary is written.
 - Architectural principles: SOLID, DRY, KISS.
