@@ -114,7 +114,7 @@ public static partial class NetworkObservationTestRunner
         return sighting.EntityId == 4242
             && Math.Abs(sighting.X - 300) < 1e-9
             && Math.Abs(sighting.Y - 450) < 1e-9
-            && Math.Abs(sighting.HpRatio - 0.75) < 1e-9;
+            && sighting.HpRatio is { } hp && Math.Abs(hp - 0.75) < 1e-9;
     }
 
     private static bool TestUnmappedOpcodeDecodesNothing()

@@ -299,16 +299,35 @@ public sealed class GameplayFreshnessTests
 
     /// <summary>
     /// The idle recording is the whole argument: 2468 movement packets, not one
-    /// <c>in</c> or <c>st</c>, so nothing the decoder can turn into a sighting —
-    /// and the screen was full of monsters throughout. A zero there would have
-    /// been a confident wrong answer on every poll.
+    /// <c>in</c> or <c>st</c>, and the screen was full of monsters throughout. A
+    /// zero there would have been a confident wrong answer on every poll — and
+    /// so, in the other direction, was the UNKNOWN this used to report, because a
+    /// move does locate an entity. It is the health it says nothing about, and a
+    /// sighting can now say that much and no more.
+    /// </summary>
+    [Fact]
+    public void A_batch_of_moves_counts_the_entities_it_located()
+    {
+        (ScriptedSource wire, _, NetworkGameplayProvider provider) = Chain();
+        wire.Send("stat 7305 7305 1420 1420 0 1184");
+        wire.Send("mv 3 3194 121 110 5");           // no prior spawn: position only
+
+        GameplayObservation observation = provider.Observe();
+
+        Assert.True(observation.HasVitals);
+        Assert.True(observation.EntitiesInView.HasValue);
+        Assert.Equal(1, observation.EntitiesInView.Value);
+    }
+
+    /// <summary>
+    /// A batch that mentions no entity at all is still UNKNOWN, not zero: an
+    /// empty screen and a channel that decoded nothing look identical from here.
     /// </summary>
     [Fact]
     public void A_batch_that_mentions_no_entity_reports_unknown_not_zero()
     {
         (ScriptedSource wire, _, NetworkGameplayProvider provider) = Chain();
         wire.Send("stat 7305 7305 1420 1420 0 1184");
-        wire.Send("mv 3 3194 121 110 5");           // no prior spawn: no sighting
 
         GameplayObservation observation = provider.Observe();
 
@@ -333,7 +352,7 @@ public sealed class GameplayFreshnessTests
         EntitySighting moved = Assert.Single(
             decoder.Decode(Packet("mv 3 3194 121 110 5", DataSourceKind.Live)).Sightings);
 
-        Assert.Equal(0.80, moved.HpRatio, 9);
+        Assert.Equal(0.80, moved.HpRatio!.Value, 9);
         Assert.Equal(DataSourceKind.Cached, moved.Source);
     }
 
@@ -347,7 +366,7 @@ public sealed class GameplayFreshnessTests
         EntitySighting seen = Assert.Single(
             decoder.Decode(Packet("st 3 313816 8 0 66 100 198 52 310 52 0", DataSourceKind.Live)).Sightings);
 
-        Assert.Equal(198.0 / 310.0, seen.HpRatio, 9);
+        Assert.Equal(198.0 / 310.0, seen.HpRatio!.Value, 9);
         Assert.Equal(DataSourceKind.Cached, seen.Source);
     }
 

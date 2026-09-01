@@ -33,10 +33,30 @@ public enum GameEventKind : byte
 }
 
 /// <summary>An entity seen on the wire, carried into the world model.</summary>
-public sealed record EntitySighting(long EntityId, string Kind, double X, double Y, double HpRatio, DataSourceKind Source)
+/// <param name="HpRatio">
+/// The entity's health as a fraction of its maximum, or null when the wire said
+/// where it is without saying how it is. That is the ordinary case, not the
+/// exception: <c>mv</c> carries a position and no health at all, and 7685 of the
+/// 8211 packets in the capture are <c>mv</c>. A sentinel such as -1, or a
+/// <c>bool HasHp</c> beside a real double, would leave every caller free to read
+/// a number that was never observed; an absent field is what
+/// <see cref="ClassifiedValue{T}"/> asserts everywhere else in this project.
+/// </param>
+public sealed record EntitySighting(long EntityId, string Kind, double X, double Y, double? HpRatio, DataSourceKind Source)
 {
-    /// <summary>Projects into the perception Detection consumed by the world model.</summary>
-    public Detection ToDetection() => new(Kind, X, Y, HpRatio);
+    /// <summary>
+    /// Projects into the perception Detection consumed by the world model, or
+    /// null when this sighting carries no health.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Detection"/> is shared with screen perception, where health is
+    /// always read alongside the box, so its HP is not optional. Filling it with
+    /// zero here would tell the world model it saw a mob at zero HP, which is a
+    /// mob it believes to be dead. The caller handles the absence instead;
+    /// <see cref="Detection"/> is a struct, so the nullable costs nothing and the
+    /// source that always has health keeps producing a value every time.
+    /// </remarks>
+    public Detection? ToDetection() => HpRatio is { } hp ? new Detection(Kind, X, Y, hp) : null;
 }
 
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>

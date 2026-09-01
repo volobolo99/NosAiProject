@@ -1,6 +1,13 @@
 namespace NosAi.Runtime.WorldModel;
 
-public sealed record EntityState(string Id, string Kind, double X, double Y, double HpRatio);
+/// <param name="HpRatio">
+/// Health as a fraction of the maximum, or null when the entity was seen without
+/// it. The wire routinely reports a position with no health (an <c>mv</c> packet
+/// carries nothing else), and a zero here would read as a dead mob to anything
+/// that plans on this state. Screen perception, which always reads health beside
+/// the box, keeps filling it in.
+/// </param>
+public sealed record EntityState(string Id, string Kind, double X, double Y, double? HpRatio);
 
 public sealed record WorldState(
     long Tick,

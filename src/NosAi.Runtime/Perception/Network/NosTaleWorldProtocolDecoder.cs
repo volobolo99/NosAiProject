@@ -162,9 +162,11 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     }
 
     /// <summary>
-    /// <c>mv type id x y speed</c> — position update. HP is not on this packet;
-    /// a sighting is emitted only when a previous <c>in</c>/<c>st</c> already
-    /// supplied one, so a move of an unseen entity does not invent full health.
+    /// <c>mv type id x y speed</c> — position update. HP is not on this packet,
+    /// so the sighting carries a health of null unless a previous <c>in</c> or
+    /// <c>st</c> supplied one. A move of an entity never seen with health is
+    /// still a sighting: it says where, and says nothing about how healthy,
+    /// rather than inventing full health or being dropped.
     /// </summary>
     private DecodedObservations DecodeMove(string[] fields, DataSourceKind source)
     {
@@ -178,11 +180,12 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
         _entities[entityId] = previous with { X = x, Y = y, HasPosition = true };
 
-        if (!previous.HasHp)
-            return DecodedObservations.Empty;
-
-        // Fresh position, and health from whichever packet last carried one.
-        return Sighting(entityId, x, y, previous.HpRatio, Stale(source));
+        // With health from an earlier packet the position is fresh and the health
+        // is not, so the sighting is marked stale. With no health at all there is
+        // nothing stale mixed in, and the packet keeps its own provenance.
+        return previous.HasHp
+            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source))
+            : Sighting(entityId, x, y, null, source);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
@@ -215,7 +218,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     }
 
     private static DecodedObservations Sighting(
-        long entityId, double x, double y, double hpRatio, DataSourceKind source)
+        long entityId, double x, double y, double? hpRatio, DataSourceKind source)
         => new(
             ImmutableArray.Create(new EntitySighting(entityId, "Monster", x, y, hpRatio, source)),
             ImmutableArray<GameEvent>.Empty);

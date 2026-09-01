@@ -248,20 +248,27 @@ Not available from the server, and needing the confirming source:
   does not. `HasTarget` is the one worth establishing next: it is what separates
   reacting to one's own health from fighting.
 
-## What the runtime does not read, and why the numbers look thin
+## What the runtime does not read
 
 Replaying the combat capture through the shipping decoder
 (`WinDivertProbe.exe --world data/nostale_combat.noscap`) reports 7942 of 8211
-packets carrying an opcode it reads — and only 629 of them producing an
-observation. The gap is not a bug, and it is worth stating so nobody chases it:
+packets carrying an opcode it reads, and 7741 sightings across 164 distinct
+entities, with 287 packets producing no observation at all. The same replay
+reported 629 packets producing an observation while a sighting had to carry
+health; letting a sighting state a position without one is what closed the gap.
+What is left out is left out on purpose, and it is worth stating so nobody
+chases it:
 
-- **`mv` dominates the wire and mostly yields nothing.** 7685 of 8211 packets are
-  movements, but a movement carries no health, and `EntitySighting` has no room
-  for "position known, health unknown". Filling that in with full health would be
-  an invented observation. So a moving entity becomes a sighting only once an
-  `in` or an `st` has said what its health is — and a capture that starts
-  mid-session has 25 `in` and 49 `st` against those 7685 `mv`. Everything already
-  on screen when the capture began stays unreported until something mentions it.
+- **`mv` dominates the wire and carries no health.** 7685 of 8211 packets are
+  movements. `EntitySighting.HpRatio` is nullable, so a movement now produces a
+  sighting that says where the entity is and says nothing about its health;
+  filling that in with full health, or with a zero, would have been an invented
+  observation, and dropping the packet threw away the position along with it.
+  Health still comes only from `in` or `st`, and a capture that starts
+  mid-session has 25 `in` and 49 `st` against those 7685 `mv` — so most entities
+  are located long before their health is ever known.
+  `EntitySighting.ToDetection()` returns null for such a sighting rather than a
+  `Detection` at zero HP, because zero HP is a dead mob to the world model.
 - **Entity types other than 3 are refused** in `in`, `mv` and `st`. The shapes
   above are type 3's; type 1 is confirmed only in `su`, `cond` and `sayi`, and
   type 2 was never observed. Reading a type-1 `in` at these positions would take

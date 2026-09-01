@@ -112,16 +112,23 @@ public sealed class NetworkWorldFeed
         {
             context.With("player.hp_ratio", Classify((double)vitals.Hp / vitals.MaxHp, vitals.Source));
         }
-        else if (report.Sightings.FirstOrDefault(s => s.EntityId == 0) is { } player)
+        else if (report.Sightings.FirstOrDefault(s => s.EntityId == 0) is { HpRatio: { } playerHp } player)
         {
             // A channel whose decoder does sight the player keeps working.
-            context.With("player.hp_ratio", Classify(player.HpRatio, player.Source));
+            context.With("player.hp_ratio", Classify(playerHp, player.Source));
         }
         else
         {
-            context.WithUnknown("player.hp_ratio", report.VitalsReadable
-                ? "player_vitals_not_in_batch"
-                : "player_not_sighted");
+            // A sighting of the player without health is a distinct case from not
+            // sighting the player at all, and the reason says which it was: the
+            // one is fixed by mapping the health field, the other by finding the
+            // player on the wire.
+            bool sightedWithoutHp = report.Sightings.Any(s => s.EntityId == 0);
+            context.WithUnknown("player.hp_ratio", sightedWithoutHp
+                ? "player_hp_not_observed"
+                : report.VitalsReadable
+                    ? "player_vitals_not_in_batch"
+                    : "player_not_sighted");
         }
 
         var monsters = report.Sightings.Where(s => s.EntityId != 0).ToArray();
@@ -130,7 +137,11 @@ public sealed class NetworkWorldFeed
         if (currentTargetId is { } targetId)
         {
             EntitySighting? target = monsters.FirstOrDefault(s => s.EntityId == targetId);
-            if (target is not null) context.With("target.hp_ratio", Classify(target.HpRatio, target.Source));
+            // Seen but without health is not the same fact as not seen, and it is
+            // certainly not health of zero: an mv packet locates the target and
+            // says nothing about its condition.
+            if (target is { HpRatio: { } targetHp }) context.With("target.hp_ratio", Classify(targetHp, target.Source));
+            else if (target is not null) context.WithUnknown("target.hp_ratio", "target_hp_not_observed");
             else context.WithUnknown("target.hp_ratio", "target_not_sighted");
         }
         else

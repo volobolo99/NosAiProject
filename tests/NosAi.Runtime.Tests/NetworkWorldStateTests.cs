@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.Perception.Network;
 using Xunit;
 
@@ -85,6 +86,73 @@ public sealed class NetworkWorldStateTests
     {
         Assert.False(Observer().TryToWorldState(Report(DataSourceKind.Unknown), out _, out string? reason));
         Assert.Equal("no_network_observation", reason);
+    }
+
+    /// <summary>
+    /// A sighting with no health must never become a detection at zero. Zero is
+    /// the reading a world model treats as a dead mob, and it is the value a
+    /// sentinel or a default would have produced here.
+    /// </summary>
+    [Fact]
+    public void A_sighting_without_health_projects_to_no_detection_at_all()
+    {
+        var seen = new EntitySighting(101, "Monster", 30, 40, null, DataSourceKind.Live);
+
+        Assert.Null(seen.ToDetection());
+    }
+
+    /// <summary>The source that always has health keeps producing one every time.</summary>
+    [Fact]
+    public void A_sighting_with_health_still_projects_to_a_detection()
+    {
+        var seen = new EntitySighting(101, "Monster", 30, 40, 0.9, DataSourceKind.Live);
+
+        Detection? projected = seen.ToDetection();
+
+        Assert.True(projected.HasValue);
+        Detection detection = projected!.Value;
+        Assert.Equal("Monster", detection.Kind);
+        Assert.Equal(30, detection.X);
+        Assert.Equal(40, detection.Y);
+        Assert.Equal(0.9, detection.HpRatio, 9);
+    }
+
+    /// <summary>
+    /// The whole point of the change: the entity reaches the world model on the
+    /// strength of its position, and its health arrives as unknown rather than as
+    /// a zero nothing downstream could tell from an observation.
+    /// </summary>
+    [Fact]
+    public void An_entity_seen_without_health_keeps_its_position_in_the_world_state()
+    {
+        NetworkObservationReport report = Report(
+            DataSourceKind.Live,
+            new EntitySighting(0, "Player", 10, 20, 0.6, DataSourceKind.Live),
+            new EntitySighting(101, "Monster", 30, 40, null, DataSourceKind.Live));
+
+        Assert.True(Observer().TryToWorldState(report, out var world, out _));
+
+        NosAi.Runtime.WorldModel.EntityState entity = Assert.Single(world.Entities);
+        Assert.Equal("Monster#101", entity.Id);
+        Assert.Equal(30, entity.X);
+        Assert.Equal(40, entity.Y);
+        Assert.Null(entity.HpRatio);
+    }
+
+    /// <summary>
+    /// A player sighted without health is not a player at zero health, and not a
+    /// player who was never sighted either: the fold refuses, as it does for any
+    /// health it cannot read.
+    /// </summary>
+    [Fact]
+    public void A_player_sighted_without_health_yields_no_state_at_all()
+    {
+        NetworkObservationReport report = Report(
+            DataSourceKind.Live,
+            new EntitySighting(0, "Player", 10, 20, null, DataSourceKind.Live));
+
+        Assert.False(Observer().TryToWorldState(report, out _, out string? reason));
+        Assert.Equal("player_not_sighted", reason);
     }
 
     [Fact]

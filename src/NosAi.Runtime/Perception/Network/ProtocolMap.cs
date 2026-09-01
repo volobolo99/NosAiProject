@@ -277,9 +277,13 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
             hpKnown = true;
         }
 
+        // A map that does not name the health field yields a sighting without
+        // health, not one at full health: 1.0 was the placeholder this local
+        // needed to exist, never a reading.
         var sightings = ImmutableArray<EntitySighting>.Empty;
         if (spec.Kind is GameEventKind.EntitySighting or GameEventKind.CombatHit)
-            sightings = ImmutableArray.Create(new EntitySighting(entityId, spec.EntityKind, x, y, hpRatio, source));
+            sightings = ImmutableArray.Create(
+                new EntitySighting(entityId, spec.EntityKind, x, y, hpKnown ? hpRatio : null, source));
 
         var events = ImmutableArray<GameEvent>.Empty;
         if (spec.Kind is not GameEventKind.EntitySighting)

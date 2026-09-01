@@ -251,15 +251,26 @@ public sealed class NosTaleWorldObservationTests
             decoder.Decode(Ascii("st 3 313816 8 0 66 100 198 52 310 52 0")).Sightings);
 
         Assert.Equal(313816, sighting.EntityId);
-        Assert.Equal(198.0 / 310.0, sighting.HpRatio, 9);
+        Assert.Equal(198.0 / 310.0, sighting.HpRatio!.Value, 9);
         Assert.NotEqual(0.66, sighting.HpRatio);
     }
 
+    /// <summary>
+    /// The move says where and says nothing about health, and the sighting now
+    /// says exactly that. Before, the only way to avoid inventing full health was
+    /// to throw the packet away, which cost the position too.
+    /// </summary>
     [Fact]
-    public void A_move_without_a_prior_spawn_does_not_invent_full_health()
+    public void A_move_without_a_prior_spawn_reports_the_position_and_no_health()
     {
-        Assert.True(new NosTaleWorldProtocolDecoder()
-            .Decode(Ascii("mv 3 3194 121 110 5")).IsEmpty);
+        EntitySighting moved = Assert.Single(new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("mv 3 3194 121 110 5")).Sightings);
+
+        Assert.Equal(3194, moved.EntityId);
+        Assert.Equal(121, moved.X);
+        Assert.Equal(110, moved.Y);
+        Assert.Null(moved.HpRatio);
+        Assert.Null(moved.ToDetection());
     }
 
     [Fact]
@@ -274,7 +285,7 @@ public sealed class NosTaleWorldObservationTests
         Assert.Equal(3194, moved.EntityId);
         Assert.Equal(121, moved.X);
         Assert.Equal(110, moved.Y);
-        Assert.Equal(0.80, moved.HpRatio, 9);
+        Assert.Equal(0.80, moved.HpRatio!.Value, 9);
     }
 
     [Fact]
@@ -288,7 +299,12 @@ public sealed class NosTaleWorldObservationTests
         Assert.Equal(GameEventKind.EntityDeath, death.Kind);
         Assert.Equal(313820, death.EntityId);
 
-        Assert.True(decoder.Decode(Ascii("mv 3 313820 111 64 5")).IsEmpty);
+        // The death forgets the health the spawn carried. A later move under the
+        // same id is a position with no health, not the dead entity's last HP
+        // attached to a new one.
+        EntitySighting afterDeath = Assert.Single(
+            decoder.Decode(Ascii("mv 3 313820 111 64 5")).Sightings);
+        Assert.Null(afterDeath.HpRatio);
     }
 
     [Fact]

@@ -62,6 +62,19 @@ public sealed class NetworkWorldFeedVitalsTests
             System.Collections.Immutable.ImmutableArray<GameEvent>.Empty);
     }
 
+    /// <summary>A decoder that sights the player but never reads its health.</summary>
+    private sealed class PlayerSightingWithoutHealthDecoder : IGamePacketDecoder
+    {
+        public string ProtocolName => "test-player-sighting-no-health";
+        public bool ReadsPlayerVitals => false;
+        public bool CanDecode(ObservedPacket packet) => true;
+
+        public DecodedObservations Decode(ObservedPacket packet) => new(
+            System.Collections.Immutable.ImmutableArray.Create(
+                new EntitySighting(0, "Player", 10, 20, null, packet.Source)),
+            System.Collections.Immutable.ImmutableArray<GameEvent>.Empty);
+    }
+
     private static NetworkWorldFeed Feed(ScriptedSource wire, IGamePacketDecoder? decoder = null)
         => new(new GameTrafficObserver(
             wire, new ScopedGameTrafficFilter(Endpoint), decoder ?? new NosTaleWorldProtocolDecoder()));
@@ -96,7 +109,7 @@ public sealed class NetworkWorldFeedVitalsTests
 
         NosAi.Runtime.WorldModel.EntityState entity = Assert.Single(state.Entities);
         Assert.Equal(109, entity.X);
-        Assert.Equal(0.80, entity.HpRatio, 6);
+        Assert.Equal(0.80, entity.HpRatio!.Value, 6);
     }
 
     /// <summary>
@@ -191,6 +204,51 @@ public sealed class NetworkWorldFeedVitalsTests
         var wire = new ScriptedSource(DataSourceKind.Live);
         wire.Send("in 3 36 313816 109 63 2 80 100");
         NetworkWorldFeed feed = Feed(wire);
+        feed.Poll();
+
+        DecisionContext context = feed.ToDecisionContext();
+
+        Assert.Contains("player.hp_ratio", context.FactNames);
+        Assert.False(context.TryRead("player.hp_ratio", out double hp, out DataSourceKind source));
+        Assert.Equal(DataSourceKind.Unknown, source);
+        Assert.Equal(0, hp);
+    }
+
+    /// <summary>
+    /// The target was located and its health was not read, which is neither
+    /// "target not sighted" nor health of zero. The reason names which of the two
+    /// it is, because they are fixed in different places.
+    /// </summary>
+    [Fact]
+    public void A_target_seen_without_health_is_unknown_with_its_own_reason()
+    {
+        var wire = new ScriptedSource(DataSourceKind.Live);
+        wire.Send("stat 3652 7305 1420 1420 0 1184");
+        wire.Send("mv 3 313816 109 63 5");           // no prior spawn: position only
+        NetworkWorldFeed feed = Feed(wire);
+        feed.Poll();
+
+        DecisionContext context = feed.ToDecisionContext(currentTargetId: 313816);
+
+        Assert.Contains("target.hp_ratio", context.FactNames);
+        Assert.False(context.TryRead("target.hp_ratio", out double hp, out DataSourceKind source));
+        Assert.Equal(DataSourceKind.Unknown, source);
+        Assert.Equal(0, hp);
+        // And the entity was still counted: the position is the part that was read.
+        Assert.True(context.TryRead("monsters.count", out double monsters, out _));
+        Assert.Equal(1, monsters);
+    }
+
+    /// <summary>
+    /// A decoder that sights the player without health does not report the player
+    /// as missing: it was found, and its health was not.
+    /// </summary>
+    [Fact]
+    public void A_player_sighted_without_health_says_the_health_was_not_observed()
+    {
+        var wire = new ScriptedSource(DataSourceKind.Live);
+        wire.Send("anything");
+        NetworkWorldFeed feed = Feed(wire, new PlayerSightingWithoutHealthDecoder());
         feed.Poll();
 
         DecisionContext context = feed.ToDecisionContext();
