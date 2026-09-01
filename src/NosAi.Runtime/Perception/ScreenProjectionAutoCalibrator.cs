@@ -253,8 +253,13 @@ public static class ScreenProjectionAutoCalibrator
                 return 1;
             }
 
+            // The scale the fit is being made at. Read from the window rather than
+            // assumed, and stored beside the client size, because the two together are
+            // the shape a later projection has to still be looking at.
+            GeometryEpoch epoch = GeometryEpoch.Read(window.Handle);
+
             if (!Solve(samples, area, out ScreenProjectionCalibration calibration,
-                    out int dropped, out string? solveFailure))
+                    out int dropped, out string? solveFailure, clientDpi: epoch.Dpi))
             {
                 Console.WriteLine($"[REFUSED] {solveFailure}");
                 Console.WriteLine("  Nothing was written. The old calibration, if any, is untouched.");
@@ -309,6 +314,9 @@ public static class ScreenProjectionAutoCalibrator
             // The regime is a property of how this process was launched, so the one
             // moment it can usefully be said is the moment it gets written into a
             // file that will outlive the command.
+            Console.WriteLine(calibration.ClientDpi == 0
+                ? "  Window DPI: UNKNOWN (not recorded, so a scale change cannot be detected)."
+                : $"  Window DPI {calibration.ClientDpi}. A different one is refused by name.");
             Console.WriteLine(
                 $"  Estimated under DPI awareness {calibration.Regime} ({calibration.Regime.ToWire()}).");
             Console.WriteLine(
@@ -347,7 +355,8 @@ public static class ScreenProjectionAutoCalibrator
         PixelRect area,
         out ScreenProjectionCalibration calibration,
         out int dropped,
-        out string? failureReason)
+        out string? failureReason,
+        uint clientDpi = 0)
     {
         dropped = 0;
         calibration = ScreenProjectionCalibration.Uncalibrated;
@@ -377,7 +386,8 @@ public static class ScreenProjectionAutoCalibrator
 
                 if (!ScreenProjectionCalibration.TrySolve(
                         candidateSamples, area.Width, area.Height, at,
-                        out ScreenProjectionCalibration candidate, out string? why))
+                        out ScreenProjectionCalibration candidate, out string? why,
+                        clientDpi: clientDpi))
                 {
                     firstFailure ??= why;
                     continue;

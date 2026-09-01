@@ -31,7 +31,8 @@ public sealed class ScreenProjectionRegimeTests
     private static readonly DateTime At = new(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc);
     private static readonly MapPoint Standing = new(100, 100);
 
-    private static ScreenProjectionCalibration CalibratedUnder(DpiAwarenessRegime regime)
+    private static ScreenProjectionCalibration CalibratedUnder(
+        DpiAwarenessRegime regime, uint clientDpi = 0)
     {
         const double a = 16.0, b = -16.0, c = 512.0, d = 8.0, e = 8.0, f = 380.0;
 
@@ -46,7 +47,7 @@ public sealed class ScreenProjectionRegimeTests
         Assert.True(ScreenProjectionCalibration.TrySolve(
             samples, ClientWidth, ClientHeight, At,
             out ScreenProjectionCalibration calibration, out string? reason,
-            regime: regime), reason);
+            regime: regime, clientDpi: clientDpi), reason);
 
         return calibration;
     }
@@ -55,12 +56,15 @@ public sealed class ScreenProjectionRegimeTests
         DpiAwarenessRegime calibratedUnder,
         DpiAwarenessRegime runningUnder,
         int clientWidth = ClientWidth,
-        int clientHeight = ClientHeight) =>
+        int clientHeight = ClientHeight,
+        uint calibratedDpi = 0,
+        uint currentDpi = 0) =>
         new(
-            CalibratedUnder(calibratedUnder),
+            CalibratedUnder(calibratedUnder, calibratedDpi),
             () => new PixelRect(0, 0, clientWidth, clientHeight),
             () => ClassifiedValue<MapPoint>.Live(Standing, At),
-            () => runningUnder);
+            () => runningUnder,
+            () => currentDpi);
 
     [Fact]
     public void The_same_regime_projects_normally()
@@ -174,5 +178,103 @@ public sealed class ScreenProjectionRegimeTests
 
         Assert.False(projection.TryProject(105, 100, out _, out _, out string? reason));
         Assert.Equal(CalibratedScreenProjection.ClientResizedReason, reason);
+    }
+
+    // ------------------------------------------------- the epoch's storable half
+
+    /// <summary>
+    /// The gap § 6.3 named, closed. The client rectangle is byte-for-byte the same and
+    /// the window is being drawn at a different scale, so the comparison below it has
+    /// nothing to object to and this is the only thing that sees it.
+    /// </summary>
+    [Fact]
+    public void A_scale_change_at_the_same_client_size_is_refused()
+    {
+        CalibratedScreenProjection projection = ProjectionUnder(
+            DpiAwarenessRegime.PerMonitorV2, DpiAwarenessRegime.PerMonitorV2,
+            calibratedDpi: 96, currentDpi: 120);
+
+        Assert.False(projection.TryProject(105, 100, out _, out _, out string? reason));
+        Assert.StartsWith(CalibratedScreenProjection.ClientDpiChangedReason, reason, StringComparison.Ordinal);
+        Assert.Contains("96_to_120", reason, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_same_scale_at_the_same_size_projects_normally()
+    {
+        CalibratedScreenProjection projection = ProjectionUnder(
+            DpiAwarenessRegime.PerMonitorV2, DpiAwarenessRegime.PerMonitorV2,
+            calibratedDpi: 120, currentDpi: 120);
+
+        Assert.True(projection.TryProject(105, 100, out _, out _, out string? reason), reason);
+    }
+
+    /// <summary>
+    /// A DPI nobody read is not evidence that the scale moved, so it is skipped rather
+    /// than refused. The opposite choice would ground every caller that has no window
+    /// handle to read one from, over a missing diagnostic rather than a real change.
+    /// </summary>
+    [Fact]
+    public void A_dpi_that_was_never_read_on_either_side_is_skipped_and_not_refused()
+    {
+        Assert.True(ProjectionUnder(
+                DpiAwarenessRegime.PerMonitorV2, DpiAwarenessRegime.PerMonitorV2,
+                calibratedDpi: 96, currentDpi: 0)
+            .TryProject(105, 100, out _, out _, out string? noCurrent), noCurrent);
+
+        Assert.True(ProjectionUnder(
+                DpiAwarenessRegime.PerMonitorV2, DpiAwarenessRegime.PerMonitorV2,
+                calibratedDpi: 0, currentDpi: 120)
+            .TryProject(105, 100, out _, out _, out string? noStored), noStored);
+    }
+
+    /// <summary>
+    /// The boundary, stated as a test. A resize is reported as a resize even when the
+    /// scale changed with it, because the size is the coarser fact and the one an
+    /// operator is far likelier to have caused.
+    /// </summary>
+    [Fact]
+    public void A_resize_keeps_the_first_word_over_a_scale_change()
+    {
+        CalibratedScreenProjection projection = ProjectionUnder(
+            DpiAwarenessRegime.PerMonitorV2, DpiAwarenessRegime.PerMonitorV2,
+            clientWidth: 1280, clientHeight: 960,
+            calibratedDpi: 96, currentDpi: 120);
+
+        Assert.False(projection.TryProject(105, 100, out _, out _, out string? reason));
+        Assert.Equal(CalibratedScreenProjection.ClientResizedReason, reason);
+    }
+
+    /// <summary>
+    /// And a window that merely moved keeps its calibration. The projection adds the
+    /// client origin at use, so a move changes nothing about the transform — making it
+    /// invalidate would throw away a good measurement every time the operator dragged
+    /// the window. Movement is the commit point's business, not this one's.
+    /// </summary>
+    [Fact]
+    public void A_window_that_only_moved_keeps_its_calibration()
+    {
+        var calibration = CalibratedUnder(DpiAwarenessRegime.PerMonitorV2, clientDpi: 96);
+
+        var moved = new CalibratedScreenProjection(
+            calibration,
+            () => new PixelRect(900, 640, ClientWidth, ClientHeight),
+            () => ClassifiedValue<MapPoint>.Live(Standing, At),
+            () => DpiAwarenessRegime.PerMonitorV2,
+            () => 96u);
+
+        Assert.True(moved.TryProject(105, 100, out int x, out int y, out string? reason), reason);
+
+        // And the act follows the window: the origin is added at the moment of use.
+        var atOrigin = new CalibratedScreenProjection(
+            calibration,
+            () => new PixelRect(0, 0, ClientWidth, ClientHeight),
+            () => ClassifiedValue<MapPoint>.Live(Standing, At),
+            () => DpiAwarenessRegime.PerMonitorV2,
+            () => 96u);
+
+        Assert.True(atOrigin.TryProject(105, 100, out int baseX, out int baseY, out _));
+        Assert.Equal(baseX + 900, x);
+        Assert.Equal(baseY + 640, y);
     }
 }

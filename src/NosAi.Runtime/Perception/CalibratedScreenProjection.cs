@@ -70,6 +70,26 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     /// </remarks>
     public const string RegimeChangedReason = "screen_projection_dpi_regime_changed";
 
+    /// <summary>
+    /// Reported when the window is being drawn at a different DPI from the one the
+    /// calibration was fitted at, with the client rectangle unchanged.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The gap <c>docs/CONTROLLO_PERSONAGGIO_ATTUAZIONE.md</c> § 6.3 named: a scale
+    /// change that leaves width and height alone is invisible to the comparison below,
+    /// which is why this is a check of its own and not a widening of that one. It is
+    /// the storable half of a <see cref="GeometryEpoch"/> — the rest of an epoch is
+    /// session-scoped and cannot be in a file.
+    /// </para>
+    /// <para>
+    /// Deliberately <b>not</b> a position check. A window that moves keeps its
+    /// transform, because the client origin is added at the moment of use; a moved
+    /// window is the commit point's business, not the calibration's.
+    /// </para>
+    /// </remarks>
+    public const string ClientDpiChangedReason = "screen_projection_client_dpi_changed";
+
     /// <summary>The client window could not be found, so there is nothing to be inside of.</summary>
     public const string WindowNotLocatedReason = "client_window_not_located";
 
@@ -82,6 +102,7 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     private readonly Func<PixelRect?> _clientArea;
     private readonly Func<ClassifiedValue<MapPoint>> _playerPosition;
     private readonly Func<DpiAwarenessRegime> _regime;
+    private readonly Func<uint> _clientDpi;
 
     /// <param name="clientArea">
     /// Re-read on every call, because a window moves and is resized while the
@@ -103,7 +124,8 @@ public sealed class CalibratedScreenProjection : IScreenProjection
         ScreenProjectionCalibration calibration,
         Func<PixelRect?> clientArea,
         Func<ClassifiedValue<MapPoint>> playerPosition,
-        Func<DpiAwarenessRegime>? regime = null)
+        Func<DpiAwarenessRegime>? regime = null,
+        Func<uint>? clientDpi = null)
     {
         _calibration = calibration ?? throw new ArgumentNullException(nameof(calibration));
         _clientArea = clientArea ?? throw new ArgumentNullException(nameof(clientArea));
@@ -113,6 +135,12 @@ public sealed class CalibratedScreenProjection : IScreenProjection
         // in practice, and a value captured at construction would be an assumption
         // where a reading costs nothing.
         _regime = regime ?? DpiAwareness.Current;
+
+        // No window handle is reachable from here — this is handed a rectangle, not a
+        // window — so a caller that wants the DPI compared has to supply the reading.
+        // Zero is "not supplied", and the check above skips rather than refuses: a
+        // diagnostic nobody took is not evidence that the geometry moved.
+        _clientDpi = clientDpi ?? (static () => 0u);
     }
 
     /// <inheritdoc />
@@ -154,6 +182,18 @@ public sealed class CalibratedScreenProjection : IScreenProjection
         if (area.Width != _calibration.ClientWidth || area.Height != _calibration.ClientHeight)
         {
             failureReason = ClientResizedReason;
+            return false;
+        }
+
+        // And the half of the shape the rectangle cannot express. Checked only when
+        // both sides have a DPI: a calibration written before the field existed is
+        // refused by version at load, so a zero here means the caller did not supply
+        // one rather than that the fit predates the field, and refusing on a reading
+        // nobody took would ground the runtime over a missing diagnostic.
+        uint currentDpi = _clientDpi();
+        if (_calibration.ClientDpi != 0 && currentDpi != 0 && currentDpi != _calibration.ClientDpi)
+        {
+            failureReason = $"{ClientDpiChangedReason}:{_calibration.ClientDpi}_to_{currentDpi}";
             return false;
         }
 

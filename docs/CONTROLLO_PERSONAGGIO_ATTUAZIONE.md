@@ -434,7 +434,7 @@ ha trovato il difetto.
    | | Che cosa domanda | Quando | Che cosa coglie che gli altri non colgono |
    |---|---|---|---|
    | **Regime** | in quale **unità** sono i numeri | a ogni proiezione, prima di tutto il resto | il cambio di consapevolezza fra stima e riuso. È **invisibile** alle dimensioni quando queste coincidono: al 100 % coincidono sempre, e fra i due regimi consapevoli coincidono a ogni scala |
-   | **Epoca** (punto 3 di questa sezione, non ancora implementata) | è ancora **la stessa** geometria | continuo, al commit point | spostamento della finestra, cambio di DPI a parità di dimensioni, cambio di monitor — cioè tutto ciò che cambia *durante* una sessione senza cambiare i numeri confrontati |
+   | **Epoca** (`GeometryEpoch`, § 6.3) | è ancora **la stessa** geometria | al commit point, subito prima del passo irreversibile | spostamento della finestra, cambio di DPI a parità di dimensioni, cambio di monitor, finestra sostituita — cioè tutto ciò che cambia *durante* una sessione senza cambiare i numeri confrontati |
    | **Dimensioni** (riga 103) | la **forma** della trasformata è ancora valida | a ogni proiezione | ridimensionamento e passaggio a schermo intero: zoom e layout diversi dentro un solo regime |
 
    L'ordine non è arbitrario: il regime è giudicato **per primo**, perché è l'unità in cui
@@ -456,18 +456,96 @@ ha trovato il difetto.
    resta alla riga 103).
 
 3. ~~L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor?~~
-   **Chiuso il 1 settembre 2026: l'epoca non esiste.** `ClientWindowLocator` è statico e
-   senza stato: rilegge e restituisce un rect nuovo a ogni chiamata, senza conservare il
-   precedente. `CalibratedScreenProjection` confronta solo larghezza e altezza e ignora
-   deliberatamente lo spostamento — il che è giusto per la *forma* della trasformazione, ma
-   significa che un cambio di DPI, che per un processo non consapevole non cambia le
-   dimensioni virtualizzate, non viene visto da nessuno. `Win32ProcessAdapter` è l'unico che
-   conserva la geometria, in un campo scritto all'attach e **mai aggiornato**.
+   **Diagnosticato e poi scritto il 1 settembre 2026.** La diagnosi era: l'epoca non
+   esiste. `ClientWindowLocator` è statico e senza stato, rilegge e restituisce un rect
+   nuovo a ogni chiamata senza conservare il precedente, quindi non ha niente da
+   confrontare; `Win32ProcessAdapter` la geometria la conserva, in un campo scritto
+   all'attach e **mai aggiornato**, quindi ha qualcosa da confrontare ed è sbagliato.
+   `DOMAIN-08` e `DOMAIN-19` non erano applicabili e la prima condizione del commit point
+   non aveva un valore da confrontare.
 
-   Conseguenza. `DOMAIN-08` e `DOMAIN-19` oggi non sono applicabili: non c'è niente contro
-   cui far decadere una calibrazione, e la prima condizione del commit point — « epoca di
-   geometria invariata dall'autorizzazione » — non ha un valore da confrontare. **L'epoca è
-   quindi un prerequisito di P2, non un dettaglio di P2.**
+   **`GeometryEpoch` (`src/NosAi.Runtime/Perception/GeometryEpoch.cs`).**
+
+   **La domanda del titolo, risposta:** sì a entrambi, e a quattro cose in tutto. L'epoca è
+   la quaterna `{ finestra, area client in coordinate schermo, DPI, monitor }`. Il
+   rettangolo porta posizione *e* dimensioni, quindi spostamento e ridimensionamento sono
+   due cambiamenti distinti e nominati; il DPI coglie il cambio di scala a parità di
+   rettangolo; il monitor coglie lo spostamento fra schermi; l'handle coglie il client
+   riavviato sotto il runtime. Ogni rifiuto nomina *quale* dei quattro, perché hanno
+   rimedi diversi: una finestra sostituita rende stale l'intera sessione, uno spostamento
+   chiede solo di ricalcolare la coordinata.
+
+   **Chi la possiede: nessuno, ed è la correzione, non una lacuna.** I due candidati
+   fallivano per ragioni opposte che sono la stessa ragione — una geometria *conservata* è
+   stale dall'istante in cui la finestra si muove, e l'intervallo da proteggere qui si
+   misura in millisecondi, quindi nessuna frequenza di aggiornamento la salverebbe.
+   `GeometryEpoch` è quindi **derivata, mai mantenuta**: un valore letto dalla finestra su
+   richiesta, senza contatore, senza proprietario, senza cache. Un valore derivato non può
+   diventare stale. `ClientWindowLocator` resta senza stato — è la forma giusta, non un
+   difetto — e il campo di `Win32ProcessAdapter` non va aggiornato: va smesso di usarlo
+   come geometria, perché conservarla è ciò che l'ha resa stale.
+
+   **Non è un contatore, di proposito.** Un numero d'epoca monotono avrebbe bisogno di
+   qualcuno che osserva ogni cambiamento per incrementarlo, e un cambiamento che arriva
+   fra due osservazioni resterebbe invisibile esattamente per il tempo in cui conta.
+   Confrontare la geometria stessa non ha quella finestra cieca: qualunque cosa sia
+   successa in mezzo, se la geometria di adesso differisce da quella di allora il
+   confronto lo dice.
+
+   **Come viaggia.** `GeometryStamp` = epoca + istante in cui è stata letta. È ciò che
+   l'`ActionEnvelope` porta come prerequisito (ARCHITETTURA § 4, « versionato, con
+   scadenza e prerequisiti »): **presa una volta** dove l'azione è autorizzata e la sua
+   coordinata schermo è calcolata, e **mai rinfrescata** mentre la busta è in volo —
+   rinfrescarla la farebbe coincidere con sé stessa a ogni istante, che è l'unico
+   comportamento che trasforma questo controllo in decorazione. L'istante è dentro la
+   stessa struttura perché « invariata **dall'autorizzazione** » è un'affermazione su un
+   intervallo, e un intervallo ha bisogno di due estremi; è anche la misura che § 2.1
+   richiede di registrare. `StillCurrent` restituisce l'età **sia** quando passa **sia**
+   quando fallisce: non esiste una finestra di rischio nulla, deve esistere una finestra
+   di rischio misurata. E l'età non è ridondante rispetto al confronto: una finestra
+   trascinata via e rimessa sullo stesso pixel confronta *uguale*, e tutto ciò che è
+   successo in mezzo è successo non osservato.
+
+   **Ignoto non combacia con niente, nemmeno con un altro ignoto.** Una geometria che non
+   si è potuta leggere non è la prova che la geometria sia la stessa; due letture fallite
+   non sono un accordo. Una lettura parziale è rifiutata come `Unknown` invece di essere
+   restituita a metà, perché combacerebbe sulle componenti leggibili — accordo sulla cosa
+   sbagliata.
+
+   **Come una calibrazione ci si aggancia: per la sua metà memorizzabile.** Due componenti
+   dell'epoca — l'handle della finestra e quello del monitor — non significano niente fuori
+   dalla sessione che le ha lette, quindi una calibrazione che portasse un'epoca intera
+   sarebbe rifiutata a ogni riavvio: un controllo che scatta sempre non controlla niente.
+   `GeometryEpoch.Shape` è la proiezione memorizzabile — `{ larghezza, altezza, DPI }` — e
+   `ScreenProjectionCalibration` la conserva (**file versione 4**). Il DPI c'è e la
+   posizione no, e la divisione è il punto: una finestra che si sposta **mantiene** la sua
+   trasformata, perché `CalibratedScreenProjection` somma l'origine del client al momento
+   dell'uso; far invalidare uno spostamento butterebbe via una buona misura ogni volta che
+   l'operatore trascina la finestra. Lo spostamento appartiene all'epoca e al commit point,
+   non alla calibrazione.
+
+   **Il confine con la riga 103.** Il confronto sulle dimensioni **resta e non è
+   modificato**. Si sovrappone all'epoca sulla dimensione, e la sovrapposizione non è
+   ridondanza perché le due hanno *durate* diverse: la riga 103 scatta quando una
+   calibrazione incontra una finestra di dimensioni diverse — uno stato che dura finché
+   qualcuno non ricalibra — mentre l'epoca scatta quando la geometria è cambiata **fra
+   l'autorizzazione e l'emissione**, una corsa lunga millisecondi che la riga 103 non è
+   messa lì per vedere e non vedrebbe comunque, perché confronta una calibrazione con il
+   presente e mai il presente con un istante precedente. Rimedi diversi: « ricalibra »
+   contro « riprova, l'atto è stato abortito ».
+
+   Accanto alla riga 103, e non al posto suo, c'è ora il confronto sul DPI
+   (`screen_projection_client_dpi_changed`), che è la parte della forma che il rettangolo
+   non sa esprimere — il buco che questo stesso punto aveva nominato. Un DPI che nessuno ha
+   letto è saltato, non rifiutato: una diagnostica non presa non è la prova che la scala si
+   sia mossa, e rifiutare lì bloccherebbe il runtime per un dato mancante invece che per un
+   cambiamento reale.
+
+   **Cosa resta.** L'epoca esiste, si legge e si confronta, ma **nessun commit point la
+   chiama ancora**, perché il commit point è § 2.1 e non è scritto. `DOMAIN-08` e
+   `DOMAIN-19` hanno ora un valore contro cui essere applicati; applicarli è la prossima
+   tappa, non questa. Test:
+   `tests/NosAi.Runtime.Tests/GeometryEpochTests.cs`.
 4. ~~La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
    monitor primario?~~ **Chiuso il 1 settembre 2026: copre il desktop virtuale.**
    `Win32InputBackend.MoveAbsolute` prende origine ed estensione da
@@ -485,3 +563,37 @@ ha trovato il difetto.
    guardie a monte rifiutano i punti fuori dal client, ma è l'ultima difesa convertita in una
    correzione silenziosa, ed è l'unico punto del percorso dove un errore di coordinate
    diventa un atto invece di un rifiuto.
+
+---
+
+## 7. Uno schema che si è ripetuto, e una domanda aperta
+
+Tre volte, in tre tappe diverse, una condizione corretta è stata scritta appoggiandosi a una
+seconda condizione che deve chiudere più a valle — e che non esiste ancora.
+
+| Dove | La condizione | Il valle su cui si appoggia | Stato del valle |
+|---|---|---|---|
+| § 3.1 | terreno aperto non osservato è `Walkable`: autorizza un piano, mai un atto | limite di età dell'osservazione all'atto | **non scritto** — l'unico confronto d'età è in `TargetSelector`, e riguarda il bersaglio |
+| § 6.3 | l'epoca è derivata a ogni lettura, non mantenuta | il commit point che la confronta fra autorizzazione ed emissione | **non scritto** — è § 2.1 |
+| § 6.3 | un DPI illeggibile fa **saltare** il confronto, non fallire: una diagnostica non presa non prova che la scala si sia mossa | ciò che chiude all'atto quando la scala è ignota | **domanda aperta** |
+
+I primi due sono registrati e datati: la condizione è giusta, il suo compagno arriva in P4 e
+in P2. Il terzo è una domanda vera, e va posta prima che P2 la assorba per abitudine.
+
+`CalibratedScreenProjection` riga 194 confronta il DPI solo quando entrambi i valori sono
+diversi da zero. Con il DPI corrente illeggibile il confronto è saltato e la proiezione
+prosegue. Il ragionamento è corretto — non sapere se la scala è cambiata non è sapere che è
+cambiata — e regge se la proiezione **non** è l'atto protetto: produce un pixel, e sarà una
+guardia più avanti a decidere se quel pixel diventa un click.
+
+Ma se quella guardia non c'è, « saltato » significa oggi « prosegue », e `DOMAIN-10` dice
+che sconosciuto non autorizza un'azione protetta. Quindi: **che cosa chiude all'atto quando
+la scala è ignota?** Se la risposta è « il commit point », va scritta lì insieme alle altre
+quattro condizioni. Se la risposta è « niente », allora il salto va convertito in un rifiuto
+finché non esiste qualcosa che chiuda.
+
+La regola generale che vale la pena tenere: una condizione può appoggiarsi a una seconda che
+arriva dopo, ma il documento deve dire che non c'è ancora. Un documento che la dà per
+presente è indistinguibile da uno che descrive un sistema completo, ed è così che
+`DOMAIN-08` e `DOMAIN-19` sono rimasti inapplicabili per settimane senza che nessuno se ne
+accorgesse.

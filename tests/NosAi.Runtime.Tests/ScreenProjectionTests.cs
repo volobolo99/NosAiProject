@@ -517,6 +517,27 @@ public sealed class ScreenProjectionTests : IDisposable
     }
 
     /// <summary>
+    /// And a file from before the window DPI was recorded is refused too, for the
+    /// same reason one version earlier: it was written where nothing read the DPI, so
+    /// it has no DPI to be compared against, and taking the reader's own would be the
+    /// assertion the field exists to avoid.
+    /// </summary>
+    [Fact]
+    public void A_calibration_from_before_the_window_dpi_was_recorded_is_refused_by_version()
+    {
+        string path = PathFor("v3");
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            path,
+            "nosai-screen-projection 3\n16 -16 512 8 8 380 1024 768 0 1 permonitorv2 2026-09-01T12:00:00Z\n");
+
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.False(loaded.IsCalibrated);
+        Assert.Equal("screen_projection_version_unsupported:3", reason);
+    }
+
+    /// <summary>
     /// A regime token written by some later build reads as Unknown rather than as
     /// anything in particular, and Unknown never matches a live regime, so the
     /// calibration is refused at use instead of being read in the wrong unit.
@@ -528,7 +549,7 @@ public sealed class ScreenProjectionTests : IDisposable
         Directory.CreateDirectory(_directory);
         File.WriteAllText(
             path,
-            "nosai-screen-projection 3\n16 -16 512 8 8 380 1024 768 0 1 permonitorv9 2026-09-01T12:00:00Z\n");
+            "nosai-screen-projection 4\n16 -16 512 8 8 380 1024 768 0 1 permonitorv9 96 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 
@@ -545,15 +566,20 @@ public sealed class ScreenProjectionTests : IDisposable
         Assert.True(ScreenProjectionCalibration.TrySolve(
             ThreeOffsets(), ClientWidth, ClientHeight, At,
             out ScreenProjectionCalibration solved, out _,
-            regime: DpiAwarenessRegime.Unaware));
+            regime: DpiAwarenessRegime.Unaware, clientDpi: 120));
 
         Assert.Equal(DpiAwarenessRegime.Unaware, solved.Regime);
+        Assert.Equal(120u, solved.ClientDpi);
 
         solved.Save(path);
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 
         Assert.True(loaded.IsCalibrated, reason);
         Assert.Equal(DpiAwarenessRegime.Unaware, loaded.Regime);
+        Assert.Equal(120u, loaded.ClientDpi);
+
+        // And the storable half of an epoch is what the two of them make.
+        Assert.Equal(new GeometryShape(ClientWidth, ClientHeight, 120), loaded.Shape);
     }
 
     /// <summary>A degenerate transform maps every offset to one pixel; it is not one.</summary>
@@ -564,7 +590,7 @@ public sealed class ScreenProjectionTests : IDisposable
         Directory.CreateDirectory(_directory);
         File.WriteAllText(
             path,
-            "nosai-screen-projection 3\n0 0 0 0 0 0 1024 768 0 0 permonitorv2 2026-09-01T12:00:00Z\n");
+            "nosai-screen-projection 4\n0 0 0 0 0 0 1024 768 0 0 permonitorv2 96 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 
@@ -580,7 +606,7 @@ public sealed class ScreenProjectionTests : IDisposable
         Directory.CreateDirectory(_directory);
         File.WriteAllText(
             path,
-            "nosai-screen-projection 3\n16 -16 5000 8 8 380 1024 768 0 1 permonitorv2 2026-09-01T12:00:00Z\n");
+            "nosai-screen-projection 4\n16 -16 5000 8 8 380 1024 768 0 1 permonitorv2 96 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 

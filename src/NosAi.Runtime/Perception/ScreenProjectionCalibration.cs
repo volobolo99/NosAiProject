@@ -187,9 +187,19 @@ public sealed record ScreenProjectionCalibration
     /// missing field to whatever the reader is running under would assert exactly
     /// the thing the field exists to establish.
     /// </para>
+    /// <para>
+    /// 3 to 4 adds the window DPI, which is the storable half of a
+    /// <see cref="GeometryEpoch"/> that the client size cannot express: a scale
+    /// changed while the rectangle stays the same is the gap
+    /// <c>docs/CONTROLLO_PERSONAGGIO_ATTUAZIONE.md</c> § 6.3 named, and it is
+    /// invisible to a comparison of width and height. Same reasoning as the bump
+    /// before it: a v3 file was written where nothing read the DPI, so it has no
+    /// DPI to be compared against, and inventing one from the reader would be the
+    /// assertion the field exists to avoid.
+    /// </para>
     /// </remarks>
     private const string Magic = "nosai-screen-projection";
-    private const int Version = 3;
+    private const int Version = 4;
 
     private ScreenProjectionCalibration(
         bool isCalibrated,
@@ -199,6 +209,7 @@ public sealed record ScreenProjectionCalibration
         double worstResidual,
         int verifiedAgainst,
         DpiAwarenessRegime regime,
+        uint clientDpi,
         DateTime? calibratedAtUtc)
     {
         IsCalibrated = isCalibrated;
@@ -209,6 +220,7 @@ public sealed record ScreenProjectionCalibration
         WorstResidualPixels = worstResidual;
         VerifiedAgainstSamples = verifiedAgainst;
         Regime = regime;
+        ClientDpi = clientDpi;
         CalibratedAtUtc = calibratedAtUtc;
     }
 
@@ -277,6 +289,28 @@ public sealed record ScreenProjectionCalibration
     /// </remarks>
     public DpiAwarenessRegime Regime { get; }
 
+    /// <summary>The window's DPI when the fit was made, or zero when it was not read.</summary>
+    /// <remarks>
+    /// <para>
+    /// Together with <see cref="ClientWidth"/> and <see cref="ClientHeight"/> this is
+    /// the <see cref="GeometryShape"/> the fit belongs to: the part of a geometry epoch
+    /// that means anything in a file. The rest of an epoch — the window handle, the
+    /// monitor, the position — is session-scoped, and a calibration that stored it
+    /// would be refused on every restart.
+    /// </para>
+    /// <para>
+    /// The position is left out on purpose rather than forgotten. A window that moves
+    /// keeps its transform, because <see cref="CalibratedScreenProjection"/> adds the
+    /// client origin at the moment of use; making a move invalidate a calibration would
+    /// throw away a good measurement every time the operator dragged the window.
+    /// Movement belongs to the epoch and to the commit point, not here.
+    /// </para>
+    /// </remarks>
+    public uint ClientDpi { get; }
+
+    /// <summary>The storable part of the geometry this fit belongs to.</summary>
+    public GeometryShape Shape => new(ClientWidth, ClientHeight, ClientDpi);
+
     /// <summary>How much independent checking the residual represents.</summary>
     /// <remarks>
     /// Samples beyond the three a general affine map needs, so: the degrees of
@@ -292,7 +326,7 @@ public sealed record ScreenProjectionCalibration
 
     /// <summary>The state before the operator has calibrated anything.</summary>
     public static ScreenProjectionCalibration Uncalibrated { get; } =
-        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DpiAwarenessRegime.Unknown, null);
+        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DpiAwarenessRegime.Unknown, 0, null);
 
     /// <summary>
     /// Solves the transform from the operator's samples, or says why it cannot.
@@ -315,7 +349,8 @@ public sealed record ScreenProjectionCalibration
         DateTime calibratedAtUtc,
         out ScreenProjectionCalibration calibration,
         out string? failureReason,
-        DpiAwarenessRegime? regime = null)
+        DpiAwarenessRegime? regime = null,
+        uint clientDpi = 0)
     {
         ArgumentNullException.ThrowIfNull(samples);
         calibration = Uncalibrated;
@@ -473,6 +508,7 @@ public sealed record ScreenProjectionCalibration
             worst,
             samples.Count - MinimumSamples,
             regime ?? DpiAwareness.Current(),
+            clientDpi,
             calibratedAtUtc);
         failureReason = null;
         return true;
@@ -545,7 +581,7 @@ public sealed record ScreenProjectionCalibration
         }
 
         string[] fields = lines[1].Split(' ');
-        if (fields.Length != 12
+        if (fields.Length != 13
             || !TryNumber(fields[0], out double a) || !TryNumber(fields[1], out double b)
             || !TryNumber(fields[2], out double c) || !TryNumber(fields[3], out double d)
             || !TryNumber(fields[4], out double e) || !TryNumber(fields[5], out double f)
@@ -553,7 +589,8 @@ public sealed record ScreenProjectionCalibration
             || !int.TryParse(fields[7], NumberStyles.Integer, CultureInfo.InvariantCulture, out int clientHeight)
             || !TryNumber(fields[8], out double residual)
             || !int.TryParse(fields[9], NumberStyles.Integer, CultureInfo.InvariantCulture, out int verified)
-            || !DateTime.TryParse(fields[11], CultureInfo.InvariantCulture,
+            || !uint.TryParse(fields[11], NumberStyles.Integer, CultureInfo.InvariantCulture, out uint clientDpi)
+            || !DateTime.TryParse(fields[12], CultureInfo.InvariantCulture,
                 DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out DateTime at))
         {
             failureReason = "screen_projection_entry_malformed";
@@ -578,7 +615,7 @@ public sealed record ScreenProjectionCalibration
         }
 
         return new ScreenProjectionCalibration(
-            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, at);
+            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, clientDpi, at);
     }
 
     /// <summary>Writes the calibration, creating the directory if needed.</summary>
@@ -606,6 +643,7 @@ public sealed record ScreenProjectionCalibration
             .Append(WorstResidualPixels.ToString("R", CultureInfo.InvariantCulture)).Append(' ')
             .Append(VerifiedAgainstSamples.ToString(CultureInfo.InvariantCulture)).Append(' ')
             .Append(Regime.ToWire()).Append(' ')
+            .Append(ClientDpi.ToString(CultureInfo.InvariantCulture)).Append(' ')
             .Append(CalibratedAtUtc!.Value.ToString("O", CultureInfo.InvariantCulture)).Append('\n');
 
         File.WriteAllText(path, text.ToString());
