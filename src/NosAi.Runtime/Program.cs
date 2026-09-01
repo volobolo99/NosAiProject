@@ -79,6 +79,30 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--hud-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe();
 
+        // The decision path over real game bytes, offline. WinDivertProbe --world
+        // reports what a recording says; this reports what the runtime decides
+        // about it, which is the half nothing exercised before.
+        int replayFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--decide-replay", StringComparison.OrdinalIgnoreCase));
+        if (replayFlag >= 0)
+        {
+            string? recording = replayFlag + 1 < args.Length ? args[replayFlag + 1] : null;
+            if (string.IsNullOrWhiteSpace(recording))
+            {
+                Console.Error.WriteLine("--decide-replay <file.noscap> requires a recording path.");
+                return 2;
+            }
+
+            int cycleFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--decide-cycles", StringComparison.OrdinalIgnoreCase));
+            int cycles = cycleFlag >= 0 && cycleFlag + 1 < args.Length
+                         && int.TryParse(args[cycleFlag + 1], out int parsed) && parsed > 0
+                ? parsed
+                : 200;
+
+            return await NosAi.Runtime.Gate3.Gate3ReplayProbe.RunAsync(recording, cycles).ConfigureAwait(false);
+        }
+
         // Offset discovery for the memory provider (ADR-0014). Read-only, and it
         // answers nothing on its own: an address is identified by narrowing across
         // several changes of the value, which is why the candidate set persists
@@ -193,7 +217,11 @@ public static class Program
 
     /// <summary>Probe flags, which live outside the suite table.</summary>
     private static readonly HashSet<string> KnownProbeFlags =
-        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump", "--hud-probe" };
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
+            "--hud-probe", "--decide-replay"
+        };
 
     private static int RunDxgiProbe()
     {

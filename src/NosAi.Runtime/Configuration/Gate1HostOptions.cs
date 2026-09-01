@@ -1,3 +1,6 @@
+using System.Net;
+using NosAi.Runtime.Perception.Network;
+
 namespace NosAi.Runtime.Configuration;
 
 public sealed class Gate1HostOptions
@@ -56,8 +59,44 @@ public sealed class Gate1HostOptions
     /// </summary>
     public string ClientProcessName { get; init; } = "NostaleClientX,NostaleClient,NosTale";
 
+    /// <summary>
+    /// World-channel endpoint to observe, or <c>null</c> when observation is off.
+    /// Absent by default: the runtime must not capture game traffic until the
+    /// operator names the host and port.
+    /// </summary>
+    /// <remarks>
+    /// Host is an IP address — the capture filter is IP-based — and the port is
+    /// 1..65535. A malformed value fails startup rather than being ignored, so a
+    /// mistyped flag cannot look like "observation is simply off".
+    /// </remarks>
+    public GameEndpoint? ObserveGame { get; init; }
+
+    /// <summary>
+    /// Run the Gate 3 decision loop over whatever is being observed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Off by default, and it decides without acting either way: the loop is built
+    /// on <see cref="Safety.RuntimeSafetyPolicy.SafeDefault"/>, which binds a
+    /// disabled effector, so a cycle runs the whole pipeline through the Safety
+    /// Gate and stops before touching the client. Turning it on adds reasoning and
+    /// a log, not an input.
+    /// </para>
+    /// <para>
+    /// It is off by default anyway, because a loop planning against
+    /// <c>gameplay_provider_not_available</c> would fill the journal with refusals
+    /// that say nothing except that observation was never configured.
+    /// </para>
+    /// </remarks>
+    public bool RunDecisionLoop { get; init; }
+
+    /// <summary>How often a decision cycle runs. Ignored unless <see cref="RunDecisionLoop"/>.</summary>
+    public int DecisionIntervalMs { get; init; } = 500;
+
     public void Validate()
     {
+        if (DecisionIntervalMs is < 50 or > 60_000)
+            throw new InvalidOperationException("DecisionIntervalMs must be between 50 and 60000 milliseconds.");
         if (DashboardPort is < 0 or > 65535)
             throw new InvalidOperationException("DashboardPort must be between 0 and 65535.");
         if (GuardPort is < 0 or > 65535)
@@ -66,6 +105,8 @@ public sealed class Gate1HostOptions
             throw new InvalidOperationException("OperationTimeoutMs must be between 100 and 120000 milliseconds.");
         if (string.IsNullOrWhiteSpace(ClientProcessName))
             throw new InvalidOperationException("ClientProcessName is required.");
+        if (ObserveGame is { } endpoint)
+            Gate1HostOptionsLoader.ValidateObserveGame(endpoint);
     }
 }
 
@@ -86,10 +127,75 @@ public static class Gate1HostOptionsLoader
             StartDashboard = !HasFlag(argList, "--no-dashboard"),
             EnableDiscovery = !HasFlag(argList, "--no-discovery"),
             GuardLoopbackOnly = HasFlag(argList, "--guard-loopback-only") || IsTruthy(environment, "NOSAI_GUARD_LOOPBACK_ONLY"),
-            ClientProcessName = ReadString(environment, argList, "NOSAI_CLIENT_PROCESS", "--client-process", new Gate1HostOptions().ClientProcessName)
+            ClientProcessName = ReadString(environment, argList, "NOSAI_CLIENT_PROCESS", "--client-process", new Gate1HostOptions().ClientProcessName),
+            ObserveGame = ReadObserveGame(environment, argList),
+            RunDecisionLoop = HasFlag(argList, "--decide") || IsTruthy(environment, "NOSAI_DECIDE"),
+            DecisionIntervalMs = ReadInt(environment, argList, "NOSAI_DECIDE_INTERVAL_MS", "--decide-interval-ms", 500)
         };
         options.Validate();
         return options;
+    }
+
+    /// <summary>
+    /// Parses <c>host:port</c> for the world-channel observation option.
+    /// </summary>
+    /// <remarks>
+    /// Last-colon split for IPv4; bracket form <c>[addr]:port</c> for IPv6.
+    /// Whitespace-only is absence. Anything else is a startup failure.
+    /// </remarks>
+    public static GameEndpoint ParseObserveGame(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            throw new InvalidOperationException("NOSAI_OBSERVE_GAME / --observe-game requires host:port.");
+
+        string trimmed = raw.Trim();
+        string host;
+        string portText;
+        if (trimmed.StartsWith('['))
+        {
+            int close = trimmed.IndexOf(']');
+            if (close < 2 || close + 1 >= trimmed.Length || trimmed[close + 1] != ':')
+                throw new InvalidOperationException("NOSAI_OBSERVE_GAME must be [ipv6]:port or host:port.");
+            host = trimmed[1..close].Trim();
+            portText = trimmed[(close + 2)..];
+        }
+        else
+        {
+            int colon = trimmed.LastIndexOf(':');
+            if (colon <= 0 || colon == trimmed.Length - 1)
+                throw new InvalidOperationException("NOSAI_OBSERVE_GAME must be host:port.");
+            host = trimmed[..colon].Trim();
+            portText = trimmed[(colon + 1)..];
+        }
+
+        if (string.IsNullOrWhiteSpace(host))
+            throw new InvalidOperationException("NOSAI_OBSERVE_GAME host must not be empty.");
+        if (!int.TryParse(portText, out int port) || port is < 1 or > 65535)
+            throw new InvalidOperationException("NOSAI_OBSERVE_GAME port must be an integer between 1 and 65535.");
+        if (!IPAddress.TryParse(host, out _))
+            throw new InvalidOperationException(
+                "NOSAI_OBSERVE_GAME host must be an IP address; the capture filter is IP-based.");
+
+        return new GameEndpoint(host, port);
+    }
+
+    internal static void ValidateObserveGame(GameEndpoint endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint.Host))
+            throw new InvalidOperationException("NOSAI_OBSERVE_GAME host must not be empty.");
+        if (endpoint.Port is < 1 or > 65535)
+            throw new InvalidOperationException("NOSAI_OBSERVE_GAME port must be an integer between 1 and 65535.");
+        if (!IPAddress.TryParse(endpoint.Host, out _))
+            throw new InvalidOperationException(
+                "NOSAI_OBSERVE_GAME host must be an IP address; the capture filter is IP-based.");
+    }
+
+    private static GameEndpoint? ReadObserveGame(IReadOnlyDictionary<string, string?> environment, string[] args)
+    {
+        var raw = ReadOptionalString(environment, args, "NOSAI_OBSERVE_GAME", "--observe-game");
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+        return ParseObserveGame(raw);
     }
 
     private static (string? Pem, string? Source) ReadPemWithSource(

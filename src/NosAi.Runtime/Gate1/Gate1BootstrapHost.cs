@@ -26,6 +26,20 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly RealClientConnector _client;
     private readonly LiveHardwareTelemetry _hardware;
     private readonly Gate1RuntimeSnapshotProvider _snapshot;
+    private readonly Gate1ObservationChannel _observation;
+
+    /// <summary>
+    /// The Gate 3 decision loop, or null when the operator did not ask for it.
+    /// </summary>
+    /// <remarks>
+    /// Composed here because this is where the snapshot it plans from lives.
+    /// <see cref="Gate3.Gate1SnapshotWorldStateSource"/> has existed as the adapter
+    /// between the two gates for some time; nothing had ever constructed it, so
+    /// Gate 3 could pass its whole suite while no code path in the runtime ever
+    /// formed a decision about the real client.
+    /// </remarks>
+    private readonly Gate3.Gate3DecisionLoop? _decisions;
+
     private readonly Gate1OperatorServer? _dashboard;
     private DiscoveryResponder? _discovery;
     private readonly string _correlationId = Guid.NewGuid().ToString("N");
@@ -73,6 +87,12 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     public Gate1RuntimeSnapshotProvider SnapshotProvider => _snapshot;
     public RealClientConnector Client => _client;
     public GuardAiNetworkChannel Channel => _channel;
+
+    /// <summary>
+    /// The decision loop, or null when it was not requested. Exposed so an
+    /// operator surface can show what it decided and run a single cycle by hand.
+    /// </summary>
+    public Gate3.Gate3DecisionLoop? Decisions => _decisions;
 
     public Gate1BootstrapHost(Gate1HostOptions options, IRuntimeLogger? logger = null, IHardwareProbe? probe = null)
     {
@@ -142,6 +162,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _hardware = new LiveHardwareTelemetry(safeProbe);
         var runtime = _runtime = RuntimeComposition.CreateSafe();
         var world = new NosAi.Runtime.WorldModel.WorldModel();
+        _observation = _options.ObserveGame is { } endpoint
+            ? Gate1ObservationChannel.TryOpenLive(endpoint, _logger)
+            : Gate1ObservationChannel.None();
         _snapshot = new Gate1RuntimeSnapshotProvider(
             runtime,
             world,
@@ -149,8 +172,19 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             _hardware,
             _client,
             () => _health,
-            _correlationId);
+            _correlationId,
+            gameplay: _observation.Provider,
+            observation: _observation);
         _channel.SetSnapshotSource(_snapshot.Capture);
+        // Reads the same snapshot the operator page shows, so what the loop planned
+        // on and what the operator is looking at cannot diverge.
+        _decisions = _options.RunDecisionLoop
+            ? new Gate3.Gate3DecisionLoop(
+                new Gate3.Gate1SnapshotWorldStateSource(_snapshot.Capture),
+                new Gate3.Gate3ExecutionOrchestrator(),
+                _logger,
+                TimeSpan.FromMilliseconds(_options.DecisionIntervalMs))
+            : null;
         _testConsole = BuildTestConsole();
         _dashboard = _options.StartDashboard
             ? new Gate1OperatorServer(_options.DashboardPort, _snapshot.Capture, HandleOperatorCommand,
@@ -185,6 +219,10 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         await _client.StartRealNetworkTransportAsync(cancellationToken).ConfigureAwait(false);
         StartDashboard();
         StartDiscovery();
+        // After the client and the observation channel, so the first cycle plans
+        // from whatever they established rather than from a snapshot taken before
+        // either had run.
+        _decisions?.Start(cancellationToken);
         _health = attached ? RuntimeHealthStatus.Healthy : RuntimeHealthStatus.Degraded;
         _logger.Info("Gate 1 runtime is listening.", new Dictionary<string, object?>
         {
@@ -442,11 +480,16 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             return;
         _disposed = true;
         _health = RuntimeHealthStatus.Stopping;
+        // First: it reads the snapshot, and everything the snapshot reads is being
+        // torn down below.
+        if (_decisions is not null)
+            await _decisions.DisposeAsync().ConfigureAwait(false);
         if (_discovery is not null)
             await _discovery.DisposeAsync().ConfigureAwait(false);
         if (_dashboard is not null)
             await _dashboard.DisposeAsync().ConfigureAwait(false);
         await _client.DisposeAsync().ConfigureAwait(false);
+        _observation.Dispose();
         _auth.Dispose();
         _runtimeIdentity.Dispose();
         _devKey?.Dispose();
