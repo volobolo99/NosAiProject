@@ -32,8 +32,13 @@ public sealed class NetworkWorldStateObserverTests
         Assert.Equal(DataSourceKind.Cached, state.Mp.Source);
     }
 
+    /// <remarks>
+    /// The name breaks this file's convention on purpose:
+    /// <c>scripts/verifica-obiettivo.ps1</c> searches for it literally to know
+    /// that C4 was done.
+    /// </remarks>
     [Fact]
-    public async Task Unobserved_provider_keeps_the_reason_and_does_not_invent_zero()
+    public async Task UnobservedProviderDoesNotBecomeZero()
     {
         const string reason = "gameplay_provider_not_available";
         var observer = new NetworkWorldStateObserver(

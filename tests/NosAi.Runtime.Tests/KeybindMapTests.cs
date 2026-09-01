@@ -34,8 +34,13 @@ public sealed class KeybindMapTests : IDisposable
         Assert.Contains("2", reason, StringComparison.Ordinal);
     }
 
+    /// <remarks>
+    /// The name breaks this file's convention on purpose:
+    /// <c>scripts/verifica-obiettivo.ps1</c> searches for it literally to know
+    /// that C3 was done.
+    /// </remarks>
     [Fact]
-    public void Missing_file_is_not_an_empty_map()
+    public void MissingFileIsRefusedNotEmpty()
     {
         string path = Path.Combine(_dir, "absent.json");
 

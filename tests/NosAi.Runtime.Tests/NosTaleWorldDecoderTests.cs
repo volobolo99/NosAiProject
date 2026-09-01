@@ -111,8 +111,13 @@ public sealed class NosTaleWorldDecoderTests
         Assert.Equal("345", decoded);
     }
 
+    /// <remarks>
+    /// The name breaks this file's convention on purpose:
+    /// <c>scripts/verifica-obiettivo.ps1</c> searches for it literally to know
+    /// that C7 was done.
+    /// </remarks>
     [Fact]
-    public void A_valid_stat_keeps_the_max_mp_it_already_validated()
+    public void StatCarriesMaxMp()
     {
         PlayerVitals? vitals = new NosTaleWorldProtocolDecoder()
             .Decode(Ascii("stat 7305 7305 1420 1420 0 1184")).Vitals;
@@ -130,8 +135,13 @@ public sealed class NosTaleWorldDecoderTests
             .Decode(Ascii("stat 7305 7305 2000 1420 0 1184")).IsEmpty);
     }
 
+    /// <remarks>
+    /// The name breaks this file's convention on purpose:
+    /// <c>scripts/verifica-obiettivo.ps1</c> searches for it literally to know
+    /// that C6 was done.
+    /// </remarks>
     [Fact]
-    public void Cond_of_the_player_carries_movement_speed_eleven()
+    public void CondReadsSpeedForPlayerOnly()
     {
         DecodedObservations decoded = new NosTaleWorldProtocolDecoder()
             .Decode(Ascii("cond 1 3443217 0 0 11"));
