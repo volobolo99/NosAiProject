@@ -222,6 +222,18 @@ public sealed class GlyphHashOcrCache
     public void Train(char character, ReadOnlySpan<byte> glyphBitmap) =>
         _glyphTable[HashGlyph(glyphBitmap)] = character;
 
+    /// <summary>
+    /// Trains from an already-hashed glyph.
+    /// </summary>
+    /// <remarks>
+    /// What <see cref="HudGlyphAtlas"/> loads from disk are hashes, not bitmaps:
+    /// the atlas keeps 8 bytes per glyph rather than a 192-byte image, and a
+    /// stored bitmap could disagree with its own stored hash. Rehashing a bitmap
+    /// reconstructed from the file would be recomputing something the file
+    /// already states.
+    /// </remarks>
+    public void TrainHash(ulong glyphHash, char character) => _glyphTable[glyphHash] = character;
+
     /// <summary>Recognizes a sequence of glyph bitmaps; unknown glyphs become '?'.</summary>
     public string Recognize(IEnumerable<byte[]> glyphs)
     {

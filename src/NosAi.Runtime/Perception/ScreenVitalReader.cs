@@ -127,6 +127,25 @@ public sealed class ScreenVitalReader
             && int.TryParse(text.AsSpan(slash + 1), out maximum);
     }
 
+    /// <summary>
+    /// The glyph bitmaps in one HUD region, for a caller that wants to train the
+    /// atlas rather than read through it.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately the same segmentation, crop and extraction the reader itself
+    /// uses. A trainer that found its glyphs any other way would be teaching the
+    /// atlas bitmaps the reader will never present to it.
+    /// </remarks>
+    public static IReadOnlyList<byte[]> ExtractGlyphs(CaptureFrame frame, RoiKind kind, PixelRect? clientArea = null)
+    {
+        ArgumentNullException.ThrowIfNull(frame);
+        if (!frame.HasPixels)
+            return Array.Empty<byte[]>();
+
+        PixelRect roi = Find(RoiSegmenter.Segment(frame.Width, frame.Height, clientArea), kind).Rect;
+        return HudGlyphExtractor.Extract(Crop(frame, roi), roi.Width, roi.Height);
+    }
+
     private static RegionOfInterest Find(IReadOnlyList<RegionOfInterest> regions, RoiKind kind)
     {
         foreach (var region in regions)
