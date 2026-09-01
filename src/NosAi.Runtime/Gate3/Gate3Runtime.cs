@@ -120,6 +120,17 @@ namespace NosAi.Runtime.Gate3
                     timeMs = 500;
                     risk = 0.10f;
                     break;
+
+                // Selecting costs a click and commits to nothing: the swing that
+                // follows is a separate candidate the planner has to justify
+                // separately. What can go wrong is aiming at a square the monster
+                // has already left, which selects nothing and is caught at
+                // verification rather than paid for in health.
+                case ActionType.TargetEntity:
+                    timeMs = 200;
+                    risk = 0.05f;
+                    successProb = 0.90f;
+                    break;
             }
 
             string signature = $"POST_HP_{Math.Clamp(currentHp + hpDelta, 0, maxHp)}_MP_{Math.Max(0, currentMp + mpDelta)}";
@@ -157,7 +168,9 @@ namespace NosAi.Runtime.Gate3
                 {
                     if (candidate.Type is ActionType.UseConsumable or ActionType.EmergencyFlee)
                         utility += 0.85f;
-                    else if (candidate.Type == ActionType.UseBasicAttack)
+                    // Picking a new fight at low health is the same mistake as
+                    // swinging at one, and costs the same.
+                    else if (candidate.Type is ActionType.UseBasicAttack or ActionType.TargetEntity)
                         utility -= 0.50f;
                 }
                 else
@@ -166,6 +179,12 @@ namespace NosAi.Runtime.Gate3
                         utility += 0.70f;
                     else if (candidate.Type == ActionType.UseBasicAttack)
                         utility += 0.55f;
+                    // Above the exploration move on purpose: with a monster
+                    // observed nearby, walking to a fixed waypoint instead of
+                    // aiming at it is the behaviour that made the loop wander
+                    // past everything it could see.
+                    else if (candidate.Type == ActionType.TargetEntity)
+                        utility += 0.50f;
                     else if (candidate.Type == ActionType.MoveToPosition)
                         utility += 0.40f;
                 }
@@ -210,7 +229,8 @@ namespace NosAi.Runtime.Gate3
                 state.Hp.Value,
                 state.MaxHp.Value,
                 state.Mp.Value,
-                state.HasTarget.HasValue ? state.HasTarget.Value : null);
+                state.HasTarget.HasValue ? state.HasTarget.Value : null,
+                state);
         }
 
         /// <summary>
@@ -254,12 +274,30 @@ namespace NosAi.Runtime.Gate3
         /// </remarks>
         private static readonly MapPoint ExplorationWaypoint = new(130, 90);
 
+        /// <summary>
+        /// How the runtime chooses which entity to aim at when it has none.
+        /// </summary>
+        /// <remarks>
+        /// A constant nobody has tuned against a real fight, and it is one place
+        /// rather than a number spread through the rules. Twelve tiles is not a
+        /// claim about attack range: past roughly that the entity is not drawn, the
+        /// projection puts it outside the client area, and the click is refused.
+        /// </remarks>
+        private static readonly TargetSelectionPolicy Targeting = TargetSelectionPolicy.Default;
+
         /// <param name="hasTarget">Null when nobody has established it.</param>
+        /// <param name="state">
+        /// The full state, for the rules that read more than the four vitals. Null
+        /// from the plain-value overload, which the dry runs and certification
+        /// runners use and which has no entities to offer — so the rule that needs
+        /// them is skipped rather than fed something invented.
+        /// </param>
         private static List<ActionCandidate> Plan(
             int playerHp,
             int maxHp,
             int playerMp,
-            bool? hasTarget)
+            bool? hasTarget,
+            Gate3WorldState? state = null)
         {
             var list = new List<ActionCandidate>();
 
@@ -307,6 +345,22 @@ namespace NosAi.Runtime.Gate3
             }
             else if (hasTarget == false)
             {
+                // Nothing is being fought, so the first question is whether there
+                // is anything to fight. Until this rule existed the answer was
+                // always no: every entity candidate carried Entity.Unidentified
+                // and the effector refused it, so the loop could only attack a
+                // target somebody else had selected.
+                if (TrySelectTarget(state) is { } chosen)
+                {
+                    list.Add(new ActionCandidate(
+                        Guid.NewGuid(),
+                        ActionType.TargetEntity,
+                        new ActionTarget.Entity(chosen.Entity.EntityId, chosen.Entity.At),
+                        0,
+                        TrustTier.Tier2_SemiAutonomous,
+                        chosen.Rationale));
+                }
+
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
                     ActionType.MoveToPosition,
@@ -321,6 +375,28 @@ namespace NosAi.Runtime.Gate3
             // walking away from a fight.
 
             return list;
+        }
+
+        /// <summary>
+        /// The entity worth aiming at, or null when there is none to aim at.
+        /// </summary>
+        /// <remarks>
+        /// Null covers a genuinely empty map, a state that carries no entities at
+        /// all, and an unknown position — none of which is a reason to plan an
+        /// attack on something unnamed. <see cref="TargetSelector"/> distinguishes
+        /// them by name; the planner only needs to know whether it has a target,
+        /// and the distinction belongs in the loop's diagnostics rather than in a
+        /// candidate.
+        /// </remarks>
+        private static TargetChoice? TrySelectTarget(Gate3WorldState? state)
+        {
+            if (state?.Entities is not { } entities || state.PlayerPosition is not { } position)
+                return null;
+
+            return TargetSelector.TrySelect(
+                entities, position, DateTime.UtcNow, Targeting, out TargetChoice? choice, out _)
+                ? choice
+                : null;
         }
     }
 

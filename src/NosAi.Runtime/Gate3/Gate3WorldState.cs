@@ -24,12 +24,25 @@ namespace NosAi.Runtime.Gate3;
 /// through to a real effector is not.
 /// </para>
 /// </remarks>
+/// <param name="Entities">
+/// What has been seen on the map, or null when nothing has looked. Only the
+/// target-selection rule reads it, so an absent list costs that one rule and
+/// leaves the others alone (ADR-0016) — the same treatment
+/// <see cref="HasTarget"/> gets when it is unknown.
+/// </param>
+/// <param name="PlayerPosition">
+/// Where the character is standing. Needed to say which observed entity is
+/// nearest and to aim at it at all; unknown is a refusal rather than the map
+/// origin.
+/// </param>
 public sealed record Gate3WorldState(
     ClassifiedValue<int> Hp,
     ClassifiedValue<int> MaxHp,
     ClassifiedValue<int> Mp,
     ClassifiedValue<bool> HasTarget,
-    ClassifiedValue<bool> InCombat)
+    ClassifiedValue<bool> InCombat,
+    IReadOnlyList<SelectableEntity>? Entities = null,
+    ClassifiedValue<MapPoint>? PlayerPosition = null)
 {
     /// <summary>Whether the character's own vitals are all known.</summary>
     /// <remarks>
