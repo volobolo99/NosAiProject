@@ -62,6 +62,61 @@ rischio nulla; deve esistere una finestra di rischio misurata.
 L'abort è sempre sicuro: tasti virtuali rilasciati, nessun pulsante lasciato premuto,
 evento con l'ultimo punto valido.
 
+**Scritto il 1 settembre 2026** — `CommitPointValidator`, `ActuationScope`,
+`HumanInputMonitor` in `src/NosAi.Runtime/LowLevel/`.
+
+**Le condizioni sono cinque, non quattro.** La quinta risponde alla domanda aperta della
+§ 7 ed è documentata lì: la scala sotto cui la coordinata è stata calcolata dev'essere
+**nota** e dev'essere ancora quella viva.
+
+L'ordine è dal più strutturale al meno, così un rifiuto nomina il fatto più a monte:
+geometria → primo piano → punto esatto (e finestra non nascosta) → operatore → scala.
+Tutte e cinque sono valutate su letture prese dentro una sola chiamata, e nessuna è
+memorizzata fra una chiamata e l'altra.
+
+**La soglia è 8 ms, e il numero ha due estremi.** Sopra: una mano che sposta una finestra
+copre una distanza visibile in ~50 ms, e un quanto di scheduling su Windows client sta fra
+15 e 30 ms — un budget più corto di un quanto significa che essere prelazionati nel
+momento sbagliato **aborta** invece di passare inosservato, ed è l'esito da preferire,
+perché un thread che non ha girato per 40 ms non sa davvero che cosa sia successo alla
+finestra. Sotto: i cinque controlli sono una manciata di chiamate Win32 e finiscono in
+decine di microsecondi, quindi 8 ms sono tre ordini di grandezza di margine e non scattano
+sul percorso normale. Una GC lunga fa scattare la soglia: è voluto, non un fastidio da
+tarare via — la pausa è esattamente l'intervallo in cui i controlli hanno smesso di essere
+veri di qualcosa.
+
+**La macchina di abort.** `ActuationScope` è l'atto: `DOMAIN-17` reso una forma. Le mosse
+del cursore dentro lo scope sono reversibili e chiedono solo policy e scope aperto; clic,
+tasto e rotella sono il passo irreversibile e vengono rivalidati per intero nell'istante
+prima di essere emessi. Ogni pressione che il gate lascia passare è **registrata prima** di
+essere emessa e cancellata dopo che è rientrata, quindi ciò che fallisce a metà lascia una
+traccia; `Abort` e `Dispose` rilasciano esattamente quella traccia, in ordine inverso — i
+modificatori risalgono dopo il tasto attorno a cui erano tenuti, come avrebbe fatto una
+pressione completata. Uno scope abortito **resta** abortito: riusarlo sarebbe ritentare
+oltre un rifiuto tenendosi l'oggetto che è stato rifiutato.
+
+Il rilascio è tentato anche se la policy è stata spenta nel frattempo, ed è l'unica
+eccezione deliberata al gate. È limitata da ciò che può esprimere, non da chi la chiama:
+`IInputReleaseBackend` non ha un metodo che prema qualcosa, quindi il peggio che quella via
+può fare è lasciar andare un tasto. Metterla dietro la policy vorrebbe dire che spegnere
+l'input a metà atto lascia un pulsante premuto — che è il guasto per cui l'eccezione
+esiste.
+
+**L'innesto, e perché non lo si aggira.** Con un `CommitPointValidator` collegato,
+`GatedInputBackend` pretende uno scope aperto per **ogni** chiamata attuante e rivalida
+prima di ogni chiamata irreversibile. Non esiste una chiamata che raggiunga il backend
+interno saltando entrambi, e dal gate non si può ottenere il backend interno: lo scope è
+l'unica via, e aprirne uno costa un `CommitRequest`, che costa uno stamp di geometria preso
+all'autorizzazione. Uno scope alla volta, perché due atti concorrenti rivaliderebbero
+ciascuno un mondo che l'altro sta cambiando.
+
+Un gate costruito **senza** validator resta policy-only com'era, e `RequiresCommitPoint` lo
+dichiara invece di lasciarlo dedurre. È una scelta di costruzione fatta in un punto solo
+— la composition root — e non un interruttore a runtime, perché un interruttore a runtime
+è la forma che ha un bypass. L'auto-calibratore è l'unica eccezione deliberata e dichiara
+la propria ragione: sta producendo la calibrazione che un commit point richiederebbe, sotto
+armamento esplicito dell'operatore, con il proprio controllo di primo piano.
+
 ### 2.2 Occlusione
 
 Meccanismo, non intenzione. Per il **punto esatto** dell'atto — non per l'area:
@@ -84,6 +139,33 @@ corso è abortita.
 attività e non distinguerebbe mai la mano dell'operatore dalla propria.
 
 Un comando esplicito di sospensione ferma tutto immediatamente, senza attendere alcun ciclo.
+
+**Scritto il 1 settembre 2026** — `HumanInputMonitor`. Tre dettagli che decidono se
+funziona:
+
+- **`GetLastInputInfo`, in concreto.** Ogni `SendInput` che questo runtime emette sposta
+  in avanti quel valore. Un runtime che gli chiedesse « una persona ha toccato qualcosa di
+  recente? » si sentirebbe rispondere di sì **dalla propria mano**, e più lavorasse più la
+  risposta sbagliata sembrerebbe certa. Non sa separare la mano dell'operatore dalla
+  nostra perché non è fatto per farlo: risponde « c'è stato input », e la domanda qui è
+  « c'è stata una **persona** ». Un solo parametro dell'hook di basso livello — il flag
+  *injected* — è tutta la differenza, e ce l'ha solo l'hook.
+- **Gli hook hanno bisogno di una coda di messaggi.** `WH_MOUSE_LL` e `WH_KEYBOARD_LL`
+  sono consegnati al thread che li ha installati, e un thread che non pompa messaggi viene
+  tolto dalla catena in silenzio dopo `LowLevelHooksTimeout`. Perciò il monitor possiede
+  un thread dedicato al solo loop: installarli sul thread principale funzionerebbe in un
+  test e ammutolirebbe sotto carico, che è la forma peggiore per un ingresso di sicurezza.
+- **Ignoto non è « nessuno c'è ».** Prima del primo evento umano, e quando il monitor non
+  gira, `SinceLastHumanInput` è `null`, e il commit point lo legge come **rifiuto**
+  (`commit_human_input_unknown`). Un monitor che non guarda non ha visto un'assenza di
+  persone.
+
+Limite noto, dichiarato invece di essere nascosto: il flag *injected* dice « un processo ha
+iniettato questo », non « questa non era una persona ». Desktop remoto, alcuni driver di
+touchpad e tablet, e i guest tools delle macchine virtuali consegnano azione umana vera con
+il flag alzato, e il monitor la leggerebbe come nostra. Dove l'ambiente è quello, la
+finestra di cortesia non protegge e l'operatore va avvisato — non è qualcosa che questa
+classe possa rilevare di sé.
 
 ---
 
@@ -143,6 +225,33 @@ Si separano così, in quest'ordine:
    il personaggio, ripetutamente ».
 
 Finché il punto 3 non è passato, `mapId` da memoria è `Candidate`, non `Verified`.
+
+**Esito della prima esecuzione dal vivo (1 settembre 2026): l'ipotesi è morta, e ha fallito
+sulla domanda giusta.** `--grid-check` ha risposto `grid_file_not_found:506534864`. Quel
+valore è `0x1E311BD0`: un indirizzo di heap in un processo a 32 bit, non un identificatore
+di mappa — le mappe estratte sono 777 e i loro id stanno sotto il migliaio. Il campo a
+`+0x30` del player manager contiene un **puntatore**.
+
+Vale la pena notare *come* è fallito. Il verdetto è arrivato dal caricamento del file, cioè
+da un filtro ancora più economico del confronto sui limiti della griglia, e quindi la
+calpestabilità non è mai stata letta: nessuna conclusione sbagliata sui bit è stata
+prodotta. L'esperimento confuso descritto sopra non si è verificato perché la sua prima
+domanda è arrivata per prima.
+
+`MapIdOffset` torna a `Unmapped`. Le due vie per trovarlo, in ordine di solidità:
+
+1. **Il filo insegna**, come in ADR-0017. `c_map` porta il cambio di mappa e nessuna cattura
+   in archivio ne contiene uno, perché nessuna cattura è stata fatta *attraversando un
+   portale*. Una cattura etichettata durante un cambio di mappa dà l'id dalla sorgente che
+   lo nomina, e diventa poi l'etichetta con cui corroborare qualunque offset di memoria.
+2. **Le 777 griglie come oracolo.** Un candidato in memoria è plausibile solo se esiste un
+   `.grid` con quell'id **e** le coordinate del personaggio cadono dentro le sue dimensioni.
+   È un filtro falsificabile su una scansione, non un'ipotesi: ripetuto su due mappe diverse
+   sopravvive un solo candidato. Non richiede cattura e usa dati che già esistono.
+
+Un puntatore a `+0x30` suggerisce che l'id stia dietro di esso. Seguirlo a offset piccoli è
+la terza via, ed è la peggiore: è indovinare due volte invece di una, e produce numeri
+plausibili prima di produrre quello giusto.
 
 *Testo precedente, superato dalla misura:*
 ~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della
@@ -602,11 +711,12 @@ seconda condizione che deve chiudere più a valle — e che non esiste ancora.
 | Dove | La condizione | Il valle su cui si appoggia | Stato del valle |
 |---|---|---|---|
 | § 3.1 | terreno aperto non osservato è `Walkable`: autorizza un piano, mai un atto | limite di età dell'osservazione all'atto | **non scritto** — l'unico confronto d'età è in `TargetSelector`, e riguarda il bersaglio |
-| § 6.3 | l'epoca è derivata a ogni lettura, non mantenuta | il commit point che la confronta fra autorizzazione ed emissione | **non scritto** — è § 2.1 |
-| § 6.3 | un DPI illeggibile fa **saltare** il confronto, non fallire: una diagnostica non presa non prova che la scala si sia mossa | ciò che chiude all'atto quando la scala è ignota | **domanda aperta** |
+| § 6.3 | l'epoca è derivata a ogni lettura, non mantenuta | il commit point che la confronta fra autorizzazione ed emissione | **scritto** il 1 set 2026 — `CommitPointValidator`, prima condizione |
+| § 6.3 | un DPI illeggibile fa **saltare** il confronto, non fallire: una diagnostica non presa non prova che la scala si sia mossa | ciò che chiude all'atto quando la scala è ignota | **risposta**: il commit point, quinta condizione — sotto |
 
-I primi due sono registrati e datati: la condizione è giusta, il suo compagno arriva in P4 e
-in P2. Il terzo è una domanda vera, e va posta prima che P2 la assorba per abitudine.
+Il primo è registrato e datato: la condizione è giusta, il suo compagno arriva in P4. Il
+secondo è stato chiuso il 1 settembre 2026. Il terzo era una domanda vera, ed è stata
+risposta invece di essere assorbita per abitudine.
 
 `CalibratedScreenProjection` riga 194 confronta il DPI solo quando entrambi i valori sono
 diversi da zero. Con il DPI corrente illeggibile il confronto è saltato e la proiezione
@@ -616,9 +726,46 @@ guardia più avanti a decidere se quel pixel diventa un click.
 
 Ma se quella guardia non c'è, « saltato » significa oggi « prosegue », e `DOMAIN-10` dice
 che sconosciuto non autorizza un'azione protetta. Quindi: **che cosa chiude all'atto quando
-la scala è ignota?** Se la risposta è « il commit point », va scritta lì insieme alle altre
-quattro condizioni. Se la risposta è « niente », allora il salto va convertito in un rifiuto
-finché non esiste qualcosa che chiuda.
+la scala è ignota?**
+
+### La risposta (1 settembre 2026): il commit point, quinta condizione
+
+**È il commit point, ed è ora scritto lì insieme alle altre quattro.**
+
+```
+COMMIT (§ 2.1, cinque condizioni):
+    epoca di geometria invariata dallo stamp di autorizzazione   altrimenti ABORT
+  ∧ finestra in primo piano == finestra di sessione             altrimenti ABORT
+  ∧ WindowFromPoint(p) → GA_ROOT == finestra di sessione,
+    e finestra non nascosta secondo DWM                          altrimenti ABORT
+  ∧ nessun input umano nella finestra di cortesia               altrimenti ABORT
+  ∧ scala della coordinata NOTA e ancora quella viva            altrimenti ABORT   ← questa
+    ────────────────────────────────────────────────
+    EMETTI, se il ritardo dall'ultima verifica ≤ 8 ms
+```
+
+`CommitRequest` porta la `GeometryShape` sotto cui la coordinata è stata calcolata — quella
+della calibrazione che l'ha prodotta — e il validator rifiuta con `commit_scale_unknown`
+quando il DPI di quella forma è zero, e con `commit_scale_changed:<da>_a_<a>` quando non è
+più il DPI vivo.
+
+**Perché questa è la divisione giusta.** Il ragionamento della proiezione resta valido e non
+cambia: `CalibratedScreenProjection` produce un **pixel**, non un atto, e non sapere se la
+scala si è mossa non è sapere che si è mossa. Rifiutare lì bloccherebbe anche la
+pianificazione e la diagnostica per un dato mancante. Il commit point invece **è** l'atto:
+lì, e solo lì, `DOMAIN-10` morde, e sconosciuto non autorizza. La stessa asimmetria della
+§ 3.1 — autorizza un piano, mai un atto.
+
+**Un caso arriva già chiuso dalla prima condizione, ed è utile sapere quale.** Se il DPI
+*corrente* è illeggibile, `GeometryEpoch.Read` restituisce `Unknown`, e `Unknown` non
+combacia con niente: l'atto cade sulla condizione uno prima di arrivare alla cinque. La
+quinta serve all'altro caso, quello che nient'altro vede: il DPI **memorizzato** è zero —
+una calibrazione prodotta dove nessuno lo lesse — mentre il corrente si legge benissimo.
+Lì la geometria è coerente, il primo controllo passa, e l'atto procederebbe con una
+coordinata la cui provenienza di scala non è registrata da nessuna parte.
+
+Test: `tests/NosAi.Runtime.Tests/CommitPointTests.cs`, `AnUnknownScaleRefusesTheAct` e
+`AScaleThatIsNoLongerTheLiveOneRefuses`.
 
 La regola generale che vale la pena tenere: una condizione può appoggiarsi a una seconda che
 arriva dopo, ma il documento deve dire che non c'è ancora. Un documento che la dà per
