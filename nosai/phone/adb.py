@@ -225,6 +225,23 @@ class Adb:
     def remove_reverse(self, serial: str, port: int = GUARD_PORT) -> None:
         self.run("-s", serial, "reverse", "--remove", f"tcp:{port}", check=False)
 
+    def clear_log(self, serial: str) -> None:
+        """Drop the device log buffer.
+
+        Called immediately before launching the app so that the only published
+        key in the buffer belongs to the run enrolment is about to read.
+        `extract_public_key` already takes the most recent block, but "most
+        recent in the buffer" is not "from the run we just started": the app
+        publishes its key a moment after launch, so a previous run's block is
+        still the newest one when `collect` first looks, and it is returned
+        rather than retried for.
+
+        Best effort. A device that refuses to clear its log is not a reason to
+        abandon the deployment; the enrolment that follows still verifies what
+        it read, and a stale key surfaces as a failed handshake as before.
+        """
+        self.run("-s", serial, "logcat", "-c", check=False)
+
     def launch(self, serial: str, package: str = PACKAGE_NAME) -> None:
         self.run("-s", serial, "shell", "monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1", check=False)
 
@@ -305,6 +322,10 @@ def deploy(
 
     adb.reverse(device.serial, port)
     if launch:
+        # Cleared first: enrolment reads the published key out of this
+        # buffer, and a key left by the previous run would be the newest
+        # block until this one publishes its own.
+        adb.clear_log(device.serial)
         adb.launch(device.serial)
 
     return DeploymentResult(

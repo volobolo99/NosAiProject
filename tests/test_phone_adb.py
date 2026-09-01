@@ -142,6 +142,36 @@ def test_deploy_skips_install_when_the_installed_apk_is_the_same_build(monkeypat
     assert "install" not in recorder.flat()
 
 
+def test_deploy_clears_the_log_before_launching_so_enrolment_reads_this_run(monkeypatch, fake_apk, fake_adb_binary):
+    # extract_public_key takes the most recent block in the buffer, but "most
+    # recent" is not "from the run we just started": the app publishes its key a
+    # moment after launch, so the previous run's block is still newest when
+    # collect first looks. It is then enrolled, and the runtime refuses the
+    # handshake with authentication_failed and no clue why. Clearing first means
+    # the only block that can be read is this run's.
+    same = hashlib.md5(fake_apk.read_bytes()).hexdigest()
+    recorder = _install_recorder(monkeypatch, _present_device(same))
+
+    deploy(apk=fake_apk, adb_path=fake_adb_binary)
+
+    clear = ["-s", "R58M12345", "logcat", "-c"]
+    assert clear in recorder.calls, recorder.flat()
+
+    launch_index = next(i for i, c in enumerate(recorder.calls) if "monkey" in c)
+    assert recorder.calls.index(clear) < launch_index, "the log must be cleared before the launch"
+
+
+def test_deploy_does_not_clear_the_log_when_it_is_not_launching(monkeypatch, fake_apk, fake_adb_binary):
+    # Nothing is going to be enrolled, so there is no reason to throw away a log
+    # the operator may be reading.
+    same = hashlib.md5(fake_apk.read_bytes()).hexdigest()
+    recorder = _install_recorder(monkeypatch, _present_device(same))
+
+    deploy(apk=fake_apk, adb_path=fake_adb_binary, launch=False)
+
+    assert ["-s", "R58M12345", "logcat", "-c"] not in recorder.calls
+
+
 def test_deploy_reinstalls_when_the_installed_apk_is_a_different_build(monkeypatch, fake_apk, fake_adb_binary):
     # The bug this pins. Presence of the package used to count as up to date, so a
     # build from a previous day stayed on the phone while the runtime had moved on
