@@ -808,6 +808,24 @@ namespace NosAi.Runtime.Gate3
             (ActionCandidate best, float utility) = ranked[0];
             PredictedOutcome predicted = predictions[best.CandidateId];
 
+            // Admission control before authorisation, because a breaker that only
+            // labels the runtime does not slow it down: the previous version
+            // escalated to Degraded and then went on acting at the same rate, so the
+            // next failure was never far away. A refusal here is the breaker working
+            // and is reported as a block, never fed back as a failed action.
+            RuntimeMode admissionMode = CurrentMode;
+            if (!_recovery.TryBeginAction(ref admissionMode, out string? recoveryRefusal))
+            {
+                CurrentMode = admissionMode;
+                return Result(
+                    CycleOutcome.Blocked,
+                    $"Blocco recovery: {recoveryRefusal}. Stato breaker: {_recovery.State}.",
+                    best.Type,
+                    null);
+            }
+
+            CurrentMode = admissionMode;
+
             if (!_safetyGate.TryAuthorize(best, predicted, CurrentMode, out SafetyToken? safetyToken, out string? rejection))
                 return Result(CycleOutcome.Blocked, $"Blocco Safety Gate: {rejection}", best.Type, null);
 
@@ -833,11 +851,21 @@ namespace NosAi.Runtime.Gate3
 
             if (verification.IsConfirmed)
             {
-                _recovery.ResetFailures();
-                CurrentMode = RuntimeMode.Normal;
+                // The orchestrator used to reset the failure count and assign Normal
+                // itself, which put the decision to resume full speed in the one
+                // place that cannot see the history it depends on. It reports the
+                // outcome now; the controller decides what the outcome earns.
+                RuntimeMode confirmedMode = CurrentMode;
+                RecoveryState breakerState = _recovery.HandleSuccess(ref confirmedMode);
+                CurrentMode = confirmedMode;
+
+                string trial = breakerState == RecoveryState.Probing
+                    ? $" In prova: {_recovery.ProbeSuccessesToClose} successi consecutivi per rientrare."
+                    : string.Empty;
+
                 return Result(
                     CycleOutcome.Confirmed,
-                    $"Ciclo confermato: {best.Type} (utility {utility:F2}). {verification.AnalysisReport}",
+                    $"Ciclo confermato: {best.Type} (utility {utility:F2}). {verification.AnalysisReport}{trial}",
                     best.Type,
                     null);
             }

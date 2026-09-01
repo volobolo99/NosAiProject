@@ -267,6 +267,9 @@ namespace NosAi.Runtime.Gate6
                 $"POST_HP_{Math.Clamp(currentHp + hpDelta, 0, maxHp)}_MP_{Math.Max(0, currentMp + mpDelta)}"
             );
 
+            if (!_recovery.TryBeginAction(ref _currentMode, out string? recoveryRefusal))
+                return (false, $"[SIMULATED] Blocco recovery: {recoveryRefusal} (breaker {_recovery.State}).");
+
             if (!_safetyGate.TryAuthorize(candidate, outcome, _currentMode, out SafetyToken? token, out string? rejectReason))
                 return (false, $"[SIMULATED] Blocco Safety Gate: {rejectReason}");
 
@@ -275,7 +278,9 @@ namespace NosAi.Runtime.Gate6
 
             if (verif.IsSuccess)
             {
-                _recovery.Reset();
+                // Not a reset: a recorded success. Whether it amounts to a recovery
+                // is the controller's to decide, from the window and the trial.
+                _recovery.HandleSuccess(ref _currentMode);
                 return (true, $"[SIMULATED] Ciclo {_cycleCounter} eseguito: {candidate.Type}. {verif.AnalysisReport}");
             }
 
