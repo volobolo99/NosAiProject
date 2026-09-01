@@ -132,6 +132,29 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--screen-samples-clear", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.ScreenProjectionProbe.RunClear(null);
 
+        // T-11 in one command: resolve the character object in the running client
+        // and check the id it holds against the id the server sent. Read-only.
+        int playerProbeFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--player-probe", StringComparison.OrdinalIgnoreCase));
+        if (playerProbeFlag >= 0)
+        {
+            int pidFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--pid", StringComparison.OrdinalIgnoreCase));
+            int targetPid = pidFlag >= 0 && pidFlag + 1 < args.Length
+                            && int.TryParse(args[pidFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedPid)
+                ? parsedPid
+                : 0;
+
+            int expectFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--expect-id", StringComparison.OrdinalIgnoreCase));
+            long? expectedId = expectFlag >= 0 && expectFlag + 1 < args.Length
+                               && long.TryParse(args[expectFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedId)
+                ? parsedId
+                : null;
+
+            return NosAi.LiveIntegration.PlayerObjectProbe.Run(targetPid, expectedId);
+        }
+
         // What a recording says, read by the runtime's own decoder and needing no
         // driver. WinDivertProbe --world does the same, but it has to sit beside a
         // staged WinDivert.dll and it holds the runtime assembly open while it
@@ -299,7 +322,8 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--decide-replay"
+            "--hud-probe", "--decide-replay", "--player-probe", "--world-replay",
+            "--screen-sample", "--screen-calibrate", "--screen-samples-clear"
         };
 
     private static int RunDxgiProbe()
