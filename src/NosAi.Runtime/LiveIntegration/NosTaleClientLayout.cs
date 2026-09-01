@@ -57,15 +57,41 @@ public sealed class NosTaleClientLayout
     /// <summary>Player manager → the character id the client is holding.</summary>
     public const int PlayerIdOffset = 0x24;
 
-    /// <summary>
-    /// Why <see cref="TryReadMapId"/> refuses: there is no mapped offset.
-    /// </summary>
+    /// <summary>Client image base to the id of the map the character is on.</summary>
     /// <remarks>
-    /// <c>+0x30</c> was tried and produced <c>506534864</c> (<c>0x1E311BD0</c>), a
-    /// heap pointer, not a map id. The field is unmapped until
-    /// <c>--find-mapid</c> identifies an address that tracks two different maps.
+    /// <para>
+    /// <b>Measured, not guessed, and measured against two different questions.</b>
+    /// <c>+0x30</c> on the player manager, which the community documentation gave,
+    /// held a heap pointer: <c>--grid-check</c> read <c>506534864</c> where the
+    /// extracted map ids are all under a thousand. What replaced the guess is the
+    /// oracle in <see cref="NosAi.Runtime.Navigation.MapIdFinder"/>: a word is a
+    /// candidate only while it names a <c>.grid</c> whose rectangle contains the
+    /// character.
+    /// </para>
+    /// <para>
+    /// On 2 September 2026 that filter survived four maps and one client restart
+    /// and left exactly one candidate. The two proofs answer two different
+    /// questions and neither substitutes for the other: crossing a portal shows
+    /// the field <i>is</i> the map id, and restarting the client shows this number
+    /// is an <i>offset</i> rather than an address that happened to work once.
+    /// </para>
+    /// <para>
+    /// It is measured from the <b>image</b>, not from the manager, so it is a
+    /// global the client keeps rather than a field of the character's object. That
+    /// is why it is resolved against the module base this layout was found in, and
+    /// why it survives relocation: the base is read again on every attach.
+    /// </para>
+    /// <para>
+    /// It is still not a licence to trust the number. The id is only
+    /// <c>Candidate</c> until it resolves to a grid that contains the character,
+    /// repeatedly - the validity predicate ADR-0014 asks for - and
+    /// <c>--grid-check</c> is where that is checked.
+    /// </para>
     /// </remarks>
-    public const string MapIdUnmapped = "map_id_unmapped";
+    public const int MapIdModuleOffset = 0x38D1BC;
+
+    /// <summary>Reported when the word at that offset cannot be a map id.</summary>
+    public const string MapIdImplausiblePrefix = "map_id_implausible";
 
     /// <summary>
     /// Player manager → the square the character is walking to.
@@ -141,11 +167,25 @@ public sealed class NosTaleClientLayout
     public const int PositionOffset = 0x0C;
 
     private readonly IntPtr _pointerHolder;
+    private readonly IntPtr _moduleBase;
 
-    private NosTaleClientLayout(IntPtr pointerHolder) => _pointerHolder = pointerHolder;
+    private NosTaleClientLayout(IntPtr pointerHolder, IntPtr moduleBase)
+    {
+        _pointerHolder = pointerHolder;
+        _moduleBase = moduleBase;
+    }
 
     /// <summary>The absolute address the client's code loads the manager from.</summary>
     public IntPtr PlayerManagerPointerAddress => _pointerHolder;
+
+    /// <summary>
+    /// The image base this layout was resolved in.
+    /// </summary>
+    /// <remarks>
+    /// Held rather than passed in per call, so that a module-relative offset can
+    /// never be resolved against a base from a different attach.
+    /// </remarks>
+    public IntPtr ModuleBase => _moduleBase;
 
     /// <summary>
     /// Finds the layout in the client's own image, or says why it could not.
@@ -209,7 +249,7 @@ public sealed class NosTaleClientLayout
                 return false;
             }
 
-            layout = new NosTaleClientLayout(holder);
+            layout = new NosTaleClientLayout(holder, moduleBase);
             return true;
         }
 
@@ -311,14 +351,49 @@ public sealed class NosTaleClientLayout
     }
 
     /// <summary>
-    /// The map id is not mapped. <c>+0x30</c> was a pointer; see
-    /// <see cref="MapIdUnmapped"/>.
+    /// Reads the map id the client keeps at <see cref="MapIdModuleOffset"/>, or
+    /// says why it could not.
     /// </summary>
-    public static bool TryReadMapId(out int mapId, out string? failureReason)
+    /// <remarks>
+    /// Read on every call and never cached, for the same reason as
+    /// <see cref="TryReadPlayer"/>: the value is the answer to "where is the
+    /// character now", and a remembered one answers "where was it".
+    /// </remarks>
+    public bool TryReadMapId(
+        ProcessMemoryReader reader,
+        out int mapId,
+        out string? failureReason)
     {
+        ArgumentNullException.ThrowIfNull(reader);
         mapId = 0;
-        failureReason = MapIdUnmapped;
-        return false;
+
+        if (_moduleBase == IntPtr.Zero)
+        {
+            failureReason = "client_module_not_located";
+            return false;
+        }
+
+        MemoryReadResult bytes = reader.Read(_moduleBase + MapIdModuleOffset, sizeof(int));
+        if (!bytes.Ok)
+        {
+            failureReason = bytes.FailureReason ?? "map_id_unreadable";
+            return false;
+        }
+
+        int value = BitConverter.ToInt32(bytes.Bytes);
+
+        // A negative id is not a small mistake, it is a different field: the
+        // extracted ids are all positive and under a thousand, so a value outside
+        // that shape is reported rather than carried into a file lookup.
+        if (value < 0)
+        {
+            failureReason = $"{MapIdImplausiblePrefix}:{value.ToString(CultureInfo.InvariantCulture)}";
+            return false;
+        }
+
+        mapId = value;
+        failureReason = null;
+        return true;
     }
 
     /// <summary>

@@ -145,11 +145,16 @@ public sealed class MapGridCheckTests
     }
 
     [Fact]
-    public void MapIdIsUnmappedUntilFindMapIdEstablishesAnAddress()
+    public void TheStandingCellCheckAsksTheClientWhichMapItIsOn()
     {
-        Assert.False(NosTaleClientLayout.TryReadMapId(out int mapId, out string? reason));
-        Assert.Equal(0, mapId);
-        Assert.Equal(NosTaleClientLayout.MapIdUnmapped, reason);
+        // It reads the id rather than taking one on the command line, because the
+        // proof is about the map the character is *on*, and a typed id would let
+        // the two disagree without anything noticing.
+        Assert.True(NosTaleClientLayout.MapIdModuleOffset > 0);
+
+        string source = File.ReadAllText(Path.Combine(
+            RepositoryRoot(), "src", "NosAi.Runtime", "Navigation", "MapGridCheck.cs"));
+        Assert.Contains("TryReadMapId", source, StringComparison.Ordinal);
     }
 
     [Fact]

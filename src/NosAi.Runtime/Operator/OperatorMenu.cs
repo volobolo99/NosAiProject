@@ -18,6 +18,9 @@ namespace NosAi.Runtime.Operator;
 /// <param name="Passes">How many different maps the set has tracked.</param>
 /// <param name="Restarts">How many client restarts it has survived.</param>
 /// <param name="Winner">The single proven candidate, when there is one.</param>
+/// <param name="PlayerX">Where the character stood on the last pass.</param>
+/// <param name="PlayerY">Where the character stood on the last pass.</param>
+/// <param name="BestAnchored">The first candidate measured from a base, if any.</param>
 public readonly record struct MapIdProgress(
     bool MapsReady,
     int Grids,
@@ -26,7 +29,10 @@ public readonly record struct MapIdProgress(
     int Anchored,
     int Passes,
     int Restarts,
-    string? Winner);
+    string? Winner,
+    int PlayerX = -1,
+    int PlayerY = -1,
+    string? BestAnchored = null);
 
 /// <summary>
 /// One screen the operator can open and keep open, instead of a list of flags to
@@ -79,15 +85,31 @@ public static class OperatorMenu
 
         if (progress.Winner is { } winner)
         {
-            return $"TROVATO: {winner}. Due prove su due. Passa questa riga a Claude: "
-                 + "va scritta in NosTaleClientLayout, e da li' la voce 2 diventa eseguibile.";
+            return $"TROVATO: {winner} - due prove su due, ed e' scritto in NosTaleClientLayout. "
+                 + "Ora la voce 2: fermo il personaggio, la cella sotto di te deve risultare "
+                 + "calpestabile. E' la prova che dice se i bit della griglia significano quello "
+                 + "che il layout pretende.";
+        }
+
+        // A restart drops every bare address at once, and it is the proof that is
+        // missing anyway. When something is anchored and something else is not, it
+        // narrows harder than another portal and costs the same.
+        if (progress.Restarts < 1 && progress.Anchored >= 1 && progress.Anchored < progress.Candidates)
+        {
+            string bare = (progress.Candidates - progress.Anchored).ToString(CultureInfo.InvariantCulture);
+            string kept = progress.Anchored.ToString(CultureInfo.InvariantCulture);
+            return $"Chiudi NosTale, riaprilo, rientra con lo stesso personaggio e rilancia la voce 1. "
+                 + $"I {bare} candidati che sono solo indirizzi muoiono con il processo e cadono da soli; "
+                 + $"restano i {kept} ancorati. E' anche la prova che manca: un offset sopravvive al "
+                 + "riavvio, un indirizzo no.";
         }
 
         if (progress.Candidates > 1)
         {
             string count = progress.Candidates.ToString(CultureInfo.InvariantCulture);
             return $"Restano {count} candidati. Attraversa un portale verso una mappa di dimensioni "
-                 + "diverse e rilancia la voce 1: chi non cambia valore non e' il codice mappa.";
+                 + "diverse e rilancia la voce 1: chi non cambia valore non e' il codice mappa."
+                 + WeakFilterHint(progress.PlayerX, progress.PlayerY);
         }
 
         if (progress.Passes < 2)
@@ -107,6 +129,25 @@ public static class OperatorMenu
              + "stesso personaggio e rilancia la voce 1: un offset sopravvive al riavvio, un indirizzo no.";
     }
 
+    /// <summary>
+    /// Says so when the character is standing where the oracle barely filters.
+    /// </summary>
+    /// <remarks>
+    /// A cell near the origin is inside almost every rectangle, so nearly every
+    /// map is plausible and the pass discards nothing. Where the character stands
+    /// is part of the experiment, and it is the part nobody thinks of as one.
+    /// </remarks>
+    internal static string WeakFilterHint(int x, int y)
+    {
+        const int Narrow = 50;
+        if (x < 0 || y < 0 || (x >= Narrow && y >= Narrow))
+            return string.Empty;
+
+        string cell = x.ToString(CultureInfo.InvariantCulture) + "," + y.ToString(CultureInfo.InvariantCulture);
+        return $" E fermati lontano dall'angolo 0,0: a {cell} quasi ogni griglia ti contiene, "
+             + "e un filtro che accetta tutti non scarta nessuno.";
+    }
+
     /// <summary>Reads the state the menu shows, from the disk and the live client.</summary>
     public static MapIdProgress ReadProgress(string candidatePath)
     {
@@ -123,10 +164,14 @@ public static class OperatorMenu
             return new MapIdProgress(mapsReady, grids, HasFile: false, 0, 0, 0, 0, null);
 
         int anchored = 0;
+        string? bestAnchored = null;
         foreach (MapIdHit hit in file.Hits)
         {
-            if (hit.IsDurable)
-                anchored++;
+            if (!hit.IsDurable)
+                continue;
+
+            anchored++;
+            bestAnchored ??= hit.Describe();
         }
 
         string? winner = MapIdFinder.Proven(file.Hits, file.Passes, file.Restarts)
@@ -134,7 +179,8 @@ public static class OperatorMenu
             : null;
 
         return new MapIdProgress(
-            mapsReady, grids, HasFile: true, file.Hits.Count, anchored, file.Passes, file.Restarts, winner);
+            mapsReady, grids, HasFile: true, file.Hits.Count, anchored, file.Passes, file.Restarts, winner,
+            file.PlayerX, file.PlayerY, bestAnchored);
     }
 
     /// <summary>Runs the menu until the operator leaves it.</summary>
@@ -176,6 +222,9 @@ public static class OperatorMenu
                     break;
                 case "7":
                     Perform("SendInput arriva alla coda?", () => LowLevel.InputEnvironmentProbe.RunConsoleProbe());
+                    break;
+                case "8":
+                    Perform("Stato delle guardie d'input", () => LowLevel.InputGuardsProbe.Run());
                     break;
                 case "0":
                 case "q":
@@ -231,6 +280,7 @@ public static class OperatorMenu
         Console.WriteLine("  5  Estrai le mappe dal client   (una volta per build)");
         Console.WriteLine("  6  Scheda di una mappa          (dimensioni e hash)");
         Console.WriteLine("  7  SendInput arriva alla coda?  (non muove niente)");
+        Console.WriteLine("  8  Stato delle guardie d'input  (commit point, sola lettura)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Tutto qui dentro e' in sola lettura: niente muove il personaggio.");
@@ -246,8 +296,9 @@ public static class OperatorMenu
         string anchored = progress.Anchored.ToString(CultureInfo.InvariantCulture);
         string passes = progress.Passes.ToString(CultureInfo.InvariantCulture);
         string restarts = progress.Restarts.ToString(CultureInfo.InvariantCulture);
-        return $"codice mappa: {candidates} candidati ({anchored} ancorati) — "
-             + $"mappe seguite {passes}/2, riavvii superati {restarts}/1";
+        string tail = progress.BestAnchored is { } best ? $"  [{best}]" : string.Empty;
+        return $"codice mappa: {candidates} candidati ({anchored} ancorati) - "
+             + $"mappe seguite {passes}/2, riavvii superati {restarts}/1{tail}";
     }
 
     [SupportedOSPlatform("windows")]

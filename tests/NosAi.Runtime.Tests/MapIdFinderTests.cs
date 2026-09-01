@@ -312,11 +312,11 @@ public sealed class MapIdFinderTests
     }
 
     [Fact]
-    public void MapIdIsUnmappedUntilFindMapIdEstablishesAnOffset()
+    public void WhatTheOracleProvedIsWrittenDownAsAModuleOffset()
     {
-        Assert.False(NosTaleClientLayout.TryReadMapId(out int mapId, out string? reason));
-        Assert.Equal(0, mapId);
-        Assert.Equal(NosTaleClientLayout.MapIdUnmapped, reason);
+        // Four maps and one client restart, 2 September 2026. Measured from the
+        // image, so it is a global the client keeps, not a field of the character.
+        Assert.Equal(0x38D1BC, NosTaleClientLayout.MapIdModuleOffset);
     }
 
     [Fact]

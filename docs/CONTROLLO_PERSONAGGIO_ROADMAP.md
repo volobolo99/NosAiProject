@@ -87,7 +87,7 @@ negativa diventa un lavoro in P2.
 | ~~Loader del formato, `--extract-maps`, `--map-info <mapId>`~~ **fatto** — 777 mappe, 0 rifiutate | Cursor |
 | ~~Test di caricamento su tutte le mappe estratte~~ **fatto** | Cursor |
 | `--extract-maps` sul volume `NOSAI-SSD` vero, una volta | operatore |
-| **Trovare `mapId`** — `--find-mapid`, poi un portale, poi di nuovo, **poi un riavvio del client**: deve sopravvivere un solo candidato, e ancorato a una base che il runtime risolve. Il comando esce `0` solo con entrambe le prove | operatore |
+| ~~**Trovare `mapId`** — `--find-mapid`, portali, riavvio del client~~ **fatto** il 2 settembre 2026: 4 mappe, 1 riavvio, un solo superstite. `MapIdModuleOffset = 0x38D1BC`, misurato dall'immagine del client | operatore |
 | **Prova della cella su cui si sta** — `--grid-check` col client aperto; la cella sotto il personaggio deve risultare calpestabile | operatore |
 
 **Stato: contenitore verificato, semantica dei bit no.** Il vincolo
@@ -119,7 +119,7 @@ d'ambiente mai dichiarata.
 | Osservazione di cambio DPI e cambio monitor, oltre a spostamento e ridimensionamento | Claude |
 | Sostituzione del campo `_geometry` mai aggiornato di `Win32ProcessAdapter` | Claude |
 | ~~`app.manifest` con `PerMonitorV2` e `ApplicationManifest` nel csproj~~ **fatto** | Cursor |
-| ~~Comando che stampa rect, dpi, monitor~~ **fatto** (`--window-probe`); manca l'epoca | Cursor |
+| ~~Comando che stampa rect, dpi, monitor~~ **fatto** (`--window-probe`); ~~manca l'epoca~~ **fatto** (stampa `GeometryEpoch`) | Cursor |
 | Test: cambio scala e spostamento fra monitor con scale diverse | Cursor |
 
 **DoD** — con il client su un monitor al 100 % e uno al 150 %, il rect letto è in pixel
@@ -140,8 +140,8 @@ Dipende da P2a per l'epoca.
 | Controllo di occlusione puntuale (`WindowFromPoint` + `GetAncestor` + primo piano + attributo DWM) | Claude |
 | `HumanInputMonitor`: hook di basso livello, scarto degli eventi iniettati, finestra di cortesia | Claude |
 | Innesto in `GatedInputBackend` senza aprire una via che lo aggiri | Claude + Cursor |
-| P/Invoke, wiring, comando `--input-guards` che stampa lo stato delle quattro condizioni | Cursor |
-| Test: occlusione, presa umana, geometria mutata a metà atto | Cursor |
+| ~~P/Invoke, wiring, comando `--input-guards` che stampa lo stato delle quattro condizioni~~ **fatto** (cinque: la quinta è la scala). `LibraryImport` su `Win32CommitEnvironment` e `HumanInputMonitor`; `CreateSafe` cablato; `--input-guards` e `--watch` | Cursor |
+| Test: occlusione, presa umana, geometria mutata a metà atto | Cursor (nomi e report: `InputGuardsProbeTests`; sul client vivo: `--input-guards --watch`) |
 | Sostituzione del `Math.Clamp` finale di `Win32InputBackend.MoveAbsolute` con un rifiuto motivato: un punto fuori dal desktop virtuale è impossibile, non da riportare al bordo | Claude |
 
 **DoD** — sposti la finestra durante un atto ⇒ nessun pixel emesso. Porti un'altra finestra
@@ -370,6 +370,6 @@ immediato, esposizione dello stato e dei budget nella dashboard e nelle metriche
 
 ## 6. Cosa fare adesso
 
-1. `X-P0` a Cursor e `C-P0` a Claude: tre domande e una lettura, nessuna modifica.
-2. In parallelo `C-P1` e `C-P2` a Claude: sono le due tappe che portano il valore.
-3. `P2` prima di `P4`. Il primo passo non si emette finché il commit point non esiste.
+1. ~~`X-P0` / `C-P0`~~ chiusi. ~~`C-P1` / `C-P2`~~ scritti. ~~`X-P2`~~ cablato il 2 settembre 2026.
+2. Sul client vivo: `NosAi.Runtime.exe --input-guards --watch 20`. Sposta la finestra, copri il punto, tocca il mouse. Ogni prova deve nominare il proprio rifiuto. Soglie e tolleranze non si toccano.
+3. `P2` prima di `P4`. Il primo passo non si emette finché queste tre prove non sono state viste sul client, non solo sul desktop fittizio.

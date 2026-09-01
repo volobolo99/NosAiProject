@@ -152,11 +152,11 @@ public sealed class ClientMemorySession : IDisposable
         return _layout.TryResolveBases(_reader, out playerManager, out playerObject, out failureReason);
     }
 
-    /// <summary>The map id is not mapped; see <see cref="NosTaleClientLayout.MapIdUnmapped"/>.</summary>
+    /// <summary>Reads the id of the map the character is on, or says where it broke.</summary>
     public bool TryReadMapId(out int mapId, out string? failureReason)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        return NosTaleClientLayout.TryReadMapId(out mapId, out failureReason);
+        return _layout.TryReadMapId(_reader, out mapId, out failureReason);
     }
 
     /// <summary>Reads one of the client's entity lists for the current map.</summary>

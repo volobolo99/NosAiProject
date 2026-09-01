@@ -65,6 +65,10 @@ evento con l'ultimo punto valido.
 **Scritto il 1 settembre 2026** — `CommitPointValidator`, `ActuationScope`,
 `HumanInputMonitor` in `src/NosAi.Runtime/LowLevel/`.
 
+**Cablato il 2 settembre 2026** — `CreateSafe` innesta il validator; il host avvia
+il monitor. `--input-guards` stampa le cinque condizioni; `--watch` le rivalida
+contro lo stamp iniziale. Le suite di certificazione restano policy-only.
+
 **Le condizioni sono cinque, non quattro.** La quinta risponde alla domanda aperta della
 § 7 ed è documentata lì: la scala sotto cui la coordinata è stata calcolata dev'essere
 **nota** e dev'essere ancora quella viva.
@@ -302,6 +306,42 @@ Se il mapId fosse un globale — la forma più durevole che potrebbe avere — l
 precedente non avrebbe potuto trovarlo, perché `MEM_IMAGE` non è `MEM_PRIVATE`, e l'unico esito
 possibile sarebbe stato un indirizzo che muore al riavvio. Le pagine di sola lettura di
 quell'immagine restano fuori: contengono costanti compilate, non stato.
+
+**Prima esecuzione con le ancore (2 settembre 2026): quattro mappe, otto superstiti, uno solo
+ancorato.** Il candidato durevole e' `module+0x38D1BC`, cioe' un globale dentro l'immagine del
+client; gli altri sette sono indirizzi nudi. Due cose meritano di restare scritte.
+
+La prima: l'unico candidato che si puo' scrivere sta **nell'immagine**, non nelle regioni
+private. La scansione precedente non l'avrebbe mai visto, e il migliore esito raggiungibile
+sarebbe stato uno dei sette indirizzi che muoiono al riavvio — cioe' una risposta che sembra
+una risposta. L'allargamento della scansione non ha aggiunto rumore: ha aggiunto l'unica riga
+utile.
+
+La seconda: il personaggio era in `69,2`. A `y = 2` quasi ogni griglia lo contiene, quindi il
+filtro dell'oracolo non morde, e otto superstiti dopo quattro mappe non sorprendono. **Dove ci
+si ferma e' parte dell'esperimento**, ed e' la parte che non sembra tale: una cella con
+entrambe le coordinate grandi e' dentro poche griglie, e scarta molto di piu'.
+
+`restarts = 0`, quindi `module+0x38D1BC` e' un **candidato**, non un offset. Il riavvio del
+client e' ora la mossa piu' economica delle due: fa cadere i sette indirizzi da solo, perche'
+muoiono con il processo, e porta la prova che manca. Nessun offset entra in
+`NosTaleClientLayout` prima di quella passata.
+
+**Il riavvio ha chiuso la questione (2 settembre 2026).** Nuovo processo, stesso personaggio,
+`--find-mapid` di nuovo: i sette indirizzi nudi sono caduti da soli, perche' muoiono con il
+processo, e il candidato ancorato ha retto — legge ancora un id la cui griglia contiene il
+personaggio, ora in `66,5`. `candidates = 1`, `passes = 4`, `restarts = 1`: il comando esce `0`.
+
+**`MapIdModuleOffset = 0x38D1BC`**, misurato dalla base dell'immagine del client. Il campo e' un
+**globale**, non un membro dell'oggetto del personaggio, e questo spiega perche' `+0x30` sul
+player manager non poteva funzionare: si cercava nel posto sbagliato, non con l'offset sbagliato.
+Vale la pena notarlo, perche' e' la ragione per cui allargare la scansione all'immagine
+scrivibile non era un dettaglio di completezza: senza, l'unica risposta possibile sarebbe stata
+un indirizzo destinato a morire.
+
+Una distinzione che il numero non cancella: l'id resta `Candidate` finche' non risolve
+**ripetutamente** a una griglia che contiene il personaggio, che e' il predicato di validita' di
+ADR-0014. `--grid-check` e' dove si verifica, ed e' eseguibile ora per la prima volta.
 
 *Testo precedente, superato dalla misura:*
 ~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della
@@ -728,11 +768,11 @@ ha trovato il difetto.
    sia mossa, e rifiutare lì bloccherebbe il runtime per un dato mancante invece che per un
    cambiamento reale.
 
-   **Cosa resta.** L'epoca esiste, si legge e si confronta, ma **nessun commit point la
-   chiama ancora**, perché il commit point è § 2.1 e non è scritto. `DOMAIN-08` e
-   `DOMAIN-19` hanno ora un valore contro cui essere applicati; applicarli è la prossima
-   tappa, non questa. Test:
-   `tests/NosAi.Runtime.Tests/GeometryEpochTests.cs`.
+   **Cosa resta.** L'epoca esiste, si legge e si confronta, e il commit point la
+   chiama (X-P2, 2 settembre 2026): `CreateSafe` cablato, `--input-guards` la stampa.
+   `DOMAIN-08` e `DOMAIN-19` hanno un valore e un confronto. Test:
+   `tests/NosAi.Runtime.Tests/GeometryEpochTests.cs`,
+   `tests/NosAi.Runtime.Tests/InputGuardsProbeTests.cs`.
 4. ~~La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
    monitor primario?~~ **Chiuso il 1 settembre 2026: copre il desktop virtuale.**
    `Win32InputBackend.MoveAbsolute` prende origine ed estensione da

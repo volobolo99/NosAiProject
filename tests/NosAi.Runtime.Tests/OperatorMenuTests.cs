@@ -18,8 +18,11 @@ public sealed class OperatorMenuTests
         int anchored = 1,
         int passes = 1,
         int restarts = 0,
-        string? winner = null)
-        => new(mapsReady, Grids: 777, hasFile, candidates, anchored, passes, restarts, winner);
+        string? winner = null,
+        int playerX = 120,
+        int playerY = 130)
+        => new(mapsReady, Grids: 777, hasFile, candidates, anchored, passes, restarts, winner,
+            playerX, playerY, anchored > 0 ? "module+0x38D1BC" : null);
 
     [Fact]
     public void WithoutTheGridsNothingElseIsAsked()
@@ -40,12 +43,45 @@ public sealed class OperatorMenuTests
     }
 
     [Fact]
-    public void ManyCandidatesAskForAPortal()
+    public void ManyCandidatesAllAnchoredAskForAPortal()
     {
-        string step = OperatorMenu.NextStep(Progress(candidates: 12, anchored: 3));
+        string step = OperatorMenu.NextStep(Progress(candidates: 12, anchored: 12));
 
         Assert.Contains("12 candidati", step);
         Assert.Contains("portale", step);
+    }
+
+    [Fact]
+    public void WithBareAddressesStillInTheSetTheRestartComesBeforeAnotherPortal()
+    {
+        // The measurement of 2 September: four maps, eight survivors, one of them
+        // anchored. A restart drops the seven for free and is the missing proof;
+        // another portal would probably keep all eight.
+        string step = OperatorMenu.NextStep(Progress(candidates: 8, anchored: 1, passes: 4));
+
+        Assert.Contains("riaprilo", step);
+        Assert.Contains("7 candidati", step);
+        Assert.DoesNotContain("portale", step, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void OnceARestartHasBeenSurvivedTheAdviceGoesBackToThePortal()
+    {
+        string step = OperatorMenu.NextStep(Progress(candidates: 8, anchored: 1, passes: 4, restarts: 1));
+
+        Assert.Contains("portale", step);
+    }
+
+    [Fact]
+    public void StandingNearTheOriginIsNamedAsTheWeakFilterItIs()
+    {
+        string step = OperatorMenu.NextStep(
+            Progress(candidates: 8, anchored: 8, passes: 4, playerX: 69, playerY: 2));
+
+        Assert.Contains("69,2", step);
+        Assert.Contains("angolo 0,0", step);
+        Assert.Empty(OperatorMenu.WeakFilterHint(120, 130));
+        Assert.Empty(OperatorMenu.WeakFilterHint(-1, -1));
     }
 
     [Fact]
@@ -144,6 +180,13 @@ public sealed class OperatorMenuTests
         Assert.Contains("dotnet build", launcher, StringComparison.Ordinal);
         Assert.Contains("--menu", launcher, StringComparison.Ordinal);
         Assert.Contains("if errorlevel 1 goto failed", launcher, StringComparison.Ordinal);
+
+        // And it runs from a copy, never from bin: an open bench holding its own
+        // exe would block the next build, which is how the loop starts.
+        Assert.Contains("RUNDIR", launcher, StringComparison.Ordinal);
+        string[] launching = Array.FindAll(
+            launcher.Split(Environment.NewLine), line => line.Contains("--menu", StringComparison.Ordinal));
+        Assert.Contains("RUNDIR", Assert.Single(launching), StringComparison.Ordinal);
     }
 
     private static string RepositoryRoot()
