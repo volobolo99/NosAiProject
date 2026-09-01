@@ -65,8 +65,18 @@ public sealed class TargetFrameReaderTests
         Assert.Equal("crop_too_small", reading.FailureReason);
     }
 
+    /// <summary>
+    /// The invariant this whole reader exists for, and the reason the name breaks
+    /// the file's convention: <c>scripts/verifica-obiettivo.ps1</c> searches for it
+    /// literally to know that C1 was done.
+    /// </summary>
+    /// <remarks>
+    /// Noise is pixels that say nothing, and "no target" is a statement. Returning
+    /// Absent here would tell the planner the target is gone, and ADR-0016 would
+    /// send the character walking to a waypoint in the middle of a fight.
+    /// </remarks>
     [Fact]
-    public void Speckle_noise_is_unreadable_not_the_absence_of_a_target()
+    public void NoiseIsUnreadableNotAbsent()
     {
         byte[] bgra = Checkerboard(Width, Height);
 
@@ -75,6 +85,74 @@ public sealed class TargetFrameReaderTests
         AssertUnreadable(reading);
         Assert.NotEqual(TargetFrameState.Absent, reading.State);
     }
+
+    // ------------------------------------------------- the shape of every answer
+
+    /// <summary>
+    /// Acceptance criterion 2, as a biconditional rather than as two examples: a
+    /// reason means the read failed, and a failed read always says why. A state
+    /// that carried both an answer and an excuse would let a caller believe
+    /// whichever it looked at first.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(EveryKindOfInput))]
+    public void A_reason_is_present_exactly_when_the_reading_is_unreadable(
+        byte[] bgra, int width, int height)
+    {
+        TargetFrameReading reading = TargetFrameReader.Read(bgra, width, height);
+
+        Assert.Equal(
+            reading.State == TargetFrameState.Unreadable,
+            !string.IsNullOrWhiteSpace(reading.FailureReason));
+    }
+
+    /// <summary>
+    /// Acceptance criterion 3. A ratio outside Present would be a health nobody
+    /// measured, and one outside 0..1 is a measurement of something that is not a
+    /// bar.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(EveryKindOfInput))]
+    public void A_ratio_is_present_exactly_when_the_frame_is(byte[] bgra, int width, int height)
+    {
+        TargetFrameReading reading = TargetFrameReader.Read(bgra, width, height);
+
+        Assert.Equal(reading.State == TargetFrameState.Present, reading.HpRatio.HasValue);
+        if (reading.HpRatio is { } ratio)
+            Assert.InRange(ratio, 0.0, 1.0);
+    }
+
+    /// <summary>
+    /// Acceptance criterion 1, including the input that used to reach the pixels.
+    /// <c>width * height * 4</c> in <c>int</c> arithmetic overflows to zero for a
+    /// width of 2^29 and a height of 2, so an empty buffer matched the expected
+    /// length and was handed to the bar reader, which indexed it and threw. The
+    /// size check has to be done in arithmetic that cannot wrap, or the guarantee
+    /// is only true of inputs nobody thought to try.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(EveryKindOfInput))]
+    public void Read_never_throws_whatever_it_is_given(byte[] bgra, int width, int height)
+    {
+        TargetFrameReading reading = TargetFrameReader.Read(bgra, width, height);
+
+        Assert.True(Enum.IsDefined(reading.State));
+    }
+
+    public static TheoryData<byte[], int, int> EveryKindOfInput() => new()
+    {
+        { SolidBar(Width, Height, fillThrough: Width), Width, Height },
+        { SolidBar(Width, Height, fillThrough: Width / 2), Width, Height },
+        { new byte[Width * Height * 4], Width, Height },
+        { Checkerboard(Width, Height), Width, Height },
+        { new byte[Width * Height * 4 - 1], Width, Height },
+        { new byte[3 * Height * 4], 3, Height },
+        { Array.Empty<byte>(), 0, 0 },
+        { Array.Empty<byte>(), -1, -1 },
+        { new byte[Width * Height * 4], Width, 1 },
+        // The overflow: 2^29 * 2 * 4 wraps to zero in int arithmetic.
+        { Array.Empty<byte>(), 1 << 29, 2 },
+    };
 
     private static void AssertPresent(TargetFrameReading reading)
     {

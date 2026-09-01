@@ -38,7 +38,12 @@ public static class TargetFrameReader
         if (width < HudBarFillReader.MinWidth || height < HudBarFillReader.MinHeight)
             return Unreadable("crop_too_small");
 
-        var expected = width * height * 4;
+        // In long arithmetic, not int. width * height * 4 wraps for a width of
+        // 2^29 and a height of 2, and the wrapped zero matched an empty buffer's
+        // length — so the crop passed this check and HudBarFillReader indexed a
+        // buffer that had nothing in it and threw. A size check that can overflow
+        // is a size check that holds only for the sizes somebody thought to try.
+        long expected = (long)width * height * 4;
         if (bgra.Length != expected)
             return Unreadable("crop_truncated");
 
