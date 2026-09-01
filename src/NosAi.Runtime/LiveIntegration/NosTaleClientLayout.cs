@@ -57,8 +57,66 @@ public sealed class NosTaleClientLayout
     /// <summary>Player manager → the character id the client is holding.</summary>
     public const int PlayerIdOffset = 0x24;
 
+    /// <summary>
+    /// Player manager → the square the character is walking to.
+    /// </summary>
+    /// <remarks>
+    /// Two <c>int16</c> at <c>+0x08</c> and <c>+0x0A</c>, beside the manager's own
+    /// copy of the current position. It is the only place the character's
+    /// <i>intent</i> is readable: the wire reports where things are, never where
+    /// this character is heading, so a move that was accepted and a move that was
+    /// ignored look identical without it.
+    /// </remarks>
+    public const int WalkTargetOffset = 0x08;
+
+    /// <summary>Player manager → its own copy of the current position.</summary>
+    /// <remarks>
+    /// Two <c>int16</c> at <c>+0x04</c>. The map object at
+    /// <see cref="PositionOffset"/> carries the same pair, and the two are read
+    /// together precisely because they can be compared: two structures the client
+    /// maintains separately agreeing is one more thing a wrong chain has to get
+    /// right by luck.
+    /// </remarks>
+    public const int ManagerPositionOffset = 0x04;
+
     /// <summary>Map object → entity id. Common to players, monsters and NPCs.</summary>
     public const int EntityIdOffset = 0x08;
+
+    /// <summary>
+    /// The scene manager: every entity the client has on the current map.
+    /// </summary>
+    /// <remarks>
+    /// The address is a direct pointer, so only one dereference follows the match
+    /// (offsets <c>{1}</c> against the operand at <see cref="SceneOperandOffset"/>).
+    /// </remarks>
+    public const string SceneManagerSignature =
+        "FF ?? ?? ?? ?? ?? FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF";
+
+    /// <summary>Where the scene manager's address sits inside its match.</summary>
+    public const int SceneOperandOffset = 1;
+
+    /// <summary>Scene manager → the four entity lists.</summary>
+    public const int PlayerListOffset = 0x0C;
+    public const int MonsterListOffset = 0x10;
+    public const int NpcListOffset = 0x14;
+    public const int GroundItemListOffset = 0x18;
+
+    /// <summary>List → the array of object pointers.</summary>
+    public const int ListArrayOffset = 0x04;
+
+    /// <summary>List → how many entries the array holds.</summary>
+    public const int ListLengthOffset = 0x08;
+
+    /// <summary>
+    /// The most entities one list is believed to hold.
+    /// </summary>
+    /// <remarks>
+    /// A length is four bytes of whatever the pointer happened to land on when
+    /// the chain is wrong, so it is bounded before it is used to size a loop. The
+    /// real captures show 158 distinct entities across a whole session; anything
+    /// past this is not a crowded map, it is a bad read.
+    /// </remarks>
+    public const int MaxEntitiesPerList = 4096;
 
     /// <summary>
     /// Map object → x, as a 16-bit value with y in the two bytes after it.
@@ -195,13 +253,256 @@ public sealed class NosTaleClientLayout
             return false;
         }
 
+        // The manager keeps its own copy of the position and, beside it, the
+        // square the character is walking to. Both are read here so the two
+        // copies can be compared and the intent is available at all.
+        MemoryReadResult managerPosition = reader.Read(manager + ManagerPositionOffset, sizeof(int));
+        MemoryReadResult walkTarget = reader.Read(manager + WalkTargetOffset, sizeof(int));
+
         uint packed = BitConverter.ToUInt32(position.Bytes);
         reading = new PlayerObjectReading(
             CharacterId: BitConverter.ToInt32(idBytes.Bytes),
             EntityId: BitConverter.ToInt32(entityId.Bytes),
             X: (ushort)(packed & 0xFFFF),
-            Y: (ushort)(packed >> 16));
+            Y: (ushort)(packed >> 16),
+            ManagerX: managerPosition.Ok ? BitConverter.ToInt16(managerPosition.Bytes, 0) : null,
+            ManagerY: managerPosition.Ok ? BitConverter.ToInt16(managerPosition.Bytes, 2) : null,
+            WalkTargetX: walkTarget.Ok ? BitConverter.ToInt16(walkTarget.Bytes, 0) : null,
+            WalkTargetY: walkTarget.Ok ? BitConverter.ToInt16(walkTarget.Bytes, 2) : null);
         failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Reads one of the scene manager's entity lists: every monster, NPC, player
+    /// or ground item the client currently has on the map.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// What F2-2 needs. The wire gives the same entities, but only as they are
+    /// mentioned: a capture that starts mid-session has 25 <c>in</c> against 7685
+    /// <c>mv</c>, so everything already on screen stays unreported until it moves.
+    /// The client's own list has all of them at once, and it has them the moment
+    /// it is asked rather than when a packet happens to arrive.
+    /// </para>
+    /// <para>
+    /// Resolved separately from the player manager and not cached alongside it:
+    /// the two are different signatures with different failure modes, and a
+    /// runtime that can read the character but not the map should say exactly
+    /// that.
+    /// </para>
+    /// </remarks>
+    public static bool TryReadEntities(
+        ProcessMemoryReader reader,
+        IntPtr moduleBase,
+        long moduleSize,
+        MapEntityKind kind,
+        out IReadOnlyList<MapEntityReading> entities,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        entities = Array.Empty<MapEntityReading>();
+
+        if (!TryResolveScene(reader, moduleBase, moduleSize, out IntPtr scene, out failureReason))
+            return false;
+
+        int listOffset = kind switch
+        {
+            MapEntityKind.Player => PlayerListOffset,
+            MapEntityKind.Monster => MonsterListOffset,
+            MapEntityKind.Npc => NpcListOffset,
+            MapEntityKind.GroundItem => GroundItemListOffset,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+
+        if (!TryFollow(reader, scene + listOffset, $"{kind}_list", out IntPtr list, out failureReason))
+            return false;
+
+        MemoryReadResult lengthBytes = reader.Read(list + ListLengthOffset, sizeof(int));
+        if (!lengthBytes.Ok)
+        {
+            failureReason = lengthBytes.FailureReason ?? "entity_list_length_unreadable";
+            return false;
+        }
+
+        int length = BitConverter.ToInt32(lengthBytes.Bytes);
+        if (length < 0 || length > MaxEntitiesPerList)
+        {
+            // A length is four bytes of whatever the chain landed on when it is
+            // wrong. Refusing beats allocating for it.
+            failureReason = $"entity_list_length_implausible:{length}";
+            return false;
+        }
+
+        if (length == 0)
+        {
+            entities = Array.Empty<MapEntityReading>();
+            failureReason = null;
+            return true;
+        }
+
+        if (!TryFollow(reader, list + ListArrayOffset, $"{kind}_array", out IntPtr array, out failureReason))
+            return false;
+
+        // The pointer array in one read: length reads would let the list change
+        // underneath and mix entries from two different moments.
+        MemoryReadResult pointers = reader.Read(array, length * sizeof(int));
+        if (!pointers.Ok)
+        {
+            failureReason = pointers.FailureReason ?? "entity_array_unreadable";
+            return false;
+        }
+
+        var found = new List<MapEntityReading>(length);
+        for (var i = 0; i < length; i++)
+        {
+            var entity = (IntPtr)BitConverter.ToUInt32(pointers.Bytes, i * sizeof(int));
+            if (entity == IntPtr.Zero)
+                continue;
+
+            MemoryReadResult idBytes = reader.Read(entity + EntityIdOffset, sizeof(int));
+            MemoryReadResult positionBytes = reader.Read(entity + PositionOffset, sizeof(int));
+            // One unreadable entry does not discard the rest: a list read while
+            // something despawns is ordinary, and the entities that did read are
+            // still entities that were there.
+            if (!idBytes.Ok || !positionBytes.Ok)
+                continue;
+
+            uint packed = BitConverter.ToUInt32(positionBytes.Bytes);
+            found.Add(new MapEntityReading(
+                BitConverter.ToInt32(idBytes.Bytes),
+                (ushort)(packed & 0xFFFF),
+                (ushort)(packed >> 16)));
+        }
+
+        entities = found;
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Finds the scene manager, whose match holds a direct pointer.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Unlike the player manager's, this signature is data and it is loose: one
+    /// <c>FF</c>, five wildcards, then a run of zeros. A 5.7 MB image contains
+    /// several byte runs shaped like that, so the <i>first</i> match is not
+    /// evidence of anything — taking it produced a pointer whose lists read back
+    /// ERROR_PARTIAL_COPY.
+    /// </para>
+    /// <para>
+    /// So every match is tried and each candidate has to prove itself: its four
+    /// list pointers must be readable and their lengths plausible. This is the
+    /// same rule the character id enforces one level up — a signature is a
+    /// hypothesis, and the thing that turns it into a reading is a check it could
+    /// not have passed by accident.
+    /// </para>
+    /// </remarks>
+    private static bool TryResolveScene(
+        ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize,
+        out IntPtr scene, out string? failureReason)
+    {
+        scene = IntPtr.Zero;
+        failureReason = null;
+
+        if (moduleBase == IntPtr.Zero || moduleSize <= 0)
+        {
+            failureReason = "client_module_not_located";
+            return false;
+        }
+
+        SignatureByte[] signature = ParseSignature(SceneManagerSignature);
+        const int sliceLength = 1 << 20;
+        int overlap = signature.Length - 1;
+        var candidates = 0;
+
+        for (long offset = 0; offset < moduleSize; offset += sliceLength - overlap)
+        {
+            int length = (int)Math.Min(sliceLength, moduleSize - offset);
+            if (length < signature.Length)
+                break;
+
+            MemoryReadResult slice = reader.Read(moduleBase + (int)offset, length);
+            if (!slice.Ok)
+                continue;
+
+            var searchFrom = 0;
+            while (true)
+            {
+                int index = IndexOfSignature(slice.Bytes, signature, searchFrom);
+                if (index < 0)
+                    break;
+
+                searchFrom = index + 1;
+                IntPtr match = moduleBase + (int)offset + index;
+
+                MemoryReadResult operand = reader.Read(match + SceneOperandOffset, sizeof(int));
+                if (!operand.Ok)
+                    continue;
+
+                var pointer = (IntPtr)BitConverter.ToUInt32(operand.Bytes);
+                if (pointer == IntPtr.Zero)
+                    continue;
+
+                candidates++;
+                if (!LooksLikeSceneManager(reader, pointer))
+                    continue;
+
+                scene = pointer;
+                return true;
+            }
+        }
+
+        failureReason = candidates == 0
+            ? "scene_manager_signature_not_found"
+            : $"scene_manager_not_confirmed:{candidates}_candidates_rejected";
+        return false;
+    }
+
+    /// <summary>
+    /// Whether a candidate address behaves like the scene manager.
+    /// </summary>
+    /// <remarks>
+    /// All four lists must be readable and sized plausibly. A stray pointer clears
+    /// one of those by luck now and then; clearing all four is what makes this a
+    /// check rather than a guess.
+    /// </remarks>
+    private static bool LooksLikeSceneManager(ProcessMemoryReader reader, IntPtr candidate)
+    {
+        foreach (int listOffset in new[]
+                 { PlayerListOffset, MonsterListOffset, NpcListOffset, GroundItemListOffset })
+        {
+            MemoryReadResult listPointer = reader.Read(candidate + listOffset, sizeof(int));
+            if (!listPointer.Ok)
+                return false;
+
+            var list = (IntPtr)BitConverter.ToUInt32(listPointer.Bytes);
+            if (list == IntPtr.Zero)
+                return false;
+
+            MemoryReadResult lengthBytes = reader.Read(list + ListLengthOffset, sizeof(int));
+            if (!lengthBytes.Ok)
+                return false;
+
+            int length = BitConverter.ToInt32(lengthBytes.Bytes);
+            if (length < 0 || length > MaxEntitiesPerList)
+                return false;
+
+            // A non-empty list must have an array behind it. An empty one need
+            // not, and an empty monster list is an ordinary quiet map.
+            if (length == 0)
+                continue;
+
+            MemoryReadResult arrayPointer = reader.Read(list + ListArrayOffset, sizeof(int));
+            if (!arrayPointer.Ok)
+                return false;
+
+            var array = (IntPtr)BitConverter.ToUInt32(arrayPointer.Bytes);
+            if (array == IntPtr.Zero || !reader.Read(array, sizeof(int)).Ok)
+                return false;
+        }
+
         return true;
     }
 
@@ -255,13 +556,14 @@ public sealed class NosTaleClientLayout
         return parsed;
     }
 
-    internal static int IndexOfSignature(ReadOnlySpan<byte> haystack, ReadOnlySpan<SignatureByte> signature)
+    internal static int IndexOfSignature(
+        ReadOnlySpan<byte> haystack, ReadOnlySpan<SignatureByte> signature, int from = 0)
     {
-        if (signature.Length == 0 || haystack.Length < signature.Length)
+        if (signature.Length == 0 || haystack.Length < signature.Length || from < 0)
             return -1;
 
         int last = haystack.Length - signature.Length;
-        for (var start = 0; start <= last; start++)
+        for (int start = from; start <= last; start++)
         {
             var matched = true;
             for (var i = 0; i < signature.Length; i++)
@@ -287,4 +589,45 @@ public sealed class NosTaleClientLayout
 /// is what turns a plausible pointer chain into a confirmed one.
 /// </param>
 /// <param name="EntityId">The id on the map object itself.</param>
-public readonly record struct PlayerObjectReading(int CharacterId, int EntityId, ushort X, ushort Y);
+/// <param name="ManagerX">
+/// The manager's own copy of the position, or null when it could not be read. It
+/// should equal <paramref name="X"/>; when it does not, one of the two structures
+/// is not the character's.
+/// </param>
+/// <param name="WalkTargetX">
+/// The square the character is walking to, or null. The one readable statement of
+/// intent: the wire never says where this character is heading.
+/// </param>
+public readonly record struct PlayerObjectReading(
+    int CharacterId,
+    int EntityId,
+    ushort X,
+    ushort Y,
+    short? ManagerX = null,
+    short? ManagerY = null,
+    short? WalkTargetX = null,
+    short? WalkTargetY = null)
+{
+    /// <summary>Whether the two copies of the position agree.</summary>
+    /// <remarks>
+    /// Null when the manager's copy could not be read, which is not a
+    /// disagreement. A mismatch is: two structures the client maintains itself
+    /// should not differ, and a chain that reads one of them wrongly is caught
+    /// here without needing anything outside the process.
+    /// </remarks>
+    public bool? PositionCopiesAgree => ManagerX is { } mx && ManagerY is { } my
+        ? mx == X && my == Y
+        : null;
+}
+
+/// <summary>One entity the client has on the current map.</summary>
+public readonly record struct MapEntityReading(long EntityId, ushort X, ushort Y);
+
+/// <summary>Which of the scene manager's four lists to read.</summary>
+public enum MapEntityKind
+{
+    Player,
+    Monster,
+    Npc,
+    GroundItem,
+}

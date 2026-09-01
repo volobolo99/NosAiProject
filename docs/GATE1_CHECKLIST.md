@@ -148,6 +148,26 @@ catture mostrano. Lo spostamento massimo fra due letture è ~5,8 caselle in 1,8 
 contro un limite di 11 × 1,8 + 4 = 23,8 dalla velocità che `cond` ha riportato
 (11): il controllo di continuità di F1-10 passa con margine.
 
+**Altri campi confermati sullo stesso oggetto.** Il manager tiene una **seconda
+copia** della posizione a `+0x04`, e nelle letture concorda sempre con quella
+dell'oggetto mappa (`157,94` = `157,94`): due strutture che il client mantiene
+separatamente, d'accordo fra loro. A `+0x08` c'è la **casella di destinazione**
+verso cui il personaggio sta camminando — l'unico posto in cui la sua *intenzione*
+è leggibile, perché il filo dice dove sono le cose e mai dove questo personaggio
+sta andando.
+
+**HP e MP non sono in queste strutture**, e non servono qui: il canale mondo li
+pubblica già `LIVE` da `stat`, confrontati con la HUD. Aggiungere una lettura di
+memoria per loro sarebbe una seconda sorgente senza niente che la confermi.
+
+**Le liste entità della scena non si risolvono su questa build.** La firma
+pubblicata (`FF ?? ?? ?? ?? ?? FF FF FF 00…`) è di soli dati e molto larga: trova
+un candidato in tutta l'immagine e la validazione lo **respinge**, perché i suoi
+quattro puntatori di lista non reggono. Riportato come
+`scene_manager_not_confirmed:1_candidates_rejected`, non come lista vuota. Non è
+una perdita: il filo dà già le stesse entità — 1812 avvistamenti su 158 entità
+distinte in 20 secondi di cattura.
+
 **Cosa resta UNKNOWN.** La lettura è `LIVE` solo mentre passano tutti e quattro i
 controlli — identità, intervallo, coerenza con la mappa, continuità. Appena uno
 cede il provider restituisce `UNKNOWN` col motivo, **mai l'ultimo valore buono**.

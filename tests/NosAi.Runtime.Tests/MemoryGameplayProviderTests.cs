@@ -73,6 +73,48 @@ public sealed class NosTaleClientLayoutTests
         => Assert.Throws<ArgumentException>(() => NosTaleClientLayout.ParseSignature("33 ZZ"));
 
     /// <summary>
+    /// Every match has to be reachable, not just the first. The scene manager's
+    /// signature is loose enough that the first match is not evidence of
+    /// anything, and taking it produced a pointer whose lists read back
+    /// ERROR_PARTIAL_COPY against the real client.
+    /// </summary>
+    [Fact]
+    public void The_search_can_continue_past_a_match_that_did_not_validate()
+    {
+        var signature = NosTaleClientLayout.ParseSignature("AA BB");
+        byte[] haystack = [0x00, 0xAA, 0xBB, 0x00, 0xAA, 0xBB, 0x00];
+
+        int first = NosTaleClientLayout.IndexOfSignature(haystack, signature);
+        int second = NosTaleClientLayout.IndexOfSignature(haystack, signature, first + 1);
+        int third = NosTaleClientLayout.IndexOfSignature(haystack, signature, second + 1);
+
+        Assert.Equal(1, first);
+        Assert.Equal(4, second);
+        Assert.Equal(-1, third);
+    }
+
+    [Fact]
+    public void A_negative_start_finds_nothing_rather_than_throwing()
+        => Assert.Equal(-1, NosTaleClientLayout.IndexOfSignature(
+            new byte[] { 0xAA, 0xBB }, NosTaleClientLayout.ParseSignature("AA BB"), from: -1));
+
+    /// <summary>
+    /// The two copies of the position the client keeps should agree; a mismatch
+    /// means one of the two structures is not the character's.
+    /// </summary>
+    [Fact]
+    public void The_two_position_copies_are_compared_when_both_were_read()
+    {
+        var agreeing = new PlayerObjectReading(1, 1, 157, 94, ManagerX: 157, ManagerY: 94);
+        var disagreeing = new PlayerObjectReading(1, 1, 157, 94, ManagerX: 12, ManagerY: 900);
+        var unread = new PlayerObjectReading(1, 1, 157, 94);
+
+        Assert.True(agreeing.PositionCopiesAgree);
+        Assert.False(disagreeing.PositionCopiesAgree);
+        Assert.Null(unread.PositionCopiesAgree);
+    }
+
+    /// <summary>
     /// x and y are adjacent 16-bit values, so one 32-bit read takes them together
     /// — x in the low half, y in the high half. Two reads would let the character
     /// move in between and produce a pair it was never at.

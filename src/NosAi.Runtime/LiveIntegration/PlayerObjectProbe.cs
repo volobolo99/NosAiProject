@@ -96,6 +96,17 @@ public static class PlayerObjectProbe
         Console.WriteLine($"  character id : {player.CharacterId}");
         Console.WriteLine($"  entity id    : {player.EntityId}");
         Console.WriteLine($"  position     : {player.X}, {player.Y}");
+        Console.WriteLine(player.PositionCopiesAgree switch
+        {
+            true => $"  manager copy : {player.ManagerX}, {player.ManagerY} (agrees)",
+            false => $"  manager copy : {player.ManagerX}, {player.ManagerY} [DISAGREES with the map object]",
+            null => "  manager copy : unreadable",
+        });
+        Console.WriteLine(player.WalkTargetX is { } wx && player.WalkTargetY is { } wy
+            ? $"  walking to   : {wx}, {wy}"
+            : "  walking to   : unreadable");
+
+        ReportEntities(reader, moduleBase, moduleSize);
 
         if (expectedCharacterId is not { } expected)
         {
@@ -121,6 +132,35 @@ public static class PlayerObjectProbe
         Console.WriteLine("  Two independent sources on one number: the pointer chain is the character's.");
         Console.WriteLine("  Record this in docs/GATE1_CHECKLIST.md as the evidence T-11 asked for.");
         return 0;
+    }
+
+    /// <summary>
+    /// Reports every entity the client has on the map, from the scene manager.
+    /// </summary>
+    /// <remarks>
+    /// Reported rather than asserted on: the scene manager is a second signature
+    /// with its own failure modes, so a runtime that reads the character but not
+    /// the map says exactly that instead of failing as a whole.
+    /// </remarks>
+    private static void ReportEntities(ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize)
+    {
+        Console.WriteLine();
+        foreach (MapEntityKind kind in Enum.GetValues<MapEntityKind>())
+        {
+            if (!NosTaleClientLayout.TryReadEntities(
+                    reader, moduleBase, moduleSize, kind,
+                    out IReadOnlyList<MapEntityReading> entities, out string? failure))
+            {
+                Console.WriteLine($"  {kind,-11}: [REFUSED] {failure}");
+                continue;
+            }
+
+            Console.WriteLine($"  {kind,-11}: {entities.Count}");
+            foreach (MapEntityReading entity in entities.Take(5))
+                Console.WriteLine($"      id={entity.EntityId,-10} at {entity.X},{entity.Y}");
+            if (entities.Count > 5)
+                Console.WriteLine($"      … and {entities.Count - 5} more");
+        }
     }
 
     private static bool TryFindClient(out int processId, out string? failureReason)
