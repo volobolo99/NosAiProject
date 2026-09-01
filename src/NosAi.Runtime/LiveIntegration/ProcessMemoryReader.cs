@@ -169,6 +169,70 @@ public sealed class ProcessMemoryReader : IDisposable
         return ClassifiedValue<int?>.Live(value, observedAtUtc);
     }
 
+    /// <summary>
+    /// The committed, readable regions of the target's address space, in order.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Needed because an offset has to be found before it can be read, and a scan
+    /// cannot simply walk the address space: most of it is not committed, and
+    /// reading there fails once per page for no information.
+    /// </para>
+    /// <para>
+    /// Only committed, readable, non-guard pages are yielded. Guard pages are
+    /// excluded because touching one raises in the target process rather than here
+    /// -- observation must not perturb the thing observed. Image and mapped regions
+    /// are included but reported with their type, so a caller can prefer private
+    /// data (where a character's vitals live) over mapped file contents.
+    /// </para>
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    public IEnumerable<MemoryRegion> EnumerateRegions()
+    {
+        if (_disposed)
+            yield break;
+
+        IntPtr address = IntPtr.Zero;
+        int structSize = Marshal.SizeOf<MemoryBasicInformation>();
+
+        while (true)
+        {
+            if (VirtualQueryEx(_handle, address, out MemoryBasicInformation info, structSize) != structSize)
+                yield break;
+
+            ulong regionSize = (ulong)info.RegionSize;
+            if (regionSize == 0)
+                yield break;
+
+            if (info.State == MemCommit && IsReadable(info.Protect))
+                yield return new MemoryRegion(info.BaseAddress, (long)regionSize, info.Protect, info.Type);
+
+            ulong next = (ulong)info.BaseAddress.ToInt64() + regionSize;
+            if (next > long.MaxValue || next <= (ulong)address.ToInt64())
+                yield break;
+
+            address = new IntPtr((long)next);
+        }
+    }
+
+    /// <summary>
+    /// Readable page protections, with guard and no-access pages excluded.
+    /// </summary>
+    /// <remarks>
+    /// PAGE_GUARD is masked off rather than treated as another protection value:
+    /// it is a modifier that can accompany any of them, and a region carrying it
+    /// must be skipped whatever its base protection says.
+    /// </remarks>
+    private static bool IsReadable(uint protect)
+    {
+        if ((protect & PageGuard) != 0 || (protect & PageNoAccess) != 0)
+            return false;
+
+        uint basic = protect & 0xFF;
+        return basic is PageReadonly or PageReadWrite or PageWriteCopy
+            or PageExecuteRead or PageExecuteReadWrite or PageExecuteWriteCopy;
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -192,4 +256,53 @@ public sealed class ProcessMemoryReader : IDisposable
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool CloseHandle(IntPtr handle);
+
+    private const uint MemCommit = 0x1000;
+    private const uint PageNoAccess = 0x01;
+    private const uint PageReadonly = 0x02;
+    private const uint PageReadWrite = 0x04;
+    private const uint PageWriteCopy = 0x08;
+    private const uint PageExecuteRead = 0x20;
+    private const uint PageExecuteReadWrite = 0x40;
+    private const uint PageExecuteWriteCopy = 0x80;
+    private const uint PageGuard = 0x100;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MemoryBasicInformation
+    {
+        public IntPtr BaseAddress;
+        public IntPtr AllocationBase;
+        public uint AllocationProtect;
+        public IntPtr RegionSize;
+        public uint State;
+        public uint Protect;
+        public uint Type;
+    }
+
+    [SupportedOSPlatform("windows")]
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern int VirtualQueryEx(
+        IntPtr process, IntPtr address, out MemoryBasicInformation buffer, int length);
+}
+
+/// <summary>One committed, readable span of a target process's address space.</summary>
+/// <param name="BaseAddress">First byte of the region.</param>
+/// <param name="Size">Length in bytes.</param>
+/// <param name="Protect">Win32 page protection, for reporting rather than decisions.</param>
+/// <param name="Type">MEM_PRIVATE, MEM_IMAGE or MEM_MAPPED.</param>
+public sealed record MemoryRegion(IntPtr BaseAddress, long Size, uint Protect, uint Type)
+{
+    /// <summary>MEM_PRIVATE: process-private data, where a character's own state lives.</summary>
+    public const uint TypePrivate = 0x20000;
+
+    /// <summary>
+    /// Whether this is private data rather than a mapped image or file.
+    /// </summary>
+    /// <remarks>
+    /// A scan for a value the game computes should prefer these: the same integer
+    /// appearing inside a mapped executable is a constant in the binary, not the
+    /// character's current state, and following it would pin an offset that never
+    /// changes and never means anything.
+    /// </remarks>
+    public bool IsPrivate => Type == TypePrivate;
 }

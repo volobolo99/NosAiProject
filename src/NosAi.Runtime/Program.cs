@@ -73,6 +73,16 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--input-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.LowLevel.InputEnvironmentProbe.RunConsoleProbe();
 
+        // Offset discovery for the memory provider (ADR-0014). Read-only, and it
+        // answers nothing on its own: an address is identified by narrowing across
+        // several changes of the value, which is why the candidate set persists
+        // between invocations rather than living inside one run.
+        int scanFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--memory-scan", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(a, "--memory-narrow", StringComparison.OrdinalIgnoreCase));
+        if (scanFlag >= 0)
+            return NosAi.LiveIntegration.MemoryScanProbe.Run(args, scanFlag);
+
         // Diagnostic read of the durable event log (M075-M076). Sola lettura: it
         // reports how complete the audit trail is, gaps included, so a missing
         // event is visible rather than silently absent. An optional path follows.
@@ -176,7 +186,7 @@ public static class Program
 
     /// <summary>Probe flags, which live outside the suite table.</summary>
     private static readonly HashSet<string> KnownProbeFlags =
-        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe" };
+        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow" };
 
     private static int RunDxgiProbe()
     {
