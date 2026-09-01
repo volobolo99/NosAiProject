@@ -188,6 +188,20 @@ Punti su cui questo documento **non** afferma uno stato, perché non è stato mi
    finestra sbagliata su schermi con scala diversa da 100 %.
 3. L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor, o solo su
    spostamento e ridimensionamento?
-4. La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
-   monitor primario? Un monitor secondario a coordinate negative è il caso che distingue le
-   due, e supera la validazione in coordinate schermo in entrambe.
+4. ~~La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
+   monitor primario?~~ **Chiuso il 1 settembre 2026: copre il desktop virtuale.**
+   `Win32InputBackend.MoveAbsolute` prende origine ed estensione da
+   `SM_XVIRTUALSCREEN` / `SM_YVIRTUALSCREEN` / `SM_CXVIRTUALSCREEN` / `SM_CYVIRTUALSCREEN`,
+   normalizza con `(x − originX)` e passa `MOUSEEVENTF_VIRTUALDESK`. Un punto su un monitor
+   secondario a coordinate negative rientra correttamente nel campo 0–65535. Non usa le
+   metriche del solo monitor primario.
+
+   **Difetto trovato leggendo, da correggere in P2.** La stessa funzione chiude con
+   `Math.Clamp(normalised, 0, 65535)`. Un punto fuori dal desktop virtuale non è un punto da
+   riportare al bordo: è un punto impossibile, e riportarlo al bordo lo trasforma in un click
+   reale sul bordo dello schermo. È la forma esatta dell'errore che il progetto vieta
+   altrove — sconosciuto non diventa un valore plausibile, e una sorgente che fallisce lo
+   dice. Deve restituire `false` con il proprio codice di guasto. Oggi non morde perché le
+   guardie a monte rifiutano i punti fuori dal client, ma è l'ultima difesa convertita in una
+   correzione silenziosa, ed è l'unico punto del percorso dove un errore di coordinate
+   diventa un atto invece di un rifiuto.
