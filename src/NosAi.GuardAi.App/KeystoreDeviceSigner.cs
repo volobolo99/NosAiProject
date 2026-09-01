@@ -1,6 +1,7 @@
 #if ANDROID
 using System.Security.Cryptography;
 using Android.OS;
+using Android.Runtime;
 using Android.Security.Keystore;
 using Java.Security;
 using NosAi.GuardClient;
@@ -101,9 +102,32 @@ public sealed class KeystoreDeviceSigner : IDeviceSigner, IDisposable
 
             // Re-read through the store either way, so the loaded key is always the
             // stored one rather than something held from generation.
-            if (store.GetKey(Alias, null) is not IPrivateKey privateKey)
+            var storedKey = store.GetKey(Alias, null);
+            if (storedKey is null)
             {
-                unavailableReason = "keystore_private_key_unavailable";
+                unavailableReason = "keystore_private_key_missing";
+                return null;
+            }
+
+            // A C# type test is not enough, and this is where the whole ADR-0010
+            // custody quietly fell back to a file on a real device. An AndroidKeyStore
+            // RSA key is android.security.keystore2.AndroidKeyStoreRSAPrivateKey, a
+            // class with no managed binding, so .NET Android wraps it in a generic
+            // proxy whose managed type implements nothing in particular:
+            // `is IPrivateKey` answers false about an object that is a private key.
+            // JavaCast builds the interface invoker over the same Java instance
+            // instead of interrogating the proxy's C# type.
+            IPrivateKey privateKey;
+            try
+            {
+                privateKey = storedKey.JavaCast<IPrivateKey>();
+            }
+            catch (InvalidCastException)
+            {
+                // Name the class that turned up, so the next device that fails here
+                // says why instead of repeating an unfalsifiable "unavailable".
+                string actual = (storedKey as Java.Lang.Object)?.Class?.Name ?? "unknown";
+                unavailableReason = $"keystore_private_key_unavailable:{actual}";
                 return null;
             }
 
