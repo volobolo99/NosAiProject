@@ -218,16 +218,54 @@ cond 1 3443217 0 0 11
 
 ## What this gives the runtime today
 
-Directly available, per ADR-0014's `LIVE` bar:
+Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
+`NosTaleWorldProtocolDecoder` + `NetworkGameplayProvider`:
 
-- **Own vitals** — HP, max HP, MP, max MP, from `stat`, updating per hit.
-- **Target vitals** — absolute HP and max HP of any entity in view, from `st`.
+- **Own vitals** — HP, max HP, MP from `stat`, updating per hit.
+  Published `LIVE` when the capture itself is live. Max MP is confirmed on the
+  packet and used to reject a malformed `stat`, but `GameplayObservation` does
+  not yet carry it. HasTarget and InCombat are **not** read (fields 5 and 6 are
+  unknown) and stay `UNKNOWN`.
+- **Target vitals** — absolute HP and max HP of any entity in view, from `st`
+  (fields 7 and 9; field 5 is ignored).
 - **Combat events** — every hit with attacker, target, skill and damage, from `su`.
-- **Entities in view** — spawn with vnum and position from `in`, tracked by `mv`, removed by `die`.
-- **Progression** — level and XP from `lev`.
-- **Drops and inventory** — `drop`, `get`, `ivn`.
+- **Entities in view** — spawn with vnum and position from `in`, tracked by `mv`
+  only after an `in`/`st` has supplied HP, removed by `die`.
+- **Progression** — level and XP from `lev` (catalogued, not yet published).
+- **Drops and inventory** — `drop`, `get`, `ivn` (catalogued, not yet published).
 
 Not available from the server, and needing the confirming source:
 
 - **The player's own position.**
 - **Anything the client decides locally** before telling the server.
+- **Whether the player has a target, and whether the player is in combat.** No
+  packet in either capture establishes either. `ct` carries targeting between two
+  entities and `su` carries every hit, but neither has an observed "target
+  cleared" counterpart, so a flag derived from them would be sticky and wrong in
+  a way nothing on the wire would correct. They stay UNKNOWN, and
+  [ADR-0016](adr/ADR-0016-planning-and-acting-on-partial-observation.md) makes
+  the planner skip the rules that read them instead of blocking every rule that
+  does not. `HasTarget` is the one worth establishing next: it is what separates
+  reacting to one's own health from fighting.
+
+## What the runtime does not read, and why the numbers look thin
+
+Replaying the combat capture through the shipping decoder
+(`WinDivertProbe.exe --world data/nostale_combat.noscap`) reports 7942 of 8211
+packets carrying an opcode it reads — and only 629 of them producing an
+observation. The gap is not a bug, and it is worth stating so nobody chases it:
+
+- **`mv` dominates the wire and mostly yields nothing.** 7685 of 8211 packets are
+  movements, but a movement carries no health, and `EntitySighting` has no room
+  for "position known, health unknown". Filling that in with full health would be
+  an invented observation. So a moving entity becomes a sighting only once an
+  `in` or an `st` has said what its health is — and a capture that starts
+  mid-session has 25 `in` and 49 `st` against those 7685 `mv`. Everything already
+  on screen when the capture began stays unreported until something mentions it.
+- **Entity types other than 3 are refused** in `in`, `mv` and `st`. The shapes
+  above are type 3's; type 1 is confirmed only in `su`, `cond` and `sayi`, and
+  type 2 was never observed. Reading a type-1 `in` at these positions would take
+  x and y out of fields that are not x and y.
+- **Opcodes marked unknown are not read at all**, which is 269 packets here:
+  `ct`, `cond`, `lev`, `sr`, `sayi`, `eff`, `delay`, `guri`, `msgi`, `drop`,
+  `ivn`, `get`, `icon`, `ms_c`, `cancel`.

@@ -13,7 +13,7 @@ checks stays `UNKNOWN`, and a source that cannot tell a correct value from a
 wrong one is never `LIVE`. Read the comparison below as an account of failure
 modes, not as a list of what is permitted.
 
-**Implementation status (2026-08-31).** The seam is implemented and wired:
+**Implementation status (2026-09-01).** The seam is implemented and wired:
 `IGameplayProvider` / `GameplayObservation` in
 `src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs`, published by the Gate 1
 snapshot under the existing `gameplayBaseline` key and read by
@@ -21,16 +21,68 @@ snapshot under the existing `gameplayBaseline` key and read by
 — still the default — the snapshot reports exactly what it reported before, so
 nothing changed for anyone who has not opted in.
 
-`NetworkGameplayProvider` is the first implementation, over the scoped network
-observation channel. **It cannot yet report vitals**, and the reason is not a
-missing feature: no NosTale protocol map exists. `ProtocolMap.PlayerVitals` is the
-optional entry an operator has to derive by correlating captured traffic against
-values read off the client's own screen. Until it exists, HP is `UNKNOWN` with
-`player_vitals_not_mapped` and Gate 3 keeps refusing to plan.
+`NetworkGameplayProvider` is the first implementation. Two decoders can feed it:
 
-That refusal is the decision below working, not a gap in it. A ratio is not an
-HP, and manufacturing a maximum to turn one into the other would be exactly the
-plausible-wrong-number this record rejected memory offsets over.
+- A reconstructed binary `ProtocolMap`. That map is never LIVE, so neither are
+  the readings. This is the path ADR-0012 described: until an operator derives
+  the map, HP is `UNKNOWN` with `player_vitals_not_mapped`.
+- `NosTaleWorldProtocolDecoder`, over `NosTaleWorldFramer`. The world channel is
+  text after a decoder that verifies its `0xFF` terminator, and `stat` carries
+  absolute HP/MP confirmed against the HUD (`docs/PROTOCOLLO_NOSTALE.md`). A
+  live capture through this path publishes those fields as `LIVE`. A replay of
+  the same bytes is `CACHED`. HasTarget and InCombat stay `UNKNOWN` — they are
+  not established on any packet this decoder reads.
+
+The provider is not the Gate 1 default. Attaching it to a live capture is the
+operator's choice (ADR-0014) and is the remaining row of T-05.
+
+That refusal-when-unread is the decision below working, not a gap in it. A ratio
+is not an HP, and manufacturing a maximum to turn one into the other would be
+exactly the plausible-wrong-number this record rejected memory offsets over.
+
+**What replaying the recordings changed (2026-09-01).** Both captures were run
+through the whole chain offline — reproducible with
+`WinDivertProbe.exe --world <file.noscap>` — and three things the suite could not
+show turned up at once. All three are the same mistake in different places:
+publishing something that reads like an observation and is not one.
+
+- **A poll between two `stat` packets was reporting HP `UNKNOWN`.** `stat` is
+  sent when the number changes, not on a schedule: 62 packets in 90 s of combat,
+  22 in an idle session. Polling in small bites therefore found nothing in 63% of
+  polls on both recordings, and Gate 3 would have refused to plan two polls out of
+  three on an HP that was a second old. The `CACHED` clause below is exactly for
+  this: the reading is republished with the time it was *really* observed, and
+  becomes `UNKNOWN` with `player_vitals_stale` past a bound the operator sets. On
+  the combat recording that takes usable polls from 48/129 to 127/129, and the two
+  that remain are the ones before any `stat` had arrived.
+- **A batch that mentioned no entity was publishing `entitiesInView = 0`.** On the
+  idle recording that was every single poll, while 2468 movement packets went by:
+  the screen was full of monsters and the channel was saying there were none. Zero
+  sightings does not establish an empty screen, so it is `UNKNOWN` now, and the
+  count is over distinct entities rather than sightings.
+- **A sighting that mixed a fresh reading with a remembered one was labelled
+  `LIVE`.** Only `in` carries a position and a health together. `mv` has position
+  without health and `st` health without position, so what each produces is half
+  this packet and half whatever last mentioned that entity. Those are `CACHED`.
+
+The decoder also refuses entity types it has never seen in `in`, `mv` and `st`.
+The catalogued shapes are type 3's; another player entering view carries a name
+where a monster carries a vnum, so the same positions would have read a
+coordinate out of something else. Nothing is lost by refusing: the server never
+sends the player's own position at all.
+
+**What the observation is allowed to do (2026-09-01).** Reading the game was
+never the point on its own, and the chain stopped one field short of its purpose.
+Gate 3 required the targeting and combat flags before it would plan, and the wire
+establishes neither — so a live capture publishing HP, max HP and MP checked
+against the HUD still produced `NoWorldState` on every cycle. One of the two
+fields it refused over is read by no planning rule at all.
+[ADR-0016](ADR-0016-planning-and-acting-on-partial-observation.md) settles what
+this record left open: a rule is skipped when its own facts are unknown, the
+cycle is not, and acting requires an observation that is real and recent rather
+than one that is `LIVE` in every field. The `CACHED` clause below is what makes
+the second half work — it was written here and had no consumer until the
+provider started republishing a reading between two packets.
 
 **Builds on:** [ADR-0002](ADR-0002-real-demo-data-separation.md) (source
 classification), [ADR-0003](ADR-0003-runtime-safety-authority.md) (the runtime is
