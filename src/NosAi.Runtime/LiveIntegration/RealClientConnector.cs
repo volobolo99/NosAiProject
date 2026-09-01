@@ -58,6 +58,20 @@ public sealed class RealClientConnector : IAsyncDisposable
     private string? _lastFailureReason;
     private bool _disposed;
 
+    /// <summary>
+    /// The attachment state the console was last told about.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Observe"/> rescans on every unattached observation, which is
+    /// what lets a client started after the runtime be picked up. Every scan used
+    /// to print its result, so a runtime polled by anything — the operator page,
+    /// and now the Gate 3 decision loop at twice a second — filled the console and
+    /// the operator log with the same line forever. Nothing was wrong with the
+    /// scan; the line was reporting a poll rather than a change, and a message
+    /// repeated five times a second is one nobody reads.
+    /// </remarks>
+    private string? _lastReportedState;
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
@@ -163,7 +177,7 @@ public sealed class RealClientConnector : IAsyncDisposable
         if (!OperatingSystem.IsWindows())
         {
             _lastFailureReason = "unsupported_platform";
-            Console.WriteLine("[RealClientConnector] ERRORE: il rilevamento della finestra NosTale è supportato solo su Windows.");
+            ReportStateChange("unsupported_platform", "[RealClientConnector] ERRORE: il rilevamento della finestra NosTale è supportato solo su Windows.");
             return false;
         }
 
@@ -177,7 +191,7 @@ public sealed class RealClientConnector : IAsyncDisposable
             catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
             {
                 _lastFailureReason = $"process_enumeration_failed:{ex.GetType().Name}";
-                Console.WriteLine($"[RealClientConnector] ERRORE: impossibile enumerare '{candidate}': {ex.Message}");
+                ReportStateChange(_lastFailureReason, $"[RealClientConnector] ERRORE: impossibile enumerare '{candidate}': {ex.Message}");
                 foreach (var opened in processes)
                     opened.Dispose();
                 return false;
@@ -187,7 +201,7 @@ public sealed class RealClientConnector : IAsyncDisposable
         if (processes.Count == 0)
         {
             _lastFailureReason = "process_not_found";
-            Console.WriteLine($"[RealClientConnector] ERRORE: nessun processo client trovato tra: {string.Join(", ", _processNames)}.");
+            ReportStateChange("process_not_found", $"[RealClientConnector] ERRORE: nessun processo client trovato tra: {string.Join(", ", _processNames)}.");
             return false;
         }
 
@@ -261,7 +275,7 @@ public sealed class RealClientConnector : IAsyncDisposable
         }
 
         _lastFailureReason = "window_not_found";
-        Console.WriteLine("[RealClientConnector] ERRORE: finestra di gioco non rilevata nonostante il processo sia attivo.");
+        ReportStateChange("window_not_found", "[RealClientConnector] ERRORE: finestra di gioco non rilevata nonostante il processo sia attivo.");
         return false;
     }
 
@@ -357,9 +371,30 @@ public sealed class RealClientConnector : IAsyncDisposable
         return _networkChannel.GetSnapshot();
     }
 
-    private static void LogAttachmentSuccess(string processName, int processId, IntPtr windowHandle)
+    private void LogAttachmentSuccess(string processName, int processId, IntPtr windowHandle)
     {
-        Console.WriteLine($"[RealClientConnector] SUCCESSO: connesso al processo '{processName}' (PID: {processId}), Window Handle: {windowHandle}");
+        ReportStateChange(
+            $"attached:{processId}",
+            $"[RealClientConnector] SUCCESSO: connesso al processo '{processName}' (PID: {processId}), Window Handle: {windowHandle}");
+    }
+
+    /// <summary>
+    /// Writes a line only when the attachment state is not the one already
+    /// reported.
+    /// </summary>
+    /// <remarks>
+    /// Keyed on the state rather than on the text, so a client that exits and
+    /// comes back reports both transitions, and one that stays missing reports
+    /// nothing after the first line. Losing the repetition loses no information:
+    /// the current state is on the snapshot, which is where a caller reads it,
+    /// and the console is for the moment it changed.
+    /// </remarks>
+    private void ReportStateChange(string? state, string message)
+    {
+        if (string.Equals(_lastReportedState, state, StringComparison.Ordinal))
+            return;
+        _lastReportedState = state;
+        Console.WriteLine(message);
     }
 
     private static bool IsLiveWindow(IntPtr hwnd)
