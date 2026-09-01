@@ -178,17 +178,69 @@ namespace NosAi.Runtime.Gate3
         }
     }
 
+    /// <summary>
+    /// Turns an observed state into the actions worth considering.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Each rule reads its own facts and is skipped when one of them is unknown
+    /// (ADR-0016). The planner used to take five plain values, which forced the
+    /// caller to have all five — so the loop refused to plan at all whenever the
+    /// wire had not established the targeting state, even with HP critical and
+    /// fully observed.
+    /// </para>
+    /// <para>
+    /// The rule that matters most is the one about the unknown target. Planning the
+    /// exploration move on an unknown <c>HasTarget</c> would mean walking to a
+    /// waypoint because nobody knows whether something is being fought; planning
+    /// the attack would mean swinging at a target nobody has seen. Neither branch
+    /// is a safe default, so an unknown fact selects neither.
+    /// </para>
+    /// </remarks>
     public sealed class ActionPlanner
     {
+        /// <summary>Plans from a classified state, skipping the rules it cannot support.</summary>
+        public List<ActionCandidate> PlanCandidates(Gate3WorldState state)
+        {
+            ArgumentNullException.ThrowIfNull(state);
+            if (!state.HasVitals)
+                return new List<ActionCandidate>();
+
+            return Plan(
+                state.Hp.Value,
+                state.MaxHp.Value,
+                state.Mp.Value,
+                state.HasTarget.HasValue ? state.HasTarget.Value : null);
+        }
+
+        /// <summary>
+        /// Plans from plain values, for dry runs and the certification runners.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="isInCombat"/> is accepted and not read, as it always was:
+        /// no rule here consults it. It stays in the signature because the runners
+        /// pass it, and it is named in ADR-0016 as the field that was blocking the
+        /// loop while changing no decision.
+        /// </remarks>
         public List<ActionCandidate> PlanCandidates(
             int playerHp,
             int maxHp,
             int playerMp,
             bool hasTarget,
             bool isInCombat)
+            => Plan(playerHp, maxHp, playerMp, hasTarget);
+
+        /// <param name="hasTarget">Null when nobody has established it.</param>
+        private static List<ActionCandidate> Plan(
+            int playerHp,
+            int maxHp,
+            int playerMp,
+            bool? hasTarget)
         {
             var list = new List<ActionCandidate>();
 
+            // Survival reads the vitals and nothing else, which is why it is the
+            // one thing this runtime can decide on the network channel alone.
             if (playerHp < maxHp * 0.35)
             {
                 list.Add(new ActionCandidate(
@@ -212,7 +264,7 @@ namespace NosAi.Runtime.Gate3
                     "HP critico: riposizionamento difensivo"));
             }
 
-            if (hasTarget)
+            if (hasTarget == true)
             {
                 if (playerMp >= 35)
                 {
@@ -237,7 +289,7 @@ namespace NosAi.Runtime.Gate3
                     TrustTier.Tier2_SemiAutonomous,
                     "Bersaglio attivo: attacco base"));
             }
-            else
+            else if (hasTarget == false)
             {
                 list.Add(new ActionCandidate(
                     Guid.NewGuid(),
@@ -249,6 +301,10 @@ namespace NosAi.Runtime.Gate3
                     TrustTier.Tier1_Assisted,
                     "Esplorazione verso waypoint"));
             }
+            // hasTarget unknown: neither branch. Not knowing whether there is a
+            // target is not the same as knowing there is none, and this is the
+            // exact point where treating it as the same would send the character
+            // walking away from a fight.
 
             return list;
         }
@@ -440,7 +496,19 @@ namespace NosAi.Runtime.Gate3
         Unverified = 4,
 
         /// <summary>Executed and the world does not match the prediction, or execution failed.</summary>
-        Failed = 5
+        Failed = 5,
+
+        /// <summary>
+        /// The state was really observed and is no longer recent enough to act on,
+        /// while a live effector was bound.
+        /// </summary>
+        /// <remarks>
+        /// Kept apart from <see cref="RefusedSimulatedInput"/> on purpose. Merging
+        /// them was the old behaviour and it told the operator that a reading taken
+        /// a second and a half ago was a simulation — false, and it hid the age,
+        /// which is the only number that makes the refusal diagnosable (ADR-0016).
+        /// </remarks>
+        RefusedStaleInput = 8
     }
 
     /// <param name="Strategy">Recovery decision, when one was taken.</param>
@@ -482,6 +550,7 @@ namespace NosAi.Runtime.Gate3
         private readonly ActionExecutionVerifier _verifier;
         private readonly RecoveryController _recovery;
         private readonly IWorldStateObserver _observer;
+        private readonly TimeProvider _clock;
 
         public RuntimeMode CurrentMode { get; private set; } = RuntimeMode.Normal;
         public TrustBoundary Trust => _trust;
@@ -493,6 +562,21 @@ namespace NosAi.Runtime.Gate3
         /// <summary>Whether anything is bound that can read the world back.</summary>
         public bool CanVerify => _observer.CanObserve;
 
+        /// <summary>
+        /// How old an observation may be and still drive a real action.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately stricter than the gameplay provider's own retention, which
+        /// republishes a reading as CACHED for several seconds. That leaves a band
+        /// where the runtime will reason about a state and refuse to act on it —
+        /// the distinction the previous all-LIVE rule could not express, since it
+        /// called every non-live reading simulated (ADR-0016).
+        /// </remarks>
+        public static readonly TimeSpan DefaultMaxObservationAge = TimeSpan.FromSeconds(2);
+
+        /// <summary>The freshness bound this loop acts within.</summary>
+        public TimeSpan MaxObservationAge { get; }
+
         /// <param name="policy">
         /// Defaults to <see cref="RuntimeSafetyPolicy.SafeDefault"/>, which keeps live
         /// input and packet injection off.
@@ -502,13 +586,24 @@ namespace NosAi.Runtime.Gate3
         /// Without one, every executed cycle ends unverified. That is the honest
         /// result, not a degraded mode to be papered over.
         /// </param>
+        /// <param name="maxObservationAge">
+        /// How old a reading may be and still reach the effector.
+        /// <see cref="DefaultMaxObservationAge"/> when omitted.
+        /// </param>
+        /// <param name="clock">Time source; the system clock unless a test supplies one.</param>
         public Gate3ExecutionOrchestrator(
             RuntimeSafetyPolicy? policy = null,
             IActionEffector? effector = null,
             IWorldStateObserver? observer = null,
-            TrustTier initialTrust = TrustTier.Tier2_SemiAutonomous)
+            TrustTier initialTrust = TrustTier.Tier2_SemiAutonomous,
+            TimeSpan? maxObservationAge = null,
+            TimeProvider? clock = null)
         {
             Policy = policy ?? RuntimeSafetyPolicy.SafeDefault;
+            TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
+            if (maxAge < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(maxObservationAge));
+            MaxObservationAge = maxAge;
+            _clock = clock ?? TimeProvider.System;
             _planner = new ActionPlanner();
             _simulation = new SimulationEngine();
             _ranking = new TacticalRankingEngine();
@@ -548,7 +643,10 @@ namespace NosAi.Runtime.Gate3
             ArgumentNullException.ThrowIfNull(state);
 
             // Nothing to reason about. Planning here would mean inventing the inputs,
-            // which is the input-side twin of confirming an unobserved outcome.
+            // which is the input-side twin of confirming an unobserved outcome. The
+            // bar is the vitals: every other fact gates only the rules that read it,
+            // and a rule whose facts are unknown is skipped rather than defaulted
+            // (ADR-0016).
             if (!state.IsPlannable)
             {
                 return Result(
@@ -558,8 +656,10 @@ namespace NosAi.Runtime.Gate3
                     null);
             }
 
+            DateTime now = _clock.GetUtcNow().UtcDateTime;
+
             // Planning on hypothetical numbers is legitimate; acting on them is not.
-            if (!state.IsFullyObserved && CanExecute)
+            if (CanExecute && state.IsSimulated)
             {
                 return Result(
                     CycleOutcome.RefusedSimulatedInput,
@@ -569,14 +669,27 @@ namespace NosAi.Runtime.Gate3
                     null);
             }
 
+            // A real reading that is no longer recent is a different failure, and
+            // saying "simulated" about it — as this check used to — is false and
+            // hides the only number that would let anyone diagnose it.
+            if (CanExecute && !state.IsActionable(now, MaxObservationAge))
+            {
+                string age = state.AgeAt(now) is { } elapsed
+                    ? $"{elapsed.TotalSeconds:F1}s"
+                    : "sconosciuta";
+                return Result(
+                    CycleOutcome.RefusedStaleInput,
+                    $"Osservazione troppo vecchia per agire: età {age}, limite "
+                    + $"{MaxObservationAge.TotalSeconds:F1}s. Pianificazione possibile, esecuzione rifiutata.",
+                    ActionType.None,
+                    null);
+            }
+
             int playerHp = state.Hp.Value;
             int maxHp = state.MaxHp.Value;
             int playerMp = state.Mp.Value;
-            bool hasTarget = state.HasTarget.Value;
-            bool isInCombat = state.InCombat.Value;
 
-            List<ActionCandidate> candidates = _planner.PlanCandidates(
-                playerHp, maxHp, playerMp, hasTarget, isInCombat);
+            List<ActionCandidate> candidates = _planner.PlanCandidates(state);
 
             if (candidates.Count == 0)
                 return Result(CycleOutcome.NoCandidate, "Nessun candidato d'azione pianificato.", ActionType.None, null);

@@ -3,6 +3,8 @@ using NosAi.Runtime.Contracts;
 // Aliased rather than importing the whole Gate 1 namespace: several type names
 // are duplicated across gates, so a broad using here would make them ambiguous.
 using Gate1CanonicalSnapshot = NosAi.Runtime.Gate1.Gate1CanonicalSnapshot;
+using IGameplayProvider = NosAi.LiveIntegration.IGameplayProvider;
+using GameplayObservation = NosAi.LiveIntegration.GameplayObservation;
 
 namespace NosAi.Runtime.Gate3;
 
@@ -29,30 +31,129 @@ public sealed record Gate3WorldState(
     ClassifiedValue<bool> HasTarget,
     ClassifiedValue<bool> InCombat)
 {
-    /// <summary>Whether every field carries a value at all, whatever its source.</summary>
+    /// <summary>Whether the character's own vitals are all known.</summary>
     /// <remarks>
-    /// Planning needs numbers; it does not need them to be real. What must never
-    /// happen is planning over UNKNOWN, because there is nothing to reason about
-    /// and any answer would be invented.
+    /// The minimum for any reasoning at all: what must never happen is planning
+    /// over UNKNOWN, because there is nothing to reason about and any answer would
+    /// be invented. Planning needs numbers; it does not need them to be real.
     /// </remarks>
-    public bool IsPlannable =>
-        Hp.HasValue && MaxHp.HasValue && Mp.HasValue && HasTarget.HasValue && InCombat.HasValue;
+    public bool HasVitals => Hp.HasValue && MaxHp.HasValue && Mp.HasValue;
 
-    /// <summary>Whether every field was actually observed from the live client.</summary>
+    /// <summary>Whether there is enough here to plan anything at all.</summary>
+    /// <remarks>
+    /// <para>
+    /// The vitals, and nothing more. Every other fact gates only the rules that
+    /// read it (ADR-0016). This used to demand all five fields, which meant the
+    /// loop refused to plan whenever the wire had not established the targeting or
+    /// combat state — including with HP critical and fully observed. One of the two
+    /// fields it refused over is read by no rule at all.
+    /// </para>
+    /// <para>
+    /// A plannable state is not a complete one. A rule whose own facts are unknown
+    /// is skipped, so this means "some rule may apply", and the honest outcome when
+    /// none does is that there was no candidate, not that the world was unknown.
+    /// </para>
+    /// </remarks>
+    public bool IsPlannable => HasVitals;
+
+    /// <summary>Whether every field was read live from the client.</summary>
+    /// <remarks>
+    /// The strictest tier, kept for a caller that wants it. It is no longer what
+    /// gates the effector: a reading republished CACHED between two packets is a
+    /// real observation with a timestamp, not a simulation, and ADR-0016 gates
+    /// acting on <see cref="IsActionable"/> instead.
+    /// </remarks>
     public bool IsFullyObserved =>
-        IsPlannable
+        HasVitals
+        && HasTarget.HasValue && InCombat.HasValue
         && Hp.Source == DataSourceKind.Live
         && MaxHp.Source == DataSourceKind.Live
         && Mp.Source == DataSourceKind.Live
         && HasTarget.Source == DataSourceKind.Live
         && InCombat.Source == DataSourceKind.Live;
 
-    /// <summary>The reason the state is unusable, or null when it can be planned on.</summary>
+    /// <summary>Whether any field carrying a value came from a simulation.</summary>
+    /// <remarks>
+    /// One simulated field is enough. A plan may be built on it; nothing may act on
+    /// it, however real the other fields are.
+    /// </remarks>
+    public bool IsSimulated => KnownSources().Any(source => source == DataSourceKind.Simulated);
+
+    /// <summary>
+    /// When the oldest field carrying a value was observed, or null when none is.
+    /// </summary>
+    /// <remarks>
+    /// A state is as old as its oldest field: a current MP does not make a stale HP
+    /// current.
+    /// </remarks>
+    public DateTime? ObservedAtUtc
+    {
+        get
+        {
+            DateTime? oldest = null;
+            foreach (DateTime observed in KnownTimes())
+                if (oldest is null || observed < oldest)
+                    oldest = observed;
+            return oldest;
+        }
+    }
+
+    /// <summary>
+    /// Whether this state may drive something that touches the real game.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Real and recent. Real excludes UNKNOWN, which has nothing to act on, and
+    /// SIMULATED, which may be planned on and never acted on. Recent is measured
+    /// per field from the time it was actually observed — not from the time the
+    /// state was assembled, which would make a remembered reading look new every
+    /// time it was republished.
+    /// </para>
+    /// <para>
+    /// The bound belongs to the caller because it depends on the channel: see
+    /// <c>Gate3ExecutionOrchestrator</c>, which holds one policy for the whole loop.
+    /// </para>
+    /// </remarks>
+    public bool IsActionable(DateTime nowUtc, TimeSpan maxAge)
+    {
+        if (!HasVitals || IsSimulated || maxAge < TimeSpan.Zero) return false;
+        if (AgeAt(nowUtc) is not { } age) return false;
+        // A reading stamped in the future is a clock disagreement, not a fresh
+        // observation, and is treated as unusable rather than as maximally recent.
+        return age >= TimeSpan.Zero && age <= maxAge;
+    }
+
+    /// <summary>How old the oldest reading is, or null when nothing was read.</summary>
+    public TimeSpan? AgeAt(DateTime nowUtc) => ObservedAtUtc is { } observed ? nowUtc - observed : null;
+
+    /// <summary>The reason the state cannot be planned on, or null when it can.</summary>
+    /// <remarks>
+    /// Only the vitals can make a state unplannable now, so only their reasons
+    /// appear here. An unknown flag is not a failure of the state: it is a fact
+    /// some rule will be skipped over, and that rule is where it shows.
+    /// </remarks>
     public string? UnusableReason => IsPlannable
         ? null
         : Hp.FailureReason ?? MaxHp.FailureReason ?? Mp.FailureReason
-          ?? HasTarget.FailureReason ?? InCombat.FailureReason
           ?? "world_state_incomplete";
+
+    private IEnumerable<DataSourceKind> KnownSources()
+    {
+        if (Hp.HasValue) yield return Hp.Source;
+        if (MaxHp.HasValue) yield return MaxHp.Source;
+        if (Mp.HasValue) yield return Mp.Source;
+        if (HasTarget.HasValue) yield return HasTarget.Source;
+        if (InCombat.HasValue) yield return InCombat.Source;
+    }
+
+    private IEnumerable<DateTime> KnownTimes()
+    {
+        if (Hp.HasValue) yield return Hp.ObservedAtUtc;
+        if (MaxHp.HasValue) yield return MaxHp.ObservedAtUtc;
+        if (Mp.HasValue) yield return Mp.ObservedAtUtc;
+        if (HasTarget.HasValue) yield return HasTarget.ObservedAtUtc;
+        if (InCombat.HasValue) yield return InCombat.ObservedAtUtc;
+    }
 
     /// <summary>Nothing is known. Planning on this is refused rather than guessed.</summary>
     public static Gate3WorldState Unobserved(string reason) => new(
@@ -63,12 +164,21 @@ public sealed record Gate3WorldState(
         ClassifiedValue<bool>.Unknown(reason));
 
     /// <summary>State read from the real client.</summary>
-    public static Gate3WorldState Live(int hp, int maxHp, int mp, bool hasTarget, bool inCombat, DateTime? observedAtUtc = null) => new(
-        ClassifiedValue<int>.Live(hp, observedAtUtc),
-        ClassifiedValue<int>.Live(maxHp, observedAtUtc),
-        ClassifiedValue<int>.Live(mp, observedAtUtc),
-        ClassifiedValue<bool>.Live(hasTarget, observedAtUtc),
-        ClassifiedValue<bool>.Live(inCombat, observedAtUtc));
+    /// <remarks>
+    /// Every field is stamped with one instant when the caller does not name one,
+    /// so a state built here cannot be aged by the microseconds between five
+    /// separate reads of the clock.
+    /// </remarks>
+    public static Gate3WorldState Live(int hp, int maxHp, int mp, bool hasTarget, bool inCombat, DateTime? observedAtUtc = null)
+    {
+        DateTime at = observedAtUtc ?? DateTime.UtcNow;
+        return new(
+            ClassifiedValue<int>.Live(hp, at),
+            ClassifiedValue<int>.Live(maxHp, at),
+            ClassifiedValue<int>.Live(mp, at),
+            ClassifiedValue<bool>.Live(hasTarget, at),
+            ClassifiedValue<bool>.Live(inCombat, at));
+    }
 
     /// <summary>
     /// Hypothetical state, for dry runs and tests.
@@ -90,6 +200,54 @@ public sealed record Gate3WorldState(
 public interface IWorldStateSource
 {
     Task<Gate3WorldState> ReadAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Reads the planning state straight from a gameplay provider.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="Gate1SnapshotWorldStateSource"/> is the path for a running host,
+/// and it reaches the provider through the whole Gate 1 snapshot — client attach,
+/// hardware, guard session and all. This one is for a caller that has a provider
+/// and no host: replaying a <c>.noscap</c> recording through the decision loop,
+/// which is how the chain can be exercised end to end with no driver, no
+/// elevation and no client running.
+/// </para>
+/// <para>
+/// It changes nothing about provenance. A recording is CACHED at the framer and
+/// stays CACHED here, so a decision taken over one may be planned and — the
+/// moment anything is bound that could act — refused for staleness, which is
+/// exactly right: those bytes were real when they were captured and they are not
+/// current now.
+/// </para>
+/// </remarks>
+public sealed class GameplayProviderWorldStateSource : IWorldStateSource
+{
+    private readonly IGameplayProvider _provider;
+
+    public GameplayProviderWorldStateSource(IGameplayProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
+    public Task<Gate3WorldState> ReadAsync(CancellationToken cancellationToken = default)
+    {
+        GameplayObservation observation;
+        try
+        {
+            observation = _provider.Observe();
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(Gate3WorldState.Unobserved($"gameplay_provider_failed:{ex.GetType().Name}"));
+        }
+
+        return Task.FromResult(new Gate3WorldState(
+            Hp: observation.Hp,
+            MaxHp: observation.MaxHp,
+            Mp: observation.Mp,
+            HasTarget: observation.HasTarget,
+            InCombat: observation.InCombat));
+    }
 }
 
 /// <summary>
