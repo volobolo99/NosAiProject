@@ -83,13 +83,24 @@ negativa diventa un lavoro in P2.
 | ~~Semantica dei bit, `IsWalkable`, `BlocksAttack`, `HasLineOfSight`, regola fuori-griglia~~ **fatto** | Claude |
 | ~~Innesto in `TileType` e confine con `Unobserved`~~ **fatto** (`StaticGeometryLayer`) | Claude |
 | ~~Contributo dell'hash all'identità della build e invalidazione~~ **fatto** (`MapGridSetIdentity`) | Claude |
-| Estrattore dagli archivi via `NosArchive` → `<NOSAI-SSD>\NosAi\data\maps\` | Cursor |
-| Loader del formato, `--extract-maps`, `--map-info <mapId>` | Cursor |
-| Test di caricamento su tutte le mappe estratte | Cursor |
+| ~~Estrattore dagli archivi via `NosArchive`~~ **fatto** — archivio `NStcData` | Cursor |
+| ~~Loader del formato, `--extract-maps`, `--map-info <mapId>`~~ **fatto** — 777 mappe, 0 rifiutate | Cursor |
+| ~~Test di caricamento su tutte le mappe estratte~~ **fatto** | Cursor |
+| `--extract-maps` sul volume `NOSAI-SSD` vero, una volta | operatore |
+| **Prova della cella su cui si sta** — la cella sotto il personaggio deve risultare calpestabile | operatore |
 
-**DoD** — prova attiva etichettata su almeno 3 mappe: si cammina fino al bordo di una zona
-che la griglia dichiara bloccata e il client ferma il personaggio **esattamente lì**. Se non
-coincide, la griglia non è promossa.
+**Stato: contenitore verificato, semantica dei bit no.** Il vincolo
+`larghezza × altezza + 4 == lunghezza` regge su 777 entrate reali, quindi si sa **dove** stanno
+i numeri. Che il bit `0x01` significhi « camminata vietata » su questa build no.
+
+**DoD** — due prove, in ordine di costo:
+
+1. **la cella su cui si sta**: personaggio fermo, `player.x` e `player.y` noti, quella cella
+   deve risultare calpestabile. Falsifica in un campione, e su una mappa quadrata è l'unica
+   delle due che coglie una griglia trasposta — le dimensioni non la colgono mai;
+2. **il bordo bloccato**, prova attiva etichettata su almeno 3 mappe: si cammina fino al bordo
+   di una zona che la griglia dichiara bloccata e il client ferma il personaggio **esattamente
+   lì**. Se non coincide, la griglia non è promossa.
 
 ---
 
