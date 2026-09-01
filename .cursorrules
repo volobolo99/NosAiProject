@@ -1,7 +1,59 @@
-# Regole di Sviluppo per Cursor & Claude in NosAiProject
-- Linguaggio di Implementazione: C# / .NET 8, fortemente tipizzato.
-- Pattern Architetturali: Principi SOLID, DRY, KISS, zero-allocation sul percorso critico (utilizzo di Span<T>, Memory<T>, ArrayPool).
-- Invarianti di Sicurezza: Nessun LLM o provider decisionale può eseguire azioni direttamente. Il percorso critico deve passare tassativamente attraverso: Observe -> WorldState -> Simulation -> Ranking -> Orchestrator -> Planner -> Guard -> Trust -> Safety -> Executor -> Verify.
-- Divieto di Mock sul Percorso Critico: Gli adapter di gioco e di rete (DXGI Direct Capture, socket TCP asincroni, framing binario a 12 byte) devono interagire con l'hardware e i client reali (Acer Nitro V 16 AI, client NosTale, smartphone Android via ADB).
-- Documentazione: Aggiornare i registri tecnici e la documentazione in lingua italiana quando richiesto dalle regole di progetto.
--
+# ADVANCED REAL-TIME AUTOMATION FRAMEWORK - SYSTEM RULES
+
+## 1. INTENT & SEMANTICS
+- This repository develops a high-frequency automation framework for the NosTale
+  client, built on computer-vision perception and reinforcement-learning decision
+  architectures.
+- The environment under analysis is a real-time, discrete-state system with
+  stochastic variables and partial observability.
+- Call things what they are. Code, comments, commits and documentation use the
+  real domain terms; a subsystem that reads target HP is named for that and not
+  for a euphemism.
+
+## 2. OUTPUT PROTOCOL (MAXIMUM UTILITY & ZERO-TOKEN WASTE)
+- **Code-Only Output:** Return exclusively valid, syntactically perfect code. No
+  pleasantries ("Sure!", "Here is the code"), no markdown explanations before or
+  after the code block.
+- **Diff-Only Delivery:** For modifications in existing files, output only the
+  updated functions or lines, using `# ... existing codebase context ...` to
+  represent unchanged areas. Never rewrite a file exceeding 30 lines.
+- **Strict Typing:** All generated code must enforce explicit typing (e.g. Python
+  type hinting with the `typing` module) and contain detailed docstrings
+  explaining the mathematical variance of the algorithm.
+
+## 3. SOFTWARE ARCHITECTURE (MODULAR & COMPARTMENTALIZED)
+- **Model-View-Controller (MVC) Decoupling:**
+  - `VisionEngine (View)`: Handles high-speed window capture via win32 API or
+    DXCAM, converting pixel buffers into clean NumPy arrays. No business logic
+    allowed here.
+  - `DecisionMatrix (Model)`: Implements the state machine, predictive models,
+    probability trees, and learning matrices. Pure math, zero OS-level
+    dependencies.
+  - `InputEmulator (Controller)`: Handles low-level hardware virtualization
+    (DirectInput/Scancodes via Interception driver or SendMessage APIs). Must
+    isolate all timing configuration behind one boundary rather than scattering
+    it across call sites.
+- **Black-Box Supervision:** The framework must not hook into the target process
+  memory. It operates purely as a black-box supervisor via vision and
+  keyboard/mouse simulation - the less invasive of the available designs, and the
+  one that keeps perception honest about what it can actually observe.
+
+## 4. CRITICAL PATH & SAFETY INVARIANTS
+- **Mandatory ordering.** No LLM or decision provider may execute actions
+  directly. The critical path passes without exception through:
+  `Observe -> WorldState -> Simulation -> Ranking -> Orchestrator -> Planner ->
+  Guard -> Trust -> Safety -> Executor -> Verify`.
+- **No mocks on the critical path.** Game and network adapters (DXGI Direct
+  Capture, asynchronous TCP sockets, 12-byte binary framing) must interact with
+  real hardware and real clients, not with fixtures.
+- **Real and simulated data stay distinguishable.** Sources are classified
+  `LIVE`, `DERIVED`, `CACHED`, `SIMULATED` or `UNKNOWN`, and `UNKNOWN` is never
+  treated as zero, false or empty.
+- **Zero-allocation on the critical path**, via `Span<T>`, `Memory<T>` and
+  `ArrayPool<T>`.
+- **Fail closed** wherever safety depends on the outcome.
+
+## 5. IMPLEMENTATION LANGUAGE
+- Runtime, protocol and client: C# / .NET 8, strongly typed.
+- Perception, tactical decision and simulation layers: Python, strictly typed.
+- Architectural principles: SOLID, DRY, KISS.
