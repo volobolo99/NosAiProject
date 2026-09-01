@@ -119,6 +119,98 @@ si affronta quando la rivalidazione continua misura un costo, non prima.
 **Invalidazione.** L'hash dell'insieme delle griglie entra nell'identità della build. Build
 diversa ⇒ griglie non caricate, pianificazione ferma, nessun valore prodotto.
 
+### 3.1 Stato al 1 settembre 2026: contratto e semantica in codice, loader no
+
+`NosAi.Runtime.Navigation` contiene il contratto e i test; il **loader del formato non è
+scritto**, quindi nulla costruisce ancora una griglia e nulla nel runtime chiama questo
+modulo (`ModuleReachability`: `Unreferenced`, dichiarato).
+
+| Tipo | Ruolo |
+|---|---|
+| `MapCellFlags` | i cinque bit, nominati |
+| `MapGrid` | `readonly struct`: larghezza, altezza, buffer. `IsWalkable`, `BlocksAttack`, `HasLineOfSight`, zero allocazioni |
+| `DynamicOccupancy` | `Clear` / `Suspected` / `Occupied` |
+| `StaticGeometryLayer` | la regola di composizione con `TileType` |
+| `MapGridSetIdentity` | hash dell'insieme, confronto e rifiuto |
+| `IMapGridLoader` + `MapGridFormat` | la forma che il loader deve avere e il vocabolario dei rifiuti |
+
+**Due strati, composti in una sola direzione.** Lo strato statico (`MapGrid`) è autorevole e
+*completo*: dentro un rettangolo caricato ogni cella ha una risposta, quindi lì non esiste
+geometria ignota. Lo strato dinamico può solo **sottrarre** calpestabilità: può chiudere
+terreno aperto, non può mai aprire terreno chiuso.
+
+**Dove va `TileType.Unobserved`.** Smette di rappresentare geometria non letta — era un
+segnaposto per un file che nessuno aveva aperto — e tiene due compiti, in entrambi bloccando:
+
+1. **nessuna griglia caricata per questa mappa** (è ciò che produce di proposito il controllo
+   di identità dopo una patch): geometria davvero ignota, pianificazione ferma;
+2. **entità sospetta sulla cella** (`DynamicOccupancy.Suspected`): un'entità tracciata
+   *potrebbe* essere lì e l'avvistamento è troppo vecchio per agire.
+
+**La decisione discutibile, dichiarata.** Terreno aperto senza nulla di osservato sopra è
+`Walkable`. Non è « ignoto trattato come vuoto »: il runtime non osserva quasi nessuna cella
+di una mappa, quindi se l'assenza di un avvistamento bloccasse, bloccherebbe *tutto*, la
+pianificazione non produrrebbe mai nulla, e la pressione a indebolire la regola finirebbe
+sulla garanzia geometrica — l'unica che non deve muoversi. I due ignoti sono proposizioni
+diverse e solo uno è spaziale:
+
+- ignota la **geometria** ⇒ è un fatto su un *luogo*, si risponde nello spazio, blocca,
+  ed è assoluto;
+- ignota l'**occupazione** ⇒ è un fatto su un *momento*; nessuna proprietà della cella lo
+  risolve, perché ciò che c'è è arrivato e se ne andrà. Si risponde nel **tempo**: limite
+  di età dell'osservazione già imposto dal ciclo prima di agire, e rivalidazione del
+  percorso prima di ogni segmento (sopra).
+
+> **Il limite di età non è imposto sul percorso dell'atto.** Verificato leggendo: l'unico
+> confronto d'età nel runtime è in `TargetSelector` riga 161, e riguarda la scelta del
+> bersaglio, non il movimento. Niente, sulla via verso un passo, chiede quanto è vecchia
+> l'osservazione che copre la cella di destinazione, e niente distingue « osservata di
+> recente, libera » da « mai guardata ». Finché è così, `Walkable` autorizza un piano **e**
+> un atto, perché all'atto non c'è una seconda condizione: la distinzione piano/atto è la
+> risposta giusta, ma è ancora solo scritta.
+>
+> È la stessa forma dell'epoca di geometria — una condizione che un documento dà per
+> presente e che non ha niente dietro — e va chiusa in P4, dove nasce il primo atto. La
+> condizione mancante: l'atto richiede un'osservazione che copra la cella di destinazione e
+> non più vecchia della soglia dichiarata; assenza di osservazione e osservazione scaduta
+> sono lo stesso ingresso per la guardia, e non sono « libero ».
+>
+> Nota minore, categoria nota: quel confronto d'età sottrae due orari di parete
+> (`ObservedAtUtc`). Le durate si misurano con orologio monotono — è il censimento che WP0
+> prevede in `PIANO_GATE_A` § 3, e questo è uno dei punti.
+
+Quindi `Walkable` afferma esattamente ciò che può sostenere — *la geometria del client
+permette questa cella e nulla di osservato ci sta sopra* — e l'affermazione che **non** fa,
+che la cella sia ancora libera quando il personaggio arriva, è quella che la rivalidazione
+rifà ogni volta che conta. Nulla qui autorizza un atto: autorizza un piano, e il piano è
+ricontrollato prima di ogni suo segmento.
+
+**Innesto su `MapGridData`.** `StaticGeometryLayer.Project` scrive la base geometrica e
+*preserva* `SafeZoneTown` e `PortalEntrance`, che sono celle calpestabili con un significato
+che i bit non sanno esprimere: sovrascriverle cancellerebbe la tabella dei portali dentro la
+geometria. Dove i due sono in disaccordo vince la geometria e il conteggio è riportato
+(`SemanticTilesOverruled`) — un portale dentro un muro è una discrepanza da guardare, non da
+risolvere in silenzio. `WaterOrChasm` invece **non** è preservato: è una congettura osservata
+sul terreno, cioè proprio ciò a cui il file risponde.
+
+**Identità e invalidazione.** `MapGridSetIdentity.Compute(files, clientFingerprint)` piega
+`FormatVersion` + impronta del client + le coppie `(mapId, sha256 del file)` ordinate per
+`mapId`, con separatori non ambigui. `MayLoad(recorded, current, out reason)` rifiuta su
+qualunque ambiguità: identità mancante da una delle due parti, client cambiato
+(`client_build_changed:…`), insieme cambiato (`map_grid_set_changed:…`). Taglia in entrambi i
+versi — modificare un `.grid` senza toccare il client invalida altrettanto. Un rifiuto lascia
+`default(MapGrid)`, che blocca l'intera mappa: è per questo che `MapGrid` e
+`StaticGeometryLayer` falliscono chiusi sull'istanza di default.
+
+**Cosa deve superare il loader.** `tests/NosAi.Runtime.Tests/MapGridLoaderContractTests.cs`,
+classe astratta: il loader la attiva con una sottoclasse che restituisce la propria istanza.
+Diciassette casi, fra cui ordine **row-major** verificato su un rettangolo non quadrato (un
+indice trasposto passa qualunque fixture quadrata), header **little-endian**, payload
+troncato e payload in eccesso entrambi rifiutati, dimensione zero rifiutata, e un rettangolo
+dichiarato di 65535×65535 rifiutato **in aritmetica** e non in un'allocazione. Ogni rifiuto
+lascia `default(MapGrid)` e porta un token di `MapGridFormat`, mai un'eccezione: un file
+malformato è ciò che produce una patch del client e deve restare distinguibile da un bug.
+
 ---
 
 ## 4. Autorità d'input legata alla sessione

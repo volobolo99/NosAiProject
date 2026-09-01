@@ -80,9 +80,9 @@ negativa diventa un lavoro in P2.
 
 | Contenuto | Chi |
 |---|---|
-| Semantica dei bit, `IsWalkable`, `BlocksAttack`, `HasLineOfSight`, regola fuori-griglia | Claude |
-| Innesto in `TileType` e confine con `Unobserved` | Claude |
-| Contributo dell'hash all'identità della build e invalidazione | Claude |
+| ~~Semantica dei bit, `IsWalkable`, `BlocksAttack`, `HasLineOfSight`, regola fuori-griglia~~ **fatto** | Claude |
+| ~~Innesto in `TileType` e confine con `Unobserved`~~ **fatto** (`StaticGeometryLayer`) | Claude |
+| ~~Contributo dell'hash all'identità della build e invalidazione~~ **fatto** (`MapGridSetIdentity`) | Claude |
 | Estrattore dagli archivi via `NosArchive` → `<NOSAI-SSD>\NosAi\data\maps\` | Cursor |
 | Loader del formato, `--extract-maps`, `--map-info <mapId>` | Cursor |
 | Test di caricamento su tutte le mappe estratte | Cursor |
@@ -160,6 +160,7 @@ Una cella. Il percorso completo su un atto minimo.
 |---|---|
 | Composizione finale delle guardie e ordine di corto circuito | Claude |
 | `MovementVerifier`: griglia contro griglia, 350 ms ± 20 ms, esiti riuscita / stallo / abort | Claude |
+| **Condizione di freschezza dell'occupazione all'atto**: l'atto richiede un'osservazione che copra la cella di destinazione entro la soglia dichiarata. Assenza di osservazione e osservazione scaduta sono lo stesso ingresso, e non sono « libero ». Oggi manca: l'unico confronto d'età è in `TargetSelector` e riguarda il bersaglio | Claude |
 | Comando `--step <dx> <dy>` con stampa dell'esito di ogni guardia | Cursor |
 | Eventi di audit dell'intera catena | Cursor |
 
