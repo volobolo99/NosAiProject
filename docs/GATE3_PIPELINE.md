@@ -181,13 +181,20 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
   Ciò che sa fare oggi: `UseConsumable` e `UseSkill`, premendo il tasto che
   l'operatore ha configurato in `data/keybinds.json` (C3/F2-4).
 
-  Ciò che rifiuta, per nome, finché non arriva F2-3: `UseBasicAttack`,
-  `TargetEntity`, `MoveToPosition` ed `EmergencyFlee` terminano `Refused` con
-  motivo `screen_projection_not_calibrated`. Non esiste una trasformazione da coordinata
-  di mappa a pixel, e una di ripiego cliccherebbe in un punto qualsiasi della
-  finestra: il ciclo lo scoprirebbe solo alla verifica, dopo aver già agito.
-  `CollectGroundItem` e `RestAndRecover` non hanno un gesto e sono rifiuti
-  nominati.
+  Il mouse: `UseBasicAttack`, `TargetEntity`, `MoveToPosition` ed
+  `EmergencyFlee` passano da `CalibratedScreenProjection` (F2-3). La
+  trasformazione esiste ed è **misurata**, non dedotta: l'operatore registra tre
+  coppie (coordinata di mappa, pixel del client) con `--screen-sample`, e
+  `--screen-calibrate` risolve la mappa affine e la scrive in
+  `data/perception/screen-projection.calibration`. Finché quel file non c'è, ogni
+  clic termina `Refused` con motivo `screen_projection_not_calibrated`, perché una
+  trasformazione di ripiego cliccherebbe in un punto qualsiasi della finestra e il
+  ciclo lo scoprirebbe solo alla verifica, dopo aver già agito. Rifiutano per nome
+  anche il punto fuori dall'area client (`point_outside_client_area`, mai un clic
+  sul bordo), la finestra ridimensionata dopo la calibrazione
+  (`screen_projection_client_size_changed`) e la finestra non trovata
+  (`client_window_not_located`). `CollectGroundItem` e `RestAndRecover` non hanno
+  un gesto e sono rifiuti nominati.
 
   `Completed` significa che l'input è stato accettato: `SendInput` riporta quanti
   eventi ha accodato, il backend restituisce `false` quando non è quello atteso, e
@@ -199,9 +206,10 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
   Finché non c'è un provider, ogni ciclo termina `NoWorldState`.
 
 Questi punti sono la vera distanza dall'operatività, e sono limiti dichiarati,
-non difetti nascosti. Il primo si è ristretto a metà: la tastiera arriva al
-client, il mouse no, e manca la trasformazione coordinata → pixel (F2-3) perché
-è la sola che non si può dedurre — va calibrata su un client reale.
+non difetti nascosti. Il primo si è chiuso sul lato del codice: tastiera e mouse
+hanno entrambi un percorso completo fino al client. Quel che resta è **la
+calibrazione**, che non si può dedurre — va misurata sul client acceso, ed è
+registrata come T-10.
 
 ## Debito noto: il token firma l'identificativo, non l'azione
 

@@ -106,6 +106,32 @@ public static class Program
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
         }
 
+        // Map coordinate to window pixel (F2-3). Two commands because a
+        // calibration is gathered across several moments in the game, so the
+        // samples have to outlive one invocation, exactly as --memory-scan's
+        // candidates do.
+        int screenSampleFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--screen-sample", StringComparison.OrdinalIgnoreCase));
+        if (screenSampleFlag >= 0)
+        {
+            if (screenSampleFlag + 2 >= args.Length
+                || !int.TryParse(args[screenSampleFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mapX)
+                || !int.TryParse(args[screenSampleFlag + 2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mapY))
+            {
+                Console.Error.WriteLine(
+                    "--screen-sample <mapX> <mapY> requires the coordinates the game is showing.");
+                return 2;
+            }
+
+            return NosAi.Runtime.Perception.ScreenProjectionProbe.RunSample(null, mapX, mapY);
+        }
+
+        if (args.Any(a => string.Equals(a, "--screen-calibrate", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Perception.ScreenProjectionProbe.RunSolve(null);
+
+        if (args.Any(a => string.Equals(a, "--screen-samples-clear", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Perception.ScreenProjectionProbe.RunClear(null);
+
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides
         // about it, which is the half nothing exercised before.

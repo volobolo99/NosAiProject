@@ -8,6 +8,7 @@ using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Observability;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.Security;
@@ -241,10 +242,45 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             keybinds = KeybindMap.Empty;
         }
 
-        // The screen projection is left at its uncalibrated default until F2-3.
-        // Every action needing a point on the screen is refused with
-        // screen_projection_not_calibrated rather than clicked approximately.
-        return new Gate3.InputActionEffector(gated, keybinds, () => runtime.Safety.Policy);
+        // F2-3. Without the operator's calibration this projects nothing and every
+        // action needing a point on the screen is refused by name, which is the
+        // whole design: a fallback transform would click somewhere in the window
+        // and the cycle would find out only at verification, after acting.
+        string projectionPath = Path.Combine(
+            AppContext.BaseDirectory, ScreenProjectionCalibration.RelativePath);
+        ScreenProjectionCalibration projection =
+            ScreenProjectionCalibration.Load(projectionPath, out string? projectionFailure);
+        if (!projection.IsCalibrated)
+        {
+            _logger.Warning("Screen projection not calibrated; clicks will be refused by name.", new Dictionary<string, object?>
+            {
+                ["path"] = projectionPath,
+                ["reason"] = projectionFailure
+            });
+        }
+
+        return new Gate3.InputActionEffector(
+            gated,
+            keybinds,
+            () => runtime.Safety.Policy,
+            new CalibratedScreenProjection(projection, LocateClientArea));
+    }
+
+    /// <summary>
+    /// Where the attached client is drawing right now, or null when it cannot be
+    /// found.
+    /// </summary>
+    /// <remarks>
+    /// Located on every call rather than captured once: a window is moved and
+    /// resized while the runtime runs, and a stale rectangle would put a click at
+    /// the offset the window used to have.
+    /// </remarks>
+    private PixelRect? LocateClientArea()
+    {
+        if (!OperatingSystem.IsWindows() || _client.AttachedProcessId is not { } pid)
+            return null;
+
+        return ClientWindowLocator.TryFind(pid, out _)?.ClientArea;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
