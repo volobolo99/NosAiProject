@@ -57,6 +57,24 @@ public sealed class NosTaleClientLayout
     /// <summary>Player manager → the character id the client is holding.</summary>
     public const int PlayerIdOffset = 0x24;
 
+    /// <summary>Player manager → the id of the map the character is on.</summary>
+    /// <remarks>
+    /// <para>
+    /// Not confirmed the way the character id is. The wire never named this field
+    /// in the captures — they started mid-session, so neither <c>at</c> nor
+    /// <c>c_map</c> appears in the catalogue — and nothing independent has agreed
+    /// with the number the way <c>cond</c> agreed with <see cref="PlayerIdOffset"/>.
+    /// </para>
+    /// <para>
+    /// It is the remaining int in the same manager the other offsets already
+    /// describe, and it is what <c>--grid-check</c> uses to pick the file. A wrong
+    /// value either finds no <c>.grid</c> or prints a 3×3 that does not match the
+    /// screen. Neither is silently walked. The standing-cell command is the
+    /// confirmation, not this constant.
+    /// </para>
+    /// </remarks>
+    public const int MapIdOffset = 0x30;
+
     /// <summary>
     /// Player manager → the square the character is walking to.
     /// </summary>
@@ -269,6 +287,44 @@ public sealed class NosTaleClientLayout
             ManagerY: managerPosition.Ok ? BitConverter.ToInt16(managerPosition.Bytes, 2) : null,
             WalkTargetX: walkTarget.Ok ? BitConverter.ToInt16(walkTarget.Bytes, 0) : null,
             WalkTargetY: walkTarget.Ok ? BitConverter.ToInt16(walkTarget.Bytes, 2) : null);
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the map id the player manager holds, or says why it could not.
+    /// </summary>
+    /// <remarks>
+    /// Followed on every call, never cached, for the same reason as
+    /// <see cref="TryReadPlayer"/>: the client replaces the manager's contents on
+    /// a map change. Unconfirmed: see <see cref="MapIdOffset"/>.
+    /// </remarks>
+    public bool TryReadMapId(
+        ProcessMemoryReader reader,
+        out int mapId,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        mapId = 0;
+
+        if (!TryFollow(reader, _pointerHolder, "player_manager", out IntPtr manager, out failureReason))
+            return false;
+
+        MemoryReadResult bytes = reader.Read(manager + MapIdOffset, sizeof(int));
+        if (!bytes.Ok)
+        {
+            failureReason = bytes.FailureReason ?? "map_id_unreadable";
+            return false;
+        }
+
+        int value = BitConverter.ToInt32(bytes.Bytes);
+        if (value < 0)
+        {
+            failureReason = $"map_id_implausible:{value.ToString(CultureInfo.InvariantCulture)}";
+            return false;
+        }
+
+        mapId = value;
         failureReason = null;
         return true;
     }

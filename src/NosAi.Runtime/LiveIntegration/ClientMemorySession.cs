@@ -141,6 +141,13 @@ public sealed class ClientMemorySession : IDisposable
         return _layout.TryReadPlayer(_reader, out reading, out failureReason);
     }
 
+    /// <summary>Reads the map id the player manager holds, or says where it broke.</summary>
+    public bool TryReadMapId(out int mapId, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryReadMapId(_reader, out mapId, out failureReason);
+    }
+
     /// <summary>Reads one of the client's entity lists for the current map.</summary>
     public bool TryReadEntities(
         MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)

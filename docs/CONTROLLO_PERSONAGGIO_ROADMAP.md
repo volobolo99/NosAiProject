@@ -87,7 +87,7 @@ negativa diventa un lavoro in P2.
 | ~~Loader del formato, `--extract-maps`, `--map-info <mapId>`~~ **fatto** — 777 mappe, 0 rifiutate | Cursor |
 | ~~Test di caricamento su tutte le mappe estratte~~ **fatto** | Cursor |
 | `--extract-maps` sul volume `NOSAI-SSD` vero, una volta | operatore |
-| **Prova della cella su cui si sta** — la cella sotto il personaggio deve risultare calpestabile | operatore |
+| **Prova della cella su cui si sta** — `--grid-check` col client aperto; la cella sotto il personaggio deve risultare calpestabile | operatore |
 
 **Stato: contenitore verificato, semantica dei bit no.** Il vincolo
 `larghezza × altezza + 4 == lunghezza` regge su 777 entrate reali, quindi si sa **dove** stanno

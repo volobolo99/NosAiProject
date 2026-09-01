@@ -106,15 +106,43 @@ significhi « camminata vietata » su questa build viene dalla stessa documentaz
 veniva il layout, e una griglia con le dimensioni giuste può portare bit invertiti o spostati
 senza che nulla se ne accorga. Due prove, in ordine di costo:
 
-1. **La cella su cui si sta.** Il personaggio è fermo, `player.x` e `player.y` sono noti dalla
-   percezione: quella cella **deve** risultare calpestabile. Se risulta bloccata, o i bit sono
-   invertiti o le righe sono trasposte. Costa un comando, falsifica in un campione, e su una
-   mappa quadrata è l'unica delle due che coglie la trasposizione — le dimensioni non la
-   colgono mai. Ripetuta su qualche posizione asimmetrica diventa una prova forte.
+1. **La cella su cui si sta.** Il personaggio è fermo, `mapId`, `player.x` e `player.y` sono
+   noti dalla percezione: quella cella **deve** risultare calpestabile. Il comando è
+   `--grid-check`: stampa il byte della cella e il 3×3 intorno, e se è bloccata lo dice
+   senza correggere. Un 3×3 che non somiglia al terreno a schermo è il segnale che i bit
+   non significano quello che il layout pretenda. Costa un comando, falsifica in un
+   campione, e su una mappa quadrata è l'unica delle due che coglie la trasposizione — le
+   dimensioni non la colgono mai. Ripetuta su qualche posizione asimmetrica diventa una
+   prova forte.
 2. **Il bordo bloccato**, che è la DoD di P1: camminare fino al bordo di una zona che la
    griglia dichiara bloccata, su almeno tre mappe, e verificare che il client fermi il
    personaggio **esattamente lì**. Fino a questo commit non era eseguibile perché non
    esistevano griglie contro cui camminare.
+
+**Attenzione: la prova 1 ha due incognite e una sola osservazione.** `--grid-check` legge
+`player.x` e `player.y` da una catena confermata, ma legge `mapId` dalla memoria a un offset
+**ipotizzato** (`+0x30`, mai corroborato: nelle catture non ci sono `at` né `c_map`). Se il
+3×3 non somiglia allo schermo, il risultato non dice *quale* delle due ipotesi è morta — il
+significato dei bit o la mappa caricata. Un esperimento confuso vale meno di nessun
+esperimento, perché produce una conclusione.
+
+Si separano così, in quest'ordine:
+
+1. **Le coordinate cadono dentro la griglia?** È una domanda sul solo `mapId` e non tocca i
+   bit. Se `player.x` o `player.y` eccedono le dimensioni della griglia caricata, l'offset è
+   sbagliato — dimostrato, senza aver parlato di calpestabilità. Le 777 mappe hanno forme
+   molto diverse (`49×51`, `160×180`, `180×220`), quindi il vincolo morde, e morde di più
+   vicino ai bordi della mappa: conviene campionare lì.
+2. **Solo se le coordinate stanno dentro**, si legge la calpestabilità. Ora l'unica incognita
+   rimasta è il significato dei bit, e la risposta è interpretabile.
+3. **Corroborazione attiva del `mapId`**, nello stile di `SPEC_GAMEPLAY_DATASET` § 3:
+   attraversare un portale e verificare che il valore cambi, che la nuova griglia abbia
+   dimensioni diverse, e che le coordinate continuino a cadere dentro. È anche il predicato
+   di validità che ADR-0014 richiede perché una lettura di memoria possa dirsi `LIVE`: non
+   « l'offset sembra dare numeri plausibili », ma « l'id risolve a una griglia che contiene
+   il personaggio, ripetutamente ».
+
+Finché il punto 3 non è passato, `mapId` da memoria è `Candidate`, non `Verified`.
 
 *Testo precedente, superato dalla misura:*
 ~~Il layout non è ancora verificato contro un file vero.~~ Viene dalla documentazione della

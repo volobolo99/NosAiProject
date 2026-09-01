@@ -129,6 +129,12 @@ public static class Program
             return NosAi.Runtime.Navigation.MapGridExtractor.RunInfo(mapId);
         }
 
+        // Standing-cell proof: map id and position from the live client, the
+        // bytes of that cell and its eight neighbours from the extracted grid.
+        // Read-only — a blocked cell is reported, not rewritten.
+        if (args.Any(a => string.Equals(a, "--grid-check", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Navigation.MapGridCheck.Run();
+
         // Map coordinate to window pixel (F2-3). Two commands because a
         // calibration is gathered across several moments in the game, so the
         // samples have to outlive one invocation, exactly as --memory-scan's
