@@ -45,6 +45,12 @@ public static class Program
             return 2;
         }
 
+        // One screen instead of a list of flags to remember. It adds no
+        // capability: every entry calls the command its flag calls, and the ones
+        // that actuate are not in it.
+        if (args.Any(a => string.Equals(a, "--menu", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Operator.OperatorMenu.Run();
+
         if (args.Any(a => string.Equals(a, "--list-suites", StringComparison.OrdinalIgnoreCase)))
         {
             foreach (string flag in suites.Keys.OrderBy(f => f, StringComparer.Ordinal))

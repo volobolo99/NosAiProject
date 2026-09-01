@@ -94,6 +94,7 @@ public static class ModuleReachability
         new("NosAi.Runtime.Hardware", ModuleReach.Integrated),
         new("NosAi.Runtime.Humanizer", ModuleReach.Integrated),
         new("NosAi.Runtime.LowLevel", ModuleReach.Integrated),
+        new("NosAi.Runtime.Operator", ModuleReach.Integrated),
         new("NosAi.Runtime.Observability", ModuleReach.Integrated),
         new("NosAi.Runtime.Orchestration", ModuleReach.Integrated),
         new("NosAi.Runtime.Perception", ModuleReach.Integrated),
