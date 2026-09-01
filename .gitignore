@@ -49,3 +49,6 @@ data/
 
 # WinDivert driver e binari di cattura (scaricati localmente, mai committati)
 tools/windivert/
+
+# Worktree e stato degli agenti (contiene copie complete del repository)
+.claude/
