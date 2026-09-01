@@ -119,6 +119,12 @@ L'unica miglioria sostanziale sopravvissuta al confronto con il codice.
 correttamente non calpestabile. Ma la calpestabilità statica non ha bisogno di essere
 osservata: **è un file del client**, e `NosArchive` sa già leggerne gli archivi.
 
+L'archivio è **`NStcData`**. Vale la pena scriverlo, perché il primo tentativo di estrazione
+ha letto `NSmpData` — il nome sembra « map » e non lo è: contiene sprite. I payload sgonfiati
+non avevano due `uint16` plausibili come dimensioni e sono stati rifiutati con
+`grid_rectangle_implausible`, che è il contratto che funziona al primo contatto con dati veri
+invece di produrre una griglia da byte di sprite.
+
 Il formato è una griglia rettangolare: due interi a 16 bit little-endian (larghezza,
 altezza), poi larghezza × altezza byte, uno per cella, con significato a bit.
 

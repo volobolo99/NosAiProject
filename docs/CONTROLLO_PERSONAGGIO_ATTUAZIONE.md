@@ -92,8 +92,18 @@ Un comando esplicito di sospensione ferma tutto immediatamente, senza attendere 
 Vedi `CONTROLLO_PERSONAGGIO_ARCHITETTURA.md` § 5 per il perché e per la tabella dei bit.
 Qui il come.
 
-**Estrazione.** Una volta per build del client, dagli archivi che `NosArchive` sa aprire,
-verso `<NOSAI-SSD>\NosAi\data\maps\<mapId>.grid`, con manifesto e hash per file.
+**Estrazione.** Una volta per build del client, dall'archivio **`NStcData`** — non
+`NSmpData`, che contiene sprite — verso `<NOSAI-SSD>\NosAi\data\maps\<mapId>.grid`, con
+manifesto e hash per file.
+
+**Il layout non è ancora verificato contro un file vero.** Viene dalla documentazione della
+comunità e ha superato solo griglie sintetiche. Se un'entrata di `NStcData` non si decodifica
+con questo layout, la regola è la stessa del framing in `SPEC_GAMEPLAY_DATASET` § 5: **si
+misura, non si indovina una seconda volta.** Si estraggono i primi 64 byte di alcune entrate,
+la lunghezza del payload sgonfiato e il nome dell'entrata, e si verifica quale ipotesi regge —
+`w × h + 4 == lunghezza` è il vincolo che decide, e va provato su entrambi gli ordinamenti dei
+byte e su una cella da uno e da due byte. Un decoder adattato ai dati finché passano è
+esattamente il difetto che il contratto esiste per impedire.
 
 **Formato.** `uint16` little-endian larghezza, `uint16` little-endian altezza, poi
 larghezza × altezza byte.
@@ -326,10 +336,31 @@ ha trovato il difetto.
    ci si adatterebbe sopra restituendo un residuo buono su una trasformazione senza
    contenuto — l'errore che `ScreenProjectionCalibration` documenta per la forma assoluta.
 
-   Perché allora T-03 ha confermato la lettura dell'HUD contro un client reale? Quasi
-   certamente perché lo schermo dell'operatore è al 100 %, dove virtuale e fisico
-   coincidono. È un'assunzione d'ambiente su cui poggia tutta la percezione, che nessuna
-   riga di codice verifica e nessun test dichiara.
+   Perché allora T-03 ha confermato la lettura dell'HUD contro un client reale? Si era
+   supposto « quasi certamente perché lo schermo dell'operatore è al 100 % ».
+   **Misurato il 1 settembre 2026: è falso.**
+
+   > **Assunzione d'ambiente, misurata e dichiarata.** Lo schermo dell'operatore è a
+   > **125 %** — `1920×1200` fisici a 120 DPI, che un processo non consapevole legge
+   > `1536×960` a 96 DPI. Misurato in due modi indipendenti che concordano:
+   > `GetDpiForMonitor` da un processo consapevole riporta 120 DPI, e
+   > `VERTRES`/`DESKTOPVERTRES` da uno non consapevole riporta 960 contro 1200. La stessa
+   > finestra misura **1536×912 a un lettore non consapevole e 1920×1140 a uno
+   > consapevole**: virtuale e fisico qui **non** coincidono, e differiscono di un quarto.
+   >
+   > Tutte le calibrazioni esistenti sono state stimate sotto questa scala. Non è più
+   > implicita: `--window-probe` la stampa a ogni esecuzione, e sotto qualunque regime,
+   > perché il calcolo moltiplica le due letture invece di fidarsi di una — un processo
+   > consapevole vede `120/96 = 1.25` e un rapporto di estensioni di 1, uno non
+   > consapevole vede `96/96 = 1` e un rapporto di `1200/960 = 1.25`. Ciascuna lettura è
+   > cieca esattamente nel regime in cui l'altra vede.
+
+   Allora perché T-03 è passato? Non per coincidenza di unità: **perché il processo era
+   già consapevole**. Il manifest è incorporato nell'apphost, e il percorso che tutti
+   usano — `dotnet NosAi.Runtime.dll` — gira sotto l'host `dotnet`, che porta il proprio
+   manifest e riporta `PerMonitor`. La lettura era già in pixel fisici prima che questo
+   manifest esistesse. La frase qui sopra sul processo « non consapevole » vale per
+   l'apphost senza manifest, non per il comando con cui la percezione è stata verificata.
 
    La correzione ha una proprietà utile: dichiarare la consapevolezza per monitor **non
    cambia nulla al 100 %**, quindi si può fare subito senza rompere ciò che oggi funziona,
@@ -338,26 +369,67 @@ ha trovato il difetto.
    non riusate.
 
    **Applicata il 1 settembre 2026** — `app.manifest` con `PerMonitorV2` su `NosAi.Runtime`,
-   più `ClientWindowDpiProbe` e il comando `--window-probe`. Due cose emerse applicandola,
-   entrambe da chiudere in P2a:
+   più `ClientWindowDpiProbe` e il comando `--window-probe`. Due cose sono emerse
+   applicandola, ed **entrambe sono chiuse**.
 
-   - **Il regime di consapevolezza dipende da come si avvia il processo.** Il manifest è
-     incorporato nell'apphost: `NosAi.Runtime.exe` riporta `PerMonitorV2`, ma
-     `dotnet exec NosAi.Runtime.dll` gira sotto l'host `dotnet` e riporta `PerMonitor`.
-     Nessuno dei due è *unaware*, quindi l'unità di coordinate non cambia e non c'è un
-     danno immediato — ma il regime sotto cui una calibrazione è stata stimata è ora una
-     funzione del comando usato per lanciare, e niente la registra. **La calibrazione deve
-     portare con sé il regime sotto cui è stata stimata e rifiutarsi di essere riusata sotto
-     un altro.** Costa poco adesso e non si retrofitta dopo che le calibrazioni si sono
-     accumulate.
-   - **Il controllo che oggi invalida non può esprimere questo caso.**
-     `CalibratedScreenProjection` confronta larghezza e altezza del client
-     (`screen_projection_client_size_changed`). Su scala diversa dal 100 % il passaggio da
-     non consapevole a consapevole cambia quelle dimensioni, e il controllo scatta: è la
-     ragione per cui il cambio di manifest non produce silenziosamente una calibrazione
-     sbagliata. **Al 100 % le dimensioni non cambiano**, quindi una calibrazione stimata
-     prima del manifest verrebbe accettata dopo. È innocua solo perché al 100 % le due
-     unità coincidono: siamo protetti da una coincidenza, non da un controllo.
+   **(a) Il regime dipende dal comando con cui si lancia — verificato con la probe.**
+
+   | Comando | Regime riportato |
+   |---|---|
+   | `NosAi.Runtime.exe --window-probe` | `PerMonitorV2` |
+   | `dotnet NosAi.Runtime.dll --window-probe` | `PerMonitor` |
+
+   Il manifest è incorporato nell'apphost, quindi vale per l'`.exe`; il `.dll` gira sotto
+   l'host `dotnet`, che porta il proprio. Il regime sotto cui una calibrazione è stata
+   stimata era quindi una funzione del comando usato per lanciare, e niente la registrava.
+
+   **Chiuso:** `ScreenProjectionCalibration` porta ora il regime
+   (`DpiAwarenessRegime`, file **versione 3**), `CalibratedScreenProjection` rifiuta il
+   riuso sotto un regime diverso con `screen_projection_dpi_regime_changed:<da>_a_<a>`, e
+   un file v2 è rifiutato per versione invece che letto con un campo mancante — non gli
+   manca solo il campo, è stato scritto da una build che non poteva controllarlo, quindi i
+   suoi pixel sono in un'unità che nessuno ha registrato. Riempire il buco con il regime
+   del lettore affermerebbe esattamente ciò che il campo esiste per stabilire.
+
+   *Onestà su che cosa morde davvero.* A cambiare l'unità è **consapevole contro non
+   consapevole**. Fra i due regimi consapevoli una `GetClientRect` sulla finestra di un
+   altro processo è in pixel fisici in entrambi i casi, e non è nota alcuna differenza di
+   unità. Si rifiuta lo stesso, per tre ragioni: « nessuna differenza nota » non è
+   « nessuna differenza », registrarlo non costa nulla, e il rifiuto cade **esattamente
+   dove la trappola è stata trovata** — calibrare con un comando e agire con l'altro. Ha
+   una conseguenza operativa voluta: una calibrazione prodotta con `NosAi.Runtime.exe` è
+   rifiutata sotto `dotnet exec`, e viceversa.
+
+   **(b) Chi invalida che cosa.** Il confronto su larghezza e altezza in
+   `CalibratedScreenProjection` **resta**: il suo ragionamento è giusto e non è quello
+   sbagliato: un client ridimensionato è uno zoom diverso e un layout diverso, quindi la
+   trasformata misurata non descrive più ciò che è sullo schermo, e scalarla assumerebbe
+   proprio la struttura che la calibrazione esiste per misurare. Non è sostituito: gli si
+   affianca un controllo che risponde a un'altra domanda.
+
+   | | Che cosa domanda | Quando | Che cosa coglie che gli altri non colgono |
+   |---|---|---|---|
+   | **Regime** | in quale **unità** sono i numeri | a ogni proiezione, prima di tutto il resto | il cambio di consapevolezza fra stima e riuso. È **invisibile** alle dimensioni quando queste coincidono: al 100 % coincidono sempre, e fra i due regimi consapevoli coincidono a ogni scala |
+   | **Epoca** (§ 6.3, non ancora implementata) | è ancora **la stessa** geometria | continuo, al commit point | spostamento della finestra, cambio di DPI a parità di dimensioni, cambio di monitor — cioè tutto ciò che cambia *durante* una sessione senza cambiare i numeri confrontati |
+   | **Dimensioni** (riga 103) | la **forma** della trasformata è ancora valida | a ogni proiezione | ridimensionamento e passaggio a schermo intero: zoom e layout diversi dentro un solo regime |
+
+   L'ordine non è arbitrario: il regime è giudicato **per primo**, perché è l'unità in cui
+   ogni altro confronto sarebbe espresso. Un confronto di dimensioni fra numeri in due
+   unità diverse non è un confronto.
+
+   E la vecchia argomentazione va corretta su un punto. Si diceva che al 125 % il controllo
+   sulle dimensioni scatta, quindi « il cambio di manifest non produce silenziosamente una
+   calibrazione sbagliata ». È vero *qui* — lo schermo dell'operatore è al 125 % e le
+   dimensioni differiscono davvero — ma è **protezione per l'esito giusto con la causa
+   sbagliata**: riporta `screen_projection_client_size_changed`, che non porta nessuno a
+   « rilancia con il comando con cui hai calibrato ». E al 100 % non scatta affatto.
+   Adesso la causa è nominata e il caso al 100 % è coperto.
+
+   Test: `tests/NosAi.Runtime.Tests/ScreenProjectionRegimeTests.cs`, in particolare
+   `A_calibration_from_another_regime_is_refused_at_the_same_client_size` (il caso che le
+   dimensioni non possono esprimere) e
+   `The_client_size_comparison_still_catches_a_resize_within_one_regime` (il lavoro che
+   resta alla riga 103).
 
 3. ~~L'epoca di geometria incrementa anche al cambio di DPI e al cambio di monitor?~~
    **Chiuso il 1 settembre 2026: l'epoca non esiste.** `ClientWindowLocator` è statico e
