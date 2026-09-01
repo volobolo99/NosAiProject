@@ -49,10 +49,20 @@ Se Cursor deve **decidere** qualcosa di sicurezza, si ferma e la domanda torna a
 
 ## 3. Le tappe
 
-### P0 — Le quattro verifiche aperte
+### P0 — Le quattro verifiche aperte — **CHIUSA il 1 settembre 2026**
 
-Sono le domande di `CONTROLLO_PERSONAGGIO_ATTUAZIONE.md` § 6. Costano poco e cambiano il
-resto del piano se una risposta è negativa.
+Erano le domande di `CONTROLLO_PERSONAGGIO_ATTUAZIONE.md` § 6, dove restano con le risposte.
+Tre su quattro erano negative, e due hanno cambiato il piano:
+
+- il ritorno dall'arresto contava i fallimenti **consecutivi**, e i due gate si
+  riassegnavano `Normal` su qualunque ciclo confermato: con esiti alternati la scala non
+  saliva nemmeno il primo gradino. **Corretto** — finestra scorrevole, stato di prova a una
+  azione per volta, cooldown esponenziale, controllo d'ammissione;
+- l'epoca di geometria non esisteva, e il Runtime non era consapevole del DPI. Da qui **P2a**;
+- il difetto del `Math.Clamp` in `MoveAbsolute`, trovato leggendo, è in P2.
+
+Sono rimaste le quattro righe qui sotto perché il criterio resta valido per le verifiche
+future: si legge il codice prima di pianificare contro di esso.
 
 | Verifica | Chi |
 |---|---|
@@ -199,16 +209,19 @@ una cella bloccata.
 
 ### P8 — Resilienza
 
-Dipende dall'esito della quarta verifica di P0.
+**Ridotta.** Il nucleo — finestra scorrevole, stato di prova, cooldown esponenziale,
+controllo d'ammissione — è stato scritto chiudendo P0, con la sua suite di test. Restano:
 
 | Contenuto | Chi |
 |---|---|
-| Finestra scorrevole e stato di prova a una azione per volta, se oggi è un contatore | Claude |
 | Budget a due livelli — azioni al secondo ed eventi d'input al secondo — per stato | Claude |
+| Taratura dei valori di default (finestra 20, 3 successi di prova, 5 s base) su dati di esercizio | Claude |
 | Dump diagnostico, comando di arresto immediato, esposizione nella dashboard | Cursor |
 
-**DoD** — dieci successi alternati a nove fallimenti **non** riportano il sistema a piena
-velocità.
+**DoD già raggiunta** — dieci successi alternati a nove fallimenti non riportano il sistema
+a piena velocità (`RecoveryCircuitBreakerTests`). Livello di verifica: `Done`, non
+`Verified`: nessuna di quelle transizioni è ancora stata osservata su un runtime che agisce
+davvero sul client.
 
 ---
 

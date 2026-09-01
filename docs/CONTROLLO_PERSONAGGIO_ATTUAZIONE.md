@@ -178,11 +178,46 @@ alla cieca è il modo più diretto per costruire un ciclo che nessuna guardia fe
 ## 6. Da verificare prima di dichiarare chiuso
 
 Punti su cui questo documento **non** afferma uno stato, perché non è stato misurato.
+Il punto 1 è stato misurato ed è chiuso; resta qui con la risposta perché è la domanda che
+ha trovato il difetto.
 
-1. Il ritorno da uno stato di arresto usa una finestra scorrevole o un contatore? Con un
-   contatore, dieci successi intervallati da nove fallimenti riportano il sistema a piena
-   velocità, che è lo scenario che l'arresto esiste per impedire. Se è un contatore, va
-   sostituito con una finestra e uno stato di prova a una azione per volta.
+1. ~~Il ritorno da uno stato di arresto usa una finestra scorrevole o un contatore?~~
+   **Risposto e corretto il 1 settembre 2026. Era un contatore.**
+
+   `RecoveryController` contava i fallimenti **consecutivi**
+   (`AutonomyPipeline.cs`, campo `_consecutiveFailures`) e la via di ritorno era
+   `ResetFailures()`, che azzerava il conteggio. I due gate poi si assegnavano da soli
+   `RuntimeMode.Normal` su qualunque ciclo confermato — `Gate3Runtime.cs` § ciclo, ramo
+   `verification.IsConfirmed`, e `Gate6Runtime.cs` sul ramo `verif.IsSuccess`. Lo scenario
+   descritto qui sopra era quindi peggiore del previsto: con dieci successi alternati a nove
+   fallimenti la scala **non saliva nemmeno il primo gradino**, perché due fallimenti non
+   erano mai adiacenti e il contatore tornava a zero diciannove volte.
+
+   **Sostituito con:**
+
+   - **finestra scorrevole** di 20 esiti; i gradini si leggono da quanti degli ultimi
+     tentativi sono falliti. Un successo non cancella la storia, la fa solo scorrere di uno.
+     I gradini restano quelli di prima (`maxRetries`+1 degrada, oltre arresta): è cambiato
+     *che cosa* si conta, non *quanto*.
+   - **stato di prova a una azione per volta** (`RecoveryState.Probing`): scaduto il
+     cooldown si ammette **un solo** atto e nessun secondo finché quello non è risolto.
+     Si torna a piena velocità solo dopo 3 successi consecutivi di prova; un fallimento in
+     prova riarresta e la prova ricomincia da zero.
+   - **cooldown esponenziale**: 5 s al primo arresto, raddoppio a ogni arresto successivo,
+     tetto a 5 minuti. I fallimenti che arrivano *mentre* è già arrestato non allungano
+     l'attesa, altrimenti una raffica la comporrebbe in un valore che nessuno ha scelto.
+   - **controllo d'ammissione** (`TryBeginAction`): prima mancava del tutto, quindi un
+     runtime «degradato» continuava ad agire alla stessa frequenza. Ora un rifiuto è
+     riportato come blocco e **non** viene ricontato come fallimento.
+
+   **Ciò che non cambia:** `TrustBoundary` resta a senso unico. Chiudere il breaker
+   ripristina il `RuntimeMode` e nient'altro; se l'arresto aveva portato la fiducia a
+   `Tier0_ReadOnly`, il `SafetyGate` continua a rifiutare finché non interviene chi
+   sorveglia. Il controller non ha, e non deve avere, alcun metodo che possa essere scambiato
+   per una promozione — la suite di Gate 3 lo verifica per riflessione.
+
+   Test: `tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs`, a partire da
+   `TenSuccessesAlternatingWithNineFailuresDoNotReturnTheRuntimeToFullSpeed`.
 2. ~~Il processo dichiara la consapevolezza DPI per monitor nel manifest?~~
    **Chiuso il 1 settembre 2026: no, e nemmeno a runtime.** `NosAi.Runtime` — il processo
    che chiama `GetClientRect`, calibra la proiezione ed emette l'input — non ha
