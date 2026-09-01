@@ -3,6 +3,7 @@ using NosAi.LiveIntegration;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Observability;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Security;
 
@@ -123,10 +124,25 @@ public sealed class Gate1ObservationChannel : IDisposable
     /// Builds the real chain over a caller-supplied packet source. Used by the
     /// live host after WinDivert opens, and by tests over an in-memory list.
     /// </summary>
+    /// <param name="targetFrames">
+    /// The screen's reading of the target frame, or null when this runtime has no
+    /// capture of the client. Supplying it is what gives <c>HasTarget</c> a source
+    /// (ADR-0018): the wire has <c>ct</c> and <c>su</c> and no observed
+    /// counterpart that clears a target, so a flag derived from it alone would go
+    /// true once and stay true. Without it the fact stays UNKNOWN, as it is today.
+    /// </param>
+    /// <param name="targetRoi">
+    /// Where the target frame sits on this client. Null loads the operator's
+    /// calibration from <see cref="TargetRoiCalibration.RelativePath"/>; an
+    /// uncalibrated one keeps <c>HasTarget</c> UNKNOWN rather than reading a
+    /// region nobody aimed.
+    /// </param>
     public static Gate1ObservationChannel FromPackets(
         IPacketSource packets,
         GameEndpoint endpoint,
-        DataSourceKind streamSource)
+        DataSourceKind streamSource,
+        ITargetFrameSource? targetFrames = null,
+        TargetRoiCalibration? targetRoi = null)
     {
         ArgumentNullException.ThrowIfNull(packets);
         ArgumentNullException.ThrowIfNull(endpoint);
@@ -137,7 +153,18 @@ public sealed class Gate1ObservationChannel : IDisposable
             new ScopedGameTrafficFilter(endpoint),
             new NosTaleWorldProtocolDecoder());
         var feed = new NetworkWorldFeed(observer);
-        var provider = new NetworkGameplayProvider(feed);
+        IGameplayProvider provider = new NetworkGameplayProvider(feed);
+
+        if (targetFrames is not null)
+        {
+            provider = new TargetAwareGameplayProvider(
+                provider,
+                targetFrames,
+                targetRoi ?? TargetRoiCalibration.Load(
+                    Path.Combine(Directory.GetCurrentDirectory(), TargetRoiCalibration.RelativePath), out _),
+                feed);
+        }
+
         return new Gate1ObservationChannel(endpoint, null, provider, feed, source, streamSource);
     }
 

@@ -34,14 +34,24 @@ namespace NosAi.Runtime.Perception.Network;
 /// still refuse a DERIVED one.
 /// </para>
 /// </remarks>
-public sealed class NetworkWorldFeed
+public sealed class NetworkWorldFeed : IPlayerAttackObserver
 {
     private readonly GameTrafficObserver _observer;
     private readonly List<Action<NetworkObservationReport>> _subscribers = new();
     private NetworkObservationReport? _latest;
+    private DateTime? _lastPlayerAttackAtUtc;
 
     /// <summary>The most recent report, or null before the first poll.</summary>
     public NetworkObservationReport? Latest => _latest;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Kept across polls rather than read off the latest report. A hit is an
+    /// instant, and the batch that carried it is usually not the batch the
+    /// composer is asking about; forgetting it at the next poll would make the
+    /// contradiction check see nothing a fraction of a second after the hit.
+    /// </remarks>
+    public DateTime? LastPlayerAttackAtUtc => _lastPlayerAttackAtUtc;
 
     public NetworkWorldFeed(GameTrafficObserver observer)
         => _observer = observer ?? throw new ArgumentNullException(nameof(observer));
@@ -58,6 +68,13 @@ public sealed class NetworkWorldFeed
     {
         NetworkObservationReport report = _observer.ObservePending(maxPackets);
         _latest = report;
+        // Never moves backwards: a replay or an out-of-order packet must not make
+        // the most recent observed hit older than one already seen.
+        if (report.PlayerAttackedAtUtc is { } attackedAt
+            && (_lastPlayerAttackAtUtc is null || attackedAt > _lastPlayerAttackAtUtc))
+        {
+            _lastPlayerAttackAtUtc = attackedAt;
+        }
         foreach (Action<NetworkObservationReport> subscriber in _subscribers)
         {
             // One faulty consumer must not stop the others from being fed.

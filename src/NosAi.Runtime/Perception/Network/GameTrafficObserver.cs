@@ -98,10 +98,17 @@ public sealed record PlayerVitals(
     DateTime? ObservedAtUtc = null);
 
 /// <summary>The observations decoded from one packet.</summary>
+/// <param name="PlayerAttackedAtUtc">
+/// When this packet showed the player attacking, or null when it did not. The
+/// wire's whole contribution to <c>HasTarget</c> (ADR-0018), and a timestamp
+/// rather than a flag because the only question asked of it is whether a hit
+/// landed after the screen looked. Null is not "the player is not attacking".
+/// </param>
 public sealed record DecodedObservations(
     ImmutableArray<EntitySighting> Sightings,
     ImmutableArray<GameEvent> Events,
-    PlayerVitals? Vitals = null)
+    PlayerVitals? Vitals = null,
+    DateTime? PlayerAttackedAtUtc = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
@@ -159,7 +166,11 @@ public sealed record NetworkObservationReport(
     PlayerVitals? Vitals = null,
     // Whether the decoder behind this report can read the player's vitals at all,
     // so a consumer can tell "not mapped" from "not in this batch".
-    bool VitalsReadable = false);
+    bool VitalsReadable = false,
+    // The most recent hit in this batch where the player was the attacker, or null
+    // when the batch showed none. The wire's contribution to HasTarget (ADR-0018);
+    // it contradicts the screen and never establishes the fact on its own.
+    DateTime? PlayerAttackedAtUtc = null);
 
 /// <summary>
 /// Pulls packets from a source, keeps only the game's own traffic, decodes them
@@ -227,6 +238,7 @@ public sealed class GameTrafficObserver
         var events = ImmutableArray.CreateBuilder<GameEvent>();
         long observed = 0, scopedOut = 0, decoded = 0, undecodable = 0;
         PlayerVitals? vitals = null;
+        DateTime? playerAttackedAt = null;
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
@@ -268,6 +280,14 @@ public sealed class GameTrafficObserver
             // Last one wins: within a batch the later message is the more recent
             // state, and keeping the first would report a stale HP as current.
             if (result.Vitals is not null) vitals = result.Vitals;
+            // Latest wins on its own merit rather than on batch order: the
+            // composer compares this against the screen's timestamp, and an
+            // out-of-order packet must not move the answer backwards.
+            if (result.PlayerAttackedAtUtc is { } attackedAt
+                && (playerAttackedAt is null || attackedAt > playerAttackedAt))
+            {
+                playerAttackedAt = attackedAt;
+            }
         }
 
         return new NetworkObservationReport(
@@ -277,7 +297,8 @@ public sealed class GameTrafficObserver
             observed, scopedOut, decoded, undecodable,
             _source.Source,
             vitals,
-            _decoder.ReadsPlayerVitals);
+            _decoder.ReadsPlayerVitals,
+            playerAttackedAt);
     }
 
     /// <summary>

@@ -28,7 +28,17 @@ public static class HudCropWriter
     /// Writes the HP and MP crops, and returns the directory, or null when there
     /// was nothing to write.
     /// </summary>
-    public static string? TrySave(string? repoRoot, CaptureFrame frame, ScreenVitalObservation observation)
+    /// <param name="targetRoi">
+    /// The candidate target-frame region, written as <c>target_latest.bmp</c>. It
+    /// is the evidence for ADR-0018's calibration, and for the same reason as the
+    /// HP crop: nothing inside the reader can tell a correct region from a real
+    /// measurement of the wrong pixels, so a person looks at it.
+    /// </param>
+    public static string? TrySave(
+        string? repoRoot,
+        CaptureFrame frame,
+        ScreenVitalObservation observation,
+        PixelRect? targetRoi = null)
     {
         if (string.IsNullOrWhiteSpace(repoRoot) || !frame.HasPixels)
             return null;
@@ -38,6 +48,8 @@ public static class HudCropWriter
 
         WriteBmp(Path.Combine(directory, "hp_latest.bmp"), frame, observation.HpRoi);
         WriteBmp(Path.Combine(directory, "mp_latest.bmp"), frame, observation.MpRoi);
+        if (targetRoi is { } target)
+            WriteBmp(Path.Combine(directory, "target_latest.bmp"), frame, target);
         return directory;
     }
 

@@ -224,8 +224,9 @@ Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
 - **Own vitals** — HP, max HP, MP from `stat`, updating per hit.
   Published `LIVE` when the capture itself is live. Max MP is confirmed on the
   packet and used to reject a malformed `stat`, but `GameplayObservation` does
-  not yet carry it. HasTarget and InCombat are **not** read (fields 5 and 6 are
-  unknown) and stay `UNKNOWN`.
+  not yet carry it. HasTarget and InCombat are **not** read from `stat` (fields 5
+  and 6 are unknown); `HasTarget` is established from the screen instead
+  (ADR-0018, below), and `InCombat` stays `UNKNOWN`.
 - **Target vitals** — absolute HP and max HP of any entity in view, from `st`
   (fields 7 and 9; field 5 is ignored).
 - **Combat events** — every hit with attacker, target, skill and damage, from `su`.
@@ -242,11 +243,20 @@ Not available from the server, and needing the confirming source:
   packet in either capture establishes either. `ct` carries targeting between two
   entities and `su` carries every hit, but neither has an observed "target
   cleared" counterpart, so a flag derived from them would be sticky and wrong in
-  a way nothing on the wire would correct. They stay UNKNOWN, and
+  a way nothing on the wire would correct.
   [ADR-0016](adr/ADR-0016-planning-and-acting-on-partial-observation.md) makes
   the planner skip the rules that read them instead of blocking every rule that
-  does not. `HasTarget` is the one worth establishing next: it is what separates
-  reacting to one's own health from fighting.
+  does not.
+
+  `HasTarget` now has a source, and it is not this one:
+  [ADR-0018](adr/ADR-0018-establishing-the-target-from-the-screen.md) has the
+  screen establish it, because the target frame disappears and the screen is
+  therefore the only source that can say *no*. The wire's contribution is a
+  `su` in which the player is the attacker — attacker type `1`, the
+  player-attacks shape above — which **contradicts** a screen that saw no frame
+  and never establishes the fact by itself. Until the operator calibrates the
+  target ROI against a real client, `HasTarget` stays UNKNOWN with the reason
+  `target_roi_not_calibrated`. `InCombat` is still unsourced.
 
 ## What the runtime does not read
 

@@ -83,7 +83,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "in" => DecodeEnter(fields, source),
             "mv" => DecodeMove(fields, source),
             "die" => DecodeDeath(fields, source),
-            "su" => DecodeHit(fields, source),
+            "su" => DecodeHit(fields, source, packet.CapturedUtc),
             _ => DecodedObservations.Empty,
         };
     }
@@ -205,16 +205,27 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// confirmed. The last fields sometimes repeat the player's HP, but they
     /// never carry MP, so this packet is the hit event and not a vitals source.
     /// </summary>
-    private static DecodedObservations DecodeHit(string[] fields, DataSourceKind source)
+    /// <remarks>
+    /// The attacker type separates the packet's two shapes: type
+    /// <see cref="PlayerEntityType"/> is the player-attacks shape, type 3 the
+    /// monster-attacks one (docs/PROTOCOLLO_NOSTALE.md). A player-attacks hit
+    /// carries its capture time out as the wire's contribution to
+    /// <c>HasTarget</c> — it contradicts a screen that saw no target frame, and it
+    /// never establishes the fact on its own (ADR-0018).
+    /// </remarks>
+    private static DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 5
             || !TryLong(fields[4], out long targetId)
+            || !TryInt(fields[1], out int attackerType)
             || !TryInt(fields[3], out _))
             return DecodedObservations.Empty;
 
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
-            ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source)));
+            ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source)),
+            Vitals: null,
+            PlayerAttackedAtUtc: attackerType == PlayerEntityType ? capturedUtc : null);
     }
 
     private static DecodedObservations Sighting(
@@ -236,6 +247,20 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// than read at positions nobody has established.
     /// </remarks>
     private static bool IsReadableEntity(string typeField) => typeField == "3";
+
+    /// <summary>
+    /// The entity type a player carries, confirmed in <c>su</c>, <c>cond</c> and
+    /// <c>sayi</c>.
+    /// </summary>
+    /// <remarks>
+    /// It does not distinguish the controlled character from another player
+    /// fighting nearby, and nothing on the read side of the wire establishes the
+    /// character's own entity id. The consequence is a possible false
+    /// disagreement in <see cref="TargetStateComposer"/>, whose result is UNKNOWN
+    /// — a fact the planner then skips, never a confident wrong answer. ADR-0018
+    /// records this as the place to tighten once the own id is available.
+    /// </remarks>
+    private const int PlayerEntityType = 1;
 
     /// <summary>
     /// A reading that mixes this packet with an earlier observation of the same

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Collections;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
@@ -77,7 +78,33 @@ public static class Program
         // had this behind a button; running it here makes the test repeatable and
         // quotable instead of clicked and described.
         if (args.Any(a => string.Equals(a, "--hud-probe", StringComparison.OrdinalIgnoreCase)))
-            return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe();
+        {
+            // --calibrate-target <x> <y> <w> <h> records the target-frame region
+            // (ADR-0018). The four fractions are the operator's confirmation that
+            // the crop they just looked at is the target frame; nothing infers
+            // them, because a reading of the wrong pixels is what the calibration
+            // exists to rule out.
+            int calibrateFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--calibrate-target", StringComparison.OrdinalIgnoreCase));
+            (double, double, double, double)? region = null;
+            if (calibrateFlag >= 0)
+            {
+                if (calibrateFlag + 4 >= args.Length
+                    || !double.TryParse(args[calibrateFlag + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out double rx)
+                    || !double.TryParse(args[calibrateFlag + 2], NumberStyles.Float, CultureInfo.InvariantCulture, out double ry)
+                    || !double.TryParse(args[calibrateFlag + 3], NumberStyles.Float, CultureInfo.InvariantCulture, out double rw)
+                    || !double.TryParse(args[calibrateFlag + 4], NumberStyles.Float, CultureInfo.InvariantCulture, out double rh))
+                {
+                    Console.Error.WriteLine(
+                        "--calibrate-target <x> <y> <width> <height> requires four fractions of the client area.");
+                    return 2;
+                }
+
+                region = (rx, ry, rw, rh);
+            }
+
+            return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
+        }
 
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides
