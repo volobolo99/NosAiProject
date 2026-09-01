@@ -258,10 +258,16 @@ public sealed class NosTaleWorldObservationTests
     /// <summary>
     /// The move says where and says nothing about health, and the sighting now
     /// says exactly that. Before, the only way to avoid inventing full health was
-    /// to throw the packet away, which cost the position too.
+    /// to throw the packet away, which cost the position too — 7685 of the 8211
+    /// packets in the combat capture.
     /// </summary>
+    /// <remarks>
+    /// The name breaks this file's convention on purpose:
+    /// <c>scripts/verifica-obiettivo.ps1</c> searches for it literally to know
+    /// that C2 was done.
+    /// </remarks>
     [Fact]
-    public void A_move_without_a_prior_spawn_reports_the_position_and_no_health()
+    public void MoveReportsPositionWithoutHealth()
     {
         EntitySighting moved = Assert.Single(new NosTaleWorldProtocolDecoder()
             .Decode(Ascii("mv 3 3194 121 110 5")).Sightings);
@@ -269,8 +275,44 @@ public sealed class NosTaleWorldObservationTests
         Assert.Equal(3194, moved.EntityId);
         Assert.Equal(121, moved.X);
         Assert.Equal(110, moved.Y);
+        // Not 1.0, not 0.0, not a sentinel: no health was read, so none is
+        // reported, and the projection into a Detection refuses rather than
+        // presenting a mob at zero HP.
         Assert.Null(moved.HpRatio);
         Assert.Null(moved.ToDetection());
+    }
+
+    /// <summary>
+    /// A move whose fields are missing or unreadable stays unread. A sighting at
+    /// coordinates 0,0 would be a position nobody sent, and the entity would be
+    /// planned against at the corner of the map.
+    /// </summary>
+    [Theory]
+    [InlineData("mv 3 3194 121")]              // four fields: no y
+    [InlineData("mv 3 3194")]                  // no coordinates at all
+    [InlineData("mv 3 3194 x 110 5")]          // x is not a number
+    [InlineData("mv 3 3194 121 y 5")]          // y is not a number
+    [InlineData("mv 3 nine 121 110 5")]        // the id is not a number
+    public void A_malformed_move_reports_nothing_rather_than_a_position_of_zero(string line)
+    {
+        DecodedObservations decoded = new NosTaleWorldProtocolDecoder().Decode(Ascii(line));
+
+        Assert.True(decoded.IsEmpty);
+        Assert.Empty(decoded.Sightings);
+    }
+
+    /// <summary>
+    /// The move of an entity that has never been seen is a first sighting, so it
+    /// keeps the packet's own provenance: the position is this packet's and there
+    /// is no remembered half mixed in to make it CACHED.
+    /// </summary>
+    [Fact]
+    public void A_move_with_no_remembered_health_keeps_the_packets_own_provenance()
+    {
+        EntitySighting moved = Assert.Single(new NosTaleWorldProtocolDecoder()
+            .Decode(Ascii("mv 3 3194 121 110 5")).Sightings);
+
+        Assert.Equal(DataSourceKind.Live, moved.Source);
     }
 
     [Fact]
