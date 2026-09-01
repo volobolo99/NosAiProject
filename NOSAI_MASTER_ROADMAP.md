@@ -68,7 +68,7 @@ AI-agent rules:
 ## Phase 1 — Core Foundation
 - [ ] `M010` — Consolidate solution/project structure.
 - [ ] `M011` — Central configuration and environment validation.
-- [ ] `M012` — Structured logging and correlation identifiers.
+- [x] `M012` — Structured logging and correlation identifiers. **DONE** (`CorrelationScope` in `src/NosAi.Runtime/Observability/RuntimeLogger.cs`, wired into `Gate1BootstrapHost`; `tests/NosAi.Runtime.Tests/RuntimeLoggerTests.cs`)
 - [ ] `M013` — Dependency Injection and lifecycle boundaries.
 - [ ] `M014` — Standard error/result model and exception policy.
 - [ ] `M015` — Core interfaces and contracts required by downstream components.
@@ -302,7 +302,7 @@ Recommended prompt:
 | Phase | Milestones | Done | Verified | Status |
 |---|---:|---:|---:|---|
 | 0 — Baseline & Governance | 7 | 7 | 0 | `DONE` |
-| 1 — Core Foundation | 6 | 0 | 0 | `TODO` |
+| 1 — Core Foundation | 6 | 1 | 0 | `IN_PROGRESS` |
 | 2 — Security & Identity | 8 | 0 | 0 | `TODO` |
 | 3 — Runtime | 6 | 0 | 0 | `TODO` |
 | 4 — Client Integration | 8 | 0 | 0 | `TODO` |
@@ -336,3 +336,7 @@ Recommended prompt:
 - Added classified Gate 1 snapshot `gate1.snapshot.v1` and local Gate 1 bootstrap/dashboard path. Real-environment Gate 1 remains not `VERIFIED`.
 - Added architectural baseline and explicit distinction between implementation and verification.
 - Updated progress tracking and execution priority.
+
+### 2026-09-01
+- Real Windows + NosTale + Guard AI hardware was not available in this session (no matching client process, no `adb` device), so Gate 1 real-environment closure (`Next execution priority` item 1) stayed blocked; proceeded to item 3, Core Foundation.
+- Marked M012 (structured logging and correlation identifiers) `DONE`: `ConsoleRuntimeLogger` always printed `correlationId=none` because nothing in the runtime ever started an `Activity`, and `Gate1BootstrapHost`'s own `_correlationId` was only ever passed as an ordinary log property on one line, invisible on every other line from the same run. Added `CorrelationScope` (`AsyncLocal`-backed) and wired it into `Gate1BootstrapHost`'s constructor/`DisposeAsync`. 14 new tests, no mocks; full suite 517/517 C# tests and the existing Python suite green.

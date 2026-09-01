@@ -29,6 +29,13 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly Gate1OperatorServer? _dashboard;
     private DiscoveryResponder? _discovery;
     private readonly string _correlationId = Guid.NewGuid().ToString("N");
+
+    /// <summary>
+    /// Keeps <see cref="_correlationId"/> current for every log line this host and
+    /// everything it starts (accept loop, watchdog, discovery, dashboard) emits for
+    /// the rest of its life. Disposed only in <see cref="DisposeAsync"/>.
+    /// </summary>
+    private readonly IDisposable _correlationScope;
     private RuntimeHealthStatus _health = RuntimeHealthStatus.Bootstrapping;
     private RSA? _devKey;
     private bool _disposed;
@@ -65,6 +72,10 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _options.Validate();
         _logger = logger ?? new ConsoleRuntimeLogger();
+        // Opened before the first log call so "Runtime identity loaded." -- until
+        // now always correlationId=none -- carries the same id as every line after
+        // it, including the gate1.snapshot.v1 this host will go on to publish.
+        _correlationScope = CorrelationScope.Begin(_correlationId);
         _runtimeIdentity = RuntimeIdentity.LoadOrCreate();
         _logger.Info("Runtime identity loaded.", new Dictionary<string, object?>
         {
@@ -113,9 +124,11 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _health = RuntimeHealthStatus.Bootstrapping;
+        // correlationId is no longer repeated here as a property: CorrelationScope
+        // (opened in the constructor) already stamps it on this line and on every
+        // other line this host emits.
         _logger.Info("Gate 1 bootstrap starting.", new Dictionary<string, object?>
         {
-            ["correlationId"] = _correlationId,
             ["guardPort"] = _options.GuardPort,
             ["dashboardPort"] = _options.DashboardPort
         });
@@ -400,6 +413,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _runtimeIdentity.Dispose();
         _devKey?.Dispose();
         _health = RuntimeHealthStatus.Stopped;
+        _correlationScope.Dispose();
     }
 }
 
