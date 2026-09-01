@@ -104,11 +104,11 @@ public static class ScreenProjectionProbe
             + $" of {clientWidth}x{clientHeight}."));
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"  Worst residual: {calibration.WorstResidualPixels:F2} px over {samples.Count} samples"
-            + $" ({calibration.VerifiedAgainstSamples} held back as a check)."));
+            + $" ({calibration.VerifiedAgainstSamples} more than the fit needs)."));
         if (calibration.VerifiedAgainstSamples == 0)
         {
-            Console.WriteLine("  Solved from exactly three pairs, so nothing independent confirmed it.");
-            Console.WriteLine("  One more sample would.");
+            Console.WriteLine("  Solved from exactly three pairs, which three pairs always reproduce");
+            Console.WriteLine("  exactly, so the residual confirmed nothing. One more sample would.");
         }
 
         Console.WriteLine($"  {path}");

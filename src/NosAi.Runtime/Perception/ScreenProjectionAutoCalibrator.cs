@@ -49,28 +49,81 @@ namespace NosAi.Runtime.Perception;
 /// </remarks>
 public static class ScreenProjectionAutoCalibrator
 {
-    /// <summary>
-    /// How many pairs to collect: three to fit, the rest to check the fit.
-    /// </summary>
+    /// <summary>How many pairs to attempt.</summary>
     /// <remarks>
-    /// Three alone would leave the solve exactly determined and therefore
-    /// unfalsifiable — six unknowns from six equations reproduce their own input
-    /// whatever it was, which is precisely how the previous calibration reported a
-    /// residual of 0.00 on a transform that described nothing.
+    /// Comfortably more than <see cref="MinimumFittedSamples"/>, because clicks are
+    /// lost for ordinary reasons: one lands on an obstacle, one walks nowhere, one
+    /// disagrees with the rest and is dropped. Collecting only as many as the fit
+    /// needs means any of those turns into a calibration with nothing left to check
+    /// it, which is exactly the run this count was raised after.
     /// </remarks>
-    public const int SampleCount = 6;
+    public const int SampleCount = 12;
 
     /// <summary>
-    /// How far from the centre the probe pixels are placed, as a fraction of the
-    /// shorter side of the client area.
+    /// The fewest pairs this will fit a transform from, whatever survives.
     /// </summary>
     /// <remarks>
-    /// Far enough that the walk is long enough to measure, close enough that the
-    /// ring stays inside the rendered world and clear of the interface drawn round
-    /// its edges — the quickbar along the bottom, the minimap at a corner. A click
-    /// on the interface is not a click on the map and produces no walk at all.
+    /// <para>
+    /// Not three. Three pairs determine six unknowns exactly, so they reproduce
+    /// themselves whatever they say and their residual is zero by construction —
+    /// the failure this whole path was rewritten to stop reporting. Six leaves
+    /// three degrees of freedom per axis, so the residual is measuring something
+    /// the solve was not handed.
+    /// </para>
+    /// <para>
+    /// Measured, not chosen for symmetry: a run that collected five pairs, dropped
+    /// one as inconsistent and fitted the remaining four wrote a transform rotated
+    /// by about thirty degrees with a reported residual of 0.74 of a tile. Four
+    /// points nearly determine six unknowns, so the check had almost nothing left
+    /// to check with, and a confident wrong answer is the one outcome this file
+    /// exists to prevent.
+    /// </para>
     /// </remarks>
-    private const double ProbeRadiusFraction = 0.20;
+    public const int MinimumFittedSamples = 6;
+
+    /// <summary>
+    /// How far from the centre the probe pixels are placed, per axis, as a
+    /// fraction of the client area.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Why not a circle.</b> This was one fraction of the shorter side, which
+    /// draws a circle, and a circle is the wrong shape for two reasons at once. The
+    /// window is wider than it is tall, so a circle on the shorter side wastes the
+    /// width; and a map tile is about twice as wide as it is high, so the same
+    /// number of pixels sideways buys half as many tiles. Together they made the
+    /// horizontal reach about four tiles, and four tiles is not enough to measure a
+    /// tile against when each reading carries a whole one of slip. Measured on the
+    /// live client: eleven of twelve clicks walked, every pair agreed with the
+    /// others, and the tile size still came out uncertain by 8% and 18% - refused,
+    /// correctly, for want of reach rather than for want of care.
+    /// </para>
+    /// <para>
+    /// <b>Why these fractions.</b> Far enough to span about ten tiles across and
+    /// fifteen down, which simulates at around two per cent against a five per cent
+    /// bar; near enough to stay inside the rendered world and clear of the
+    /// interface drawn round its edges. At 1024x768 the probes run from 154 to 870
+    /// across and 169 to 599 down, which leaves the quickbar along the bottom and
+    /// the minimap in its corner untouched. A click on the interface is not a click
+    /// on the map and produces no walk at all.
+    /// </para>
+    /// </remarks>
+    private const double ProbeRadiusFractionX = 0.35;
+    private const double ProbeRadiusFractionY = 0.28;
+
+    /// <summary>
+    /// A second, tighter ring was tried here and removed.
+    /// </summary>
+    /// <remarks>
+    /// The idea was that the long walks were the unreliable ones, so half the
+    /// probes should be short. Simulated against the quantisation the method
+    /// actually carries, the near ring makes the answer worse rather than safer:
+    /// it contributes offsets of two or three tiles, where a whole tile of slip is
+    /// most of the reading, and it costs a far probe that would have contributed
+    /// ten. Spread is what determines the scale, and there is no cheap substitute
+    /// for it. The reliability problem is real, but it belongs to what the client
+    /// writes into WalkTarget, not to where the probes are placed.
+    /// </remarks>
 
     /// <summary>Tried per probe point before giving up on it.</summary>
     /// <remarks>
@@ -191,10 +244,10 @@ public static class ScreenProjectionAutoCalibrator
             }
 
             Console.WriteLine();
-            if (samples.Count < ScreenProjectionCalibration.MinimumSamples)
+            if (samples.Count < MinimumFittedSamples)
             {
                 Console.WriteLine(
-                    $"[REFUSED] not_enough_samples:{samples.Count}_of_{ScreenProjectionCalibration.MinimumSamples}");
+                    $"[REFUSED] not_enough_samples:{samples.Count}_of_{MinimumFittedSamples}");
                 Console.WriteLine("  Too many clicks walked nowhere. Stand in open ground, away from walls,");
                 Console.WriteLine("  portals and monsters, and run it again.");
                 return 1;
@@ -233,7 +286,8 @@ public static class ScreenProjectionAutoCalibrator
                 $"Screen projection calibrated from {samples.Count - dropped} of {samples.Count} samples.");
             if (dropped > 0)
             {
-                Console.WriteLine("  1 rejected as inconsistent with the rest — a click that hit an obstacle");
+                Console.WriteLine(
+                    $"  {dropped} rejected as inconsistent with the rest — a click that hit an obstacle");
                 Console.WriteLine("  walks somewhere other than where it was aimed.");
             }
 
@@ -246,26 +300,49 @@ public static class ScreenProjectionAutoCalibrator
                 + $" of {area.Width}x{area.Height}; one tile is {pitchX:F1}x{pitchY:F1} px."));
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                 $"  Worst residual {calibration.WorstResidualPixels:F2} px,"
-                + $" {calibration.VerifiedAgainstSamples} sample(s) held back as a check."));
+                + $" fitted over {samples.Count - dropped} pairs with"
+                + $" {calibration.VerifiedAgainstSamples} to spare."));
             Console.WriteLine($"  {path}");
             Console.WriteLine("  Valid at this client size. Resize the window or go full screen and it is");
             Console.WriteLine("  refused by name — run this again and it recalibrates itself.");
+
+            // The regime is a property of how this process was launched, so the one
+            // moment it can usefully be said is the moment it gets written into a
+            // file that will outlive the command.
+            Console.WriteLine(
+                $"  Estimated under DPI awareness {calibration.Regime} ({calibration.Regime.ToWire()}).");
+            Console.WriteLine(
+                "  A calibration is refused under a different regime, and the regime depends on");
+            Console.WriteLine(
+                "  the command: NosAi.Runtime.exe reports PerMonitorV2, dotnet NosAi.Runtime.dll");
+            Console.WriteLine(
+                "  reports PerMonitor. Act with the same command you calibrated with.");
             return 0;
         }
     }
 
     /// <summary>
-    /// Fits the samples, dropping at most one that the others contradict.
+    /// Fits the largest set of samples that agree with each other, never fewer
+    /// than <see cref="MinimumFittedSamples"/>.
     /// </summary>
     /// <remarks>
-    /// One bad pair is expected rather than exceptional: a click can land on an
-    /// obstacle and walk somewhere other than where it was aimed. Dropping one and
-    /// refitting keeps an unattended run from failing on it, and what makes that
-    /// safe is that the reduced set still has to pass the residual test against
-    /// its own held-back samples. Two contradictions are not an accident and are
-    /// reported rather than fitted around.
+    /// <para>
+    /// A bad pair is expected rather than exceptional: a click can land on an
+    /// obstacle and walk somewhere other than where it was aimed. Refitting without
+    /// it keeps an unattended run from failing on one unlucky click.
+    /// </para>
+    /// <para>
+    /// <b>What makes that safe is the floor, and it was missing.</b> The earlier
+    /// version dropped one and refitted whatever was left, down to three pairs.
+    /// Dropping samples until a fit passes is fitting the noise, and the fewer that
+    /// remain the more certainly it succeeds: on the real client it dropped one of
+    /// five, fitted four, and wrote a transform rotated by thirty degrees that
+    /// reported a residual of less than a tile. So the search runs the other way
+    /// round — it prefers the <i>largest</i> agreeing set and refuses to go below
+    /// six, where three degrees of freedom per axis are still left to disagree.
+    /// </para>
     /// </remarks>
-    private static bool Solve(
+    internal static bool Solve(
         IReadOnlyList<ScreenProjectionSample> samples,
         PixelRect area,
         out ScreenProjectionCalibration calibration,
@@ -273,40 +350,86 @@ public static class ScreenProjectionAutoCalibrator
         out string? failureReason)
     {
         dropped = 0;
-        if (ScreenProjectionCalibration.TrySolve(
-                samples, area.Width, area.Height, DateTime.UtcNow, out calibration, out failureReason))
+        calibration = ScreenProjectionCalibration.Uncalibrated;
+        failureReason = null;
+
+        if (samples.Count < MinimumFittedSamples)
         {
-            return true;
+            failureReason = $"not_enough_samples:{samples.Count}_of_{MinimumFittedSamples}";
+            return false;
         }
 
-        // Only a disagreement is worth retrying. Collinear offsets, a degenerate
-        // scale or an anchor off the window are properties of the whole set, and
-        // dropping one sample does not change them.
-        if (failureReason is null || !failureReason.StartsWith("samples_disagree", StringComparison.Ordinal))
-            return false;
+        DateTime at = DateTime.UtcNow;
 
-        if (samples.Count <= ScreenProjectionCalibration.MinimumSamples + 1)
-            return false;
-
-        for (var skip = 0; skip < samples.Count; skip++)
+        // Largest first, so a set is only narrowed when the wider one genuinely
+        // disagrees. Among sets of the same size the one whose worst sample lands
+        // closest to its prediction wins.
+        for (int size = samples.Count; size >= MinimumFittedSamples; size--)
         {
-            var reduced = new List<ScreenProjectionSample>(samples.Count - 1);
-            for (var i = 0; i < samples.Count; i++)
+            ScreenProjectionCalibration? best = null;
+            string? firstFailure = null;
+
+            foreach (int[] subset in Subsets(samples.Count, size))
             {
-                if (i != skip)
-                    reduced.Add(samples[i]);
+                var candidateSamples = new List<ScreenProjectionSample>(size);
+                foreach (int index in subset)
+                    candidateSamples.Add(samples[index]);
+
+                if (!ScreenProjectionCalibration.TrySolve(
+                        candidateSamples, area.Width, area.Height, at,
+                        out ScreenProjectionCalibration candidate, out string? why))
+                {
+                    firstFailure ??= why;
+                    continue;
+                }
+
+                if (best is null || candidate.WorstResidualPixels < best.WorstResidualPixels)
+                    best = candidate;
             }
 
-            if (ScreenProjectionCalibration.TrySolve(
-                    reduced, area.Width, area.Height, DateTime.UtcNow, out calibration, out _))
+            if (best is not null)
             {
-                dropped = 1;
+                calibration = best;
+                dropped = samples.Count - size;
                 failureReason = null;
                 return true;
             }
+
+            if (firstFailure is not null)
+                failureReason = firstFailure;
         }
 
+        failureReason ??= "samples_disagree";
         return false;
+    }
+
+    /// <summary>Every choice of <paramref name="size"/> indices out of <paramref name="count"/>.</summary>
+    /// <remarks>
+    /// Bounded by construction: <see cref="SampleCount"/> is twelve and the floor
+    /// is six, so the widest search is a few hundred solves of a three by three
+    /// system.
+    /// </remarks>
+    private static IEnumerable<int[]> Subsets(int count, int size)
+    {
+        var chosen = new int[size];
+
+        IEnumerable<int[]> Choose(int next, int depth)
+        {
+            if (depth == size)
+            {
+                yield return chosen;
+                yield break;
+            }
+
+            for (int i = next; i <= count - (size - depth); i++)
+            {
+                chosen[depth] = i;
+                foreach (int[] result in Choose(i + 1, depth + 1))
+                    yield return result;
+            }
+        }
+
+        return Choose(0, 0);
     }
 
     /// <summary>
@@ -467,14 +590,15 @@ public static class ScreenProjectionAutoCalibrator
         var points = new List<(int, int)>(count);
         double centreX = area.Width / 2.0;
         double centreY = area.Height / 2.0;
-        double radius = Math.Min(area.Width, area.Height) * ProbeRadiusFraction;
+        double radiusX = area.Width * ProbeRadiusFractionX;
+        double radiusY = area.Height * ProbeRadiusFractionY;
 
         for (var i = 0; i < count; i++)
         {
             double angle = ((2 * Math.PI * i) / count) + (Math.PI / 8);
             points.Add((
-                (int)Math.Round(centreX + (radius * Math.Cos(angle))),
-                (int)Math.Round(centreY + (radius * Math.Sin(angle)))));
+                (int)Math.Round(centreX + (radiusX * Math.Cos(angle))),
+                (int)Math.Round(centreY + (radiusY * Math.Sin(angle)))));
         }
 
         return points;

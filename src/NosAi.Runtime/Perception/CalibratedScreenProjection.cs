@@ -46,6 +46,30 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     /// <summary>The window is a different size than when the samples were taken.</summary>
     public const string ClientResizedReason = "screen_projection_client_size_changed";
 
+    /// <summary>
+    /// Reported when the calibration was estimated under a different DPI awareness
+    /// regime from the one this process is running under.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Its own reason and not folded into <see cref="ClientResizedReason"/>, because
+    /// the two name different faults and only one of them is fixed by resizing the
+    /// window back. The instruction "run it again from the same command you
+    /// calibrated with" is not derivable from "the client size changed".
+    /// </para>
+    /// <para>
+    /// It also catches what the size comparison structurally cannot. The regime
+    /// decides the unit the stored pixels are in, and two regimes can agree on the
+    /// client size while disagreeing on the unit: at 100% scale every regime reports
+    /// the same rectangle, and the two aware regimes report the same rectangle at
+    /// every scale. On the operator's display at 125% the sizes do differ across
+    /// aware and unaware — which means the size check happens to fire there, for the
+    /// right outcome by the wrong reason, and names a cause that is not what
+    /// happened.
+    /// </para>
+    /// </remarks>
+    public const string RegimeChangedReason = "screen_projection_dpi_regime_changed";
+
     /// <summary>The client window could not be found, so there is nothing to be inside of.</summary>
     public const string WindowNotLocatedReason = "client_window_not_located";
 
@@ -57,6 +81,7 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     private readonly ScreenProjectionCalibration _calibration;
     private readonly Func<PixelRect?> _clientArea;
     private readonly Func<ClassifiedValue<MapPoint>> _playerPosition;
+    private readonly Func<DpiAwarenessRegime> _regime;
 
     /// <param name="clientArea">
     /// Re-read on every call, because a window moves and is resized while the
@@ -69,14 +94,25 @@ public sealed class CalibratedScreenProjection : IScreenProjection
     /// pointer chain and a client sitting at the login screen are different
     /// problems and the operator has to be able to tell them apart.
     /// </param>
+    /// <param name="regime">
+    /// The process's DPI awareness regime, defaulting to reading it. Injectable only
+    /// so a test can state a regime rather than inherit whatever the test host runs
+    /// under; there is no production caller that supplies it.
+    /// </param>
     public CalibratedScreenProjection(
         ScreenProjectionCalibration calibration,
         Func<PixelRect?> clientArea,
-        Func<ClassifiedValue<MapPoint>> playerPosition)
+        Func<ClassifiedValue<MapPoint>> playerPosition,
+        Func<DpiAwarenessRegime>? regime = null)
     {
         _calibration = calibration ?? throw new ArgumentNullException(nameof(calibration));
         _clientArea = clientArea ?? throw new ArgumentNullException(nameof(clientArea));
         _playerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
+
+        // Read per call rather than captured once: the regime is fixed for a process
+        // in practice, and a value captured at construction would be an assumption
+        // where a reading costs nothing.
+        _regime = regime ?? DpiAwareness.Current;
     }
 
     /// <inheritdoc />
@@ -94,6 +130,21 @@ public sealed class CalibratedScreenProjection : IScreenProjection
         if (_clientArea() is not { } area || area.Width <= 0 || area.Height <= 0)
         {
             failureReason = WindowNotLocatedReason;
+            return false;
+        }
+
+        // Before the shape of the transform, the unit its numbers are in. A
+        // calibration estimated while the process read windows in logical pixels
+        // cannot be applied while it reads them in physical ones, and no comparison
+        // of the numbers themselves can notice: at 100% scale the two regimes report
+        // identical rectangles, so identical sizes are not evidence of a shared unit.
+        // Unknown on either side is a mismatch, never a pass — a regime that could
+        // not be read is not the regime that was recorded.
+        DpiAwarenessRegime regime = _regime();
+        if (regime != _calibration.Regime || regime == DpiAwarenessRegime.Unknown)
+        {
+            failureReason =
+                $"{RegimeChangedReason}:{_calibration.Regime.ToWire()}_to_{regime.ToWire()}";
             return false;
         }
 

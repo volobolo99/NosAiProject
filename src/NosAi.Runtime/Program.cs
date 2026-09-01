@@ -106,6 +106,29 @@ public static class Program
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
         }
 
+        // Physical client rect, window DPI, monitor handle, and the process's
+        // actual awareness mode. The manifest declares per-monitor v2; this is
+        // what the OS assigned, which is the reading that matters.
+        if (args.Any(a => string.Equals(a, "--window-probe", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Perception.ClientWindowDpiProbe.Run();
+
+        if (args.Any(a => string.Equals(a, "--extract-maps", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Navigation.MapGridExtractor.RunExtract();
+
+        int mapInfoFlag = Array.FindIndex(args, a =>
+            string.Equals(a, "--map-info", StringComparison.OrdinalIgnoreCase));
+        if (mapInfoFlag >= 0)
+        {
+            if (mapInfoFlag + 1 >= args.Length
+                || !int.TryParse(args[mapInfoFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mapId))
+            {
+                Console.Error.WriteLine("--map-info <mapId> requires the map identifier.");
+                return 2;
+            }
+
+            return NosAi.Runtime.Navigation.MapGridExtractor.RunInfo(mapId);
+        }
+
         // Map coordinate to window pixel (F2-3). Two commands because a
         // calibration is gathered across several moments in the game, so the
         // samples have to outlive one invocation, exactly as --memory-scan's
@@ -347,7 +370,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--decide-replay", "--player-probe", "--world-replay",
+            "--hud-probe", "--window-probe", "--decide-replay", "--player-probe", "--world-replay",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

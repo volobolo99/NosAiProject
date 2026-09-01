@@ -139,11 +139,12 @@ public sealed class ScreenProjectionTests : IDisposable
     }
 
     /// <summary>
-    /// Samples beyond the third are not fitted; they check the answer, which is
-    /// the only independent validity check this file can carry.
+    /// Samples beyond the third are what makes the residual mean anything: three
+    /// pairs reproduce themselves exactly whatever they say, so a fourth is the
+    /// first one the fit can be caught by.
     /// </summary>
     [Fact]
-    public void A_fourth_sample_is_held_back_as_a_check_and_agrees()
+    public void A_fourth_sample_constrains_the_fit_and_is_counted_as_a_check()
     {
         List<ScreenProjectionSample> samples = IsometricSamples((6, 2), (-4, 5), (1, -7), (8, 8));
 
@@ -152,6 +153,207 @@ public sealed class ScreenProjectionTests : IDisposable
 
         Assert.Equal(1, calibration.VerifiedAgainstSamples);
         Assert.True(calibration.WorstResidualPixels < 1.0);
+    }
+
+    /// <summary>
+    /// The defect this file was rewritten for. Every pair the auto-calibrator
+    /// records is quantised twice over — the clicked pixel lies somewhere inside
+    /// the tile the client resolves it to, and the character is drawn at a smooth
+    /// position inside the tile whose integer index is all that memory holds — so
+    /// a sample can be a whole tile from where the true transform puts it without
+    /// anything having gone wrong. Fitting three of those exactly made their noise
+    /// the definition of the transform and every other sample a disagreement.
+    /// </summary>
+    [Fact]
+    public void Samples_carrying_a_tile_of_quantisation_are_not_a_disagreement()
+    {
+        (double a, double b, double c, double d, double e, double f) = Isometric;
+
+        // The pixel comes from where the click really landed; the offset recorded
+        // beside it is the whole tile the client resolved that pixel to.
+        (int X, int Y)[] offsets = { (6, 2), (-4, 5), (1, -7), (8, 8), (-7, -3), (3, 9) };
+        (double X, double Y)[] slips =
+            { (0.5, -0.5), (-0.5, 0.5), (0.4, 0.4), (-0.5, -0.5), (0.5, 0.3), (-0.3, -0.5) };
+
+        var samples = new List<ScreenProjectionSample>();
+        for (var i = 0; i < offsets.Length; i++)
+        {
+            double trueX = offsets[i].X + slips[i].X;
+            double trueY = offsets[i].Y + slips[i].Y;
+            samples.Add(new ScreenProjectionSample(
+                new MapPoint(offsets[i].X, offsets[i].Y),
+                (int)Math.Round((a * trueX) + (b * trueY) + c),
+                (int)Math.Round((d * trueX) + (e * trueY) + f)));
+        }
+
+        Assert.True(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration calibration, out string? reason), reason);
+
+        // What has to hold is not that the coefficients come back unchanged - six
+        // samples that each carry half a tile of slip cannot determine them that
+        // well, and claiming otherwise would be the old failure in a new place.
+        // It is that a click computed from the fit lands where it was aimed to
+        // within the resolution of the evidence, which is one tile.
+        double pitch = Math.Sqrt((a * a) + (d * d));
+        double worst = 0;
+        for (var dx = -8; dx <= 8; dx++)
+        {
+            for (var dy = -8; dy <= 8; dy++)
+            {
+                (double x, double y) = calibration.ProjectDelta(new MapPoint(dx, dy))!.Value;
+                double trueX = (a * dx) + (b * dy) + c;
+                double trueY = (d * dx) + (e * dy) + f;
+                worst = Math.Max(worst, Math.Sqrt(
+                    ((x - trueX) * (x - trueX)) + ((y - trueY) * (y - trueY))));
+            }
+        }
+
+        Assert.True(worst < pitch, $"worst projection error {worst:F1} px is over one {pitch:F1} px tile");
+    }
+
+    /// <summary>
+    /// The six pairs the auto-calibrator read off the running client on 1 Sep 2026,
+    /// at 1024x768. Kept verbatim because they carry both halves of the story.
+    /// </summary>
+    /// <remarks>
+    /// The exact fit through the first three called these six a 218 px
+    /// disagreement, and they are not one: fitted together they reproduce each
+    /// other to within about a tile, which is the resolution of the evidence. But
+    /// agreeing is not the same as determining, and they do not determine a scale -
+    /// the offsets are too small for the slip they carry, and the tile size that
+    /// comes out is uncertain by 9%. So this run is refused, and refused for the
+    /// second reason rather than the first. Both halves are the point: the fit had
+    /// to stop rejecting readings that agree before the real question - whether
+    /// they settle anything - could even be asked.
+    /// </remarks>
+    [Fact]
+    public void The_readings_taken_from_the_live_client_agree_but_do_not_settle_a_scale()
+    {
+        var samples = new List<ScreenProjectionSample>
+        {
+            new(new MapPoint(4, 1), 654, 443),
+            new(new MapPoint(0, 6), 532, 536),
+            new(new MapPoint(-3, 3), 390, 478),
+            new(new MapPoint(-5, -6), 370, 325),
+            new(new MapPoint(-2, -15), 492, 232),
+            new(new MapPoint(4, -9), 634, 290),
+        };
+
+        Assert.False(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration calibration, out string? reason));
+
+        Assert.False(calibration.IsCalibrated);
+        Assert.StartsWith("scale_not_determined", reason, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A small residual is not a determined answer, and this is the pair of runs
+    /// that proved it. Both of these were taken by the auto-calibrator on the live
+    /// client minutes apart at the same window size; they agree on five of eight
+    /// readings; both reproduce their own samples to within a tile and a half; and
+    /// they give tile sizes half as big again as one another. The offsets are too
+    /// small for the noise they carry, so the samples do not contain the answer,
+    /// and writing either would put a click tiles away from where it was aimed.
+    /// </summary>
+    [Fact]
+    public void Samples_too_tightly_spread_to_fix_a_scale_are_refused_however_well_they_fit()
+    {
+        var first = new List<ScreenProjectionSample>
+        {
+            new(new MapPoint(2, -1), 590, 416),
+            new(new MapPoint(3, 3), 606, 506),
+            new(new MapPoint(0, 2), 523, 468),
+            new(new MapPoint(-1, 5), 453, 526),
+            new(new MapPoint(-2, 0), 445, 435),
+            new(new MapPoint(-4, -2), 360, 404),
+            new(new MapPoint(-3, -6), 434, 352),
+            new(new MapPoint(0, -2), 418, 262),
+            new(new MapPoint(1, -1), 664, 364),
+        };
+
+        var second = new List<ScreenProjectionSample>
+        {
+            new(new MapPoint(2, 4), 606, 506),
+            new(new MapPoint(1, 3), 523, 468),
+            new(new MapPoint(-1, 5), 453, 526),
+            new(new MapPoint(-2, 0), 445, 435),
+            new(new MapPoint(-4, -2), 360, 404),
+            new(new MapPoint(-3, -6), 434, 352),
+            new(new MapPoint(-2, -3), 418, 262),
+            new(new MapPoint(1, -1), 664, 364),
+        };
+
+        foreach (List<ScreenProjectionSample> samples in new[] { first, second })
+        {
+            Assert.False(ScreenProjectionCalibration.TrySolve(
+                samples, ClientWidth, ClientHeight, At,
+                out ScreenProjectionCalibration calibration, out string? reason));
+
+            Assert.False(calibration.IsCalibrated);
+
+            // Taken whole they miss by five and seven tiles, so the residual bar
+            // is the one that catches them here. The uncertainty bar is what
+            // catches the subsets they can be cut down to, which is where the
+            // written calibration actually came from - see the auto-calibrator
+            // tests, where the same two runs are refused end to end.
+            Assert.NotNull(reason);
+            Assert.True(
+                reason!.StartsWith("samples_disagree", StringComparison.Ordinal)
+                || reason.StartsWith("scale_not_determined", StringComparison.Ordinal),
+                reason);
+        }
+    }
+
+    /// <summary>
+    /// And the bar is not so high that ordinary noise cannot clear it: pairs spread
+    /// across ten tiles, each carrying half a tile of slip, are accepted.
+    /// </summary>
+    [Fact]
+    public void Samples_spread_wide_enough_clear_the_uncertainty_bar()
+    {
+        (double a, double b, double c, double d, double e, double f) = Isometric;
+
+        (int X, int Y)[] offsets =
+            { (10, 3), (4, 11), (-6, 9), (-11, 2), (-9, -6), (-2, -11), (6, -9), (11, -3) };
+        (double X, double Y)[] slips =
+            { (0.4, -0.3), (-0.3, 0.4), (0.2, 0.4), (-0.4, -0.2), (0.4, 0.1), (-0.2, -0.4), (0.1, 0.3), (-0.4, 0.2) };
+
+        var samples = new List<ScreenProjectionSample>();
+        for (var i = 0; i < offsets.Length; i++)
+        {
+            double x = offsets[i].X + slips[i].X;
+            double y = offsets[i].Y + slips[i].Y;
+            samples.Add(new ScreenProjectionSample(
+                new MapPoint(offsets[i].X, offsets[i].Y),
+                (int)Math.Round((a * x) + (b * y) + c),
+                (int)Math.Round((d * x) + (e * y) + f)));
+        }
+
+        Assert.True(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration calibration, out string? reason), reason);
+
+        Assert.True(calibration.IsCalibrated);
+    }
+
+    /// <summary>
+    /// The tolerance moved from pixels to tiles, so state what it still catches: a
+    /// pair that is wrong by tens of tiles, which is the size of the mistakes this
+    /// check exists for.
+    /// </summary>
+    [Fact]
+    public void A_sample_wrong_by_tiles_rather_than_by_quantisation_is_still_refused()
+    {
+        List<ScreenProjectionSample> samples = IsometricSamples((6, 2), (-4, 5), (1, -7), (8, 8), (-7, -3));
+        samples.Add(new ScreenProjectionSample(new MapPoint(3, 9), 5, 5));
+
+        Assert.False(ScreenProjectionCalibration.TrySolve(
+            samples, ClientWidth, ClientHeight, At, out ScreenProjectionCalibration calibration, out string? reason));
+
+        Assert.False(calibration.IsCalibrated);
+        Assert.StartsWith("samples_disagree", reason, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -293,13 +495,76 @@ public sealed class ScreenProjectionTests : IDisposable
         Assert.Equal("screen_projection_version_unsupported:1", reason);
     }
 
+    /// <summary>
+    /// And a file from before the regime was recorded is refused too. It does not
+    /// merely lack a field: it was written by a build that could not have checked
+    /// the regime, so its pixels are in a unit nobody wrote down. Filling the gap
+    /// with the reader's own regime would assert exactly the thing the field exists
+    /// to establish.
+    /// </summary>
+    [Fact]
+    public void A_calibration_from_before_the_regime_was_recorded_is_refused_by_version()
+    {
+        string path = PathFor("v2");
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            path, "nosai-screen-projection 2\n16 -16 512 8 8 380 1024 768 0 1 2026-09-01T12:00:00Z\n");
+
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.False(loaded.IsCalibrated);
+        Assert.Equal("screen_projection_version_unsupported:2", reason);
+    }
+
+    /// <summary>
+    /// A regime token written by some later build reads as Unknown rather than as
+    /// anything in particular, and Unknown never matches a live regime, so the
+    /// calibration is refused at use instead of being read in the wrong unit.
+    /// </summary>
+    [Fact]
+    public void An_unrecognised_regime_token_loads_as_unknown_rather_than_as_a_regime()
+    {
+        string path = PathFor("future-regime");
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            path,
+            "nosai-screen-projection 3\n16 -16 512 8 8 380 1024 768 0 1 permonitorv9 2026-09-01T12:00:00Z\n");
+
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.True(loaded.IsCalibrated, reason);
+        Assert.Equal(DpiAwarenessRegime.Unknown, loaded.Regime);
+    }
+
+    /// <summary>The regime survives a round trip through the file.</summary>
+    [Fact]
+    public void The_regime_is_written_and_read_back()
+    {
+        string path = PathFor("regime-round-trip");
+
+        Assert.True(ScreenProjectionCalibration.TrySolve(
+            ThreeOffsets(), ClientWidth, ClientHeight, At,
+            out ScreenProjectionCalibration solved, out _,
+            regime: DpiAwarenessRegime.Unaware));
+
+        Assert.Equal(DpiAwarenessRegime.Unaware, solved.Regime);
+
+        solved.Save(path);
+        ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
+
+        Assert.True(loaded.IsCalibrated, reason);
+        Assert.Equal(DpiAwarenessRegime.Unaware, loaded.Regime);
+    }
+
     /// <summary>A degenerate transform maps every offset to one pixel; it is not one.</summary>
     [Fact]
     public void A_file_whose_transform_collapses_the_plane_is_refused()
     {
         string path = PathFor("degenerate");
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(path, "nosai-screen-projection 2\n0 0 0 0 0 0 1024 768 0 0 2026-09-01T12:00:00Z\n");
+        File.WriteAllText(
+            path,
+            "nosai-screen-projection 3\n0 0 0 0 0 0 1024 768 0 0 permonitorv2 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 
@@ -314,7 +579,8 @@ public sealed class ScreenProjectionTests : IDisposable
         string path = PathFor("anchor");
         Directory.CreateDirectory(_directory);
         File.WriteAllText(
-            path, "nosai-screen-projection 2\n16 -16 5000 8 8 380 1024 768 0 1 2026-09-01T12:00:00Z\n");
+            path,
+            "nosai-screen-projection 3\n16 -16 5000 8 8 380 1024 768 0 1 permonitorv2 2026-09-01T12:00:00Z\n");
 
         ScreenProjectionCalibration loaded = ScreenProjectionCalibration.Load(path, out string? reason);
 

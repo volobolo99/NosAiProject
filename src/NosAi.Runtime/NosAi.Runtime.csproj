@@ -11,6 +11,10 @@
     <!-- Several imported Gate/Host sources still declare their own Main.
          The runtime entry point is explicit so the build is deterministic. -->
     <StartupObject>NosAi.Runtime.Program</StartupObject>
+    <!-- Without this, GetClientRect returns virtualised coordinates on any
+         display whose scale is not 100%. Per-monitor v2 is what makes those
+         readings physical pixels, which is what the rest of perception assumes. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- The DXGI Desktop Duplication backend calls COM vtable slots through
          unmanaged function pointers (src/NosAi.Runtime/Perception/DxgiInterop.cs);
          no external interop package is pulled in for it. -->

@@ -230,6 +230,22 @@ del vecchio modello è rifiutata invece di essere reinterpretata in un clic
 sbagliato. Un ridimensionamento della finestra — o il passaggio a schermo intero
 — è rifiutato per nome, e basta rieseguire il comando.
 
+**Aggiornamento (1 set 2026, sera): la calibrazione non e' ancora riuscita, e ora
+lo dice.** Cinque esecuzioni sul client vivo non hanno prodotto nessuna
+calibrazione utilizzabile, e tre difetti della procedura sono stati corretti nel
+farlo: il fit passava esattamente per tre campioni invece di essere ai minimi
+quadrati su tutti; il residuo era giudicato in pixel quando la misura e' un indice
+di casella; e scartare campioni finche' il fit passava poteva scendere a quattro
+pairs e **scrivere** una trasformata ruotata di trenta gradi. In piu' un residuo
+basso non e' una risposta determinata: due corse a minuti di distanza hanno dato
+caselle da 37 px e 56 px superando entrambe il residuo, quindi si rifiuta ora
+anche quando l'errore standard della scala supera il 5%. L'ultima corsa e'
+rifiutata con `scale_not_determined:3x11pct`: le letture verso il basso sono
+monotone, quelle verso l'alto no, e c'e' un ostacolo a nord del personaggio. Serve
+rieseguire da una zona aperta. **Nessun file e' stato scritto**, quindi ogni clic
+resta rifiutato con `screen_projection_not_calibrated` - che e' esattamente cio'
+che deve succedere finche' la trasformata non e' misurata.
+
 **Cosa resta.** `CalibratedScreenProjection` ha bisogno della casella su cui sta
 il personaggio, e dentro l'host quella sorgente non è ancora collegata: ogni clic
 è rifiutato con `player_position_source_not_wired`. La lettura esiste ed è stata

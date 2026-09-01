@@ -55,9 +55,20 @@ public readonly record struct ScreenProjectionSample(MapPoint MapDelta, int Scre
 /// (<c>sx = a·Δx + b·Δy + c</c>, <c>sy = d·Δx + e·Δy + f</c>), so two points fix
 /// it only once something is assumed about its structure — that the axes do not
 /// mix, say, which is exactly false for an isometric projection, the one the card
-/// names. Three non-collinear pairs determine all six and assume nothing. Samples
-/// beyond the third are not fitted: they are held back and used to check the
-/// solution, which is the only way this file can carry its own validity check.
+/// names. Three non-collinear pairs determine all six and assume nothing.
+/// </para>
+/// <para>
+/// <b>And why every sample is fitted.</b> Samples beyond the third used to be held
+/// back rather than fitted, so that the residual measured something the solve had
+/// not already been given. The reasoning was right and the arrangement was the
+/// wrong way round: three pairs determine six unknowns <i>exactly</i>, so whatever
+/// error those three carried silently became the definition of the transform, and
+/// the held-back samples were then judged against it. On the real client that
+/// turned six readings agreeing to within one tile into a reported disagreement of
+/// 218 px. The fit is now least squares over every sample, which keeps the
+/// residual falsifiable for the reason that actually makes it so: there are more
+/// samples than unknowns, so the solve cannot reproduce all of them and a wrong
+/// model has nowhere to hide.
 /// </para>
 /// <para>
 /// <b>Machine-specific, and therefore not committed.</b> It belongs in gitignored
@@ -78,15 +89,75 @@ public sealed record ScreenProjectionCalibration
     public const int MinimumSamples = 3;
 
     /// <summary>
-    /// How far a held-back sample may land from where the solved transform puts
-    /// it, in pixels.
+    /// How far a sample may land from where the fitted transform puts it, measured
+    /// in map tiles rather than in pixels.
     /// </summary>
     /// <remarks>
-    /// The operator places a cursor by hand, so a pixel or two is the procedure,
-    /// not an error. Tens of pixels is a mistyped coordinate or a sample taken
-    /// after the view scrolled, and that is the calibration this refuses to write.
+    /// <para>
+    /// <b>Why tiles.</b> This was six pixels, which was the right unit only while
+    /// an operator placed the cursor by hand: the pair was a pixel a person aimed
+    /// at and a coordinate they read, so a pixel or two was the procedure rather
+    /// than an error. The auto-calibrator does not measure in pixels at all — it
+    /// reads a tile index back from the client, so a tile is what the error is
+    /// made of. On the real client one tile is about 32x15 px, so six pixels asked
+    /// for a fifth of a tile: a tolerance finer than the resolution of its own
+    /// evidence, which refuses correct fits and cannot be met by any amount of
+    /// care.
+    /// </para>
+    /// <para>
+    /// <b>Where the number comes from.</b> Two half-tiles, both inherent to the
+    /// method: the clicked pixel may lie anywhere inside the tile the client
+    /// resolves it to, and the character is drawn at a smooth position inside the
+    /// tile whose integer index is all that memory holds. That is a whole tile per
+    /// axis before anything has gone wrong. The margin over it is deliberately
+    /// small, and it still catches what this check exists for: the absolute model,
+    /// and a client resolving clicks to a waypoint rather than to a destination,
+    /// miss by tens of tiles and not by one.
+    /// </para>
     /// </remarks>
-    public const double MaxVerificationResidualPixels = 6.0;
+    public const double MaxVerificationResidualTiles = 1.5;
+
+    /// <summary>
+    /// How uncertain the measured size of a tile may be before the samples are
+    /// declared not to determine the transform, as a fraction of that size.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>A small residual is not the same as a determined answer.</b> The residual
+    /// says the fitted transform reproduces the pairs it was given. It says nothing
+    /// about how much the answer would move if the pairs moved by the noise they
+    /// are known to carry, and when the offsets are small that movement is
+    /// enormous: an error of one tile on an offset of four is a quarter of the
+    /// signal, and the scale that comes out is worth about as much.
+    /// </para>
+    /// <para>
+    /// <b>Measured on the live client.</b> Two runs of the auto-calibrator minutes
+    /// apart, at the same window size, agreed on five of eight readings and still
+    /// produced tile sizes of 37 px and 56 px — half as big again. Both passed the
+    /// residual check. What separates them from a usable calibration is not the
+    /// residual but the standard error of the fit, which was 25% and 19% of the
+    /// tile size: the samples simply did not contain the answer. A click computed
+    /// from either would land tiles away from where it was aimed, and the cycle
+    /// would learn that only after acting.
+    /// </para>
+    /// <para>
+    /// <b>Five per cent, and it comes from what the click has to do.</b> These
+    /// clicks are aimed up to about ten tiles from the character, and a click has
+    /// to land on the tile it was aimed at, so the scale may be wrong by at most
+    /// half a tile over that distance: half of ten is a twentieth. The bar is not
+    /// set where the measurements happen to fall. It was ten per cent first, and
+    /// the run that squeezed under it at 5.8% would still have put a ten-tile click
+    /// almost a whole tile wide - accepted, and useless for the one thing it is
+    /// for.
+    /// </para>
+    /// <para>
+    /// It is also attainable, which is the other half of choosing a threshold:
+    /// simulated over the probe ring this command uses, with a whole tile of slip
+    /// on every pair, the fit comes out near three per cent. So what this refuses
+    /// is sampling that failed, not sampling that has noise in it.
+    /// </para>
+    /// </remarks>
+    public const double MaxScaleUncertainty = 0.05;
 
     /// <summary>
     /// How far apart the sampled pixels must lie before a transform can be fitted.
@@ -99,17 +170,26 @@ public sealed record ScreenProjectionCalibration
     /// </remarks>
     public const double MinScreenSpanPixels = 40.0;
 
-    /// <summary>Reported when a file from before the offset model is found.</summary>
+    /// <summary>Reported when a file from an earlier model is found.</summary>
     /// <remarks>
+    /// <para>
     /// The bump from 1 to 2 is not cosmetic. A v1 file holds coefficients fitted
     /// to absolute map coordinates; read as offsets they project to a pixel that
     /// is wrong by the character's whole distance from the map origin, and the
     /// click still lands inside the window, so nothing downstream would notice.
     /// Refusing by version is what stops a stale file from being silently
     /// reinterpreted into a real click somewhere nobody chose.
+    /// </para>
+    /// <para>
+    /// 2 to 3 adds the DPI awareness regime the fit was estimated under. A v2 file
+    /// does not merely lack the field: it was written by a build that could not
+    /// have checked it, so its numbers are in an unrecorded unit. Defaulting the
+    /// missing field to whatever the reader is running under would assert exactly
+    /// the thing the field exists to establish.
+    /// </para>
     /// </remarks>
     private const string Magic = "nosai-screen-projection";
-    private const int Version = 2;
+    private const int Version = 3;
 
     private ScreenProjectionCalibration(
         bool isCalibrated,
@@ -118,6 +198,7 @@ public sealed record ScreenProjectionCalibration
         int clientWidth, int clientHeight,
         double worstResidual,
         int verifiedAgainst,
+        DpiAwarenessRegime regime,
         DateTime? calibratedAtUtc)
     {
         IsCalibrated = isCalibrated;
@@ -127,6 +208,7 @@ public sealed record ScreenProjectionCalibration
         ClientHeight = clientHeight;
         WorstResidualPixels = worstResidual;
         VerifiedAgainstSamples = verifiedAgainst;
+        Regime = regime;
         CalibratedAtUtc = calibratedAtUtc;
     }
 
@@ -164,13 +246,44 @@ public sealed record ScreenProjectionCalibration
     public int ClientWidth { get; }
     public int ClientHeight { get; }
 
-    /// <summary>How far the worst held-back sample landed from its prediction.</summary>
+    /// <summary>
+    /// How far the worst sample landed from where the fit puts it, in pixels.
+    /// </summary>
+    /// <remarks>
+    /// Recorded in pixels because that is what it is; it is <i>judged</i> in tiles,
+    /// against <see cref="MaxVerificationResidualTiles"/>, because that is the unit
+    /// the samples were measured in.
+    /// </remarks>
     public double WorstResidualPixels { get; }
 
-    /// <summary>How many samples were held back to check the solution.</summary>
+    /// <summary>
+    /// The DPI awareness regime the process was running under when this was fitted.
+    /// </summary>
     /// <remarks>
-    /// Zero means the calibration was solved from exactly three pairs and nothing
-    /// independent confirmed it. Usable, and worth knowing.
+    /// <para>
+    /// Every number in this file is a pixel coordinate, and which pixels those are
+    /// is decided by the regime: an unaware process reads a window as 1536x912 where
+    /// an aware one reads 1920x1140, on a display at 125%. The transform is
+    /// meaningless outside the unit it was measured in, and nothing else in the file
+    /// records that unit.
+    /// </para>
+    /// <para>
+    /// It is not derivable from the other fields, which is why it has to be stored.
+    /// The client width and height do change with the regime on a scaled display, so
+    /// the size comparison catches the change there by accident — but at 100% they
+    /// are identical in both regimes and it catches nothing, and between the two
+    /// aware regimes they are identical at every scale.
+    /// </para>
+    /// </remarks>
+    public DpiAwarenessRegime Regime { get; }
+
+    /// <summary>How much independent checking the residual represents.</summary>
+    /// <remarks>
+    /// Samples beyond the three a general affine map needs, so: the degrees of
+    /// freedom left over once the fit has taken what it needs. Zero means the
+    /// calibration was solved from exactly three pairs, which three pairs always
+    /// reproduce exactly, so its residual of zero confirms nothing. Usable, and
+    /// worth knowing.
     /// </remarks>
     public int VerifiedAgainstSamples { get; }
 
@@ -179,7 +292,7 @@ public sealed record ScreenProjectionCalibration
 
     /// <summary>The state before the operator has calibrated anything.</summary>
     public static ScreenProjectionCalibration Uncalibrated { get; } =
-        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null);
+        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DpiAwarenessRegime.Unknown, null);
 
     /// <summary>
     /// Solves the transform from the operator's samples, or says why it cannot.
@@ -189,13 +302,20 @@ public sealed record ScreenProjectionCalibration
     /// projected through it and checked. A calibration that cannot predict a pair
     /// the operator actually recorded is not written.
     /// </remarks>
+    /// <param name="regime">
+    /// The DPI awareness regime the samples were measured under. Defaulted to the
+    /// calling process's own regime, because that is what it is in every real call;
+    /// it is a parameter so a test can state a regime instead of inheriting whatever
+    /// the test host happens to run under.
+    /// </param>
     public static bool TrySolve(
         IReadOnlyList<ScreenProjectionSample> samples,
         int clientWidth,
         int clientHeight,
         DateTime calibratedAtUtc,
         out ScreenProjectionCalibration calibration,
-        out string? failureReason)
+        out string? failureReason,
+        DpiAwarenessRegime? regime = null)
     {
         ArgumentNullException.ThrowIfNull(samples);
         calibration = Uncalibrated;
@@ -212,16 +332,30 @@ public sealed record ScreenProjectionCalibration
             return false;
         }
 
-        ScreenProjectionSample s0 = samples[0], s1 = samples[1], s2 = samples[2];
+        // Least squares over every sample, on offsets centred about their own
+        // mean: centring keeps the scale part of the solve independent of where
+        // the anchor lands.
+        double meanX = samples.Average(s => (double)s.MapDelta.X);
+        double meanY = samples.Average(s => (double)s.MapDelta.Y);
 
-        // Twice the signed area of the triangle the three offsets make. Zero
-        // means they lie on a line, and a line cannot fix a mapping of the plane:
-        // every sample walked along the same axis and one has to cross it.
-        double determinant =
-            (s1.MapDelta.X - s0.MapDelta.X) * (double)(s2.MapDelta.Y - s0.MapDelta.Y) -
-            (s2.MapDelta.X - s0.MapDelta.X) * (double)(s1.MapDelta.Y - s0.MapDelta.Y);
+        double sxx = 0, sxy = 0, syy = 0;
+        foreach (ScreenProjectionSample s in samples)
+        {
+            double dx = s.MapDelta.X - meanX;
+            double dy = s.MapDelta.Y - meanY;
+            sxx += dx * dx;
+            sxy += dx * dy;
+            syy += dy * dy;
+        }
 
-        if (Math.Abs(determinant) < 1e-9)
+        // Zero area means the offsets lie on a line, and a line cannot fix a
+        // mapping of the plane: every sample walked along the same axis and one
+        // has to cross it. Judged against the spread rather than against an
+        // absolute number, so it does not depend on how far the samples walked.
+        double determinant = (sxx * syy) - (sxy * sxy);
+        double spread = sxx + syy;
+
+        if (spread <= 0 || determinant <= 1e-9 * spread * spread)
         {
             failureReason = "samples_are_collinear";
             return false;
@@ -229,7 +363,7 @@ public sealed record ScreenProjectionCalibration
 
         // The screen points have to move too, or there is nothing to measure a
         // scale against. This survives from the absolute model, where it was the
-        // check that finally caught it: the samples were the character's own
+        // check that finally caught it: the samples were the character’s own
         // pixel, which the camera holds still, and three of them fit six unknowns
         // exactly so the residual saw nothing wrong.
         double screenSpanX = samples.Max(s => (double)s.ScreenX) - samples.Min(s => (double)s.ScreenX);
@@ -242,28 +376,84 @@ public sealed record ScreenProjectionCalibration
         }
 
         (double a, double b, double c) = SolveComponent(
-            s0, s1, s2, determinant, static s => s.ScreenX);
+            samples, meanX, meanY, sxx, sxy, syy, determinant, static s => s.ScreenX);
         (double d, double e, double f) = SolveComponent(
-            s0, s1, s2, determinant, static s => s.ScreenY);
+            samples, meanX, meanY, sxx, sxy, syy, determinant, static s => s.ScreenY);
 
-        // Every pair recorded, including the three that were fitted: a residual on
-        // those means the arithmetic went wrong rather than that the samples
-        // disagree, and either way the transform must not be written.
+        // A residual is a pixel distance, but the measurement error is not: what
+        // was read back is a tile index, so the disagreement is carried back
+        // through the fitted transform and judged in the unit it was made in.
+        // Inverting it requires it to be a transform at all.
+        double transformDeterminant = (a * e) - (b * d);
+        if (Math.Abs(transformDeterminant) < 1e-9)
+        {
+            failureReason = "fitted_transform_collapses_the_plane";
+            return false;
+        }
+
         double worst = 0;
+        double worstTiles = 0;
         foreach (ScreenProjectionSample sample in samples)
         {
             double px = (a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c;
             double py = (d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f;
-            double residual = Math.Sqrt(
-                ((px - sample.ScreenX) * (px - sample.ScreenX)) +
-                ((py - sample.ScreenY) * (py - sample.ScreenY)));
-            worst = Math.Max(worst, residual);
+            double errorX = px - sample.ScreenX;
+            double errorY = py - sample.ScreenY;
+
+            worst = Math.Max(worst, Math.Sqrt((errorX * errorX) + (errorY * errorY)));
+
+            double tileX = ((e * errorX) - (b * errorY)) / transformDeterminant;
+            double tileY = ((a * errorY) - (d * errorX)) / transformDeterminant;
+            worstTiles = Math.Max(worstTiles, Math.Sqrt((tileX * tileX) + (tileY * tileY)));
         }
 
-        if (worst > MaxVerificationResidualPixels)
+        if (worstTiles > MaxVerificationResidualTiles)
         {
-            failureReason = $"samples_disagree:{worst:F1}px";
+            failureReason = string.Create(CultureInfo.InvariantCulture,
+                $"samples_disagree:{worstTiles:F2}tiles_{worst:F0}px");
             return false;
+        }
+
+        // How much the answer would move if the samples moved by the noise they
+        // carry. Six unknowns from 2n equations leaves 2n-6 degrees of freedom to
+        // estimate that noise from; at exactly three pairs there are none, the fit
+        // reproduces its input, and there is nothing to say - which is what
+        // VerifiedAgainstSamples reports as zero.
+        int degreesOfFreedom = (2 * samples.Count) - 6;
+        if (degreesOfFreedom > 0)
+        {
+            double sumOfSquares = 0;
+            foreach (ScreenProjectionSample sample in samples)
+            {
+                double px = (a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c;
+                double py = (d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f;
+                sumOfSquares += ((px - sample.ScreenX) * (px - sample.ScreenX))
+                                + ((py - sample.ScreenY) * (py - sample.ScreenY));
+            }
+
+            // Standard error of the two scale coefficients, from the same centred
+            // normal matrix the fit came out of.
+            double variance = sumOfSquares / degreesOfFreedom;
+            double standardErrorX = Math.Sqrt(variance * syy / determinant);
+            double standardErrorY = Math.Sqrt(variance * sxx / determinant);
+
+            double pitchX = Math.Sqrt((a * a) + (d * d));
+            double pitchY = Math.Sqrt((b * b) + (e * e));
+            if (pitchX <= 0 || pitchY <= 0)
+            {
+                failureReason = "fitted_transform_collapses_the_plane";
+                return false;
+            }
+
+            double uncertaintyX = standardErrorX / pitchX;
+            double uncertaintyY = standardErrorY / pitchY;
+
+            if (uncertaintyX > MaxScaleUncertainty || uncertaintyY > MaxScaleUncertainty)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"scale_not_determined:{uncertaintyX * 100:F0}x{uncertaintyY * 100:F0}pct");
+                return false;
+            }
         }
 
         // The one coefficient with a meaning outside the fit: a zero offset is the
@@ -282,6 +472,7 @@ public sealed record ScreenProjectionCalibration
             clientWidth, clientHeight,
             worst,
             samples.Count - MinimumSamples,
+            regime ?? DpiAwareness.Current(),
             calibratedAtUtc);
         failureReason = null;
         return true;
@@ -354,7 +545,7 @@ public sealed record ScreenProjectionCalibration
         }
 
         string[] fields = lines[1].Split(' ');
-        if (fields.Length != 11
+        if (fields.Length != 12
             || !TryNumber(fields[0], out double a) || !TryNumber(fields[1], out double b)
             || !TryNumber(fields[2], out double c) || !TryNumber(fields[3], out double d)
             || !TryNumber(fields[4], out double e) || !TryNumber(fields[5], out double f)
@@ -362,12 +553,17 @@ public sealed record ScreenProjectionCalibration
             || !int.TryParse(fields[7], NumberStyles.Integer, CultureInfo.InvariantCulture, out int clientHeight)
             || !TryNumber(fields[8], out double residual)
             || !int.TryParse(fields[9], NumberStyles.Integer, CultureInfo.InvariantCulture, out int verified)
-            || !DateTime.TryParse(fields[10], CultureInfo.InvariantCulture,
+            || !DateTime.TryParse(fields[11], CultureInfo.InvariantCulture,
                 DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out DateTime at))
         {
             failureReason = "screen_projection_entry_malformed";
             return Uncalibrated;
         }
+
+        // A regime token this build does not recognise reads as Unknown rather than
+        // as anything in particular, and Unknown never matches a live regime, so the
+        // calibration is refused at use instead of being read in the wrong unit.
+        DpiAwarenessRegime regime = DpiAwareness.FromWire(fields[10]);
 
         // A transform that maps every offset to the same pixel is not a transform,
         // and it is what an all-zero or corrupted file decodes to. The anchor is
@@ -382,7 +578,7 @@ public sealed record ScreenProjectionCalibration
         }
 
         return new ScreenProjectionCalibration(
-            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, at);
+            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, at);
     }
 
     /// <summary>Writes the calibration, creating the directory if needed.</summary>
@@ -409,6 +605,7 @@ public sealed record ScreenProjectionCalibration
             .Append(ClientHeight.ToString(CultureInfo.InvariantCulture)).Append(' ')
             .Append(WorstResidualPixels.ToString("R", CultureInfo.InvariantCulture)).Append(' ')
             .Append(VerifiedAgainstSamples.ToString(CultureInfo.InvariantCulture)).Append(' ')
+            .Append(Regime.ToWire()).Append(' ')
             .Append(CalibratedAtUtc!.Value.ToString("O", CultureInfo.InvariantCulture)).Append('\n');
 
         File.WriteAllText(path, text.ToString());
@@ -418,18 +615,37 @@ public sealed record ScreenProjectionCalibration
     /// Solves one row of the affine map by Cramer's rule over the three sampled
     /// offsets.
     /// </summary>
+    /// <summary>
+    /// Least-squares fit of one screen component against the offsets.
+    /// </summary>
+    /// <remarks>
+    /// With exactly three non-collinear samples this reproduces the exact solve it
+    /// replaces, so the minimum case is unchanged; beyond three it averages rather
+    /// than interpolates.
+    /// </remarks>
     private static (double A, double B, double C) SolveComponent(
-        ScreenProjectionSample s0,
-        ScreenProjectionSample s1,
-        ScreenProjectionSample s2,
+        IReadOnlyList<ScreenProjectionSample> samples,
+        double meanX,
+        double meanY,
+        double sxx,
+        double sxy,
+        double syy,
         double determinant,
         Func<ScreenProjectionSample, int> screen)
     {
-        double v0 = screen(s0), v1 = screen(s1), v2 = screen(s2);
+        double meanV = samples.Average(s => (double)screen(s));
 
-        double a = (((v1 - v0) * (s2.MapDelta.Y - s0.MapDelta.Y)) - ((v2 - v0) * (s1.MapDelta.Y - s0.MapDelta.Y))) / determinant;
-        double b = (((v2 - v0) * (s1.MapDelta.X - s0.MapDelta.X)) - ((v1 - v0) * (s2.MapDelta.X - s0.MapDelta.X))) / determinant;
-        double c = v0 - (a * s0.MapDelta.X) - (b * s0.MapDelta.Y);
+        double tx = 0, ty = 0;
+        foreach (ScreenProjectionSample s in samples)
+        {
+            double dv = screen(s) - meanV;
+            tx += (s.MapDelta.X - meanX) * dv;
+            ty += (s.MapDelta.Y - meanY) * dv;
+        }
+
+        double a = ((syy * tx) - (sxy * ty)) / determinant;
+        double b = ((sxx * ty) - (sxy * tx)) / determinant;
+        double c = meanV - (a * meanX) - (b * meanY);
         return (a, b, c);
     }
 
