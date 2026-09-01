@@ -30,23 +30,91 @@ public static class MemoryScanProbe
 
     public static int Run(string[] args, int flagIndex)
     {
-        bool narrowing = string.Equals(args[flagIndex], "--memory-narrow", StringComparison.OrdinalIgnoreCase);
-
         if (!OperatingSystem.IsWindows())
         {
             Console.Error.WriteLine("Memory scanning needs Windows.");
             return 2;
         }
 
+        if (string.Equals(args[flagIndex], "--memory-dump", StringComparison.OrdinalIgnoreCase))
+            return RunDump(args, flagIndex);
+
+        bool narrowing = string.Equals(args[flagIndex], "--memory-narrow", StringComparison.OrdinalIgnoreCase);
+
         if (!TryReadOperands(args, flagIndex, out int processId, out int value, out string? error))
         {
             Console.Error.WriteLine(error);
-            Console.Error.WriteLine("Usage: --memory-scan <pid> <value>      first pass, saves candidates");
-            Console.Error.WriteLine("       --memory-narrow <pid> <value>    later pass, narrows them");
+            Console.Error.WriteLine("Usage: --memory-scan <pid> <value>              first pass, saves candidates");
+            Console.Error.WriteLine("       --memory-narrow <pid> <value>            later pass, narrows them");
+            Console.Error.WriteLine("       --memory-dump <pid> <hexAddr> [bytes]    read the struct around an address");
             return 2;
         }
 
         return Execute(processId, value, narrowing);
+    }
+
+    /// <summary>
+    /// Prints the 32-bit words around an address, so the fields beside a value
+    /// that has already been identified can be read off.
+    /// </summary>
+    /// <remarks>
+    /// Once HP is pinned, MaxHP and MP do not need their own scans: a character's
+    /// vitals sit together in one structure, so they are almost always a few words
+    /// from each other. Reading the neighbourhood turns two more narrowing sessions
+    /// into one look, and the offsets it suggests are still only candidates until a
+    /// validity check confirms them.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static int RunDump(string[] args, int flagIndex)
+    {
+        if (flagIndex + 2 >= args.Length
+            || !int.TryParse(args[flagIndex + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int processId)
+            || !long.TryParse(args[flagIndex + 2].TrimStart('0', 'x', 'X').PadLeft(1, '0'),
+                              NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long address))
+        {
+            Console.Error.WriteLine("Usage: --memory-dump <pid> <hexAddr> [bytes]");
+            return 2;
+        }
+
+        int length = 128;
+        if (flagIndex + 3 < args.Length
+            && int.TryParse(args[flagIndex + 3], NumberStyles.Integer, CultureInfo.InvariantCulture, out int requested))
+            length = Math.Clamp(requested, 16, 4096);
+
+        using ProcessMemoryReader? reader = ProcessMemoryReader.TryOpen(
+            processId, SecurityPrincipal.Operator, out string? failure);
+        if (reader is null)
+        {
+            Console.Error.WriteLine($"Cannot read process {processId}: {failure}");
+            return 1;
+        }
+
+        // Centred on the address: a vitals struct is as likely to run backwards
+        // from the field that was found as forwards.
+        long start = address - (length / 2);
+        MemoryReadResult read = reader.Read(new IntPtr(start), length);
+        if (!read.Ok)
+        {
+            // The region may begin at the address itself; fall back to reading forward.
+            start = address;
+            read = reader.Read(new IntPtr(start), length);
+            if (!read.Ok)
+            {
+                Console.Error.WriteLine($"Read failed at 0x{address:X}: {read.FailureReason}");
+                return 1;
+            }
+        }
+
+        Console.WriteLine($"{length} bytes around 0x{address:X} in process {processId}:");
+        for (int i = 0; i + 4 <= read.Bytes.Length; i += 4)
+        {
+            long at = start + i;
+            int word = BitConverter.ToInt32(read.Bytes, i);
+            string marker = at == address ? "  <-- the address found" : string.Empty;
+            Console.WriteLine($"  0x{at:X}  {(at - address >= 0 ? "+" : "-")}{Math.Abs(at - address):D3}  {word,12}  0x{word:X8}{marker}");
+        }
+
+        return 0;
     }
 
     [SupportedOSPlatform("windows")]

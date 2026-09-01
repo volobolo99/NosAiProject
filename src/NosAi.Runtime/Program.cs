@@ -79,7 +79,8 @@ public static class Program
         // between invocations rather than living inside one run.
         int scanFlag = Array.FindIndex(args, a =>
             string.Equals(a, "--memory-scan", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(a, "--memory-narrow", StringComparison.OrdinalIgnoreCase));
+            string.Equals(a, "--memory-narrow", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(a, "--memory-dump", StringComparison.OrdinalIgnoreCase));
         if (scanFlag >= 0)
             return NosAi.LiveIntegration.MemoryScanProbe.Run(args, scanFlag);
 
@@ -186,7 +187,7 @@ public static class Program
 
     /// <summary>Probe flags, which live outside the suite table.</summary>
     private static readonly HashSet<string> KnownProbeFlags =
-        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow" };
+        new(StringComparer.OrdinalIgnoreCase) { "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump" };
 
     private static int RunDxgiProbe()
     {
