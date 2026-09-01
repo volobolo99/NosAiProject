@@ -205,6 +205,39 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
   legge lo snapshot reale, che però classifica il gameplay come non disponibile.
   Finché non c'è un provider, ogni ciclo termina `NoWorldState`.
 
+### Aggiornamento (1 set 2026): la scelta del bersaglio e la calibrazione
+
+Due cose che mancavano fra "c'è un bersaglio" e un clic mirato sono ora nel codice.
+
+**Quale bersaglio.** Il pianificatore sapeva *che* c'era un bersaglio e mai
+*quale*: ogni candidato costruito portava `ActionTarget.Entity.Unidentified` e
+l'effettore li rifiutava tutti con `target_entity_unresolved`. Il ciclo poteva
+attaccare un bersaglio selezionato da qualcun altro e non poteva selezionarne uno.
+`TargetSelector` sceglie l'entità più vicina fra quelle osservate e produce un
+`ActionTarget.Entity` con id e casella. I rifiuti sono nominati e distinti perché
+chiedono cose diverse: `no_entities_observed`, `no_entity_in_range:<d>_of_<r>_tiles`,
+`all_sightings_stale:<n>`, `all_observed_entities_dead:<n>`,
+`player_position_unknown:<perché>`. Vita ignota non è nessuno di questi: quasi
+tutti gli avvistamenti sono `mv`, che non portano vita, ed escluderli lascerebbe
+quasi nulla da mirare.
+
+**Dove cliccare.** La calibrazione adattava `schermo = A*coordinataMappa + C`, e
+non esiste: la telecamera segue il personaggio. Ora adatta
+`schermo = A*scostamento + ancora`, e `--screen-autocalibrate --arm-input` la
+produce da sola, cliccando pixel scelti dal runtime e leggendo dalla memoria quale
+casella il client ha risolto. Il file porta una versione, quindi una calibrazione
+del vecchio modello è rifiutata invece di essere reinterpretata in un clic
+sbagliato. Un ridimensionamento della finestra — o il passaggio a schermo intero
+— è rifiutato per nome, e basta rieseguire il comando.
+
+**Cosa resta.** `CalibratedScreenProjection` ha bisogno della casella su cui sta
+il personaggio, e dentro l'host quella sorgente non è ancora collegata: ogni clic
+è rifiutato con `player_position_source_not_wired`. La lettura esiste ed è stata
+confermata (T-11), ma vale come lettura solo se controllata contro l'id che il
+server ha mandato, e l'osservatore di rete che lo fornisce non è agganciato
+all'host. È il prossimo anello, ed è l'unico che separa la catena dal
+funzionare da un capo all'altro.
+
 Questi punti sono la vera distanza dall'operatività, e sono limiti dichiarati,
 non difetti nascosti. Il primo si è chiuso sul lato del codice: tastiera e mouse
 hanno entrambi un percorso completo fino al client. Quel che resta è **la
