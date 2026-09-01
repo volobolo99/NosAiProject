@@ -25,8 +25,19 @@ namespace NosAi.LiveIntegration.Capture;
 public sealed class WinDivertPacketSource : IPacketSource
 {
     private const short LayerNetwork = 0;
-    private const ulong FlagSniff = 0x0001;
-    private const ulong FlagRecvOnly = 0x0008;
+
+    // WinDivert 2.x flag values, from the header. They are internal rather than
+    // private so a test can hold them to those values without the driver: the
+    // capture layer read nothing at all for as long as it existed because
+    // FlagRecvOnly was 0x0008, which is SEND_ONLY. The handle opened cleanly, the
+    // filter was right, and every packet was unreachable through a write-only
+    // handle. Nothing caught it because everything below this class is exercised
+    // against synthetic sources and recorded files, where the driver never runs.
+    internal const ulong FlagSniff = 0x0001;
+    internal const ulong FlagDrop = 0x0002;
+    internal const ulong FlagRecvOnly = 0x0004;
+    internal const ulong FlagSendOnly = 0x0008;
+
     private const int ErrorNoData = 232;
 
     private readonly IntPtr _handle;
