@@ -241,3 +241,28 @@ docs/adr/                            i record decisionali
 Nessuna voce di questa tabella è `DONE` finché non ha la prova che la sua riga
 richiede. `CLAUDE.md` e ADR-0004 valgono qui come ovunque: l'esistenza del file
 non è mai la verifica.
+
+---
+
+## 7. Come si verifica l'avanzamento
+
+```powershell
+pwsh scripts/verifica-obiettivo.ps1          # controlli strutturali, pochi secondi
+pwsh scripts/verifica-obiettivo.ps1 -Test    # esegue anche build e test
+```
+
+Lo script cerca, per ogni scheda, l'artefatto che quella scheda aveva promesso:
+un file, un simbolo, un test con il nome concordato, o una stringa che doveva
+sparire. Stampa **fatto** o **aperto**, e per ogni scheda aperta dice cosa manca.
+
+**Quello che dice è deliberatamente meno di quanto si vorrebbe.** Un file che
+esiste non è una funzione che funziona, e nessuna ricerca di stringhe può dire se
+il personaggio si è mosso. Lo script non stampa mai `VERIFIED`: la distinzione fra
+`Present`, `Integrated`, `Done` e `Verified` è il modello di stato del progetto, e
+ADR-0004 vuole la prova reale prima dell'ultimo gradino.
+
+I criteri **A1–A8** della sezione 1 restano fuori dalla sua portata per
+costruzione. Si chiudono con il client acceso e si registrano in
+`docs/GATE1_CHECKLIST.md`, dove stanno le altre prove reali del progetto. Lo
+script li elenca in coda proprio per non lasciar credere che il conteggio delle
+schede sia l'obiettivo: le schede sono il mezzo, A1–A8 sono il risultato.

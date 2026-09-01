@@ -69,6 +69,31 @@ compensata a intuito.
 **C2 dipende da F1-1, che fa Claude.** Non iniziarla finché `EntitySighting` non
 porta una salute opzionale: la scheda lo dice e il codice non compilerebbe comunque.
 
+## Nomi di test vincolanti
+
+Ogni scheda si considera chiusa quando esiste **e passa** il test qui sotto.
+Il nome è vincolante alla lettera: `scripts/verifica-obiettivo.ps1` lo cerca per
+sapere se la scheda è stata fatta. Un test equivalente con un altro nome non
+chiude la scheda, perché nessuno saprebbe dire che è stato scritto.
+
+Il test scelto per ciascuna è quello che protegge l'invariante, non quello del
+caso facile: è il caso che sbaglia in silenzio se qualcuno prende una scorciatoia.
+
+| Scheda | Classe di test | Metodo di test vincolante |
+|---|---|---|
+| C1 | `TargetFrameReaderTests` | `NoiseIsUnreadableNotAbsent` |
+| C2 | *(file esistente del decoder)* | `MoveReportsPositionWithoutHealth` |
+| C3 | `KeybindMapTests` | `MissingFileIsRefusedNotEmpty` |
+| C4 | `NetworkWorldStateObserverTests` | `UnobservedProviderDoesNotBecomeZero` |
+| C5 | *(file esistente del decoder)* | `SkillReadyReportsSlot` |
+| C6 | *(file esistente del decoder)* | `CondReadsSpeedForPlayerOnly` |
+| C7 | *(file esistente del decoder)* | `StatCarriesMaxMp` |
+| C8 | *(file esistente del decoder)* | `LevRejectsXpAboveMax` |
+
+Questi sono il **minimo**, non l'elenco completo: ogni scheda chiede un test per
+criterio di accettazione, e quelli restano dovuti. Questo è solo quello che si
+può cercare da fuori.
+
 ---
 
 ## Prompt di avvio — da incollare in Cursor, una scheda per chat

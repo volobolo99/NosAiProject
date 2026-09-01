@@ -18,6 +18,27 @@ dotnet test  tests/NosAi.ControlPanel.Tests/NosAi.ControlPanel.Tests.csproj -c R
 
 Baseline all'apertura: **648** verdi nel runtime, **43** nel Control Panel.
 
+## Artefatti attesi — come si verifica da fuori
+
+`scripts/verifica-obiettivo.ps1` cerca questi nomi per sapere quali schede sono
+chiuse. Sono vincolanti alla lettera: un file equivalente con un altro nome
+lascia la scheda aperta agli occhi di chiunque non abbia seguito il lavoro.
+
+| Scheda | Artefatto cercato |
+|---|---|
+| F0-1 | `.cursorrules` **senza** «must not hook into the target process memory» e **senza** «tactical decision and simulation layers: Python» |
+| F1-1 | `double? HpRatio` in `GameTrafficObserver.cs` |
+| F1-8 | `docs/adr/ADR-0018-establishing-the-target.md` |
+| F1-10 | `src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs` |
+| F2-1 | **nessuna** occorrenza di `TARGET_MOB_01`, `WAYPOINT_A`, `ITEM_POTION_HP` in `src/` |
+| F2-3 | `src/NosAi.Runtime/Perception/ScreenProjection.cs` |
+| F3-1 | `src/NosAi.Runtime/Gate3/InputActionEffector.cs` |
+| F4-1b | `maxMp` in `GameplayObservation.ToWire()` |
+
+Lo script dice **presente** o **assente**, mai `VERIFIED`. Un file che esiste non
+è una funzione che funziona: è la distinzione su cui il modello di stato del
+progetto è costruito, e ADR-0004 la richiede.
+
 ---
 
 ## F0-1 — Allineare `.cursorrules` ad ADR-0014 e al C# reale
