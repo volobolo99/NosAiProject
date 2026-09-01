@@ -284,21 +284,22 @@ public sealed class GuardAiClient : IAsyncDisposable
             throw new GuardProtocolException("cipher_unavailable", type.ToString());
 
         var sequence = _egress.Next;
-        byte[] packet;
+        int frameLength = handshake ? WireHeader.HeaderSize + payload.Length : SessionCipher.FrameLength(payload.Length);
+        using var frame = PooledWireBuffer.Rent(frameLength);
+
         if (handshake)
         {
-            packet = new byte[WireHeader.HeaderSize + payload.Length];
-            new WireHeader(type, (ushort)payload.Length, sequence).WriteTo(packet);
-            payload.Span.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+            new WireHeader(type, (ushort)payload.Length, sequence).WriteTo(frame.Span);
+            payload.Span.CopyTo(frame.Span[WireHeader.HeaderSize..]);
         }
         else
         {
-            packet = cipher!.SealFrame(type, sequence, payload.Span);
+            cipher!.SealFrameInto(frame.Span, type, sequence, payload.Span);
         }
 
         try
         {
-            await stream.WriteAsync(packet, cancellationToken).ConfigureAwait(false);
+            await stream.WriteAsync(frame.Memory, cancellationToken).ConfigureAwait(false);
             await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (IOException ex)
@@ -321,26 +322,33 @@ public sealed class GuardAiClient : IAsyncDisposable
 
     private async Task<(WireMessageType Type, byte[] Payload)> ReceiveAsync(CancellationToken cancellationToken)
     {
-        var headerBytes = new byte[WireHeader.HeaderSize];
-        await ReadExactlyAsync(headerBytes, cancellationToken).ConfigureAwait(false);
-        if (!WireHeader.TryRead(headerBytes, out var header, out var error))
+        using var headerBuffer = PooledWireBuffer.Rent(WireHeader.HeaderSize);
+        await ReadExactlyAsync(headerBuffer.Memory, cancellationToken).ConfigureAwait(false);
+        if (!WireHeader.TryRead(headerBuffer.Span, out var header, out var error))
             throw new GuardProtocolException("invalid_header", error);
 
         if (!_ingress.ValidateAndAdvance(header.SequenceNumber, out var sequenceError))
             throw new GuardProtocolException("sequence_violation", sequenceError);
 
-        var payload = new byte[header.PayloadLength];
-        if (payload.Length > 0)
-            await ReadExactlyAsync(payload, cancellationToken).ConfigureAwait(false);
+        using var payloadBuffer = PooledWireBuffer.Rent(header.PayloadLength);
+        if (header.PayloadLength > 0)
+            await ReadExactlyAsync(payloadBuffer.Memory, cancellationToken).ConfigureAwait(false);
 
         // ADR-0009: past the handshake nothing is readable. A frame that arrives in
         // clear, or that fails its tag, is refused rather than interpreted.
+        byte[] payload;
         if (!WireMessageTypes.IsHandshake(header.MessageType))
         {
             var cipher = _cipher ?? throw new GuardProtocolException("plaintext_after_handshake", header.MessageType.ToString());
-            if (!cipher.TryOpenFrame(headerBytes, payload, out var opened, out var openError))
+            if (!cipher.TryOpenFrame(headerBuffer.Span, payloadBuffer.Span, out var opened, out var openError))
                 throw new GuardProtocolException("decrypt_failed", openError);
             payload = opened;
+        }
+        else
+        {
+            // Handshake payloads are small and rare; the owned copy hands off to
+            // the caller while the rented buffer above returns to the pool here.
+            payload = payloadBuffer.Span.ToArray();
         }
 
         return (header.MessageType, payload);

@@ -563,26 +563,38 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         {
             while (!token.IsCancellationRequested && connection.IsAlive)
             {
-                var headerBytes = new byte[WireHeader.HeaderSize];
-                await ReadExactlyAsync(connection.Stream, headerBytes, token).ConfigureAwait(false);
-                if (!WireHeader.TryRead(headerBytes, out var header, out var error)) { Drop(connection, $"invalid_header:{error}"); return; }
+                // Rented per iteration, not held across it: each pass through the
+                // loop reads exactly one frame, so the pool sees a bounded number
+                // of buffers outstanding rather than one per frame ever received.
+                using var headerBuffer = PooledWireBuffer.Rent(WireHeader.HeaderSize);
+                await ReadExactlyAsync(connection.Stream, headerBuffer.Memory, token).ConfigureAwait(false);
+                if (!WireHeader.TryRead(headerBuffer.Span, out var header, out var error)) { Drop(connection, $"invalid_header:{error}"); return; }
                 if (!connection.Ingress.ValidateAndAdvance(header.SequenceNumber, out var sequenceError)) { Drop(connection, $"sequence_violation:{sequenceError}"); return; }
-                var payload = new byte[header.PayloadLength];
-                if (payload.Length > 0) await ReadExactlyAsync(connection.Stream, payload, token).ConfigureAwait(false);
+
+                using var payloadBuffer = PooledWireBuffer.Rent(header.PayloadLength);
+                if (header.PayloadLength > 0) await ReadExactlyAsync(connection.Stream, payloadBuffer.Memory, token).ConfigureAwait(false);
 
                 // ADR-0009: only the handshake is readable. Anything else must be
                 // sealed under this session's keys, and a frame that will not open
                 // ends the session rather than being interpreted.
+                byte[] payload;
                 if (!WireMessageTypes.IsHandshake(header.MessageType))
                 {
                     var cipher = connection.Cipher;
                     if (cipher is null) { Drop(connection, $"plaintext_after_handshake:{header.MessageType}"); return; }
-                    if (!cipher.TryOpenFrame(headerBytes, payload, out var opened, out var openError))
+                    if (!cipher.TryOpenFrame(headerBuffer.Span, payloadBuffer.Span, out var opened, out var openError))
                     {
                         Drop(connection, $"decrypt_failed:{openError}");
                         return;
                     }
                     payload = opened;
+                }
+                else
+                {
+                    // Handshake payloads are small and rare; the owned copy hands
+                    // off to HandleMessageAsync while the rented buffer above still
+                    // returns to the pool at the end of this iteration.
+                    payload = payloadBuffer.Span.ToArray();
                 }
 
                 await HandleMessageAsync(connection, header.MessageType, payload, token).ConfigureAwait(false);
@@ -744,19 +756,20 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         try
         {
             var sequence = connection.Egress.Next;
-            byte[] packet;
+            int frameLength = handshake ? WireHeader.HeaderSize + payload.Length : SessionCipher.FrameLength(payload.Length);
+            using var frame = PooledWireBuffer.Rent(frameLength);
+
             if (handshake)
             {
-                packet = new byte[WireHeader.HeaderSize + payload.Length];
-                new WireHeader(type, checked((ushort)payload.Length), sequence).WriteTo(packet);
-                payload.CopyTo(packet.AsSpan(WireHeader.HeaderSize));
+                new WireHeader(type, checked((ushort)payload.Length), sequence).WriteTo(frame.Span);
+                payload.CopyTo(frame.Span[WireHeader.HeaderSize..]);
             }
             else
             {
-                packet = cipher!.SealFrame(type, sequence, payload);
+                cipher!.SealFrameInto(frame.Span, type, sequence, payload);
             }
 
-            await connection.Stream.WriteAsync(packet, token).ConfigureAwait(false);
+            await connection.Stream.WriteAsync(frame.Memory, token).ConfigureAwait(false);
             await connection.Stream.FlushAsync(token).ConfigureAwait(false);
             if (!connection.Egress.ValidateAndAdvance(sequence, out _)) Drop(connection, "egress_sequence_failure");
         }
@@ -838,12 +851,12 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
         await Task.CompletedTask;
     }
 
-    private static async Task ReadExactlyAsync(NetworkStream stream, byte[] buffer, CancellationToken token)
+    private static async Task ReadExactlyAsync(NetworkStream stream, Memory<byte> buffer, CancellationToken token)
     {
         var offset = 0;
         while (offset < buffer.Length)
         {
-            var read = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), token).ConfigureAwait(false);
+            var read = await stream.ReadAsync(buffer[offset..], token).ConfigureAwait(false);
             if (read == 0) throw new EndOfStreamException();
             offset += read;
         }

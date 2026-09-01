@@ -273,4 +273,123 @@ public sealed class SessionCipherTests
         Assert.Throws<InvalidDataException>(() =>
             phone.SealFrame(WireMessageType.TelemetrySnapshot, 1, new byte[SessionCipher.MaxPlaintextLength + 1]));
     }
+
+    [Fact]
+    public void FrameLengthAccountsForHeaderNonceAndTag()
+    {
+        Assert.Equal(
+            WireHeader.HeaderSize + SessionCipher.Overhead + GoldenPlaintext.Length,
+            SessionCipher.FrameLength(GoldenPlaintext.Length));
+    }
+
+    [Fact]
+    public void SealFrameIntoProducesTheSameBytesAsTheAllocatingSealFrame()
+    {
+        // Two fresh ciphers over the same fixed material and the same sequence:
+        // both start their nonce counter at zero, so the two APIs must agree byte
+        // for byte instead of merely "close enough".
+        using var viaAllocatingApi = SessionCipher.ForPhone(Material());
+        byte[] allocated = viaAllocatingApi.SealFrame(WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        using var viaPooledApi = SessionCipher.ForPhone(Material());
+        Span<byte> destination = new byte[SessionCipher.FrameLength(GoldenPlaintext.Length)];
+        viaPooledApi.SealFrameInto(destination, WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        Assert.Equal(allocated, destination.ToArray());
+    }
+
+    [Fact]
+    public void SealFrameIntoWritesOnlyItsOwnSliceOfALargerPooledStyleBuffer()
+    {
+        // ArrayPool<T>.Rent can hand back a buffer larger than requested. The
+        // pooled send path relies on SealFrameInto never touching bytes past the
+        // frame it was asked to write.
+        using var phone = SessionCipher.ForPhone(Material());
+        int frameLength = SessionCipher.FrameLength(GoldenPlaintext.Length);
+        byte[] oversized = new byte[frameLength + 64];
+        Array.Fill(oversized, (byte)0xCC);
+
+        phone.SealFrameInto(oversized, WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        Assert.Equal(GoldenHeader, Convert.ToHexString(oversized.AsSpan(0, WireHeader.HeaderSize)));
+        foreach (byte trailing in oversized.AsSpan(frameLength))
+            Assert.Equal(0xCC, trailing);
+    }
+
+    [Fact]
+    public void SealFrameIntoRefusesADestinationSmallerThanTheFrame()
+    {
+        using var phone = SessionCipher.ForPhone(Material());
+        byte[] tooSmall = new byte[SessionCipher.FrameLength(GoldenPlaintext.Length) - 1];
+
+        Assert.Throws<ArgumentException>(() =>
+            phone.SealFrameInto(tooSmall, WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext));
+    }
+
+    [Fact]
+    public void SealFrameIntoZeroesTheNonceItselfInsteadOfTrustingAPreCleanedBuffer()
+    {
+        // ArrayPool<byte>.Shared is process-wide and shared with code that has no
+        // idea this channel exists -- System.Text.Json's own scratch buffers rent
+        // from it and are not cleared on return. A destination buffer with
+        // leftover nonzero bytes at the four positions this method never writes
+        // is exactly what a neighbour like that leaves behind, and it must not
+        // produce a frame the receiver refuses as "out of order".
+        using var phone = SessionCipher.ForPhone(Material());
+        using var runtime = SessionCipher.ForRuntime(Material());
+
+        byte[] dirty = new byte[SessionCipher.FrameLength(GoldenPlaintext.Length)];
+        Array.Fill(dirty, (byte)0xFF);
+
+        phone.SealFrameInto(dirty, WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        Assert.True(runtime.TryOpenFrame(
+            dirty.AsSpan(0, WireHeader.HeaderSize),
+            dirty.AsSpan(WireHeader.HeaderSize),
+            out byte[] plaintext,
+            out string? reason));
+        Assert.Null(reason);
+        Assert.Equal(GoldenPlaintext, plaintext);
+    }
+
+    [Fact]
+    public void ManyFramesSealedIntoPooledBuffersOfVaryingSizesAllOpen()
+    {
+        using var phone = SessionCipher.ForPhone(Material());
+        using var runtime = SessionCipher.ForRuntime(Material());
+
+        var sizes = new[] { 0, 0, 650, 0, 651, 0, 649, 0, 652 };
+        for (int i = 0; i < sizes.Length; i++)
+        {
+            byte[] plaintext = new byte[sizes[i]];
+            new Random(i).NextBytes(plaintext);
+
+            using var frame = PooledWireBuffer.Rent(SessionCipher.FrameLength(plaintext.Length));
+            phone.SealFrameInto(frame.Span, WireMessageType.TelemetrySnapshot, (uint)(i + 1), plaintext);
+
+            using var headerCopy = PooledWireBuffer.Rent(WireHeader.HeaderSize);
+            frame.Span[..WireHeader.HeaderSize].CopyTo(headerCopy.Span);
+            using var payloadCopy = PooledWireBuffer.Rent(frame.Length - WireHeader.HeaderSize);
+            frame.Span[WireHeader.HeaderSize..].CopyTo(payloadCopy.Span);
+
+            bool ok = runtime.TryOpenFrame(headerCopy.Span, payloadCopy.Span, out byte[] opened, out string? reason);
+            Assert.True(ok, $"iteration {i} size {sizes[i]} failed: {reason}");
+            Assert.Equal(plaintext, opened);
+        }
+    }
+
+    [Fact]
+    public void AFrameSealedIntoAPooledBufferOpensIdenticallyToOneFromSealFrame()
+    {
+        using var phone = SessionCipher.ForPhone(Material());
+        using var runtime = SessionCipher.ForRuntime(Material());
+
+        using var frame = PooledWireBuffer.Rent(SessionCipher.FrameLength(GoldenPlaintext.Length));
+        phone.SealFrameInto(frame.Span, WireMessageType.TelemetrySnapshot, 7, GoldenPlaintext);
+
+        Assert.True(runtime.TryOpenFrame(
+            frame.Span[..WireHeader.HeaderSize], frame.Span[WireHeader.HeaderSize..], out byte[] plaintext, out string? reason));
+        Assert.Null(reason);
+        Assert.Equal(GoldenPlaintext, plaintext);
+    }
 }

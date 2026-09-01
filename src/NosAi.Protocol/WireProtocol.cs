@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 
 namespace NosAi.Runtime.Gate1;
@@ -101,6 +102,83 @@ public readonly record struct WireHeader(WireMessageType MessageType, ushort Pay
         if (source[4] != CurrentVersion) { error = "unsupported_version"; return false; }
         header = new WireHeader((WireMessageType)source[5], BinaryPrimitives.ReadUInt16BigEndian(source[6..8]), BinaryPrimitives.ReadUInt32BigEndian(source[8..12]));
         return true;
+    }
+}
+
+/// <summary>
+/// Borrows a byte[] from <see cref="ArrayPool{T}.Shared"/> sized to exactly one
+/// wire read or write — a header, a payload, or a whole frame — so the
+/// per-frame read/write loop in <c>GuardAiNetworkChannel</c> and
+/// <c>GuardAiClient</c> stops allocating a fresh array for every single frame.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="ArrayPool{T}"/> hands back an array that can be larger than
+/// requested — that is how its size buckets work — so <see cref="Span"/> and
+/// <see cref="Memory"/> are both clamped to <see cref="Length"/>; the slack past
+/// it is never exposed to a caller and never reaches the wire.
+/// </para>
+/// <para>
+/// Frames on this channel carry handshake bytes and, until it authenticates,
+/// encrypted session bytes (ADR-0009). The array is zeroed on return instead of
+/// handed back to the pool holding a previous frame's bytes for whoever rents
+/// that slot next.
+/// </para>
+/// <para>
+/// Not thread-safe and not reentrant: one instance guards one rented array, used
+/// with <c>using</c> for exactly the lifetime of one frame.
+/// </para>
+/// </remarks>
+public sealed class PooledWireBuffer : IDisposable
+{
+    private byte[] _array;
+    private bool _disposed;
+
+    /// <summary>The usable length; the underlying rented array may be larger.</summary>
+    public int Length { get; }
+
+    private PooledWireBuffer(byte[] array, int length)
+    {
+        _array = array;
+        Length = length;
+    }
+
+    /// <summary>Rents a buffer whose usable prefix is exactly <paramref name="length"/> bytes.</summary>
+    public static PooledWireBuffer Rent(int length)
+    {
+        if (length < 0) throw new ArgumentOutOfRangeException(nameof(length));
+        // Zero-length frames happen on this channel (HeartbeatAck carries no
+        // payload): renting a zero-byte array from the shared pool would only
+        // add bookkeeping for nothing to hold.
+        return length == 0
+            ? new PooledWireBuffer(Array.Empty<byte>(), 0)
+            : new PooledWireBuffer(ArrayPool<byte>.Shared.Rent(length), length);
+    }
+
+    public Span<byte> Span
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _array.AsSpan(0, Length);
+        }
+    }
+
+    public Memory<byte> Memory
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _array.AsMemory(0, Length);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        if (Length > 0) ArrayPool<byte>.Shared.Return(_array, clearArray: true);
+        _array = Array.Empty<byte>();
     }
 }
 

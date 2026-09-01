@@ -237,23 +237,43 @@ public sealed class SessionCipher : IDisposable
                 nameof(material));
     }
 
+    /// <summary>Total frame size a sealed payload of this length produces: header, nonce, ciphertext, tag.</summary>
+    public static int FrameLength(int plaintextLength) => WireHeader.HeaderSize + Overhead + plaintextLength;
+
     /// <summary>
-    /// Builds one complete encrypted frame: header in clear, payload sealed under it.
+    /// Builds one complete encrypted frame directly into a caller-owned buffer:
+    /// header in clear, payload sealed under it.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The header is written here rather than taken from the caller so the
     /// associated data is guaranteed to be the very bytes that go on the wire.
     /// A frame authenticated against a header it was not sent with would be a
     /// silent hole.
+    /// </para>
+    /// <para>
+    /// This is the primitive the pooled send path uses: renting a buffer per
+    /// send only pays off if sealing can write into it directly instead of
+    /// allocating its own array, so <see cref="SealFrame"/> below is now a thin
+    /// wrapper over this rather than the other way round.
+    /// </para>
     /// </remarks>
-    public byte[] SealFrame(WireMessageType type, uint sequence, ReadOnlySpan<byte> plaintext)
+    /// <param name="destination">
+    /// Must be at least <see cref="FrameLength(int)"/> bytes for
+    /// <paramref name="plaintext"/>'s length; anything past that is left
+    /// untouched, so a pooled buffer larger than the frame is safe to pass.
+    /// </param>
+    public void SealFrameInto(Span<byte> destination, WireMessageType type, uint sequence, ReadOnlySpan<byte> plaintext)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (plaintext.Length > MaxPlaintextLength)
             throw new InvalidDataException($"payload_too_large:{plaintext.Length}");
 
-        var frame = new byte[WireHeader.HeaderSize + Overhead + plaintext.Length];
-        var header = frame.AsSpan(0, WireHeader.HeaderSize);
+        int frameLength = FrameLength(plaintext.Length);
+        if (destination.Length < frameLength)
+            throw new ArgumentException("Destination buffer is smaller than the sealed frame.", nameof(destination));
+
+        var header = destination[..WireHeader.HeaderSize];
         new WireHeader(type, checked((ushort)(Overhead + plaintext.Length)), sequence).WriteTo(header);
 
         lock (_sync)
@@ -261,15 +281,37 @@ public sealed class SessionCipher : IDisposable
             if (_sendCounter == ulong.MaxValue)
                 throw new InvalidOperationException("nonce_space_exhausted");
 
-            var nonce = frame.AsSpan(WireHeader.HeaderSize, NonceLength);
+            var nonce = destination.Slice(WireHeader.HeaderSize, NonceLength);
+            // The leading bytes are never written by the counter below, so they
+            // must be zeroed explicitly rather than assumed. That assumption held
+            // for a freshly allocated array (SealFrame's original shape) but not
+            // for a caller-supplied buffer: one rented from ArrayPool<byte>.Shared
+            // can carry bytes another, unrelated renter left behind -- the BCL's
+            // own JsonSerializer scratch buffers are one such neighbour, and they
+            // are not cleared on return.
+            nonce[..CounterOffset].Clear();
             BinaryPrimitives.WriteUInt64BigEndian(nonce[CounterOffset..], _sendCounter);
-            var ciphertext = frame.AsSpan(WireHeader.HeaderSize + NonceLength, plaintext.Length);
-            var tag = frame.AsSpan(WireHeader.HeaderSize + NonceLength + plaintext.Length, TagLength);
+            var ciphertext = destination.Slice(WireHeader.HeaderSize + NonceLength, plaintext.Length);
+            var tag = destination.Slice(WireHeader.HeaderSize + NonceLength + plaintext.Length, TagLength);
 
             _send.Encrypt(nonce, plaintext, ciphertext, tag, header);
             _sendCounter++;
         }
+    }
 
+    /// <summary>
+    /// Builds one complete encrypted frame: header in clear, payload sealed under it.
+    /// </summary>
+    /// <remarks>
+    /// Allocates a fresh array and delegates to <see cref="SealFrameInto"/>. Kept
+    /// for callers that want an owned array back (tests pin golden vectors
+    /// against exactly this shape); the hot send path uses
+    /// <see cref="SealFrameInto"/> directly against a pooled buffer instead.
+    /// </remarks>
+    public byte[] SealFrame(WireMessageType type, uint sequence, ReadOnlySpan<byte> plaintext)
+    {
+        var frame = new byte[FrameLength(plaintext.Length)];
+        SealFrameInto(frame, type, sequence, plaintext);
         return frame;
     }
 

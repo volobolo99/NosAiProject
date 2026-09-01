@@ -101,6 +101,38 @@ public sealed class GuardAiClientTests
     }
 
     [Fact]
+    public async Task ManyRapidHeartbeatsSurviveThePooledReadWriteAdapterWithoutCorruption()
+    {
+        // Exercises the ArrayPool-backed frame buffers on both ends (Gate1Runtime.cs
+        // server side, GuardAiClient.cs phone side) at a much higher frame rate
+        // than one heartbeat every two seconds. A buffer returned to the pool
+        // while still referenced, or two rentals aliasing the same array, would
+        // show up here as a corrupted sequence number or a snapshot that fails to
+        // parse -- not as a slow leak a three-exchange test would never reach.
+        await using var channel = StartChannel();
+        using var cts = Deadline();
+
+        await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey, channel.Auth.RuntimePublicKeyPem);
+        await client.ConnectAsync(cts.Token);
+        await client.OpenSessionAsync(cts.Token);
+
+        for (var i = 0; i < 200; i++)
+        {
+            try
+            {
+                using var snapshot = JsonDocument.Parse(await client.HeartbeatAsync(cts.Token));
+                Assert.Equal(
+                    Gate1SnapshotContract.Version,
+                    snapshot.RootElement.GetProperty("contractVersion").GetString());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"failed at iteration {i}: {ex.Message}", ex);
+            }
+        }
+    }
+
+    [Fact]
     public async Task UntrustedKeyIsRefusedFailClosed()
     {
         await using var channel = StartChannel();
