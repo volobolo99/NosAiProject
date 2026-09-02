@@ -40,9 +40,23 @@ public sealed class NetworkWorldFeed : IPlayerAttackObserver
     private readonly List<Action<NetworkObservationReport>> _subscribers = new();
     private NetworkObservationReport? _latest;
     private DateTime? _lastPlayerAttackAtUtc;
+    private long? _playerEntityId;
 
     /// <summary>The most recent report, or null before the first poll.</summary>
     public NetworkObservationReport? Latest => _latest;
+
+    /// <summary>
+    /// The controlled character's own entity id, once any batch has carried the
+    /// <c>cond</c> that names it. Null until then, never guessed.
+    /// </summary>
+    /// <remarks>
+    /// Kept across polls because <c>cond</c> arrives once and the id does not
+    /// change within a session. This is the value a memory reader checks its
+    /// own character id against (<c>MemoryGameplayProvider</c>'s identity
+    /// check): two independent sources agreeing on one number is what turns a
+    /// pointer chain's coordinate into a position.
+    /// </remarks>
+    public long? PlayerEntityId => _playerEntityId;
 
     /// <inheritdoc />
     /// <remarks>
@@ -75,6 +89,7 @@ public sealed class NetworkWorldFeed : IPlayerAttackObserver
         {
             _lastPlayerAttackAtUtc = attackedAt;
         }
+        _playerEntityId ??= report.PlayerEntityId;
         foreach (Action<NetworkObservationReport> subscriber in _subscribers)
         {
             // One faulty consumer must not stop the others from being fed.

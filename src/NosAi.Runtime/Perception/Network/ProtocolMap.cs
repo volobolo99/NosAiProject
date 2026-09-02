@@ -280,16 +280,21 @@ public sealed class ConfigurableProtocolDecoder : IGamePacketDecoder
         // A map that does not name the health field yields a sighting without
         // health, not one at full health: 1.0 was the placeholder this local
         // needed to exist, never a reading.
+        // A mapped message states position and health together, so both halves
+        // carry the packet's own instant — when the caller knew it. Null stays
+        // null: a consumer that needs an age must not be handed the poll's clock.
         var sightings = ImmutableArray<EntitySighting>.Empty;
         if (spec.Kind is GameEventKind.EntitySighting or GameEventKind.CombatHit)
             sightings = ImmutableArray.Create(
-                new EntitySighting(entityId, spec.EntityKind, x, y, hpKnown ? hpRatio : null, source));
+                new EntitySighting(
+                    entityId, spec.EntityKind, x, y, hpKnown ? hpRatio : null, source,
+                    capturedUtc, hpKnown ? capturedUtc : null));
 
         var events = ImmutableArray<GameEvent>.Empty;
         if (spec.Kind is not GameEventKind.EntitySighting)
         {
             string descriptor = spec.Description ?? (hpKnown ? $"hp={hpRatio:0.00}" : spec.Kind.ToString());
-            events = ImmutableArray.Create(new GameEvent(spec.Kind, entityId, descriptor, source));
+            events = ImmutableArray.Create(new GameEvent(spec.Kind, entityId, descriptor, source, capturedUtc));
         }
 
         return new DecodedObservations(sightings, events);

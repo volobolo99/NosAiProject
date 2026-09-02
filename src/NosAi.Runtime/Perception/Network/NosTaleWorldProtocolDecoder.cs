@@ -18,18 +18,37 @@ namespace NosAi.Runtime.Perception.Network;
 /// out to be needed is a new capture, not a guess from its neighbours.
 /// </para>
 /// <para>
-/// Framing has already been verified by the time a packet arrives here, so a
-/// reading taken wholly from one packet keeps that packet's provenance — LIVE
-/// bytes that framed stay LIVE, a replay stays CACHED. There is no reconstructed
-/// binary map to weaken the claim.
+/// Eleven opcodes are read. Seven carry the world: <c>stat</c>, <c>st</c>,
+/// <c>in</c>, <c>mv</c>, <c>die</c>, <c>su</c>, <c>cond</c>. Four carry the
+/// facts a post-condition needs (C1-3): <c>sr</c>, <c>ivn</c>, <c>get</c>,
+/// <c>drop</c>. Those four are marked <i>probable</i> in the catalogue, and the
+/// discipline for a probable reading is the one <c>in</c> and <c>st</c> already
+/// follow for their probable fields: the reading keeps the packet's provenance
+/// — LIVE bytes that framed stay LIVE — because provenance says where the bytes
+/// came from and that their framing was verified (ADR-0014), while the guard
+/// against a misread is the shape check. A packet with fewer fields than the
+/// observed shape, or a field outside what that field can plausibly hold, is
+/// not the packet the catalogue describes and is not read at all, on the same
+/// principle by which <see cref="VitalsArePlausible"/> refuses a <c>stat</c>
+/// whose HP exceeds its maximum. What is refused produces nothing; nothing is
+/// ever clamped or defaulted into a value.
 /// </para>
 /// <para>
-/// Entity sightings are the exception, and deliberately. Only <c>in</c> carries a
-/// position and a health together; <c>mv</c> has position without health and
-/// <c>st</c> health without position, so the sighting each of them produces is
-/// half fresh and half remembered. Those are published CACHED — really observed,
-/// no longer current — because a stale HP wearing a LIVE label is precisely what
-/// the classification is for.
+/// Framing has already been verified by the time a packet arrives here, so a
+/// reading taken wholly from one packet keeps that packet's provenance and
+/// carries that packet's capture time. There is no reconstructed binary map to
+/// weaken the claim, and there is no clock of this class's own: every instant
+/// on an observation is the instant the packet crossed the wire.
+/// </para>
+/// <para>
+/// Entity sightings are the exception on provenance, and deliberately. Only
+/// <c>in</c> carries a position and a health together; <c>mv</c> has position
+/// without health and <c>st</c> health without position, so the sighting each
+/// of them produces is half fresh and half remembered. Those are published
+/// CACHED — really observed, no longer current — because a stale HP wearing a
+/// LIVE label is precisely what the classification is for. Each half also keeps
+/// the instant of the packet that stated it, so a consumer can measure what
+/// CACHED cost rather than only be told it.
 /// </para>
 /// <para>
 /// HasTarget and InCombat are not established on any packet this class reads,
@@ -87,15 +106,20 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
 
         DataSourceKind source = packet.Source;
+        DateTime at = packet.CapturedUtc;
         return fields[0] switch
         {
-            "stat" => DecodeStat(fields, source, packet.CapturedUtc),
-            "st" => DecodeOtherVitals(fields, source),
-            "in" => DecodeEnter(fields, source),
-            "mv" => DecodeMove(fields, source),
-            "die" => DecodeDeath(fields, source),
-            "su" => DecodeHit(fields, source, packet.CapturedUtc),
+            "stat" => DecodeStat(fields, source, at),
+            "st" => DecodeOtherVitals(fields, source, at),
+            "in" => DecodeEnter(fields, source, at),
+            "mv" => DecodeMove(fields, source, at),
+            "die" => DecodeDeath(fields, source, at),
+            "su" => DecodeHit(fields, source, at),
             "cond" => DecodeCondition(fields),
+            "sr" => DecodeSkillReady(fields, source, at),
+            "ivn" => DecodeInventorySlot(fields, source, at),
+            "get" => DecodePickup(fields, source, at),
+            "drop" => DecodeGroundItem(fields, source, at),
             _ => DecodedObservations.Empty,
         };
     }
@@ -128,7 +152,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// vitals. Absolute HP and max HP (fields 7 and 9) are used; the percentage
     /// at field 5 disagrees with those values across the capture and is ignored.
     /// </summary>
-    private DecodedObservations DecodeOtherVitals(string[] fields, DataSourceKind source)
+    private DecodedObservations DecodeOtherVitals(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 10 || !IsReadableEntity(fields[1]))
             return DecodedObservations.Empty;
@@ -141,20 +165,23 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
         double hpRatio = (double)hp / maxHp;
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
-        _entities[entityId] = previous with { HpRatio = hpRatio, HasHp = true };
+        _entities[entityId] = previous with { HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc };
 
         if (!previous.HasPosition)
             return DecodedObservations.Empty;
 
-        // Fresh health, and a position from whichever packet last carried one.
-        return Sighting(entityId, previous.X, previous.Y, hpRatio, Stale(source));
+        // Fresh health, and a position from whichever packet last carried one —
+        // stamped with that packet's instant, not this one's.
+        return Sighting(
+            entityId, previous.X, previous.Y, hpRatio, Stale(source),
+            positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc);
     }
 
     /// <summary>
     /// <c>in type vnum id x y dir hp% mp% …</c> — an entity enters view.
     /// The tail after mp% is unknown and is not read.
     /// </summary>
-    private DecodedObservations DecodeEnter(string[] fields, DataSourceKind source)
+    private DecodedObservations DecodeEnter(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 9 || !IsReadableEntity(fields[1]))
             return DecodedObservations.Empty;
@@ -167,10 +194,12 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
 
         double hpRatio = hpPercent / 100.0;
-        _entities[entityId] = new TrackedEntity(x, y, hpRatio, HasHp: true, HasPosition: true);
+        _entities[entityId] = new TrackedEntity(
+            x, y, hpRatio, HasHp: true, HasPosition: true,
+            PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc);
         // Position and health both come from this packet, so nothing stale is
-        // mixed in and the sighting keeps the packet's own provenance.
-        return Sighting(entityId, x, y, hpRatio, source);
+        // mixed in and the sighting keeps the packet's own provenance and time.
+        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc);
     }
 
     /// <summary>
@@ -180,7 +209,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// still a sighting: it says where, and says nothing about how healthy,
     /// rather than inventing full health or being dropped.
     /// </summary>
-    private DecodedObservations DecodeMove(string[] fields, DataSourceKind source)
+    private DecodedObservations DecodeMove(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 5 || !IsReadableEntity(fields[1]))
             return DecodedObservations.Empty;
@@ -190,18 +219,19 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
 
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
-        _entities[entityId] = previous with { X = x, Y = y, HasPosition = true };
+        _entities[entityId] = previous with { X = x, Y = y, HasPosition = true, PositionAtUtc = capturedUtc };
 
         // With health from an earlier packet the position is fresh and the health
-        // is not, so the sighting is marked stale. With no health at all there is
-        // nothing stale mixed in, and the packet keeps its own provenance.
+        // is not, so the sighting is marked stale and the health keeps the older
+        // instant. With no health at all there is nothing stale mixed in, and the
+        // packet keeps its own provenance.
         return previous.HasHp
-            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source))
-            : Sighting(entityId, x, y, null, source);
+            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc)
+            : Sighting(entityId, x, y, null, source, capturedUtc, null);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
-    private DecodedObservations DecodeDeath(string[] fields, DataSourceKind source)
+    private DecodedObservations DecodeDeath(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
         if (fields.Length < 3 || !TryLong(fields[2], out long entityId))
             return DecodedObservations.Empty;
@@ -209,7 +239,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         _entities.Remove(entityId);
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
-            ImmutableArray.Create(new GameEvent(GameEventKind.EntityDeath, entityId, "die", source)));
+            ImmutableArray.Create(new GameEvent(GameEventKind.EntityDeath, entityId, "die", source, capturedUtc)));
     }
 
     /// <summary>
@@ -218,12 +248,22 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// never carry MP, so this packet is the hit event and not a vitals source.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The attacker type separates the packet's two shapes: type
     /// <see cref="PlayerEntityType"/> is the player-attacks shape, type 3 the
     /// monster-attacks one (docs/PROTOCOLLO_NOSTALE.md). A player-attacks hit
     /// carries its capture time out as the wire's contribution to
     /// <c>HasTarget</c> — it contradicts a screen that saw no target frame, and it
     /// never establishes the fact on its own (ADR-0018).
+    /// </para>
+    /// <para>
+    /// The other direction is C1-2: a hit whose target is <i>this</i> character
+    /// names its aggressor. That needs the own id, and the two directions are
+    /// gated differently on purpose. The contradiction may run on the type alone
+    /// because its false positive is UNKNOWN, a fact the planner skips. The
+    /// aggressor may not, because its false positive would be a counter-attack
+    /// aimed at whoever a stranger nearby happened to be fighting.
+    /// </para>
     /// </remarks>
     private DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
@@ -231,7 +271,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             || !TryLong(fields[4], out long targetId)
             || !TryInt(fields[1], out int attackerType)
             || !TryLong(fields[2], out long attackerId)
-            || !TryInt(fields[3], out _))
+            || !TryInt(fields[3], out int targetType))
             return DecodedObservations.Empty;
 
         // Type 1 alone says "a player attacked", not "this character attacked".
@@ -243,11 +283,22 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             ? attackerId == own
             : attackerType == PlayerEntityType;
 
+        // The aggressor is published only when the target is known to be this
+        // character: own id known, and both the id and the confirmed type agree.
+        // A target of type 1 with an unknown own id is "a player was hit", which
+        // does not name anybody this character has a reason to attack.
+        PlayerHit? hit = _playerEntityId is { } self
+            && targetType == PlayerEntityType
+            && targetId == self
+                ? new PlayerHit(new Aggressor(attackerId, attackerType), capturedUtc, source)
+                : null;
+
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
-            ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source)),
+            ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source, capturedUtc)),
             Vitals: null,
-            PlayerAttackedAtUtc: playerAttacked ? capturedUtc : null);
+            PlayerAttackedAtUtc: playerAttacked ? capturedUtc : null,
+            PlayerHit: hit);
     }
 
     /// <summary>
@@ -279,10 +330,158 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             PlayerEntityId: entityId);
     }
 
+    // ------------------------------------------------------------------ C1-3
+
+    /// <summary>
+    /// <c>sr slot</c> — a skill slot came off cooldown. Observed as <c>sr 0</c>,
+    /// <c>sr 2</c>, <c>sr 6</c>; probable.
+    /// </summary>
+    /// <remarks>
+    /// A slot is a small non-negative index. Negative is not a slot, and a value
+    /// past <see cref="MaxPlausibleSkillSlot"/> is a field that is not a slot at
+    /// all rather than a very large skill bar. Nothing beyond field 1 was ever
+    /// observed, and nothing beyond it is read.
+    /// </remarks>
+    private static DecodedObservations DecodeSkillReady(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 2 || !TryInt(fields[1], out int slot))
+            return DecodedObservations.Empty;
+        if (slot < 0 || slot > MaxPlausibleSkillSlot)
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            SkillReady: new SkillReady(slot, capturedUtc, source));
+    }
+
+    /// <summary>
+    /// <c>ivn kind slot.vnum.amount.rarity</c> — what one inventory slot holds.
+    /// Observed as <c>ivn 2 34.2006.1.0</c>, with the vnum matching the
+    /// <c>drop</c> that preceded it; probable.
+    /// </summary>
+    /// <remarks>
+    /// The dotted field is read only in the four-part shape the capture showed.
+    /// Fewer parts is a truncated packet; more parts is a shape nobody has
+    /// observed, in which the third part may not be an amount at all, and reading
+    /// it as one would be the misplaced-field reading this decoder refuses
+    /// everywhere else. An empty slot (a vnum of −1, or an amount of 0) was never
+    /// observed either and is not read: the cost is that an emptied slot produces
+    /// no reading, which a consumer sees as the absence of a newer one rather
+    /// than as an invented empty.
+    /// </remarks>
+    private static DecodedObservations DecodeInventorySlot(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 3 || !TryInt(fields[1], out int inventoryKind) || inventoryKind < 0)
+            return DecodedObservations.Empty;
+
+        string[] parts = fields[2].Split('.');
+        if (parts.Length != 4
+            || !TryInt(parts[0], out int slot)
+            || !TryInt(parts[1], out int vnum)
+            || !TryInt(parts[2], out int amount)
+            || !TryInt(parts[3], out int rarity))
+            return DecodedObservations.Empty;
+        if (slot < 0 || vnum <= 0 || amount <= 0)
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            InventorySlot: new InventorySlotReading(inventoryKind, slot, vnum, amount, rarity, capturedUtc, source));
+    }
+
+    /// <summary>
+    /// <c>get takerType takerId dropId ?</c> — a ground item was picked up.
+    /// Observed as <c>get 1 3443217 1092257 0</c>, the drop id matching a
+    /// preceding <c>drop</c>; probable. Field 4 is not named and is not read.
+    /// </summary>
+    /// <remarks>
+    /// Whether the taker was this character is answered only once <c>cond</c>
+    /// has named the own id, by the same rule as the aggressor: taker type 1 says
+    /// a player picked it up, not which one, so before the id is known the
+    /// answer is null — and null is carried, not resolved to false.
+    /// </remarks>
+    private DecodedObservations DecodePickup(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 4
+            || !TryInt(fields[1], out int takerType)
+            || !TryLong(fields[2], out long takerId)
+            || !TryLong(fields[3], out long dropId))
+            return DecodedObservations.Empty;
+        if (takerType < 0 || takerId <= 0 || dropId <= 0)
+            return DecodedObservations.Empty;
+
+        bool? byPlayer = _playerEntityId is { } own
+            ? takerType == PlayerEntityType && takerId == own
+            : null;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            Pickup: new ItemPickup(takerType, takerId, dropId, byPlayer, capturedUtc, source));
+    }
+
+    /// <summary>
+    /// <c>drop vnum dropId x y amount ? ownerId</c> — an item on the ground.
+    /// Observed as <c>drop 2006 1092257 110 63 1 0 3443217</c>; probable. Field
+    /// 6 is unknown and is not read.
+    /// </summary>
+    /// <remarks>
+    /// The coordinates get the same bound the memory reader applies to the
+    /// character's own position: a value past
+    /// <see cref="MaxPlausibleCoordinate"/> is not a distant square, it is a
+    /// field that is not a coordinate. An amount below one is not an item on the
+    /// ground.
+    /// </remarks>
+    private static DecodedObservations DecodeGroundItem(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 8
+            || !TryInt(fields[1], out int vnum)
+            || !TryLong(fields[2], out long dropId)
+            || !TryInt(fields[3], out int x)
+            || !TryInt(fields[4], out int y)
+            || !TryInt(fields[5], out int amount)
+            || !TryLong(fields[7], out long ownerId))
+            return DecodedObservations.Empty;
+        if (vnum <= 0 || dropId <= 0 || amount <= 0 || ownerId < 0)
+            return DecodedObservations.Empty;
+        if (!IsPlausibleCoordinate(x) || !IsPlausibleCoordinate(y))
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            GroundItem: new GroundItem(vnum, dropId, x, y, amount, ownerId, capturedUtc, source));
+    }
+
+    /// <summary>
+    /// The largest skill slot index a packet is taken to name.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately loose, as <see cref="MaxPlausibleCoordinate"/> is: it rejects
+    /// a field that is not a slot at all, not a skill bar slightly larger than
+    /// the ones observed (0, 2 and 6). A tight bound would refuse a real packet
+    /// to catch a garbage one, and the garbage this guards against is orders of
+    /// magnitude out.
+    /// </remarks>
+    public const int MaxPlausibleSkillSlot = 255;
+
+    /// <summary>
+    /// The largest coordinate a NosTale map is taken to have — the same bound
+    /// <c>MemoryGameplayProvider</c> applies to the character's own position,
+    /// restated here so the network layer does not depend on the memory one.
+    /// </summary>
+    public const int MaxPlausibleCoordinate = 1000;
+
+    private static bool IsPlausibleCoordinate(int value) => value >= 0 && value <= MaxPlausibleCoordinate;
+
     private static DecodedObservations Sighting(
-        long entityId, double x, double y, double? hpRatio, DataSourceKind source)
+        long entityId, double x, double y, double? hpRatio, DataSourceKind source,
+        DateTime positionAtUtc, DateTime? hpAtUtc)
         => new(
-            ImmutableArray.Create(new EntitySighting(entityId, "Monster", x, y, hpRatio, source)),
+            ImmutableArray.Create(new EntitySighting(
+                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc)),
             ImmutableArray<GameEvent>.Empty);
 
     /// <summary>
@@ -305,11 +504,11 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// </summary>
     /// <remarks>
     /// It does not distinguish the controlled character from another player
-    /// fighting nearby, and nothing on the read side of the wire establishes the
-    /// character's own entity id. The consequence is a possible false
-    /// disagreement in <see cref="TargetStateComposer"/>, whose result is UNKNOWN
-    /// — a fact the planner then skips, never a confident wrong answer. ADR-0018
-    /// records this as the place to tighten once the own id is available.
+    /// fighting nearby; only the own id from <c>cond</c> does. Before that id is
+    /// known the type alone still feeds <see cref="TargetStateComposer"/>'s
+    /// contradiction, whose false positive is UNKNOWN — a fact the planner then
+    /// skips, never a confident wrong answer — and feeds nothing that could name
+    /// an aggressor.
     /// </remarks>
     private const int PlayerEntityType = 1;
 
@@ -385,6 +584,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     private static bool TryDouble(string field, out double value)
         => double.TryParse(field, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
 
+    /// <summary>
+    /// What this decoder remembers about an entity between packets, with the
+    /// instant each half was last stated so a merged sighting can say how old
+    /// its remembered half is.
+    /// </summary>
     private readonly record struct TrackedEntity(
-        double X, double Y, double HpRatio, bool HasHp, bool HasPosition);
+        double X,
+        double Y,
+        double HpRatio,
+        bool HasHp,
+        bool HasPosition,
+        DateTime PositionAtUtc,
+        DateTime HpAtUtc);
 }

@@ -42,7 +42,30 @@ public enum GameEventKind : byte
 /// a number that was never observed; an absent field is what
 /// <see cref="ClassifiedValue{T}"/> asserts everywhere else in this project.
 /// </param>
-public sealed record EntitySighting(long EntityId, string Kind, double X, double Y, double? HpRatio, DataSourceKind Source)
+/// <param name="PositionObservedAtUtc">
+/// When the packet that stated this position crossed the wire, or null when the
+/// decoder did not know. It is the packet's own capture time, never the clock of
+/// whoever polled: a poll stamps every replayed sighting "now", which is exactly
+/// how a recording made yesterday would look as fresh as the live wire
+/// (ADR-0016). A sighting is half position and half health, and the two halves
+/// can come from packets minutes apart, so each carries its own instant - the
+/// same reason the health itself is nullable rather than defaulted.
+/// </param>
+/// <param name="HpObservedAtUtc">
+/// When the packet that stated this health crossed the wire; null when there is
+/// no health here, or when the decoder did not know the time. For a move that
+/// carries a remembered health this is older than the position's instant, and
+/// that difference is the CACHED label made measurable.
+/// </param>
+public sealed record EntitySighting(
+    long EntityId,
+    string Kind,
+    double X,
+    double Y,
+    double? HpRatio,
+    DataSourceKind Source,
+    DateTime? PositionObservedAtUtc = null,
+    DateTime? HpObservedAtUtc = null)
 {
     /// <summary>
     /// Projects into the perception Detection consumed by the world model, or
@@ -60,7 +83,102 @@ public sealed record EntitySighting(long EntityId, string Kind, double X, double
 }
 
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>
-public sealed record GameEvent(GameEventKind Kind, long EntityId, string Descriptor, DataSourceKind Source);
+/// <param name="ObservedAtUtc">
+/// When the packet crossed the wire, or null when the decoder did not know. An
+/// event is an instant; without it a consumer can only say that something
+/// happened, never how long ago.
+/// </param>
+public sealed record GameEvent(
+    GameEventKind Kind,
+    long EntityId,
+    string Descriptor,
+    DataSourceKind Source,
+    DateTime? ObservedAtUtc = null);
+
+/// <summary>Who hit the controlled character: an entity id and its type.</summary>
+/// <remarks>
+/// The two fields <c>su</c> confirms for the attacker. The id is what a
+/// counter-attack aims at; the type is kept because a monster and a player call
+/// for different answers from a reactive rule, and it costs nothing to carry.
+/// </remarks>
+public readonly record struct Aggressor(long EntityId, int EntityType);
+
+/// <summary>The controlled character was hit: by whom, and when.</summary>
+/// <remarks>
+/// <para>
+/// C1-2. Produced only once the decoder has established that the target of the
+/// hit is <i>this</i> character, which needs the own entity id from <c>cond</c>.
+/// Target type 1 alone says "a player was hit"; naming an aggressor on that alone
+/// would let a stranger's fight next to the character nominate somebody for it
+/// to attack. The asymmetry is ADR-0018's, resolved the other way: there a false
+/// positive costs a fact the planner skips, here it would cost an act aimed at
+/// the wrong entity, so the fact is withheld until the id is known.
+/// </para>
+/// <para>
+/// It carries its own instant because the reason it exists is a reactive rule
+/// with a decay window (C6-1), and a hit without a time cannot decay. The window
+/// belongs to that consumer; this record never expires on its own.
+/// </para>
+/// </remarks>
+public sealed record PlayerHit(Aggressor By, DateTime ObservedAtUtc, DataSourceKind Source);
+
+/// <summary><c>sr slot</c>: a skill slot came off cooldown.</summary>
+/// <remarks>
+/// "Skill ready / cooldown ended, by skill slot" in docs/PROTOCOLLO_NOSTALE.md,
+/// marked probable. It is the second half of <c>UseSkill</c>'s post-condition;
+/// what it says is when the slot became usable again, not when it stopped being.
+/// </remarks>
+public sealed record SkillReady(int Slot, DateTime ObservedAtUtc, DataSourceKind Source);
+
+/// <summary><c>ivn kind slot.vnum.amount.rarity</c>: what one inventory slot holds.</summary>
+/// <param name="InventoryKind">
+/// Field 1 of the packet, observed as <c>2</c>. The catalogue does not name it;
+/// it is carried because the slot number alone was never observed to be unique
+/// across it, and a reading keyed on the slot alone could overwrite one bag's
+/// slot with another's. No meaning is attached to the number.
+/// </param>
+/// <param name="Amount">
+/// How many of the item the slot holds. The observed shape is a slot with an
+/// item in it, so an amount of zero is outside it and is not read.
+/// </param>
+public sealed record InventorySlotReading(
+    int InventoryKind,
+    int Slot,
+    int Vnum,
+    int Amount,
+    int Rarity,
+    DateTime ObservedAtUtc,
+    DataSourceKind Source);
+
+/// <summary><c>get takerType takerId dropId</c>: a ground item was picked up.</summary>
+/// <param name="ByPlayer">
+/// Whether the taker was the controlled character. True or false once
+/// <c>cond</c> has named the character's id; null before, because taker type 1
+/// says "a player picked it up" and not which one. Null is not false.
+/// </param>
+public sealed record ItemPickup(
+    int TakerType,
+    long TakerId,
+    long DropId,
+    bool? ByPlayer,
+    DateTime ObservedAtUtc,
+    DataSourceKind Source);
+
+/// <summary><c>drop vnum dropId x y amount ? ownerId</c>: an item lying on the ground.</summary>
+/// <param name="OwnerId">
+/// Field 7, read as the owner's entity id because the catalogue records it so
+/// and the capture showed the session's own id there. What a value of zero
+/// would mean was never observed and is not decided here.
+/// </param>
+public sealed record GroundItem(
+    int Vnum,
+    long DropId,
+    int X,
+    int Y,
+    int Amount,
+    long OwnerId,
+    DateTime ObservedAtUtc,
+    DataSourceKind Source);
 
 /// <summary>
 /// The controlled character's own vitals, in absolute units.
@@ -127,20 +245,36 @@ public sealed record PlayerVitals(
 /// controlled character. Null until a packet says so, and never guessed.
 /// </para>
 /// </remarks>
+/// <param name="PlayerHit">
+/// This packet showed the controlled character being hit, by a named aggressor,
+/// or null. Null is not "not hit": it is also what a hit on the character reads
+/// as while the own id is still unknown (C1-2).
+/// </param>
+/// <param name="SkillReady">A skill slot came off cooldown on this packet (<c>sr</c>).</param>
+/// <param name="InventorySlot">One inventory slot's contents, from <c>ivn</c>.</param>
+/// <param name="Pickup">A ground item was picked up, from <c>get</c>.</param>
+/// <param name="GroundItem">An item was seen on the ground, from <c>drop</c>.</param>
 public sealed record DecodedObservations(
     ImmutableArray<EntitySighting> Sightings,
     ImmutableArray<GameEvent> Events,
     PlayerVitals? Vitals = null,
     DateTime? PlayerAttackedAtUtc = null,
     int? PlayerMovementSpeed = null,
-    long? PlayerEntityId = null)
+    long? PlayerEntityId = null,
+    PlayerHit? PlayerHit = null,
+    SkillReady? SkillReady = null,
+    InventorySlotReading? InventorySlot = null,
+    ItemPickup? Pickup = null,
+    GroundItem? GroundItem = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
 
     public bool IsEmpty =>
         Sightings.IsEmpty && Events.IsEmpty && Vitals is null
-        && PlayerMovementSpeed is null && PlayerEntityId is null;
+        && PlayerMovementSpeed is null && PlayerEntityId is null
+        && PlayerHit is null && SkillReady is null && InventorySlot is null
+        && Pickup is null && GroundItem is null;
 }
 
 /// <summary>
@@ -204,7 +338,31 @@ public sealed record NetworkObservationReport(
     int? PlayerMovementSpeed = null,
     // The controlled character's own entity id, once a packet has named it. Null
     // until then, never guessed.
-    long? PlayerEntityId = null);
+    long? PlayerEntityId = null)
+{
+    /// <summary>
+    /// The most recent hit on the controlled character in this batch, or null
+    /// when the batch showed none it could attribute.
+    /// </summary>
+    /// <remarks>
+    /// Most recent by the packet's own instant, not by batch order, for the same
+    /// reason as <see cref="PlayerAttackedAtUtc"/>: an out-of-order packet must
+    /// not move the answer backwards. Null is not "not hit".
+    /// </remarks>
+    public PlayerHit? LastPlayerHit { get; init; }
+
+    /// <summary>Every <c>sr</c> in this batch, in wire order.</summary>
+    public ImmutableArray<SkillReady> SkillsReady { get; init; } = ImmutableArray<SkillReady>.Empty;
+
+    /// <summary>Every <c>ivn</c> in this batch, in wire order.</summary>
+    public ImmutableArray<InventorySlotReading> InventorySlots { get; init; } = ImmutableArray<InventorySlotReading>.Empty;
+
+    /// <summary>Every <c>get</c> in this batch, in wire order.</summary>
+    public ImmutableArray<ItemPickup> Pickups { get; init; } = ImmutableArray<ItemPickup>.Empty;
+
+    /// <summary>Every <c>drop</c> in this batch, in wire order.</summary>
+    public ImmutableArray<GroundItem> GroundItems { get; init; } = ImmutableArray<GroundItem>.Empty;
+}
 
 /// <summary>
 /// Pulls packets from a source, keeps only the game's own traffic, decodes them
@@ -275,6 +433,11 @@ public sealed class GameTrafficObserver
         DateTime? playerAttackedAt = null;
         int? playerSpeed = null;
         long? playerEntityId = null;
+        PlayerHit? playerHit = null;
+        var skillsReady = ImmutableArray.CreateBuilder<SkillReady>();
+        var inventorySlots = ImmutableArray.CreateBuilder<InventorySlotReading>();
+        var pickups = ImmutableArray.CreateBuilder<ItemPickup>();
+        var groundItems = ImmutableArray.CreateBuilder<GroundItem>();
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
@@ -330,6 +493,21 @@ public sealed class GameTrafficObserver
             // The id does not change within a session, so the first packet that
             // names it is as good as the last.
             playerEntityId ??= result.PlayerEntityId;
+            // Latest by its own instant, as for the attack above: the batch that
+            // carried the hit is rarely the batch a reactive rule asks about, and
+            // an out-of-order packet must not make the last hit older.
+            if (result.PlayerHit is { } hit
+                && (playerHit is null || hit.ObservedAtUtc > playerHit.ObservedAtUtc))
+            {
+                playerHit = hit;
+            }
+            // Every one, in wire order. These are events and slot readings, not a
+            // single current state; collapsing them to the last would lose the
+            // ones a post-condition window needs to see.
+            if (result.SkillReady is { } ready) skillsReady.Add(ready);
+            if (result.InventorySlot is { } slot) inventorySlots.Add(slot);
+            if (result.Pickup is { } pickup) pickups.Add(pickup);
+            if (result.GroundItem is { } drop) groundItems.Add(drop);
         }
 
         return new NetworkObservationReport(
@@ -342,7 +520,14 @@ public sealed class GameTrafficObserver
             _decoder.ReadsPlayerVitals,
             playerAttackedAt,
             playerSpeed,
-            playerEntityId);
+            playerEntityId)
+        {
+            LastPlayerHit = playerHit,
+            SkillsReady = skillsReady.ToImmutable(),
+            InventorySlots = inventorySlots.ToImmutable(),
+            Pickups = pickups.ToImmutable(),
+            GroundItems = groundItems.ToImmutable(),
+        };
     }
 
     /// <summary>

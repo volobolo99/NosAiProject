@@ -5,6 +5,7 @@ using NosAi.Runtime.Contracts;
 using Gate1CanonicalSnapshot = NosAi.Runtime.Gate1.Gate1CanonicalSnapshot;
 using IGameplayProvider = NosAi.LiveIntegration.IGameplayProvider;
 using GameplayObservation = NosAi.LiveIntegration.GameplayObservation;
+using Aggressor = NosAi.Runtime.Perception.Network.Aggressor;
 
 namespace NosAi.Runtime.Gate3;
 
@@ -33,7 +34,16 @@ namespace NosAi.Runtime.Gate3;
 /// <param name="PlayerPosition">
 /// Where the character is standing. Needed to say which observed entity is
 /// nearest and to aim at it at all; unknown is a refusal rather than the map
-/// origin.
+/// origin. Null when nothing has looked; UNKNOWN with the reader's own reason
+/// when something looked and could not say, which today is every reading, since
+/// the wire never carries it and no memory reader is bound to the running host.
+/// </param>
+/// <param name="HitBy">
+/// Who last hit the character, with the instant of the hit as the value's
+/// <see cref="ClassifiedValue{T}.ObservedAtUtc"/>. Null when nothing has looked.
+/// Only the reactive rule reads it (C6-1), and that rule owns the window past
+/// which an old hit stops being a reason; the state does not age on it, because
+/// a hit ten seconds ago does not make a current HP stale.
 /// </param>
 public sealed record Gate3WorldState(
     ClassifiedValue<int> Hp,
@@ -42,7 +52,8 @@ public sealed record Gate3WorldState(
     ClassifiedValue<bool> HasTarget,
     ClassifiedValue<bool> InCombat,
     IReadOnlyList<SelectableEntity>? Entities = null,
-    ClassifiedValue<MapPoint>? PlayerPosition = null)
+    ClassifiedValue<MapPoint>? PlayerPosition = null,
+    ClassifiedValue<Aggressor>? HitBy = null)
 {
     /// <summary>Whether the character's own vitals are all known.</summary>
     /// <remarks>
@@ -150,6 +161,14 @@ public sealed record Gate3WorldState(
         : Hp.FailureReason ?? MaxHp.FailureReason ?? Mp.FailureReason
           ?? "world_state_incomplete";
 
+    /// <remarks>
+    /// The position and the hit count: one simulated field is enough to keep a
+    /// state off a real effector, whichever field it is. The entity list does
+    /// not appear here because <see cref="SelectableEntity"/> carries no
+    /// provenance of its own; its classification lives on the observation that
+    /// produced it, and the entities travel through the same channel as the
+    /// vitals, so a simulated channel is caught on the vitals.
+    /// </remarks>
     private IEnumerable<DataSourceKind> KnownSources()
     {
         if (Hp.HasValue) yield return Hp.Source;
@@ -157,8 +176,16 @@ public sealed record Gate3WorldState(
         if (Mp.HasValue) yield return Mp.Source;
         if (HasTarget.HasValue) yield return HasTarget.Source;
         if (InCombat.HasValue) yield return InCombat.Source;
+        if (PlayerPosition is { HasValue: true } position) yield return position.Source;
+        if (HitBy is { HasValue: true } hit) yield return hit.Source;
     }
 
+    /// <remarks>
+    /// The position ages the state: a click is aimed from it, and a square the
+    /// character has since walked off is the wrong origin. The hit does not — it
+    /// is an instant with its own decay in the rule that reads it — and each
+    /// entity carries its own instant for the selector to measure.
+    /// </remarks>
     private IEnumerable<DateTime> KnownTimes()
     {
         if (Hp.HasValue) yield return Hp.ObservedAtUtc;
@@ -166,6 +193,7 @@ public sealed record Gate3WorldState(
         if (Mp.HasValue) yield return Mp.ObservedAtUtc;
         if (HasTarget.HasValue) yield return HasTarget.ObservedAtUtc;
         if (InCombat.HasValue) yield return InCombat.ObservedAtUtc;
+        if (PlayerPosition is { HasValue: true } position) yield return position.ObservedAtUtc;
     }
 
     /// <summary>Nothing is known. Planning on this is refused rather than guessed.</summary>
@@ -174,7 +202,42 @@ public sealed record Gate3WorldState(
         ClassifiedValue<int>.Unknown(reason),
         ClassifiedValue<int>.Unknown(reason),
         ClassifiedValue<bool>.Unknown(reason),
-        ClassifiedValue<bool>.Unknown(reason));
+        ClassifiedValue<bool>.Unknown(reason),
+        Entities: null,
+        PlayerPosition: ClassifiedValue<MapPoint>.Unknown(reason),
+        HitBy: ClassifiedValue<Aggressor>.Unknown(reason));
+
+    /// <summary>
+    /// The planning state a gameplay observation implies, field by field.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The one place the observation becomes the state, shared by both sources so
+    /// the two cannot disagree about it. What the provider read stays read, what
+    /// it could not stays UNKNOWN with the provider's own reason.
+    /// </para>
+    /// <para>
+    /// The entity list becomes null when the observation has none — nothing to
+    /// aim at, and the selector's refusal is the diagnostic — and the reason
+    /// stays on the observation, which is what the snapshot shows. Each entity
+    /// keeps its own instant. The position and the hit keep their whole
+    /// classification: an unknown position reaches the selector as a refusal
+    /// with the reader's reason, never as a coordinate.
+    /// </para>
+    /// </remarks>
+    public static Gate3WorldState FromObservation(GameplayObservation observation)
+    {
+        ArgumentNullException.ThrowIfNull(observation);
+        return new Gate3WorldState(
+            Hp: observation.Hp,
+            MaxHp: observation.MaxHp,
+            Mp: observation.Mp,
+            HasTarget: observation.HasTarget,
+            InCombat: observation.InCombat,
+            Entities: observation.Entities.HasValue ? observation.Entities.Value : null,
+            PlayerPosition: observation.PlayerPosition,
+            HitBy: observation.HitBy);
+    }
 
     /// <summary>State read from the real client.</summary>
     /// <remarks>
@@ -254,12 +317,7 @@ public sealed class GameplayProviderWorldStateSource : IWorldStateSource
             return Task.FromResult(Gate3WorldState.Unobserved($"gameplay_provider_failed:{ex.GetType().Name}"));
         }
 
-        return Task.FromResult(new Gate3WorldState(
-            Hp: observation.Hp,
-            MaxHp: observation.MaxHp,
-            Mp: observation.Mp,
-            HasTarget: observation.HasTarget,
-            InCombat: observation.InCombat));
+        return Task.FromResult(Gate3WorldState.FromObservation(observation));
     }
 }
 
@@ -323,11 +381,6 @@ public sealed class Gate1SnapshotWorldStateSource : IWorldStateSource
                 snapshot.Client.GameplayBaseline.FailureReason ?? "gameplay_provider_not_available"));
         }
 
-        return Task.FromResult(new Gate3WorldState(
-            Hp: gameplay.Hp,
-            MaxHp: gameplay.MaxHp,
-            Mp: gameplay.Mp,
-            HasTarget: gameplay.HasTarget,
-            InCombat: gameplay.InCombat));
+        return Task.FromResult(Gate3WorldState.FromObservation(gameplay));
     }
 }

@@ -300,9 +300,7 @@ public static class Program
                 return 2;
             }
 
-            Console.WriteLine(
-                NosAi.LiveIntegration.Capture.WorldChannelReplay.ReplayFile(capture).Describe());
-            return 0;
+            return NosAi.Runtime.Observability.WorldReplayCommand.Run(capture);
         }
 
         // The decision path over real game bytes, offline. WinDivertProbe --world
@@ -326,7 +324,7 @@ public static class Program
                 ? parsed
                 : 200;
 
-            return await NosAi.Runtime.Gate3.Gate3ReplayProbe.RunAsync(recording, cycles).ConfigureAwait(false);
+            return await NosAi.Runtime.Observability.DecideReplayCommand.RunAsync(recording, cycles).ConfigureAwait(false);
         }
 
         // Offset discovery for the memory provider (ADR-0014). Read-only, and it

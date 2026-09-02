@@ -55,8 +55,10 @@ public readonly record struct KeybindCheckEntry(string Intent, ushort VirtualKey
 public static class KeybindsCheck
 {
     /// <summary>
-    /// Intent prefixes <c>InputActionEffector</c> actually constructs. A configured
-    /// intent covers a prefix only by starting with it.
+    /// Intent prefixes <c>InputActionEffector</c> actually constructs, in the
+    /// order the planner needs them: heal first, then attack
+    /// (<c>docs/TASTI_E_BERSAGLIO.md</c> § 4.2). A configured intent covers a
+    /// prefix only by starting with it.
     /// </summary>
     public static readonly string[] RuntimeIntentPrefixes =
     [
@@ -170,7 +172,7 @@ public static class KeybindsCheck
         }
         else
         {
-            text.AppendLine("uncovered:");
+            text.AppendLine("uncovered (heal then attack):");
             foreach (string prefix in report.UncoveredPrefixes)
                 text.AppendLine("  " + prefix);
         }

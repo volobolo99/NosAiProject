@@ -58,21 +58,26 @@ public sealed class SyntheticProtocolDecoder : IGamePacketDecoder
 
         switch (opcode)
         {
+            // Position and health both come from this one frame, so both carry
+            // its capture time.
             case OpSighting:
                 return new DecodedObservations(
-                    ImmutableArray.Create(new EntitySighting(entityId, "Monster", x, y, hpRatio, source)),
+                    ImmutableArray.Create(new EntitySighting(
+                        entityId, "Monster", x, y, hpRatio, source, packet.CapturedUtc, packet.CapturedUtc)),
                     ImmutableArray<GameEvent>.Empty);
 
             case OpCombatHit:
                 return new DecodedObservations(
-                    ImmutableArray.Create(new EntitySighting(entityId, "Monster", x, y, hpRatio, source)),
+                    ImmutableArray.Create(new EntitySighting(
+                        entityId, "Monster", x, y, hpRatio, source, packet.CapturedUtc, packet.CapturedUtc)),
                     ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, entityId,
-                        $"hp={hpRatio:0.00}", source)));
+                        $"hp={hpRatio:0.00}", source, packet.CapturedUtc)));
 
             case OpEntityDeath:
                 return new DecodedObservations(
                     ImmutableArray<EntitySighting>.Empty,
-                    ImmutableArray.Create(new GameEvent(GameEventKind.EntityDeath, entityId, "dead", source)));
+                    ImmutableArray.Create(new GameEvent(
+                        GameEventKind.EntityDeath, entityId, "dead", source, packet.CapturedUtc)));
 
             default:
                 // An unknown opcode is not a guessable entity: report nothing.
