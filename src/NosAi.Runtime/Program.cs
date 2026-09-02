@@ -231,6 +231,11 @@ public static class Program
         // (ADR-0021). --no-target declares the pass that tells the selection apart
         // from the client's own entity list, which every entry of that list would
         // otherwise survive.
+        // The chain the hunt established, and the proof its last link still needs:
+        // manager -> target pointer -> candidate id, against what ct named on the wire.
+        if (args.Any(a => string.Equals(a, "--target-chain", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Navigation.TargetChainProbe.Run();
+
         if (args.Any(a => string.Equals(a, "--find-target", StringComparison.OrdinalIgnoreCase)))
         {
             // No flag says whether a target is selected any more: the hunt asks, round
@@ -503,7 +508,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

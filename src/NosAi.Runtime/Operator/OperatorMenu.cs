@@ -299,6 +299,9 @@ public static class OperatorMenu
                 case "14":
                     Perform("Tasti configurati", () => LowLevel.KeybindsCheck.Run());
                     break;
+                case "16":
+                    Perform("Catena del bersaglio", () => Navigation.TargetChainProbe.Run());
+                    break;
                 case "15":
                     Perform("Cerca il bersaglio in memoria", RunTargetHunt);
                     break;
@@ -373,7 +376,8 @@ public static class OperatorMenu
         Console.WriteLine(" 12  Replay di una registrazione  (cosa vede l'osservazione, senza client)");
         Console.WriteLine(" 13  Replay della decisione       (la scala del ciclo, senza client)");
         Console.WriteLine(" 14  Tasti configurati            (quali intenti hanno un tasto)");
-        Console.WriteLine(" 15  Cerca il bersaglio in memoria (una passata dell'oracolo)");
+        Console.WriteLine(" 15  Cerca il bersaglio in memoria (un giro dell'oracolo)");
+        Console.WriteLine(" 16  Catena del bersaglio         (manager -> puntatore -> id, contro ct)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
