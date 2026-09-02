@@ -78,7 +78,7 @@ namespace NosAi.Runtime.Gate6
             if (candidate.CandidateId != token.CandidateId)
                 return new ExecutionResult(candidate.CandidateId, false, false, 0, "SafetyToken non associato al candidato.", DataSourceKind.Simulated);
 
-            if (!_safetyGate.ValidateToken(token))
+            if (!_safetyGate.ValidateToken(token, candidate))
                 return new ExecutionResult(candidate.CandidateId, false, false, 0, "Firma SafetyToken non valida o contraffatta.", DataSourceKind.Simulated);
 
             if (!token.TryConsume())
@@ -439,7 +439,7 @@ namespace NosAi.Runtime.Gate6
             if (!gate.TryAuthorize(candidate, outcome, RuntimeMode.Normal, out SafetyToken? token, out _))
                 return false;
 
-            if (!gate.ValidateToken(token!)) return false;
+            if (!gate.ValidateToken(token!, candidate)) return false;
             if (!token!.TryConsume()) return false;
             return !token.TryConsume();
         }
@@ -456,12 +456,12 @@ namespace NosAi.Runtime.Gate6
                 return false;
 
             // A token minted by another gate's key must not validate here.
-            if (gateB.ValidateToken(token!)) return false;
+            if (gateB.ValidateToken(token!, candidate)) return false;
 
             // A tampered signature must not validate anywhere.
             var tampered = new SafetyToken(candidate.CandidateId, TrustTier.Tier2_SemiAutonomous,
                 new byte[32], TimeSpan.FromSeconds(2));
-            return !gateA.ValidateToken(tampered);
+            return !gateA.ValidateToken(tampered, candidate);
         }
 
         private static bool TestGuardPolicyBoundaries()
