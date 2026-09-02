@@ -172,7 +172,52 @@ public sealed class GameplayWireContractTests
 
             Assert.DoesNotContain("\"maxMp\"", source, StringComparison.Ordinal);
             Assert.DoesNotContain("\"maxHp\"", source, StringComparison.Ordinal);
+            // C1 added these on the same precedent; the same rule holds them open.
+            foreach (string key in C1Keys)
+                Assert.DoesNotContain($"\"{key}\"", source, StringComparison.Ordinal);
         }
+    }
+
+    /// <summary>The keys C1 added inside <c>gameplayBaseline</c>, additively.</summary>
+    private static readonly string[] C1Keys =
+    [
+        "entities", "playerPosition", "hitBy", "selectedTarget",
+        "skillsReady", "inventory", "lastPickup", "groundItems",
+    ];
+
+    /// <summary>
+    /// Each C1 key is one classified value beside the existing ones, unknown with a
+    /// reason when the provider did not publish it — never a zero, an empty list or
+    /// a coordinate.
+    /// </summary>
+    [Fact]
+    public void Every_c1_field_is_published_as_one_classified_value_with_its_reason()
+    {
+        JsonElement wire = Wire(Full());
+
+        foreach (string key in C1Keys)
+        {
+            JsonElement field = wire.GetProperty(key);
+            Assert.Equal("UNKNOWN", field.GetProperty("source").GetString());
+            Assert.Equal(JsonValueKind.Null, field.GetProperty("value").ValueKind);
+            Assert.Equal(
+                key == "playerPosition"
+                    ? GameplayObservation.PlayerPositionNotReadReason
+                    : GameplayObservation.NotPublishedReason,
+                field.GetProperty("failureReason").GetString());
+        }
+    }
+
+    /// <summary>And none of them made planning wait for it (ADR-0016).</summary>
+    [Fact]
+    public void Publishing_the_c1_fields_did_not_make_any_of_them_a_precondition_for_planning()
+    {
+        GameplayObservation observation = Full();
+
+        Assert.True(observation.HasVitals);
+        Assert.Null(observation.UnusableReason);
+        Assert.False(observation.Entities.HasValue);
+        Assert.False(observation.PlayerPosition.HasValue);
     }
 
     private static string Snapshot(bool withMaxMp)

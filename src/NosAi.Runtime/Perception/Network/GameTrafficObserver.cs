@@ -51,6 +51,15 @@ public enum GameEventKind : byte
 /// can come from packets minutes apart, so each carries its own instant - the
 /// same reason the health itself is nullable rather than defaulted.
 /// </param>
+/// <param name="Vnum">
+/// What the entity is, by the game's own number, or null when no packet has said.
+/// Only <c>in</c> carries it — a move or a vitals update names the entity by id
+/// alone — so it is remembered from the spawn and null for an entity first seen
+/// moving. It is exposed and never interpreted here: type 3 on this wire is
+/// monster and NPC together (docs/PROTOCOLLO_NOSTALE.md), and telling them apart
+/// is the reference catalogue's answer to a lookup by vnum, not this decoder's
+/// guess (docs/TASTI_E_BERSAGLIO.md § 5).
+/// </param>
 /// <param name="HpObservedAtUtc">
 /// When the packet that stated this health crossed the wire; null when there is
 /// no health here, or when the decoder did not know the time. For a move that
@@ -65,7 +74,8 @@ public sealed record EntitySighting(
     double? HpRatio,
     DataSourceKind Source,
     DateTime? PositionObservedAtUtc = null,
-    DateTime? HpObservedAtUtc = null)
+    DateTime? HpObservedAtUtc = null,
+    int? Vnum = null)
 {
     /// <summary>
     /// Projects into the perception Detection consumed by the world model, or
@@ -121,6 +131,30 @@ public readonly record struct Aggressor(long EntityId, int EntityType);
 /// </para>
 /// </remarks>
 public sealed record PlayerHit(Aggressor By, DateTime ObservedAtUtc, DataSourceKind Source);
+
+/// <summary>An entity the controlled character acted on: an entity id and its type.</summary>
+public readonly record struct TargetedEntity(long EntityId, int EntityType);
+
+/// <summary>
+/// <c>ct</c> with the controlled character as the source: which entity the
+/// character is acting on, and when.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The wire's answer to <i>which</i>; the screen keeps the answer to
+/// <i>whether</i> (ADR-0018, docs/TASTI_E_BERSAGLIO.md § 6.3). No packet in any
+/// capture clears a target, so this fact is sticky by nature: it names the last
+/// entity the character acted on, and says nothing about whether a target is
+/// still selected. A consumer that needs the latter reads <c>HasTarget</c>.
+/// </para>
+/// <para>
+/// Produced only once <c>cond</c> has named the own id and the source of the
+/// packet is that id — a monster's <c>ct</c> aimed at the character is not the
+/// character's selection — and never for a cast the character aims at itself,
+/// which the captures show for a self-buff and which selects nothing.
+/// </para>
+/// </remarks>
+public sealed record PlayerTargetSelection(TargetedEntity Target, DateTime ObservedAtUtc, DataSourceKind Source);
 
 /// <summary><c>sr slot</c>: a skill slot came off cooldown.</summary>
 /// <remarks>
@@ -265,7 +299,8 @@ public sealed record DecodedObservations(
     SkillReady? SkillReady = null,
     InventorySlotReading? InventorySlot = null,
     ItemPickup? Pickup = null,
-    GroundItem? GroundItem = null)
+    GroundItem? GroundItem = null,
+    PlayerTargetSelection? PlayerTarget = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
@@ -274,7 +309,7 @@ public sealed record DecodedObservations(
         Sightings.IsEmpty && Events.IsEmpty && Vitals is null
         && PlayerMovementSpeed is null && PlayerEntityId is null
         && PlayerHit is null && SkillReady is null && InventorySlot is null
-        && Pickup is null && GroundItem is null;
+        && Pickup is null && GroundItem is null && PlayerTarget is null;
 }
 
 /// <summary>
@@ -350,6 +385,13 @@ public sealed record NetworkObservationReport(
     /// not move the answer backwards. Null is not "not hit".
     /// </remarks>
     public PlayerHit? LastPlayerHit { get; init; }
+
+    /// <summary>
+    /// The most recent entity the controlled character acted on in this batch,
+    /// or null when the batch showed none it could attribute. Most recent by the
+    /// packet's own instant.
+    /// </summary>
+    public PlayerTargetSelection? LastPlayerTarget { get; init; }
 
     /// <summary>Every <c>sr</c> in this batch, in wire order.</summary>
     public ImmutableArray<SkillReady> SkillsReady { get; init; } = ImmutableArray<SkillReady>.Empty;
@@ -434,6 +476,7 @@ public sealed class GameTrafficObserver
         int? playerSpeed = null;
         long? playerEntityId = null;
         PlayerHit? playerHit = null;
+        PlayerTargetSelection? playerTarget = null;
         var skillsReady = ImmutableArray.CreateBuilder<SkillReady>();
         var inventorySlots = ImmutableArray.CreateBuilder<InventorySlotReading>();
         var pickups = ImmutableArray.CreateBuilder<ItemPickup>();
@@ -504,6 +547,11 @@ public sealed class GameTrafficObserver
             // Every one, in wire order. These are events and slot readings, not a
             // single current state; collapsing them to the last would lose the
             // ones a post-condition window needs to see.
+            if (result.PlayerTarget is { } target
+                && (playerTarget is null || target.ObservedAtUtc > playerTarget.ObservedAtUtc))
+            {
+                playerTarget = target;
+            }
             if (result.SkillReady is { } ready) skillsReady.Add(ready);
             if (result.InventorySlot is { } slot) inventorySlots.Add(slot);
             if (result.Pickup is { } pickup) pickups.Add(pickup);
@@ -523,6 +571,7 @@ public sealed class GameTrafficObserver
             playerEntityId)
         {
             LastPlayerHit = playerHit,
+            LastPlayerTarget = playerTarget,
             SkillsReady = skillsReady.ToImmutable(),
             InventorySlots = inventorySlots.ToImmutable(),
             Pickups = pickups.ToImmutable(),

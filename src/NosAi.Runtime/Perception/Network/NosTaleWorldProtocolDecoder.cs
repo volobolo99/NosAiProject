@@ -18,10 +18,11 @@ namespace NosAi.Runtime.Perception.Network;
 /// out to be needed is a new capture, not a guess from its neighbours.
 /// </para>
 /// <para>
-/// Eleven opcodes are read. Seven carry the world: <c>stat</c>, <c>st</c>,
+/// Twelve opcodes are read. Seven carry the world: <c>stat</c>, <c>st</c>,
 /// <c>in</c>, <c>mv</c>, <c>die</c>, <c>su</c>, <c>cond</c>. Four carry the
 /// facts a post-condition needs (C1-3): <c>sr</c>, <c>ivn</c>, <c>get</c>,
-/// <c>drop</c>. Those four are marked <i>probable</i> in the catalogue, and the
+/// <c>drop</c>; <c>ct</c> carries which entity the character acts on. Those
+/// five are marked <i>probable</i> in the catalogue, and the
 /// discipline for a probable reading is the one <c>in</c> and <c>st</c> already
 /// follow for their probable fields: the reading keeps the packet's provenance
 /// — LIVE bytes that framed stay LIVE — because provenance says where the bytes
@@ -120,6 +121,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "ivn" => DecodeInventorySlot(fields, source, at),
             "get" => DecodePickup(fields, source, at),
             "drop" => DecodeGroundItem(fields, source, at),
+            "ct" => DecodeCast(fields, source, at),
             _ => DecodedObservations.Empty,
         };
     }
@@ -174,7 +176,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // stamped with that packet's instant, not this one's.
         return Sighting(
             entityId, previous.X, previous.Y, hpRatio, Stale(source),
-            positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc);
+            positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc, vnum: previous.Vnum);
     }
 
     /// <summary>
@@ -185,21 +187,25 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     {
         if (fields.Length < 9 || !IsReadableEntity(fields[1]))
             return DecodedObservations.Empty;
-        if (!TryLong(fields[3], out long entityId)
+        if (!TryInt(fields[2], out int vnum)
+            || !TryLong(fields[3], out long entityId)
             || !TryDouble(fields[4], out double x)
             || !TryDouble(fields[5], out double y)
             || !TryInt(fields[7], out int hpPercent))
             return DecodedObservations.Empty;
-        if (hpPercent is < 0 or > 100)
+        // The vnum is confirmed (36, 45, 9, 96 in the captures, each grouping
+        // identical monsters); a non-positive one is a misplaced field, and the
+        // packet is refused whole rather than read with a hole in it.
+        if (vnum <= 0 || hpPercent is < 0 or > 100)
             return DecodedObservations.Empty;
 
         double hpRatio = hpPercent / 100.0;
         _entities[entityId] = new TrackedEntity(
             x, y, hpRatio, HasHp: true, HasPosition: true,
-            PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc);
+            PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc, Vnum: vnum);
         // Position and health both come from this packet, so nothing stale is
         // mixed in and the sighting keeps the packet's own provenance and time.
-        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc);
+        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc, vnum);
     }
 
     /// <summary>
@@ -226,8 +232,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // instant. With no health at all there is nothing stale mixed in, and the
         // packet keeps its own provenance.
         return previous.HasHp
-            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc)
-            : Sighting(entityId, x, y, null, source, capturedUtc, null);
+            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum)
+            : Sighting(entityId, x, y, null, source, capturedUtc, null, previous.Vnum);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
@@ -287,9 +293,13 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // character: own id known, and both the id and the confirmed type agree.
         // A target of type 1 with an unknown own id is "a player was hit", which
         // does not name anybody this character has a reason to attack.
+        // Never the character itself: the captures show a self-buff as a su whose
+        // attacker and target are both the own id, and a reactive rule handed
+        // that would counter-attack its own character.
         PlayerHit? hit = _playerEntityId is { } self
             && targetType == PlayerEntityType
             && targetId == self
+            && attackerId != self
                 ? new PlayerHit(new Aggressor(attackerId, attackerType), capturedUtc, source)
                 : null;
 
@@ -456,6 +466,44 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     }
 
     /// <summary>
+    /// <c>ct srcType srcId tgtType tgtId ? ? ?</c> — an entity acts on another.
+    /// Observed 108 times as <c>ct 3 313816 1 3443217 -1 -1 0</c> and, with the
+    /// character as source, as <c>ct 1 3443217 3 3205 -1 -1 220</c>; probable.
+    /// The three trailing fields are not named by the catalogue and are not read.
+    /// </summary>
+    /// <remarks>
+    /// Read as the answer to <i>which</i> entity the character is acting on
+    /// (docs/TASTI_E_BERSAGLIO.md § 6.3), and only when the source is the own id
+    /// from <c>cond</c>: a monster's <c>ct</c> aimed at the character is that
+    /// monster's business. A cast aimed at the character itself — a self-buff in
+    /// the captures — selects nothing and produces nothing. Whether a target is
+    /// currently selected stays the screen's fact (ADR-0018); this one has no
+    /// clearing counterpart on the wire and is sticky by nature.
+    /// </remarks>
+    private DecodedObservations DecodeCast(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 5
+            || !TryInt(fields[1], out int sourceType)
+            || !TryLong(fields[2], out long sourceId)
+            || !TryInt(fields[3], out int targetType)
+            || !TryLong(fields[4], out long targetId))
+            return DecodedObservations.Empty;
+        if (sourceType < 0 || sourceId <= 0 || targetType < 0 || targetId <= 0)
+            return DecodedObservations.Empty;
+
+        if (_playerEntityId is not { } own
+            || sourceType != PlayerEntityType
+            || sourceId != own
+            || targetId == own)
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            PlayerTarget: new PlayerTargetSelection(new TargetedEntity(targetId, targetType), capturedUtc, source));
+    }
+
+    /// <summary>
     /// The largest skill slot index a packet is taken to name.
     /// </summary>
     /// <remarks>
@@ -478,10 +526,10 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
     private static DecodedObservations Sighting(
         long entityId, double x, double y, double? hpRatio, DataSourceKind source,
-        DateTime positionAtUtc, DateTime? hpAtUtc)
+        DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum)
         => new(
             ImmutableArray.Create(new EntitySighting(
-                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc)),
+                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum)),
             ImmutableArray<GameEvent>.Empty);
 
     /// <summary>
@@ -596,5 +644,6 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         bool HasHp,
         bool HasPosition,
         DateTime PositionAtUtc,
-        DateTime HpAtUtc);
+        DateTime HpAtUtc,
+        int? Vnum = null);
 }

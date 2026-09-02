@@ -99,6 +99,20 @@ public sealed record GameplayObservation(
     public ClassifiedValue<Aggressor> HitBy { get; init; }
         = ClassifiedValue<Aggressor>.Unknown(NotPublishedReason);
 
+    /// <summary>
+    /// The entity the controlled character last acted on, from <c>ct</c>, with
+    /// the instant of that packet as the value's
+    /// <see cref="ClassifiedValue{T}.ObservedAtUtc"/>.
+    /// </summary>
+    /// <remarks>
+    /// The wire's <i>which</i>; <see cref="HasTarget"/> is the screen's
+    /// <i>whether</i> (ADR-0018). Sticky by nature — nothing on the wire clears a
+    /// selection — so it names the last selection and never establishes that one
+    /// still exists.
+    /// </remarks>
+    public ClassifiedValue<TargetedEntity> SelectedTarget { get; init; }
+        = ClassifiedValue<TargetedEntity>.Unknown(NotPublishedReason);
+
     /// <summary>The most recent <c>sr</c> per skill slot, ordered by slot.</summary>
     public ClassifiedValue<IReadOnlyList<SkillReady>> SkillsReady { get; init; }
         = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(NotPublishedReason);
@@ -129,6 +143,7 @@ public sealed record GameplayObservation(
         Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(reason),
         PlayerPosition = ClassifiedValue<MapPoint>.Unknown(reason),
         HitBy = ClassifiedValue<Aggressor>.Unknown(reason),
+        SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason),
         SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason),
         Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason),
         LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason),
@@ -199,10 +214,12 @@ public sealed record GameplayObservation(
             x = e.At.X,
             y = e.At.Y,
             hpRatio = e.HpRatio,
+            vnum = e.Vnum,
             observedAtUtc = Iso(e.ObservedAtUtc),
         }).ToArray()),
         playerPosition = Project(PlayerPosition, p => new { x = p.X, y = p.Y }),
         hitBy = Project(HitBy, a => new { entityId = a.EntityId, entityType = a.EntityType }),
+        selectedTarget = Project(SelectedTarget, t => new { entityId = t.EntityId, entityType = t.EntityType }),
         skillsReady = Project(SkillsReady, list => list.Select(s => new
         {
             slot = s.Slot,
@@ -382,6 +399,8 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     private string? _entityWarning;
     private PlayerHit? _lastHit;
     private bool _lastHitFresh;
+    private PlayerTargetSelection? _lastTarget;
+    private bool _lastTargetFresh;
     private readonly Dictionary<int, Retained<SkillReady>> _skillsReady = new();
     private readonly Dictionary<(int Kind, int Slot), Retained<InventorySlotReading>> _inventory = new();
     private ItemPickup? _lastPickup;
@@ -536,6 +555,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     {
         AbsorbEntities(report, now);
         AbsorbHit(report);
+        AbsorbTarget(report);
         AbsorbSkills(report);
         AbsorbInventory(report);
         AbsorbGroundItems(report, now);
@@ -576,7 +596,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
             // Last mentioned by whichever half this packet stated.
             DateTime stated = sighting.HpObservedAtUtc is { } hpAt && hpAt > positionAt ? hpAt : positionAt;
             _entities[sighting.EntityId] = new Retained<SelectableEntity>(
-                new SelectableEntity(sighting.EntityId, at, sighting.HpRatio, positionAt),
+                new SelectableEntity(sighting.EntityId, at, sighting.HpRatio, positionAt, sighting.Vnum),
                 sighting.Source, stated, Fresh: true);
             _entityEverSeen = true;
         }
@@ -608,6 +628,17 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         {
             _lastHit = hit;
             _lastHitFresh = true;
+        }
+    }
+
+    private void AbsorbTarget(NetworkObservationReport report)
+    {
+        _lastTargetFresh = false;
+        if (report.LastPlayerTarget is { } target
+            && (_lastTarget is null || target.ObservedAtUtc > _lastTarget.ObservedAtUtc))
+        {
+            _lastTarget = target;
+            _lastTargetFresh = true;
         }
     }
 
@@ -698,6 +729,10 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
             ? Classify(hit.By, _lastHitFresh ? hit.Source : Remembered(hit.Source), hit.ObservedAtUtc)
             : ClassifiedValue<Aggressor>.Unknown(
                 _feed.PlayerEntityId is null ? "player_entity_id_not_observed" : "no_hit_on_player_observed"),
+        SelectedTarget = _lastTarget is { } selected
+            ? Classify(selected.Target, _lastTargetFresh ? selected.Source : Remembered(selected.Source), selected.ObservedAtUtc)
+            : ClassifiedValue<TargetedEntity>.Unknown(
+                _feed.PlayerEntityId is null ? "player_entity_id_not_observed" : "no_target_selection_observed"),
         SkillsReady = PublishList(
             _skillsReady.Values.OrderBy(r => r.Value.Slot), "no_skill_ready_observed"),
         Inventory = PublishList(

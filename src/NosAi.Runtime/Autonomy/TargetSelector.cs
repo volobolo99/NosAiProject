@@ -17,11 +17,19 @@ namespace NosAi.Runtime.Autonomy;
 /// selection acts on <i>where it was</i>: the click lands on a square, and a
 /// square a monster has walked off is empty ground.
 /// </param>
+/// <param name="Vnum">
+/// What the entity is, by the game's own number, or null when no spawn packet
+/// has said. Carried, never interpreted: the wire's type 3 is monster and NPC
+/// together, and whether a vnum is something to fight is the reference
+/// catalogue's answer (<c>GameReferenceDatabase.Lookup</c>), not a guess made
+/// here (docs/TASTI_E_BERSAGLIO.md § 5.2). Null is not "a monster".
+/// </param>
 public readonly record struct SelectableEntity(
     long EntityId,
     MapPoint At,
     double? HpRatio,
-    DateTime ObservedAtUtc);
+    DateTime ObservedAtUtc,
+    int? Vnum = null);
 
 /// <summary>What the operator considers worth aiming at.</summary>
 /// <param name="MaxRangeTiles">

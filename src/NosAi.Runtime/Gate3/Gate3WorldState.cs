@@ -6,6 +6,7 @@ using Gate1CanonicalSnapshot = NosAi.Runtime.Gate1.Gate1CanonicalSnapshot;
 using IGameplayProvider = NosAi.LiveIntegration.IGameplayProvider;
 using GameplayObservation = NosAi.LiveIntegration.GameplayObservation;
 using Aggressor = NosAi.Runtime.Perception.Network.Aggressor;
+using TargetedEntity = NosAi.Runtime.Perception.Network.TargetedEntity;
 
 namespace NosAi.Runtime.Gate3;
 
@@ -45,6 +46,12 @@ namespace NosAi.Runtime.Gate3;
 /// which an old hit stops being a reason; the state does not age on it, because
 /// a hit ten seconds ago does not make a current HP stale.
 /// </param>
+/// <param name="SelectedTarget">
+/// Which entity the character last acted on, from the wire's <c>ct</c>. The
+/// answer to <i>which</i>; <see cref="HasTarget"/> is the screen's answer to
+/// <i>whether</i>, and neither stands in for the other (ADR-0018). Null when
+/// nothing has looked; sticky when known, so the state does not age on it.
+/// </param>
 public sealed record Gate3WorldState(
     ClassifiedValue<int> Hp,
     ClassifiedValue<int> MaxHp,
@@ -53,7 +60,8 @@ public sealed record Gate3WorldState(
     ClassifiedValue<bool> InCombat,
     IReadOnlyList<SelectableEntity>? Entities = null,
     ClassifiedValue<MapPoint>? PlayerPosition = null,
-    ClassifiedValue<Aggressor>? HitBy = null)
+    ClassifiedValue<Aggressor>? HitBy = null,
+    ClassifiedValue<TargetedEntity>? SelectedTarget = null)
 {
     /// <summary>Whether the character's own vitals are all known.</summary>
     /// <remarks>
@@ -178,6 +186,7 @@ public sealed record Gate3WorldState(
         if (InCombat.HasValue) yield return InCombat.Source;
         if (PlayerPosition is { HasValue: true } position) yield return position.Source;
         if (HitBy is { HasValue: true } hit) yield return hit.Source;
+        if (SelectedTarget is { HasValue: true } selected) yield return selected.Source;
     }
 
     /// <remarks>
@@ -205,7 +214,8 @@ public sealed record Gate3WorldState(
         ClassifiedValue<bool>.Unknown(reason),
         Entities: null,
         PlayerPosition: ClassifiedValue<MapPoint>.Unknown(reason),
-        HitBy: ClassifiedValue<Aggressor>.Unknown(reason));
+        HitBy: ClassifiedValue<Aggressor>.Unknown(reason),
+        SelectedTarget: ClassifiedValue<TargetedEntity>.Unknown(reason));
 
     /// <summary>
     /// The planning state a gameplay observation implies, field by field.
@@ -236,7 +246,8 @@ public sealed record Gate3WorldState(
             InCombat: observation.InCombat,
             Entities: observation.Entities.HasValue ? observation.Entities.Value : null,
             PlayerPosition: observation.PlayerPosition,
-            HitBy: observation.HitBy);
+            HitBy: observation.HitBy,
+            SelectedTarget: observation.SelectedTarget);
     }
 
     /// <summary>State read from the real client.</summary>
