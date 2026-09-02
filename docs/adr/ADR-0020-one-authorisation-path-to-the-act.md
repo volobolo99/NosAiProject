@@ -191,6 +191,25 @@ be composed into the pipeline, so "nothing emits without an authorisation bound 
 act" becomes a property of the signature rather than of the call order — Gate 7's
 architecture test, kept, at the boundary `ADR-0019` chose.
 
+**What that boundary can actually verify, added while implementing this** (2 Sep 2026).
+The sentence above did not say, and the difference matters. The effector **cannot check
+the signature**: the key lives in the issuer and must not leave it. What it can check is
+that the token is bound to *this* candidate and that it has not expired **in the instant
+of emission** — and that is precisely the interval this record says is covered by
+nothing, because between the executor consuming the token and the click there is the
+keybind lookup and the projection.
+
+So the guarantee here is of two different strengths and they must not be conflated. The
+strong one is **by type**: `ApplyAsync` requires a token, so an effector that cannot
+receive one does not exist as far as the pipeline is concerned, and a reflection test
+holds that over every implementation rather than over the ones that happen to exist
+today. The weaker one is **by check**: binding and freshness, at the last moment before
+the act.
+
+Whoever reads this must not come away believing the effector re-verifies the signature.
+A defence that appears to be there is worse than one that is absent, which is the failure
+this whole record exists to remove.
+
 **What the digest does not cover, deliberately.** The pixel. The coordinate is computed
 in the effector, after authorisation, from the map point the digest *does* cover; what
 guards the pixel is the commit point, whose third and fifth conditions ask whether that
