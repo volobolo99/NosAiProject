@@ -229,6 +229,7 @@ public partial class MainWindow : Window
         DecisionFields.ItemsSource = DecisionInspect.Inspect(_session.Kind, _session.DescribeDecisions());
         ResilienceFields.ItemsSource = snapshot.Resilience;
         EventLogFields.ItemsSource = EventLogInspect.Inspect(eventLog);
+        ApplyMap(snapshot);
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
@@ -247,6 +248,17 @@ public partial class MainWindow : Window
             _ => "Nessun runtime. Premere Avvia, oppure lasciare l'auto-avvio attivo."
         };
         StopButton.Content = _session.Kind == SessionKind.Attached ? "Scollega" : "Ferma";
+    }
+
+    private void ApplyMap(SnapshotView snapshot)
+    {
+        MapView map = MapInspect.Observe(_session.Kind, snapshot.ClientProcessId);
+        MapFields.ItemsSource = map.Fields;
+        StandingCellText.Text = map.StandingLine;
+        StandingCellText.Foreground = map.StandingIsError
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("TextBrush");
+        MapCropGlyphs.Text = map.CropGlyphs;
     }
 
     private static string ModeLabel(SessionKind kind) => kind switch
@@ -268,6 +280,7 @@ public partial class MainWindow : Window
 
         NavOverview.Style = (Style)FindResource("NavButton");
         NavClient.Style = (Style)FindResource("NavButton");
+        NavMap.Style = (Style)FindResource("NavButton");
         NavPhone.Style = (Style)FindResource("NavButton");
         NavPerception.Style = (Style)FindResource("NavButton");
         NavNetwork.Style = (Style)FindResource("NavButton");
@@ -280,6 +293,7 @@ public partial class MainWindow : Window
 
         ViewOverview.Visibility = Visibility.Collapsed;
         ViewClient.Visibility = Visibility.Collapsed;
+        ViewMap.Visibility = Visibility.Collapsed;
         ViewPhone.Visibility = Visibility.Collapsed;
         ViewPerception.Visibility = Visibility.Collapsed;
         ViewNetwork.Visibility = Visibility.Collapsed;
@@ -291,6 +305,7 @@ public partial class MainWindow : Window
 
         if (ReferenceEquals(button, NavOverview)) { ViewOverview.Visibility = Visibility.Visible; PageTitle.Text = "Panoramica"; }
         else if (ReferenceEquals(button, NavClient)) { ViewClient.Visibility = Visibility.Visible; PageTitle.Text = "Client NosTale"; }
+        else if (ReferenceEquals(button, NavMap)) { ViewMap.Visibility = Visibility.Visible; PageTitle.Text = "Mappa"; }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception)) { ViewPerception.Visibility = Visibility.Visible; PageTitle.Text = "Percezione"; }
         else if (ReferenceEquals(button, NavNetwork))

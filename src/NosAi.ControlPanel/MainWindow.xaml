@@ -69,6 +69,7 @@
         <StackPanel Margin="4,8,4,8">
           <Button x:Name="NavOverview" Style="{StaticResource NavButtonActive}" Content="Panoramica" Click="OnNav"/>
           <Button x:Name="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
+          <Button x:Name="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
           <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
@@ -172,6 +173,26 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Baseline OS: processo e finestra. Il gameplay resta UNKNOWN finché non esiste un provider di memoria.</TextBlock>
             <ItemsControl x:Name="ClientFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewMap" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">
+              Griglia statica e cella di appoggio. UNKNOWN è un disegno proprio, non una cella vuota e non il fuori-griglia. L'occupancy dinamica non è sullo snapshot: non è disegnata, quindi una cella chiara è solo geometria, non «libero».
+            </TextBlock>
+            <ItemsControl x:Name="MapFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="CELLA DI APPOGGIO"/>
+                <TextBlock x:Name="StandingCellText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="Cella di appoggio: UNKNOWN"/>
+              </StackPanel>
+            </Border>
+            <TextBlock FontWeight="SemiBold" Margin="0,0,0,6">Ritaglio 31×31</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" FontFamily="Consolas" Text="· calpestabile    # bloccata    × fuori griglia    ? UNKNOWN"/>
+            <Border Style="{StaticResource CardChrome}" HorizontalAlignment="Left">
+              <TextBlock x:Name="MapCropGlyphs" FontFamily="Consolas" FontSize="11" Text="?"/>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
