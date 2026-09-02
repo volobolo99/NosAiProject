@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
@@ -38,11 +37,10 @@ public readonly record struct WorldReplayEntityRow(
 /// <param name="Inventory">Every <c>ivn</c>.</param>
 /// <param name="Pickups">Every <c>get</c>.</param>
 /// <param name="GroundItems">Every <c>drop</c>.</param>
-/// <param name="SelectionCount">How many <c>ct</c> selections the observation carried.</param>
+/// <param name="Selections">Every <c>ct</c> the report published as <see cref="PlayerTargetSelection"/>.</param>
 /// <param name="SelectionReason">
-/// Why selections are zero when they are: the decoder does not publish <c>ct</c>
-/// on <see cref="NetworkObservationReport"/> today, and an empty list is not a
-/// count of zero looks.
+/// Why selections are zero when they are. An empty contract is
+/// <see cref="WorldReplayCommand.CtEmpty"/>, not a count of zero looks.
 /// </param>
 /// <param name="ObservedPackets">Packets the observer took.</param>
 /// <param name="DecodedPackets">Packets that produced a non-empty decode.</param>
@@ -57,7 +55,7 @@ public sealed record WorldReplayReport(
     IReadOnlyList<InventorySlotReading> Inventory,
     IReadOnlyList<ItemPickup> Pickups,
     IReadOnlyList<GroundItem> GroundItems,
-    int SelectionCount,
+    IReadOnlyList<PlayerTargetSelection> Selections,
     string SelectionReason,
     long ObservedPackets,
     long DecodedPackets,
@@ -93,8 +91,8 @@ public static class WorldReplayCommand
     /// <summary>The operator flag.</summary>
     public const string Flag = "--world-replay";
 
-    /// <summary><c>ct</c> is not a property of <see cref="NetworkObservationReport"/>.</summary>
-    public const string CtNotOnObservation = "ct_not_on_observation";
+    /// <summary>The <see cref="PlayerTargetSelection"/> contract arrived empty.</summary>
+    public const string CtEmpty = "ct_empty";
 
     /// <summary>No <c>in</c>/<c>mv</c>/<c>st</c> sighting was published.</summary>
     public const string NothingSighted = "nothing_sighted";
@@ -170,10 +168,9 @@ public static class WorldReplayCommand
         var inventory = new List<InventorySlotReading>();
         var pickups = new List<ItemPickup>();
         var ground = new List<GroundItem>();
+        var selections = new List<PlayerTargetSelection>();
         long observed = 0, decoded = 0, undecodable = 0;
         DateTime? asOf = null;
-        int selections = 0;
-        string selectionReason = CtNotOnObservation;
 
         IPacketSource packets = openSource();
         var endpoint = new GameEndpoint(packets.ServerAddress.ToString(), packets.ServerPort);
@@ -228,18 +225,14 @@ public static class WorldReplayCommand
                 asOf = Later(asOf, item.ObservedAtUtc);
             }
 
-            asOf = Later(asOf, report.PlayerAttackedAtUtc);
-            (int extra, string? reason) = CountSelections(report);
-            if (reason is null)
+            if (report.LastPlayerTarget is { } selection)
             {
-                selections += extra;
-                if (extra > 0)
-                    selectionReason = "";
+                selections.Add(selection);
+                asOf = Later(asOf, selection.ObservedAtUtc);
             }
-        }
 
-        if (selections == 0 && selectionReason.Length == 0)
-            selectionReason = CtNotOnObservation;
+            asOf = Later(asOf, report.PlayerAttackedAtUtc);
+        }
 
         DateTime stamp = asOf ?? default;
         var rows = new List<WorldReplayEntityRow>(entities.Count);
@@ -255,7 +248,7 @@ public static class WorldReplayCommand
             pickups,
             ground,
             selections,
-            selectionReason,
+            selections.Count == 0 ? CtEmpty : "",
             observed,
             decoded,
             undecodable,
@@ -291,7 +284,12 @@ public static class WorldReplayCommand
                 $"  hits=1  id={hit.By.EntityId}  type={hit.By.EntityType}  at={hit.ObservedAtUtc:O}"));
         }
 
-        AppendCounted(text, "selections (ct)", report.SelectionCount, report.SelectionReason);
+        AppendCounted(text, "selections (ct)", report.Selections.Count, report.SelectionReason);
+        foreach (PlayerTargetSelection selection in report.Selections)
+        {
+            text.AppendLine(string.Create(CultureInfo.InvariantCulture,
+                $"  id={selection.Target.EntityId}  type={selection.Target.EntityType}  at={selection.ObservedAtUtc:O}"));
+        }
         AppendCounted(text, "cooldowns (sr)", report.SkillsReady.Count, SkillReadyEmpty);
         foreach (SkillReady ready in report.SkillsReady)
         {
@@ -336,8 +334,8 @@ public static class WorldReplayCommand
         Inventory: Array.Empty<InventorySlotReading>(),
         Pickups: Array.Empty<ItemPickup>(),
         GroundItems: Array.Empty<GroundItem>(),
-        SelectionCount: 0,
-        SelectionReason: CtNotOnObservation,
+        Selections: Array.Empty<PlayerTargetSelection>(),
+        SelectionReason: CtEmpty,
         ObservedPackets: 0,
         DecodedPackets: 0,
         UndecodablePackets: 0,
@@ -372,27 +370,16 @@ public static class WorldReplayCommand
     }
 
     /// <summary>
-    /// Distinguishes a missing member from a null member. Does not invent a
-    /// number from neighbouring packet fields.
+    /// <see cref="EntitySighting.Vnum"/> is null when no packet stated it
+    /// (<c>vnum assente</c>). A sighting type with no such member would print
+    /// <c>vnum non letto</c>; the contract now carries the member.
     /// </summary>
     internal static string DescribeVnum(EntitySighting sighting, out int? vnum)
     {
-        vnum = null;
-        PropertyInfo? property = typeof(EntitySighting).GetProperty("Vnum");
-        if (property is null)
-            return VnumNotRead;
-
-        object? boxed = property.GetValue(sighting);
-        if (boxed is null)
+        vnum = sighting.Vnum;
+        if (vnum is null)
             return VnumAbsent;
-
-        if (boxed is int n)
-        {
-            vnum = n;
-            return string.Create(CultureInfo.InvariantCulture, $"vnum={n}");
-        }
-
-        return VnumNotRead;
+        return string.Create(CultureInfo.InvariantCulture, $"vnum={vnum.Value}");
     }
 
     private static string DescribeName(
@@ -428,29 +415,5 @@ public static class WorldReplayCommand
         if (current is null || candidate.Value > current.Value)
             return candidate;
         return current;
-    }
-
-    /// <summary>
-    /// <c>ct</c> is not on the report type today. If a parallel session published
-    /// a collection named for it, count that; otherwise the zero is
-    /// <see cref="CtNotOnObservation"/>, not an invented empty look.
-    /// </summary>
-    private static (int Count, string? Reason) CountSelections(NetworkObservationReport report)
-    {
-        foreach (string name in new[] { "Selections", "TargetSelections", "CurrentTargets" })
-        {
-            PropertyInfo? property = typeof(NetworkObservationReport).GetProperty(name);
-            if (property is null)
-                continue;
-            if (property.GetValue(report) is System.Collections.IEnumerable items)
-            {
-                int n = 0;
-                foreach (object? _ in items)
-                    n++;
-                return (n, null);
-            }
-        }
-
-        return (0, CtNotOnObservation);
     }
 }

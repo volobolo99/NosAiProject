@@ -63,8 +63,10 @@ public sealed class KeybindsCheckTests : IDisposable
         Assert.Contains(path, text, StringComparison.Ordinal);
         Assert.Contains("exists:  false", text, StringComparison.Ordinal);
         Assert.Contains("configured: (none)", text, StringComparison.Ordinal);
-        Assert.Contains("consumable.*", text, StringComparison.Ordinal);
-        Assert.Contains("skill.*", text, StringComparison.Ordinal);
+        Assert.Contains("uncovered (heal then attack):", text, StringComparison.Ordinal);
+        int heal = text.IndexOf("consumable.*", StringComparison.Ordinal);
+        int attack = text.IndexOf("skill.*", StringComparison.Ordinal);
+        Assert.True(heal >= 0 && attack > heal, "planner order is heal then attack");
         Assert.Equal(1, KeybindsCheck.Run(path));
     }
 

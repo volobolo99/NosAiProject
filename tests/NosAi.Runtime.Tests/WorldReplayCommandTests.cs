@@ -50,11 +50,11 @@ public sealed class WorldReplayCommandTests : IDisposable
         Assert.Empty(report.Inventory);
         Assert.Empty(report.Pickups);
         Assert.Empty(report.GroundItems);
-        Assert.Equal(0, report.SelectionCount);
-        Assert.Equal(WorldReplayCommand.CtNotOnObservation, report.SelectionReason);
+        Assert.Empty(report.Selections);
+        Assert.Equal(WorldReplayCommand.CtEmpty, report.SelectionReason);
         Assert.Contains("entities: 0  reason=nothing_sighted", text, StringComparison.Ordinal);
         Assert.Contains("aggressors: 0  reason=player_hit_empty", text, StringComparison.Ordinal);
-        Assert.Contains("selections (ct): 0  reason=ct_not_on_observation", text, StringComparison.Ordinal);
+        Assert.Contains("selections (ct): 0  reason=ct_empty", text, StringComparison.Ordinal);
         Assert.Contains("cooldowns (sr): 0  reason=skill_ready_empty", text, StringComparison.Ordinal);
         Assert.Contains("inventory (ivn): 0  reason=inventory_slot_empty", text, StringComparison.Ordinal);
         Assert.Contains("pickups (get): 0  reason=item_pickup_empty", text, StringComparison.Ordinal);
@@ -87,22 +87,23 @@ public sealed class WorldReplayCommandTests : IDisposable
     [Fact]
     public void AnEntityRowNamesVnumAbsenceExplicitly()
     {
-        WorldReplayReport report = WorldReplayCommand.Inspect(Recording(Encoded("in 3 221 999 10 20 0 80 100")));
+        WorldReplayReport report = WorldReplayCommand.Inspect(Recording(
+            Encoded("in 3 221 999 10 20 0 80 100"),
+            Encoded("mv 3 888 5 6 11")));
         string text = WorldReplayCommand.Format(report);
 
         Assert.True(report.Ok);
-        WorldReplayEntityRow row = Assert.Single(report.Entities);
-        Assert.Equal(999, row.EntityId);
-        Assert.Equal(10, row.X);
-        Assert.Equal(20, row.Y);
-        Assert.True(
-            row.VnumText is WorldReplayCommand.VnumNotRead
-                or WorldReplayCommand.VnumAbsent
-                || row.VnumText.StartsWith("vnum=", StringComparison.Ordinal),
-            row.VnumText);
-        Assert.Contains("UNKNOWN", row.NameText, StringComparison.Ordinal);
-        Assert.Contains("id=999", text, StringComparison.Ordinal);
-        Assert.Contains("pos=10,20", text, StringComparison.Ordinal);
+        Assert.Equal(2, report.Entities.Count);
+        WorldReplayEntityRow spawned = Assert.Single(report.Entities, e => e.EntityId == 999);
+        Assert.Equal("vnum=221", spawned.VnumText);
+        Assert.Equal(10, spawned.X);
+        Assert.Equal(20, spawned.Y);
+        WorldReplayEntityRow movedOnly = Assert.Single(report.Entities, e => e.EntityId == 888);
+        Assert.Equal(WorldReplayCommand.VnumAbsent, movedOnly.VnumText);
+        Assert.Contains("UNKNOWN (vnum assente)", text, StringComparison.Ordinal);
+        Assert.Contains("vnum=221", text, StringComparison.Ordinal);
+        Assert.Contains(WorldReplayCommand.VnumAbsent, text, StringComparison.Ordinal);
+        Assert.NotEqual(WorldReplayCommand.VnumNotRead, WorldReplayCommand.VnumAbsent);
     }
 
     [Fact]
