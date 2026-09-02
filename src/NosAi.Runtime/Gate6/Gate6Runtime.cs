@@ -72,10 +72,10 @@ namespace NosAi.Runtime.Gate6
     /// </summary>
     public sealed class AuthorizedActionExecutor
     {
-        private readonly SafetyGate _safetyGate;
+        private readonly ActionTokenIssuer _safetyGate;
         private readonly SimulatedGameWorld _world;
 
-        public AuthorizedActionExecutor(SafetyGate safetyGate, SimulatedGameWorld world)
+        public AuthorizedActionExecutor(ActionTokenIssuer safetyGate, SimulatedGameWorld world)
         {
             _safetyGate = safetyGate;
             _world = world;
@@ -193,7 +193,7 @@ namespace NosAi.Runtime.Gate6
 
         private readonly TrustBoundary _trustBoundary;
         private readonly GuardPolicyEngine _guardPolicy;
-        private readonly SafetyGate _safetyGate;
+        private readonly ActionTokenIssuer _safetyGate;
         private readonly AuthorizedActionExecutor _executor;
         private readonly ActionExecutionVerifier _verifier;
         private readonly RecoveryController _recovery;
@@ -217,7 +217,7 @@ namespace NosAi.Runtime.Gate6
             _world = world ?? new SimulatedGameWorld();
             _trustBoundary = new TrustBoundary(TrustTier.Tier2_SemiAutonomous);
             _guardPolicy = new GuardPolicyEngine();
-            _safetyGate = new SafetyGate(_trustBoundary, _guardPolicy);
+            _safetyGate = new ActionTokenIssuer(_trustBoundary, _guardPolicy);
             _executor = new AuthorizedActionExecutor(_safetyGate, _world);
             _verifier = new ActionExecutionVerifier();
             _recovery = new RecoveryController(_trustBoundary);
@@ -340,7 +340,7 @@ namespace NosAi.Runtime.Gate6
             allPassed &= Run("Canonical NOSA header round-trips and rejects corrupted magic", TestCanonicalWireHeader);
             allPassed &= Run("Canonical sequence guard rejects replay and skip", TestCanonicalSequenceGuard);
             allPassed &= Run("RSA-2048 challenge is single use end to end", TestRsaChallengeSingleUse);
-            allPassed &= Run("Safety token is HMAC-bound and single consumption", TestSafetyGateAndTokenConsumption);
+            allPassed &= Run("Safety token is HMAC-bound and single consumption", TestActionTokenIssuerAndTokenConsumption);
             allPassed &= Run("Foreign and tampered safety tokens are rejected", TestForgedTokenRejection);
             allPassed &= Run("Guard policy blocks cooling combat, high risk and stopped mode", TestGuardPolicyBoundaries);
             allPassed &= await RunAsync("Closed loop succeeds against the simulated world and says so", TestClosedLoopSimulatedSuccessAsync).ConfigureAwait(false);
@@ -438,10 +438,10 @@ namespace NosAi.Runtime.Gate6
 
         // -------------------------------------------------------- safety boundary
 
-        private static bool TestSafetyGateAndTokenConsumption()
+        private static bool TestActionTokenIssuerAndTokenConsumption()
         {
             var trust = new TrustBoundary(TrustTier.Tier3_AutonomousRestricted);
-            var gate = new SafetyGate(trust, new GuardPolicyEngine());
+            var gate = new ActionTokenIssuer(trust, new GuardPolicyEngine());
 
             var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, new ActionTarget.Entity(SimulatedTargetEntityId), 201, TrustTier.Tier2_SemiAutonomous, "Test");
             var outcome = new PredictedOutcome(candidate.CandidateId, 0, -35, 200, 0.95f, 0.1f, "SIG");
@@ -457,8 +457,8 @@ namespace NosAi.Runtime.Gate6
         private static bool TestForgedTokenRejection()
         {
             var trust = new TrustBoundary(TrustTier.Tier3_AutonomousRestricted);
-            var gateA = new SafetyGate(trust, new GuardPolicyEngine());
-            var gateB = new SafetyGate(trust, new GuardPolicyEngine());
+            var gateA = new ActionTokenIssuer(trust, new GuardPolicyEngine());
+            var gateB = new ActionTokenIssuer(trust, new GuardPolicyEngine());
 
             var candidate = new ActionCandidate(Guid.NewGuid(), ActionType.UseSkill, new ActionTarget.Entity(SimulatedTargetEntityId), 201, TrustTier.Tier2_SemiAutonomous, "Test");
             var outcome = new PredictedOutcome(candidate.CandidateId, 0, -35, 200, 0.95f, 0.1f, "SIG");

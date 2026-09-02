@@ -1,5 +1,6 @@
 using System.Net;
 using NosAi.LiveIntegration.Capture;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Security;
@@ -76,7 +77,7 @@ public sealed class ScopedLiveCaptureBackendTests
         // very component that exists to run it. This test states that on purpose --
         // an earlier version of it assumed the opposite and was wrong.
         AuthorizationDecision decision = new Gate1AuthorizationPolicy().Evaluate(
-            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1, TrustTier.Tier4);
+            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
 
         Assert.True(decision.Allowed);
 

@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Security;
 
@@ -21,7 +22,7 @@ namespace NosAi.Runtime.Safety;
 /// question and cannot overturn a rejection.
 /// </para>
 /// </remarks>
-public sealed class SafetyGate : ISafetyGate
+public sealed class CapabilityAuthorizationGate : ISafetyGate
 {
     private readonly IRuntimeAuthorizationPolicy _policy;
     private readonly SecurityPrincipal _principal;
@@ -33,12 +34,12 @@ public sealed class SafetyGate : ISafetyGate
     /// arriving through the orchestrator has no person behind it, and assuming one
     /// would grant it more than it should have.
     /// </remarks>
-    public SafetyGate()
-        : this(new Gate1AuthorizationPolicy(), SecurityPrincipal.AutonomousAgent, TrustTier.Tier1)
+    public CapabilityAuthorizationGate()
+        : this(new Gate1AuthorizationPolicy(), SecurityPrincipal.AutonomousAgent, TrustTier.Tier1_Assisted)
     {
     }
 
-    public SafetyGate(IRuntimeAuthorizationPolicy policy, SecurityPrincipal principal, TrustTier grantedTier)
+    public CapabilityAuthorizationGate(IRuntimeAuthorizationPolicy policy, SecurityPrincipal principal, TrustTier grantedTier)
     {
         _policy = policy ?? throw new ArgumentNullException(nameof(policy));
         _principal = principal;

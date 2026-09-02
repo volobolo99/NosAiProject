@@ -19,11 +19,11 @@ namespace NosAi.Runtime.Autonomy;
 /// behaved differently.
 /// </para>
 /// <para>
-/// <b>What the duplication was hiding.</b> Gate 6's <c>SafetyGate.ValidateToken</c>
+/// <b>What the duplication was hiding.</b> Gate 6's token validator
 /// checked the signature but <i>not</i> the expiry, while Gate 3's checked both.
 /// Both gates issue tokens with a 1500 ms lifetime, so in the Gate 6 path that
 /// lifetime was decoration: an expired token still validated. The merged
-/// <see cref="SafetyGate"/> below enforces expiry, which is the fail-closed
+/// <see cref="ActionTokenIssuer"/> below enforces expiry, which is the fail-closed
 /// behaviour both gates were written to have.
 /// </para>
 /// <para>
@@ -46,11 +46,10 @@ public static class AutonomyPipelineNotes
 
 /// <summary>How much autonomy the runtime is currently trusted with.</summary>
 /// <remarks>
-/// Not to be confused with <c>NosAi.Runtime.Contracts.TrustTier</c>, which grades
-/// the sensitivity of a <c>RuntimeCapability</c> request and numbers its tiers
-/// 1–4 with no read-only floor. This one grades the runtime's own autonomy and
-/// starts at <see cref="Tier0_ReadOnly"/>. Two different questions that happened
-/// to pick the same word.
+/// The scale starts at <see cref="Tier0_ReadOnly"/>. Tiers 1–4 coincide
+/// numerically with the former <c>Contracts.TrustTier</c> members
+/// (<c>Tier1</c>…<c>Tier4</c>), which this type absorbed: a comparison or a
+/// serialization by number does not change meaning.
 /// </remarks>
 public enum TrustTier : byte
 {
@@ -432,7 +431,7 @@ public sealed class GuardPolicyEngine
 /// The signing key is generated per instance and never leaves it, so a token is
 /// only valid at the gate that issued it.
 /// </remarks>
-public sealed class SafetyGate
+public sealed class ActionTokenIssuer
 {
     private readonly TrustBoundary _trustBoundary;
     private readonly GuardPolicyEngine _guardPolicy;
@@ -449,7 +448,7 @@ public sealed class SafetyGate
     /// in both original copies, which is part of why the Gate 6 version could drop
     /// the expiry check without any test noticing.
     /// </param>
-    public SafetyGate(TrustBoundary trustBoundary, GuardPolicyEngine guardPolicy, TimeSpan? tokenLifetime = null)
+    public ActionTokenIssuer(TrustBoundary trustBoundary, GuardPolicyEngine guardPolicy, TimeSpan? tokenLifetime = null)
     {
         _trustBoundary = trustBoundary;
         _guardPolicy = guardPolicy;
@@ -594,7 +593,7 @@ public sealed record RecoveryHaltTransition(
 /// component that has been failing does not get to decide it is trustworthy again.
 /// So closing the breaker after a halt restores the <see cref="RuntimeMode"/> and
 /// nothing else — if the halt also dropped trust to
-/// <see cref="TrustTier.Tier0_ReadOnly"/>, the <see cref="SafetyGate"/> keeps
+/// <see cref="TrustTier.Tier0_ReadOnly"/>, the <see cref="ActionTokenIssuer"/> keeps
 /// refusing until whoever is watching restores it. That asymmetry is intended and
 /// is the reason this class has no method whose name would let it be mistaken for
 /// an escalation.

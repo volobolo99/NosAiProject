@@ -1,6 +1,7 @@
 using System.Net;
 using NosAi.LiveIntegration;
 using NosAi.LiveIntegration.Capture;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Observability;
 using NosAi.Runtime.Perception;
@@ -182,7 +183,7 @@ public sealed class Gate1ObservationChannel : IDisposable
 
         var policy = new Gate1AuthorizationPolicy();
         AuthorizationDecision decision = policy.Evaluate(
-            SecurityPrincipal.Operator, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1, TrustTier.Tier4);
+            SecurityPrincipal.Operator, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
         if (!decision.Allowed)
         {
             string denied = $"not_authorized:{decision.Reason}";

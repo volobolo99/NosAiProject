@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Security;
 
@@ -90,7 +91,7 @@ public sealed class ProcessMemoryReader : IDisposable
         // Authorised before anything is opened: the check is the gate, not a label
         // applied afterwards.
         var policy = authorization ?? new Gate1AuthorizationPolicy();
-        var decision = policy.Evaluate(principal, RuntimeCapability.ReadProcessMemory, TrustTier.Tier1, TrustTier.Tier4);
+        var decision = policy.Evaluate(principal, RuntimeCapability.ReadProcessMemory, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
         if (!decision.Allowed)
         {
             failureReason = $"not_authorized:{decision.Reason}";

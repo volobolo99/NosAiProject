@@ -61,7 +61,7 @@ public static class RuntimeComposition
             () => safety.Policy.LiveInputEnabled);
 
         return new RuntimeComponents(
-            safety, input, humanizer, new GuardAi(), new SafetyGate(), humanInput, authority);
+            safety, input, humanizer, new GuardAi(), new CapabilityAuthorizationGate(), humanInput, authority);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public static class RuntimeComposition
         var safety = new RuntimeSafetyController(policy);
         var input = new GatedInputBackend(rawInput, () => safety.Policy);
         return new RuntimeComponents(
-            safety, input, new DeterministicHumanizer(input), new GuardAi(), new SafetyGate(),
+            safety, input, new DeterministicHumanizer(input), new GuardAi(), new CapabilityAuthorizationGate(),
             NotWatchingHumanInput.Instance);
     }
 }

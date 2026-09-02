@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Security;
@@ -26,8 +27,8 @@ public sealed class RuntimeAuthorizationTests
     private static AuthorizationDecision Ask(
         SecurityPrincipal principal,
         RuntimeCapability capability,
-        TrustTier required = TrustTier.Tier1,
-        TrustTier granted = TrustTier.Tier4)
+        TrustTier required = TrustTier.Tier1_Assisted,
+        TrustTier granted = TrustTier.Tier4_FullAutonomous)
         => Policy.Evaluate(principal, capability, required, granted);
 
     // ------------------------------------------------------------ fail closed
@@ -115,7 +116,7 @@ public sealed class RuntimeAuthorizationTests
             if (principal == SecurityPrincipal.Unknown)
                 continue;
 
-            var decision = Ask(principal, capability, TrustTier.Tier1, TrustTier.Tier4);
+            var decision = Ask(principal, capability, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
 
             Assert.False(decision.Allowed);
             Assert.Equal(Gate1AuthorizationPolicy.ExecutionDisabledReason, decision.Reason);
@@ -128,7 +129,7 @@ public sealed class RuntimeAuthorizationTests
         // Trust and gate level are different axes. Holding Tier 4 must not read as
         // permission to act while the gate says otherwise.
         var decision = Ask(SecurityPrincipal.Operator, RuntimeCapability.ExecuteGameAction,
-            TrustTier.Tier1, TrustTier.Tier4);
+            TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
 
         Assert.False(decision.Allowed);
         Assert.Equal(Gate1AuthorizationPolicy.ExecutionDisabledReason, decision.Reason);
@@ -174,7 +175,7 @@ public sealed class RuntimeAuthorizationTests
     public void ATierBelowWhatTheActionDemandsIsRefusedWithBothTiersNamed()
     {
         var decision = Ask(SecurityPrincipal.Operator, RuntimeCapability.RequestCommand,
-            required: TrustTier.Tier4, granted: TrustTier.Tier2);
+            required: TrustTier.Tier4_FullAutonomous, granted: TrustTier.Tier2_SemiAutonomous);
 
         Assert.False(decision.Allowed);
         Assert.Contains("trust_tier_insufficient", decision.Reason);
@@ -186,7 +187,7 @@ public sealed class RuntimeAuthorizationTests
     public void AnExactTierMatchIsEnough()
     {
         Assert.True(Ask(SecurityPrincipal.Operator, RuntimeCapability.RequestCommand,
-            required: TrustTier.Tier3, granted: TrustTier.Tier3).Allowed);
+            required: TrustTier.Tier3_AutonomousRestricted, granted: TrustTier.Tier3_AutonomousRestricted).Allowed);
     }
 
     // -------------------------------------------------------- the safety gate
@@ -197,12 +198,12 @@ public sealed class RuntimeAuthorizationTests
         // The outcome must not have changed: this used to be a bare `return false`,
         // and adding reasons must not have turned a gate that always refused into
         // one that sometimes permits.
-        var gate = new SafetyGate();
-        var allowed = new GuardDecision(true, TrustTier.Tier4, "guard_ok");
+        var gate = new CapabilityAuthorizationGate();
+        var allowed = new GuardDecision(true, TrustTier.Tier4_FullAutonomous, "guard_ok");
 
         foreach (ActionKind kind in Enum.GetValues<ActionKind>())
         {
-            var action = new CandidateAction($"a-{kind}", kind, TrustTier.Tier1, 1.0);
+            var action = new CandidateAction($"a-{kind}", kind, TrustTier.Tier1_Assisted, 1.0);
             Assert.False(gate.Authorize(action, allowed));
         }
     }
@@ -212,10 +213,10 @@ public sealed class RuntimeAuthorizationTests
     {
         // The specific loosening this guards against: routing NoOp to observation
         // would have made the gate authorise it.
-        var gate = new SafetyGate();
-        var action = new CandidateAction("noop", ActionKind.NoOp, TrustTier.Tier1, 0.0);
+        var gate = new CapabilityAuthorizationGate();
+        var action = new CandidateAction("noop", ActionKind.NoOp, TrustTier.Tier1_Assisted, 0.0);
 
-        var decision = gate.Evaluate(action, new GuardDecision(true, TrustTier.Tier4, "guard_ok"));
+        var decision = gate.Evaluate(action, new GuardDecision(true, TrustTier.Tier4_FullAutonomous, "guard_ok"));
 
         Assert.False(decision.Allowed);
         Assert.Equal(Gate1AuthorizationPolicy.ExecutionDisabledReason, decision.Reason);
@@ -226,10 +227,10 @@ public sealed class RuntimeAuthorizationTests
     {
         // The guard's verdict comes first: the policy answers a different question
         // and must never be able to reverse a rejection.
-        var gate = new SafetyGate();
-        var action = new CandidateAction("a", ActionKind.Move, TrustTier.Tier1, 1.0);
+        var gate = new CapabilityAuthorizationGate();
+        var action = new CandidateAction("a", ActionKind.Move, TrustTier.Tier1_Assisted, 1.0);
 
-        var decision = gate.Evaluate(action, new GuardDecision(false, TrustTier.Tier1, "too_risky"));
+        var decision = gate.Evaluate(action, new GuardDecision(false, TrustTier.Tier1_Assisted, "too_risky"));
 
         Assert.False(decision.Allowed);
         Assert.StartsWith("guard_refused:", decision.Reason);
@@ -239,10 +240,10 @@ public sealed class RuntimeAuthorizationTests
     [Fact]
     public void TheGateRemembersItsLastDecisionForReporting()
     {
-        var gate = new SafetyGate();
-        var action = new CandidateAction("a", ActionKind.Combat, TrustTier.Tier1, 1.0);
+        var gate = new CapabilityAuthorizationGate();
+        var action = new CandidateAction("a", ActionKind.Combat, TrustTier.Tier1_Assisted, 1.0);
 
-        gate.Authorize(action, new GuardDecision(true, TrustTier.Tier4, "ok"));
+        gate.Authorize(action, new GuardDecision(true, TrustTier.Tier4_FullAutonomous, "ok"));
 
         Assert.NotNull(gate.LastDecision);
         Assert.Equal(Gate1AuthorizationPolicy.ExecutionDisabledReason, gate.LastDecision!.Reason);
@@ -252,10 +253,10 @@ public sealed class RuntimeAuthorizationTests
     [Fact]
     public void TheGateRefusesNullInputRatherThanTreatingItAsPermission()
     {
-        var gate = new SafetyGate();
-        var action = new CandidateAction("a", ActionKind.Move, TrustTier.Tier1, 1.0);
+        var gate = new CapabilityAuthorizationGate();
+        var action = new CandidateAction("a", ActionKind.Move, TrustTier.Tier1_Assisted, 1.0);
 
-        Assert.Throws<ArgumentNullException>(() => gate.Authorize(null!, new GuardDecision(true, TrustTier.Tier1, "ok")));
+        Assert.Throws<ArgumentNullException>(() => gate.Authorize(null!, new GuardDecision(true, TrustTier.Tier1_Assisted, "ok")));
         Assert.Throws<ArgumentNullException>(() => gate.Authorize(action, null!));
     }
 
@@ -263,7 +264,7 @@ public sealed class RuntimeAuthorizationTests
     public void APolicyIsRequiredRatherThanDefaultingToPermissive()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new SafetyGate(null!, SecurityPrincipal.Operator, TrustTier.Tier4));
+            new CapabilityAuthorizationGate(null!, SecurityPrincipal.Operator, TrustTier.Tier4_FullAutonomous));
     }
 
     [Fact]
@@ -271,9 +272,9 @@ public sealed class RuntimeAuthorizationTests
     {
         // An action arriving through the orchestrator has no person behind it.
         // Assuming an operator would grant it more than it should hold.
-        var gate = new SafetyGate();
-        gate.Authorize(new CandidateAction("a", ActionKind.Move, TrustTier.Tier1, 1.0),
-            new GuardDecision(true, TrustTier.Tier1, "ok"));
+        var gate = new CapabilityAuthorizationGate();
+        gate.Authorize(new CandidateAction("a", ActionKind.Move, TrustTier.Tier1_Assisted, 1.0),
+            new GuardDecision(true, TrustTier.Tier1_Assisted, "ok"));
 
         Assert.Equal(SecurityPrincipal.AutonomousAgent, gate.LastDecision!.Principal);
     }

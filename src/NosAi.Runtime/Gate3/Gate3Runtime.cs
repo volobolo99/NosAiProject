@@ -1,4 +1,4 @@
-using SafetyGate = NosAi.Runtime.Autonomy.SafetyGate;
+using ActionTokenIssuer = NosAi.Runtime.Autonomy.ActionTokenIssuer;
 using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
 using NosAi.Runtime.Autonomy;
 // ============================================================================
@@ -567,7 +567,7 @@ namespace NosAi.Runtime.Gate3
     /// </remarks>
     public sealed class AuthorizedActionExecutor
     {
-        private readonly SafetyGate _safetyGate;
+        private readonly ActionTokenIssuer _safetyGate;
         private readonly IActionEffector _effector;
 
         /// <param name="effector">
@@ -575,7 +575,7 @@ namespace NosAi.Runtime.Gate3
         /// with live input off. Passing nothing yields a pipeline that refuses to
         /// act, never one that pretends to.
         /// </param>
-        public AuthorizedActionExecutor(SafetyGate safetyGate, IActionEffector? effector = null)
+        public AuthorizedActionExecutor(ActionTokenIssuer safetyGate, IActionEffector? effector = null)
         {
             _safetyGate = safetyGate;
             _effector = effector ?? new DisabledActionEffector();
@@ -925,7 +925,7 @@ namespace NosAi.Runtime.Gate3
         private readonly TacticalRankingEngine _ranking;
         private readonly GuardPolicyEngine _guard;
         private readonly TrustBoundary _trust;
-        private readonly SafetyGate _safetyGate;
+        private readonly ActionTokenIssuer _safetyGate;
         private readonly AuthorizedActionExecutor _executor;
         private readonly ActionExecutionVerifier _verifier;
         private readonly RecoveryController _recovery;
@@ -1040,7 +1040,7 @@ namespace NosAi.Runtime.Gate3
             _ranking = new TacticalRankingEngine();
             _guard = new GuardPolicyEngine();
             _trust = new TrustBoundary(initialTrust);
-            _safetyGate = new SafetyGate(_trust, _guard);
+            _safetyGate = new ActionTokenIssuer(_trust, _guard);
             _executor = new AuthorizedActionExecutor(_safetyGate, policySource is null
                 ? ActionEffectorFactory.ForPolicy(Policy, effector)
                 : ActionEffectorFactory.ForPolicy(policySource, effector));
@@ -1469,7 +1469,7 @@ namespace NosAi.Runtime.Gate3
 
             allPassed &= Run("Simulation is deterministic and side-effect free", TestSimulationPurity);
             allPassed &= Run("Ranking puts survival first at critical HP", TestTacticalRankingPriorities);
-            allPassed &= Run("Safety Gate denies an action above the trust tier", TestSafetyGateTrustDenial);
+            allPassed &= Run("Safety Gate denies an action above the trust tier", TestActionTokenIssuerTrustDenial);
             allPassed &= Run("A forged safety token is rejected", TestForgedTokenRejected);
             allPassed &= Run("A safety token is single use", TestTokenSingleUse);
             allPassed &= Run("An expired token authorises nothing", TestExpiredTokenRejected);
@@ -1537,7 +1537,7 @@ namespace NosAi.Runtime.Gate3
         private static PredictedOutcome Outcome(Guid id, float risk = 0.0f, string signature = "SIG") =>
             new(id, 0, 0, 200, 1.0f, risk, signature);
 
-        private static SafetyGate Gate(TrustTier tier) =>
+        private static ActionTokenIssuer Gate(TrustTier tier) =>
             new(new TrustBoundary(tier), new GuardPolicyEngine());
 
         /// <summary>An effector that records whether it was ever reached.</summary>
@@ -1592,9 +1592,9 @@ namespace NosAi.Runtime.Gate3
                    && ranked[0].Candidate.Type is ActionType.UseConsumable or ActionType.EmergencyFlee;
         }
 
-        private static bool TestSafetyGateTrustDenial()
+        private static bool TestActionTokenIssuerTrustDenial()
         {
-            SafetyGate gate = Gate(TrustTier.Tier0_ReadOnly);
+            ActionTokenIssuer gate = Gate(TrustTier.Tier0_ReadOnly);
             ActionCandidate candidate = Candidate(ActionType.UseBasicAttack, TrustTier.Tier2_SemiAutonomous);
 
             bool authorized = gate.TryAuthorize(
@@ -1607,7 +1607,7 @@ namespace NosAi.Runtime.Gate3
         {
             // A token whose signature does not come from this gate's key must never
             // authorise: without the check, anyone able to construct the type could act.
-            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionTokenIssuer gate = Gate(TrustTier.Tier4_FullAutonomous);
             var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
 
             return !gate.ValidateToken(forged);
@@ -1615,7 +1615,7 @@ namespace NosAi.Runtime.Gate3
 
         private static bool TestTokenSingleUse()
         {
-            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionTokenIssuer gate = Gate(TrustTier.Tier4_FullAutonomous);
             ActionCandidate candidate = Candidate();
 
             if (!gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal, out SafetyToken? token, out _))
@@ -1626,7 +1626,7 @@ namespace NosAi.Runtime.Gate3
 
         private static bool TestExpiredTokenRejected()
         {
-            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionTokenIssuer gate = Gate(TrustTier.Tier4_FullAutonomous);
             ActionCandidate candidate = Candidate();
 
             if (!gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal, out SafetyToken? issued, out _))
@@ -1729,7 +1729,7 @@ namespace NosAi.Runtime.Gate3
 
         private static async Task<bool> TestTokenBindingEnforcedAsync()
         {
-            SafetyGate gate = Gate(TrustTier.Tier4_FullAutonomous);
+            ActionTokenIssuer gate = Gate(TrustTier.Tier4_FullAutonomous);
             var executor = new AuthorizedActionExecutor(gate, new RecordingEffector());
 
             ActionCandidate authorised = Candidate();

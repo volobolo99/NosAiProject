@@ -1,4 +1,5 @@
 using System.Net;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Security;
@@ -101,7 +102,7 @@ public sealed class ScopedLiveCaptureBackend : IRawScopedCaptureBackend
         // read in this runtime. The phone may ask; it may not capture.
         var policy = authorization ?? new Gate1AuthorizationPolicy();
         AuthorizationDecision decision = policy.Evaluate(
-            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1, TrustTier.Tier4);
+            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
         if (!decision.Allowed)
         {
             failureReason = $"not_authorized:{decision.Reason}";
@@ -140,7 +141,7 @@ public sealed class ScopedLiveCaptureBackend : IRawScopedCaptureBackend
 
         var policy = authorization ?? new Gate1AuthorizationPolicy();
         AuthorizationDecision decision = policy.Evaluate(
-            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1, TrustTier.Tier4);
+            principal, RuntimeCapability.ReadGameTraffic, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
         if (!decision.Allowed)
         {
             failureReason = $"not_authorized:{decision.Reason}";

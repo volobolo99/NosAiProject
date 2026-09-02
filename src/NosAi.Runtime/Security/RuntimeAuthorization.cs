@@ -1,4 +1,4 @@
-using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Autonomy;
 
 namespace NosAi.Runtime.Security;
 
@@ -64,7 +64,7 @@ public enum RuntimeCapability
 /// An authorization answer, with the reason attached.
 /// </summary>
 /// <remarks>
-/// The reason is the point. <c>SafetyGate</c> used to return a bare <c>false</c>,
+/// The reason is the point. <c>CapabilityAuthorizationGate</c> used to return a bare <c>false</c>,
 /// so "denied because Gate 1 disables execution", "denied because the trust tier
 /// is too low" and "denied because this principal was never granted it" were
 /// indistinguishable — to the operator and to a test. A refusal that cannot be

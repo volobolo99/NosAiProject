@@ -2,12 +2,10 @@ using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Gate3;
 using Xunit;
 
-// Aliased rather than imported wholesale: TrustTier, VerificationResult and
-// SafetyGate each exist in more than one namespace (Contracts, Gate3, Gate6,
-// Safety, Host), so a broad using makes every reference ambiguous. The
-// duplication is a real problem in its own right and is recorded in
-// docs/GATE3_PIPELINE.md; collapsing it touches shared contracts and other
-// gates, so it needs coordinating rather than doing halfway here.
+// VerificationResult still exists in both Contracts and Gate 3, and
+// RuntimeSafetyPolicy is aliased so a broad Safety using does not collide
+// with other types in that namespace. TrustTier and the two former
+// SafetyGate types each have one name now.
 using DataSourceKind = NosAi.Runtime.Contracts.DataSourceKind;
 using RuntimeSafetyPolicy = NosAi.Runtime.Safety.RuntimeSafetyPolicy;
 
@@ -392,7 +390,7 @@ public sealed class Gate3Tests
     [Fact]
     public async Task ATokenBoundToAnotherCandidateIsRefusedAndNotBurned()
     {
-        var gate = new SafetyGate(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
+        var gate = new ActionTokenIssuer(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
         var executor = new AuthorizedActionExecutor(gate, new CountingEffector());
 
         var mine = new ActionCandidate(Guid.NewGuid(), ActionType.MoveToPosition, Somewhere, 0, TrustTier.Tier1_Assisted, "a");
@@ -411,7 +409,7 @@ public sealed class Gate3Tests
     [Fact]
     public void AForgedTokenAuthorisesNothing()
     {
-        var gate = new SafetyGate(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
+        var gate = new ActionTokenIssuer(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
         var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
 
         Assert.False(gate.ValidateToken(forged));

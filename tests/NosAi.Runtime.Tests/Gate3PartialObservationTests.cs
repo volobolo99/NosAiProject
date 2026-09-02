@@ -2,9 +2,9 @@ using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Gate3;
 using Xunit;
 
-// Aliased for the same reason Gate3Tests aliases them: TrustTier, SafetyGate and
-// RuntimeSafetyPolicy each exist in more than one namespace, so a broad using
-// makes every reference ambiguous.
+// VerificationResult still exists in both Contracts and Gate 3, and
+// RuntimeSafetyPolicy is aliased so a broad Safety using does not collide
+// with other types in that namespace.
 using DataSourceKind = NosAi.Runtime.Contracts.DataSourceKind;
 using RuntimeSafetyPolicy = NosAi.Runtime.Safety.RuntimeSafetyPolicy;
 

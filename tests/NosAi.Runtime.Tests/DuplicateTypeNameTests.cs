@@ -45,21 +45,6 @@ public sealed class DuplicateTypeNameTests
     private static readonly IReadOnlyDictionary<string, string> Declared =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            // R1: unificazione decisa su NosAi.Runtime.Autonomy.TrustTier, che ha il
-            // gradino Tier0_ReadOnly che la scala di Contracts non sa esprimere. La
-            // rimozione tocca 8 file e 30 siti d'uso, di cui 6 file fuori dal
-            // perimetro di questa sessione (Adapters, Guard, LowLevel,
-            // Orchestration, Security): la propagazione è di Cursor.
-            ["TrustTier"] =
-                "R1: canonica NosAi.Runtime.Autonomy.TrustTier; propagazione ai consumatori pendente",
-
-            // R1: NON un duplicato. Safety.SafetyGate decide se un principal ha il
-            // diritto di esercitare una capability; Autonomy.SafetyGate emette e
-            // valida una credenziale a uso singolo per una singola azione. Zero
-            // membri in comune. Vanno rinominati, non unificati.
-            ["SafetyGate"] =
-                "R1: due concetti sotto un nome; rinomina decisa, propagazione pendente",
-
             // R1: NON un duplicato. Contracts.VerificationResult(bool, string) è
             // l'esito del verificatore della pipeline agente (IAgentVerifier), che
             // non ha implementazioni e il cui unico consumatore non viene mai
@@ -151,8 +136,9 @@ public sealed class DuplicateTypeNameTests
     /// La copia di <c>VerificationResult</c> di Gate 6 è sparita, e non torna.
     /// </summary>
     /// <remarks>
-    /// Nominata a parte perché è la sola unificazione che R1 ha applicato: le altre
-    /// due voci sono decisioni non ancora propagate, questa è un fatto. Se qualcuno
+    /// Nominata a parte perché è la sola unificazione che R1 ha applicato sul
+    /// tipo: TrustTier è stato assorbito sulla canonica Autonomy, i due
+    /// SafetyGate sono stati rinominati (non unificati), questa è un fatto. Se qualcuno
     /// ridichiara il tipo dentro Gate 6, questa prova lo dice prima che le due
     /// definizioni abbiano il tempo di divergere.
     /// </remarks>

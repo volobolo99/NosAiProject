@@ -94,9 +94,8 @@ public sealed class InputActionEffectorTests
         }
     }
 
-    // TrustTier is qualified because it is defined in Contracts, Gate3, Gate6 and
-    // Host at once, and a file importing two of those namespaces cannot say which
-    // it means. That is the shared-boundary debt the roadmap records, met here.
+    // TrustTier is the Autonomy canonical. Qualified here because this file
+    // already imports more than one runtime namespace.
     private static ActionCandidate Candidate(
         ActionType type,
         int skillOrItemId = 0,

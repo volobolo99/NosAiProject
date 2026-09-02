@@ -1,12 +1,6 @@
-namespace NosAi.Runtime.Contracts;
+using NosAi.Runtime.Autonomy;
 
-public enum TrustTier
-{
-    Tier1 = 1,
-    Tier2 = 2,
-    Tier3 = 3,
-    Tier4 = 4
-}
+namespace NosAi.Runtime.Contracts;
 
 public enum ActionKind
 {

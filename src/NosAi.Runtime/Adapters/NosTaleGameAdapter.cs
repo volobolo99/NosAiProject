@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Guard;
 using NosAi.Runtime.Humanizer;
@@ -48,7 +49,7 @@ public sealed class NosTaleGameAdapter : IGameAdapter
     /// </summary>
     public async Task SendMovementCommandAsync(float targetX, float targetY, CancellationToken cancellationToken)
     {
-        var action = new CandidateAction("Movement", ActionKind.Move, TrustTier.Tier2, 0);
+        var action = new CandidateAction("Movement", ActionKind.Move, TrustTier.Tier2_SemiAutonomous, 0);
         Authorize(action);
         var target = new TargetDescriptor(new ScreenPoint((int)targetX, (int)targetY), 20, 20, "GameWorldTarget");
         await _humanizer.ClickTargetAsync(target, MouseButton.Left, cancellationToken);
@@ -57,7 +58,7 @@ public sealed class NosTaleGameAdapter : IGameAdapter
     /// <summary>Targets or attacks an entity with the right mouse button.</summary>
     public async Task SendTargetInteractionAsync(float targetX, float targetY, CancellationToken cancellationToken)
     {
-        var action = new CandidateAction("TargetInteraction", ActionKind.Combat, TrustTier.Tier3, 0);
+        var action = new CandidateAction("TargetInteraction", ActionKind.Combat, TrustTier.Tier3_AutonomousRestricted, 0);
         Authorize(action);
         var target = new TargetDescriptor(new ScreenPoint((int)targetX, (int)targetY), 20, 20, "GameWorldEntity");
         await _humanizer.ClickTargetAsync(target, MouseButton.Right, cancellationToken);
@@ -67,14 +68,14 @@ public sealed class NosTaleGameAdapter : IGameAdapter
     {
         // A skill cast is combat, not a utility keystroke: the guard cannot apply
         // combat policy to an action classified as something else.
-        var action = new CandidateAction($"SkillCast:{skillSlot}", ActionKind.Combat, TrustTier.Tier3, 0);
+        var action = new CandidateAction($"SkillCast:{skillSlot}", ActionKind.Combat, TrustTier.Tier3_AutonomousRestricted, 0);
         Authorize(action);
         await _humanizer.PressKeyHumanlikeAsync(skillSlot, cancellationToken);
     }
 
     public async Task SendNosMateCommandAsync(char mateCommand, CancellationToken cancellationToken)
     {
-        var action = new CandidateAction($"NosMate:{mateCommand}", ActionKind.Utility, TrustTier.Tier2, 0);
+        var action = new CandidateAction($"NosMate:{mateCommand}", ActionKind.Utility, TrustTier.Tier2_SemiAutonomous, 0);
         Authorize(action);
         await _humanizer.PressKeyHumanlikeAsync(mateCommand.ToString(), cancellationToken);
     }

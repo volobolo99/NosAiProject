@@ -20,7 +20,7 @@ public sealed class AutonomyPipelineTests
 
     public AutonomyPipelineTests(ITestOutputHelper output) => _output = output;
 
-    private static SafetyGate NewGate(TrustTier tier = TrustTier.Tier4_FullAutonomous) =>
+    private static ActionTokenIssuer NewGate(TrustTier tier = TrustTier.Tier4_FullAutonomous) =>
         new(new TrustBoundary(tier), new GuardPolicyEngine());
 
     private static ActionCandidate Candidate(
@@ -55,7 +55,7 @@ public sealed class AutonomyPipelineTests
         // The signature has to be real for this to test anything: a forged one is
         // rejected by the HMAC check before expiry is ever considered, which is why
         // Gate 6's missing expiry check went unnoticed for so long.
-        var gate = new SafetyGate(
+        var gate = new ActionTokenIssuer(
             new TrustBoundary(TrustTier.Tier4_FullAutonomous),
             new GuardPolicyEngine(),
             tokenLifetime: TimeSpan.FromMilliseconds(30));
@@ -166,7 +166,7 @@ public sealed class AutonomyPipelineTests
             out SafetyToken? token, out _);
 
         Assert.Equal(gate.TokenLifetime, token!.ExpiresAtUtc - token.IssuedAtUtc);
-        Assert.Equal(SafetyGate.DefaultTokenLifetime, gate.TokenLifetime);
+        Assert.Equal(ActionTokenIssuer.DefaultTokenLifetime, gate.TokenLifetime);
     }
 
     // ------------------------------------------------------------ single use
@@ -340,15 +340,15 @@ public sealed class AutonomyPipelineTests
         Assert.Equal(0, recovery.ConsecutiveFailures);
     }
 
-    // ------------------------------------------------- the two TrustTier types
+    // ------------------------------------------------- the canonical TrustTier scale
 
     [Fact]
-    public void TheAutonomyTiersAreNotTheCapabilityTiers()
+    public void TheCanonicalTrustScaleStartsAtReadOnlyAndKeepsTheNumericTiers()
     {
-        // Same word, different question. The capability tiers start at 1 and have no
-        // read-only floor, so casting between them would invent a tier that does not
-        // exist on the other side.
         Assert.Equal(0, (int)TrustTier.Tier0_ReadOnly);
-        Assert.False(Enum.IsDefined(typeof(Contracts.TrustTier), 0));
+        Assert.Equal(1, (int)TrustTier.Tier1_Assisted);
+        Assert.Equal(2, (int)TrustTier.Tier2_SemiAutonomous);
+        Assert.Equal(3, (int)TrustTier.Tier3_AutonomousRestricted);
+        Assert.Equal(4, (int)TrustTier.Tier4_FullAutonomous);
     }
 }

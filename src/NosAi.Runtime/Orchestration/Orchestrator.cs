@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Guard;
 using NosAi.Runtime.Perception;
@@ -39,7 +40,7 @@ public sealed class Orchestrator
 
         var ranked = _planner.Rank(_worldModel.Current, candidates);
         var selected = ranked.FirstOrDefault()?.Action
-            ?? new CandidateAction("noop", ActionKind.NoOp, TrustTier.Tier1, 0);
+            ?? new CandidateAction("noop", ActionKind.NoOp, TrustTier.Tier1_Assisted, 0);
 
         var guard = _guardAi.Evaluate(selected, maxTrustTier);
         var authorized = _safetyGate.Authorize(selected, guard);

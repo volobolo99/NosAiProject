@@ -315,9 +315,9 @@ public static class InputControlTestRunner
     private static async Task<bool> TestOperatingTierCeilingAsync()
     {
         var recorder = new RecordingInputBackend();
-        // Tier1 is below every game action: the guard must refuse, and the
+        // Tier1_Assisted is below every game action: the guard must refuse, and the
         // refusal must come from the trust ceiling rather than the input policy.
-        var adapter = BuildAdapter(recorder, EnabledHeadless, NosAi.Runtime.Contracts.TrustTier.Tier1);
+        var adapter = BuildAdapter(recorder, EnabledHeadless, NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted);
         await adapter.InitializeAsync(CancellationToken.None);
         try
         {
@@ -332,7 +332,7 @@ public static class InputControlTestRunner
 
     private static NosAi.Runtime.Adapters.NosTaleGameAdapter BuildAdapter(
         RecordingInputBackend recorder, RuntimeSafetyPolicy policy,
-        NosAi.Runtime.Contracts.TrustTier operatingTier = NosAi.Runtime.Contracts.TrustTier.Tier3)
+        NosAi.Runtime.Autonomy.TrustTier operatingTier = NosAi.Runtime.Autonomy.TrustTier.Tier3_AutonomousRestricted)
     {
         var humanizer = new DeterministicHumanizer(new GatedInputBackend(recorder, policy), NoDelay);
         return new NosAi.Runtime.Adapters.NosTaleGameAdapter(

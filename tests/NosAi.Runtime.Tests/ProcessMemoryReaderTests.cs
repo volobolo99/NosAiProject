@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using NosAi.LiveIntegration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Security;
 using Xunit;
@@ -46,7 +47,7 @@ public sealed class ProcessMemoryReaderTests
         // Not the same claim as "the OS let us in": this pins the policy decision,
         // which is what ADR-0014 changed.
         var decision = new Gate1AuthorizationPolicy().Evaluate(
-            SecurityPrincipal.Operator, RuntimeCapability.ReadProcessMemory, TrustTier.Tier1, TrustTier.Tier4);
+            SecurityPrincipal.Operator, RuntimeCapability.ReadProcessMemory, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
 
         Assert.True(decision.Allowed);
     }

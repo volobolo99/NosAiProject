@@ -1,4 +1,4 @@
-using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Security;
 
 namespace NosAi.Runtime.Safety;
@@ -125,7 +125,7 @@ public sealed class RuntimeSafetyController
         // Arming a power is itself a privileged act: it is authorised as the
         // capability it unlocks, so the phone cannot arm what it may not use.
         var capability = CapabilityFor(which);
-        var decision = _authorization.Evaluate(principal, RuntimeCapability.RequestCommand, TrustTier.Tier1, TrustTier.Tier4);
+        var decision = _authorization.Evaluate(principal, RuntimeCapability.RequestCommand, TrustTier.Tier1_Assisted, TrustTier.Tier4_FullAutonomous);
         if (!decision.Allowed)
             return AuthorizationDecision.Deny(principal, capability, decision.Reason);
 
