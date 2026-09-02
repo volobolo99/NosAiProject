@@ -152,6 +152,13 @@ public sealed class ClientMemorySession : IDisposable
         return _layout.TryResolveBases(_reader, out playerManager, out playerObject, out failureReason);
     }
 
+    /// <summary>Reads whether a target is selected, and the candidate id behind it.</summary>
+    public bool TryReadTarget(out TargetPointerReading reading, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryReadTarget(_reader, out reading, out failureReason);
+    }
+
     /// <summary>Reads the id of the map the character is on, or says where it broke.</summary>
     public bool TryReadMapId(out int mapId, out string? failureReason)
     {

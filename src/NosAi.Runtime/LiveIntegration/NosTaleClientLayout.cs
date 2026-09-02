@@ -118,6 +118,58 @@ public sealed class NosTaleClientLayout
     /// <summary>Map object → entity id. Common to players, monsters and NPCs.</summary>
     public const int EntityIdOffset = 0x08;
 
+    /// <summary>Player manager → the object of the entity the character has selected.</summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Found by the behavioural oracle, not by a signature and not by analogy.</b>
+    /// <see cref="NosAi.Runtime.Navigation.TargetIdFinder"/> keeps a word only while it
+    /// changes exactly when the selection changes <i>and</i> returns to the same value
+    /// every time the target is cleared. On 2 September 2026 that survived six
+    /// selections, two clearings and one client restart, and left exactly one candidate:
+    /// this offset, with zero as its "nobody" value.
+    /// </para>
+    /// <para>
+    /// <b>It holds a pointer, not an id, and the numbers say so.</b> The hunt was looking
+    /// for an entity id and found something better behaved: two runs read
+    /// <c>0x22C8A4F0</c> and <c>0x1F5BA4F0</c>, while real entity ids on this build are
+    /// three orders of magnitude smaller (the character's own is <c>0x00348A11</c>, and
+    /// one taken off the wire is <c>0x0004CA32</c>). Both values sit in the same heap
+    /// region as the manager, and their low sixteen bits are <i>identical across two
+    /// different processes</i> — that is the signature of an allocation, not of a number.
+    /// </para>
+    /// <para>
+    /// <b>Why the oracle found it anyway, and why that is the right outcome.</b> A
+    /// pointer to the target behaves exactly like an id of the target: it changes with
+    /// the selection and goes to zero when there is none. The behavioural constraint
+    /// found the correct field precisely <i>because</i> it never looked at the contents.
+    /// A content filter would have discarded it and the hunt would have ended empty,
+    /// with the oracle taking the blame.
+    /// </para>
+    /// <para>
+    /// For <c>HasTarget</c> this is more direct than an id would have been: non-zero is a
+    /// target, zero is none. Which entity it is remains a separate, unproven question —
+    /// see <see cref="TargetEntityIdIsAHypothesisReason"/>.
+    /// </para>
+    /// </remarks>
+    public const int TargetPointerOffset = 0x44;
+
+    /// <summary>
+    /// Why the id behind the target pointer is reported as a candidate and never as a reading.
+    /// </summary>
+    /// <remarks>
+    /// By analogy with the character — the player object hangs at
+    /// <see cref="PlayerObjectOffset"/> and its id at <see cref="EntityIdOffset"/> — the
+    /// id of the selected entity should be at <c>[manager + TargetPointerOffset] +
+    /// EntityIdOffset</c>. <b>An analogy is not a measurement.</b> The project asks two
+    /// independent sources to agree before a number is established, exactly as the map id
+    /// required both a portal crossing and a restart; here the second source is
+    /// <c>ct</c> on the wire, which names the selected entity. Until a run shows the two
+    /// agreeing, the identity stays UNKNOWN with this reason — and <c>HasTarget</c> works
+    /// regardless, because knowing <i>that</i> there is a target and knowing <i>which</i>
+    /// are two facts and the first does not wait for the second.
+    /// </remarks>
+    public const string TargetEntityIdIsAHypothesisReason = "target_entity_id_not_established";
+
     /// <summary>
     /// The scene manager: every entity the client has on the current map.
     /// </summary>
@@ -267,6 +319,68 @@ public sealed class NosTaleClientLayout
     /// change, for one — so a remembered object address is a reading of whatever
     /// occupies that memory afterwards.
     /// </remarks>
+    /// <summary>
+    /// Whether a target is selected, and the candidate id behind it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Zero is an answer here, not a failure.</b> Everywhere else in this layout a
+    /// null pointer means the chain broke and <see cref="TryFollow"/> refuses by name;
+    /// at <see cref="TargetPointerOffset"/> zero is what the client writes when nothing
+    /// is selected, and treating it as a broken read would turn "no target" into
+    /// UNKNOWN — collapsing two of ADR-0018's three states into one. So the word is read
+    /// directly and interpreted, rather than followed.
+    /// </para>
+    /// <para>
+    /// The id is only ever a <i>candidate</i>: see
+    /// <see cref="TargetEntityIdIsAHypothesisReason"/>. It is read and returned so an
+    /// operator command can show it beside what <c>ct</c> says, which is how the
+    /// hypothesis becomes a measurement — or does not.
+    /// </para>
+    /// </remarks>
+    public bool TryReadTarget(
+        ProcessMemoryReader reader,
+        out TargetPointerReading reading,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        reading = default;
+
+        if (!TryFollow(reader, _pointerHolder, "player_manager", out IntPtr manager, out failureReason))
+            return false;
+
+        MemoryReadResult pointer = reader.Read(manager + TargetPointerOffset, sizeof(int));
+        if (!pointer.Ok)
+        {
+            failureReason = pointer.FailureReason ?? "target_pointer_unreadable";
+            return false;
+        }
+
+        uint address = BitConverter.ToUInt32(pointer.Bytes);
+        if (address == 0)
+        {
+            // The client's own "nobody", measured by the oracle rather than assumed.
+            reading = new TargetPointerReading(manager, IntPtr.Zero, null, null);
+            failureReason = null;
+            return true;
+        }
+
+        var target = new IntPtr(address);
+        MemoryReadResult id = reader.Read(target + EntityIdOffset, sizeof(int));
+        int? candidate = id.Ok && id.Bytes.Length == sizeof(int)
+            ? BitConverter.ToInt32(id.Bytes, 0)
+            : null;
+
+        reading = new TargetPointerReading(
+            manager,
+            target,
+            candidate,
+            candidate is null ? id.FailureReason ?? "target_entity_id_unreadable" : null);
+
+        failureReason = null;
+        return true;
+    }
+
     public bool TryReadPlayer(
         ProcessMemoryReader reader,
         out PlayerObjectReading reading,
@@ -783,6 +897,25 @@ public sealed class NosTaleClientLayout
 /// The square the character is walking to, or null. The one readable statement of
 /// intent: the wire never says where this character is heading.
 /// </param>
+/// <summary>What the target pointer says, and the candidate behind it.</summary>
+/// <param name="PlayerManager">The manager the offset was measured from.</param>
+/// <param name="TargetObject">The selected entity's object, or zero when nothing is selected.</param>
+/// <param name="CandidateEntityId">
+/// The word at <c>[TargetObject] + EntityIdOffset</c>, by analogy with the player object.
+/// A <b>candidate</b>, never a reading: see
+/// <see cref="NosTaleClientLayout.TargetEntityIdIsAHypothesisReason"/>.
+/// </param>
+/// <param name="CandidateFailureReason">Why there is no candidate, when there is none.</param>
+public readonly record struct TargetPointerReading(
+    IntPtr PlayerManager,
+    IntPtr TargetObject,
+    int? CandidateEntityId,
+    string? CandidateFailureReason)
+{
+    /// <summary>True exactly when the client has something selected.</summary>
+    public bool HasTarget => TargetObject != IntPtr.Zero;
+}
+
 public readonly record struct PlayerObjectReading(
     int CharacterId,
     int EntityId,

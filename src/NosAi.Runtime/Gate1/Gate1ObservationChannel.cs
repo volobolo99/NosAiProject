@@ -137,12 +137,21 @@ public sealed class Gate1ObservationChannel : IDisposable
     /// uncalibrated one keeps <c>HasTarget</c> UNKNOWN rather than reading a
     /// region nobody aimed.
     /// </param>
+    /// <param name="targetMemory">
+    /// The client's own target pointer, or null when this runtime has no memory session.
+    /// Supplying it is what ADR-0021 § 1 means by memory establishing <c>HasTarget</c>:
+    /// the pointer at <see cref="NosAi.LiveIntegration.NosTaleClientLayout.TargetPointerOffset"/>
+    /// is non-zero exactly when something is selected, so it carries the <i>no</i> the
+    /// wire could never produce. It is composed <b>inside</b> the screen decorator, so
+    /// when both are present memory answers and the screen stays the second source.
+    /// </param>
     public static Gate1ObservationChannel FromPackets(
         IPacketSource packets,
         GameEndpoint endpoint,
         DataSourceKind streamSource,
         ITargetFrameSource? targetFrames = null,
-        TargetRoiCalibration? targetRoi = null)
+        TargetRoiCalibration? targetRoi = null,
+        Func<TargetPointerReading?>? targetMemory = null)
     {
         ArgumentNullException.ThrowIfNull(packets);
         ArgumentNullException.ThrowIfNull(endpoint);
@@ -154,6 +163,9 @@ public sealed class Gate1ObservationChannel : IDisposable
             new NosTaleWorldProtocolDecoder());
         var feed = new NetworkWorldFeed(observer);
         IGameplayProvider provider = new NetworkGameplayProvider(feed);
+
+        if (targetMemory is not null)
+            provider = new MemoryTargetGameplayProvider(provider, targetMemory);
 
         if (targetFrames is not null)
         {
