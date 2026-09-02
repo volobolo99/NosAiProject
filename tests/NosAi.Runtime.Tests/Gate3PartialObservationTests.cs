@@ -141,11 +141,44 @@ public sealed class Gate3PartialObservationTests
         Assert.Equal(0, effector.Applications);
     }
 
+    /// <summary>
+    /// Knowing there is no target is a fact, and it selects the branch that
+    /// "unknown" must not.
+    /// </summary>
+    /// <remarks>
+    /// What changed with C6-2 is where the exploration walks to. It used to be the
+    /// constant <c>(130, 90)</c> — a point nobody had observed, carried since the
+    /// rule needed somewhere to go — and it is now the place the active goal
+    /// names. The branch is still selected by a known-false target; it simply has
+    /// nowhere to walk unless something asked the runtime to look there, which is
+    /// the next test.
+    /// </remarks>
     [Fact]
     public void A_known_absent_target_still_plans_the_exploration_move()
     {
-        // The counterpart: knowing there is no target is a fact, and it selects the
-        // branch that "unknown" must not.
+        var state = new Gate3WorldState(
+            NosAi.Runtime.Contracts.ClassifiedValue<int>.Live(4800, Now),
+            NosAi.Runtime.Contracts.ClassifiedValue<int>.Live(5000, Now),
+            NosAi.Runtime.Contracts.ClassifiedValue<int>.Live(900, Now),
+            NosAi.Runtime.Contracts.ClassifiedValue<bool>.Live(false, Now),
+            NosAi.Runtime.Contracts.ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"));
+        var planner = new ActionPlanner(
+            GoalStack.With(Goal.Hunt("test-hunt", new[] { 36 }, new MapPoint(130, 90))));
+
+        List<ActionCandidate> candidates = planner.PlanCandidates(state);
+
+        ActionCandidate move = Assert.Single(candidates, c => c.Type == ActionType.MoveToPosition);
+        Assert.Equal(new MapPoint(130, 90), Assert.IsType<ActionTarget.Position>(move.Target).At);
+    }
+
+    /// <summary>
+    /// And with nothing asked of it, the same known-absent target plans nothing at
+    /// all. The waypoint was the last place the runtime moved for no stated
+    /// reason (C6-2).
+    /// </summary>
+    [Fact]
+    public void A_known_absent_target_with_no_goal_plans_nothing()
+    {
         var state = new Gate3WorldState(
             NosAi.Runtime.Contracts.ClassifiedValue<int>.Live(4800, Now),
             NosAi.Runtime.Contracts.ClassifiedValue<int>.Live(5000, Now),
@@ -153,9 +186,7 @@ public sealed class Gate3PartialObservationTests
             NosAi.Runtime.Contracts.ClassifiedValue<bool>.Live(false, Now),
             NosAi.Runtime.Contracts.ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"));
 
-        List<ActionCandidate> candidates = new ActionPlanner().PlanCandidates(state);
-
-        Assert.Contains(candidates, c => c.Type == ActionType.MoveToPosition);
+        Assert.Empty(new ActionPlanner().PlanCandidates(state));
     }
 
     /// <summary>

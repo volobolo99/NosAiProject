@@ -104,6 +104,9 @@ public static class TargetSelector
     /// <summary>Where the character stands is unknown, so nothing has a distance.</summary>
     public const string PlayerPositionUnknownReason = "player_position_unknown";
 
+    /// <summary>Entities were observed and none is established as attackable.</summary>
+    public const string NothingEstablishedReason = "no_established_target";
+
     /// <summary>
     /// Picks the entity to aim at, or says why none was picked.
     /// </summary>
@@ -117,13 +120,32 @@ public static class TargetSelector
     /// distance, and treating it as the map origin would make the farthest entity
     /// look like the nearest.
     /// </param>
+    /// <param name="isAttackable">
+    /// Whether an entity has been <i>established</i> as something this runtime may
+    /// attack, or null to select from everything observed.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Supplying <paramref name="isAttackable"/> is what keeps the selector off
+    /// the merchants. The wire's type 3 is monster and NPC together, confirmed,
+    /// so nothing here can tell them apart and nothing here tries: the caller
+    /// passes <see cref="TargetEstablishment.Assess"/>, an entity nothing
+    /// established is skipped, and the refusal names how many were skipped for
+    /// that reason (docs/TASTI_E_BERSAGLIO.md § 6.2).
+    /// </para>
+    /// <para>
+    /// Null keeps the old behaviour for a caller that has already filtered, and
+    /// is not a default the planner uses.
+    /// </para>
+    /// </remarks>
     public static bool TrySelect(
         IReadOnlyList<SelectableEntity> observed,
         ClassifiedValue<MapPoint> playerPosition,
         DateTime nowUtc,
         TargetSelectionPolicy policy,
         out TargetChoice? choice,
-        out string failureReason)
+        out string failureReason,
+        Func<SelectableEntity, bool>? isAttackable = null)
     {
         ArgumentNullException.ThrowIfNull(observed);
         ArgumentNullException.ThrowIfNull(playerPosition);
@@ -153,10 +175,20 @@ public static class TargetSelector
         var stale = 0;
         var dead = 0;
         var outOfRange = 0;
+        var unestablished = 0;
         double nearestOutOfRange = double.MaxValue;
 
         foreach (SelectableEntity entity in observed)
         {
+            // Checked first, and before anything is measured about it: an entity
+            // nothing established is not a far target or a stale one, it is not a
+            // target at all.
+            if (isAttackable is not null && !isAttackable(entity))
+            {
+                unestablished++;
+                continue;
+            }
+
             // A known-dead entity is not a target. Unknown health is not death and
             // does not exclude anything: most sightings are moves, which carry no
             // health at all, and skipping them would leave almost nothing.
@@ -199,13 +231,18 @@ public static class TargetSelector
             // "no_entity_in_range:40,0_..." on an Italian machine and
             // "...:40.0_..." on an English one, so the same refusal would be two
             // different strings depending on who ran it.
-            failureReason = (outOfRange, stale, dead) switch
+            failureReason = (outOfRange, stale, dead, unestablished) switch
             {
-                ( > 0, _, _) => string.Create(
+                ( > 0, _, _, _) => string.Create(
                     CultureInfo.InvariantCulture,
                     $"no_entity_in_range:{nearestOutOfRange:F1}_of_{policy.MaxRangeTiles:F0}_tiles"),
-                (0, > 0, _) => $"all_sightings_stale:{stale}",
-                (0, 0, > 0) => $"all_observed_entities_dead:{dead}",
+                (0, > 0, _, _) => $"all_sightings_stale:{stale}",
+                (0, 0, > 0, _) => $"all_observed_entities_dead:{dead}",
+                // Last, and its own reason: "nothing here is established as
+                // attackable" tells the operator something quite different from
+                // "there is nothing here", and it is the ordinary state of a map
+                // full of entities nobody has read a vnum for.
+                (0, 0, 0, > 0) => $"{NothingEstablishedReason}:{unestablished}",
                 _ => NothingObservedReason,
             };
             return false;

@@ -22,6 +22,18 @@ public sealed class PostConditionWiringTests
     private static readonly RuntimeSafetyPolicy ExecutionAllowed = new(
         LiveInputEnabled: true, PacketInjectionEnabled: false, RequireClientHealthy: true, RequireGuardApproval: true);
 
+    /// <summary>
+    /// A standing goal, so the cycles below can plan an attack at all.
+    /// </summary>
+    /// <remarks>
+    /// C6-2 made an active goal the precondition of every proactive attack: with
+    /// nothing asked of the runtime, no fight is picked and these cycles would
+    /// plan nothing. The goal is not what these tests are about — that is
+    /// <see cref="GoalStackTests"/> — it is the reason the runtime is allowed to
+    /// be in the fight they set up.
+    /// </remarks>
+    private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("test-hunt", new[] { 36 }));
+
     /// <summary>A world the planner answers with an attack: healthy, with a target.</summary>
     private static Gate3WorldState Fighting() => Gate3WorldState.Live(800, 1000, 100, true, false);
 
@@ -43,7 +55,7 @@ public sealed class PostConditionWiringTests
             new UseBasicAttackPostCondition(),
             new UseConsumablePostCondition());
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, effector, postConditions: partial);
+            ExecutionAllowed, effector, postConditions: partial, goals: Hunting());
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -59,7 +71,7 @@ public sealed class PostConditionWiringTests
     [Fact]
     public void The_shipping_catalogue_admits_every_action_the_planner_proposes()
     {
-        var planner = new ActionPlanner();
+        var planner = new ActionPlanner(Hunting());
         var proposed = new HashSet<ActionType>();
 
         foreach (Gate3WorldState state in new[]
@@ -92,7 +104,8 @@ public sealed class PostConditionWiringTests
         var orchestrator = new Gate3ExecutionOrchestrator(
             ExecutionAllowed,
             new CountingEffector(),
-            new CachedVitalsObserver(hp: 800, mp: 40));
+            new CachedVitalsObserver(hp: 800, mp: 40),
+            goals: Hunting());
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -137,7 +150,8 @@ public sealed class PostConditionWiringTests
         var orchestrator = new Gate3ExecutionOrchestrator(
             ExecutionAllowed,
             new CountingEffector(),
-            postConditions: new PostConditionTable(new NeverRetriedSkill()));
+            postConditions: new PostConditionTable(new NeverRetriedSkill()),
+            goals: Hunting());
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -158,7 +172,8 @@ public sealed class PostConditionWiringTests
         var orchestrator = new Gate3ExecutionOrchestrator(
             ExecutionAllowed,
             new CountingEffector(),
-            new CachedVitalsObserver(hp: 800, mp: 100));   // MP unchanged: the skill did not fire
+            new CachedVitalsObserver(hp: 800, mp: 100),   // MP unchanged: the skill did not fire
+            goals: Hunting());
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -175,13 +190,65 @@ public sealed class PostConditionWiringTests
     [Fact]
     public async Task An_unverifiable_cycle_replans_and_never_continues()
     {
-        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, new CountingEffector());
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed, new CountingEffector(), goals: Hunting());
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
         Assert.Equal(CycleOutcome.Unverified, result.Outcome);
         Assert.False(result.IsConfirmed);
         Assert.Equal(RecoveryStrategy.Replan, result.Strategy);
+    }
+
+    // ------------------------------------------------------ C6-4, the breaker
+
+    /// <summary>
+    /// The last link the catalogue asked for: an action that produces no
+    /// observable effect reaches the recovery breaker, so it degrades instead of
+    /// being repeated. The band and the breaker's own history are combined by
+    /// taking the severer of the two, so a clean history cannot soften a badly
+    /// divergent cycle and a small divergence cannot soften a long run of
+    /// failures.
+    /// </summary>
+    [Fact]
+    public async Task An_action_that_produces_no_effect_reaches_the_breaker()
+    {
+        var recovery = new RecoveryController(new TrustBoundary(TrustTier.Tier2_SemiAutonomous));
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed,
+            new CountingEffector(),
+            new CachedVitalsObserver(hp: 800, mp: 100),   // MP unchanged, every cycle
+            goals: Hunting(),
+            recovery: recovery);
+
+        Gate3CycleResult first = await orchestrator.ExecuteCycleAsync(Fighting());
+
+        Assert.Equal(CycleOutcome.Failed, first.Outcome);
+        // The breaker was told, which is what makes the next cycle a different
+        // decision from this one rather than the same one again.
+        Assert.True(recovery.FailuresInWindow > 0);
+        Assert.NotNull(first.Strategy);
+    }
+
+    /// <summary>
+    /// And a confirmed cycle does not feed it, so the breaker measures failures
+    /// and not activity.
+    /// </summary>
+    [Fact]
+    public async Task A_confirmed_cycle_does_not_feed_the_breaker()
+    {
+        var recovery = new RecoveryController(new TrustBoundary(TrustTier.Tier2_SemiAutonomous));
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed,
+            new CountingEffector(),
+            new CachedVitalsObserver(hp: 800, mp: 40),    // MP fell: the skill fired
+            goals: Hunting(),
+            recovery: recovery);
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
+
+        Assert.Equal(CycleOutcome.Confirmed, result.Outcome);
+        Assert.Equal(0, recovery.FailuresInWindow);
     }
 
     // --------------------------------------------------------------- doubles

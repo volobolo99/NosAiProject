@@ -75,9 +75,12 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 ## 3. Dove siamo davvero
 
-Misurato il 2 settembre 2026 su `0c80508`: `dotnet build -c Release` → **0 errori**,
-1 warning preesistente (Android). `dotnet test` → **1322 test, 0 falliti** (1207
-runtime, 66 core, 49 control panel).
+Misurato il 2 settembre 2026 su `d75ed0d` più il lavoro `C1`/`C4-1`/`C6` di questa
+sessione: `dotnet build -c Release` → **0 errori**, 1 warning preesistente (Android).
+`dotnet test` → **1591 test, 0 falliti** (1438 runtime, 66 core, 87 control panel).
+Il conteggio precedente era 1322; le catture reali in `data/` sono ignorate da git,
+quindi i test che le rigiocano passano a vuoto su un clone e portano il loro peso
+solo qui.
 
 Il progetto non è in difficoltà tecnica. È in difficoltà di *ordine*: la quantità di
 codice sano è alta, e ciò che manca sono pochi collegamenti e tre misure che solo
@@ -87,7 +90,7 @@ l'operatore può prendere.
 |---|---|---|
 | Aggancio al client, canale col telefono, dashboard | **Verified** su sistema reale | Gate 1 chiuso, `GATE1_CHECKLIST.md` |
 | Lettura dei vitali propri dal filo | **Verified** — HP, maxHP, MP, maxMP `LIVE` | `stat`, confrontato con l'HUD |
-| Lettura delle entità dal filo | **codice sì, arrivo no** | il decoder produce gli avvistamenti, **nessuno li passa al pianificatore** |
+| Lettura delle entità dal filo | **arrivano al pianificatore** | il decoder legge dodici opcode (i sette di prima più `sr`, `ivn`, `get`, `drop`, `ct`) e il vnum di `in`; gli avvistamenti diventano `Gate3WorldState.Entities` con età e provenienza per campo, e la posizione propria resta `UNKNOWN` con il suo motivo finché un lettore non è legato |
 | Griglie di mappa | **777 mappe estratte**, id mappa provato su 4 mappe e 1 riavvio | `MapIdModuleOffset = 0x38D1BC` |
 | Posizione propria | **provata** — `T-11` chiuso il 1 settembre | firma di codice, non offset; l'id `3443217` letto dal client coincide con quello che il server ha mandato su `cond`. Richiede console **elevata**: il manifest del client dichiara `requireAdministrator` |
 | Bersaglio (`HasTarget`) | **UNKNOWN** | ROI del riquadro mai calibrata, `T-09` |
@@ -95,12 +98,23 @@ l'operatore può prendere.
 | Catena d'input e sue guardie | **scritta e testata in locale** | commit point a 5 condizioni, autorità di sessione, `StepGuardChain`, 33 test |
 | Emissione di un atto reale | **mai avvenuta** | `--step` non esiste ancora |
 | Tasti (skill, pozioni, interfaccia) | **impossibili oggi** | `data/keybinds.json` **non esiste**: ogni pressione rifiuta con `keybind_not_configured:` |
-| Ciclo decisionale | gira, ma pianifica solo sulla sopravvivenza | senza entità e senza `HasTarget` nessuna regola d'attacco può essere scelta |
+| Verifica dell'atto | **catalogo implementato** (`C4-1`) | sei schede con la loro finestra e il loro soggetto; `RestAndRecover` non ha scheda e per questo non è ammissibile. `VER-01` è impossibile da violare per firma, `VER-04` chiuso: il tier di verifica non è più severo di quello di attuazione |
+| Ciclo decisionale | **ha un motivo** (`C6-1`, `C6-2`, `C6-3`) | contrattacca chi l'ha colpito entro una finestra di decadimento; senza obiettivo attivo non sceglie nessun bersaglio e non cammina più verso il waypoint costante `(130, 90)`; attacca solo ciò che è stato **stabilito** attaccabile |
+| Bersaglio su una sessione viva | **ancora `UNKNOWN`** | il tubo c'è, la ROI no: finché `C1-6` non è calibrata, `HasTarget` resta `UNKNOWN` e le regole che lo leggono restano saltate |
 
-**Il dato che spiega la sensazione di essere fermi:** quasi tutto è costruito, e tre
-tubi non sono collegati. Le entità sono decodificate e buttate via una funzione prima
-del pianificatore; il bersaglio non ha una sorgente calibrata; i tasti non hanno un
-file. Nessuno dei tre è un lavoro grande.
+**Che cosa resta, dopo questa sessione.** Due dei tre tubi sono collegati: le entità
+arrivano al pianificatore con la loro età, e il ciclo ha un motivo per attaccare e una
+verifica che riguarda l'azione eseguita invece di una stringa. Ciò che manca non è più
+codice di scrivania:
+
+- **la ROI del bersaglio** (`C1-6`) — venti minuti col client aperto, e sblocca ogni
+  regola d'attacco che legge `HasTarget`;
+- **i tasti** (`C3-1`) — `data/keybinds.json` non esiste, quindi ogni skill e ogni
+  pozione rifiutano per nome;
+- **la proiezione** (`C2-3`) — senza di essa nessun clic è emesso, quindi il
+  contrattacco pianifica e non colpisce.
+
+Le tre sono misure che solo l'operatore può prendere.
 
 ---
 

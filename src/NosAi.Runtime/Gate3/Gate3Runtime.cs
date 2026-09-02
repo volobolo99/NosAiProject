@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Observability;
 using NosAi.Runtime.Safety;
 
@@ -220,6 +221,41 @@ namespace NosAi.Runtime.Gate3
     /// </remarks>
     public sealed class ActionPlanner
     {
+        private readonly GoalStack _goals;
+        private readonly GameReferenceDatabase? _catalogue;
+        private readonly TimeProvider _clock;
+        private readonly ReactionPolicy _reaction;
+
+        /// <param name="goals">
+        /// What the runtime has been asked to do. <see cref="GoalStack.Empty"/>
+        /// when omitted, which means nothing has been asked and no fight is
+        /// picked: an absent reason is not a licence, and this is the constant
+        /// waypoint's replacement (C6-2).
+        /// </param>
+        /// <param name="catalogue">
+        /// The reference database, for the weakest of the three kinds of evidence
+        /// that establish a target. Null costs that evidence and nothing else.
+        /// </param>
+        /// <param name="clock">Time source; the system clock unless a caller supplies one.</param>
+        /// <param name="reaction">
+        /// How long an aggression stays a reason. <see cref="ReactionPolicy.Default"/>
+        /// when omitted.
+        /// </param>
+        public ActionPlanner(
+            GoalStack? goals = null,
+            GameReferenceDatabase? catalogue = null,
+            TimeProvider? clock = null,
+            ReactionPolicy? reaction = null)
+        {
+            _goals = goals ?? GoalStack.Empty();
+            _catalogue = catalogue;
+            _clock = clock ?? TimeProvider.System;
+            _reaction = reaction ?? ReactionPolicy.Default;
+        }
+
+        /// <summary>What the runtime has been asked to do.</summary>
+        public GoalStack Goals => _goals;
+
         /// <summary>Plans from a classified state, skipping the rules it cannot support.</summary>
         public List<ActionCandidate> PlanCandidates(Gate3WorldState state)
         {
@@ -294,7 +330,7 @@ namespace NosAi.Runtime.Gate3
         /// runners use and which has no entities to offer — so the rule that needs
         /// them is skipped rather than fed something invented.
         /// </param>
-        private static List<ActionCandidate> Plan(
+        private List<ActionCandidate> Plan(
             int playerHp,
             int maxHp,
             int playerMp,
@@ -323,6 +359,20 @@ namespace NosAi.Runtime.Gate3
                     TrustTier.Tier1_Assisted,
                     "HP critico: riposizionamento difensivo"));
             }
+
+            // The reactive rule, and it reads neither the targeting flag nor a
+            // goal. Being hit is its own reason: the character is already in a
+            // fight it did not choose, and the answer is to hit back at whoever
+            // started it (C6-1). It is the one attack that needs no goal, which is
+            // exactly why it is written before the ones that do.
+            if (Counterattack(state) is { } counterattack)
+                list.Add(counterattack);
+
+            // Everything below picks a fight, and picking a fight needs a reason.
+            // No active goal, no attack candidate and no exploration: "not at
+            // random" is a rule that refuses, not a recommendation (C6-2).
+            if (!_goals.HasActiveGoal)
+                return list;
 
             if (hasTarget == true)
             {
@@ -363,13 +413,21 @@ namespace NosAi.Runtime.Gate3
                         chosen.Rationale));
                 }
 
-                list.Add(new ActionCandidate(
-                    Guid.NewGuid(),
-                    ActionType.MoveToPosition,
-                    new ActionTarget.Position(ExplorationWaypoint),
-                    0,
-                    TrustTier.Tier1_Assisted,
-                    "Esplorazione verso waypoint"));
+                // Where the goal says to look, and nowhere otherwise. The
+                // constant (130, 90) this replaces was a point nobody had
+                // observed, walked to because the rule needed somewhere to go.
+                if (_goals.SearchAt is { } searchAt)
+                {
+                    list.Add(new ActionCandidate(
+                        Guid.NewGuid(),
+                        ActionType.MoveToPosition,
+                        new ActionTarget.Position(searchAt),
+                        0,
+                        TrustTier.Tier1_Assisted,
+                        string.Create(
+                            CultureInfo.InvariantCulture,
+                            $"Esplorazione verso il luogo dell'obiettivo {_goals.Current!.Id}: {searchAt.X},{searchAt.Y}")));
+                }
             }
             // hasTarget unknown: neither branch. Not knowing whether there is a
             // target is not the same as knowing there is none, and this is the
@@ -390,16 +448,111 @@ namespace NosAi.Runtime.Gate3
         /// and the distinction belongs in the loop's diagnostics rather than in a
         /// candidate.
         /// </remarks>
-        private static TargetChoice? TrySelectTarget(Gate3WorldState? state)
+        private TargetChoice? TrySelectTarget(Gate3WorldState? state)
         {
             if (state?.Entities is not { } entities || state.PlayerPosition is not { } position)
                 return null;
 
             return TargetSelector.TrySelect(
-                entities, position, DateTime.UtcNow, Targeting, out TargetChoice? choice, out _)
+                entities,
+                position,
+                _clock.GetUtcNow().UtcDateTime,
+                Targeting,
+                out TargetChoice? choice,
+                out _,
+                // Only what has been established, and only what the goal named.
+                // The two are different questions: the first keeps the runtime off
+                // the merchants without having to recognise one, the second keeps
+                // it from fighting whatever happens to be established while it was
+                // asked to do something else.
+                entity => IsAttackable(state, entity) && _goals.Names(entity.Vnum))
                 ? choice
                 : null;
         }
+
+        /// <summary>Whether anything has established this entity as attackable.</summary>
+        private bool IsAttackable(Gate3WorldState state, SelectableEntity entity) =>
+            TargetEstablishment.Assess(entity, state.HitBy, state.SelectedTarget, _catalogue).IsEstablished;
+
+        /// <summary>
+        /// The counter-attack, or null when nobody has hit the character recently
+        /// enough for it to still be a reason.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The aggressor is named by the wire and only once the character's own id
+        /// is known, so this candidate never aims at whoever a stranger nearby was
+        /// fighting (C1-2). It carries the aggressor's position when one has been
+        /// observed and null when none has: the effector needs a point on screen
+        /// and refuses by name rather than clicking at the map origin.
+        /// </para>
+        /// <para>
+        /// The decay is here rather than on the observation because it is a
+        /// decision, not a reading: the provider keeps the hit with the instant it
+        /// happened, and how long that stays a reason to fight is this rule's to
+        /// say (C6-1).
+        /// </para>
+        /// </remarks>
+        private ActionCandidate? Counterattack(Gate3WorldState? state)
+        {
+            if (state?.HitBy is not { HasValue: true } hitBy)
+                return null;
+
+            DateTime now = _clock.GetUtcNow().UtcDateTime;
+            TimeSpan since = now - hitBy.ObservedAtUtc;
+            // A hit stamped in the future is a clock disagreement, not a fresh
+            // aggression, and is no more a reason than an old one.
+            if (since < TimeSpan.Zero || since > _reaction.AggressionDecays)
+                return null;
+
+            long aggressorId = hitBy.Value.EntityId;
+            MapPoint? at = null;
+            if (state.Entities is { } entities)
+            {
+                foreach (SelectableEntity entity in entities)
+                {
+                    if (entity.EntityId != aggressorId) continue;
+                    // A known-dead aggressor is not something to hit back at.
+                    if (entity.HpRatio is <= 0) return null;
+                    at = entity.At;
+                }
+            }
+
+            return new ActionCandidate(
+                Guid.NewGuid(),
+                ActionType.UseBasicAttack,
+                new ActionTarget.Entity(aggressorId, at),
+                0,
+                TrustTier.Tier2_SemiAutonomous,
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Contrattacco: colpiti dall'entita' {aggressorId} {since.TotalSeconds:F1}s fa"));
+        }
+    }
+
+    /// <summary>How long being hit stays a reason to hit back.</summary>
+    /// <remarks>
+    /// <para>
+    /// The window C6-1 asks for, and it belongs to the rule rather than to the
+    /// observation: the provider keeps the aggression with the instant it was
+    /// really observed and never expires it, because how long it matters is a
+    /// decision and not a reading.
+    /// </para>
+    /// <para>
+    /// Ten seconds is <b>declared, not measured</b>. What would measure it is the
+    /// interval between two <c>su</c> with the character as target in
+    /// <c>data/nostale_combat.noscap</c>: a monster that has stopped hitting for
+    /// longer than its own attack cadence has disengaged or is dead. Until
+    /// somebody takes that measurement this number says it is a placeholder.
+    /// </para>
+    /// </remarks>
+    /// <param name="AggressionDecays">
+    /// After this long without a new hit, the aggression is no longer a reason.
+    /// </param>
+    public sealed record ReactionPolicy(TimeSpan AggressionDecays)
+    {
+        /// <summary>The window nobody has measured against a real fight yet.</summary>
+        public static ReactionPolicy Default { get; } = new(TimeSpan.FromSeconds(10));
     }
 
 
@@ -799,6 +952,14 @@ namespace NosAi.Runtime.Gate3
         /// <summary>Whether anything is bound that can read the world back.</summary>
         public bool CanVerify => _observer.CanObserve;
 
+        /// <summary>What this loop has been asked to do.</summary>
+        /// <remarks>
+        /// Empty by default, which means nothing has been asked: the survival
+        /// rules still plan, the counter-attack still plans when something hits,
+        /// and no fight is picked. An absent reason is not a licence (C6-2).
+        /// </remarks>
+        public GoalStack Goals => _planner.Goals;
+
         /// <summary>The post-conditions this loop admits actions against.</summary>
         /// <remarks>
         /// An action with no card here is refused at admission. That is the
@@ -864,14 +1025,17 @@ namespace NosAi.Runtime.Gate3
             RecoveryController? recovery = null,
             PipelineStageBoard? stageBoard = null,
             PostConditionTable? postConditions = null,
-            Func<CancellationToken, Task<Gate3WorldState>>? worldSampler = null)
+            Func<CancellationToken, Task<Gate3WorldState>>? worldSampler = null,
+            GoalStack? goals = null,
+            GameReferenceDatabase? catalogue = null,
+            ReactionPolicy? reaction = null)
         {
             Policy = policy ?? policySource?.Invoke() ?? RuntimeSafetyPolicy.SafeDefault;
             TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
             if (maxAge < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(maxObservationAge));
             MaxObservationAge = maxAge;
             _clock = clock ?? TimeProvider.System;
-            _planner = new ActionPlanner();
+            _planner = new ActionPlanner(goals, catalogue, _clock, reaction);
             _simulation = new SimulationEngine();
             _ranking = new TacticalRankingEngine();
             _guard = new GuardPolicyEngine();
