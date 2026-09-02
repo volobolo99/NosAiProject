@@ -511,19 +511,87 @@ bastava.
 di un soggetto; `AutonomyPipeline.cs` non esiste più; il numero di prove C# non è sceso; e
 il `git diff` non mostra cambi di logica al di fuori delle tre scelte enumerate sopra.
 
-### `R3` — Un solo percorso di autorizzazione
+### `R3` — Un solo percorso di autorizzazione — **fatta** il 2 settembre 2026
 
-`ADR-0020` è deciso e non applicato. Finché non lo è, il token firma un identificativo e
-non un atto: `candidate with { Target = ... }` produce un candidato diverso con lo stesso
-id, e il token lo valida.
+`ADR-0020` era deciso e non applicato. Il token firmava un identificativo e non un atto:
+`candidate with { Target = ... }` produceva un candidato diverso con lo stesso id, e il
+token lo validava.
 
-| Passo | Chi |
-|---|---|
-| Il digest dell'intento: quali campi entrano nell'HMAC, e la regola che rende impossibile firmare un'azione diversa | Claude |
-| Il token raggiunge il confine che emette; propagazione e test negativi — contraffatto, bersaglio ricambiato, scaduto, già consumato | Cursor |
+| Passo | Chi | Esito |
+|---|---|---|
+| Il digest dell'intento: quali campi entrano nell'HMAC, e la regola che rende impossibile firmare un'azione diversa | Claude | `Safety/ActionIntentDigest.cs` (`c922aa6`) |
+| Il token raggiunge il confine che emette; propagazione e test negativi | Claude | stesso commit, più `d3bdb4e` per le quattro righe di `Gate6` |
 
 **Fatto quando** — un candidato col bersaglio sostituito non valida più, e c'è un test
-che lo dimostra.
+che lo dimostra. ✅ `ATokenDoesNotValidateACandidateWhoseTargetWasRebound` è **lo stesso
+test che prima asseriva il contrario**: era stato scritto per registrare il difetto
+invece di correggerlo, perché allargare l'HMAC è un cambio di comportamento di sicurezza
+e voleva la sua decisione. La decisione è `ADR-0020` § 3, e l'asserzione si è invertita.
+
+#### Le decisioni prese, e perché
+
+**Quali campi entrano.** `CandidateId`, `Type`, il **discriminante del bersaglio e i suoi
+campi**, `SkillOrItemId`, `RequiredTrust`. Il criterio è uno solo: entra tutto ciò che
+cambia *che cosa l'atto fa*. `RequiredTrust` è il meno ovvio e serve — senza, un candidato
+potrebbe essere ripresentato dichiarando un requisito più basso di quello che il confine
+di Trust ha effettivamente approvato.
+
+**Che cosa resta fuori: `Rationale`.** È la frase che spiega la scelta a una persona e non
+cambia nulla di ciò che arriva al client. Firmarla farebbe invalidare un token vivo a una
+frase riscritta: un rifiuto senza contenuto di sicurezza, e la prima volta che scattasse
+qualcuno allargherebbe qualcosa che invece conta.
+
+**Come si evita l'ambiguità di concatenazione.** Non con i prefissi di lunghezza, ma
+togliendo il problema: **nessun campo è a lunghezza variabile**. Un intento è sempre 48
+byte, ogni campo sta a un offset fisso, e due digest identici sono due intenti identici
+per costruzione — non c'è un confine da spostare per far collidere due intenti diversi.
+Il bersaglio occupa 24 byte comunque sia fatto, e il discriminante lo precede, così uno
+slot d'inventario 5 e una posizione con x=5 non possono coincidere.
+
+**Il byte di versione guida, ed è dentro i byte firmati.** Aggiungere un campo domani
+cambia il significato di un digest; se la versione non fosse firmata, un token emesso con
+le vecchie regole si farebbe validare con le nuove. Così invece scade.
+
+**Nessun overload di `ValidateToken` col vecchio comportamento.** Quello *era* il difetto:
+lasciato accanto al metodo corretto compilerebbe, passerebbe i test, e il primo che lo
+chiamasse per abitudine riaprirebbe il buco senza che nessuno se ne accorga. Il fatto che
+togliendolo l'albero non compili è la proprietà voluta, non l'ostacolo: quattro chiamate
+in `Gate6` sono state propagate, ed è tutto.
+
+#### La precisazione al § 4 dell'`ADR-0020`, nata implementandolo
+
+Il record dice « il token raggiunge il confine che emette » senza dire **che cosa quel
+confine può davvero controllare**. Scrivendolo è emerso che sono due cose diverse:
+
+- **la firma no.** La chiave di firma vive dentro `ActionTokenIssuer` e non deve uscirne,
+  quindi l'unico posto che sa distinguere un token autentico da uno contraffatto è
+  l'emittente, un livello sopra. Un lettore che credesse che l'effettore riverifica la
+  firma si fiderebbe di una difesa che non c'è, ed è la classe di errore peggiore che
+  questo progetto abbia;
+- **il legame e la scadenza sì**, e nessuno li controllava. L'effettore verifica che il
+  token sia legato al candidato che sta per eseguire e che non sia scaduto **nell'istante
+  dell'emissione**. È esattamente l'intervallo che il § 4 dichiara scoperto: fra il
+  consumo del token nell'executor e il clic che parte, l'effettore risolve un keybind e
+  proietta una coordinata.
+
+La garanzia forte resta di tipo, non di controllo: `ApplyAsync` **richiede** un
+`SafetyToken`, quindi un effettore che non sappia riceverne uno non è componibile nella
+pipeline. Un test di architettura lo verifica per riflessione su tutte le implementazioni,
+perché una garanzia sulla firma di un metodo controllata solo dal codice che esiste oggi
+non è una garanzia.
+
+E ciò che il digest **non** copre resta il pixel: la coordinata è calcolata
+nell'effettore, dopo l'autorizzazione, dal punto mappa che il digest copre. A proteggere
+il pixel è il commit point — terza condizione (quel punto appartiene alla finestra di
+sessione?) e quinta (la scala sotto cui è stato calcolato è ancora quella viva?). Due
+guardie, due soggetti, e la proiezione è la giunzione fra loro.
+
+#### Costo dichiarato
+
+I due commit sono separati su richiesta del coordinamento, perché il cambio di sicurezza
+resti leggibile da solo. La conseguenza è che `c922aa6` **non compila da solo**: le quattro
+righe di `Gate6` arrivano in `d3bdb4e`. È una finestra di due commit per `git bisect`, ed è
+uno scambio fatto di proposito.
 
 ### `R4` — Tagliare la linea Python
 
