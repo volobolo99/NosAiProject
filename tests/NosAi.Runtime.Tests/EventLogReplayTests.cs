@@ -48,6 +48,28 @@ public sealed class EventLogReplayTests : IDisposable
         // this returns rather than at the mercy of the flush interval.
     }
 
+    /// <summary>
+    /// Waits until the logger has actually committed <paramref name="count"/> events.
+    /// </summary>
+    /// <remarks>
+    /// A gap is stamped with <c>MAX(seq)</c> of the events committed so far, so where it
+    /// lands depends on the flush having happened — not on how long the test slept. A
+    /// fixed delay is a bet against the scheduler, and under a loaded run it loses: the
+    /// flush worker's own interval plus one descheduled moment outruns it, the gap is
+    /// stamped after nothing, and the test fails for a reason that has no bearing on
+    /// what it is checking. Waiting on the count waits on the condition the order
+    /// actually depends on.
+    /// </remarks>
+    private static async Task PersistedAsync(NosAiSqliteBatchLogger logger, long count)
+    {
+        for (int attempt = 0; attempt < 300 && logger.PersistedCount < count; attempt++)
+            await Task.Delay(10);
+
+        Assert.True(
+            logger.PersistedCount >= count,
+            $"the logger committed {logger.PersistedCount} of {count} events before the test gave up");
+    }
+
     // -------------------------------------------------------------- durability
 
     [Fact]
@@ -163,7 +185,7 @@ public sealed class EventLogReplayTests : IDisposable
         await using (var logger = new NosAiSqliteBatchLogger(Policy()))
         {
             logger.EnqueueEvent(Event("S-gap", 1));
-            await Task.Delay(80);
+            await PersistedAsync(logger, 1);
             logger.RecordGap(7, "event_bus_full");
             logger.EnqueueEvent(Event("S-gap", 2));
         }
@@ -184,10 +206,10 @@ public sealed class EventLogReplayTests : IDisposable
         await using (var logger = new NosAiSqliteBatchLogger(Policy()))
         {
             logger.EnqueueEvent(Event("S-pos", 1));
-            await Task.Delay(80);
+            await PersistedAsync(logger, 1);
             logger.RecordGap(3, "event_bus_full");
             logger.EnqueueEvent(Event("S-pos", 2));
-            await Task.Delay(80);
+            await PersistedAsync(logger, 2);
         }
 
         var records = EventLogReader.Read(_database).Records;
