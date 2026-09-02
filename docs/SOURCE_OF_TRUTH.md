@@ -45,6 +45,7 @@ This index lists the documents that are authoritative for implementation, review
 - `ADR-0017` — the wire teaches the screen to read: network readings label the HUD glyph atlas
 - `ADR-0018` — the screen establishes `HasTarget`, the wire confirms it and never creates it
 - `ADR-0019` — operating system input is the actuation channel for character control (scopes a choice ADR-0014 left open; revokes nothing)
+- `ADR-0020` — **Proposed.** One authorisation path to the act: the commit point is the boundary, the token signs the intent digest instead of the `CandidateId` and reaches the effector. Supersedes `ROADMAP_ESECUTIVA` §§ 8.2–8.3 for actuation and narrows `INV-07` to the transport codec, which is why it awaits acceptance
 
 ## Gate 1 contract
 

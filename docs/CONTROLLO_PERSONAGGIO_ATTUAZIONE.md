@@ -890,3 +890,21 @@ arriva dopo, ma il documento deve dire che non c'è ancora. Un documento che la 
 presente è indistinguibile da uno che descrive un sistema completo, ed è così che
 `DOMAIN-08` e `DOMAIN-19` sono rimasti inapplicabili per settimane senza che nessuno se ne
 accorgesse.
+
+---
+
+## 8. Corsa dei 100 passi (`--step`) — procedura d'operatore
+
+Non è un test automatico. Premere `--step` sul client vivo richiede prima le prove di
+`P2` (`--input-guards --watch 20`: finestra spostata, punto coperto, mano sul mouse) e
+quella di `P3` (client elevato ⇒ sessione non attuante, puntatore fermo; client non
+elevato ⇒ sessione attuante). Senza quelle, il primo passo è anche la prima occasione
+per scoprire che una guardia non rifiutava.
+
+1. NosTale aperto, personaggio fermo su cella aperta, finestra in primo piano, input armato.
+2. `NosAi.Runtime.exe --step 1 0` (una cella est). Stampa le sei guardie, il pixel, il verifier.
+3. Uscita 0 solo su `Succeeded`. Ogni altro esito è non-zero; non ritentare da solo.
+4. Ripetere su celle adiacenti calpestabili fino a 100 passi. Fermarsi al primo atto
+   fuori dal client, con finestra non in primo piano, o senza autorità nominata nel registro.
+5. `--event-log-report`: tre eventi per un passo emesso (`step.authorization`,
+   `step.emission`, `step.verification`), uno solo per un rifiuto; ognuno porta `authority`.

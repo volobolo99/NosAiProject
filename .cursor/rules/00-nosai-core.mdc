@@ -11,6 +11,7 @@ Canonical flow:
 `Observe → World Model → Decision/Policy → Safety → Execute → Verify → Re-observe`
 
 Rules:
+- Use docs\INDICE_REPO.md 
 - Runtime is authoritative for authorization, safety and privileged execution.
 - UI/mobile clients request operations; they never define security policy.
 - Distinguish `LIVE`, `DERIVED`, `CACHED`, `SIMULATED`, `UNKNOWN` data explicitly.
