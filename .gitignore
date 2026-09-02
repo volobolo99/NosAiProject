@@ -45,7 +45,9 @@ obj/
 # device it belongs to. Keys live on the dedicated volume, per
 # docs/INTEGRAZIONE_RSA_SESSION_AUTH.md.
 *.pem
-data/
+# Operator-local runtime data. The example keybind file is the schema, not a bind.
+data/*
+!data/keybinds.example.json
 
 # WinDivert driver e binari di cattura (scaricati localmente, mai committati)
 tools/windivert/

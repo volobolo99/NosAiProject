@@ -152,6 +152,30 @@ public static class Program
             return NosAi.Runtime.LowLevel.InputAuthorityProbe.Run(repeats);
         }
 
+        // One adjacent-cell step (S4 / C2-4). The chain and the executor already
+        // exist; this only prints them, audits them, and names the operator
+        // command as the authority of the act. It does not arm input.
+        int stepFlag = Array.FindIndex(args, a =>
+            string.Equals(a, NosAi.Runtime.Navigation.SingleStepCommand.Flag, StringComparison.OrdinalIgnoreCase));
+        if (stepFlag >= 0)
+        {
+            if (stepFlag + 2 >= args.Length
+                || !int.TryParse(args[stepFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int stepDx)
+                || !int.TryParse(args[stepFlag + 2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int stepDy))
+            {
+                Console.Error.WriteLine("--step <dx> <dy> requires two integer cell offsets.");
+                return NosAi.Runtime.Navigation.SingleStepCommand.ExitUsage;
+            }
+
+            return NosAi.Runtime.Navigation.SingleStepCommand.Run(stepDx, stepDy);
+        }
+
+        // Which intents the operator bound, and which the runtime can ask for
+        // that are not bound. Non-zero when the file is missing or a required
+        // prefix is uncovered. Does not write data/keybinds.json.
+        if (args.Any(a => string.Equals(a, "--keybinds-check", StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.LowLevel.KeybindsCheck.Run();
+
         if (args.Any(a => string.Equals(a, "--extract-maps", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Navigation.MapGridExtractor.RunExtract();
 
@@ -428,7 +452,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay",
+            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

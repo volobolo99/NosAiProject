@@ -16,6 +16,16 @@ public sealed class KeybindMap
     public const int MinVirtualKey = 1;
     public const int MaxVirtualKey = 254;
 
+    /// <summary>
+    /// Where the operator's binds live, relative to the repository root.
+    /// </summary>
+    /// <remarks>
+    /// The same path <c>InputActionEffector.KeybindsRelativePath</c> loads. The real
+    /// file is the operator's and is gitignored; <c>data/keybinds.example.json</c>
+    /// is the schema, not a bind.
+    /// </remarks>
+    public const string RelativePath = "data/keybinds.json";
+
     private readonly IReadOnlyDictionary<string, Keybind> _binds;
 
     private KeybindMap(IReadOnlyDictionary<string, Keybind> binds)
