@@ -269,11 +269,69 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             });
         }
 
+        // § 4. A session this runtime cannot drive exposes no actuation capability at
+        // all, rather than one that fails on use. The delegate is the pure read: asking
+        // whether the capability exists must never itself move the pointer, so the
+        // verdict is taken by RefreshActuationAuthority and only read here.
+        SessionActuationAuthority? authority = runtime.SessionAuthority;
+
         return new Gate3.InputActionEffector(
             gated,
             keybinds,
             () => runtime.Safety.Policy,
-            new CalibratedScreenProjection(projection, LocateClientArea, ReadPlayerPosition));
+            new CalibratedScreenProjection(projection, LocateClientArea, ReadPlayerPosition),
+            authority is null ? null : authority.CurrentRefusal);
+    }
+
+    /// <summary>
+    /// Points the actuation authority at the client session that is attached now, and
+    /// takes a verdict for it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Called once the client is attached, and safe to call again: declaring the same
+    /// window twice would discard a standing verdict, so the session is only re-declared
+    /// when the window actually differs — a client restarted under the runtime, which is
+    /// a different pair of processes and rightly clears even a latched refusal.
+    /// </para>
+    /// <para>
+    /// The verdict taken here is usually a named refusal, and that is the correct
+    /// outcome rather than a shortcoming: at startup live input is not armed and the
+    /// runtime's own console is in front, so the honest answer is
+    /// <c>authority_live_input_not_armed</c> or <c>authority_window_not_foreground</c>.
+    /// The operator's command re-takes it once those are true
+    /// (<see cref="SessionActuationAuthority.EnsureVerified"/>).
+    /// </para>
+    /// </remarks>
+    private void RefreshActuationAuthority()
+    {
+        if (_runtime.SessionAuthority is not { } authority)
+            return;
+
+        if (!OperatingSystem.IsWindows() || _client.AttachedProcessId is not { } pid)
+            return;
+
+        ClientWindow? window = ClientWindowLocator.TryFind(pid, out string? locateFailure);
+        if (window is null)
+        {
+            _logger.Warning("Client window not located; actuation authority stays unverified.",
+                new Dictionary<string, object?> { ["pid"] = pid, ["reason"] = locateFailure });
+            return;
+        }
+
+        SessionAuthorityVerdict standing = authority.Current;
+        if (standing.Window != window.Handle || standing.ClientProcessId != pid)
+            authority.BeginSession(window.Handle, pid);
+
+        SessionAuthorityVerdict verdict = authority.Verify();
+        _logger.Info("Actuation authority verdict taken.", new Dictionary<string, object?>
+        {
+            ["actuating"] = verdict.IsActuating,
+            ["reason"] = verdict.RefusalReason,
+            ["terminal"] = verdict.IsTerminal,
+            ["runtimeIntegrity"] = verdict.Runtime.Name,
+            ["clientIntegrity"] = verdict.Client.Name
+        });
     }
 
     /// <summary>
@@ -339,6 +397,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             ["attached"] = attached,
             ["failure"] = attached ? null : _client.CaptureBaselineSnapshot().FailureReason
         });
+
+        if (attached)
+            RefreshActuationAuthority();
 
         await _client.StartRealNetworkTransportAsync(cancellationToken).ConfigureAwait(false);
         StartDashboard();

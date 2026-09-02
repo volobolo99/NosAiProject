@@ -106,6 +106,7 @@ public sealed class InputActionEffector : IActionEffector
     private readonly KeybindMap _keybinds;
     private readonly IScreenProjection _projection;
     private readonly Func<RuntimeSafetyPolicy> _policySource;
+    private readonly Func<string?>? _sessionAuthority;
 
     /// <param name="input">
     /// The gated boundary. Concrete on purpose: see the class remarks.
@@ -123,23 +124,49 @@ public sealed class InputActionEffector : IActionEffector
     /// Map coordinates to screen pixels. Defaults to the uncalibrated one, which
     /// refuses — the safe default until F2-3 exists.
     /// </param>
+    /// <param name="sessionAuthority">
+    /// Why this session cannot be acted on, or null when it can
+    /// (<see cref="SessionActuationAuthority.CurrentRefusal"/>). A pure read: it is
+    /// consulted on every question and never probes, so asking whether the capability
+    /// exists cannot itself emit input. Null leaves the effector answering on the
+    /// policy alone, which is what the certification suites want against a recording
+    /// backend where there is no session to bind to.
+    /// </param>
     public InputActionEffector(
         GatedInputBackend input,
         KeybindMap keybinds,
         Func<RuntimeSafetyPolicy> policySource,
-        IScreenProjection? projection = null)
+        IScreenProjection? projection = null,
+        Func<string?>? sessionAuthority = null)
     {
         _input = input ?? throw new ArgumentNullException(nameof(input));
         _keybinds = keybinds ?? throw new ArgumentNullException(nameof(keybinds));
         _policySource = policySource ?? throw new ArgumentNullException(nameof(policySource));
         _projection = projection ?? UncalibratedScreenProjection.Instance;
+        _sessionAuthority = sessionAuthority;
     }
 
     /// <inheritdoc />
-    public bool CanApply => _policySource().LiveInputEnabled;
+    public bool CanApply => UnavailableReason is null;
 
-    /// <inheritdoc />
-    public string? UnavailableReason => CanApply ? null : "live_input_disabled_by_policy";
+    /// <summary>
+    /// Why the decision level is not being offered actuation, or null.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Two independent reasons, and the order between them is not arbitrary: the policy
+    /// is the operator's switch and answers first, because "you have not armed this" is
+    /// the more useful thing to be told when both are true.
+    /// </para>
+    /// <para>
+    /// The second is § 4's rule. A session this runtime cannot drive exposes <i>no</i>
+    /// actuation capability — not a capability that fails on use — so the planner never
+    /// selects an action it cannot carry out, and the failure stops looking like a
+    /// client that is not responding. Observation is untouched.
+    /// </para>
+    /// </remarks>
+    public string? UnavailableReason =>
+        !_policySource().LiveInputEnabled ? "live_input_disabled_by_policy" : _sessionAuthority?.Invoke();
 
     /// <inheritdoc />
     public Task<ExecutionResult> ApplyAsync(

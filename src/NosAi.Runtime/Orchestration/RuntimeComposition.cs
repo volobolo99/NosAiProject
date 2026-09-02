@@ -45,11 +45,23 @@ public static class RuntimeComposition
         // refuses with commit_human_input_unknown rather than proceeding on
         // evidence nobody gathered.
         var humanInput = new HumanInputMonitor();
-        var commitPoint = new CommitPointValidator(new Win32CommitEnvironment(), humanInput);
+        var desktop = new Win32CommitEnvironment();
+        var commitPoint = new CommitPointValidator(desktop, humanInput);
         var input = new GatedInputBackend(new Win32InputBackend(), () => safety.Policy, commitPoint);
         var humanizer = new DeterministicHumanizer(input);
 
-        return new RuntimeComponents(safety, input, humanizer, new GuardAi(), new SafetyGate(), humanInput);
+        // § 4. The commit point asks whether the act would land where it was aimed; this
+        // asks the prior question of whether this runtime can drive that client at all,
+        // which SendInput answers by failing silently when it cannot. It shares the one
+        // desktop seam so both read the same foreground.
+        var authority = new SessionActuationAuthority(
+            new Win32ProcessIntegrityReader(),
+            desktop,
+            input,
+            () => safety.Policy.LiveInputEnabled);
+
+        return new RuntimeComponents(
+            safety, input, humanizer, new GuardAi(), new SafetyGate(), humanInput, authority);
     }
 
     /// <summary>
@@ -77,7 +89,8 @@ public sealed record RuntimeComponents(
     IHumanizer Humanizer,
     IGuardAi GuardAi,
     ISafetyGate SafetyGate,
-    IHumanInputMonitor HumanInput)
+    IHumanInputMonitor HumanInput,
+    SessionActuationAuthority? SessionAuthority = null)
 {
     /// <summary>
     /// The safety state in force right now.
