@@ -9,6 +9,8 @@ using NosAi.LiveIntegration;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Gate2;
 using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Navigation;
+using NosAi.Runtime.Perception;
 
 namespace NosAi.ControlPanel;
 
@@ -26,6 +28,8 @@ public partial class MainWindow : Window
     private bool? _apiListening;
     private bool? _guardListening;
     private SnapshotView _lastSnapshot = SnapshotView.Empty("avvio");
+    private FileSystemWatcher? _targetFiles;
+    private string? _targetSignature;
 
     public MainWindow()
     {
@@ -47,6 +51,8 @@ public partial class MainWindow : Window
         BuildSuiteButtons();
         RefreshSetup();
         ApplyMode();
+        WatchTargetFiles();
+        ApplyTarget();
         OverviewWire.Text = ChannelView.WireLabel;
         OverviewPhoneReminder.Text = ChannelView.PhoneReminder;
         Loaded += async (_, _) => await AutoStartAsync();
@@ -232,6 +238,7 @@ public partial class MainWindow : Window
         EventLogFields.ItemsSource = EventLogInspect.Inspect(eventLog);
         ApplyMap(snapshot);
         ApplyAround(snapshot);
+        ApplyTarget();
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
@@ -273,6 +280,93 @@ public partial class MainWindow : Window
         KeybindsFields.ItemsSource = KeybindsInspect.Inspect(Path.Combine(_repoRoot, KeybindMap.RelativePath)).Fields;
     }
 
+    /// <summary>
+    /// Candidate file and target-frame ROI, redrawn only when those files change.
+    /// The hunt lives on disk, not on the snapshot: a missing file stays
+    /// "caccia non iniziata", never a fabricated zero.
+    /// </summary>
+    private void ApplyTarget()
+    {
+        string candidatePath = Path.Combine(_repoRoot, TargetIdFinder.CandidatePath);
+        string roiPath = Path.Combine(_repoRoot, TargetRoiCalibration.RelativePath);
+        string signature = TargetInspect.Signature(candidatePath, roiPath);
+        if (signature == _targetSignature)
+            return;
+
+        _targetSignature = signature;
+        TargetHuntView view = TargetInspect.Inspect(candidatePath, roiPath);
+        TargetHuntStatusText.Text = view.HuntStatusLine;
+        TargetClearedPassText.Text = view.ClearedPassLine;
+        TargetAdviceText.Text = view.AdviceLine;
+        TargetRoiText.Text = view.RoiLine;
+        TargetFields.ItemsSource = view.Fields;
+        TargetHuntStatusText.Foreground = view.HuntKind == TargetHuntKind.NotStarted
+            ? (Brush)FindResource("MutedBrush")
+            : (Brush)FindResource("TextBrush");
+        TargetClearedPassText.Foreground = view.ClearedPassMissing
+            ? (Brush)FindResource("WarnBrush")
+            : view.HuntKind is TargetHuntKind.NotStarted or TargetHuntKind.Unreadable
+                ? (Brush)FindResource("MutedBrush")
+                : (Brush)FindResource("LiveBrush");
+        TargetRoiText.Foreground = (Brush)FindResource("MutedBrush");
+    }
+
+    /// <summary>
+    /// Wakes the target view when the candidate or ROI file changes, instead of
+    /// polling those files on their own timer.
+    /// </summary>
+    private void WatchTargetFiles()
+    {
+        string data = Path.Combine(_repoRoot, "data");
+        try
+        {
+            if (!Directory.Exists(data))
+                return;
+
+            var watcher = new FileSystemWatcher(data)
+            {
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.FileName
+                    | NotifyFilters.DirectoryName
+                    | NotifyFilters.LastWrite
+                    | NotifyFilters.Size
+                    | NotifyFilters.CreationTime,
+                EnableRaisingEvents = true
+            };
+            watcher.Changed += OnTargetFileEvent;
+            watcher.Created += OnTargetFileEvent;
+            watcher.Deleted += OnTargetFileEvent;
+            watcher.Renamed += OnTargetFileEvent;
+            _targetFiles = watcher;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            _log.Warning($"Osservazione file bersaglio non avviata: {ex.Message}");
+        }
+    }
+
+    private void OnTargetFileEvent(object sender, FileSystemEventArgs e)
+    {
+        if (!IsTargetWatchedPath(e.FullPath)
+            && !(e is RenamedEventArgs renamed && IsTargetWatchedPath(renamed.OldFullPath)))
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            _targetSignature = null;
+            ApplyTarget();
+        });
+    }
+
+    private static bool IsTargetWatchedPath(string fullPath)
+    {
+        string name = Path.GetFileName(fullPath);
+        return name.Equals("target_candidates.txt", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("target-roi.calibration", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string ModeLabel(SessionKind kind) => kind switch
     {
         SessionKind.Hosted => "OSPITATO",
@@ -294,6 +388,7 @@ public partial class MainWindow : Window
         NavClient.Style = (Style)FindResource("NavButton");
         NavMap.Style = (Style)FindResource("NavButton");
         NavAround.Style = (Style)FindResource("NavButton");
+        NavTarget.Style = (Style)FindResource("NavButton");
         NavPhone.Style = (Style)FindResource("NavButton");
         NavPerception.Style = (Style)FindResource("NavButton");
         NavNetwork.Style = (Style)FindResource("NavButton");
@@ -308,6 +403,7 @@ public partial class MainWindow : Window
         ViewClient.Visibility = Visibility.Collapsed;
         ViewMap.Visibility = Visibility.Collapsed;
         ViewAround.Visibility = Visibility.Collapsed;
+        ViewTarget.Visibility = Visibility.Collapsed;
         ViewPhone.Visibility = Visibility.Collapsed;
         ViewPerception.Visibility = Visibility.Collapsed;
         ViewNetwork.Visibility = Visibility.Collapsed;
@@ -321,6 +417,13 @@ public partial class MainWindow : Window
         else if (ReferenceEquals(button, NavClient)) { ViewClient.Visibility = Visibility.Visible; PageTitle.Text = "Client NosTale"; }
         else if (ReferenceEquals(button, NavMap)) { ViewMap.Visibility = Visibility.Visible; PageTitle.Text = "Mappa"; }
         else if (ReferenceEquals(button, NavAround)) { ViewAround.Visibility = Visibility.Visible; PageTitle.Text = "Attorno"; }
+        else if (ReferenceEquals(button, NavTarget))
+        {
+            _targetSignature = null;
+            ApplyTarget();
+            ViewTarget.Visibility = Visibility.Visible;
+            PageTitle.Text = "Bersaglio";
+        }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception)) { ViewPerception.Visibility = Visibility.Visible; PageTitle.Text = "Percezione"; }
         else if (ReferenceEquals(button, NavNetwork))
@@ -661,6 +764,8 @@ public partial class MainWindow : Window
     {
         _poll.Stop();
         _clock.Stop();
+        _targetFiles?.Dispose();
+        _targetFiles = null;
         if (_session.Kind == SessionKind.Hosted)
             await _session.DisposeAsync();
     }

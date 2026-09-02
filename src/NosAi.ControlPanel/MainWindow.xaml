@@ -71,6 +71,7 @@
           <Button x:Name="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
           <Button x:Name="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
           <Button x:Name="NavAround" Style="{StaticResource NavButton}" Content="Attorno" Click="OnNav"/>
+          <Button x:Name="NavTarget" Style="{StaticResource NavButton}" Content="Bersaglio" Click="OnNav"/>
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
           <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
@@ -214,6 +215,39 @@
               Intenti che KeybindsCheck elenca come configurati, e intenti scoperti col loro nome. Un intento mancante si disegna come mancante, non come riga vuota. Il pannello non scrive il file.
             </TextBlock>
             <ItemsControl x:Name="KeybindsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewTarget" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">
+              HasTarget viene dalla memoria del client (ADR-0021). TargetIdFinder cerca l'offset con un oracolo a passate; lo stato di quella caccia è questo file. La passata senza bersaglio distingue la selezione dalla lista delle entità: senza di essa nessun candidato può essere provato. Il riquadro sullo schermo resta la seconda sorgente indipendente, non una precondizione del combattimento.
+            </TextBlock>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="CACCIA"/>
+                <TextBlock x:Name="TargetHuntStatusText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="caccia non iniziata"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="PASSATA SENZA BERSAGLIO"/>
+                <TextBlock x:Name="TargetClearedPassText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="Passata senza bersaglio: UNKNOWN"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="PROSSIMO PASSO"/>
+                <TextBlock x:Name="TargetAdviceText" FontSize="14" TextWrapping="Wrap" Text="UNKNOWN"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="RIQUADRO BERSAGLIO (SCHERMO)"/>
+                <TextBlock x:Name="TargetRoiText" FontSize="14" TextWrapping="Wrap" Text="NON CALIBRATO"/>
+              </StackPanel>
+            </Border>
+            <ItemsControl x:Name="TargetFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 
