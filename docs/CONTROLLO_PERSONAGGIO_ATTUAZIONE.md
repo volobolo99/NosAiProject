@@ -496,6 +496,25 @@ raccogliere, non si agisce. La differenza che questo introduce è che il fallime
 somigliare a « il gioco non risponde », che è la lettura sotto cui un ciclo di ritentativi
 gira per sempre senza poter riuscire.
 
+**Stato — 2 settembre 2026.** Scritto in `src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs`,
+composto in `RuntimeComposition.CreateSafe`, letto da `InputActionEffector.UnavailableReason`.
+Tre precisazioni emerse scrivendolo:
+
+- il probe si esegue **solo mentre la finestra del client è in primo piano**, perché UIPI
+  giudica contro la finestra che possiede la coda di input in quell'istante: un probe preso
+  con davanti un'altra finestra misura un'altra coppia di processi, e un esito positivo
+  misurato sulla coppia sbagliata autorizzerebbe l'atto che non ha provato;
+- « sconosciuto » non è un livello di integrità. Il RID `0x0000` è *untrusted*, cioè il più
+  basso realmente esistente, quindi una struttura che usasse lo zero per « non letto »
+  scambierebbe l'uno per l'altro nei due versi;
+- « nessun ritentativo » è un **latch**, non una politica del chiamante. Runtime sotto il
+  client e puntatore che non si muove sono terminali: chiedere di nuovo non può cambiarli, e
+  chiederlo comunque muoverebbe il puntatore dell'operatore a ogni ciclo. Se ne esce con una
+  sessione nuova o con `Reset` dell'operatore.
+
+Copertura: `tests/NosAi.Runtime.Tests/SessionAuthorityTests.cs`. Evidenza locale; il giro
+con il client elevato non è ancora stato eseguito.
+
 ---
 
 ## 5. Verifica

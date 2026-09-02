@@ -154,13 +154,31 @@ proprio codice e l'ultimo punto valido.
 
 | Contenuto | Chi |
 |---|---|
-| Confronto dei livelli di integrità e legame dell'esito allo stato della sessione | Claude |
-| Regola « sessione non attuante »: nessuna capacità di attuazione esposta | Claude |
-| Riuso di `InputEnvironmentProbe`, validità temporale del probe, ripetizione al ripristino del primo piano | Claude |
-| Superficie CLI e dashboard che mostra lo stato di autorità | Cursor |
+| ~~Confronto dei livelli di integrità e legame dell'esito allo stato della sessione~~ **fatto** — `SessionActuationAuthority` e `Win32ProcessIntegrityReader` in `src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs` | Claude |
+| ~~Regola « sessione non attuante »: nessuna capacità di attuazione esposta~~ **fatto** — `InputActionEffector.UnavailableReason` interroga l'autorità, quindi il livello decisionale non vede la capacità invece di vederla fallire | Claude |
+| ~~Validità temporale del verdetto e ripetizione al ripristino del primo piano~~ **fatto** — `Validity` 60 s, `NoteForegroundRestored`, `EnsureVerified` | Claude |
+| Superficie CLI e dashboard che mostra lo stato di autorità | Cursor (`X-P3`) |
+| Chiamata di `EnsureVerified()` all'inizio del ciclo decisionale e all'evento di primo piano | Cursor (`X-P3`) |
+
+**Il riuso di `InputEnvironmentProbe` non è avvenuto, e la ragione conta.** Quel probe
+valida il *sistema operativo*: aggancia un hook di tastiera, inietta `VK_F24` e lo
+ingoia. Qui la domanda è un'altra — se questo runtime possa guidare *quel* client — e
+si risponde solo mentre la finestra del client è in primo piano, perché è la finestra
+in primo piano che UIPI giudica. Un tasto ingoiato da un hook non attraversa quel
+confine e non dimostra nulla su di esso. È riusato lo **schema**: atto innocuo,
+rilettura con attesa breve, ripristino della posizione, tolleranza di 2 px.
+
+**Due rifiuti sono terminali e non vengono più riprovati** (`IsTerminal`): runtime sotto
+il client, e puntatore che non arriva dove è stato mandato. Nessuno dei due cambia
+richiedendo di nuovo, e riprovare farebbe sobbalzare il puntatore dell'operatore a ogni
+ciclo. Si esce dal blocco solo con una sessione nuova (`BeginSession` su una finestra
+diversa — il client riavviato senza elevazione) o con `Reset` chiesto dall'operatore.
 
 **DoD** — client elevato e runtime no ⇒ sessione non attuante con il proprio codice,
-osservazione che continua, e **nessun ritentativo**.
+osservazione che continua, e **nessun ritentativo**. *Coperta in locale* da
+`tests/NosAi.Runtime.Tests/SessionAuthorityTests.cs` (23 test). **Non ancora osservata
+sul client reale**: serve un giro con NosTale elevato e il runtime no, ed è il compito
+dell'operatore alla riga 4 di § 6.
 
 ---
 
@@ -370,6 +388,8 @@ immediato, esposizione dello stato e dei budget nella dashboard e nelle metriche
 
 ## 6. Cosa fare adesso
 
-1. ~~`X-P0` / `C-P0`~~ chiusi. ~~`C-P1` / `C-P2`~~ scritti. ~~`X-P2`~~ cablato il 2 settembre 2026.
+1. ~~`X-P0` / `C-P0`~~ chiusi. ~~`C-P1` / `C-P2`~~ scritti. ~~`X-P2`~~ cablato il 2 settembre 2026. ~~`C-P3`~~ scritto il 2 settembre 2026.
 2. Sul client vivo: `NosAi.Runtime.exe --input-guards --watch 20`. Sposta la finestra, copri il punto, tocca il mouse. Ogni prova deve nominare il proprio rifiuto. Soglie e tolleranze non si toccano.
-3. `P2` prima di `P4`. Il primo passo non si emette finché queste tre prove non sono state viste sul client, non solo sul desktop fittizio.
+3. `X-P3` — la superficie che mostra l'autorità di sessione, e la chiamata a `EnsureVerified()` nel ciclo. Senza di essa il verdetto viene preso una sola volta all'attach, quando il client non è in primo piano e l'input non è armato: il runtime resta correttamente non attuante, ma per un motivo che non è quello vero.
+4. Prova d'operatore, dopo `X-P3`: avvia NosTale **come amministratore** e il runtime no. La CLI deve dire `authority_integrity_below_client:medium_under_high`, il pannello deve mostrare la sessione come non attuante, l'osservazione deve continuare, e **il puntatore non deve muoversi nemmeno una volta**. Poi lo stesso giro senza elevazione: la sessione diventa attuante e il puntatore torna esattamente dov'era.
+5. `P2` e `P3` prima di `P4`. Il primo passo non si emette finché queste prove non sono state viste sul client, non solo sul desktop fittizio.
