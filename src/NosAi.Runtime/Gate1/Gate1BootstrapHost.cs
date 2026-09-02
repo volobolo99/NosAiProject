@@ -163,6 +163,16 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         var safeProbe = new SafeHardwareProbe(probe ?? CreateDefaultProbe());
         _hardware = new LiveHardwareTelemetry(safeProbe);
         var runtime = _runtime = RuntimeComposition.CreateSafe();
+        if (runtime.HumanInput is HumanInputMonitor monitor
+            && !monitor.TryStart(out string? humanWatchFailure))
+        {
+            _logger.Warning(
+                "Human input monitor did not start; every irreversible act will refuse.",
+                new Dictionary<string, object?>
+                {
+                    ["reason"] = humanWatchFailure
+                });
+        }
         var world = new NosAi.Runtime.WorldModel.WorldModel();
         _observation = _options.ObserveGame is { } endpoint
             ? Gate1ObservationChannel.TryOpenLive(endpoint, _logger)
@@ -606,6 +616,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _observation.Dispose();
         _auth.Dispose();
         _runtimeIdentity.Dispose();
+        if (_runtime.HumanInput is IDisposable humanInput)
+            humanInput.Dispose();
         _devKey?.Dispose();
         _health = RuntimeHealthStatus.Stopped;
         _correlationScope.Dispose();

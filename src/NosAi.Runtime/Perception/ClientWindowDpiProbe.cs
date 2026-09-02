@@ -17,9 +17,10 @@ namespace NosAi.Runtime.Perception;
 /// virtualised rectangle.
 /// </para>
 /// <para>
-/// It does not keep an epoch and it does not invalidate a calibration. Those
-/// are safety decisions; this only reports what is true of one window at one
-/// moment. The regime reading itself lives in <see cref="DpiAwareness"/>, because
+/// It prints the current <see cref="GeometryEpoch"/> as a reading, and it does
+/// not keep one. Invalidating a calibration is a safety decision; this only
+/// reports what is true of one window at one moment. The regime reading itself
+/// lives in <see cref="DpiAwareness"/>, because
 /// <see cref="ScreenProjectionCalibration"/> now records it and
 /// <see cref="CalibratedScreenProjection"/> refuses across a change in it — and two
 /// copies of that reading could disagree about the thing a refusal depends on.
@@ -75,6 +76,14 @@ public static class ClientWindowDpiProbe
         Console.WriteLine(monitor == IntPtr.Zero
             ? "Monitor: UNKNOWN (MonitorFromWindow returned 0)"
             : string.Create(CultureInfo.InvariantCulture, $"Monitor: 0x{monitor.ToInt64():X}"));
+
+        GeometryEpoch epoch = GeometryEpoch.Read(window);
+        Console.WriteLine(epoch.IsKnown
+            ? string.Create(CultureInfo.InvariantCulture,
+                $"Epoch: {epoch.ClientArea.X},{epoch.ClientArea.Y} "
+                + $"{epoch.ClientArea.Width}x{epoch.ClientArea.Height} "
+                + $"dpi={epoch.Dpi} monitor=0x{epoch.Monitor.ToInt64():X}")
+            : "Epoch: UNKNOWN");
         return 0;
     }
 

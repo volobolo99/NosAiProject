@@ -294,7 +294,7 @@ public sealed class CommitPointValidator
 }
 
 /// <summary>The real desktop.</summary>
-public sealed class Win32CommitEnvironment : ICommitEnvironment
+public sealed partial class Win32CommitEnvironment : ICommitEnvironment
 {
     public IntPtr ForegroundWindow() =>
         OperatingSystem.IsWindows() ? GetForegroundWindow() : IntPtr.Zero;
@@ -304,8 +304,8 @@ public sealed class Win32CommitEnvironment : ICommitEnvironment
         if (!OperatingSystem.IsWindows())
             return IntPtr.Zero;
 
-        IntPtr hit = WindowFromPoint(new Point { X = screenX, Y = screenY });
-        return hit == IntPtr.Zero ? IntPtr.Zero : GetAncestor(hit, GaRoot);
+        nint hit = WindowFromPoint(new Point { X = screenX, Y = screenY });
+        return hit == nint.Zero ? IntPtr.Zero : GetAncestor(hit, GaRoot);
     }
 
     public bool? IsCloaked(IntPtr window)
@@ -337,18 +337,18 @@ public sealed class Win32CommitEnvironment : ICommitEnvironment
     private struct Point { public int X, Y; }
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
+    [LibraryImport("user32.dll")]
+    private static partial nint GetForegroundWindow();
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern IntPtr WindowFromPoint(Point point);
+    [LibraryImport("user32.dll")]
+    private static partial nint WindowFromPoint(Point point);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+    [LibraryImport("user32.dll")]
+    private static partial nint GetAncestor(nint window, uint flags);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmGetWindowAttribute(IntPtr window, int attribute, out int value, int size);
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmGetWindowAttribute(nint window, int attribute, out int value, int size);
 }

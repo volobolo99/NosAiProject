@@ -289,6 +289,7 @@ public sealed class RuntimeSafetyControllerTests
 
         Assert.IsType<GatedInputBackend>(components.InputBackend);
         Assert.False(components.InputBackend.IsLive);
+        Assert.True(((GatedInputBackend)components.InputBackend).RequiresCommitPoint);
     }
 
     /// <summary>An input backend that records instead of touching the desktop.</summary>

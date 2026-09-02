@@ -38,10 +38,18 @@ public static class RuntimeComposition
         // cannot inject input while the policy forbids it. The policy is read per
         // call, so flipping the switch takes effect immediately and so does
         // flipping it back — which is what makes an emergency stop worth having.
-        var input = new GatedInputBackend(new Win32InputBackend(), () => safety.Policy);
+        //
+        // The commit point is a construction-time choice, not a runtime switch:
+        // a switch is what a bypass looks like. The monitor is wired here and
+        // started by the host; until it is watching, every irreversible act
+        // refuses with commit_human_input_unknown rather than proceeding on
+        // evidence nobody gathered.
+        var humanInput = new HumanInputMonitor();
+        var commitPoint = new CommitPointValidator(new Win32CommitEnvironment(), humanInput);
+        var input = new GatedInputBackend(new Win32InputBackend(), () => safety.Policy, commitPoint);
         var humanizer = new DeterministicHumanizer(input);
 
-        return new RuntimeComponents(safety, input, humanizer, new GuardAi(), new SafetyGate());
+        return new RuntimeComponents(safety, input, humanizer, new GuardAi(), new SafetyGate(), humanInput);
     }
 
     /// <summary>
@@ -56,7 +64,9 @@ public static class RuntimeComposition
 
         var safety = new RuntimeSafetyController(policy);
         var input = new GatedInputBackend(rawInput, () => safety.Policy);
-        return new RuntimeComponents(safety, input, new DeterministicHumanizer(input), new GuardAi(), new SafetyGate());
+        return new RuntimeComponents(
+            safety, input, new DeterministicHumanizer(input), new GuardAi(), new SafetyGate(),
+            NotWatchingHumanInput.Instance);
     }
 }
 
@@ -66,7 +76,8 @@ public sealed record RuntimeComponents(
     IInputBackend InputBackend,
     IHumanizer Humanizer,
     IGuardAi GuardAi,
-    ISafetyGate SafetyGate)
+    ISafetyGate SafetyGate,
+    IHumanInputMonitor HumanInput)
 {
     /// <summary>
     /// The safety state in force right now.

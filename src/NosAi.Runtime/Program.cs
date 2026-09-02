@@ -118,6 +118,23 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--window-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.ClientWindowDpiProbe.Run();
 
+        // The five commit-point conditions against the live window. Observation
+        // only: a refused verdict is printed, nothing is emitted. --watch <s>
+        // keeps the stamp taken at the start so the three real-client proofs
+        // (window moved, point covered, hand on the mouse) are named refusals.
+        if (args.Any(a => string.Equals(a, "--input-guards", StringComparison.OrdinalIgnoreCase)))
+        {
+            int guardsWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int seconds = guardsWatchFlag >= 0 && guardsWatchFlag + 1 < args.Length
+                          && int.TryParse(args[guardsWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
+                          && parsed > 0
+                ? parsed
+                : 0;
+
+            return NosAi.Runtime.LowLevel.InputGuardsProbe.Run(seconds);
+        }
+
         if (args.Any(a => string.Equals(a, "--extract-maps", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Navigation.MapGridExtractor.RunExtract();
 
@@ -388,7 +405,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--decide-replay", "--player-probe", "--world-replay",
+            "--hud-probe", "--window-probe", "--input-guards", "--decide-replay", "--player-probe", "--world-replay",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

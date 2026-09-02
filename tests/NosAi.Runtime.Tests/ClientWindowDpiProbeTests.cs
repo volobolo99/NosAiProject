@@ -19,6 +19,10 @@ public sealed class ClientWindowDpiProbeTests
         Assert.Contains("true/pm", manifest, StringComparison.Ordinal);
         Assert.Contains(">PerMonitorV2</dpiAwareness>", manifest, StringComparison.Ordinal);
         Assert.Contains("<ApplicationManifest>app.manifest</ApplicationManifest>", csproj, StringComparison.Ordinal);
+
+        string probe = File.ReadAllText(Path.Combine(root, "src", "NosAi.Runtime", "Perception", "ClientWindowDpiProbe.cs"));
+        Assert.Contains("GeometryEpoch.Read", probe, StringComparison.Ordinal);
+        Assert.Contains("Epoch:", probe, StringComparison.Ordinal);
     }
 
     /// <summary>

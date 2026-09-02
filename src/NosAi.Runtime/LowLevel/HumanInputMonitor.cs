@@ -79,7 +79,7 @@ public interface IHumanInputMonitor
 /// itself.
 /// </para>
 /// </remarks>
-public sealed class HumanInputMonitor : IHumanInputMonitor, IDisposable
+public sealed partial class HumanInputMonitor : IHumanInputMonitor, IDisposable
 {
     private readonly object _lifecycle = new();
 
@@ -188,8 +188,10 @@ public sealed class HumanInputMonitor : IHumanInputMonitor, IDisposable
             _mouseProc = OnMouse;
             _keyboardProc = OnKeyboard;
 
-            _mouseHook = SetWindowsHookExW(WhMouseLowLevel, _mouseProc, IntPtr.Zero, 0);
-            _keyboardHook = SetWindowsHookExW(WhKeyboardLowLevel, _keyboardProc, IntPtr.Zero, 0);
+            _mouseHook = SetWindowsHookExW(
+                WhMouseLowLevel, Marshal.GetFunctionPointerForDelegate(_mouseProc), nint.Zero, 0);
+            _keyboardHook = SetWindowsHookExW(
+                WhKeyboardLowLevel, Marshal.GetFunctionPointerForDelegate(_keyboardProc), nint.Zero, 0);
 
             if (_mouseHook == IntPtr.Zero || _keyboardHook == IntPtr.Zero)
             {
@@ -219,7 +221,7 @@ public sealed class HumanInputMonitor : IHumanInputMonitor, IDisposable
             Record((data.flags & LlmhfInjected) != 0);
         }
 
-        return CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
+        return CallNextHookEx(nint.Zero, code, wParam, lParam);
     }
 
     [SupportedOSPlatform("windows")]
@@ -231,7 +233,7 @@ public sealed class HumanInputMonitor : IHumanInputMonitor, IDisposable
             Record((data.flags & LlkhfInjected) != 0);
         }
 
-        return CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
+        return CallNextHookEx(nint.Zero, code, wParam, lParam);
     }
 
     private void Record(bool injected)
@@ -325,36 +327,39 @@ public sealed class HumanInputMonitor : IHumanInputMonitor, IDisposable
     }
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr SetWindowsHookExW(int idHook, HookProc callback, IntPtr module, uint threadId);
+    [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowsHookExW")]
+    private static partial nint SetWindowsHookExW(int idHook, nint callback, nint module, uint threadId);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern bool UnhookWindowsHookEx(IntPtr hook);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool UnhookWindowsHookEx(nint hook);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern IntPtr CallNextHookEx(IntPtr hook, int code, IntPtr wParam, IntPtr lParam);
+    [LibraryImport("user32.dll")]
+    private static partial nint CallNextHookEx(nint hook, int code, nint wParam, nint lParam);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern int GetMessageW(out Msg message, IntPtr window, uint filterMin, uint filterMax);
+    [LibraryImport("user32.dll", EntryPoint = "GetMessageW")]
+    private static partial int GetMessageW(out Msg message, nint window, uint filterMin, uint filterMax);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern bool TranslateMessage(ref Msg message);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool TranslateMessage(ref Msg message);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern IntPtr DispatchMessageW(ref Msg message);
+    [LibraryImport("user32.dll", EntryPoint = "DispatchMessageW")]
+    private static partial nint DispatchMessageW(ref Msg message);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("user32.dll")]
-    private static extern bool PostThreadMessageW(uint threadId, uint message, IntPtr wParam, IntPtr lParam);
+    [LibraryImport("user32.dll", EntryPoint = "PostThreadMessageW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool PostThreadMessageW(uint threadId, uint message, nint wParam, nint lParam);
 
     [SupportedOSPlatform("windows")]
-    [DllImport("kernel32.dll")]
-    private static extern uint GetCurrentThreadId();
+    [LibraryImport("kernel32.dll")]
+    private static partial uint GetCurrentThreadId();
 }
 
 /// <summary>A monitor that is not running and says so.</summary>
