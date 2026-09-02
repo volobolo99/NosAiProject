@@ -171,6 +171,27 @@ public static class Program
             return NosAi.Runtime.Navigation.SingleStepCommand.Run(stepDx, stepDy);
         }
 
+        // Walk a path to an absolute cell (C2-7). The controller admits, decides
+        // and replans; this command is the loop around those four methods, the
+        // printout, and the audit. It does not arm input. --dry-run admits and
+        // prints the guard ladder without reaching the input backend.
+        int walkFlag = Array.FindIndex(args, a =>
+            string.Equals(a, NosAi.Runtime.Navigation.WalkCommand.Flag, StringComparison.OrdinalIgnoreCase));
+        if (walkFlag >= 0)
+        {
+            if (walkFlag + 2 >= args.Length
+                || !int.TryParse(args[walkFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int walkGx)
+                || !int.TryParse(args[walkFlag + 2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int walkGy))
+            {
+                Console.Error.WriteLine("--walk <gx> <gy> requires two integer cell coordinates.");
+                return NosAi.Runtime.Navigation.WalkCommand.ExitUsage;
+            }
+
+            bool dryRun = args.Any(a =>
+                string.Equals(a, NosAi.Runtime.Navigation.WalkCommand.DryRunFlag, StringComparison.OrdinalIgnoreCase));
+            return NosAi.Runtime.Navigation.WalkCommand.Run(walkGx, walkGy, dryRun);
+        }
+
         // Which intents the operator bound, and which the runtime can ask for
         // that are not bound. Non-zero when the file is missing or a required
         // prefix is uncovered. Does not write data/keybinds.json.
@@ -481,7 +502,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };
