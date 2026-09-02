@@ -28,16 +28,16 @@ namespace NosAi.Raids.Dodekatheon
     public enum DodekaBossPhase : byte { Phase1_OrbCleansing = 1, Phase2_ElementalShields = 2, Phase3_StaggerDpsCheck = 3, Phase4_CataclysmFrenzy = 4, InvulnerableStasis = 5 }
     public enum CelestialTelegraphKind : byte { SweepingLaserBeam = 0, MeteorFallCircle = 1, ElementalShockwave = 2, SafeSanctuaryDome = 3 }
 
-    public readonly record struct Position2D(double X, double Y)
+    public readonly record struct TelegraphPoint(double X, double Y)
     {
-        public double DistanceTo(Position2D other) { double dx = X - other.X, dy = Y - other.Y; return Math.Sqrt(dx * dx + dy * dy); }
-        public static Position2D Zero => new(0, 0);
+        public double DistanceTo(TelegraphPoint other) { double dx = X - other.X, dy = Y - other.Y; return Math.Sqrt(dx * dx + dy * dy); }
+        public static TelegraphPoint Zero => new(0, 0);
     }
 
-    public sealed record ProjectedCelestialTelegraph(Guid TelegraphId, CelestialTelegraphKind Kind, Position2D Center, double RadiusOrLengthTiles, double AngleDegrees, DateTime TriggerAtUtc, int WarningDurationMs, bool IsInstantKill)
+    public sealed record ProjectedCelestialTelegraph(Guid TelegraphId, CelestialTelegraphKind Kind, TelegraphPoint Center, double RadiusOrLengthTiles, double AngleDegrees, DateTime TriggerAtUtc, int WarningDurationMs, bool IsInstantKill)
     {
         public bool IsActive => DateTime.UtcNow <= TriggerAtUtc;
-        public bool ContainsPoint(Position2D point)
+        public bool ContainsPoint(TelegraphPoint point)
         {
             if (Kind is CelestialTelegraphKind.MeteorFallCircle or CelestialTelegraphKind.ElementalShockwave or CelestialTelegraphKind.SafeSanctuaryDome) return Center.DistanceTo(point) <= RadiusOrLengthTiles;
             double dist = Center.DistanceTo(point); if (dist > RadiusOrLengthTiles) return false;
@@ -50,7 +50,7 @@ namespace NosAi.Raids.Dodekatheon
     public sealed record BossStaggerGauge(int CurrentStaggerPoints, int MaxStaggerThreshold, bool IsBrokenAndVulnerable, DateTime BrokenUntilUtc)
     { public double StaggerPercentage => (double)CurrentStaggerPoints / Math.Max(1, MaxStaggerThreshold); }
 
-    public sealed record DodekaTacticalIntent(Guid IntentId, string ActionType, long TargetEntityId, Position2D TargetPosition, CelestialElement RequiredAttackElement, float PriorityScore, string TacticalRationale);
+    public sealed record DodekaTacticalIntent(Guid IntentId, string ActionType, long TargetEntityId, TelegraphPoint TargetPosition, CelestialElement RequiredAttackElement, float PriorityScore, string TacticalRationale);
 
     #endregion
 
@@ -106,7 +106,7 @@ namespace NosAi.Raids.Dodekatheon
     #region 3. AoE Radar & Safe-Spot Resolver Celestiale
     public sealed class CelestialSafeSpotResolver
     {
-        public bool TryResolveSafePosition(Position2D currentPos, IReadOnlyList<ProjectedCelestialTelegraph> activeTelegraphs, out Position2D safePosition, out string? dodgeRationale)
+        public bool TryResolveSafePosition(TelegraphPoint currentPos, IReadOnlyList<ProjectedCelestialTelegraph> activeTelegraphs, out TelegraphPoint safePosition, out string? dodgeRationale)
         {
             safePosition = currentPos; dodgeRationale = null;
             var sanctuaryDome = activeTelegraphs.FirstOrDefault(t => t.IsActive && t.Kind == CelestialTelegraphKind.SafeSanctuaryDome);
@@ -119,7 +119,7 @@ namespace NosAi.Raids.Dodekatheon
             double avgDangerX = dangerousOverlaps.Average(t => t.Center.X), avgDangerY = dangerousOverlaps.Average(t => t.Center.Y), maxRange = dangerousOverlaps.Max(t => t.RadiusOrLengthTiles);
             double dirX = currentPos.X - avgDangerX, dirY = currentPos.Y - avgDangerY, len = Math.Sqrt(dirX * dirX + dirY * dirY); if (len < 0.001) { dirX = 1.0; dirY = 0.0; len = 1.0; }
             double safeMargin = maxRange + 2.0;
-            safePosition = new Position2D(avgDangerX + (dirX / len) * safeMargin, avgDangerY + (dirY / len) * safeMargin);
+            safePosition = new TelegraphPoint(avgDangerX + (dirX / len) * safeMargin, avgDangerY + (dirY / len) * safeMargin);
             dodgeRationale = $"[SCHIVATA CELESTIALE]: Allontanamento da {dangerousOverlaps.Count} indicatori letali verso ({safePosition.X:F1}, {safePosition.Y:F1})."; return true;
         }
     }
@@ -144,15 +144,15 @@ namespace NosAi.Raids.Dodekatheon
         public DodekatheonRaidOrchestrator(int staggerThreshold = 1000) { _mechanicsEngine = new DodekaBossMechanicsEngine(staggerThreshold); _safeSpotResolver = new CelestialSafeSpotResolver(); _teamCoordinator = new CelestialTeamCoordinator(); }
         public void RegisterTelegraph(ProjectedCelestialTelegraph telegraph) { _activeTelegraphs.Add(telegraph); }
         public void CleanExpiredTelegraphs() { _activeTelegraphs.RemoveAll(t => !t.IsActive); }
-        public IReadOnlyList<DodekaTacticalIntent> EvaluateRaidTick(Position2D playerPos, int bossCurrentHp, int bossMaxHp, int teamLivesRemaining, bool hasTotemToActivate)
+        public IReadOnlyList<DodekaTacticalIntent> EvaluateRaidTick(TelegraphPoint playerPos, int bossCurrentHp, int bossMaxHp, int teamLivesRemaining, bool hasTotemToActivate)
         {
             var intents = new List<DodekaTacticalIntent>(); CleanExpiredTelegraphs();
             if (teamLivesRemaining <= 0) { intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), "AbortRaidFailClosed", 0, playerPos, CelestialElement.Neutral, 1.0f, "ABORT FAIL-CLOSED: 0 vite di squadra residue nel Raid Dodekatheon.")); return intents; }
-            if (_safeSpotResolver.TryResolveSafePosition(playerPos, _activeTelegraphs, out Position2D safePos, out string? dodgeRationale)) { intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), "MoveToSafeSpot", 0, safePos, CelestialElement.Neutral, 0.99f, dodgeRationale!)); return intents; }
+            if (_safeSpotResolver.TryResolveSafePosition(playerPos, _activeTelegraphs, out TelegraphPoint safePos, out string? dodgeRationale)) { intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), "MoveToSafeSpot", 0, safePos, CelestialElement.Neutral, 0.99f, dodgeRationale!)); return intents; }
             var (phase, alert) = _mechanicsEngine.UpdateHealth(bossCurrentHp, bossMaxHp);
-            if (_mechanicsEngine.IsInvulnerable && hasTotemToActivate) { intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), "InteractWithCelestialTotem", 8888, new Position2D(playerPos.X + 2, playerPos.Y + 2), CelestialElement.Neutral, 0.95f, "Boss in Stasi Invulnerabile: Attivazione totem per spezzare l'immunità.")); return intents; }
+            if (_mechanicsEngine.IsInvulnerable && hasTotemToActivate) { intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), "InteractWithCelestialTotem", 8888, new TelegraphPoint(playerPos.X + 2, playerPos.Y + 2), CelestialElement.Neutral, 0.95f, "Boss in Stasi Invulnerabile: Attivazione totem per spezzare l'immunità.")); return intents; }
             CelestialElement counterElement = _teamCoordinator.GetOppositeCounterElement(_mechanicsEngine.ActiveShieldElement);
-            intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), _mechanicsEngine.StaggerGauge.IsBrokenAndVulnerable ? "ExecuteBurstCombo" : "AttackBossWithCounterElement", 9999, new Position2D(50, 50), counterElement, 0.90f, $"Ingaggio offensivo: Scudo Boss {_mechanicsEngine.ActiveShieldElement} -> Elemento di contrasto {counterElement}. {alert}")); return intents;
+            intents.Add(new DodekaTacticalIntent(Guid.NewGuid(), _mechanicsEngine.StaggerGauge.IsBrokenAndVulnerable ? "ExecuteBurstCombo" : "AttackBossWithCounterElement", 9999, new TelegraphPoint(50, 50), counterElement, 0.90f, $"Ingaggio offensivo: Scudo Boss {_mechanicsEngine.ActiveShieldElement} -> Elemento di contrasto {counterElement}. {alert}")); return intents;
         }
     }
     #endregion
@@ -177,9 +177,9 @@ namespace NosAi.Raids.Dodekatheon
         private static void PrintResult(string name, bool passed, string? error = null) { Console.Write($"[{(passed ? "PASS" : "FAIL")}] {name,-62}"); if (passed) { Console.ForegroundColor = ConsoleColor.Green; Console.WriteLine(" [OK]"); } else { Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine($" [ERRORE: {error ?? "Asserzione fallita"}]"); } Console.ResetColor(); }
         private static bool TestDodekaPhaseTransitions() { var engine = new DodekaBossMechanicsEngine(1000); var (p1, _) = engine.UpdateHealth(90000, 100000); var (p2, _) = engine.UpdateHealth(65000, 100000); var (p3, _) = engine.UpdateHealth(35000, 100000); var (p4, _) = engine.UpdateHealth(10000, 100000); return p1 == DodekaBossPhase.Phase1_OrbCleansing && p2 == DodekaBossPhase.Phase2_ElementalShields && p3 == DodekaBossPhase.Phase3_StaggerDpsCheck && p4 == DodekaBossPhase.Phase4_CataclysmFrenzy; }
         private static bool TestStaggerGaugeBreak() { var engine = new DodekaBossMechanicsEngine(500); bool break1 = engine.ApplyStaggerDamage(200, out _); bool break2 = engine.ApplyStaggerDamage(350, out string? report); return !break1 && break2 && engine.StaggerGauge.IsBrokenAndVulnerable && report != null && report.Contains("STAGGER BREAK"); }
-        private static bool TestSafeSanctuaryDomePriority() { var resolver = new CelestialSafeSpotResolver(); var playerPos = new Position2D(10, 10); var dome = new ProjectedCelestialTelegraph(Guid.NewGuid(), CelestialTelegraphKind.SafeSanctuaryDome, new Position2D(30, 30), 5.0, 0, DateTime.UtcNow.AddSeconds(2), 2000, true); bool needMove = resolver.TryResolveSafePosition(playerPos, new[] { dome }, out Position2D targetSafe, out string? rationale); return needMove && targetSafe == new Position2D(30, 30) && rationale != null && rationale.Contains("SANCTUARY"); }
+        private static bool TestSafeSanctuaryDomePriority() { var resolver = new CelestialSafeSpotResolver(); var playerPos = new TelegraphPoint(10, 10); var dome = new ProjectedCelestialTelegraph(Guid.NewGuid(), CelestialTelegraphKind.SafeSanctuaryDome, new TelegraphPoint(30, 30), 5.0, 0, DateTime.UtcNow.AddSeconds(2), 2000, true); bool needMove = resolver.TryResolveSafePosition(playerPos, new[] { dome }, out TelegraphPoint targetSafe, out string? rationale); return needMove && targetSafe == new TelegraphPoint(30, 30) && rationale != null && rationale.Contains("SANCTUARY"); }
         private static bool TestOppositeElementCounter() { var coordinator = new CelestialTeamCoordinator(); bool lightVsShadow = coordinator.GetOppositeCounterElement(CelestialElement.Light) == CelestialElement.Shadow; bool shadowVsLight = coordinator.GetOppositeCounterElement(CelestialElement.Shadow) == CelestialElement.Light; bool fireVsWater = coordinator.GetOppositeCounterElement(CelestialElement.Fire) == CelestialElement.Water; bool waterVsFire = coordinator.GetOppositeCounterElement(CelestialElement.Water) == CelestialElement.Fire; return lightVsShadow && shadowVsLight && fireVsWater && waterVsFire; }
-        private static bool TestFailClosedZeroLivesAbort() { var orchestrator = new DodekatheonRaidOrchestrator(); var intents = orchestrator.EvaluateRaidTick(new Position2D(50, 50), 50000, 100000, 0, false); return intents.Count == 1 && intents[0].ActionType == "AbortRaidFailClosed" && intents[0].PriorityScore == 1.0f; }
+        private static bool TestFailClosedZeroLivesAbort() { var orchestrator = new DodekatheonRaidOrchestrator(); var intents = orchestrator.EvaluateRaidTick(new TelegraphPoint(50, 50), 50000, 100000, 0, false); return intents.Count == 1 && intents[0].ActionType == "AbortRaidFailClosed" && intents[0].PriorityScore == 1.0f; }
         private static bool TestDodekaSecurityInvariant() { var types = typeof(DodekatheonRaidOrchestrator).Assembly.GetTypes().Where(t => t.Namespace != null && t.Namespace.Contains("NosAi.Raids.Dodekatheon")); bool hasExecution = types.Any(t => t.GetMethods().Any(m => m.Name.ToLowerInvariant().Contains("click") || m.Name.ToLowerInvariant().Contains("sendpacket"))); return !hasExecution; }
     }
     #endregion

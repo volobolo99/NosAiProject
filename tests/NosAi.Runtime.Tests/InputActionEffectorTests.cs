@@ -1,9 +1,9 @@
-using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Perception;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Safety;
 using Xunit;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Tests;
 
@@ -104,7 +104,7 @@ public sealed class InputActionEffectorTests
         int slot = 1,
         long entityId = 101) => new(
         Guid.NewGuid(), type, TargetFor(type, x, y, slot, entityId), skillOrItemId,
-        NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted, "test");
+        NosAi.Runtime.Contracts.TrustTier.Tier1_Assisted, "test");
 
     /// <summary>
     /// A target of the shape each action type requires; <c>0,0</c> means the
@@ -269,7 +269,7 @@ public sealed class InputActionEffectorTests
             Build(Open, projection: new FakeProjection());
         var candidate = new ActionCandidate(
             Guid.NewGuid(), ActionType.UseBasicAttack, ActionTarget.Entity.Unidentified, 0,
-            NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted, "test");
+            NosAi.Runtime.Contracts.TrustTier.Tier1_Assisted, "test");
 
         ExecutionResult result = await effector.ApplyAsync(candidate);
 

@@ -5,6 +5,7 @@
 // ============================================================================
 
 using System.Globalization;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Autonomy;
 

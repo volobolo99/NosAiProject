@@ -11,9 +11,9 @@
 
 using System.Globalization;
 using System.Threading;
-using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Navigation;
 
@@ -149,7 +149,7 @@ public sealed class SingleStepExecutor
     /// </param>
     /// <param name="authority">
     /// Under whose authority this step is emitted (ADR-0020 § 2): the operator command
-    /// that asked for it, or the cycle's <see cref="Autonomy.SafetyToken"/>. Required,
+    /// that asked for it, or the cycle's <see cref="Safety.SafetyToken"/>. Required,
     /// and stated per step rather than held on the executor — an authority captured at
     /// construction would be the same one for every act the process ever emits, which is
     /// not an attribution.

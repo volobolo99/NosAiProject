@@ -1,5 +1,5 @@
-using NosAi.Runtime.Autonomy;
 using Xunit;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Tests;
 

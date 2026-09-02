@@ -21,30 +21,21 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate2
 {
     public enum DataProvenance : byte { Observed = 0, Estimated = 1, Decision = 2 }
     public enum EntityType : byte { Player = 0, Monster = 1, Npc = 2, GroundItem = 3, Portal = 4, PetPartner = 5 }
 
-    public readonly record struct Position2D(int X, int Y)
-    {
-        public double DistanceTo(Position2D other)
-        {
-            long dx = X - other.X;
-            long dy = Y - other.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
-        }
-    }
-
     public sealed record WorldEntity(
-        long EntityId, EntityType Type, string Name, Position2D Position,
+        long EntityId, EntityType Type, string Name, MapPoint Position,
         int CurrentHp, int MaxHp, bool IsAlive, bool IsTargetable,
         DataProvenance Provenance, float ConfidenceScore, DateTime LastObservedUtc);
 
     public sealed record ControlledPlayerState(
         long CharacterId, string CharacterName, int Level, int JobLevel,
-        int CurrentHp, int MaxHp, int CurrentMp, int MaxMp, Position2D Position,
+        int CurrentHp, int MaxHp, int CurrentMp, int MaxMp, MapPoint Position,
         int MapId, bool IsInCombat, long Gold, int SpPoints);
 
     public sealed record WorldStateSnapshot(
@@ -63,7 +54,7 @@ namespace NosAi.Runtime.Gate2
         public static WorldStateSnapshot CreateInitial(string sessionId) => new(
             sessionId, 0, DateTime.UtcNow,
             new ControlledPlayerState(0, "UNOBSERVED", 0, 0, 0, 0, 0, 0,
-                new Position2D(0, 0), 0, false, 0, 0),
+                new MapPoint(0, 0), 0, false, 0, 0),
             ImmutableDictionary<long, WorldEntity>.Empty, 0.0f, true);
     }
 
@@ -440,11 +431,11 @@ namespace NosAi.Runtime.Gate2
     /// additions, because a patch of nullable fields cannot introduce an entity the
     /// receiver has never seen; for updates and removals it stays null.
     /// </summary>
-    public sealed record EntityDelta(long EntityId, bool IsRemoved, Position2D? NewPosition,
+    public sealed record EntityDelta(long EntityId, bool IsRemoved, MapPoint? NewPosition,
         int? NewHp, bool? NewIsAlive, bool? NewIsCombat, WorldEntity? NewEntity = null);
 
     public sealed record WorldStateDeltaPacket(string SessionId, ulong BaseFrameIndex,
-        ulong TargetFrameIndex, Position2D PlayerPosition, int PlayerHp, int PlayerMp,
+        ulong TargetFrameIndex, MapPoint PlayerPosition, int PlayerHp, int PlayerMp,
         bool PlayerInCombat, ImmutableArray<EntityDelta> MutatedEntities);
 
     public static class WorldStateDeltaEngine
@@ -656,7 +647,7 @@ namespace NosAi.Runtime.Gate2
         private static bool TestWorldStateImmutability()
         {
             var initial = WorldStateSnapshot.CreateInitial("TEST");
-            var entity = new WorldEntity(101, EntityType.Monster, "Dander", new Position2D(15, 20), 80, 80, true, true, DataProvenance.Observed, .98f, DateTime.UtcNow);
+            var entity = new WorldEntity(101, EntityType.Monster, "Dander", new MapPoint(15, 20), 80, 80, true, true, DataProvenance.Observed, .98f, DateTime.UtcNow);
             var updated = initial with { FrameIndex = 1, Entities = initial.Entities.Add(entity.EntityId, entity) };
             return initial.Entities.Count == 0 && updated.Entities.Count == 1 && updated.Entities.ContainsKey(101);
         }
@@ -774,9 +765,9 @@ namespace NosAi.Runtime.Gate2
         {
             var initial = WorldStateSnapshot.CreateInitial("S");
             var builder = ImmutableDictionary.CreateBuilder<long, WorldEntity>();
-            for (int i = 0; i < 20; i++) builder.Add(i, new WorldEntity(i, EntityType.Monster, $"Fox_{i}", new Position2D(10 + i, 10 + i), 100, 100, true, true, DataProvenance.Observed, .95f, DateTime.UtcNow));
+            for (int i = 0; i < 20; i++) builder.Add(i, new WorldEntity(i, EntityType.Monster, $"Fox_{i}", new MapPoint(10 + i, 10 + i), 100, 100, true, true, DataProvenance.Observed, .95f, DateTime.UtcNow));
             var frame1 = initial with { FrameIndex = 1, Entities = builder.ToImmutable() };
-            var frame2 = frame1 with { FrameIndex = 2, Entities = frame1.Entities.SetItem(0, frame1.Entities[0] with { Position = new Position2D(99, 99) }) };
+            var frame2 = frame1 with { FrameIndex = 2, Entities = frame1.Entities.SetItem(0, frame1.Entities[0] with { Position = new MapPoint(99, 99) }) };
             var delta = WorldStateDeltaEngine.ComputeDelta(frame1, frame2);
             var full = JsonSerializer.SerializeToUtf8Bytes(frame2);
             var compact = WorldStateDeltaEngine.SerializeDelta(delta);

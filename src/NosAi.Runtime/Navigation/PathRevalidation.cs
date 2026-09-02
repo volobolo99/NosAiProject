@@ -17,7 +17,7 @@
 using System.Globalization;
 using System.Collections.Immutable;
 using NosAi.Navigation.Pathfinding;
-using NosAi.Runtime.Autonomy;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Navigation;
 

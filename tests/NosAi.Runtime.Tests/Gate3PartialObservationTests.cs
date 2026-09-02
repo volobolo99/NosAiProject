@@ -7,6 +7,7 @@ using Xunit;
 // with other types in that namespace.
 using DataSourceKind = NosAi.Runtime.Contracts.DataSourceKind;
 using RuntimeSafetyPolicy = NosAi.Runtime.Safety.RuntimeSafetyPolicy;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Tests;
 

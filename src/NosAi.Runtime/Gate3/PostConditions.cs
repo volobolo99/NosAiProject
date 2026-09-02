@@ -16,6 +16,7 @@ using System.Linq;
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using InventorySlotReading = NosAi.Runtime.Perception.Network.InventorySlotReading;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate3
 {

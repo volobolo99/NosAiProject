@@ -1,11 +1,10 @@
-using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+using TrustTier = NosAi.Runtime.Contracts.TrustTier;
 // R1: la verifica ha una sola definizione, ed è quella di Gate 3. Alias mirati
 // invece di importare il namespace, perché Gate3.ExecutionResult e
 // Gate6.ExecutionResult restano due tipi distinti — l'uno legato a un effettore
 // reale, l'altro al mondo simulato di questo gate.
 using VerificationResult = NosAi.Runtime.Gate3.VerificationResult;
 using VerificationOutcome = NosAi.Runtime.Gate3.VerificationOutcome;
-using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Project: NosAi — Controlled Automation Runtime
 // Version: 1.0 Beta
@@ -29,21 +28,12 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate6
 {
     #region 1. Contratti canonici unificati e invarianti di sicurezza
 
-
-    public readonly record struct Position2D(int X, int Y)
-    {
-        public double DistanceTo(Position2D other)
-        {
-            int dx = X - other.X;
-            int dy = Y - other.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
-        }
-    }
 
 
     /// <summary>

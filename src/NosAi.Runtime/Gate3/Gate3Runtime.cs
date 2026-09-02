@@ -1,5 +1,5 @@
-using ActionTokenIssuer = NosAi.Runtime.Autonomy.ActionTokenIssuer;
-using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+using ActionTokenIssuer = NosAi.Runtime.Safety.ActionTokenIssuer;
+using TrustTier = NosAi.Runtime.Contracts.TrustTier;
 using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Project: NosAi — Controlled Automation Runtime

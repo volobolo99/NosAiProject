@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate2;
 
@@ -129,7 +130,7 @@ public static class WorldStateDeltaCodec
             ulong baseFrame = reader.ReadUInt64();
             ulong targetFrame = reader.ReadUInt64();
             if (targetFrame < baseFrame) return false;
-            var playerPosition = new Position2D(reader.ReadInt32(), reader.ReadInt32());
+            var playerPosition = new MapPoint(reader.ReadInt32(), reader.ReadInt32());
             int playerHp = reader.ReadInt32();
             int playerMp = reader.ReadInt32();
             byte packetFlags = reader.ReadByte();
@@ -141,9 +142,9 @@ public static class WorldStateDeltaCodec
             {
                 long entityId = reader.ReadInt64();
                 byte flags = reader.ReadByte();
-                Position2D? position = null;
+                MapPoint? position = null;
                 if ((flags & EntityFlagHasPosition) != 0)
-                    position = new Position2D(reader.ReadInt32(), reader.ReadInt32());
+                    position = new MapPoint(reader.ReadInt32(), reader.ReadInt32());
                 int? hp = (flags & EntityFlagHasHp) != 0 ? reader.ReadInt32() : null;
                 bool? alive = (flags & EntityFlagHasAlive) != 0 ? (flags & EntityFlagAliveValue) != 0 : null;
                 bool? combat = (flags & EntityFlagHasCombat) != 0 ? (flags & EntityFlagCombatValue) != 0 : null;
@@ -155,7 +156,7 @@ public static class WorldStateDeltaCodec
                     if (!TryReadString(reader, out string name)) return false;
                     int currentHp = reader.ReadInt32();
                     int maxHp = reader.ReadInt32();
-                    var entityPosition = new Position2D(reader.ReadInt32(), reader.ReadInt32());
+                    var entityPosition = new MapPoint(reader.ReadInt32(), reader.ReadInt32());
                     byte entityFlags = reader.ReadByte();
                     var provenance = (DataProvenance)reader.ReadByte();
                     float confidence = reader.ReadSingle();

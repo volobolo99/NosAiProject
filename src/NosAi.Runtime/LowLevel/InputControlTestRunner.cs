@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NosAi.Runtime.Humanizer;
 using NosAi.Runtime.Safety;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.LowLevel;
 
@@ -317,7 +318,7 @@ public static class InputControlTestRunner
         var recorder = new RecordingInputBackend();
         // Tier1_Assisted is below every game action: the guard must refuse, and the
         // refusal must come from the trust ceiling rather than the input policy.
-        var adapter = BuildAdapter(recorder, EnabledHeadless, NosAi.Runtime.Autonomy.TrustTier.Tier1_Assisted);
+        var adapter = BuildAdapter(recorder, EnabledHeadless, NosAi.Runtime.Contracts.TrustTier.Tier1_Assisted);
         await adapter.InitializeAsync(CancellationToken.None);
         try
         {
@@ -332,7 +333,7 @@ public static class InputControlTestRunner
 
     private static NosAi.Runtime.Adapters.NosTaleGameAdapter BuildAdapter(
         RecordingInputBackend recorder, RuntimeSafetyPolicy policy,
-        NosAi.Runtime.Autonomy.TrustTier operatingTier = NosAi.Runtime.Autonomy.TrustTier.Tier3_AutonomousRestricted)
+        NosAi.Runtime.Contracts.TrustTier operatingTier = NosAi.Runtime.Contracts.TrustTier.Tier3_AutonomousRestricted)
     {
         var humanizer = new DeterministicHumanizer(new GatedInputBackend(recorder, policy), NoDelay);
         return new NosAi.Runtime.Adapters.NosTaleGameAdapter(

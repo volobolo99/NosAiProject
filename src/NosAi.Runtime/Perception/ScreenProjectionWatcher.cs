@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Contracts;
 
 
 namespace NosAi.Runtime.Perception;
@@ -121,7 +122,7 @@ public static class ScreenProjectionWatcher
                 }
 
                 var sample = new ScreenProjectionSample(
-                    new Autonomy.MapPoint(tx - player.X, ty - player.Y), relativeX, relativeY);
+                    new Contracts.MapPoint(tx - player.X, ty - player.Y), relativeX, relativeY);
                 samples.Add(sample);
                 recorded.Add(string.Create(CultureInfo.InvariantCulture,
                     $"{sample.MapDelta.X} {sample.MapDelta.Y} {relativeX} {relativeY} {clientArea.Width} {clientArea.Height}"));

@@ -8,6 +8,8 @@ using Xunit;
 // SafetyGate types each have one name now.
 using DataSourceKind = NosAi.Runtime.Contracts.DataSourceKind;
 using RuntimeSafetyPolicy = NosAi.Runtime.Safety.RuntimeSafetyPolicy;
+using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Tests;
 

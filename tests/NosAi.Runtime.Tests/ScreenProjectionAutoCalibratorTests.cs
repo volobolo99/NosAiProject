@@ -1,6 +1,6 @@
-using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Perception;
 using Xunit;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Tests;
 

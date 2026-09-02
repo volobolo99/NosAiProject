@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate2;
 
@@ -39,7 +40,7 @@ public sealed class Gate2SessionStore : IAsyncDisposable
 
     private readonly record struct PendingFrame(
         long SessionRowId, ulong FrameIndex, DateTime TimestampUtc, int MapId,
-        Position2D Position, int PlayerHp, int PlayerMp, bool InCombat,
+        MapPoint Position, int PlayerHp, int PlayerMp, bool InCombat,
         int EntityCount, float GlobalConfidence, bool Degraded);
 
     public Gate2SessionStore(SqliteStoragePolicy policy)

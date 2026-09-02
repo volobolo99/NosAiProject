@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate2;
 
@@ -100,7 +101,7 @@ public sealed record SlimmedEntity(
 public sealed record SlimmedWorldContext(
     ulong FrameIndex,
     int MapId,
-    Position2D PlayerPosition,
+    MapPoint PlayerPosition,
     int PlayerHp, int PlayerMaxHp,
     int PlayerMp, int PlayerMaxMp,
     bool PlayerInCombat,

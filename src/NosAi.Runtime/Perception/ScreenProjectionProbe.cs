@@ -1,5 +1,5 @@
 using System.Globalization;
-using NosAi.Runtime.Autonomy;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Perception;
 

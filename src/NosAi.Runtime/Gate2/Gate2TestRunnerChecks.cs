@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate2;
 
@@ -18,12 +19,12 @@ public static partial class Gate2TestRunner
 {
     private static WorldEntity MakeEntity(long id, int x, int y, DateTime observedUtc,
         float confidence = 0.9f, string? name = null, int currentHp = 100, int maxHp = 100) => new(
-        id, EntityType.Monster, name ?? $"Mob_{id}", new Position2D(x, y),
+        id, EntityType.Monster, name ?? $"Mob_{id}", new MapPoint(x, y),
         currentHp, maxHp, IsAlive: true, IsTargetable: true,
         DataProvenance.Observed, confidence, observedUtc);
 
-    private static ControlledPlayerState MakePlayer(int mapId = 1, int hp = 800, int mp = 300, Position2D? position = null) => new(
-        7, "Hero", 50, 30, hp, 900, mp, 350, position ?? new Position2D(0, 0), mapId, false, 1234, 5);
+    private static ControlledPlayerState MakePlayer(int mapId = 1, int hp = 800, int mp = 300, MapPoint? position = null) => new(
+        7, "Hero", 50, 30, hp, 900, mp, 350, position ?? new MapPoint(0, 0), mapId, false, 1234, 5);
 
     // ------------------------------------------------------------------ world model
 
@@ -55,7 +56,7 @@ public static partial class Gate2TestRunner
             ImmutableArray.Create(2L), null));
         return second.FrameIndex == 2
             && second.Entities.Count == 1
-            && second.Entities[1].Position == new Position2D(15, 15)
+            && second.Entities[1].Position == new MapPoint(15, 15)
             && !second.Entities.ContainsKey(2);
     }
 
@@ -154,7 +155,7 @@ public static partial class Gate2TestRunner
             builder.Add(i, MakeEntity(i, i, 0, t0, name: $"VeryLongEntityName_NumberIs_{i:D3}", currentHp: 50, maxHp: 200));
         var snapshot = WorldStateSnapshot.CreateInitial("S") with
         {
-            Player = MakePlayer(position: new Position2D(0, 0)),
+            Player = MakePlayer(position: new MapPoint(0, 0)),
             Entities = builder.ToImmutable(),
             IsDegradedState = false,
         };
@@ -185,9 +186,9 @@ public static partial class Gate2TestRunner
         var target = baseState with
         {
             FrameIndex = 6,
-            Player = baseState.Player with { Position = new Position2D(9, 9), CurrentHp = 777, CurrentMp = 222, IsInCombat = true },
+            Player = baseState.Player with { Position = new MapPoint(9, 9), CurrentHp = 777, CurrentMp = 222, IsInCombat = true },
             Entities = baseEntities
-                .SetItem(1, baseEntities[1] with { Position = new Position2D(11, 12), CurrentHp = 60 })
+                .SetItem(1, baseEntities[1] with { Position = new MapPoint(11, 12), CurrentHp = 60 })
                 .Remove(2)
                 .Add(4, MakeEntity(4, 40, 40, t0)),
         };
@@ -208,11 +209,11 @@ public static partial class Gate2TestRunner
     private static bool TestBinaryCodecRoundTrip()
     {
         var t0 = new DateTime(2026, 8, 30, 12, 0, 0, DateTimeKind.Utc);
-        var packet = new WorldStateDeltaPacket("S", 5, 6, new Position2D(3, 4), 90, 40, true,
+        var packet = new WorldStateDeltaPacket("S", 5, 6, new MapPoint(3, 4), 90, 40, true,
             ImmutableArray.Create(
-                new EntityDelta(1, false, new Position2D(7, 8), 55, true, null),
+                new EntityDelta(1, false, new MapPoint(7, 8), 55, true, null),
                 new EntityDelta(2, true, null, null, null, null),
-                new EntityDelta(9, false, new Position2D(40, 40), 100, true, false, MakeEntity(9, 40, 40, t0))));
+                new EntityDelta(9, false, new MapPoint(40, 40), 100, true, false, MakeEntity(9, 40, 40, t0))));
 
         byte[] bytes = WorldStateDeltaCodec.Serialize(packet);
         if (!WorldStateDeltaCodec.TryDeserialize(bytes, out var decoded) || decoded is null) return false;
@@ -249,9 +250,9 @@ public static partial class Gate2TestRunner
         {
             FrameIndex = 2,
             Entities = frame1.Entities
-                .SetItem(1, frame1.Entities[1] with { Position = new Position2D(99, 99) })
+                .SetItem(1, frame1.Entities[1] with { Position = new MapPoint(99, 99) })
                 .SetItem(2, frame1.Entities[2] with { CurrentHp = 42 })
-                .SetItem(3, frame1.Entities[3] with { Position = new Position2D(55, 55) }),
+                .SetItem(3, frame1.Entities[3] with { Position = new MapPoint(55, 55) }),
         };
 
         byte[] full = JsonSerializer.SerializeToUtf8Bytes(frame2);

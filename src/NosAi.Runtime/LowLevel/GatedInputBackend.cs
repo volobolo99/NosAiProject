@@ -144,7 +144,7 @@ public sealed class GatedInputBackend : IInputBackend
     /// two interleaved.
     /// </remarks>
     /// <param name="authority">
-    /// Under whose authority the act is emitted: a <see cref="Autonomy.SafetyToken"/>
+    /// Under whose authority the act is emitted: a <see cref="Safety.SafetyToken"/>
     /// for a planned one, a named command for one a person asked for (ADR-0020 § 2).
     /// There is deliberately <b>no overload without it</b> — a rule enforced by the
     /// order of calls survives only until someone adds a shorter signature, and this is

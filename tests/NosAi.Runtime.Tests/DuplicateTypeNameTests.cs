@@ -45,15 +45,6 @@ public sealed class DuplicateTypeNameTests
     private static readonly IReadOnlyDictionary<string, string> Declared =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            // R1: NON un duplicato. Contracts.VerificationResult(bool, string) è
-            // l'esito del verificatore della pipeline agente (IAgentVerifier), che
-            // non ha implementazioni e il cui unico consumatore non viene mai
-            // costruito. Gate3.VerificationResult è l'esito del ciclo Gate 3, a
-            // quattro esiti e con provenienza. La copia di Gate 6 è stata unificata
-            // su quella di Gate 3.
-            ["VerificationResult"] =
-                "R1: canonica NosAi.Runtime.Gate3.VerificationResult; quella di Contracts appartiene alla pipeline agente da rinominare o cancellare",
-
             // --- tenuti doppi per decisione, non per inerzia -------------------
             // AutonomyPipeline.cs lo scrive per esteso: questi tre non sono la
             // stessa cosa sotto due nomi. Quelli di Gate 3 sono legati a un
@@ -68,11 +59,11 @@ public sealed class DuplicateTypeNameTests
                 "deciso: quello di Gate 6 dichiara la propria provenienza simulata",
 
             // --- scoperti da questa prova, mai enumerati prima -----------------
-            // Nessuno dei tre è nel mandato di R1, che nomina VerificationResult,
+            // Nessuno dei due è nel mandato di R1, che nomina VerificationResult,
             // TrustTier e SafetyGate. Stanno qui perché una prova che li tacesse
-            // sarebbe una prova che nasconde ciò che ha trovato.
-            ["Position2D"] =
-                "scoperto da R1: quattro definizioni di un punto sul piano (Events, Raids, Gate2, Gate6); da decidere",
+            // sarebbe una prova che nasconde ciò che ha trovato. Position2D è
+            // chiuso da R2: tre definizioni intere sono MapPoint, la quarta è
+            // TelegraphPoint.
             ["CaptureFrame"] =
                 "scoperto da R1: due definizioni di un fotogramma catturato (Capture, Perception); da decidere",
             ["ScreenPoint"] =

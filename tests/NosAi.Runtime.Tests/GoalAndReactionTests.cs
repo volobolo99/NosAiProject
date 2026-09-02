@@ -3,7 +3,7 @@ using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Perception.Network;
 using Xunit;
-using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+using TrustTier = NosAi.Runtime.Contracts.TrustTier;
 
 namespace NosAi.Runtime.Tests;
 

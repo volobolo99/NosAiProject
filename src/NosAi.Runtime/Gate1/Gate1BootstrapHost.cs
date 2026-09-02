@@ -369,8 +369,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// origin silently treated as the map origin aims at a real point on screen.
     /// </para>
     /// </remarks>
-    private static ClassifiedValue<Autonomy.MapPoint> ReadPlayerPosition()
-        => ClassifiedValue<Autonomy.MapPoint>.Unknown("player_position_source_not_wired");
+    private static ClassifiedValue<Contracts.MapPoint> ReadPlayerPosition()
+        => ClassifiedValue<Contracts.MapPoint>.Unknown("player_position_source_not_wired");
 
     /// <summary>
     /// Where the attached client is drawing right now, or null when it cannot be

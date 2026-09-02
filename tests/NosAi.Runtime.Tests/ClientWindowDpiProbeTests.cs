@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Perception;
 using Xunit;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Tests;
 

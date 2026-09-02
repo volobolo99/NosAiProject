@@ -1,7 +1,8 @@
 using System.Collections.Immutable;
-using NosAi.Runtime.Autonomy;
 using Xunit;
 using Xunit.Abstractions;
+using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Tests;
 
