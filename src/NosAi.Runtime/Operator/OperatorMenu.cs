@@ -446,28 +446,18 @@ public static class OperatorMenu
     [SupportedOSPlatform("windows")]
     private static int RunTargetHunt()
     {
-        Console.WriteLine("Serve sapere una cosa sola: in questo istante hai un bersaglio selezionato?");
-        Console.WriteLine("La prima passata ne vuole uno. Poi alterna: bersagli diversi, e ogni tanto");
-        Console.WriteLine("nessuno - la passata senza bersaglio e' quella che toglie la lista delle");
-        Console.WriteLine("entita' dai candidati.");
-        Console.Write("Bersaglio selezionato? (s/n): ");
-
-        string? typed = Console.ReadLine()?.Trim();
-        bool? selected = typed?.ToLowerInvariant() switch
-        {
-            "s" or "si" or "sì" or "y" => true,
-            "n" or "no" => false,
-            _ => null,
-        };
-
-        if (selected is not { } targetSelected)
-        {
-            Console.WriteLine("Rispondi s oppure n. Indovinare qui falsifica la passata.");
-            return 2;
-        }
-
+        Console.WriteLine("Il giro e' uno solo, e alterni tu mentre gira: seleziona un mostro,");
+        Console.WriteLine("poi toglilo, poi selezionane un altro. Ogni passo ti dice cosa fare e");
+        Console.WriteLine("aspetta INVIO; 'x' si ferma e salva quello che e' rimasto.");
         Console.WriteLine();
-        return TargetIdFinder.Run(targetSelected);
+        Console.WriteLine("La deselezione non e' un di piu': una parola qualunque cambia, ma solo la");
+        Console.WriteLine("selezione TORNA ALLO STESSO valore ogni volta che togli il bersaglio.");
+        Console.WriteLine();
+        Console.WriteLine("Il riavvio del client resta una seconda esecuzione: rilancia questa voce");
+        Console.WriteLine("dopo aver chiuso e riaperto NosTale, e riparte dai superstiti.");
+        Console.WriteLine();
+
+        return TargetIdFinder.Run();
     }
 
     /// <summary>The recorded target-frame region, or the uncalibrated one.</summary>
