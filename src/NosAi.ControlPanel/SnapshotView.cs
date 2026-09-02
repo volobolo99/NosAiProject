@@ -1,5 +1,8 @@
+using NosAi.LiveIntegration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate1;
+using NosAi.Runtime.Perception.Network;
 
 namespace NosAi.ControlPanel;
 
@@ -25,6 +28,18 @@ public sealed class SnapshotView
     public ClassifiedValue<int?> ClientProcessId { get; init; } = ClassifiedValue<int?>.Unknown("runtime_not_connected");
     public ClassifiedValue<int> ObservationLastHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
     public ClassifiedValue<int> ObservationLastMaxHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
+    /// <summary>
+    /// Entities the runtime observed, or UNKNOWN when the list itself was never
+    /// published. An empty list is a looked-at absence, not this default.
+    /// </summary>
+    public ClassifiedValue<IReadOnlyList<SelectableEntity>> Entities { get; init; }
+        = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown("runtime_not_connected");
+    /// <summary>Who last hit the character, with the hit instant on the value.</summary>
+    public ClassifiedValue<Aggressor> HitBy { get; init; }
+        = ClassifiedValue<Aggressor>.Unknown("runtime_not_connected");
+    /// <summary>Target as classified bool. The inspect maps it to three drawings.</summary>
+    public ClassifiedValue<bool> HasTarget { get; init; }
+        = ClassifiedValue<bool>.Unknown("runtime_not_connected");
     public string WireLabel { get; init; } = ChannelView.WireLabel;
     public string SlotLabel { get; init; } = "UNKNOWN";
     public string SlotHint { get; init; } = "";
@@ -53,6 +68,9 @@ public sealed class SnapshotView
             ClientProcessId = ClassifiedValue<int?>.Unknown("runtime_not_connected"),
             ObservationLastHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
             ObservationLastMaxHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
+            Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown("runtime_not_connected"),
+            HitBy = ClassifiedValue<Aggressor>.Unknown("runtime_not_connected"),
+            HasTarget = ClassifiedValue<bool>.Unknown("runtime_not_connected"),
             SlotLabel = slot,
             SlotHint = hint
         };
@@ -126,7 +144,10 @@ public sealed class SnapshotView
             snapshot.Safety.SessionAuthorityTerminal.HasValue ? snapshot.Safety.SessionAuthorityTerminal.Value : null),
         ClientProcessId = snapshot.Client.ProcessId,
         ObservationLastHp = snapshot.GameObservation.LastHp,
-        ObservationLastMaxHp = snapshot.GameObservation.LastMaxHp
+        ObservationLastMaxHp = snapshot.GameObservation.LastMaxHp,
+        Entities = GameplayEntities(snapshot),
+        HitBy = GameplayHitBy(snapshot),
+        HasTarget = GameplayHasTarget(snapshot)
         };
     }
 
@@ -174,6 +195,24 @@ public sealed class SnapshotView
             ? $"Sessione non attuante, terminale: {named}"
             : $"Sessione non attuante: {named}";
     }
+
+    private static ClassifiedValue<IReadOnlyList<SelectableEntity>> GameplayEntities(Gate1CanonicalSnapshot snapshot)
+        => snapshot.Client.Gameplay is { } gameplay
+            ? gameplay.Entities
+            : ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(GameplayUnreadReason(snapshot));
+
+    private static ClassifiedValue<Aggressor> GameplayHitBy(Gate1CanonicalSnapshot snapshot)
+        => snapshot.Client.Gameplay is { } gameplay
+            ? gameplay.HitBy
+            : ClassifiedValue<Aggressor>.Unknown(GameplayUnreadReason(snapshot));
+
+    private static ClassifiedValue<bool> GameplayHasTarget(Gate1CanonicalSnapshot snapshot)
+        => snapshot.Client.Gameplay is { } gameplay
+            ? gameplay.HasTarget
+            : ClassifiedValue<bool>.Unknown(GameplayUnreadReason(snapshot));
+
+    private static string GameplayUnreadReason(Gate1CanonicalSnapshot snapshot)
+        => snapshot.Client.GameplayBaseline.FailureReason ?? GameplayObservation.NotPublishedReason;
 
     private static DisplayField Field<T>(string label, ClassifiedValue<T> classified)
     {

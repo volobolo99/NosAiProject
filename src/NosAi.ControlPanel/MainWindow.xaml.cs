@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Gate2;
+using NosAi.Runtime.LowLevel;
 
 namespace NosAi.ControlPanel;
 
@@ -230,6 +231,7 @@ public partial class MainWindow : Window
         ResilienceFields.ItemsSource = snapshot.Resilience;
         EventLogFields.ItemsSource = EventLogInspect.Inspect(eventLog);
         ApplyMap(snapshot);
+        ApplyAround(snapshot);
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
@@ -261,6 +263,16 @@ public partial class MainWindow : Window
         MapCropGlyphs.Text = map.CropGlyphs;
     }
 
+    private void ApplyAround(SnapshotView snapshot)
+    {
+        DateTime nowUtc = TimeProvider.System.GetUtcNow().UtcDateTime;
+        SurroundingsView around = SurroundingsInspect.Inspect(snapshot.Entities, nowUtc);
+        SurroundingsSummary.Text = around.Summary;
+        SurroundingsFields.ItemsSource = around.Fields;
+        CombatFields.ItemsSource = CombatInspect.Inspect(snapshot.HitBy, snapshot.HasTarget, nowUtc).Fields;
+        KeybindsFields.ItemsSource = KeybindsInspect.Inspect(Path.Combine(_repoRoot, KeybindMap.RelativePath)).Fields;
+    }
+
     private static string ModeLabel(SessionKind kind) => kind switch
     {
         SessionKind.Hosted => "OSPITATO",
@@ -281,6 +293,7 @@ public partial class MainWindow : Window
         NavOverview.Style = (Style)FindResource("NavButton");
         NavClient.Style = (Style)FindResource("NavButton");
         NavMap.Style = (Style)FindResource("NavButton");
+        NavAround.Style = (Style)FindResource("NavButton");
         NavPhone.Style = (Style)FindResource("NavButton");
         NavPerception.Style = (Style)FindResource("NavButton");
         NavNetwork.Style = (Style)FindResource("NavButton");
@@ -294,6 +307,7 @@ public partial class MainWindow : Window
         ViewOverview.Visibility = Visibility.Collapsed;
         ViewClient.Visibility = Visibility.Collapsed;
         ViewMap.Visibility = Visibility.Collapsed;
+        ViewAround.Visibility = Visibility.Collapsed;
         ViewPhone.Visibility = Visibility.Collapsed;
         ViewPerception.Visibility = Visibility.Collapsed;
         ViewNetwork.Visibility = Visibility.Collapsed;
@@ -306,6 +320,7 @@ public partial class MainWindow : Window
         if (ReferenceEquals(button, NavOverview)) { ViewOverview.Visibility = Visibility.Visible; PageTitle.Text = "Panoramica"; }
         else if (ReferenceEquals(button, NavClient)) { ViewClient.Visibility = Visibility.Visible; PageTitle.Text = "Client NosTale"; }
         else if (ReferenceEquals(button, NavMap)) { ViewMap.Visibility = Visibility.Visible; PageTitle.Text = "Mappa"; }
+        else if (ReferenceEquals(button, NavAround)) { ViewAround.Visibility = Visibility.Visible; PageTitle.Text = "Attorno"; }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception)) { ViewPerception.Visibility = Visibility.Visible; PageTitle.Text = "Percezione"; }
         else if (ReferenceEquals(button, NavNetwork))

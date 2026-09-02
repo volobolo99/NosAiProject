@@ -31,6 +31,7 @@ internal static class AttachedSnapshot
         JsonElement? safetyNode = root.TryGetProperty("safety", out var safetyEl) && safetyEl.ValueKind == JsonValueKind.Object
             ? safetyEl
             : default(JsonElement?);
+        GameplayPanelRead gameplay = GameplayWireReader.Read(client);
 
         return new SnapshotView
         {
@@ -95,7 +96,10 @@ internal static class AttachedSnapshot
                 ReadClassifiedBool(safetyNode, "sessionAuthorityTerminal")),
             ClientProcessId = ReadClassifiedNullableInt(client, "processId", "process_not_attached"),
             ObservationLastHp = ReadClassifiedInt(gameObservation, "lastHp", "game_observation_absent"),
-            ObservationLastMaxHp = ReadClassifiedInt(gameObservation, "lastMaxHp", "game_observation_absent")
+            ObservationLastMaxHp = ReadClassifiedInt(gameObservation, "lastMaxHp", "game_observation_absent"),
+            Entities = gameplay.Entities,
+            HitBy = gameplay.HitBy,
+            HasTarget = gameplay.HasTarget
         };
     }
 

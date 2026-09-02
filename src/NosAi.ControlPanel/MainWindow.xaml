@@ -70,6 +70,7 @@
           <Button x:Name="NavOverview" Style="{StaticResource NavButtonActive}" Content="Panoramica" Click="OnNav"/>
           <Button x:Name="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
           <Button x:Name="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
+          <Button x:Name="NavAround" Style="{StaticResource NavButton}" Content="Attorno" Click="OnNav"/>
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
           <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
@@ -193,6 +194,26 @@
             <Border Style="{StaticResource CardChrome}" HorizontalAlignment="Left">
               <TextBlock x:Name="MapCropGlyphs" FontFamily="Consolas" FontSize="11" Text="?"/>
             </Border>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewAround" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">
+              Entità che il runtime ha osservato. Nessuna osservazione non è la stessa cosa di nessuna entità attorno. L'età della lettura è parte del disegno: trenta secondi e adesso non si stampano uguali. Il vnum resta UNKNOWN finché l'osservazione non lo porta.
+            </TextBlock>
+            <TextBlock x:Name="SurroundingsSummary" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" Text="nessuna osservazione"/>
+            <ItemsControl x:Name="SurroundingsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <TextBlock FontWeight="SemiBold" Margin="0,16,0,8">Combattimento</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap">
+              Ultimo colpo con l'età della lettura. Il bersaglio ha tre valori: presente, assente, illeggibile col motivo. Mai collassati in due.
+            </TextBlock>
+            <ItemsControl x:Name="CombatFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <TextBlock FontWeight="SemiBold" Margin="0,16,0,8">Tasti</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap">
+              Intenti che KeybindsCheck elenca come configurati, e intenti scoperti col loro nome. Un intento mancante si disegna come mancante, non come riga vuota. Il pannello non scrive il file.
+            </TextBlock>
+            <ItemsControl x:Name="KeybindsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 
