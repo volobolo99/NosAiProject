@@ -59,3 +59,7 @@ tools/windivert/
 # binari non si versionano (LGPLv3/GPLv2 + driver kernel firmato). third_party/windivert/README.md
 third_party/windivert/*.dll
 third_party/windivert/*.sys
+
+# I log dei test (dotnet test -l trx) non sono sorgente. Senza questa riga
+# restano come file non tracciati in un albero gia condiviso fra piu sessioni.
+TestResults/
