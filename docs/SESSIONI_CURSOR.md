@@ -20,8 +20,8 @@ aspettare una decisione di sicurezza.** Tutto ciò che richiede di scegliere una
 criterio di rifiuto o una regola di autorizzazione è già stato deciso e sta nel codice; a
 Cursor resta ciò che, se sbagliato, non compila o rompe un test.
 
-Ordine: `S2` è chiusa il 2 settembre 2026. `S1` e `S3` restano sbloccate e indipendenti.
-`S4` è bloccata e dice da cosa.
+Ordine: `S1`, `S2` e `S3` sono chiuse il 2 settembre 2026. `S4` e `S5` sono aperte, e
+sono state scelte per non incrociarsi: `S4` sta nel runtime, `S5` nel pannello.
 
 ---
 
@@ -306,29 +306,195 @@ simulabili sono coperte da test; la parte fisica è una procedura d'operatore sc
 
 ---
 
-## 6. `S4` — Il primo passo (`X-P4`) — **bloccata**
+## 6. `S4` — Il primo passo (`X-P4`)
 
-Non va aperta finché non sono vere tutte e tre:
+**Sbloccata a livello di codice il 2 settembre 2026**, quando `C-P4` è stato scritto.
+Resta bloccata **l'emissione sul client vivo**, e la differenza è tutta qui: la sessione
+scrive il comando, i suoi test e l'audit; *premerlo con NosTale aperto* richiede prima le
+due prove d'operatore elencate in fondo.
 
-1. `C-P4` scritto: composizione finale delle guardie, `MovementVerifier`, condizione di
-   freschezza dell'occupazione all'atto. È lavoro di Claude e non esiste ancora.
-2. Le tre prove di `P2` viste **sul client vivo**, non sul desktop fittizio:
-   `NosAi.Runtime.exe --input-guards --watch 20`, finestra spostata a metà atto, finestra
-   terza interposta sul punto, mano sul mouse. Ogni prova deve nominare il proprio rifiuto.
-3. La prova d'operatore di `P3`: client elevato ⇒ sessione non attuante, terminale,
-   puntatore fermo; client non elevato ⇒ sessione attuante.
+### Cosa esiste già
 
-Il motivo per cui è bloccata non è procedurale. `--step` emette il primo input reale
-diretto al client: se una delle guardie non è stata vista rifiutare sul sistema vero, il
-primo passo è anche la prima occasione in cui si scopre che non rifiutava.
+| Elemento | Dove |
+|---|---|
+| Composizione delle guardie e ordine di corto circuito | `src/NosAi.Runtime/Navigation/StepGuardChain.cs` |
+| Freschezza dell'occupazione all'atto | `src/NosAi.Runtime/Navigation/OccupancyFreshness.cs` |
+| `MovementVerifier`, cinque esiti, finestra 350 ms + 20 ms | `src/NosAi.Runtime/Navigation/MovementVerifier.cs` |
+| L'interfaccia che `--step` deve rispettare | `src/NosAi.Runtime/Navigation/SingleStepExecutor.cs` |
+| L'autorita' che ogni atto deve nominare (ADR-0020 § 2) | `src/NosAi.Runtime/LowLevel/ActuationAuthority.cs` |
+| Test | `tests/NosAi.Runtime.Tests/StepGuardTests.cs` (33), `CommitPointTests` |
+
+### Il comando
+
+```
+[PREAMBOLO COMUNE]
+
+SESSIONE S4 — il primo passo (X-P4).
+
+@Codebase Leggi per intero, e prima di scrivere: StepGuardChain.cs,
+OccupancyFreshness.cs, MovementVerifier.cs, SingleStepExecutor.cs. Poi guarda come
+--input-authority e --input-guards sono costruiti in Program.cs.
+
+Quello che segue non si tocca, si usa: l'ordine delle guardie, quali rifiuti sono
+terminali, la finestra di 350 ms e la tolleranza di 20 ms, la regola per cui una
+lettura vale solo se timbrata dopo l'emissione, le due soglie di freschezza. Se ti
+sembra che una di queste sia sbagliata, fermati e riportalo invece di cambiarla.
+
+Lavoro, in quest'ordine.
+
+0. ADR-0020 e' gia' applicato: SingleStepExecutor.Step prende una ActuationAuthority e
+   non esiste un overload senza. Passa ActuationAuthority.Commanded("--step"): l'atto e'
+   comandato da una persona, e l'audit deve dirlo. Non inventare un SafetyToken per un
+   comando d'operatore, e non aggirare il parametro con un default.
+
+1. Comando `--step <dx> <dy>` in Program.cs. Un solo passo su cella adiacente.
+   Costruisce StepGuardChain e SingleStepExecutor dai componenti gia composti nel
+   runtime: non ricostruire il grafo a mano e non istanziare Win32InputBackend, il
+   gate arriva da RuntimeComponents. Stampa, in ordine:
+   - la richiesta: mappa, cella di partenza, cella di destinazione;
+   - una riga per ciascuna delle sei guardie, con Passed / Refused / NotEvaluated e,
+     per quella che ha rifiutato, il motivo esatto. Le NotEvaluated si stampano:
+     "non valutata" e' un fatto diverso da "passata";
+   - se autorizzato, il pixel di destinazione e la scala sotto cui e' stato calcolato;
+   - se emesso, l'esito del verifier con i millisecondi misurati e il dettaglio;
+   - se non emesso, il motivo del rifiuto di emissione.
+   Uscita: 0 solo su MovementOutcome.Succeeded. Ogni altro esito e' non-zero, con
+   codici distinti per rifiuto-guardia, non-emesso, e stallo/spostato/non-osservato.
+
+2. --step non deve partire se l'input non e' armato o se la sessione non e' attuante,
+   e non perche' lo ricontrolli tu: la catena lo dice gia'. Stampa il ladder ed esci.
+   Non aggiungere un --force di nessun tipo.
+
+3. Eventi di audit dell'intera catena, sul registro eventi esistente: uno per
+   l'autorizzazione (con l'esito di ogni guardia), uno per l'emissione (pixel, scala,
+   istante, e l'autorita' via ActuationAuthority.Describe()), uno per la verifica
+   (esito, millisecondi, letture accettate). Payload
+   JSON piatto, nessun segreto, nessun percorso di macchina. Rileggibili da
+   EventLogReader nello stesso ordine in cui sono avvenuti.
+
+4. Test in tests/NosAi.Runtime.Tests:
+   - la formattazione del ladder per ciascun punto di rifiuto, righe NotEvaluated
+     comprese;
+   - i codici di uscita per ciascun esito;
+   - i tre eventi di audit in ordine per un passo autorizzato, e solo quello di
+     autorizzazione per un passo rifiutato. Un evento di emissione senza emissione
+     sarebbe esattamente la bugia che questo audit esiste per impedire;
+   - un passo rifiutato non produce nessun evento di input (RecordingInputBackend).
+
+5. NON scrivere un test automatico che clicca sul client reale. La corsa dei 100 passi
+   e' una procedura d'operatore: scrivila in dieci righe in fondo a
+   docs/CONTROLLO_PERSONAGGIO_ATTUAZIONE.md - cosa aprire, cosa armare, cosa lanciare,
+   cosa deve stampare, e quando fermarsi.
+
+Vincoli: nessun ritentativo automatico da nessuna parte, nemmeno uno. Nessun percorso
+che raggiunga il backend d'input senza passare da SingleStepExecutor.
+dotnet build -c Release senza warning e dotnet test verdi prima di riportare.
+```
+
+### DoD di `S4`
+
+1. `--step 1 0` con l'input disarmato stampa il ladder, si ferma a `Policy`, esce
+   non-zero e **non emette nulla**.
+2. Con tutto armato e il client in primo piano, stampa sei righe di guardia, il pixel,
+   e un esito del verifier con i millisecondi misurati.
+3. Tre eventi di audit per un passo emesso, uno solo per un passo rifiutato, e
+   **ognuno nomina l'autorità dell'atto** — nessun evento con quel campo vuoto.
+4. Build senza warning, suite runtime verde.
+5. **La corsa dei 100 passi resta aperta**: è la DoD di `P4`, ed è dell'operatore.
+
+### Il blocco che resta, e perché
+
+**Primo, e non è una prova d'operatore: l'autorità dell'atto.** `ADR-0020` (*proposto*)
+chiede che `GatedInputBackend.TryBeginActuation` riceva sempre l'autorità sotto cui lo
+scope è aperto — il `SafetyToken` del ciclo, oppure un comando d'operatore nominato — e
+`SingleStepExecutor` oggi non ne porta nessuna. Non è la guardia `Authority` della
+catena, che chiede se il runtime può guidare *questa sessione*; è chi risponde di
+*questo atto*. Cablare `--step` prima significherebbe consegnare all'operatore un
+comando che emette input reale mentre il gate non sa attribuirlo. La firma cambia di un
+parametro, è **di Claude** perché è una regola di autorizzazione (`ROADMAP` § 2), e
+`S4` la trova già fatta o si ferma e la chiede.
+
+Poi due prove, d'operatore e non di Cursor:
+
+1. le tre di `P2` sul client vivo — `--input-guards --watch 20`, finestra spostata a
+   metà atto, finestra terza interposta sul punto, mano sul mouse. Ogni prova deve
+   nominare il proprio rifiuto;
+2. quella di `P3` — client elevato ⇒ sessione non attuante, terminale, puntatore fermo;
+   client non elevato ⇒ sessione attuante.
+
+Non è una formalità. `--step` emette il primo input reale diretto al client: se una
+guardia non è mai stata vista rifiutare sul sistema vero, il primo passo è anche la
+prima occasione per scoprire che non rifiutava.
 
 ---
 
-## 7. Come riportare
+## 7. `S5` — Griglia e cella di appoggio nel pannello
+
+**Sbloccata**, e scelta apposta per non incrociare `S4`: sta in
+`src/NosAi.ControlPanel/` e nei suoi test, e legge `MapGrid` senza scrivere nulla nel
+runtime. È anche la prima delle due prove di `P1` — quella della cella su cui si sta —
+resa ripetibile invece che fatta una volta a mano.
+
+### Il comando
+
+```
+[PREAMBOLO COMUNE]
+
+SESSIONE S5 — griglia e cella di appoggio nel Centro di controllo.
+
+@Codebase Leggi src/NosAi.Runtime/Navigation/MapGrid.cs, StaticGeometryLayer.cs,
+MapGridSetIdentity.cs, MapGridCheck.cs e il comando --grid-check; poi come il pannello
+legge oggi lo snapshot (SnapshotView.cs, AttachedSnapshot.cs).
+
+Questa sessione e' di sola lettura verso il runtime: non aggiunge comandi, non arma
+niente, non tocca il percorso d'input. Se ti serve un dato che il runtime non espone,
+aggiungi una proprieta' di sola lettura e dillo nel riepilogo.
+
+Lavoro, in quest'ordine.
+
+1. Una vista "Mappa" nel pannello che mostra, per la sessione attaccata:
+   - l'id mappa e da dove viene, con il motivo quando e' UNKNOWN;
+   - se una griglia e' caricata per quella mappa, le sue dimensioni, e l'identita'
+     dell'insieme (MapGridSetIdentity) con l'hash della build;
+   - la cella su cui sta il personaggio e SE QUELLA CELLA RISULTA CALPESTABILE.
+     Questa riga e' la prova: una cella di appoggio non calpestabile significa che la
+     griglia e il mondo non parlano della stessa mappa, e va mostrata come errore, non
+     come dettaglio.
+
+2. Un ritaglio della griglia intorno al personaggio - 31x31 celle bastano - disegnato
+   con tre stati distinguibili anche in bianco e nero: calpestabile, bloccata, fuori
+   griglia. Nessun quarto stato inventato: se l'occupancy dinamica non e' disponibile,
+   non disegnarla affatto invece di disegnare "libero".
+
+3. Stato UNKNOWN esplicito ovunque: nessuna griglia caricata, posizione sconosciuta,
+   identita' della build non verificata. UNKNOWN non e' una cella vuota e non e' "fuori
+   griglia": sono tre disegni diversi.
+
+4. Test in tests/NosAi.ControlPanel.Tests: la riga della cella di appoggio nei quattro
+   casi (calpestabile, non calpestabile, fuori griglia, posizione sconosciuta); il
+   ritaglio ai bordi della mappa non va in eccezione e mostra il fuori-griglia; nessun
+   percorso della vista scrive verso il runtime.
+
+Vincoli: niente polling stretto, la vista si aggiorna quando lo snapshot cambia.
+Nessun valore inventato quando la griglia non c'e'.
+dotnet build -c Release senza warning e dotnet test verdi prima di riportare.
+```
+
+### DoD di `S5`
+
+1. Con il client aperto e la griglia estratta: id mappa, dimensioni, hash della build e
+   la cella di appoggio marcata calpestabile.
+2. Senza griglia, tutto `UNKNOWN` con il motivo, e niente disegnato come libero.
+3. Una cella di appoggio non calpestabile è mostrata come errore.
+4. Build senza warning, suite pannello verde.
+
+---
+
+## 8. Come riportare
 
 Alla fine di ogni sessione, e non prima:
 
-- ID della sessione (`S1`…`S4`);
+- ID della sessione (`S1`…`S5`);
 - file creati e modificati;
 - riepilogo dell'implementazione in poche righe;
 - comando di build e **esito reale**;

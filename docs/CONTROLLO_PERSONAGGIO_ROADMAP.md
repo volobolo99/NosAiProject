@@ -188,15 +188,48 @@ Una cella. Il percorso completo su un atto minimo.
 
 | Contenuto | Chi |
 |---|---|
-| Composizione finale delle guardie e ordine di corto circuito | Claude |
-| `MovementVerifier`: griglia contro griglia, 350 ms ± 20 ms, esiti riuscita / stallo / abort | Claude |
-| **Condizione di freschezza dell'occupazione all'atto**: l'atto richiede un'osservazione che copra la cella di destinazione entro la soglia dichiarata. Assenza di osservazione e osservazione scaduta sono lo stesso ingresso, e non sono « libero ». Oggi manca: l'unico confronto d'età è in `TargetSelector` e riguarda il bersaglio | Claude |
-| Comando `--step <dx> <dy>` con stampa dell'esito di ogni guardia | Cursor |
-| Eventi di audit dell'intera catena | Cursor |
+| ~~Composizione finale delle guardie e ordine di corto circuito~~ **fatto** — `StepGuardChain`: shape, geometry, authority, policy, occupancy, projection | Claude |
+| ~~`MovementVerifier`: griglia contro griglia, 350 ms ± 20 ms~~ **fatto** — cinque esiti, non tre | Claude |
+| ~~**Condizione di freschezza dell'occupazione all'atto**~~ **fatto** — `OccupancyFreshness`, due soglie | Claude |
+| **Autorità dell'atto sullo scope** — conseguenza di `ADR-0020` (*proposto*). **Non** è la guardia `Authority` della catena: quella chiede se il runtime può guidare *questa sessione*, questa chiede sotto **quale** autorità il singolo atto esce — `SafetyToken` del ciclo, o comando d'operatore. `SingleStepExecutor` è il secondo chiamante di `TryBeginActuation` e non ne porta nessuna: il confinamento regge già (`MayMove` rifiuta con `commit_scope_required`, quindi nulla emette fuori da uno scope), l'attribuzione no. Un parametro sul gate, non un redesign — `StepGuardChain`, `MovementVerifier` e `OccupancyFreshness` restano intatti. **Prima di `S4`** | Claude |
+| Comando `--step <dx> <dy>` con stampa dell'esito di ogni guardia | Cursor (`S4`) |
+| Eventi di audit dell'intera catena, **con l'autorità dell'atto** | Cursor (`S4`) |
 
-**DoD** — 100 passi consecutivi su cella adiacente calpestabile; tasso di successo dichiarato;
-zero campioni fuori dal client; zero atti con la finestra non in primo piano; ogni fallimento
-etichettato.
+**L'ordine è deciso da due regole che concordano.** *Nomina il fatto più a monte* — la
+stessa ragione per cui `CommitPointValidator` ordina le sue cinque condizioni così:
+sapere che la destinazione è occupata non serve a nulla se il runtime non poteva
+comunque guidare il client. E *leggi per ultima la cosa volatile*: tutto ciò che sta
+prima di `Occupancy` è un fatto che non cambia mentre la catena gira — la forma della
+richiesta, un file che il client spedisce, un verdetto latched, un interruttore in mano
+all'operatore. `Projection` chiude perché è l'unica che *produce* invece di permettere.
+
+**Il commit point non è in questa catena, ed è deliberato.** Appartiene al gate, gira
+nell'istante prima del passo irreversibile, e rilegge un mondo che la catena ha già
+finito di guardare. Una copia qui sarebbe una seconda risposta capace di contraddire
+quella che conta.
+
+**Il verifier ha cinque esiti perché tre lo farebbero mentire.** *Non osservato* non è
+*stallo*: uno stallo afferma che il personaggio è stato guardato e non si è mosso, e
+senza una lettura successiva all'atto nessuno ha guardato niente. *Spostato* non è
+*riuscito*: arrivare da qualche parte non è arrivare **lì**, ed è lo stesso difetto del
+`Completed` senza esecuzione dietro. La regola su cui poggia tutto: **una lettura vale
+solo se timbrata dopo l'emissione**, perché un feed ripubblica ciò che sapeva, e
+confrontare quella lettura verificherebbe l'atto contro lo stato che doveva cambiare.
+
+**La freschezza ha due soglie, non una.** L'età della *vista* chiede se il runtime sente
+ancora il mondo (1000 ms); l'età di *un avvistamento* chiede se quell'entità è ancora
+dove era (30 s, come `TargetSelector`, e per la stessa ragione). Un solo numero si rompe
+in entrambi i versi: alla soglia della vista ogni mostro fermo diventa un sospetto,
+a quella dell'avvistamento un feed morto da trenta secondi autorizza ancora gli atti. I
+1000 ms **non sono stati misurati contro un feed reale**: se rifiutano nelle zone
+tranquille, la riparazione è un battito nel feed, non un numero più grande qui.
+
+**DoD** — 100 passi consecutivi su cella adiacente calpestabile; tasso di successo
+dichiarato; zero campioni fuori dal client; zero atti con la finestra non in primo
+piano; ogni fallimento etichettato; **ogni atto attribuito nel registro a un'autorità
+nominata**, e nessuno attribuito a nessuna. *Il codice è coperto in locale da
+`tests/NosAi.Runtime.Tests/StepGuardTests.cs` (33 test); la corsa dei 100 passi è
+dell'operatore e non è ancora avvenuta.*
 
 ---
 
@@ -394,3 +427,4 @@ immediato, esposizione dello stato e dei budget nella dashboard e nelle metriche
 3. `X-P3` — la superficie che mostra l'autorità di sessione, e la chiamata a `EnsureVerified()` nel ciclo. Senza di essa il verdetto viene preso una sola volta all'attach, quando il client non è in primo piano e l'input non è armato: il runtime resta correttamente non attuante, ma per un motivo che non è quello vero.
 4. Prova d'operatore, dopo `X-P3`: avvia NosTale **come amministratore** e il runtime no. La CLI deve dire `authority_integrity_below_client:medium_under_high`, il pannello deve mostrare la sessione come non attuante, l'osservazione deve continuare, e **il puntatore non deve muoversi nemmeno una volta**. Poi lo stesso giro senza elevazione: la sessione diventa attuante e il puntatore torna esattamente dov'era.
 5. `P2` e `P3` prima di `P4`. Il primo passo non si emette finché queste prove non sono state viste sul client, non solo sul desktop fittizio.
+6. **L'autorità sullo scope prima di `X-P4`.** `C-P4` è scritto (`b98e681`) e ha aggiunto il secondo ingresso al gate: `SingleStepExecutor` apre uno scope senza portare un'autorità. `ADR-0020` chiede che `TryBeginActuation` la riceva sempre — `SafetyToken` o comando d'operatore — e cablare `--step` prima significherebbe consegnare all'operatore un comando che emette input reale mentre il gate non sa attribuirlo. È l'unica riga di `P4` che va fatta in un ordine preciso, ed è di Claude perché è una regola di autorizzazione (§ 2).
