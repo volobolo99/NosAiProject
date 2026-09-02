@@ -100,6 +100,17 @@ public sealed class CalibratedScreenProjection : IScreenProjection
 
     private readonly ScreenProjectionCalibration _calibration;
     private readonly Func<PixelRect?> _clientArea;
+
+    /// <summary>
+    /// The geometry the fit was measured under, straight from the calibration.
+    /// </summary>
+    /// <remarks>
+    /// Not re-read from the live window on purpose. The commit point compares this
+    /// against the window as it is at the instant of emission, and a value taken from
+    /// that same window would agree with itself always.
+    /// </remarks>
+    public GeometryShape Scale => _calibration.Shape;
+
     private readonly Func<ClassifiedValue<MapPoint>> _playerPosition;
     private readonly Func<DpiAwarenessRegime> _regime;
     private readonly Func<uint> _clientDpi;

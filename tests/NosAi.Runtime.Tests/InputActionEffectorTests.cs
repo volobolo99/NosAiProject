@@ -1,5 +1,6 @@
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Gate3;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Safety;
 using Xunit;
@@ -43,6 +44,9 @@ public sealed class InputActionEffectorTests
             _offsetY = offsetY;
             _refuseWith = refuseWith;
         }
+
+        /// <summary>A stated scale, so the commit point has something to compare against.</summary>
+        public GeometryShape Scale { get; set; } = new(1024, 768, 96);
 
         public bool TryProject(int mapX, int mapY, out int screenX, out int screenY, out string? failureReason)
         {

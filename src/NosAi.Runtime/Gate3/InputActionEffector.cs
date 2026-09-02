@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate3;
@@ -31,6 +32,19 @@ public interface IScreenProjection
     /// is a refusal with its own reason, not a click on the border.
     /// </param>
     bool TryProject(int mapX, int mapY, out int screenX, out int screenY, out string? failureReason);
+
+    /// <summary>
+    /// The window geometry the transform was fitted under.
+    /// </summary>
+    /// <remarks>
+    /// Carried so the commit point's fifth condition compares the scale the coordinate
+    /// was <i>computed</i> under against the scale that is live now. Re-reading the live
+    /// window for both sides would make that condition compare a value with itself,
+    /// which is the one way to turn a guard into decoration. A projection that has not
+    /// been calibrated has no scale, and <see cref="GeometryShape.IsKnown"/> says so
+    /// rather than reporting zeroes that would compare unequal for the wrong reason.
+    /// </remarks>
+    GeometryShape Scale { get; }
 }
 
 /// <summary>The only projection that exists until F2-3 is calibrated: it refuses.</summary>
@@ -40,6 +54,9 @@ public sealed class UncalibratedScreenProjection : IScreenProjection
     public const string NotCalibratedReason = "screen_projection_not_calibrated";
 
     public static UncalibratedScreenProjection Instance { get; } = new();
+
+    /// <summary>Unknown: there is no fit, so there is no geometry it was fitted under.</summary>
+    public GeometryShape Scale => default;
 
     public bool TryProject(int mapX, int mapY, out int screenX, out int screenY, out string? failureReason)
     {
