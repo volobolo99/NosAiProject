@@ -539,6 +539,7 @@ public sealed class NosTaleClientLayout
         const int sliceLength = 1 << 20;
         int overlap = signature.Length - 1;
         var candidates = 0;
+        string? firstRejection = null;
 
         for (long offset = 0; offset < moduleSize; offset += sliceLength - overlap)
         {
@@ -569,8 +570,16 @@ public sealed class NosTaleClientLayout
                     continue;
 
                 candidates++;
-                if (!LooksLikeSceneManager(reader, pointer))
+                if (!TryConfirmSceneManager(reader, pointer, out string? rejection))
+                {
+                    // The first rejection is the one reported. With a single
+                    // candidate it is the whole answer, and with several the
+                    // operator still gets a check they can act on rather than a
+                    // count they cannot.
+                    firstRejection ??= string.Create(CultureInfo.InvariantCulture,
+                        $"0x{pointer.ToInt64():X}:{rejection}");
                     continue;
+                }
 
                 scene = pointer;
                 return true;
@@ -579,7 +588,8 @@ public sealed class NosTaleClientLayout
 
         failureReason = candidates == 0
             ? "scene_manager_signature_not_found"
-            : $"scene_manager_not_confirmed:{candidates}_candidates_rejected";
+            : string.Create(CultureInfo.InvariantCulture,
+                $"scene_manager_not_confirmed:{candidates}_candidates:{firstRejection}");
         return false;
     }
 
@@ -592,25 +602,68 @@ public sealed class NosTaleClientLayout
     /// check rather than a guess.
     /// </remarks>
     private static bool LooksLikeSceneManager(ProcessMemoryReader reader, IntPtr candidate)
+        => TryConfirmSceneManager(reader, candidate, out _);
+
+    /// <summary>
+    /// Whether a candidate behaves like the scene manager, and which check said no.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// All four lists must be readable and sized plausibly. A stray pointer clears
+    /// one of those by luck now and then; clearing all four is what makes this a
+    /// check rather than a guess.
+    /// </para>
+    /// <para>
+    /// <b>Why the reason is carried out.</b> A bare <c>false</c> here reaches the
+    /// operator as « 1 candidate rejected », which names nothing they can act on:
+    /// a wrong offset for this client build and a list the client legitimately
+    /// keeps null read exactly the same. The reason names the list, the offset and
+    /// the value seen, so the next decision is taken on a reading instead of on a
+    /// hunch.
+    /// </para>
+    /// </remarks>
+    internal static bool TryConfirmSceneManager(
+        ProcessMemoryReader reader, IntPtr candidate, out string? failureReason)
     {
-        foreach (int listOffset in new[]
-                 { PlayerListOffset, MonsterListOffset, NpcListOffset, GroundItemListOffset })
+        foreach ((string name, int listOffset) in new[]
+                 {
+                     ("player", PlayerListOffset),
+                     ("monster", MonsterListOffset),
+                     ("npc", NpcListOffset),
+                     ("ground", GroundItemListOffset),
+                 })
         {
             MemoryReadResult listPointer = reader.Read(candidate + listOffset, sizeof(int));
             if (!listPointer.Ok)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_pointer_unreadable_at+0x{listOffset:X}");
                 return false;
+            }
 
             var list = (IntPtr)BitConverter.ToUInt32(listPointer.Bytes);
             if (list == IntPtr.Zero)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_pointer_null_at+0x{listOffset:X}");
                 return false;
+            }
 
             MemoryReadResult lengthBytes = reader.Read(list + ListLengthOffset, sizeof(int));
             if (!lengthBytes.Ok)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_length_unreadable_at_0x{list.ToInt64():X}+0x{ListLengthOffset:X}");
                 return false;
+            }
 
             int length = BitConverter.ToInt32(lengthBytes.Bytes);
             if (length < 0 || length > MaxEntitiesPerList)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_length_implausible:{length}");
                 return false;
+            }
 
             // A non-empty list must have an array behind it. An empty one need
             // not, and an empty monster list is an ordinary quiet map.
@@ -619,13 +672,22 @@ public sealed class NosTaleClientLayout
 
             MemoryReadResult arrayPointer = reader.Read(list + ListArrayOffset, sizeof(int));
             if (!arrayPointer.Ok)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_array_unreadable:{length}_entries");
                 return false;
+            }
 
             var array = (IntPtr)BitConverter.ToUInt32(arrayPointer.Bytes);
             if (array == IntPtr.Zero || !reader.Read(array, sizeof(int)).Ok)
+            {
+                failureReason = string.Create(CultureInfo.InvariantCulture,
+                    $"{name}_list_array_unusable:{length}_entries_at_0x{array.ToInt64():X}");
                 return false;
+            }
         }
 
+        failureReason = null;
         return true;
     }
 
