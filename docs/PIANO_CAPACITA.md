@@ -160,7 +160,8 @@ che serve il client vivo e una persona davanti.
 | `C1-9` | **`ct` decodificato**: dice *quale* entità è selezionata dopo un `F8`. 108 occorrenze catalogate, mai lette. Vedi `TASTI_E_BERSAGLIO.md` § 6.3 | Claude — stessa sessione | stesso decoder, `NetworkObservationContracts.cs` |
 | `C1-4` | **Prova offline.** `--world-replay` sui `.noscap` esistenti stampa: entità distinte, quante con posizione, quante con vita, attaccanti risolti, eventi d'inventario. Nessun client, nessun rischio | Cursor | `Program.cs`, test |
 | `C1-5` | **Confermare `LIVE` su sessione in corso** (`T-05`): il decodificatore è provato offline sui `.noscap` (62 letture, HP 7218..7305); manca l'accensione di `--observe-game <host:porta>` su una sessione vera. Control Panel **come amministratore** | operatore | — |
-| `C1-6` | **Calibrare la ROI del bersaglio** (`T-09`): con un bersaglio selezionato, `--hud-probe`, guardare `data/perception/crops/target_latest.bmp`, poi registrare le frazioni con `--hud-probe --calibrate-target <x> <y> <w> <h>`. **Sblocca ogni regola d'attacco** | operatore | `data/perception/` |
+| `C1-6` | **Trovare il bersaglio in memoria** (`ADR-0021`, *proposto*): un oracolo sul modello di `MapIdFinder`. Una parola è candidata solo finché vale l'id che `ct` ha appena nominato; ogni `ct` successivo restringe; la morte dell'entità tenuta è l'evento di azzeramento **gratuito**, perché il client si toglie il bersaglio da solo. Il superstite è ancorato alla base del modulo. **Nessuna misura umana, nessuno screenshot, indipendente dalla risoluzione**, e sblocca ogni regola d'attacco | Claude scrive l'oracolo, l'operatore lancia una passata | `LiveIntegration/`, `Perception/Network/` |
+| `C1-6b` | **Calibrare la ROI del bersaglio** (`T-09`) — declassato da precondizione a *irrobustimento*: resta la seconda sorgente indipendente che deve concordare, ma il combattimento non la aspetta più | operatore, quando conviene | `data/perception/` |
 | `C1-7` | **Barra parziale e atlante dei glifi** (`T-03`, residuo): `--hud-probe` con la barra **non piena** — le due fixture esistenti sono entrambe a barra piena, quindi il bordo del riempimento non è mai stato misurato su una scanalatura vuota vera | operatore | `data/perception/crops/` |
 
 **Fatto quando** — su una sessione viva, lo snapshot mostra almeno un'entità con
@@ -251,9 +252,11 @@ dare a agenti diversi contemporaneamente.
 | **Cursor 2** | `S5` — mappa e cella d'appoggio nel pannello | Sta solo in `src/NosAi.ControlPanel/` |
 | **Operatore** | `C2-2`, `C1-6`, `C1-7`, `C1-5` — in quest'ordine, dal più economico al più invasivo | Sono `UNKNOWN` che nessun lavoro di scrivania può togliere |
 
-`C1-6` (la ROI del bersaglio) è il singolo lavoro con il rapporto valore/tempo più alto
-di tutto il piano: finché `HasTarget` è `UNKNOWN`, **ogni** regola d'attacco viene
-saltata, per progetto.
+`C1-6` è il singolo lavoro con il rapporto valore/tempo più alto di tutto il piano:
+finché `HasTarget` è `UNKNOWN`, **ogni** regola d'attacco viene saltata, per progetto.
+Con `ADR-0021` smette però di essere un lavoro d'operatore: l'oracolo si scrive a
+tavolino e la prova gliela dà il filo, che nella cattura di combattimento nomina il
+bersaglio 16 volte in 90 secondi. All'operatore resta una passata col client aperto.
 
 ### Onda 2 — quando l'onda 1 ha riportato
 

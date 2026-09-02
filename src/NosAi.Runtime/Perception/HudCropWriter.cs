@@ -34,11 +34,19 @@ public static class HudCropWriter
     /// HP crop: nothing inside the reader can tell a correct region from a real
     /// measurement of the wrong pixels, so a person looks at it.
     /// </param>
+    /// <param name="clientArea">
+    /// The whole client area, written as <c>client_latest.bmp</c>. A crop alone
+    /// cannot say which way to move a region that is pointed at the wrong place:
+    /// it shows empty HUD either way. The full picture is what turns the
+    /// calibration from guesswork into a measurement, because the operator can
+    /// read the frame's two corners off it in pixels.
+    /// </param>
     public static string? TrySave(
         string? repoRoot,
         CaptureFrame frame,
         ScreenVitalObservation observation,
-        PixelRect? targetRoi = null)
+        PixelRect? targetRoi = null,
+        PixelRect? clientArea = null)
     {
         if (string.IsNullOrWhiteSpace(repoRoot) || !frame.HasPixels)
             return null;
@@ -50,6 +58,8 @@ public static class HudCropWriter
         WriteBmp(Path.Combine(directory, "mp_latest.bmp"), frame, observation.MpRoi);
         if (targetRoi is { } target)
             WriteBmp(Path.Combine(directory, "target_latest.bmp"), frame, target);
+        if (clientArea is { } client)
+            WriteBmp(Path.Combine(directory, "client_latest.bmp"), frame, client);
         return directory;
     }
 

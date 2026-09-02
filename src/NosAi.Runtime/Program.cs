@@ -205,6 +205,17 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--find-mapid", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Navigation.MapIdFinder.Run();
 
+        // The same oracle, aimed at the selected entity instead of the map id
+        // (ADR-0021). --no-target declares the pass that tells the selection apart
+        // from the client's own entity list, which every entry of that list would
+        // otherwise survive.
+        if (args.Any(a => string.Equals(a, "--find-target", StringComparison.OrdinalIgnoreCase)))
+        {
+            bool targetSelected = !args.Any(a =>
+                string.Equals(a, "--no-target", StringComparison.OrdinalIgnoreCase));
+            return NosAi.Runtime.Navigation.TargetIdFinder.Run(targetSelected);
+        }
+
         // Map coordinate to window pixel (F2-3). Two commands because a
         // calibration is gathered across several moments in the game, so the
         // samples have to outlive one invocation, exactly as --memory-scan's

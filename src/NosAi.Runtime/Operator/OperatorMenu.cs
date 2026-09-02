@@ -299,6 +299,9 @@ public static class OperatorMenu
                 case "14":
                     Perform("Tasti configurati", () => LowLevel.KeybindsCheck.Run());
                     break;
+                case "15":
+                    Perform("Cerca il bersaglio in memoria", RunTargetHunt);
+                    break;
                 case "0":
                 case "q":
                 case "Q":
@@ -370,6 +373,7 @@ public static class OperatorMenu
         Console.WriteLine(" 12  Replay di una registrazione  (cosa vede l'osservazione, senza client)");
         Console.WriteLine(" 13  Replay della decisione       (la scala del ciclo, senza client)");
         Console.WriteLine(" 14  Tasti configurati            (quali intenti hanno un tasto)");
+        Console.WriteLine(" 15  Cerca il bersaglio in memoria (una passata dell'oracolo)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
@@ -430,6 +434,42 @@ public static class OperatorMenu
         }
     }
 
+    /// <summary>
+    /// One pass of the target-id oracle, told what the operator has selected.
+    /// </summary>
+    /// <remarks>
+    /// The single bit a person supplies, and it is a keypress rather than a
+    /// measurement: nothing here reads a pixel, and nothing asks anybody to aim.
+    /// It matters because a pass without a target is the only one that tells the
+    /// selection apart from the client's own entity list (`ADR-0021`).
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static int RunTargetHunt()
+    {
+        Console.WriteLine("Serve sapere una cosa sola: in questo istante hai un bersaglio selezionato?");
+        Console.WriteLine("La prima passata ne vuole uno. Poi alterna: bersagli diversi, e ogni tanto");
+        Console.WriteLine("nessuno - la passata senza bersaglio e' quella che toglie la lista delle");
+        Console.WriteLine("entita' dai candidati.");
+        Console.Write("Bersaglio selezionato? (s/n): ");
+
+        string? typed = Console.ReadLine()?.Trim();
+        bool? selected = typed?.ToLowerInvariant() switch
+        {
+            "s" or "si" or "sì" or "y" => true,
+            "n" or "no" => false,
+            _ => null,
+        };
+
+        if (selected is not { } targetSelected)
+        {
+            Console.WriteLine("Rispondi s oppure n. Indovinare qui falsifica la passata.");
+            return 2;
+        }
+
+        Console.WriteLine();
+        return TargetIdFinder.Run(targetSelected);
+    }
+
     /// <summary>The recorded target-frame region, or the uncalibrated one.</summary>
     private static Perception.TargetRoiCalibration LoadTargetRoi()
         => Perception.TargetRoiCalibration.Load(
@@ -462,34 +502,145 @@ public static class OperatorMenu
     /// overwrites the last, and the crop is the only judge of whether the
     /// region was right. Saying so is the whole point of this prompt.
     /// </remarks>
+    [SupportedOSPlatform("windows")]
     private static int RunTargetCalibration()
     {
-        Console.WriteLine("Frazioni dell'area client, origine sul suo angolo in alto a sinistra.");
-        Console.WriteLine("Per trovarlo la prima volta ritaglia largo - per esempio 0.20 0 0.60 0.20 -");
-        Console.WriteLine("guarda data/perception/crops/target_latest.bmp, poi restringi.");
-        Console.WriteLine("Ogni registrazione sovrascrive la precedente: vale l'ultima che lanci.");
-        Console.WriteLine("La virgola va bene quanto il punto.");
+        if (Perception.HudProbe.FindClientWindow() is not { } window)
+        {
+            Console.WriteLine("La finestra di NosTale non c'e'. Apri il client e riprova:");
+            Console.WriteLine("senza di essa le frazioni sarebbero dell'intero desktop, non del gioco.");
+            return 2;
+        }
+
+        int clientWidth = window.ClientArea.Width;
+        int clientHeight = window.ClientArea.Height;
+
+        Console.WriteLine("PASSO 1 - fotografo l'area client.");
+        Console.WriteLine("Seleziona un mostro nel client: senza bersaglio il riquadro non c'e' da");
+        Console.WriteLine("misurare. Poi torna qui e premi INVIO.");
+        Console.Write("INVIO quando il bersaglio e' selezionato.");
+        Console.ReadLine();
+
+        // Pressing ENTER brought this console to the front, so the client is now
+        // behind it and the capture would photograph whatever covers it. The
+        // countdown is the operator's time to click back on the game; the check
+        // below is what makes the refusal honest when they do not.
+        Console.WriteLine();
+        Console.WriteLine("Ora porta NosTale davanti. Clicca sulla sua BARRA DEL TITOLO, non dentro il");
+        Console.WriteLine("gioco: un clic nel mondo muove il personaggio e puo' togliere il bersaglio.");
+        Console.WriteLine("Scatto fra:");
+        for (int second = 5; second >= 1; second--)
+        {
+            Console.Write(string.Create(CultureInfo.InvariantCulture, $" {second}"));
+            Thread.Sleep(1000);
+        }
+
+        Console.WriteLine();
         Console.WriteLine();
 
-        if (!TryReadFraction("x       ", out double x)) return 2;
-        if (!TryReadFraction("y       ", out double y)) return 2;
-        if (!TryReadFraction("larghezza", out double width)) return 2;
-        if (!TryReadFraction("altezza ", out double height)) return 2;
+        if (!ClientIsInFront(window, out string? covered))
+        {
+            Console.WriteLine($"[RIFIUTATO] {covered}");
+            Console.WriteLine("La foto sarebbe di quello che copre il gioco, e una misura presa li'");
+            Console.WriteLine("produce una regione plausibile del rettangolo sbagliato. Riprova.");
+            return 2;
+        }
+
+        int shot = Perception.HudProbe.RunConsoleProbe();
+        if (shot != 0)
+            return shot;
+
+        string image = Path.GetFullPath(
+            Path.Combine(Perception.HudCropWriter.RelativeDirectory, "client_latest.bmp"));
 
         Console.WriteLine();
+        Console.WriteLine("PASSO 2 - misura il riquadro sulla foto.");
+        Console.WriteLine($"  {image}");
+        Console.WriteLine();
+        Console.WriteLine("Aprila con Paint. Passa il mouse sull'angolo IN ALTO A SINISTRA del riquadro");
+        Console.WriteLine("bersaglio: in basso a sinistra Paint scrive due numeri, sono i pixel. Poi");
+        Console.WriteLine("fai lo stesso sull'angolo IN BASSO A DESTRA. Servono quei quattro numeri.");
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"L'immagine e' {clientWidth}x{clientHeight}: alle frazioni ci penso io."));
+        Console.WriteLine();
+
+        if (!TryReadPixel("sinistra", clientWidth, out int left)) return 2;
+        if (!TryReadPixel("alto    ", clientHeight, out int top)) return 2;
+        if (!TryReadPixel("destra  ", clientWidth, out int right)) return 2;
+        if (!TryReadPixel("basso   ", clientHeight, out int bottom)) return 2;
+
+        if (right <= left || bottom <= top)
+        {
+            Console.WriteLine("Destra deve stare oltre sinistra, e basso oltre alto:");
+            Console.WriteLine("sono i due angoli opposti, non due punti qualsiasi.");
+            return 2;
+        }
+
+        double x = (double)left / clientWidth;
+        double y = (double)top / clientHeight;
+        double width = (double)(right - left) / clientWidth;
+        double height = (double)(bottom - top) / clientHeight;
+
+        Console.WriteLine();
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"Frazioni: {x:F4} {y:F4} {width:F4} {height:F4}"));
+        Console.WriteLine("Registro e ritaglio quella regione. Riguarda target_latest.bmp: se non e' il");
+        Console.WriteLine("riquadro, rifai questa voce - ogni giro sovrascrive il precedente.");
+        Console.WriteLine();
+
         return Perception.HudProbe.RunConsoleProbe(calibrateTarget: (x, y, width, height));
     }
 
-    /// <summary>Reads one fraction of the client area, comma or point.</summary>
-    private static bool TryReadFraction(string label, out double value)
+    /// <summary>
+    /// Whether the client really is the window drawn at its own rectangle.
+    /// </summary>
+    /// <remarks>
+    /// The same two questions the commit point asks before an act, asked here
+    /// before a measurement, and for the same reason: desktop duplication copies
+    /// whatever is on screen at those coordinates, so a covered client yields a
+    /// photograph of the thing covering it — a picture that looks perfectly
+    /// valid and is of the wrong program. Foreground alone is not enough,
+    /// because a small window can sit on top without taking it.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static bool ClientIsInFront(Perception.ClientWindow window, out string? failureReason)
+    {
+        var desktop = new LowLevel.Win32CommitEnvironment();
+
+        if (desktop.ForegroundWindow() != window.Handle)
+        {
+            failureReason = "NosTale non e' la finestra in primo piano.";
+            return false;
+        }
+
+        int centreX = window.ClientArea.X + (window.ClientArea.Width / 2);
+        int centreY = window.ClientArea.Y + (window.ClientArea.Height / 2);
+        if (desktop.RootWindowFromPoint(centreX, centreY) != window.Handle)
+        {
+            failureReason = "Qualcosa copre il centro della finestra di NosTale.";
+            return false;
+        }
+
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>Reads one pixel coordinate, and refuses one outside the picture.</summary>
+    /// <remarks>
+    /// The bound is the honest half of the conversion: a number larger than the
+    /// image is a reading taken off the desktop instead of off the client, and it
+    /// would produce a plausible fraction of the wrong rectangle.
+    /// </remarks>
+    private static bool TryReadPixel(string label, int limit, out int value)
     {
         Console.Write($"{label}: ");
-        string? typed = Console.ReadLine()?.Trim().Replace(',', '.');
-        if (!double.TryParse(typed, NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+        string? typed = Console.ReadLine()?.Trim();
+        if (!int.TryParse(typed, NumberStyles.Integer, CultureInfo.InvariantCulture, out value)
             || value < 0
-            || value > 1)
+            || value > limit)
         {
-            Console.WriteLine("Serve un numero fra 0 e 1.");
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"Serve un numero intero fra 0 e {limit}."));
             value = 0;
             return false;
         }

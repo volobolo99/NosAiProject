@@ -46,6 +46,7 @@ This index lists the documents that are authoritative for implementation, review
 - `ADR-0018` — the screen establishes `HasTarget`, the wire confirms it and never creates it
 - `ADR-0019` — operating system input is the actuation channel for character control (scopes a choice ADR-0014 left open; revokes nothing)
 - `ADR-0020` — **Proposed.** One authorisation path to the act: the commit point is the boundary, the token signs the intent digest instead of the `CandidateId` and reaches the effector. Supersedes `ROADMAP_ESECUTIVA` §§ 8.2–8.3 for actuation and narrows `INV-07` to the transport codec, which is why it awaits acceptance
+- `ADR-0021` — **Proposed.** The client's memory establishes the target and the wire proves the offset, by an oracle on the model of `MapIdFinder`. Supersedes `ADR-0018` only in which source establishes `HasTarget`; its three states and its cross-check survive. Removes the per-resolution human calibration from the path to combat
 
 ## Gate 1 contract
 

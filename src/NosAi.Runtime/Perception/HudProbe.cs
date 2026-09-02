@@ -45,24 +45,13 @@ public static class HudProbe
         // the whole desktop, which is only the client area when the client is
         // fullscreen -- T-03 measured the editor behind it instead.
         PixelRect? clientArea = null;
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows() && FindClientWindow(processName) is { } window)
         {
-            foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
-            {
-                using (process)
-                {
-                    ClientWindow? window = ClientWindowLocator.TryFind(process.Id, out string? why);
-                    if (window is null)
-                        continue;
-
-                    clientArea = window.ClientArea;
-                    Console.WriteLine(
-                        $"Client window: 0x{window.Handle.ToInt64():X} class={window.ClassName} " +
-                        $"client={window.ClientArea.Width}x{window.ClientArea.Height}" +
-                        $"@{window.ClientArea.X},{window.ClientArea.Y}");
-                    break;
-                }
-            }
+            clientArea = window.ClientArea;
+            Console.WriteLine(
+                $"Client window: 0x{window.Handle.ToInt64():X} class={window.ClassName} " +
+                $"client={window.ClientArea.Width}x{window.ClientArea.Height}" +
+                $"@{window.ClientArea.X},{window.ClientArea.Y}");
         }
 
         if (clientArea is null)
@@ -95,7 +84,7 @@ public static class HudProbe
 
                 PixelRect area = clientArea ?? new PixelRect(0, 0, frame.Width, frame.Height);
                 PixelRect targetRoi = TargetRegion(area, calibrateTarget, frame);
-                string? directory = HudCropWriter.TrySave(repoRoot, frame, observation, targetRoi);
+                string? directory = HudCropWriter.TrySave(repoRoot, frame, observation, targetRoi, area);
 
                 Console.WriteLine($"Frame: {frame.Width}x{frame.Height} [{frame.Source.ToWire()}] after {attempt} attempt(s)");
                 Console.WriteLine($"  HP roi={Describe(observation.HpRoi)} bar={Describe(observation.HpBar)}");
@@ -103,9 +92,14 @@ public static class HudProbe
                 Console.WriteLine($"  Target roi={Describe(targetRoi)} {DescribeTarget(frame, targetRoi)}");
                 Console.WriteLine($"  Crops: {directory ?? "not written"}");
                 Console.WriteLine();
+                Console.WriteLine($"  Area client: {area.Width}x{area.Height} px (le frazioni sono di questa)");
+                Console.WriteLine();
                 Console.WriteLine("Open hp_latest.bmp and mp_latest.bmp. The reading is DERIVED only if the");
                 Console.WriteLine("crop is actually the HUD bar; if it is anything else the number is a");
                 Console.WriteLine("measurement of the wrong pixels and the honest answer stays UNKNOWN.");
+                Console.WriteLine("client_latest.bmp is the whole client area, and it is what the target");
+                Console.WriteLine("frame's corners are measured off: a crop of the wrong region looks the");
+                Console.WriteLine("same whichever way it is wrong.");
                 Console.WriteLine();
                 ReportTargetCalibration(repoRoot, area, calibrateTarget);
 
@@ -119,6 +113,29 @@ public static class HudProbe
             Console.WriteLine("  A completely static desktop can do this. HP and MP stay UNKNOWN.");
             return 1;
         }
+    }
+
+    /// <summary>
+    /// The client window the crops are fractions of, or null when it is not open.
+    /// </summary>
+    /// <remarks>
+    /// Public because the bench turns the pixels an operator reads off
+    /// <c>client_latest.bmp</c> into fractions of this area, and two answers to
+    /// "which window is the client" would be one answer too many.
+    /// </remarks>
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public static ClientWindow? FindClientWindow(string processName = "NostaleClientX")
+    {
+        foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
+        {
+            using (process)
+            {
+                if (ClientWindowLocator.TryFind(process.Id, out _) is { } window)
+                    return window;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
