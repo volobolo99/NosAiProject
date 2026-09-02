@@ -6,7 +6,7 @@ Write-Host '=== NosAiProject tests ==='
 python -m compileall -q nosai
 Assert-LastExitCode 'python -m compileall'
 
-python -m pytest -q
+python -m pytest -q tests
 Assert-LastExitCode 'python -m pytest'
 
 $projects = Get-ChildItem -Path . -Filter *Tests.csproj -Recurse -File | Where-Object { $_.FullName -notmatch '\\.git\\' }

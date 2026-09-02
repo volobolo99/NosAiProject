@@ -5,7 +5,7 @@ echo '=== NosAiProject validation ==='
 
 python3 --version
 python3 -m compileall -q nosai
-python3 -m pytest -q
+python3 -m pytest -q tests
 
 dotnet --version
 dotnet restore src/NosAi.Runtime/NosAi.Runtime.csproj

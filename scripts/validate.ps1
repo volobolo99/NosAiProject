@@ -9,7 +9,7 @@ Assert-LastExitCode 'python --version'
 python -m compileall -q nosai
 Assert-LastExitCode 'python -m compileall'
 
-python -m pytest -q
+python -m pytest -q tests
 Assert-LastExitCode 'python -m pytest'
 
 dotnet --version

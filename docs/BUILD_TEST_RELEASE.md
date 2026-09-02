@@ -16,12 +16,17 @@ This document defines the reproducible validation path used by developers and AI
 
 ## 3. Python validation
 
+Remaining Python is the operator surface (`nosai.dashboard`, `nosai.phone`,
+`nosai.bringup`) plus research packages without a complete C# counterpart.
+See `docs/INVENTARIO_PYTHON.md`. `compileall` and `pytest` cover that tree, not
+the deleted COPERTO packages.
+
 ```bash
 python --version
 python -m pip install --upgrade pip
 python -m pip install pytest
 python -m compileall -q nosai
-python -m pytest -q
+python -m pytest -q tests
 ```
 
 ## 4. .NET validation

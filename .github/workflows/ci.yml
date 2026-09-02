@@ -19,10 +19,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[test]"
-      - name: Compile Python runtime
+      - name: Compile remaining Python packages
+        # Inventory and marks: docs/INVENTARIO_PYTHON.md. COPERTO packages were
+        # removed; compileall must still succeed on what is left.
         run: python -m compileall -q nosai
-      - name: Run tests
-        run: python -m pytest -q
+      - name: Run remaining Python tests
+        run: python -m pytest -q tests
 
   dotnet-build:
     runs-on: ubuntu-latest

@@ -4,7 +4,7 @@ set -euo pipefail
 echo '=== NosAiProject tests ==='
 
 python3 -m compileall -q nosai
-python3 -m pytest -q
+python3 -m pytest -q tests
 
 mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*')
 if [[ ${#tests[@]} -eq 0 ]]; then
