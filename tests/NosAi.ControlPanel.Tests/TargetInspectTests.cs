@@ -56,12 +56,12 @@ public sealed class TargetInspectTests : IDisposable
     public void AFileWithCandidatesShowsCountsAndCallsAdvice()
     {
         string path = WriteCandidates(
-            passes: 2,
+            selections: 2,
             restarts: 1,
             cleared: true,
             processId: 7932,
-            "manager 40 313906",
-            "heap DEAD 3205");
+            "manager 40 313906 -1",
+            "heap DEAD 3205 -1");
         string roi = Path.Combine(_dir, "no-roi");
 
         TargetHuntView view = TargetInspect.Inspect(path, roi);
@@ -69,19 +69,19 @@ public sealed class TargetInspectTests : IDisposable
         Assert.Equal(TargetHuntKind.InProgress, view.HuntKind);
         Assert.Contains("2 candidati", view.HuntStatusLine, StringComparison.Ordinal);
         Assert.Contains("1 ancorati", view.HuntStatusLine, StringComparison.Ordinal);
-        Assert.Contains($"2/{TargetIdFinder.RequiredPasses}", view.HuntStatusLine, StringComparison.Ordinal);
+        Assert.Contains($"2/{TargetIdFinder.RequiredSelections}", view.HuntStatusLine, StringComparison.Ordinal);
         Assert.Contains("1/1", view.HuntStatusLine, StringComparison.Ordinal);
         Assert.False(view.ClearedPassMissing);
         Assert.Contains(TargetInspect.ClearedDoneLabel, view.ClearedPassLine, StringComparison.Ordinal);
         Assert.DoesNotContain(TargetInspect.ClearedMissingLabel, view.ClearedPassLine, StringComparison.Ordinal);
 
-        string expected = TargetIdFinder.Advice(count: 2, durable: 1, passes: 2, restarts: 1, sawCleared: true);
+        string expected = TargetIdFinder.Advice(count: 2, durable: 1, selections: 2, restarts: 1, sawCleared: true);
         Assert.Equal(expected, view.AdviceLine);
         Assert.Equal(expected, Field(view, TargetInspect.AdviceLabel).Value);
         Assert.Equal("DERIVED", Field(view, TargetInspect.AdviceLabel).Source);
         Assert.Equal("2 [CACHED]", Field(view, TargetInspect.CandidatesLabel).Value);
         Assert.Equal("1 [CACHED]", Field(view, TargetInspect.AnchoredLabel).Value);
-        Assert.Equal($"2/{TargetIdFinder.RequiredPasses} [CACHED]", Field(view, TargetInspect.SelectionsLabel).Value);
+        Assert.Equal($"2/{TargetIdFinder.RequiredSelections} [CACHED]", Field(view, TargetInspect.SelectionsLabel).Value);
         Assert.Equal("1/1 [CACHED]", Field(view, TargetInspect.RestartsLabel).Value);
         Assert.Equal(TargetInspect.ClearedDoneLabel, Field(view, TargetInspect.ClearedLabel).Value);
     }
@@ -89,7 +89,7 @@ public sealed class TargetInspectTests : IDisposable
     [Fact]
     public void AZeroCandidateFileIsNotHuntNotStartedAndAdviceIsTheEmptySetSentence()
     {
-        string path = WriteCandidates(passes: 3, restarts: 1, cleared: true, processId: 1);
+        string path = WriteCandidates(selections: 3, restarts: 1, cleared: true, processId: 1);
         string roi = Path.Combine(_dir, "no-roi");
 
         TargetHuntView view = TargetInspect.Inspect(path, roi);
@@ -100,7 +100,7 @@ public sealed class TargetInspectTests : IDisposable
         Assert.Contains("0 candidati", view.HuntStatusLine, StringComparison.Ordinal);
         Assert.Equal("0 [CACHED]", Field(view, TargetInspect.CandidatesLabel).Value);
 
-        string expected = TargetIdFinder.Advice(count: 0, durable: 0, passes: 3, restarts: 1, sawCleared: true);
+        string expected = TargetIdFinder.Advice(count: 0, durable: 0, selections: 3, restarts: 1, sawCleared: true);
         Assert.Equal(expected, view.AdviceLine);
         Assert.Contains("Nessun candidato", view.AdviceLine, StringComparison.Ordinal);
     }
@@ -109,11 +109,11 @@ public sealed class TargetInspectTests : IDisposable
     public void AMissingClearedPassIsDrawnAsMissingAndBlocksTheAdviceOrder()
     {
         string path = WriteCandidates(
-            passes: 1,
+            selections: 1,
             restarts: 0,
             cleared: false,
             processId: 100,
-            "manager 40 313906",
+            "manager 40 313906 -1",
             "module 10 313906");
         string roi = Path.Combine(_dir, "no-roi");
 
@@ -126,10 +126,10 @@ public sealed class TargetInspectTests : IDisposable
         Assert.DoesNotContain(TargetInspect.ClearedDoneLabel, view.ClearedPassLine, StringComparison.Ordinal);
         Assert.Equal(TargetInspect.ClearedMissingLabel, Field(view, TargetInspect.ClearedLabel).Value);
 
-        string expected = TargetIdFinder.Advice(count: 2, durable: 2, passes: 1, restarts: 0, sawCleared: false);
+        string expected = TargetIdFinder.Advice(count: 2, durable: 2, selections: 1, restarts: 0, sawCleared: false);
         Assert.Equal(expected, view.AdviceLine);
-        Assert.Contains("TOGLI il bersaglio", view.AdviceLine, StringComparison.Ordinal);
-        Assert.DoesNotContain("DIVERSO", view.AdviceLine, StringComparison.Ordinal);
+        Assert.Contains("TORNARE", view.AdviceLine, StringComparison.Ordinal);
+        Assert.DoesNotContain("selezioni diverse", view.AdviceLine, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public sealed class TargetInspectTests : IDisposable
         string absent = TargetInspect.Signature(candidates, roi);
         Assert.Equal(absent, TargetInspect.Signature(candidates, roi));
 
-        WriteCandidates(passes: 1, restarts: 0, cleared: false, processId: 1, "manager 40 1");
+        WriteCandidates(selections: 1, restarts: 0, cleared: false, processId: 1, "manager 40 1 -1");
         File.Move(Path.Combine(_dir, "candidates.txt"), candidates);
         string present = TargetInspect.Signature(candidates, roi);
         Assert.NotEqual(absent, present);
@@ -227,18 +227,18 @@ public sealed class TargetInspectTests : IDisposable
     public void AProvenSetIsNamedProvenAndAdviceIsTheFoundSentence()
     {
         string path = WriteCandidates(
-            passes: TargetIdFinder.RequiredPasses,
+            selections: TargetIdFinder.RequiredSelections,
             restarts: 1,
             cleared: true,
             processId: 7,
-            "manager 40 313906");
+            "manager 40 313906 -1");
         string roi = Path.Combine(_dir, "no-roi");
 
         TargetHuntView view = TargetInspect.Inspect(path, roi);
 
         Assert.Equal(TargetHuntKind.Proven, view.HuntKind);
         Assert.Equal(
-            TargetIdFinder.Advice(count: 1, durable: 1, passes: TargetIdFinder.RequiredPasses, restarts: 1, sawCleared: true),
+            TargetIdFinder.Advice(count: 1, durable: 1, selections: TargetIdFinder.RequiredSelections, restarts: 1, sawCleared: true),
             view.AdviceLine);
         Assert.Contains("TROVATO", view.AdviceLine, StringComparison.Ordinal);
     }
@@ -277,13 +277,13 @@ public sealed class TargetInspectTests : IDisposable
         Assert.DoesNotContain("File.Write", applyTarget, StringComparison.Ordinal);
     }
 
-    private string WriteCandidates(int passes, int restarts, bool cleared, int processId, params string[] hits)
+    private string WriteCandidates(int selections, int restarts, bool cleared, int processId, params string[] hits)
     {
         // Layout of TargetIdFinder.Format: the panel reads this file, it does not
         // call the internal writer, so the fixture is that writer’s text.
         var text = new System.Text.StringBuilder();
         text.AppendLine("# nosai target-id candidates (ADR-0021)");
-        text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"passes={passes}"));
+        text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"selections={selections}"));
         text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"restarts={restarts}"));
         text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"process={processId}"));
         text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"cleared={(cleared ? 1 : 0)}"));

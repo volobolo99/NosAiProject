@@ -233,9 +233,10 @@ public static class Program
         // otherwise survive.
         if (args.Any(a => string.Equals(a, "--find-target", StringComparison.OrdinalIgnoreCase)))
         {
-            bool targetSelected = !args.Any(a =>
-                string.Equals(a, "--no-target", StringComparison.OrdinalIgnoreCase));
-            return NosAi.Runtime.Navigation.TargetIdFinder.Run(targetSelected);
+            // No flag says whether a target is selected any more: the hunt asks, round
+            // by round, while it runs. --no-target is gone rather than ignored, because
+            // a flag that is accepted and does nothing is worse than one that is refused.
+            return NosAi.Runtime.Navigation.TargetIdFinder.Run();
         }
 
         // Map coordinate to window pixel (F2-3). Two commands because a

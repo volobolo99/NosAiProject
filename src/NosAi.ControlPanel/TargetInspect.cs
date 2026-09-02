@@ -109,7 +109,7 @@ internal static class TargetInspect
 
     /// <summary>Why the no-target pass is the line that matters.</summary>
     public const string ClearedPassWhy =
-        "distinguere la selezione dalla lista delle entità; senza di essa nessun candidato può essere provato";
+        "chiedere al valore di TORNARE allo stesso « nessuno »; è l'unica prova che un contatore non sa superare";
 
     public const string HuntUnreadableReason = "target_candidates_unreadable";
     public const string CandidatesLabel = "Candidati sopravvissuti";
@@ -186,7 +186,7 @@ internal static class TargetInspect
 
         int count = candidates.Hits.Count;
         int durable = CountDurable(candidates.Hits);
-        int passes = candidates.Passes;
+        int passes = candidates.Selections;
         int restarts = candidates.Restarts;
         bool sawCleared = candidates.SawCleared;
         string advice = TargetIdFinder.Advice(count, durable, passes, restarts, sawCleared);
@@ -202,7 +202,7 @@ internal static class TargetInspect
             : $"{ClearedLabel}: {ClearedMissingLabel} — {ClearedPassWhy}";
 
         string status = string.Create(CultureInfo.InvariantCulture,
-            $"{count} candidati ({durable} ancorati) — selezioni seguite {passes}/{TargetIdFinder.RequiredPasses}, riavvii {restarts}/1");
+            $"{count} candidati ({durable} ancorati) — selezioni seguite {passes}/{TargetIdFinder.RequiredSelections}, riavvii {restarts}/1");
 
         string cached = DataSourceKind.Cached.ToWire();
         return new HuntDrawing(
@@ -215,7 +215,7 @@ internal static class TargetInspect
             new DisplayField(AnchoredLabel, $"{durable} [{cached}]", cached),
             new DisplayField(
                 SelectionsLabel,
-                string.Create(CultureInfo.InvariantCulture, $"{passes}/{TargetIdFinder.RequiredPasses} [{cached}]"),
+                string.Create(CultureInfo.InvariantCulture, $"{passes}/{TargetIdFinder.RequiredSelections} [{cached}]"),
                 cached),
             new DisplayField(
                 RestartsLabel,
@@ -310,8 +310,8 @@ internal static class TargetInspect
             if (text.Length == 0 || text.StartsWith('#'))
                 continue;
 
-            if (text.StartsWith("passes=", StringComparison.Ordinal))
-                int.TryParse(text.AsSpan(7), NumberStyles.Integer, CultureInfo.InvariantCulture, out passes);
+            if (text.StartsWith("selections=", StringComparison.Ordinal))
+                int.TryParse(text.AsSpan(11), NumberStyles.Integer, CultureInfo.InvariantCulture, out passes);
             else if (text.StartsWith("restarts=", StringComparison.Ordinal))
                 int.TryParse(text.AsSpan(9), NumberStyles.Integer, CultureInfo.InvariantCulture, out restarts);
             else if (text.StartsWith("process=", StringComparison.Ordinal))
@@ -328,8 +328,11 @@ internal static class TargetInspect
     private static bool TryParseHit(string line, out TargetIdHit hit)
     {
         hit = default;
+        // Four columns since the behavioural oracle: the fourth is the value the word
+        // takes when the target is cleared. A three-column row was written by the
+        // scene-list oracle and is refused rather than shown with a made-up sentinel.
         string[] parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 3)
+        if (parts.Length != 4)
             return false;
 
         MapIdAnchorKind? anchor = MapIdAnchors.Parse(parts[0]);
@@ -337,12 +340,13 @@ internal static class TargetInspect
             return false;
 
         if (!long.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long offset)
-            || !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out long entityId))
+            || !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out long entityId)
+            || !long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out long nobody))
         {
             return false;
         }
 
-        hit = new TargetIdHit(kind, offset, entityId);
+        hit = new TargetIdHit(kind, offset, entityId, nobody);
         return true;
     }
 
