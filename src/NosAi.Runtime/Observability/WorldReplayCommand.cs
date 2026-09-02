@@ -118,8 +118,27 @@ public static class WorldReplayCommand
     /// <summary>The sighting declares a vnum member and it is null.</summary>
     public const string VnumAbsent = "vnum assente";
 
+    /// <summary>Printed on the name column when the sighting carries no vnum.</summary>
+    public const string NameVnumAbsent = "UNKNOWN (vnum assente)";
+
+    /// <summary>Printed on the name column when nobody passed a catalogue.</summary>
+    public const string CatalogNotLoaded = "UNKNOWN (catalog_not_loaded)";
+
+    /// <summary>
+    /// Printed when the entity is in the catalogue but has no display name for
+    /// <see cref="CatalogLanguage"/>. The raw name key is not a name.
+    /// </summary>
+    public const string CatalogUnknown = "UNKNOWN (catalog_unknown)";
+
     /// <summary>Language <see cref="GameReferenceDatabase.DisplayName"/> already uses in live tests.</summary>
     public const string CatalogLanguage = "IT";
+
+    /// <summary>
+    /// The catalogue is loaded and does not contain this vnum. Distinct from
+    /// <see cref="VnumAbsent"/> (no vnum on the wire) and from a resolved name.
+    /// </summary>
+    public static string VnumNotInCatalog(int vnum) =>
+        string.Create(CultureInfo.InvariantCulture, $"vnum {vnum} non nel catalogo");
 
     /// <summary>Missing path or unreadable bytes. Matches the other capture probes.</summary>
     public const int ExitUnreadable = 2;
@@ -387,14 +406,32 @@ public static class WorldReplayCommand
     {
         if (vnumText == VnumNotRead)
             return "UNKNOWN (vnum non letto)";
-        if (vnumText == VnumAbsent || vnum is null)
-            return "UNKNOWN (vnum assente)";
+        return ResolveEntityName(kind, vnum, catalog);
+    }
+
+    /// <summary>
+    /// The three answers a sighting can get from the catalogue: a display name,
+    /// <see cref="NameVnumAbsent"/> when the wire carried no vnum, or
+    /// <see cref="VnumNotInCatalog"/> when the catalogue does not know that vnum.
+    /// </summary>
+    /// <remarks>
+    /// A loaded catalogue that contains the entity but has no language row still
+    /// returns <see cref="CatalogUnknown"/> rather than the raw key: showing
+    /// <c>zts1e</c> would look like a name and be one only by accident.
+    /// </remarks>
+    internal static string ResolveEntityName(string kind, int? vnum, GameReferenceDatabase? catalog)
+    {
+        if (vnum is null)
+            return NameVnumAbsent;
         if (catalog is null)
-            return "UNKNOWN (catalog_not_loaded)";
+            return CatalogNotLoaded;
 
         string catalogKind = kind.ToLowerInvariant();
+        if (!catalog.Exists(catalogKind, vnum.Value))
+            return VnumNotInCatalog(vnum.Value);
+
         string? name = catalog.DisplayName(catalogKind, vnum.Value, CatalogLanguage);
-        return name is { Length: > 0 } ? name : "UNKNOWN (catalog_unknown)";
+        return name is { Length: > 0 } ? name : CatalogUnknown;
     }
 
     private static string AgeText(DateTime asOf, DateTime? stamped, string missingReason)

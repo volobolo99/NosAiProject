@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Collections;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Gate2;
 using NosAi.Runtime.Gate3;
@@ -311,8 +312,27 @@ public static class Program
                 return 2;
             }
 
-            return NosAi.Runtime.Observability.WorldReplayCommand.Run(capture);
+            GameReferenceDatabase? catalog = null;
+            if (!GameReferenceLocator.TryOpen(out catalog, out string? catalogReason))
+                Console.Error.WriteLine($"reference catalog: {catalogReason}");
+            else
+                Console.Error.WriteLine($"reference catalog: {catalog!.DatabasePath}");
+
+            try
+            {
+                return NosAi.Runtime.Observability.WorldReplayCommand.Run(capture, catalog);
+            }
+            finally
+            {
+                catalog?.Dispose();
+            }
         }
+
+        // Which catalogue this process would open, and what is in it. A missing
+        // file is reported rather than invented: replay without names is still
+        // a replay, and this is how the operator tells the two cases apart.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ReferenceInfoCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Observability.ReferenceInfoCommand.Run();
 
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides
@@ -461,7 +481,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay",
+            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--step", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

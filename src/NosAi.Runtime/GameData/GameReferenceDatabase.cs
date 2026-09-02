@@ -117,6 +117,31 @@ public sealed class GameReferenceDatabase : IDisposable
         return database;
     }
 
+    /// <summary>
+    /// Opens an existing catalogue for reading. Does not create a file or a schema.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Open"/> creates an empty database when the path is missing, which
+    /// would make every lookup look like "vnum not in the catalogue". Replay and
+    /// <c>--reference-info</c> must not do that: a missing file is a named absence.
+    /// </remarks>
+    public static GameReferenceDatabase OpenExisting(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (!File.Exists(path))
+            throw new FileNotFoundException("Reference database not found.", path);
+
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadOnly,
+            Cache = SqliteCacheMode.Private,
+            Pooling = false
+        }.ToString());
+        connection.Open();
+        return new GameReferenceDatabase(connection, Path.GetFullPath(path));
+    }
+
     private void CreateSchema()
     {
         Execute("PRAGMA journal_mode=WAL");
