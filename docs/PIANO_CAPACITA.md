@@ -75,11 +75,12 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 ## 3. Dove siamo davvero
 
-Misurato il 2 settembre 2026 su `2499715` (`C2-7` compresa): `dotnet build -c Release`
-→ **0 errori**, 1 warning preesistente (Android). `dotnet test` → **1651 test, 0
-falliti** (1487 runtime, 66 core, 98 control panel). I conteggi precedenti erano 1591 e
-prima 1322; le catture reali in `data/` sono ignorate da git, quindi i test che le
-rigiocano passano a vuoto su un clone e portano il loro peso solo qui.
+Misurato il 2 settembre 2026 su `c8b39ce` (`C2-7`, `R3` e la riscrittura dell'oracolo del
+bersaglio comprese): `dotnet build -c Release` → **0 errori**, **0 warning**.
+`dotnet test` → **1695 test, 0 falliti** (1531 runtime, 66 core, 98 control panel). I
+conteggi precedenti erano 1682, 1651, 1591 e prima 1322; le catture reali in `data/` sono
+ignorate da git, quindi i test che le rigiocano passano a vuoto su un clone e portano il
+loro peso solo qui.
 
 Il progetto non è in difficoltà tecnica. È in difficoltà di *ordine*: la quantità di
 codice sano è alta, e ciò che manca sono pochi collegamenti e tre misure che solo
@@ -92,7 +93,7 @@ l'operatore può prendere.
 | Lettura delle entità dal filo | **arrivano al pianificatore** | il decoder legge dodici opcode (i sette di prima più `sr`, `ivn`, `get`, `drop`, `ct`) e il vnum di `in`; gli avvistamenti diventano `Gate3WorldState.Entities` con età e provenienza per campo, e la posizione propria resta `UNKNOWN` con il suo motivo finché un lettore non è legato |
 | Griglie di mappa | **777 mappe estratte**, id mappa provato su 4 mappe e 1 riavvio | `MapIdModuleOffset = 0x38D1BC` |
 | Posizione propria | **provata** — `T-11` chiuso il 1 settembre | firma di codice, non offset; l'id `3443217` letto dal client coincide con quello che il server ha mandato su `cond`. Richiede console **elevata**: il manifest del client dichiara `requireAdministrator` |
-| Bersaglio (`HasTarget`) | **UNKNOWN** | non più per la ROI: `ADR-0021` sposta la sorgente sulla memoria del client, e il motivo è ora `target_offset_not_established`. L'oracolo `TargetIdFinder` è scritto; manca la passata sul client |
+| Bersaglio (`HasTarget`) | **UNKNOWN** | non più per la ROI: `ADR-0021` sposta la sorgente sulla memoria del client, e il motivo è ora `target_offset_not_established`. L'oracolo è stato **riscritto** il 2 settembre dopo un fallimento sul client vivo: il vincolo non è più di contenuto (« la parola contiene l'id di un'entità nella scena », che non si poteva nemmeno valutare) ma di comportamento (« cambia con la selezione e torna sempre allo stesso valore quando si toglie il bersaglio »). Manca la passata sul client |
 | Proiezione mappa→schermo | **non calibrata** | `T-10`: cinque tentativi, nessuno utilizzabile |
 | Catena d'input e sue guardie | **scritta e testata in locale** | commit point a 5 condizioni, autorità di sessione, `StepGuardChain`, 33 test |
 | Percorso: ammissione, rivalidazione, replan (`C2-7`) | **scritto e testato in locale** | un percorso è ammesso guardando **ogni** cella, non gli estremi, e ogni segmento è rivalidato prima di essere emesso; limite di 3 replan consecutivi, dove « consecutivi » significa senza avvicinarsi più di quanto ci si sia mai avvicinati. 24 test, 21 percorsi da ≥ 16 celle su 3 mappe, e la prova che un percorso attraverso una cella bloccata **non raggiunge affatto** il backend d'input |
@@ -101,7 +102,8 @@ l'operatore può prendere.
 | Tasti (skill, pozioni, interfaccia) | **impossibili oggi** | `data/keybinds.json` **non esiste**: ogni pressione rifiuta con `keybind_not_configured:` |
 | Verifica dell'atto | **catalogo implementato** (`C4-1`) | sei schede con la loro finestra e il loro soggetto; `RestAndRecover` non ha scheda e per questo non è ammissibile. `VER-01` è impossibile da violare per firma, `VER-04` chiuso: il tier di verifica non è più severo di quello di attuazione |
 | Ciclo decisionale | **ha un motivo** (`C6-1`, `C6-2`, `C6-3`) | contrattacca chi l'ha colpito entro una finestra di decadimento; senza obiettivo attivo non sceglie nessun bersaglio e non cammina più verso il waypoint costante `(130, 90)`; attacca solo ciò che è stato **stabilito** attaccabile |
-| Bersaglio su una sessione viva | **ancora `UNKNOWN`** | il tubo c'è, l'offset no. `TargetIdFinder` cerca in memoria dove il client tiene l'entità selezionata, usando la lista della scena come oracolo; finché una passata non lo stabilisce, `HasTarget` resta `UNKNOWN` e le regole che lo leggono restano saltate. Nessuna misura di pixel, nessuna dipendenza dalla risoluzione |
+| Bersaglio su una sessione viva | **ancora `UNKNOWN`** | il tubo c'è, l'offset no. Il giro è ora **una sola esecuzione** in cui l'operatore alterna — seleziona, togli, seleziona un altro, togli — più un secondo lancio dopo il riavvio del client, che resta l'unica prova che vuole due processi. Finché una passata non lo stabilisce, `HasTarget` resta `UNKNOWN` e le regole che lo leggono restano saltate. Nessuna misura di pixel, nessuna dipendenza dalla risoluzione |
+| Lista entità del client (`SceneManagerSignature`) | **non confermata su questa build** | non è una firma di codice ma un motivo di dati quasi tutto `FF`, `00` e jolly: combacia col riempimento. Sul client vivo trova un candidato e il puntatore letto è `0xFFFFFFFF`. Lasciata dov'è e non più usata dall'oracolo; la vista *Attorno* del pannello legge le stesse liste, e sapere perché è vuota vale più che cancellarla |
 
 **Che cosa resta, dopo questa sessione.** Due dei tre tubi sono collegati: le entità
 arrivano al pianificatore con la loro età, e il ciclo ha un motivo per attaccare e una
