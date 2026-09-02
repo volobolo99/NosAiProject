@@ -75,12 +75,11 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 ## 3. Dove siamo davvero
 
-Misurato il 2 settembre 2026 su `d75ed0d` più il lavoro `C1`/`C4-1`/`C6` di questa
-sessione: `dotnet build -c Release` → **0 errori**, 1 warning preesistente (Android).
-`dotnet test` → **1591 test, 0 falliti** (1438 runtime, 66 core, 87 control panel).
-Il conteggio precedente era 1322; le catture reali in `data/` sono ignorate da git,
-quindi i test che le rigiocano passano a vuoto su un clone e portano il loro peso
-solo qui.
+Misurato il 2 settembre 2026 su `2499715` (`C2-7` compresa): `dotnet build -c Release`
+→ **0 errori**, 1 warning preesistente (Android). `dotnet test` → **1651 test, 0
+falliti** (1487 runtime, 66 core, 98 control panel). I conteggi precedenti erano 1591 e
+prima 1322; le catture reali in `data/` sono ignorate da git, quindi i test che le
+rigiocano passano a vuoto su un clone e portano il loro peso solo qui.
 
 Il progetto non è in difficoltà tecnica. È in difficoltà di *ordine*: la quantità di
 codice sano è alta, e ciò che manca sono pochi collegamenti e tre misure che solo
@@ -96,6 +95,8 @@ l'operatore può prendere.
 | Bersaglio (`HasTarget`) | **UNKNOWN** | ROI del riquadro mai calibrata, `T-09` |
 | Proiezione mappa→schermo | **non calibrata** | `T-10`: cinque tentativi, nessuno utilizzabile |
 | Catena d'input e sue guardie | **scritta e testata in locale** | commit point a 5 condizioni, autorità di sessione, `StepGuardChain`, 33 test |
+| Percorso: ammissione, rivalidazione, replan (`C2-7`) | **scritto e testato in locale** | un percorso è ammesso guardando **ogni** cella, non gli estremi, e ogni segmento è rivalidato prima di essere emesso; limite di 3 replan consecutivi, dove « consecutivi » significa senza avvicinarsi più di quanto ci si sia mai avvicinati. 24 test, 21 percorsi da ≥ 16 celle su 3 mappe, e la prova che un percorso attraverso una cella bloccata **non raggiunge affatto** il backend d'input |
+| Jump Point Search | **misurato e non introdotto** | rivalidare ogni cella di un percorso costa meno che pianificarlo una volta: JPS ottimizzerebbe la metà già economica. Un test fallisce se il rapporto si inverte, così la decisione resta falsificabile |
 | Emissione di un atto reale | **mai avvenuta** | `--step` non esiste ancora |
 | Tasti (skill, pozioni, interfaccia) | **impossibili oggi** | `data/keybinds.json` **non esiste**: ogni pressione rifiuta con `keybind_not_configured:` |
 | Verifica dell'atto | **catalogo implementato** (`C4-1`) | sei schede con la loro finestra e il loro soggetto; `RestAndRecover` non ha scheda e per questo non è ammissibile. `VER-01` è impossibile da violare per firma, `VER-04` chiuso: il tier di verifica non è più severo di quello di attuazione |
@@ -104,8 +105,10 @@ l'operatore può prendere.
 
 **Che cosa resta, dopo questa sessione.** Due dei tre tubi sono collegati: le entità
 arrivano al pianificatore con la loro età, e il ciclo ha un motivo per attaccare e una
-verifica che riguarda l'azione eseguita invece di una stringa. Ciò che manca non è più
-codice di scrivania:
+verifica che riguarda l'azione eseguita invece di una stringa. Con `C2-7` anche il
+percorso è coperto in locale, e resta vero il limite che conta: **nessun atto reale è
+mai stato emesso**, quindi tutto ciò che sta sopra è `Done` e nulla è `Verified`. Ciò
+che manca non è più codice di scrivania:
 
 - **la ROI del bersaglio** (`C1-6`) — venti minuti col client aperto, e sblocca ogni
   regola d'attacco che legge `HasTarget`;
