@@ -67,6 +67,22 @@ che sembra da fare è già fatto.
 Codice completo, nessun placeholder. Identificatori in inglese, documentazione
 XML in inglese come nel resto del runtime.
 
+DOVE VANNO I TOKEN — regola vincolante, prevale su ogni abitudine.
+
+Nella chat: niente. Non scrivere prosa, piani, "ora faccio", riepiloghi di ciò
+che hai letto, elenchi di file prima di scriverli, spiegazioni di scelte ovvie,
+ripetizioni della consegna. In chat è ammesso SOLO il rapporto finale nella
+forma richiesta dalla sessione.
+
+Nel codice e nei file: NESSUN LIMITE. Non accorciare un'implementazione, non
+omettere un caso, non tagliare la documentazione XML, non ridurre i test per
+risparmiare. Il divieto riguarda ciò che non finisce nel repository; tutto ciò
+che ci finisce si scrive per esteso.
+
+Le due metà stanno insieme e la seconda è la più importante: "non sprecare
+token" non significa "scrivere meno codice". Una implementazione incompleta o
+un test in meno costano molto più di qualunque paragrafo in chat.
+
 Se una richiesta ti costringe a DECIDERE una soglia, un criterio di rifiuto o
 una regola di autorizzazione: fermati, non inventarla, e riporta la domanda.
 ```
