@@ -792,6 +792,15 @@ ha trovato il difetto.
    `DOMAIN-08` e `DOMAIN-19` hanno un valore e un confronto. Test:
    `tests/NosAi.Runtime.Tests/GeometryEpochTests.cs`,
    `tests/NosAi.Runtime.Tests/InputGuardsProbeTests.cs`.
+   Isolazioni simulabili: DPI a parità di rettangolo, monitor a parità di DPI,
+   spostamento a parità del resto; ignoto non combacia. La parte fisica è sotto.
+
+   **Prova d'operatore — due monitor a scale diverse (S3).** Un monitor al 100 %, l'altro al 150 %. Client sul primo: `NosAi.Runtime.exe --window-probe`.
+   Deve stampare il rect in pixel fisici, `DPI: 96`, un handle di monitor, un'epoca nota, `Process DPI awareness: PerMonitorV2 (permonitorv2)`, e se una calibrazione è memorizzata, se è utilizzabile sotto quel regime.
+   Spostare il client sul secondo e ripetere lo stesso comando.
+   Rect ancora in pixel fisici (non virtualizzati), `DPI: 144`, handle di monitor diverso, epoca diversa: il confronto fra le due epoche nomina `geometry_dpi_changed` (o `geometry_window_resized` se anche il rect è cambiato; `geometry_monitor_changed` solo a parità di DPI e dimensioni).
+   La calibrazione stimata sul primo non è più utilizzabile: la probe stampa `NOT USABLE` con il motivo (`screen_projection_client_dpi_changed` o `screen_projection_client_size_changed`) e esce con codice non-zero.
+   La stessa probe con `dotnet NosAi.Runtime.dll --window-probe` stampa `PerMonitor` e, su una calibrazione dell'`.exe`, `screen_projection_dpi_regime_changed:permonitorv2_to_permonitor`, uscita non-zero.
 4. ~~La conversione a coordinate assolute normalizzate copre il desktop virtuale o solo il
    monitor primario?~~ **Chiuso il 1 settembre 2026: copre il desktop virtuale.**
    `Win32InputBackend.MoveAbsolute` prende origine ed estensione da

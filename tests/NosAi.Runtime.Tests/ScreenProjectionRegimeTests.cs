@@ -105,6 +105,33 @@ public sealed class ScreenProjectionRegimeTests
     }
 
     /// <summary>
+    /// The same refusal, judged against the regime this process is actually
+    /// running under rather than against an injected pair. The manifest lives on
+    /// the apphost, so <c>NosAi.Runtime.exe</c> and <c>dotnet exec</c> are
+    /// different regimes: whichever this host is, a calibration estimated under
+    /// the other one is refused, and the reason names both.
+    /// </summary>
+    [Fact]
+    public void A_calibration_from_the_other_launch_command_is_refused_by_this_process()
+    {
+        DpiAwarenessRegime here = DpiAwareness.Current();
+        DpiAwarenessRegime other = here == DpiAwarenessRegime.PerMonitorV2
+            ? DpiAwarenessRegime.PerMonitor
+            : DpiAwarenessRegime.PerMonitorV2;
+
+        // No regime injection on the running side: Current() is what TryProject
+        // reads in production, and substituting it would hide the thing under test.
+        var projection = new CalibratedScreenProjection(
+            CalibratedUnder(other),
+            () => new PixelRect(0, 0, ClientWidth, ClientHeight),
+            () => ClassifiedValue<MapPoint>.Live(Standing, At));
+
+        Assert.False(projection.TryProject(105, 100, out _, out _, out string? reason));
+        Assert.StartsWith(CalibratedScreenProjection.RegimeChangedReason, reason, StringComparison.Ordinal);
+        Assert.Contains($"{other.ToWire()}_to_{here.ToWire()}", reason, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// The refusal names the regime change, not a resize. The two faults have
     /// different remedies and "the client size changed" does not lead anyone to
     /// "run it from the command you calibrated with".

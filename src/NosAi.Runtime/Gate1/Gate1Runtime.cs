@@ -7,6 +7,7 @@ using System.Text.Json;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Orchestration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.WorldModel;
 using NosAi.LiveIntegration;
@@ -934,6 +935,7 @@ public sealed class Gate1RuntimeSnapshotProvider
     private readonly Gate1ObservationChannel? _observation;
     private readonly Func<RuntimeHealthStatus> _health;
     private readonly string _correlationId;
+    private readonly Func<RecoveryController?>? _recovery;
 
     /// <param name="gameplay">
     /// Reads the game's own state. Optional, and absent by default: no provider
@@ -950,7 +952,8 @@ public sealed class Gate1RuntimeSnapshotProvider
         Func<RuntimeHealthStatus>? health = null,
         string? correlationId = null,
         IGameplayProvider? gameplay = null,
-        Gate1ObservationChannel? observation = null)
+        Gate1ObservationChannel? observation = null,
+        Func<RecoveryController?>? recovery = null)
     {
         _runtime = runtime;
         _worldModel = worldModel;
@@ -963,6 +966,7 @@ public sealed class Gate1RuntimeSnapshotProvider
         // Healthy: an unreported health must never read as a passing one.
         _health = health ?? (() => RuntimeHealthStatus.Bootstrapping);
         _correlationId = correlationId ?? "gate1";
+        _recovery = recovery;
     }
 
     public Gate1CanonicalSnapshot Capture()
@@ -1004,7 +1008,9 @@ public sealed class Gate1RuntimeSnapshotProvider
             _runtime.SafetyPolicy,
             hardware.FailureReason,
             gameplay,
-            _observation?.Describe(gameplay) ?? Gate1GameObservationView.NotConfigured());
+            _observation?.Describe(gameplay) ?? Gate1GameObservationView.NotConfigured(),
+            _runtime.SessionAuthority,
+            _recovery?.Invoke());
     }
 
     public object GetSnapshot() => Capture().ToWire();

@@ -15,7 +15,13 @@ public sealed class SnapshotView
     public IReadOnlyList<DisplayField> Guard { get; init; } = Array.Empty<DisplayField>();
     public IReadOnlyList<DisplayField> Hardware { get; init; } = Array.Empty<DisplayField>();
     public IReadOnlyList<DisplayField> Safety { get; init; } = Array.Empty<DisplayField>();
+    public IReadOnlyList<DisplayField> Resilience { get; init; } = Array.Empty<DisplayField>();
     public IReadOnlyList<DisplayField> GameObservation { get; init; } = Array.Empty<DisplayField>();
+    /// <summary>
+    /// Operator-facing line: actuating or not, the full reason, and whether the
+    /// verdict is terminal. The panel never offers a retry from this line.
+    /// </summary>
+    public string SessionAuthorityLine { get; init; } = AuthorityStatus(null, null, null);
     public ClassifiedValue<int?> ClientProcessId { get; init; } = ClassifiedValue<int?>.Unknown("runtime_not_connected");
     public ClassifiedValue<int> ObservationLastHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
     public ClassifiedValue<int> ObservationLastMaxHp { get; init; } = ClassifiedValue<int>.Unknown("runtime_not_connected");
@@ -41,7 +47,9 @@ public sealed class SnapshotView
             ],
             Hardware = [new DisplayField("Piattaforma", "UNKNOWN", "UNKNOWN")],
             Safety = [new DisplayField("Esecuzione", "UNKNOWN", "UNKNOWN")],
+            Resilience = ResilienceInspect.Inspect(null),
             GameObservation = ObservationUnknown("runtime_not_connected"),
+            SessionAuthorityLine = AuthorityStatus(null, null, null),
             ClientProcessId = ClassifiedValue<int?>.Unknown("runtime_not_connected"),
             ObservationLastHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
             ObservationLastMaxHp = ClassifiedValue<int>.Unknown("runtime_not_connected"),
@@ -103,9 +111,19 @@ public sealed class SnapshotView
             Field("Iniezione pacchetti", snapshot.Safety.PacketInjectionEnabled),
             Field("Client sano richiesto", snapshot.Safety.RequireClientHealthy),
             Field("Guard richiesto", snapshot.Safety.RequireGuardApproval),
-            Field("Esecuzione", snapshot.Safety.ExecutionMode)
+            Field("Esecuzione", snapshot.Safety.ExecutionMode),
+            Field("Sessione attuante", snapshot.Safety.SessionActuating),
+            Field("Motivo autorità", snapshot.Safety.SessionAuthorityReason),
+            Field("Verdetto terminale", snapshot.Safety.SessionAuthorityTerminal),
+            Field("Integrità runtime", snapshot.Safety.RuntimeIntegrity),
+            Field("Integrità client", snapshot.Safety.ClientIntegrity)
         ],
+        Resilience = ResilienceInspect.Inspect(snapshot.Resilience),
         GameObservation = Observation(snapshot.GameObservation),
+        SessionAuthorityLine = AuthorityStatus(
+            snapshot.Safety.SessionActuating.HasValue ? snapshot.Safety.SessionActuating.Value : null,
+            snapshot.Safety.SessionAuthorityReason.HasValue ? snapshot.Safety.SessionAuthorityReason.Value : snapshot.Safety.SessionAuthorityReason.FailureReason,
+            snapshot.Safety.SessionAuthorityTerminal.HasValue ? snapshot.Safety.SessionAuthorityTerminal.Value : null),
         ClientProcessId = snapshot.Client.ProcessId,
         ObservationLastHp = snapshot.GameObservation.LastHp,
         ObservationLastMaxHp = snapshot.GameObservation.LastMaxHp
@@ -137,6 +155,25 @@ public sealed class SnapshotView
         new DisplayField("Ultimo MP", $"UNKNOWN · {reason}", "UNKNOWN"),
         new DisplayField("Timestamp vitals", $"UNKNOWN · {reason}", "UNKNOWN")
     ];
+
+    /// <summary>
+    /// One status line for the session verdict. Terminal is named because that is
+    /// the difference between "try again in a moment" and "this will never work".
+    /// The panel does not offer a retry from this line, and nothing here can mark
+    /// a session as actuating.
+    /// </summary>
+    public static string AuthorityStatus(bool? actuating, string? reason, bool? terminal)
+    {
+        if (actuating is null)
+            return "Sessione: UNKNOWN";
+        if (actuating.Value)
+            return "Sessione attuante";
+
+        string named = string.IsNullOrWhiteSpace(reason) ? "UNKNOWN" : reason;
+        return terminal == true
+            ? $"Sessione non attuante, terminale: {named}"
+            : $"Sessione non attuante: {named}";
+    }
 
     private static DisplayField Field<T>(string label, ClassifiedValue<T> classified)
     {

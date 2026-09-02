@@ -84,6 +84,13 @@ public sealed class GatedInputBackend : IInputBackend
 
     public InputRefusal? LastRefusal => _lastRefusal;
 
+    /// <summary>
+    /// The last commit-point decision, or null when this gate is policy-only or
+    /// has never validated. A refused decision is the last commit-point refusal
+    /// a halt dump photographs.
+    /// </summary>
+    public CommitDecision? LastCommitDecision => _commitPoint?.LastDecision;
+
     /// <summary>True only when the policy currently permits live injection.</summary>
     public bool IsLive => _inner.IsLive && _policySource().LiveInputEnabled;
 

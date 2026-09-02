@@ -111,6 +111,37 @@ public sealed class GeometryEpochTests
         Assert.StartsWith(GeometryEpoch.DpiChangedReason, rescaled, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The two-monitor case at the same scale: position and monitor both change,
+    /// DPI does not. The reason names the monitor, because a move is the weaker
+    /// fact and would send someone to recompute a coordinate that is already
+    /// invalid for a more structural reason.
+    /// </summary>
+    [Fact]
+    public void DraggingOntoAnotherMonitorAtTheSameScaleNamesTheMonitorNotTheMove()
+    {
+        Assert.False(GeometryEpoch.Unchanged(
+            Epoch(), Epoch(x: 2000, y: 100, monitor: 0xBEEF), out string? reason));
+        Assert.Equal(GeometryEpoch.MonitorChangedReason, reason);
+    }
+
+    /// <summary>
+    /// The two-monitor case at different scales (100% → 150%): DPI, monitor and
+    /// position all change, rectangle size does not. DPI is named first because a
+    /// scale change in Settings moves the DPI without moving the window, and
+    /// naming the monitor there would be wrong.
+    /// </summary>
+    [Fact]
+    public void DraggingOntoAMonitorAtADifferentScaleNamesTheDpi()
+    {
+        Assert.False(GeometryEpoch.Unchanged(
+            Epoch(dpi: 96),
+            Epoch(x: 2000, y: 100, dpi: 144, monitor: 0xBEEF),
+            out string? reason));
+        Assert.StartsWith(GeometryEpoch.DpiChangedReason, reason, StringComparison.Ordinal);
+        Assert.Contains("96_to_144", reason, StringComparison.Ordinal);
+    }
+
     // ----------------------------------------------------------- the unknown
 
     /// <summary>

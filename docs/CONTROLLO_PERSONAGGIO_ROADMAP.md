@@ -119,8 +119,8 @@ d'ambiente mai dichiarata.
 | Osservazione di cambio DPI e cambio monitor, oltre a spostamento e ridimensionamento | Claude |
 | Sostituzione del campo `_geometry` mai aggiornato di `Win32ProcessAdapter` | Claude |
 | ~~`app.manifest` con `PerMonitorV2` e `ApplicationManifest` nel csproj~~ **fatto** | Cursor |
-| ~~Comando che stampa rect, dpi, monitor~~ **fatto** (`--window-probe`); ~~manca l'epoca~~ **fatto** (stampa `GeometryEpoch`) | Cursor |
-| Test: cambio scala e spostamento fra monitor con scale diverse | Cursor |
+| ~~Comando che stampa rect, dpi, monitor~~ **fatto** (`--window-probe`); ~~manca l'epoca~~ **fatto** (stampa `GeometryEpoch`); ~~regime e riuso della calibrazione~~ **fatto** (stampa il regime e se la calibrazione memorizzata è utilizzabile; uscita non-zero se non lo è) | Cursor |
+| ~~Test: cambio scala e spostamento fra monitor con scale diverse~~ **fatto** (isolazioni in `GeometryEpochTests`; `dotnet exec` vs apphost in `ClientWindowDpiProbeTests`; procedura d'operatore in ATTUAZIONE § 6.2.3) | Cursor |
 
 **DoD** — con il client su un monitor al 100 % e uno al 150 %, il rect letto è in pixel
 fisici su entrambi, l'epoca incrementa passando dall'uno all'altro, e ogni calibrazione
@@ -157,8 +157,8 @@ proprio codice e l'ultimo punto valido.
 | ~~Confronto dei livelli di integrità e legame dell'esito allo stato della sessione~~ **fatto** — `SessionActuationAuthority` e `Win32ProcessIntegrityReader` in `src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs` | Claude |
 | ~~Regola « sessione non attuante »: nessuna capacità di attuazione esposta~~ **fatto** — `InputActionEffector.UnavailableReason` interroga l'autorità, quindi il livello decisionale non vede la capacità invece di vederla fallire | Claude |
 | ~~Validità temporale del verdetto e ripetizione al ripristino del primo piano~~ **fatto** — `Validity` 60 s, `NoteForegroundRestored`, `EnsureVerified` | Claude |
-| Superficie CLI e dashboard che mostra lo stato di autorità | Cursor (`X-P3`) |
-| Chiamata di `EnsureVerified()` all'inizio del ciclo decisionale e all'evento di primo piano | Cursor (`X-P3`) |
+| ~~Superficie CLI e dashboard che mostra lo stato di autorità~~ **fatto** — `--input-authority [--watch n]`, campi additivi sullo snapshot, riga di stato nel Control Panel e nella dashboard operatore. Nessun ritentativo su verdetto terminale. | Cursor (`X-P3`) |
+| ~~Chiamata di `EnsureVerified()` all'inizio del ciclo decisionale e all'evento di primo piano~~ **fatto** — il ciclo chiama `EnsureVerified()` prima di interrogare l'effettore e di comporre il piano. Non esiste un osservatore del primo piano: l'unico innesco di ripresa dopo il ritorno in primo piano è `--input-authority --watch`. | Cursor (`X-P3`) |
 
 **Il riuso di `InputEnvironmentProbe` non è avvenuto, e la ragione conta.** Quel probe
 valida il *sistema operativo*: aggancia un hook di tastiera, inietta `VK_F24` e lo
@@ -248,7 +248,7 @@ controllo d'ammissione — è stato scritto chiudendo P0, con la sua suite di te
 |---|---|
 | Budget a due livelli — azioni al secondo ed eventi d'input al secondo — per stato | Claude |
 | Taratura dei valori di default (finestra 20, 3 successi di prova, 5 s base) su dati di esercizio | Claude |
-| Dump diagnostico, comando di arresto immediato, esposizione nella dashboard | Cursor |
+| ~~Dump diagnostico, comando di arresto immediato, esposizione nella dashboard~~ **fatto** (`S2` / `X-P8`, 2 settembre 2026) | Cursor |
 
 **DoD già raggiunta** — dieci successi alternati a nove fallimenti non riportano il sistema
 a piena velocità (`RecoveryCircuitBreakerTests`). Livello di verifica: `Done`, non
@@ -381,14 +381,15 @@ entra nel catalogo senza un osservabile. »
 **X-P7** — « @Codebase Profilo della barra come dato con schema e caricatore; comando di uso
 skill; i cinque test negativi, uno per precondizione. »
 
-**X-P8** — « @Codebase Dump diagnostico alla transizione di arresto, comando di arresto
-immediato, esposizione dello stato e dei budget nella dashboard e nelle metriche. »
+~~**X-P8** — « @Codebase Dump diagnostico alla transizione di arresto, comando di arresto
+immediato, esposizione dello stato e dei budget nella dashboard e nelle metriche. »~~
+**fatto** il 2 settembre 2026 (`S2`).
 
 ---
 
 ## 6. Cosa fare adesso
 
-1. ~~`X-P0` / `C-P0`~~ chiusi. ~~`C-P1` / `C-P2`~~ scritti. ~~`X-P2`~~ cablato il 2 settembre 2026. ~~`C-P3`~~ scritto il 2 settembre 2026.
+1. ~~`X-P0` / `C-P0`~~ chiusi. ~~`C-P1` / `C-P2`~~ scritti. ~~`X-P2`~~ cablato il 2 settembre 2026. ~~`C-P3`~~ scritto il 2 settembre 2026. ~~`X-P8`~~ cablato il 2 settembre 2026 (`S2`).
 2. Sul client vivo: `NosAi.Runtime.exe --input-guards --watch 20`. Sposta la finestra, copri il punto, tocca il mouse. Ogni prova deve nominare il proprio rifiuto. Soglie e tolleranze non si toccano.
 3. `X-P3` — la superficie che mostra l'autorità di sessione, e la chiamata a `EnsureVerified()` nel ciclo. Senza di essa il verdetto viene preso una sola volta all'attach, quando il client non è in primo piano e l'input non è armato: il runtime resta correttamente non attuante, ma per un motivo che non è quello vero.
 4. Prova d'operatore, dopo `X-P3`: avvia NosTale **come amministratore** e il runtime no. La CLI deve dire `authority_integrity_below_client:medium_under_high`, il pannello deve mostrare la sessione come non attuante, l'osservazione deve continuare, e **il puntatore non deve muoversi nemmeno una volta**. Poi lo stesso giro senza elevazione: la sessione diventa attuante e il puntatore torna esattamente dov'era.

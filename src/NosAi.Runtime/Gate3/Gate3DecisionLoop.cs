@@ -151,6 +151,9 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
         _clock = clock ?? TimeProvider.System;
     }
 
+    /// <summary>The orchestrator this loop drives, including its recovery breaker.</summary>
+    public Gate3ExecutionOrchestrator Orchestrator => _orchestrator;
+
     /// <summary>Whether the pump is running.</summary>
     public bool IsRunning => _pump is { IsCompleted: false };
 

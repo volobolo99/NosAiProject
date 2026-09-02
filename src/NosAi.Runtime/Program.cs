@@ -112,9 +112,9 @@ public static class Program
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
         }
 
-        // Physical client rect, window DPI, monitor handle, and the process's
-        // actual awareness mode. The manifest declares per-monitor v2; this is
-        // what the OS assigned, which is the reading that matters.
+        // Physical client rect, window DPI, monitor handle, epoch, the process's
+        // actual awareness mode, and whether the stored calibration can be applied
+        // under that regime. Non-zero when it cannot.
         if (args.Any(a => string.Equals(a, "--window-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Perception.ClientWindowDpiProbe.Run();
 
@@ -133,6 +133,23 @@ public static class Program
                 : 0;
 
             return NosAi.Runtime.LowLevel.InputGuardsProbe.Run(seconds);
+        }
+
+        // Session actuation verdict: integrity comparison and the harmless probe.
+        // A verification command — non-zero when the session is not actuating.
+        // --watch <n> repeats n times at 1 s, calling EnsureVerified so the
+        // operator can bring the client forward and see the verdict change.
+        if (args.Any(a => string.Equals(a, "--input-authority", StringComparison.OrdinalIgnoreCase)))
+        {
+            int authorityWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int repeats = authorityWatchFlag >= 0 && authorityWatchFlag + 1 < args.Length
+                          && int.TryParse(args[authorityWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedRepeats)
+                          && parsedRepeats > 0
+                ? parsedRepeats
+                : 0;
+
+            return NosAi.Runtime.LowLevel.InputAuthorityProbe.Run(repeats);
         }
 
         if (args.Any(a => string.Equals(a, "--extract-maps", StringComparison.OrdinalIgnoreCase)))
@@ -315,6 +332,12 @@ public static class Program
             return health.Readable && health.IsComplete ? 0 : 1;
         }
 
+        // Operator immediate halt against a runtime already listening. Disarms
+        // then aborts; a new process cannot halt the one that is actually armed.
+        if (args.Any(a => string.Equals(a, "--halt", StringComparison.OrdinalIgnoreCase)))
+            return await NosAi.Runtime.Operator.HaltCli.RunAsync(
+                NosAi.Runtime.Operator.HaltCli.PortFromArgs(args)).ConfigureAwait(false);
+
         var logger = new ConsoleRuntimeLogger();
         Gate1HostOptions options;
         try
@@ -405,7 +428,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--input-guards", "--decide-replay", "--player-probe", "--world-replay",
+            "--hud-probe", "--window-probe", "--input-guards", "--input-authority", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

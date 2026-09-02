@@ -28,6 +28,9 @@ internal static class AttachedSnapshot
         JsonElement? gameObservation = root.TryGetProperty("gameObservation", out var goNode) && goNode.ValueKind == JsonValueKind.Object
             ? goNode
             : default(JsonElement?);
+        JsonElement? safetyNode = root.TryGetProperty("safety", out var safetyEl) && safetyEl.ValueKind == JsonValueKind.Object
+            ? safetyEl
+            : default(JsonElement?);
 
         return new SnapshotView
         {
@@ -69,8 +72,27 @@ internal static class AttachedSnapshot
                 ("packetInjectionEnabled", "Iniezione pacchetti"),
                 ("requireClientHealthy", "Client sano richiesto"),
                 ("requireGuardApproval", "Guard richiesto"),
-                ("executionMode", "Esecuzione")),
+                ("executionMode", "Esecuzione"),
+                ("sessionActuating", "Sessione attuante"),
+                ("sessionAuthorityReason", "Motivo autorità"),
+                ("sessionAuthorityTerminal", "Verdetto terminale"),
+                ("runtimeIntegrity", "Integrità runtime"),
+                ("clientIntegrity", "Integrità client")),
+            Resilience = ReadObject(root, "resilience",
+                ("state", "Stato breaker"),
+                ("failuresInWindow", "Fallimenti in finestra"),
+                ("cooldownRemainingSeconds", "Attesa prossimo tentativo (s)"),
+                ("windowSize", "Budget finestra"),
+                ("probeSuccessesToClose", "Prove per chiudere"),
+                ("baseCooldownSeconds", "Cooldown base (s)"),
+                ("maxCooldownSeconds", "Cooldown massimo (s)"),
+                ("currentCooldownSeconds", "Cooldown in vigore (s)"),
+                ("halts", "Arresti")),
             GameObservation = ReadObservation(root),
+            SessionAuthorityLine = SnapshotView.AuthorityStatus(
+                ReadClassifiedBool(safetyNode, "sessionActuating"),
+                ReadClassifiedText(safetyNode, "sessionAuthorityReason"),
+                ReadClassifiedBool(safetyNode, "sessionAuthorityTerminal")),
             ClientProcessId = ReadClassifiedNullableInt(client, "processId", "process_not_attached"),
             ObservationLastHp = ReadClassifiedInt(gameObservation, "lastHp", "game_observation_absent"),
             ObservationLastMaxHp = ReadClassifiedInt(gameObservation, "lastMaxHp", "game_observation_absent")

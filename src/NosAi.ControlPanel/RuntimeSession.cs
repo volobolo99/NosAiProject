@@ -1,10 +1,11 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Gate1;
+using NosAi.Runtime.Gate2;
 using NosAi.Runtime.Gate3;
-using NosAi.Runtime.Observability;
 
 namespace NosAi.ControlPanel;
 
@@ -137,6 +138,104 @@ public sealed class RuntimeSession : IAsyncDisposable
     {
         lock (_gate)
             return _host?.Decisions?.Describe();
+    }
+
+    public async Task HaltAsync()
+    {
+        Gate1BootstrapHost? hosted;
+        int? attachedPort;
+        lock (_gate)
+        {
+            hosted = _host;
+            attachedPort = _kind == SessionKind.Attached ? DashboardPort : null;
+        }
+
+        if (hosted is not null)
+        {
+            hosted.RequestHalt();
+            _logger.Operator("Halt richiesto al runtime ospitato.");
+            return;
+        }
+
+        if (attachedPort is int port)
+        {
+            using var content = new StringContent(NosAi.Runtime.Safety.ImmediateHalt.CommandName);
+            try
+            {
+                await Http.PostAsync($"http://127.0.0.1:{port}/api/command", content).ConfigureAwait(false);
+                _logger.Operator("Halt inviato al runtime collegato.");
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                _logger.Error("Invio halt fallito.", ex);
+            }
+        }
+    }
+
+    /// <summary>Durable event-log health. Hosted reads the store; attached asks the runtime.</summary>
+    public async Task<EventLogHealth> ReadEventLogAsync(CancellationToken token = default)
+    {
+        lock (_gate)
+        {
+            if (_kind == SessionKind.Hosted)
+                return EventLogDiagnostics.Inspect();
+        }
+
+        if (Kind == SessionKind.Attached && DashboardPort is int port)
+        {
+            try
+            {
+                var json = await Http.GetStringAsync($"http://127.0.0.1:{port}/api/event-log", token).ConfigureAwait(false);
+                return ParseEventLog(json);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or FormatException)
+            {
+                return EventLogHealth.Failed(EventLogDiagnostics.DefaultDatabasePath, false, $"event_log_unreachable:{ex.GetType().Name}");
+            }
+        }
+
+        return EventLogHealth.Failed(EventLogDiagnostics.DefaultDatabasePath, false, "runtime_not_connected");
+    }
+
+    private static EventLogHealth ParseEventLog(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        bool readable = !root.TryGetProperty("readable", out var r) || r.GetBoolean();
+        string path = root.TryGetProperty("databasePath", out var p) ? p.GetString() ?? EventLogDiagnostics.DefaultDatabasePath : EventLogDiagnostics.DefaultDatabasePath;
+        if (!readable)
+        {
+            string reason = root.TryGetProperty("failureReason", out var f) ? f.GetString() ?? "event_log_unreadable" : "event_log_unreadable";
+            bool exists = root.TryGetProperty("exists", out var e) && e.GetBoolean();
+            return EventLogHealth.Failed(path, exists, reason);
+        }
+
+        var gaps = new List<EventLogGapReport>();
+        if (root.TryGetProperty("gaps", out var gapNode) && gapNode.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var g in gapNode.EnumerateArray())
+            {
+                gaps.Add(new EventLogGapReport(
+                    g.TryGetProperty("afterSequence", out var a) ? a.GetInt64() : 0,
+                    g.TryGetProperty("lostCount", out var l) ? l.GetInt64() : 0,
+                    g.TryGetProperty("reason", out var reason) ? reason.GetString() ?? "" : "",
+                    g.TryGetProperty("detectedUtc", out var d) && d.TryGetDateTime(out var dt) ? dt : default));
+            }
+        }
+
+        return new EventLogHealth(
+            path,
+            root.TryGetProperty("exists", out var ex) && ex.GetBoolean(),
+            root.TryGetProperty("eventCount", out var c) ? c.GetInt64() : 0,
+            root.TryGetProperty("gapCount", out var gc) ? gc.GetInt64() : gaps.Count,
+            root.TryGetProperty("lostEventCount", out var lost) ? lost.GetInt64() : 0,
+            root.TryGetProperty("firstSequence", out var fs) && fs.ValueKind == JsonValueKind.Number ? fs.GetInt64() : null,
+            root.TryGetProperty("lastSequence", out var ls) && ls.ValueKind == JsonValueKind.Number ? ls.GetInt64() : null,
+            root.TryGetProperty("firstEventUtc", out var fe) && fe.TryGetDateTime(out var fet) ? fet : null,
+            root.TryGetProperty("lastEventUtc", out var le) && le.TryGetDateTime(out var let) ? let : null,
+            gaps,
+            Array.Empty<EventLogTailEntry>(),
+            null);
     }
 
     public async Task EmergencyStopAsync()

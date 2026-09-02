@@ -16,6 +16,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Observability;
 using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate3
@@ -639,12 +640,20 @@ namespace NosAi.Runtime.Gate3
         private readonly AuthorizedActionExecutor _executor;
         private readonly ActionExecutionVerifier _verifier;
         private readonly RecoveryController _recovery;
+        private readonly PipelineStageBoard _stageBoard;
         private readonly IWorldStateObserver _observer;
         private readonly TimeProvider _clock;
+        private readonly Action? _ensureSessionVerified;
 
         public RuntimeMode CurrentMode { get; private set; } = RuntimeMode.Normal;
         public TrustBoundary Trust => _trust;
         public RuntimeSafetyPolicy Policy { get; }
+
+        /// <summary>The breaker this cycle reports outcomes to.</summary>
+        public RecoveryController Recovery => _recovery;
+
+        /// <summary>Last outcome per canonical pipeline stage, for a halt dump.</summary>
+        public PipelineStageBoard StageBoard => _stageBoard;
 
         /// <summary>Whether anything is bound that can actually act on the world.</summary>
         public bool CanExecute => _executor.Effector.CanApply;
@@ -689,6 +698,14 @@ namespace NosAi.Runtime.Gate3
         /// do nothing. Supplying this is what makes arming — and disarming —
         /// take effect on the next action.
         /// </param>
+        /// <param name="ensureSessionVerified">
+        /// Called at the start of every cycle that can produce an act, before the
+        /// effector is asked whether actuation is on offer and before a plan is
+        /// composed. The production host binds
+        /// <c>SessionActuationAuthority.EnsureVerified</c>. Null leaves the cycle
+        /// answering on the standing verdict, which is what the certification
+        /// suites want against a recording backend with no session.
+        /// </param>
         public Gate3ExecutionOrchestrator(
             RuntimeSafetyPolicy? policy = null,
             IActionEffector? effector = null,
@@ -696,7 +713,10 @@ namespace NosAi.Runtime.Gate3
             TrustTier initialTrust = TrustTier.Tier2_SemiAutonomous,
             TimeSpan? maxObservationAge = null,
             TimeProvider? clock = null,
-            Func<RuntimeSafetyPolicy>? policySource = null)
+            Func<RuntimeSafetyPolicy>? policySource = null,
+            Action? ensureSessionVerified = null,
+            RecoveryController? recovery = null,
+            PipelineStageBoard? stageBoard = null)
         {
             Policy = policy ?? policySource?.Invoke() ?? RuntimeSafetyPolicy.SafeDefault;
             TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
@@ -713,8 +733,10 @@ namespace NosAi.Runtime.Gate3
                 ? ActionEffectorFactory.ForPolicy(Policy, effector)
                 : ActionEffectorFactory.ForPolicy(policySource, effector));
             _verifier = new ActionExecutionVerifier();
-            _recovery = new RecoveryController(_trust);
+            _recovery = recovery ?? new RecoveryController(_trust);
+            _stageBoard = stageBoard ?? new PipelineStageBoard();
             _observer = observer ?? new UnavailableWorldStateObserver();
+            _ensureSessionVerified = ensureSessionVerified;
         }
 
         /// <summary>
@@ -750,12 +772,23 @@ namespace NosAi.Runtime.Gate3
             // (ADR-0016).
             if (!state.IsPlannable)
             {
+                _stageBoard.Record("Observe", false, state.UnusableReason ?? "world_state_unavailable");
                 return Result(
                     CycleOutcome.NoWorldState,
                     $"Stato del mondo non disponibile: {state.UnusableReason}. Nessuna pianificazione possibile.",
                     ActionType.None,
                     null);
             }
+
+            _stageBoard.Record("Observe", true);
+            _stageBoard.Record("WorldState", true);
+
+            // X-P3. Refresh the session verdict before the effector is asked
+            // whether actuation is on offer (CanExecute) and before a plan is
+            // composed. EnsureVerified is a no-op on a standing verified path.
+            // It is not inside the effector: asking whether the capability exists
+            // must remain a pure read.
+            _ensureSessionVerified?.Invoke();
 
             DateTime now = _clock.GetUtcNow().UtcDateTime;
 
@@ -793,17 +826,28 @@ namespace NosAi.Runtime.Gate3
             List<ActionCandidate> candidates = _planner.PlanCandidates(state);
 
             if (candidates.Count == 0)
+            {
+                _stageBoard.Record("Planner", false, "no_candidate");
                 return Result(CycleOutcome.NoCandidate, "Nessun candidato d'azione pianificato.", ActionType.None, null);
+            }
+
+            _stageBoard.Record("Planner", true);
 
             var predictions = new Dictionary<Guid, PredictedOutcome>(candidates.Count);
             foreach (ActionCandidate candidate in candidates)
                 predictions[candidate.CandidateId] = _simulation.Simulate(candidate, playerHp, playerMp, maxHp);
+            _stageBoard.Record("Simulation", true);
 
             IReadOnlyList<(ActionCandidate Candidate, float UtilityScore)> ranked =
                 _ranking.RankCandidates(candidates, predictions, playerHp, maxHp);
 
             if (ranked.Count == 0)
+            {
+                _stageBoard.Record("Ranking", false, "no_ranked_candidate");
                 return Result(CycleOutcome.NoCandidate, "Nessun candidato idoneo dopo il ranking tattico.", ActionType.None, null);
+            }
+
+            _stageBoard.Record("Ranking", true);
 
             (ActionCandidate best, float utility) = ranked[0];
             PredictedOutcome predicted = predictions[best.CandidateId];
@@ -827,7 +871,14 @@ namespace NosAi.Runtime.Gate3
             CurrentMode = admissionMode;
 
             if (!_safetyGate.TryAuthorize(best, predicted, CurrentMode, out SafetyToken? safetyToken, out string? rejection))
+            {
+                _stageBoard.Record("Safety", false, rejection);
+                _stageBoard.Record("Guard", false, rejection);
                 return Result(CycleOutcome.Blocked, $"Blocco Safety Gate: {rejection}", best.Type, null);
+            }
+
+            _stageBoard.Record("Safety", true);
+            _stageBoard.Record("Guard", true);
 
             ExecutionResult execution = await _executor
                 .ExecuteAuthorizedAsync(best, safetyToken!, token)
@@ -890,7 +941,31 @@ namespace NosAi.Runtime.Gate3
         }
 
         private Gate3CycleResult Result(CycleOutcome outcome, string summary, ActionType action, RecoveryStrategy? strategy)
-            => new(outcome, summary, action, CurrentMode, _trust.CurrentTier, strategy);
+        {
+            switch (outcome)
+            {
+                case CycleOutcome.Confirmed:
+                    _stageBoard.Record("Execute", true);
+                    _stageBoard.Record("Verify", true);
+                    break;
+                case CycleOutcome.ExecutionDisabled:
+                    _stageBoard.Record("Execute", false, "execution_disabled");
+                    break;
+                case CycleOutcome.Unverified:
+                    _stageBoard.Record("Execute", true);
+                    _stageBoard.Record("Verify", false, "unverified");
+                    break;
+                case CycleOutcome.Failed:
+                    _stageBoard.Record("Execute", true);
+                    _stageBoard.Record("Verify", false, "verification_failed");
+                    break;
+                case CycleOutcome.Blocked:
+                    _stageBoard.Record("Orchestrator", false, "blocked");
+                    break;
+            }
+
+            return new(outcome, summary, action, CurrentMode, _trust.CurrentTier, strategy);
+        }
     }
 
     /// <summary>

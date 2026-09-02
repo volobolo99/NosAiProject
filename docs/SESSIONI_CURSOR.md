@@ -20,8 +20,8 @@ aspettare una decisione di sicurezza.** Tutto ciò che richiede di scegliere una
 criterio di rifiuto o una regola di autorizzazione è già stato deciso e sta nel codice; a
 Cursor resta ciò che, se sbagliato, non compila o rompe un test.
 
-Ordine: `S1` è sbloccata adesso. `S2` e `S3` sono indipendenti da `S1` e possono partire in
-parallelo se si lavora su copie separate. `S4` è bloccata e dice da cosa.
+Ordine: `S2` è chiusa il 2 settembre 2026. `S1` e `S3` restano sbloccate e indipendenti.
+`S4` è bloccata e dice da cosa.
 
 ---
 
@@ -178,8 +178,8 @@ Vincoli di questa sessione:
 
 ## 4. `S2` — Diagnostica, freno e registro (`X-P8` + pannello)
 
-**Sbloccata.** Il nucleo di resilienza è stato scritto chiudendo `P0`
-(`RecoveryCircuitBreakerTests`): resta la superficie.
+**Chiusa il 2 settembre 2026.** Il nucleo di resilienza resta quello di `P0`
+(`RecoveryCircuitBreakerTests`): questa sessione ha aggiunto solo la superficie.
 
 ### Il comando
 
@@ -240,6 +240,15 @@ macchina, nessun ritentativo automatico aggiunto da nessuna parte.
 3. Il pannello mostra stato di resilienza e salute del registro, e un registro con gap si
    vede come incompleto.
 4. Build senza warning, suite runtime verde.
+
+### Esito
+
+Dump su transizione a `Halted` (un file in `data/halt-*.json`, campi dichiarati);
+`--halt` e il bottone HALT del pannello disarmano poi abortiscono, idempotenti,
+solo `SecurityPrincipal.Operator`; snapshot additivo `resilience`; registro con
+gap etichettato `INCOMPLETO`. Soglie e stati del breaker invariati. Livello:
+`Done`, non `Verified` — nessun halt è ancora stato osservato su un runtime che
+agisce sul client.
 
 ---
 

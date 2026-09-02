@@ -41,6 +41,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// formed a decision about the real client.
     /// </remarks>
     private readonly Gate3.Gate3DecisionLoop? _decisions;
+    private readonly HaltDiagnosticsDumper _haltDump;
 
     private readonly Gate1OperatorServer? _dashboard;
     private DiscoveryResponder? _discovery;
@@ -186,7 +187,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             () => _health,
             _correlationId,
             gameplay: _observation.Provider,
-            observation: _observation);
+            observation: _observation,
+            recovery: () => _decisions?.Orchestrator.Recovery);
         _channel.SetSnapshotSource(_snapshot.Capture);
         // Reads the same snapshot the operator page shows, so what the loop planned
         // on and what the operator is looking at cannot diverge.
@@ -195,14 +197,19 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
                 new Gate3.Gate1SnapshotWorldStateSource(_snapshot.Capture),
                 new Gate3.Gate3ExecutionOrchestrator(
                     effector: BuildLiveEffector(runtime),
-                    policySource: () => runtime.Safety.Policy),
+                    policySource: () => runtime.Safety.Policy,
+                    ensureSessionVerified: () => runtime.SessionAuthority?.EnsureVerified()),
                 _logger,
                 TimeSpan.FromMilliseconds(_options.DecisionIntervalMs))
             : null;
+        _haltDump = new HaltDiagnosticsDumper(HaltDiagnosticsDumper.DefaultDirectory, HaltDumpContext());
+        if (_decisions is not null)
+            _haltDump.Attach(_decisions.Orchestrator.Recovery);
         _testConsole = BuildTestConsole();
         _dashboard = _options.StartDashboard
             ? new Gate1OperatorServer(_options.DashboardPort, _snapshot.Capture, HandleOperatorCommand,
-                safetyState: SafetyState, safetySetter: SetSafetySwitch, tests: _testConsole)
+                safetyState: SafetyState, safetySetter: SetSafetySwitch, tests: _testConsole,
+                eventLog: EventLogState)
             : null;
     }
 
@@ -301,6 +308,14 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// <c>authority_live_input_not_armed</c> or <c>authority_window_not_foreground</c>.
     /// The operator's command re-takes it once those are true
     /// (<see cref="SessionActuationAuthority.EnsureVerified"/>).
+    /// </para>
+    /// <para>
+    /// Nothing in this host observes the foreground as an event, so
+    /// <see cref="SessionActuationAuthority.NoteForegroundRestored"/> is not
+    /// hooked here. The only trigger that retakes a verdict after the operator
+    /// brings the client forward is <c>--input-authority --watch</c>. A timer
+    /// that called <see cref="SessionActuationAuthority.Verify"/> on its own
+    /// would move the operator's pointer without anyone asking.
     /// </para>
     /// </remarks>
     private void RefreshActuationAuthority()
@@ -498,6 +513,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// </summary>
     public void RequestEmergencyStop() => HandleOperatorCommand("EMERGENCY_STOP");
 
+    /// <summary>Operator halt: disarm, then abort. Does not tear the Guard session down.</summary>
+    public ImmediateHaltResult RequestHalt() => ApplyHalt();
+
     /// <summary>
     /// Builds the test console, or nothing when the repository is not reachable.
     /// </summary>
@@ -541,19 +559,28 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
 
     private void HandleOperatorCommand(string command)
     {
+        if (command.Contains(ImmediateHalt.CommandName, StringComparison.OrdinalIgnoreCase)
+            && !command.Contains("EMERGENCY_STOP", StringComparison.OrdinalIgnoreCase))
+        {
+            ImmediateHaltResult halt = ApplyHalt();
+            _logger.Warning("Operator halt accepted.", new Dictionary<string, object?>
+            {
+                ["allowed"] = halt.Allowed,
+                ["reason"] = halt.Reason,
+                ["actAborted"] = halt.ActAborted,
+                ["liveInput"] = _runtime.SafetyPolicy.LiveInputEnabled,
+                ["packetInjection"] = _runtime.SafetyPolicy.PacketInjectionEnabled
+            });
+            return;
+        }
+
         if (command.Contains("EMERGENCY_STOP", StringComparison.OrdinalIgnoreCase)
             || command.Contains("\"action\":\"stop\"", StringComparison.OrdinalIgnoreCase))
         {
-            // Disarm first, then tear the session down: an emergency stop that
-            // dropped the session while input stayed armed would leave the
-            // dangerous half running.
-            _runtime.Safety.EmergencyStop("operator_emergency_stop");
-
-            // Then abandon the act already in flight. Disarming only refuses the
-            // next call; the key this program pressed is already down, and the
-            // scope is the only thing that knows about it (§ 2.3).
-            bool aborted = _runtime.InputBackend is GatedInputBackend gate
-                && gate.AbortOpenScope("operator_emergency_stop");
+            // Disarm first, then abort, then tear the session down. An emergency
+            // stop that dropped the session while input stayed armed would leave
+            // the dangerous half running.
+            ImmediateHaltResult halt = ApplyHalt("operator_emergency_stop");
 
             _health = RuntimeHealthStatus.Failed;
             _channel.TerminateSession("operator_emergency_stop");
@@ -562,9 +589,71 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
                 ["health"] = _health.ToString(),
                 ["liveInput"] = _runtime.SafetyPolicy.LiveInputEnabled,
                 ["packetInjection"] = _runtime.SafetyPolicy.PacketInjectionEnabled,
-                ["actInFlightAborted"] = aborted
+                ["actInFlightAborted"] = halt.ActAborted
             });
         }
+    }
+
+    private ImmediateHaltResult ApplyHalt(string? reason = null)
+    {
+        GatedInputBackend? gate = _runtime.InputBackend as GatedInputBackend;
+        return ImmediateHalt.Execute(SecurityPrincipal.Operator, _runtime.Safety, gate, reason);
+    }
+
+    private HaltDiagnosticsContext HaltDumpContext() => new()
+    {
+        LastCommitPointRefusal = () =>
+        {
+            if (_runtime.InputBackend is not GatedInputBackend gated)
+                return null;
+            CommitDecision? decision = gated.LastCommitDecision;
+            if (decision is { IsAuthorised: false, RefusalReason: { } reason })
+                return new CommitPointRefusalDump(reason, gated.LastRefusal?.AtUtc);
+            return null;
+        },
+        LastSessionAuthority = () =>
+        {
+            if (_runtime.SessionAuthority is not { } authority)
+                return null;
+            SessionAuthorityVerdict verdict = authority.Current;
+            return new SessionAuthorityDump(
+                verdict.IsActuating,
+                verdict.RefusalReason,
+                verdict.IsTerminal,
+                verdict.Runtime.Name,
+                verdict.Client.Name,
+                verdict.WasProbed);
+        },
+        LastStageOutcomes = () =>
+            _decisions?.Orchestrator.StageBoard.Snapshot() ?? PipelineStageBoard.UnknownAll()
+    };
+
+    /// <summary>Durable event-log health, for the operator panel.</summary>
+    public object EventLogState()
+    {
+        var health = Gate2.EventLogDiagnostics.Inspect();
+        return new
+        {
+            databasePath = health.DatabasePath,
+            exists = health.Exists,
+            readable = health.Readable,
+            isComplete = health.IsComplete,
+            eventCount = health.EventCount,
+            gapCount = health.GapCount,
+            lostEventCount = health.LostEventCount,
+            firstSequence = health.FirstSequence,
+            lastSequence = health.LastSequence,
+            firstEventUtc = health.FirstEventUtc,
+            lastEventUtc = health.LastEventUtc,
+            gaps = health.Gaps.Select(g => new
+            {
+                afterSequence = g.AfterSequence,
+                lostCount = g.LostCount,
+                reason = g.Reason,
+                detectedUtc = g.DetectedUtc
+            }).ToArray(),
+            failureReason = health.FailureReason
+        };
     }
 
     /// <summary>
@@ -591,26 +680,41 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     }
 
     /// <summary>The current switch state and its history, for the operator surface.</summary>
-    public object SafetyState() => new
+    public object SafetyState()
     {
-        executionMode = _runtime.Safety.ExecutionMode,
-        switches = new
+        SessionActuationAuthority? authority = _runtime.SessionAuthority;
+        SessionAuthorityVerdict verdict = authority?.Current ?? SessionAuthorityVerdict.None;
+        string? refusal = authority is null
+            ? SessionActuationAuthority.NoSessionReason
+            : authority.CurrentRefusal();
+        bool actuating = refusal is null;
+
+        return new
         {
-            liveInput = _runtime.SafetyPolicy.LiveInputEnabled,
-            packetInjection = _runtime.SafetyPolicy.PacketInjectionEnabled,
-            requireClientHealthy = _runtime.SafetyPolicy.RequireClientHealthy,
-            requireGuardApproval = _runtime.SafetyPolicy.RequireGuardApproval
-        },
-        history = _runtime.Safety.History.Select(h => new
-        {
-            atUtc = h.AtUtc,
-            principal = h.Principal.ToString(),
-            @switch = h.Switch.ToString(),
-            from = h.From,
-            to = h.To,
-            reason = h.Reason
-        }).ToArray()
-    };
+            executionMode = _runtime.Safety.ExecutionMode,
+            sessionActuating = actuating,
+            sessionAuthorityReason = actuating ? null : refusal,
+            sessionAuthorityTerminal = verdict.IsTerminal,
+            runtimeIntegrity = verdict.Runtime.Name,
+            clientIntegrity = verdict.Client.Name,
+            switches = new
+            {
+                liveInput = _runtime.SafetyPolicy.LiveInputEnabled,
+                packetInjection = _runtime.SafetyPolicy.PacketInjectionEnabled,
+                requireClientHealthy = _runtime.SafetyPolicy.RequireClientHealthy,
+                requireGuardApproval = _runtime.SafetyPolicy.RequireGuardApproval
+            },
+            history = _runtime.Safety.History.Select(h => new
+            {
+                atUtc = h.AtUtc,
+                principal = h.Principal.ToString(),
+                @switch = h.Switch.ToString(),
+                from = h.From,
+                to = h.To,
+                reason = h.Reason
+            }).ToArray()
+        };
+    }
 
     private static IHardwareProbe CreateDefaultProbe()
     {
@@ -715,6 +819,9 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
 
     /// <summary>The test console, when one was wired. Null leaves /tests reporting why.</summary>
     private readonly TestConsoleService? _tests;
+
+    /// <summary>Durable event-log health. Null leaves /api/event-log reporting why.</summary>
+    private readonly Func<object>? _eventLog;
     private readonly int _requestedPort;
     private HttpListener? _listener;
     private CancellationTokenSource? _cts;
@@ -738,11 +845,13 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
         Action<string> commandHandler,
         Func<object>? safetyState = null,
         Func<SafetySwitch, bool, AuthorizationDecision>? safetySetter = null,
-        TestConsoleService? tests = null)
+        TestConsoleService? tests = null,
+        Func<object>? eventLog = null)
     {
         _safetyState = safetyState;
         _safetySetter = safetySetter;
         _tests = tests;
+        _eventLog = eventLog;
         if (port is < 0 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(port), port, "Dashboard port must be between 0 and 65535.");
         _requestedPort = port;
@@ -971,6 +1080,13 @@ public sealed class Gate1OperatorServer : IAsyncDisposable
                     : Json(200, _safetyState());
             }
 
+            if (method == "GET" && path == "/api/event-log")
+            {
+                return _eventLog is null
+                    ? Json(503, new { error = "event_log_unavailable" })
+                    : Json(200, _eventLog());
+            }
+
             // The operator arms and disarms here. The runtime decides, and a refusal
             // comes back with its reason rather than as a silent no-op.
             if (method == "POST" && path == "/api/safety")
@@ -1093,12 +1209,31 @@ internal static class Gate1DashboardHtml
     <h2>Controlli di esecuzione</h2>
     <p class="muted">Ogni interruttore e' deciso dal runtime, non da questa pagina: una richiesta rifiutata torna col suo motivo. Lo stato qui sotto e' quello reale, riletto ogni 2 secondi.</p>
     <p>Modalita': <span class="value" id="exec-mode">…</span></p>
+    <p>Sessione: <span class="value" id="session-authority">…</span></p>
     <div class="switches" id="switches"></div>
     <p class="deny" id="deny"></p>
     <p class="hist" id="history"></p>
   </div>
 
-  <p><button onclick="stopAll()">EMERGENCY STOP — disarma tutto</button></p>
+  <div class="card" style="margin-top:20px">
+    <h2>Resilienza</h2>
+    <p class="muted">Stato del breaker, fallimenti nella finestra, attesa al prossimo tentativo ammesso, budget in vigore. Sola lettura.</p>
+    <p>Stato: <span class="value" id="res-state">…</span> · fallimenti: <span id="res-fail">…</span> · attesa: <span id="res-cool">…</span>s</p>
+    <p class="muted" id="res-budget"></p>
+  </div>
+
+  <div class="card" style="margin-top:20px" id="event-log-card">
+    <h2>Registro eventi</h2>
+    <p class="muted">Salute dell'audit trail. Un registro con buchi si vede come incompleto: e' la differenza fra un audit e una lista di righe.</p>
+    <p id="event-log-status" class="value">…</p>
+    <p class="muted" id="event-log-detail"></p>
+    <p class="warn" id="event-log-gaps"></p>
+  </div>
+
+  <p>
+    <button onclick="haltNow()">HALT — disarma e aborta</button>
+    <button onclick="stopAll()">EMERGENCY STOP — disarma tutto</button>
+  </p>
   <pre id="raw">Loading classified snapshot…</pre>
   <script>
     function field(obj, fallback) {
@@ -1121,6 +1256,16 @@ internal static class Gate1DashboardHtml
         document.getElementById('guard-status').textContent = field(s.guard.authenticated, false) === true ? 'AUTHENTICATED' : (field(s.guard.connected, false) === true ? 'CONNECTED' : 'DISCONNECTED');
         document.getElementById('guard-src').textContent = src(s.guard.connected);
         document.getElementById('warning').textContent = s.warning || s.client.warning || '';
+        const r = s.resilience || {};
+        document.getElementById('res-state').textContent = field(r.state, 'UNKNOWN');
+        document.getElementById('res-fail').textContent = field(r.failuresInWindow, 'UNKNOWN');
+        document.getElementById('res-cool').textContent = field(r.cooldownRemainingSeconds, 'UNKNOWN');
+        const w = field(r.windowSize, '?');
+        const p = field(r.probeSuccessesToClose, '?');
+        const b = field(r.baseCooldownSeconds, '?');
+        const m = field(r.maxCooldownSeconds, '?');
+        document.getElementById('res-budget').textContent =
+          'Budget: finestra ' + w + ', prove per chiudere ' + p + ', cooldown ' + b + 's\u2013' + m + 's';
         document.getElementById('raw').textContent = JSON.stringify(s, null, 2);
       } catch (e) {
         document.getElementById('runtime').textContent = 'UNKNOWN';
@@ -1149,15 +1294,61 @@ internal static class Gate1DashboardHtml
       refreshSafety();
     }
 
+    async function haltNow() {
+      await fetch('/api/command', { method:'POST', body:'HALT' });
+      refreshSafety();
+      refresh();
+      refreshEventLog();
+    }
+
     async function stopAll() {
       await fetch('/api/command', { method:'POST', body:'EMERGENCY_STOP' });
       refreshSafety();
+    }
+
+    async function refreshEventLog() {
+      try {
+        const h = await (await fetch('/api/event-log')).json();
+        const status = document.getElementById('event-log-status');
+        const detail = document.getElementById('event-log-detail');
+        const gaps = document.getElementById('event-log-gaps');
+        if (h.readable === false) {
+          status.textContent = 'NON LEGGIBILE';
+          status.className = 'value on';
+          detail.textContent = h.failureReason || '';
+          gaps.textContent = '';
+          return;
+        }
+        if (h.isComplete) {
+          status.textContent = 'completo';
+          status.className = 'value off';
+          gaps.textContent = '';
+        } else {
+          status.textContent = 'INCOMPLETO';
+          status.className = 'value on';
+          const list = (h.gaps || []).map(function (g) {
+            return 'gap dopo seq ' + g.afterSequence + ': ' + g.lostCount + ' persi (' + g.reason + ')';
+          }).join(' · ');
+          gaps.textContent = list;
+        }
+        const seq = (h.firstSequence == null) ? 'vuoto' : ('seq ' + h.firstSequence + '..' + h.lastSequence);
+        detail.textContent = (h.eventCount || 0) + ' eventi, ' + seq;
+      } catch (e) {
+        document.getElementById('event-log-status').textContent = 'UNKNOWN';
+        document.getElementById('event-log-detail').textContent = 'Registro non raggiungibile.';
+      }
     }
 
     async function refreshSafety() {
       try {
         const s = await (await fetch('/api/safety')).json();
         document.getElementById('exec-mode').textContent = s.executionMode;
+        const actuating = s.sessionActuating === true;
+        const terminal = s.sessionAuthorityTerminal === true;
+        const reason = s.sessionAuthorityReason || '';
+        let sessionLine = actuating ? 'attuante' : ('non attuante: ' + reason);
+        if (!actuating && terminal) sessionLine = 'non attuante, terminale: ' + reason;
+        document.getElementById('session-authority').textContent = sessionLine;
         document.getElementById('switches').innerHTML = SWITCHES.map(function (sw) {
           const on = s.switches[sw.field] === true;
           return '<div class="sw"><div class="name">' + sw.name + '</div>' +
@@ -1174,14 +1365,17 @@ internal static class Gate1DashboardHtml
           : 'Nessun cambio registrato in questa sessione.';
       } catch (e) {
         document.getElementById('exec-mode').textContent = 'UNKNOWN';
+        document.getElementById('session-authority').textContent = 'UNKNOWN';
         document.getElementById('switches').innerHTML = '<p class="warn">Stato di sicurezza non raggiungibile.</p>';
       }
     }
 
     refresh();
     refreshSafety();
+    refreshEventLog();
     setInterval(refresh, 2000);
     setInterval(refreshSafety, 2000);
+    setInterval(refreshEventLog, 2000);
   </script>
 </body>
 </html>

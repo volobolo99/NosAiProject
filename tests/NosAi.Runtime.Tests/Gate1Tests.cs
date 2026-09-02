@@ -90,6 +90,11 @@ public sealed class Gate1Tests
         using var document = System.Text.Json.JsonDocument.Parse(
             System.Text.Json.JsonSerializer.Serialize(snapshot.ToWire()));
         AssertUnknownFieldsHaveNullValue(document.RootElement);
+        Assert.True(document.RootElement.TryGetProperty("resilience", out var resilience));
+        Assert.Equal("UNKNOWN", resilience.GetProperty("state").GetProperty("source").GetString());
+        Assert.Equal("recovery_controller_not_configured", resilience.GetProperty("state").GetProperty("failureReason").GetString());
+        Assert.True(document.RootElement.TryGetProperty("safety", out var safety));
+        Assert.True(safety.TryGetProperty("executionMode", out _));
     }
 
     private static void AssertUnknownFieldsHaveNullValue(System.Text.Json.JsonElement element)

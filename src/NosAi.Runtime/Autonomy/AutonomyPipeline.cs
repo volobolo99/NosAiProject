@@ -537,6 +537,25 @@ public enum RecoveryState : byte
 }
 
 /// <summary>
+/// The photograph taken at the instant the breaker stops trusting itself.
+/// </summary>
+/// <remarks>
+/// Raised once per transition into <see cref="RecoveryState.Halted"/>, never on a
+/// failure that arrives while already halted, and never on a timer. Failures
+/// already inside the halt are recorded against the window; they are not a new
+/// decision to stop.
+/// </remarks>
+public sealed record RecoveryHaltTransition(
+    RecoveryState PreviousState,
+    RecoveryState NewState,
+    DateTimeOffset TransitionedAtUtc,
+    IReadOnlyList<bool> FailureWindow,
+    int FailuresInWindow,
+    int WindowOccupancy,
+    int Halts,
+    TimeSpan CurrentCooldown);
+
+/// <summary>
 /// Escalates the response to repeated failures, giving up autonomy as it goes, and
 /// makes the way back a trial rather than a single lucky outcome.
 /// </summary>
@@ -628,6 +647,12 @@ public sealed class RecoveryController
     private int _probeSuccesses;
     private bool _probeOutstanding;
 
+    /// <summary>
+    /// Raised after a fresh transition into <see cref="RecoveryState.Halted"/>.
+    /// Subscribers see the window as it stood at that instant.
+    /// </summary>
+    public event Action<RecoveryHaltTransition>? Halted;
+
     /// <param name="maxRetries">
     /// Failures tolerated inside the window before the ladder starts giving up
     /// autonomy. The rungs are unchanged from the consecutive-count version: at
@@ -683,8 +708,23 @@ public sealed class RecoveryController
     /// <summary>The window length the rungs are read over.</summary>
     public int WindowSize => _windowSize;
 
+    /// <summary>
+    /// The last outcomes, oldest first. True is a failure. A copy: callers cannot
+    /// mutate the window the rungs are read from.
+    /// </summary>
+    public IReadOnlyList<bool> FailureWindow
+    {
+        get { lock (_lock) return _window.ToArray(); }
+    }
+
     /// <summary>Consecutive probe successes needed before full speed returns.</summary>
     public int ProbeSuccessesToClose => _probeSuccessesToClose;
+
+    /// <summary>The wait after the first halt. It doubles with each halt after it.</summary>
+    public TimeSpan BaseCooldown => _baseCooldown;
+
+    /// <summary>The ceiling the doubling stops at.</summary>
+    public TimeSpan MaxCooldown => _maxCooldown;
 
     /// <summary>How many times the breaker has halted since it last closed.</summary>
     public int Halts
@@ -798,6 +838,8 @@ public sealed class RecoveryController
     /// </remarks>
     public RecoveryStrategy HandleFailure(ref RuntimeMode runtimeMode)
     {
+        RecoveryHaltTransition? transition = null;
+        RecoveryStrategy strategy;
         lock (_lock)
         {
             Record(failure: true);
@@ -806,35 +848,46 @@ public sealed class RecoveryController
             // A probe that fails is the strongest evidence available that the fault
             // is still there, so it goes straight back to halted and waits longer.
             if (_state == RecoveryState.Probing)
-                return Halt(ref runtimeMode);
-
-            if (_failuresInWindow > _maxRetries + 1)
-                return Halt(ref runtimeMode);
-
-            if (_failuresInWindow == _maxRetries + 1)
+                strategy = Halt(ref runtimeMode, out transition);
+            else if (_failuresInWindow > _maxRetries + 1)
+                strategy = Halt(ref runtimeMode, out transition);
+            else if (_failuresInWindow == _maxRetries + 1)
             {
                 // Never a step back up: once halted, a lighter rung does not apply.
                 if (_state == RecoveryState.Halted)
-                    return RecoveryStrategy.HaltAndAlert;
-
-                _state = RecoveryState.Throttled;
-                _trustBoundary.DowngradeTrust(TrustTier.Tier1_Assisted);
-                runtimeMode = RuntimeMode.Degraded;
-                return RecoveryStrategy.DegradedReplan;
+                {
+                    strategy = RecoveryStrategy.HaltAndAlert;
+                }
+                else
+                {
+                    _state = RecoveryState.Throttled;
+                    _trustBoundary.DowngradeTrust(TrustTier.Tier1_Assisted);
+                    runtimeMode = RuntimeMode.Degraded;
+                    strategy = RecoveryStrategy.DegradedReplan;
+                }
             }
-
-            if (_state == RecoveryState.Halted)
-                return RecoveryStrategy.HaltAndAlert;
-
-            if (_state == RecoveryState.Throttled)
+            else if (_state == RecoveryState.Halted)
+            {
+                strategy = RecoveryStrategy.HaltAndAlert;
+            }
+            else if (_state == RecoveryState.Throttled)
             {
                 runtimeMode = RuntimeMode.Degraded;
-                return RecoveryStrategy.DegradedReplan;
+                strategy = RecoveryStrategy.DegradedReplan;
             }
-
-            runtimeMode = RuntimeMode.Recovery;
-            return RecoveryStrategy.Retry;
+            else
+            {
+                runtimeMode = RuntimeMode.Recovery;
+                strategy = RecoveryStrategy.Retry;
+            }
         }
+
+        // The dump is the photograph of the transition. Raised outside the lock
+        // so a subscriber that writes a file cannot stall the next admission.
+        if (transition is not null)
+            Halted?.Invoke(transition);
+
+        return strategy;
     }
 
     /// <summary>
@@ -934,16 +987,29 @@ public sealed class RecoveryController
         }
     }
 
-    private RecoveryStrategy Halt(ref RuntimeMode runtimeMode)
+    private RecoveryStrategy Halt(ref RuntimeMode runtimeMode, out RecoveryHaltTransition? transition)
     {
+        transition = null;
+
         // Only a fresh halt lengthens the wait. Failures arriving while already
         // halted are recorded but do not push the cooldown out again, or a burst of
         // them would compound into a wait nobody chose.
         if (_state != RecoveryState.Halted)
         {
+            RecoveryState previous = _state;
             _halts++;
-            _cooldownEndsAtUtc = _clock.GetUtcNow() + CooldownForHalts(_halts);
+            DateTimeOffset now = _clock.GetUtcNow();
+            _cooldownEndsAtUtc = now + CooldownForHalts(_halts);
             _state = RecoveryState.Halted;
+            transition = new RecoveryHaltTransition(
+                previous,
+                RecoveryState.Halted,
+                now,
+                _window.ToArray(),
+                _failuresInWindow,
+                _window.Count,
+                _halts,
+                CooldownForHalts(_halts));
         }
 
         _probeSuccesses = 0;

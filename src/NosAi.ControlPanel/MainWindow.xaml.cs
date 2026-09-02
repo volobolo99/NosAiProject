@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Configuration;
+using NosAi.Runtime.Gate2;
 
 namespace NosAi.ControlPanel;
 
@@ -153,6 +154,13 @@ public partial class MainWindow : Window
         Status($"Cartella exe: {folder}");
     }
 
+    private async void OnHalt(object sender, RoutedEventArgs e)
+    {
+        await _session.HaltAsync();
+        await RefreshSnapshotAsync();
+        Status("Halt richiesto. Interruttori disarmati, atto in volo abortito.");
+    }
+
     private async void OnEmergencyStop(object sender, RoutedEventArgs e)
     {
         await _session.EmergencyStopAsync();
@@ -166,7 +174,10 @@ public partial class MainWindow : Window
         {
             var snapshot = await _session.CaptureAsync().ConfigureAwait(true);
             await RefreshListenAsync();
-            ApplySnapshot(snapshot);
+            EventLogHealth? log = null;
+            try { log = await _session.ReadEventLogAsync().ConfigureAwait(true); }
+            catch (Exception) { /* shown as unread */ }
+            ApplySnapshot(snapshot, log);
         }
         catch (Exception ex)
         {
@@ -189,12 +200,16 @@ public partial class MainWindow : Window
         _lastListenProbeUtc = DateTime.UtcNow;
     }
 
-    private void ApplySnapshot(SnapshotView snapshot)
+    private void ApplySnapshot(SnapshotView snapshot, EventLogHealth? eventLog = null)
     {
         OverviewHealth.Text = snapshot.RuntimeStatus;
         OverviewClient.Text = FirstValue(snapshot.Client, "Stato");
         OverviewGuard.Text = FirstValue(snapshot.Guard, "Autenticato");
         OverviewSafety.Text = FirstValue(snapshot.Safety, "Esecuzione");
+        // Reports the standing verdict. A terminal one is named, and there is no
+        // retry control: the panel asks, it does not decide, and nothing here
+        // can mark a session as actuating.
+        OverviewAuthority.Text = snapshot.SessionAuthorityLine;
         OverviewWire.Text = snapshot.WireLabel;
         OverviewSlot.Text = snapshot.SlotLabel;
         OverviewSlotHint.Text = snapshot.SlotHint;
@@ -212,6 +227,8 @@ public partial class MainWindow : Window
         GameObservationFields.ItemsSource = snapshot.GameObservation;
         HealthFields.ItemsSource = OperatorHealth.From(snapshot, _session.Kind);
         DecisionFields.ItemsSource = DecisionInspect.Inspect(_session.Kind, _session.DescribeDecisions());
+        ResilienceFields.ItemsSource = snapshot.Resilience;
+        EventLogFields.ItemsSource = EventLogInspect.Inspect(eventLog);
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";

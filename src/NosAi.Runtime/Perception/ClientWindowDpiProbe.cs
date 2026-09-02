@@ -19,8 +19,9 @@ namespace NosAi.Runtime.Perception;
 /// <para>
 /// It prints the current <see cref="GeometryEpoch"/> as a reading, and it does
 /// not keep one. Invalidating a calibration is a safety decision; this only
-/// reports what is true of one window at one moment. The regime reading itself
-/// lives in <see cref="DpiAwareness"/>, because
+/// reports what is true of one window at one moment, and whether the stored
+/// calibration can be applied under this process's regime and that shape. The
+/// regime reading itself lives in <see cref="DpiAwareness"/>, because
 /// <see cref="ScreenProjectionCalibration"/> now records it and
 /// <see cref="CalibratedScreenProjection"/> refuses across a change in it — and two
 /// copies of that reading could disagree about the thing a refusal depends on.
@@ -31,13 +32,24 @@ public static class ClientWindowDpiProbe
     public const string NotWindowsReason = "window_probe_requires_windows";
     public const string WindowNotLocatedReason = "client_window_not_located";
 
+    /// <summary>
+    /// Returned when the window was found but the stored calibration cannot be
+    /// applied under this process regime or the live window shape.
+    /// </summary>
+    public const int CalibrationNotUsableExitCode = 3;
+
     /// <param name="processName">
     /// One client executable, or null to try
     /// <see cref="RealClientConnector.DefaultProcessNames"/> in order — the same
     /// names attachment uses, so the probe does not look for a different process
     /// than the rest of the runtime.
     /// </param>
-    public static int Run(string? processName = null)
+    /// <param name="calibrationPath">
+    /// The stored projection to judge, or null to read
+    /// <see cref="ScreenProjectionCalibration.RelativePath"/> from the current
+    /// directory — the same file the auto-calibrator writes.
+    /// </param>
+    public static int Run(string? processName = null, string? calibrationPath = null)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -45,46 +57,136 @@ public static class ClientWindowDpiProbe
             return 2;
         }
 
-        return RunWindows(processName);
+        return RunWindows(processName, calibrationPath);
+    }
+
+    /// <summary>
+    /// Whether a stored calibration can be applied under this process regime and,
+    /// when a live window shape is known, under that shape.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Regime first, then size, then DPI — the same order
+    /// <see cref="CalibratedScreenProjection.TryProject"/> uses, and for the same
+    /// reason: the regime is the unit every other comparison would be expressed
+    /// in. Unknown on either side of the regime is a refusal, never a pass.
+    /// </para>
+    /// <para>
+    /// A missing live shape (the window was not located) still judges the regime,
+    /// because that is a property of how this process was launched, not of one
+    /// window. Size and DPI are skipped rather than invented.
+    /// </para>
+    /// </remarks>
+    public static bool CalibrationIsUsable(
+        ScreenProjectionCalibration calibration,
+        DpiAwarenessRegime regime,
+        GeometryShape? liveShape,
+        out string? refusalReason)
+    {
+        ArgumentNullException.ThrowIfNull(calibration);
+
+        if (!calibration.IsCalibrated)
+        {
+            refusalReason = ScreenProjectionCalibration.NotCalibratedReason;
+            return false;
+        }
+
+        if (regime != calibration.Regime || regime == DpiAwarenessRegime.Unknown)
+        {
+            refusalReason =
+                $"{CalibratedScreenProjection.RegimeChangedReason}:{calibration.Regime.ToWire()}_to_{regime.ToWire()}";
+            return false;
+        }
+
+        if (liveShape is { } shape && shape.IsKnown)
+        {
+            if (shape.Width != calibration.ClientWidth || shape.Height != calibration.ClientHeight)
+            {
+                refusalReason = CalibratedScreenProjection.ClientResizedReason;
+                return false;
+            }
+
+            if (calibration.ClientDpi != 0 && shape.Dpi != 0 && shape.Dpi != calibration.ClientDpi)
+            {
+                refusalReason =
+                    $"{CalibratedScreenProjection.ClientDpiChangedReason}:{calibration.ClientDpi}_to_{shape.Dpi}";
+                return false;
+            }
+        }
+
+        refusalReason = null;
+        return true;
     }
 
     [SupportedOSPlatform("windows")]
-    private static int RunWindows(string? processName)
+    private static int RunWindows(string? processName, string? calibrationPath)
     {
         DpiAwarenessRegime regime = DpiAwareness.Current();
         Console.WriteLine($"Process DPI awareness: {regime} ({regime.ToWire()})");
 
         ReportDisplayScale();
 
-        if (!TryFindWindow(processName, out ClientWindow window, out string? failure))
+        bool windowFound = TryFindWindow(processName, out ClientWindow window, out string? failure);
+        GeometryEpoch epoch = GeometryEpoch.Unknown;
+
+        if (!windowFound)
         {
             Console.WriteLine($"[REFUSED] {failure}");
-            return 1;
+        }
+        else
+        {
+            PixelRect rect = window.ClientArea;
+            uint dpi = GetDpiForWindow(window.Handle);
+            IntPtr monitor = MonitorFromWindow(window.Handle, MonitorDefaultToNearest);
+
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"Window: 0x{window.Handle.ToInt64():X} class={window.ClassName}"));
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"Client rect: {rect.X},{rect.Y} {rect.Width}x{rect.Height}"));
+            Console.WriteLine(dpi == 0
+                ? "DPI: UNKNOWN (GetDpiForWindow returned 0)"
+                : string.Create(CultureInfo.InvariantCulture, $"DPI: {dpi}"));
+            Console.WriteLine(monitor == IntPtr.Zero
+                ? "Monitor: UNKNOWN (MonitorFromWindow returned 0)"
+                : string.Create(CultureInfo.InvariantCulture, $"Monitor: 0x{monitor.ToInt64():X}"));
+
+            epoch = GeometryEpoch.Read(window);
+            Console.WriteLine(epoch.IsKnown
+                ? string.Create(CultureInfo.InvariantCulture,
+                    $"Epoch: {epoch.ClientArea.X},{epoch.ClientArea.Y} "
+                    + $"{epoch.ClientArea.Width}x{epoch.ClientArea.Height} "
+                    + $"dpi={epoch.Dpi} monitor=0x{epoch.Monitor.ToInt64():X}")
+                : "Epoch: UNKNOWN");
         }
 
-        PixelRect rect = window.ClientArea;
-        uint dpi = GetDpiForWindow(window.Handle);
-        IntPtr monitor = MonitorFromWindow(window.Handle, MonitorDefaultToNearest);
+        string path = calibrationPath
+            ?? Path.Combine(Directory.GetCurrentDirectory(), ScreenProjectionCalibration.RelativePath);
+        ScreenProjectionCalibration stored = ScreenProjectionCalibration.Load(path, out _);
+        GeometryShape? liveShape = epoch.IsKnown ? epoch.Shape : null;
+        bool usable = CalibrationIsUsable(stored, regime, liveShape, out string? whyNot);
+        ReportCalibration(path, stored, usable, whyNot);
 
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"Window: 0x{window.Handle.ToInt64():X} class={window.ClassName}"));
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"Client rect: {rect.X},{rect.Y} {rect.Width}x{rect.Height}"));
-        Console.WriteLine(dpi == 0
-            ? "DPI: UNKNOWN (GetDpiForWindow returned 0)"
-            : string.Create(CultureInfo.InvariantCulture, $"DPI: {dpi}"));
-        Console.WriteLine(monitor == IntPtr.Zero
-            ? "Monitor: UNKNOWN (MonitorFromWindow returned 0)"
-            : string.Create(CultureInfo.InvariantCulture, $"Monitor: 0x{monitor.ToInt64():X}"));
+        if (!windowFound)
+            return 1;
 
-        GeometryEpoch epoch = GeometryEpoch.Read(window);
-        Console.WriteLine(epoch.IsKnown
-            ? string.Create(CultureInfo.InvariantCulture,
-                $"Epoch: {epoch.ClientArea.X},{epoch.ClientArea.Y} "
-                + $"{epoch.ClientArea.Width}x{epoch.ClientArea.Height} "
-                + $"dpi={epoch.Dpi} monitor=0x{epoch.Monitor.ToInt64():X}")
-            : "Epoch: UNKNOWN");
-        return 0;
+        return usable ? 0 : CalibrationNotUsableExitCode;
+    }
+
+    private static void ReportCalibration(
+        string path,
+        ScreenProjectionCalibration stored,
+        bool usable,
+        string? whyNot)
+    {
+        if (stored.IsCalibrated)
+        {
+            string verdict = usable ? "usable" : $"NOT USABLE {whyNot}";
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"Calibration: {stored.ClientWidth}x{stored.ClientHeight} dpi={stored.ClientDpi} under {stored.Regime.ToWire()} ({path}) — {verdict}"));
+            return;
+        }
+
+        Console.WriteLine($"Calibration: none ({path}) — NOT USABLE {whyNot}");
     }
 
     [SupportedOSPlatform("windows")]

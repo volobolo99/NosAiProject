@@ -93,6 +93,7 @@
           <Button Style="{StaticResource LiveButton}" Content="Avvia runtime" Click="OnStartRuntime" Margin="0,0,8,0"/>
           <Button Style="{StaticResource GhostButton}" Content="Ricollega" Click="OnReconnect" Margin="0,0,8,0"/>
           <Button x:Name="StopButton" Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopRuntime" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource GhostButton}" Content="HALT" Click="OnHalt" Margin="0,0,8,0"/>
           <Button Style="{StaticResource DangerButton}" Content="STOP" Click="OnEmergencyStop"/>
         </StackPanel>
         <StackPanel>
@@ -158,8 +159,11 @@
                 </StackPanel>
               </Border>
             </UniformGrid>
+            <TextBlock x:Name="OverviewAuthority" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,14" Text="Sessione: UNKNOWN"/>
             <TextBlock FontWeight="SemiBold" Margin="0,4,0,10">Auto-configurazione</TextBlock>
             <ItemsControl x:Name="SetupList" ItemTemplate="{StaticResource SetupItemTemplate}"/>
+            <TextBlock FontWeight="SemiBold" Margin="0,16,0,10">Resilienza</TextBlock>
+            <ItemsControl x:Name="ResilienceFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock x:Name="OverviewWarning" Foreground="{StaticResource WarnBrush}" Margin="0,12,0,0" TextWrapping="Wrap"/>
           </StackPanel>
         </ScrollViewer>
@@ -207,6 +211,9 @@
             <ItemsControl x:Name="GameObservationFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Registro eventi</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap">Salute dell'audit trail. Un registro con buchi si vede come incompleto.</TextBlock>
+            <ItemsControl x:Name="EventLogFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 

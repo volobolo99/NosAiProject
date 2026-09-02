@@ -1,6 +1,8 @@
 using NosAi.Runtime.Contracts;
 using NosAi.LiveIntegration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Hardware;
+using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Safety;
 
 namespace NosAi.Runtime.Gate1;
@@ -12,7 +14,9 @@ public static class Gate1SnapshotContract
     /// processResponding, windowVisible, and the network group: networkConnected,
     /// serverEndpoint, connectionState, remoteSessionCount) stay on v1: unknown
     /// keys are ignored by older readers, and the Python dashboard requires an
-    /// exact version match.
+    /// exact version match. The session-authority group on <c>safety</c>
+    /// (sessionActuating, sessionAuthorityReason, sessionAuthorityTerminal,
+    /// runtimeIntegrity, clientIntegrity) is the same kind of addition.
     /// </summary>
     public const string Version = "gate1.snapshot.v1";
 }
@@ -78,7 +82,71 @@ public sealed record Gate1SafetyView(
     ClassifiedValue<bool> PacketInjectionEnabled,
     ClassifiedValue<bool> RequireClientHealthy,
     ClassifiedValue<bool> RequireGuardApproval,
-    ClassifiedValue<string> ExecutionMode);
+    ClassifiedValue<string> ExecutionMode,
+    ClassifiedValue<bool> SessionActuating,
+    ClassifiedValue<string?> SessionAuthorityReason,
+    ClassifiedValue<bool> SessionAuthorityTerminal,
+    ClassifiedValue<string> RuntimeIntegrity,
+    ClassifiedValue<string> ClientIntegrity);
+
+/// <summary>The recovery breaker's live state, read-only, additive on v1.</summary>
+public sealed record Gate1ResilienceView(
+    ClassifiedValue<string> State,
+    ClassifiedValue<int> FailuresInWindow,
+    ClassifiedValue<double> CooldownRemainingSeconds,
+    ClassifiedValue<int> WindowSize,
+    ClassifiedValue<int> ProbeSuccessesToClose,
+    ClassifiedValue<double> BaseCooldownSeconds,
+    ClassifiedValue<double> MaxCooldownSeconds,
+    ClassifiedValue<double> CurrentCooldownSeconds,
+    ClassifiedValue<int> Halts)
+{
+    public const string NotConfiguredReason = "recovery_controller_not_configured";
+
+    public object ToWire() => new
+    {
+        state = State.ToWire(),
+        failuresInWindow = FailuresInWindow.ToWire(),
+        cooldownRemainingSeconds = CooldownRemainingSeconds.ToWire(),
+        windowSize = WindowSize.ToWire(),
+        probeSuccessesToClose = ProbeSuccessesToClose.ToWire(),
+        baseCooldownSeconds = BaseCooldownSeconds.ToWire(),
+        maxCooldownSeconds = MaxCooldownSeconds.ToWire(),
+        currentCooldownSeconds = CurrentCooldownSeconds.ToWire(),
+        halts = Halts.ToWire()
+    };
+
+    public static Gate1ResilienceView NotConfigured()
+    {
+        const string reason = NotConfiguredReason;
+        return new(
+            ClassifiedValue<string>.Unknown(reason),
+            ClassifiedValue<int>.Unknown(reason),
+            ClassifiedValue<double>.Unknown(reason),
+            ClassifiedValue<int>.Unknown(reason),
+            ClassifiedValue<int>.Unknown(reason),
+            ClassifiedValue<double>.Unknown(reason),
+            ClassifiedValue<double>.Unknown(reason),
+            ClassifiedValue<double>.Unknown(reason),
+            ClassifiedValue<int>.Unknown(reason));
+    }
+
+    public static Gate1ResilienceView From(RecoveryController recovery)
+    {
+        ArgumentNullException.ThrowIfNull(recovery);
+        DateTime now = DateTime.UtcNow;
+        return new(
+            ClassifiedValue<string>.Live(recovery.State.ToString(), now),
+            ClassifiedValue<int>.Live(recovery.FailuresInWindow, now),
+            ClassifiedValue<double>.Live(recovery.CooldownRemaining.TotalSeconds, now),
+            ClassifiedValue<int>.Derived(recovery.WindowSize, now),
+            ClassifiedValue<int>.Derived(recovery.ProbeSuccessesToClose, now),
+            ClassifiedValue<double>.Derived(recovery.BaseCooldown.TotalSeconds, now),
+            ClassifiedValue<double>.Derived(recovery.MaxCooldown.TotalSeconds, now),
+            ClassifiedValue<double>.Live(recovery.CurrentCooldown.TotalSeconds, now),
+            ClassifiedValue<int>.Live(recovery.Halts, now));
+    }
+}
 
 public sealed record Gate1CanonicalSnapshot(
     string ContractVersion,
@@ -93,7 +161,8 @@ public sealed record Gate1CanonicalSnapshot(
     // Additive on v1: the world-channel observation surface. Unknown keys are
     // ignored by older readers. Absent configuration is UNKNOWN with a reason,
     // never a quiet zero.
-    Gate1GameObservationView GameObservation)
+    Gate1GameObservationView GameObservation,
+    Gate1ResilienceView Resilience)
 {
     public object ToWire() => new
     {
@@ -149,9 +218,15 @@ public sealed record Gate1CanonicalSnapshot(
             packetInjectionEnabled = Safety.PacketInjectionEnabled.ToWire(),
             requireClientHealthy = Safety.RequireClientHealthy.ToWire(),
             requireGuardApproval = Safety.RequireGuardApproval.ToWire(),
-            executionMode = Safety.ExecutionMode.ToWire()
+            executionMode = Safety.ExecutionMode.ToWire(),
+            sessionActuating = Safety.SessionActuating.ToWire(),
+            sessionAuthorityReason = Safety.SessionAuthorityReason.ToWire(),
+            sessionAuthorityTerminal = Safety.SessionAuthorityTerminal.ToWire(),
+            runtimeIntegrity = Safety.RuntimeIntegrity.ToWire(),
+            clientIntegrity = Safety.ClientIntegrity.ToWire()
         },
-        gameObservation = GameObservation.ToWire()
+        gameObservation = GameObservation.ToWire(),
+        resilience = Resilience.ToWire()
     };
 }
 
@@ -166,7 +241,9 @@ public static class Gate1SnapshotFactory
         RuntimeSafetyPolicy safety,
         string? warning = null,
         GameplayObservation? gameplay = null,
-        Gate1GameObservationView? gameObservation = null)
+        Gate1GameObservationView? gameObservation = null,
+        SessionActuationAuthority? sessionAuthority = null,
+        RecoveryController? recovery = null)
     {
         var now = DateTime.UtcNow;
         var clientObserved = client.ObservedAtUtc;
@@ -188,6 +265,7 @@ public static class Gate1SnapshotFactory
                     "A gameplay provider is attached but could not read the vitals.");
 
         var network = client.Network;
+        var session = SessionFields(sessionAuthority, now);
 
         return new Gate1CanonicalSnapshot(
             ContractVersion: Gate1SnapshotContract.Version,
@@ -268,9 +346,52 @@ public static class Gate1SnapshotFactory
                     safety.LiveInputEnabled || safety.PacketInjectionEnabled
                         ? "enabled_by_operator"
                         : "disabled_by_operator",
-                    now)),
+                    now),
+                SessionActuating: session.Actuating,
+                SessionAuthorityReason: session.Reason,
+                SessionAuthorityTerminal: session.Terminal,
+                RuntimeIntegrity: session.RuntimeIntegrity,
+                ClientIntegrity: session.ClientIntegrity),
             Warning: warning,
-            GameObservation: gameObservation ?? Gate1GameObservationView.NotConfigured());
+            GameObservation: gameObservation ?? Gate1GameObservationView.NotConfigured(),
+            Resilience: recovery is null
+                ? Gate1ResilienceView.NotConfigured()
+                : Gate1ResilienceView.From(recovery));
+    }
+
+    private static (
+        ClassifiedValue<bool> Actuating,
+        ClassifiedValue<string?> Reason,
+        ClassifiedValue<bool> Terminal,
+        ClassifiedValue<string> RuntimeIntegrity,
+        ClassifiedValue<string> ClientIntegrity)
+        SessionFields(SessionActuationAuthority? authority, DateTime now)
+    {
+        if (authority is null)
+        {
+            const string missing = "authority_not_bound";
+            return (
+                ClassifiedValue<bool>.Unknown(missing),
+                ClassifiedValue<string?>.Unknown(missing),
+                ClassifiedValue<bool>.Unknown(missing),
+                ClassifiedValue<string>.Unknown(missing),
+                ClassifiedValue<string>.Unknown(missing));
+        }
+
+        SessionAuthorityVerdict verdict = authority.Current;
+        string? refusal = authority.CurrentRefusal();
+        return (
+            ClassifiedValue<bool>.Derived(refusal is null, now),
+            refusal is null
+                ? ClassifiedValue<string?>.Unknown("session_actuating")
+                : ClassifiedValue<string?>.Derived(refusal, now),
+            ClassifiedValue<bool>.Derived(verdict.IsTerminal, now),
+            verdict.Runtime.IsKnown
+                ? ClassifiedValue<string>.Live(verdict.Runtime.Name, now)
+                : ClassifiedValue<string>.Unknown("unreadable"),
+            verdict.Client.IsKnown
+                ? ClassifiedValue<string>.Live(verdict.Client.Name, now)
+                : ClassifiedValue<string>.Unknown("unreadable"));
     }
 
     private static ClassifiedValue<string> ClassifyText(string? value, DateTime observedAtUtc, string missingReason)
