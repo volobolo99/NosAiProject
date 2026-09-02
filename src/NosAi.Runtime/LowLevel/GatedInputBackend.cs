@@ -143,8 +143,30 @@ public sealed class GatedInputBackend : IInputBackend
     /// world the other was changing, and DOMAIN-17 allows one irreversible step, not
     /// two interleaved.
     /// </remarks>
-    public bool TryBeginActuation(in CommitRequest request, out ActuationScope? scope, out string? refusalReason)
+    /// <param name="authority">
+    /// Under whose authority the act is emitted: a <see cref="Autonomy.SafetyToken"/>
+    /// for a planned one, a named command for one a person asked for (ADR-0020 § 2).
+    /// There is deliberately <b>no overload without it</b> — a rule enforced by the
+    /// order of calls survives only until someone adds a shorter signature, and this is
+    /// the one place both entries to the boundary already pass through.
+    /// </param>
+    public bool TryBeginActuation(
+        in CommitRequest request,
+        in ActuationAuthority authority,
+        out ActuationScope? scope,
+        out string? refusalReason)
     {
+        // Before the lock, because an unattributable act is refused whether or not
+        // anything else is in flight, and the refusal should name the authority rather
+        // than whichever scope happened to be open.
+        if (!authority.IsUsable(DateTime.UtcNow, out string? authorityRefusal))
+        {
+            scope = null;
+            refusalReason = authorityRefusal;
+            Refuse(refusalReason!);
+            return false;
+        }
+
         lock (_scopeLock)
         {
             if (_scope is not null)
@@ -155,7 +177,7 @@ public sealed class GatedInputBackend : IInputBackend
                 return false;
             }
 
-            scope = new ActuationScope(this, request);
+            scope = new ActuationScope(this, request, authority);
             _scope = scope;
         }
 

@@ -222,6 +222,9 @@ public sealed class SessionActuationAuthority
     /// <summary>Reported when the pointer did not land where it was sent. Terminal.</summary>
     public const string PointerDidNotMovePrefix = "authority_pointer_did_not_move";
 
+    /// <summary>What the audit records as the authority behind the probe's pointer move.</summary>
+    public const string ProbeAuthorityName = "session_authority_probe";
+
     /// <summary>
     /// How long a verdict stands before it has to be retaken.
     /// </summary>
@@ -534,7 +537,12 @@ public sealed class SessionActuationAuthority
             targetY,
             epoch.Shape);
 
-        if (!_input.TryBeginActuation(in request, out ActuationScope? scope, out string? scopeRefusal) || scope is null)
+        // Named, because ADR-0020 § 2 forbids the state where the gate cannot say under
+        // whose authority it is acting. The probe is not a planned act and has no token;
+        // it is a verification a person or the host asked for, and the audit says so.
+        ActuationAuthority authority = ActuationAuthority.Commanded(ProbeAuthorityName);
+
+        if (!_input.TryBeginActuation(in request, in authority, out ActuationScope? scope, out string? scopeRefusal) || scope is null)
             return Refuse(window, clientProcessId, $"{ScopeRefusedPrefix}:{scopeRefusal ?? "unknown"}",
                 terminal: false, runtime, client);
 

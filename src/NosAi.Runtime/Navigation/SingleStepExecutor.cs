@@ -147,8 +147,16 @@ public sealed class SingleStepExecutor
     /// The observed grid position, re-read while the window is open. Only readings
     /// stamped after the emission are testimony — see <see cref="MovementVerifier"/>.
     /// </param>
+    /// <param name="authority">
+    /// Under whose authority this step is emitted (ADR-0020 § 2): the operator command
+    /// that asked for it, or the cycle's <see cref="Autonomy.SafetyToken"/>. Required,
+    /// and stated per step rather than held on the executor — an authority captured at
+    /// construction would be the same one for every act the process ever emits, which is
+    /// not an attribution.
+    /// </param>
     public StepReport Step(
         in StepRequest request,
+        in ActuationAuthority authority,
         Func<PositionReading?> readPosition,
         CancellationToken cancellationToken = default)
     {
@@ -181,7 +189,7 @@ public sealed class SingleStepExecutor
             authorization.ScreenY,
             authorization.Scale);
 
-        if (!_input.TryBeginActuation(in commit, out ActuationScope? scope, out string? scopeRefusal) || scope is null)
+        if (!_input.TryBeginActuation(in commit, in authority, out ActuationScope? scope, out string? scopeRefusal) || scope is null)
             return NotEmitted(authorization, $"{ScopeRefusedPrefix}:{scopeRefusal ?? "unknown"}");
 
         try

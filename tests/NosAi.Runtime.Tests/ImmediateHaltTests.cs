@@ -58,7 +58,7 @@ public sealed class ImmediateHaltTests
         var inner = new RecordingReleaseBackend();
         var gate = new GatedInputBackend(inner, () => safety.Policy);
 
-        Assert.True(gate.TryBeginActuation(default, out ActuationScope? scope, out _), "scope should open without a commit point");
+        Assert.True(gate.TryBeginActuation(default, ActuationAuthority.Commanded("test"), out ActuationScope? scope, out _), "scope should open without a commit point");
         scope!.RecordKey(0x41);
 
         ImmediateHaltResult result = ImmediateHalt.Execute(SecurityPrincipal.Operator, safety, gate);

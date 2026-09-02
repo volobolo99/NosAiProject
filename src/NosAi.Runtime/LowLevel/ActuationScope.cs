@@ -43,14 +43,26 @@ public sealed class ActuationScope : IDisposable
     private bool _aborted;
     private bool _closed;
 
-    internal ActuationScope(GatedInputBackend gate, CommitRequest request)
+    internal ActuationScope(GatedInputBackend gate, CommitRequest request, ActuationAuthority authority)
     {
         _gate = gate;
         Request = request;
+        Authority = authority;
     }
 
     /// <summary>What was authorised, and against which geometry and scale.</summary>
     public CommitRequest Request { get; }
+
+    /// <summary>
+    /// Under whose authority this act is being emitted (ADR-0020 § 2).
+    /// </summary>
+    /// <remarks>
+    /// Carried on the scope rather than passed along beside it, so the audit for an act
+    /// reads it from the same object that knows what the act pressed. A scope that could
+    /// not name its authority would be exactly the unattributable emission the record
+    /// forbids.
+    /// </remarks>
+    public ActuationAuthority Authority { get; }
 
     /// <summary>True once this scope has refused and released.</summary>
     public bool IsAborted
@@ -161,5 +173,5 @@ public sealed class ActuationScope : IDisposable
     }
 
     internal string Describe() => string.Create(CultureInfo.InvariantCulture,
-        $"scope at {Request.ScreenX},{Request.ScreenY} holding {HeldCount}");
+        $"scope at {Request.ScreenX},{Request.ScreenY} holding {HeldCount} under {Authority.Describe()}");
 }

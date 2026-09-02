@@ -1,3 +1,4 @@
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Perception;
 using NosAi.Runtime.Safety;
@@ -15,6 +16,13 @@ public sealed class CommitPointTests
     private static readonly IntPtr Session = 0x1000;
     private static readonly IntPtr Other = 0x2000;
     private static readonly IntPtr Monitor = 0xABCD;
+
+    /// <summary>
+    /// The authority every act in these tests is emitted under. ADR-0020 § 2: there is
+    /// no way to open a scope without naming one, so a test that wanted to omit it
+    /// would not compile — which is the property the record asks for.
+    /// </summary>
+    private static readonly ActuationAuthority Operator = ActuationAuthority.Commanded("test");
 
     private static GeometryEpoch Epoch(uint dpi = 96, int x = 0, int y = 0, int w = 1024, int h = 768) =>
         new(Session, new PixelRect(x, y, w, h), dpi, Monitor);
@@ -273,7 +281,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out string? why), why);
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out string? why), why);
         using (scope)
         {
             Assert.True(gate.MoveAbsolute(500, 400));
@@ -290,15 +298,15 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, _, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? first, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? first, out _));
         using (first)
         {
-            Assert.False(gate.TryBeginActuation(Request(), out ActuationScope? second, out string? reason));
+            Assert.False(gate.TryBeginActuation(Request(), Operator, out ActuationScope? second, out string? reason));
             Assert.Null(second);
             Assert.Equal(GatedInputBackend.ScopeAlreadyOpenReason, reason);
         }
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? third, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? third, out _));
         third!.Dispose();
     }
 
@@ -312,7 +320,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, FakeHuman human) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         using (scope)
         {
             Assert.True(gate.MoveAbsolute(500, 400));
@@ -335,7 +343,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, FakeDesktop desktop, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         using (scope)
         {
             desktop.Foreground = Other;
@@ -364,7 +372,7 @@ public sealed class CommitPointTests
         var gate = new GatedInputBackend(
             inner, () => policy, new CommitPointValidator(desktop, human));
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
 
         // Pretend a press is in flight, as it is between the down and the up.
         scope!.RecordButton(MouseButton.Left);
@@ -389,7 +397,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         scope!.RecordKey(0x41);
         scope.RecordButton(MouseButton.Left);
 
@@ -410,12 +418,71 @@ public sealed class CommitPointTests
 
         Assert.False(gate.AbortOpenScope("operator_emergency_stop"));
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         scope!.RecordKey(0x41);
         Assert.True(gate.AbortOpenScope("operator_emergency_stop"));
         Assert.False(gate.AbortOpenScope("operator_emergency_stop"));
 
         Assert.Single(inner.Events, e => e == "release-key:65");
+    }
+
+    // ------------------------------------------------- the authority behind the act
+
+    /// <summary>
+    /// ADR-0020 § 1: two entries to the boundary are legitimate, and the third state —
+    /// an emission the gate cannot attribute to anybody — is not.
+    /// </summary>
+    [Fact]
+    public void AScopeCannotBeOpenedWithoutAnAuthority()
+    {
+        (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
+
+        Assert.False(gate.TryBeginActuation(Request(), default, out ActuationScope? scope, out string? why));
+
+        Assert.Null(scope);
+        Assert.Equal(ActuationAuthority.MissingReason, why);
+        Assert.Empty(inner.Events);
+        Assert.Equal(ActuationAuthority.MissingReason, gate.LastRefusal?.Reason);
+    }
+
+    [Fact]
+    public void AnExpiredTokenIsNotALiveAuthorisation()
+    {
+        (GatedInputBackend gate, _, _, _) = LiveGate();
+        var expired = new SafetyToken(
+            Guid.NewGuid(), TrustTier.Tier1_Assisted, new byte[32], TimeSpan.FromMilliseconds(-1));
+
+        Assert.False(gate.TryBeginActuation(
+            Request(), ActuationAuthority.Planned(expired), out _, out string? why));
+
+        Assert.StartsWith(ActuationAuthority.ExpiredPrefix + ":", why);
+    }
+
+    [Fact]
+    public void TheScopeNamesWhoAuthorisedIt()
+    {
+        (GatedInputBackend gate, _, _, _) = LiveGate();
+        var token = new SafetyToken(
+            Guid.NewGuid(), TrustTier.Tier1_Assisted, new byte[32], TimeSpan.FromSeconds(2));
+
+        Assert.True(gate.TryBeginActuation(
+            Request(), ActuationAuthority.Planned(token), out ActuationScope? planned, out _));
+        Assert.Equal(ActuationAuthorityKind.Planned, planned!.Authority.Kind);
+        Assert.Contains(token.TokenId.ToString("N"), planned.Authority.Describe());
+        planned.Dispose();
+
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? commanded, out _));
+        Assert.Equal(ActuationAuthorityKind.Commanded, commanded!.Authority.Kind);
+        Assert.Equal("operator:test", commanded.Authority.Describe());
+        commanded.Dispose();
+    }
+
+    /// <summary>An anonymous command is not an authority; it is the missing one, spelled.</summary>
+    [Fact]
+    public void ACommandWithoutANameIsRefusedAtConstruction()
+    {
+        Assert.Throws<ArgumentException>(() => ActuationAuthority.Commanded("  "));
+        Assert.Throws<ArgumentNullException>(() => ActuationAuthority.Commanded(null!));
     }
 
     /// <summary>Modifiers come up after the key they were held around, as a completed press would.</summary>
@@ -424,7 +491,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         scope!.RecordKey(0x11);   // control down
         scope.RecordKey(0x41);    // 'A' down
         scope.Abort("test");
@@ -442,7 +509,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         scope!.RecordButton(MouseButton.Right);
         scope.Dispose();
 
@@ -456,7 +523,7 @@ public sealed class CommitPointTests
     {
         (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         using (scope)
         {
             Assert.True(gate.Click(MouseButton.Left));
@@ -494,7 +561,7 @@ public sealed class CommitPointTests
             () => RuntimeSafetyPolicy.SafeDefault,
             new CommitPointValidator(desktop, new FakeHuman()));
 
-        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        Assert.True(gate.TryBeginActuation(Request(), Operator, out ActuationScope? scope, out _));
         using (scope)
         {
             Assert.False(gate.Click(MouseButton.Left));

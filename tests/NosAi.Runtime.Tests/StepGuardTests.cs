@@ -18,6 +18,9 @@ public sealed class StepGuardTests
     private static readonly DateTime Now = new(2026, 9, 2, 14, 0, 0, DateTimeKind.Utc);
     private static readonly IntPtr Session = 0x7100;
 
+    /// <summary>ADR-0020 § 2: a step names the authority it is emitted under.</summary>
+    private static readonly ActuationAuthority Operator = ActuationAuthority.Commanded("--step");
+
     // --------------------------------------------------------------- scaffolding
 
     /// <summary>A 10x10 map, open ground, with a wall down column 5.</summary>
@@ -494,7 +497,7 @@ public sealed class StepGuardTests
         (SingleStepExecutor executor, RecordingInputBackend recorder, ChainRig rig) = Executor();
         rig.AuthorityRefusal = "authority_no_session";
 
-        StepReport report = executor.Step(Request(), () => null);
+        StepReport report = executor.Step(Request(), Operator, () => null);
 
         Assert.False(report.Emitted);
         Assert.Equal(MovementOutcome.Aborted, report.Verification.Outcome);
@@ -517,7 +520,7 @@ public sealed class StepGuardTests
         var executor = new SingleStepExecutor(
             rig.Build(), gate, () => IntPtr.Zero, Fast, readGeometry: StatedGeometry);
 
-        StepReport report = executor.Step(Request(), () => null);
+        StepReport report = executor.Step(Request(), Operator, () => null);
 
         Assert.False(report.Emitted);
         Assert.Equal(SingleStepExecutor.NoSessionWindowReason, report.EmissionRefusal);
@@ -535,6 +538,7 @@ public sealed class StepGuardTests
 
         StepReport report = executor.Step(
             Request(),
+            Operator,
             Readings(new PositionReading(new MapPoint(3, 2), Now.AddYears(1), DataSourceKind.Live)));
 
         Assert.True(report.Emitted);
@@ -548,12 +552,12 @@ public sealed class StepGuardTests
     {
         (SingleStepExecutor executor, _, _) = Executor();
 
-        executor.Step(Request(), () => null);
+        executor.Step(Request(), Operator, () => null);
 
         // A scope left open would refuse every following act with
         // commit_scope_already_open, which is the shape of a leak that only shows up
         // on the second step.
-        StepReport second = executor.Step(Request(), () => null);
+        StepReport second = executor.Step(Request(), Operator, () => null);
         Assert.NotEqual(
             $"{SingleStepExecutor.ScopeRefusedPrefix}:{GatedInputBackend.ScopeAlreadyOpenReason}",
             second.EmissionRefusal);
