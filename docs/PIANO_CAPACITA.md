@@ -92,7 +92,7 @@ l'operatore può prendere.
 | Lettura delle entità dal filo | **arrivano al pianificatore** | il decoder legge dodici opcode (i sette di prima più `sr`, `ivn`, `get`, `drop`, `ct`) e il vnum di `in`; gli avvistamenti diventano `Gate3WorldState.Entities` con età e provenienza per campo, e la posizione propria resta `UNKNOWN` con il suo motivo finché un lettore non è legato |
 | Griglie di mappa | **777 mappe estratte**, id mappa provato su 4 mappe e 1 riavvio | `MapIdModuleOffset = 0x38D1BC` |
 | Posizione propria | **provata** — `T-11` chiuso il 1 settembre | firma di codice, non offset; l'id `3443217` letto dal client coincide con quello che il server ha mandato su `cond`. Richiede console **elevata**: il manifest del client dichiara `requireAdministrator` |
-| Bersaglio (`HasTarget`) | **UNKNOWN** | ROI del riquadro mai calibrata, `T-09` |
+| Bersaglio (`HasTarget`) | **UNKNOWN** | non più per la ROI: `ADR-0021` sposta la sorgente sulla memoria del client, e il motivo è ora `target_offset_not_established`. L'oracolo `TargetIdFinder` è scritto; manca la passata sul client |
 | Proiezione mappa→schermo | **non calibrata** | `T-10`: cinque tentativi, nessuno utilizzabile |
 | Catena d'input e sue guardie | **scritta e testata in locale** | commit point a 5 condizioni, autorità di sessione, `StepGuardChain`, 33 test |
 | Percorso: ammissione, rivalidazione, replan (`C2-7`) | **scritto e testato in locale** | un percorso è ammesso guardando **ogni** cella, non gli estremi, e ogni segmento è rivalidato prima di essere emesso; limite di 3 replan consecutivi, dove « consecutivi » significa senza avvicinarsi più di quanto ci si sia mai avvicinati. 24 test, 21 percorsi da ≥ 16 celle su 3 mappe, e la prova che un percorso attraverso una cella bloccata **non raggiunge affatto** il backend d'input |
@@ -101,7 +101,7 @@ l'operatore può prendere.
 | Tasti (skill, pozioni, interfaccia) | **impossibili oggi** | `data/keybinds.json` **non esiste**: ogni pressione rifiuta con `keybind_not_configured:` |
 | Verifica dell'atto | **catalogo implementato** (`C4-1`) | sei schede con la loro finestra e il loro soggetto; `RestAndRecover` non ha scheda e per questo non è ammissibile. `VER-01` è impossibile da violare per firma, `VER-04` chiuso: il tier di verifica non è più severo di quello di attuazione |
 | Ciclo decisionale | **ha un motivo** (`C6-1`, `C6-2`, `C6-3`) | contrattacca chi l'ha colpito entro una finestra di decadimento; senza obiettivo attivo non sceglie nessun bersaglio e non cammina più verso il waypoint costante `(130, 90)`; attacca solo ciò che è stato **stabilito** attaccabile |
-| Bersaglio su una sessione viva | **ancora `UNKNOWN`** | il tubo c'è, la ROI no: finché `C1-6` non è calibrata, `HasTarget` resta `UNKNOWN` e le regole che lo leggono restano saltate |
+| Bersaglio su una sessione viva | **ancora `UNKNOWN`** | il tubo c'è, l'offset no. `TargetIdFinder` cerca in memoria dove il client tiene l'entità selezionata, usando la lista della scena come oracolo; finché una passata non lo stabilisce, `HasTarget` resta `UNKNOWN` e le regole che lo leggono restano saltate. Nessuna misura di pixel, nessuna dipendenza dalla risoluzione |
 
 **Che cosa resta, dopo questa sessione.** Due dei tre tubi sono collegati: le entità
 arrivano al pianificatore con la loro età, e il ciclo ha un motivo per attaccare e una
