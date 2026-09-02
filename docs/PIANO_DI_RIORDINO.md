@@ -71,6 +71,131 @@ impedisce loro di divergere.
 
 **Fatto quando** — `grep` di ciascun nome trova una sola definizione, e i test sono verdi.
 
+### `R1` — scelte
+
+Decise il 2 settembre 2026 leggendo ogni definizione e ogni consumatore. Il criterio
+non è stato « la più vecchia » né « la più usata », ma **quale definizione esprime il
+concetto al livello giusto** — e per due nomi su tre la risposta è stata che non c'era
+nessun concetto da unificare.
+
+#### `VerificationResult` — canonica: `NosAi.Runtime.Gate3.VerificationResult`
+
+Tre definizioni, e **non erano tre copie della stessa cosa**.
+
+| Definizione | Che cosa dice |
+|---|---|
+| `Gate3` | `(Guid, VerificationOutcome, float DiscrepancyScore, string, DataSourceKind)` — quattro esiti, una divergenza misurata, la provenienza |
+| `Gate6` | `(Guid, bool IsSuccess, float, string)` — due esiti, nessuna provenienza |
+| `Contracts` | `(bool Passed, string Reason)` — l'esito di `IAgentVerifier`, un'altra pipeline |
+
+**Gate 3 assorbe Gate 6.** Il `bool` di Gate 6 non sa esprimere `Unverified`, e
+collassarlo in « non riuscito » è esattamente ciò che `VER-05` vieta: non osservabile
+non è né riuscito né fallito. Ogni esito che Gate 6 sapeva produrre esiste nella
+canonica; il contrario è falso.
+
+`AutonomyPipeline.cs` argomentava che unirli « etichetterebbe dati simulati come live ».
+**L'argomento non regge**, ed è il motivo per cui va scritto qui invece di essere
+ereditato: la canonica di Gate 3 ha il campo `Source`, e Gate 6 lo riempie con
+`DataSourceKind.Simulated` — che è ciò che quel gate già dichiara di sé in ogni
+`ExecutionResult` che emette. Unificare non ha tolto la dichiarazione di simulazione:
+l'ha resa esplicita anche sul verdetto, dove prima era sottintesa.
+
+**Campi che solo una definizione aveva.** Gate 6 non ne aveva nessuno che Gate 3 non
+abbia. Nel verso opposto Gate 6 **guadagna** `Source`, e `Outcome` al posto di un
+booleano. Nessuna decisione è andata persa; due sono state acquisite.
+
+**`Contracts.VerificationResult` non è un duplicato dei due precedenti.** È l'esito di
+`IAgentVerifier.Verify(CandidateAction, object)`, cioè della pipeline
+`Orchestration`/`Guard`/`PlayAi`, che ha un proprio vocabolario (`CandidateAction`,
+`GuardDecision`, `ISafetyGate`) e verifica un'altra cosa. Misurato: quell'interfaccia
+**non ha implementazioni**, e `AutonomousAgentRuntime` — il suo unico consumatore — non
+è **mai costruito**, né in `src/` né nei test. Non va unificata: va rinominata insieme
+al resto di quella pipeline, o cancellata con essa. È fuori dal mandato di `R1`.
+
+**Applicato.** La copia di Gate 6 è sparita; da tre definizioni a due.
+
+#### `TrustTier` — canonica: `NosAi.Runtime.Autonomy.TrustTier`
+
+| Definizione | Scala |
+|---|---|
+| `Autonomy` | `Tier0_ReadOnly` … `Tier4_FullAutonomous` (byte) |
+| `Contracts` | `Tier1` … `Tier4` (int), **nessun gradino di sola lettura** |
+
+`AutonomyPipeline.cs` sostiene che siano « due domande diverse »: una gradua la
+sensibilità di una `RuntimeCapability` richiesta, l'altra l'autonomia del runtime.
+**Il codice smentisce il commento.** `IRuntimeAuthorizationPolicy.Evaluate` prende
+`requiredTier` **e** `grantedTier` dello stesso tipo e confronta `grantedTier <
+requiredTier`; `TrustBoundary.IsAuthorized` confronta `_currentTrust >= requiredTier`.
+È lo stesso ordinamento sulla stessa idea di fiducia, usato in entrambi i sensi da
+entrambe le pipeline. Un solo concetto.
+
+**Canonica quella di `Autonomy` perché è la sola che sa dire « nessuna autonomia ».**
+Con la scala di `Contracts`, `TrustBoundary` non può rappresentare un runtime in sola
+lettura: il gradino più basso esprimibile è già un permesso. Una scala di sicurezza a
+cui manca lo zero costringe a inventare un valore per « niente », ed è il difetto che
+questo progetto rifiuta ovunque altrove.
+
+**Campi persi: nessuno.** I valori `1..4` coincidono numericamente fra le due scale,
+quindi ogni confronto e ogni serializzazione per numero resta identica. Si guadagna lo
+zero. Cambiano invece i **nomi** dei membri (`Tier1` → `Tier1_Assisted`), quindi la
+propagazione non è meccanica: ogni sito d'uso va riscritto a mano.
+
+**Non applicato, e il motivo è misurato.** Togliere `Contracts.TrustTier` produce
+**30 errori di compilazione in 8 file**, di cui 6 fuori dal perimetro di questa
+sessione: `Adapters/NosTaleGameAdapter.cs`, `Guard/GuardAi.cs`,
+`LowLevel/InputControlTestRunner.cs`, `Orchestration/AutonomousAgentRuntime.cs`,
+`Orchestration/AutonomousOrchestratorLoop.cs`, `Orchestration/Orchestrator.cs`,
+`Security/RuntimeAuthorization.cs`, `Safety/SafetyGate.cs`. La rimozione appartiene
+alla propagazione, non alla decisione.
+
+#### `SafetyGate` — **non un duplicato: due concetti sotto un nome**
+
+| Definizione | Domanda a cui risponde | Firma |
+|---|---|---|
+| `Safety.SafetyGate : ISafetyGate` | « questo *chiamante* ha il diritto di esercitare questa capability? » | `Authorize(CandidateAction, GuardDecision) → bool`, con `SecurityPrincipal` e `IRuntimeAuthorizationPolicy` |
+| `Autonomy.SafetyGate` | « emetti una credenziale a uso singolo, firmata e con scadenza, per *questa* azione » | `TryAuthorize(ActionCandidate, PredictedOutcome, RuntimeMode, out SafetyToken)`, `ValidateToken` |
+
+**Zero membri in comune, zero firme in comune, tipi d'ingresso diversi**
+(`CandidateAction` contro `ActionCandidate`), uscite diverse (una decisione contro un
+token HMAC). Non sono due copie che hanno divergito: sono due stadi distinti di un
+percorso di autorizzazione — la **politica** e la **credenziale** — che hanno pescato
+la stessa parola.
+
+Entrambi sono vivi e provati: il primo lo costruisce `RuntimeComposition.CreateSafe()`
+e lo coprono dieci prove in `RuntimeAuthorizationTests`; il secondo firma ogni token
+del ciclo Gate 3.
+
+**Quindi la mossa non è unificare, è rinominare.** Unificarli richiederebbe di
+decidere quale delle due domande è quella vera, e nessuna delle due è di troppo. I
+nomi proposti dicono il livello:
+
+- `Safety.SafetyGate` → **`CapabilityAuthorizationGate`** — decide su principal e
+  capability, non su una singola azione;
+- `Autonomy.SafetyGate` → **`ActionTokenIssuer`** — emette e valida la credenziale di
+  un atto.
+
+**Campi persi: nessuno**, perché nulla viene fuso.
+
+**Non applicato.** Un rinomina è propagazione per definizione: tocca 28 siti in 9 file,
+fra cui `Orchestration/RuntimeComposition.cs` e quattro file di prova.
+
+#### Che cosa ha trovato la prova, e nessuno aveva enumerato
+
+`DuplicateTypeNameTests` guarda l'assembly con la reflection invece di fidarsi
+dell'elenco. Oltre ai tre nomi del mandato ne ha trovati **sette**:
+`ActionExecutionVerifier`, `AuthorizedActionExecutor` ed `ExecutionResult` (Gate 3 e
+Gate 6, tenuti separati per decisione già scritta), `Position2D` — **quattro**
+definizioni di un punto sul piano, in `Events.InstantBattle`, `Raids.Dodekatheon`,
+`Gate2` e `Gate6` — `CaptureFrame`, `ScreenPoint`, e `Program` (un `Main` per
+eseguibile, atteso).
+
+Il documento diceva tre; la misura dice dieci. Ognuno è dichiarato nella prova con il
+proprio motivo, e la prova fallisce sia su un duplicato **nuovo** non dichiarato, sia
+su una voce dichiarata che **non serve più** — così l'elenco si accorcia da solo
+invece di sopravvivere al debito che descriveva.
+
+---
+
 ### `R2` — Sciogliere `AutonomyPipeline.cs`
 
 `R1` non regge finché il file che duplica resta un contenitore unico: il prossimo tipo

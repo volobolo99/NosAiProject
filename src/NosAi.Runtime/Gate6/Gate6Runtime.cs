@@ -1,4 +1,10 @@
 using TrustTier = NosAi.Runtime.Autonomy.TrustTier;
+// R1: la verifica ha una sola definizione, ed è quella di Gate 3. Alias mirati
+// invece di importare il namespace, perché Gate3.ExecutionResult e
+// Gate6.ExecutionResult restano due tipi distinti — l'uno legato a un effettore
+// reale, l'altro al mondo simulato di questo gate.
+using VerificationResult = NosAi.Runtime.Gate3.VerificationResult;
+using VerificationOutcome = NosAi.Runtime.Gate3.VerificationOutcome;
 using NosAi.Runtime.Autonomy;
 // ============================================================================
 // Project: NosAi — Controlled Automation Runtime
@@ -54,13 +60,6 @@ namespace NosAi.Runtime.Gate6
         DataSourceKind Source
     );
 
-    public sealed record VerificationResult(
-        Guid CandidateId,
-        bool IsSuccess,
-        float DiscrepancyScore,
-        string AnalysisReport
-    );
-
     #endregion
 
     #region 2. Confini di sicurezza e modello delle autorità
@@ -106,16 +105,36 @@ namespace NosAi.Runtime.Gate6
 
     public sealed class ActionExecutionVerifier
     {
+        /// <remarks>
+        /// R1: la definizione di <see cref="VerificationResult"/> è quella di Gate 3.
+        /// I due esiti che questo verificatore sa produrre — riuscito e non — erano
+        /// un <c>bool</c>; sono ora <see cref="VerificationOutcome.Confirmed"/> e
+        /// <see cref="VerificationOutcome.Discrepant"/>, e un'esecuzione mai
+        /// completata è <see cref="VerificationOutcome.NotExecuted"/>, che è quello
+        /// che era. Il campo che questo gate non aveva è la provenienza, e vale
+        /// <see cref="DataSourceKind.Simulated"/>: è ciò che il gate già dichiara di
+        /// sé in ogni <see cref="ExecutionResult"/> che emette, scritto adesso anche
+        /// sul verdetto invece di essere sottinteso.
+        /// </remarks>
         public VerificationResult Verify(ActionCandidate candidate, PredictedOutcome predicted, ExecutionResult exec, int actualHpAfter, int actualMpAfter)
         {
             if (!exec.ExecutionCompleted)
-                return new VerificationResult(candidate.CandidateId, false, 1.0f, $"Esecuzione fallita: {exec.ErrorMessage}");
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.NotExecuted,
+                    1.0f,
+                    $"Esecuzione fallita: {exec.ErrorMessage}",
+                    DataSourceKind.Simulated);
 
             string observedSig = $"POST_HP_{actualHpAfter}_MP_{actualMpAfter}";
             bool matches = predicted.StateSignatureAfter == observedSig;
 
-            return new VerificationResult(candidate.CandidateId, matches, matches ? 0.0f : 0.40f,
-                matches ? "Verifica confermata (mondo simulato)." : $"Discrepanza: Atteso {predicted.StateSignatureAfter}, Rilevato {observedSig}");
+            return new VerificationResult(
+                candidate.CandidateId,
+                matches ? VerificationOutcome.Confirmed : VerificationOutcome.Discrepant,
+                matches ? 0.0f : 0.40f,
+                matches ? "Verifica confermata (mondo simulato)." : $"Discrepanza: Atteso {predicted.StateSignatureAfter}, Rilevato {observedSig}",
+                DataSourceKind.Simulated);
         }
     }
 
@@ -276,7 +295,9 @@ namespace NosAi.Runtime.Gate6
             ExecutionResult exec = await _executor.ExecuteAsync(candidate, outcome, token!, ct).ConfigureAwait(false);
             VerificationResult verif = _verifier.Verify(candidate, outcome, exec, _world.CurrentHp, _world.CurrentMp);
 
-            if (verif.IsSuccess)
+            // IsConfirmed è ciò che IsSuccess diceva: solo un esito confermato
+            // conta come riuscito, e ogni altro no.
+            if (verif.IsConfirmed)
             {
                 // Not a reset: a recorded success. Whether it amounts to a recovery
                 // is the controller's to decide, from the window and the trial.
