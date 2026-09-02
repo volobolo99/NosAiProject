@@ -379,6 +379,45 @@ public sealed class CommitPointTests
         Assert.Contains("release-button:Left", inner.Events);
     }
 
+    /// <summary>
+    /// The operator's suspend has to reach the act already in flight, not only the next
+    /// one (§ 2.3). Disarming the policy refuses the following call and says nothing
+    /// about the key this program already pressed.
+    /// </summary>
+    [Fact]
+    public void AbortingTheOpenScopeReleasesWhatTheActWasHolding()
+    {
+        (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
+
+        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        scope!.RecordKey(0x41);
+        scope.RecordButton(MouseButton.Left);
+
+        Assert.True(gate.AbortOpenScope("operator_emergency_stop"));
+
+        Assert.Equal(0, scope.HeldCount);
+        Assert.True(scope.IsAborted);
+        Assert.Equal("operator_emergency_stop", scope.AbortReason);
+        Assert.Contains("release-key:65", inner.Events);
+        Assert.Contains("release-button:Left", inner.Events);
+    }
+
+    /// <summary>An emergency stop has to be callable twice, so nothing to abort is not a failure.</summary>
+    [Fact]
+    public void AbortingWithNoActInFlightIsNotAnError()
+    {
+        (GatedInputBackend gate, RecordingInputBackend inner, _, _) = LiveGate();
+
+        Assert.False(gate.AbortOpenScope("operator_emergency_stop"));
+
+        Assert.True(gate.TryBeginActuation(Request(), out ActuationScope? scope, out _));
+        scope!.RecordKey(0x41);
+        Assert.True(gate.AbortOpenScope("operator_emergency_stop"));
+        Assert.False(gate.AbortOpenScope("operator_emergency_stop"));
+
+        Assert.Single(inner.Events, e => e == "release-key:65");
+    }
+
     /// <summary>Modifiers come up after the key they were held around, as a completed press would.</summary>
     [Fact]
     public void ReleasesHappenInReverseOrderOfPressing()

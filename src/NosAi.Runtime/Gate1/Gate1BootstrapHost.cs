@@ -548,13 +548,21 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             // dropped the session while input stayed armed would leave the
             // dangerous half running.
             _runtime.Safety.EmergencyStop("operator_emergency_stop");
+
+            // Then abandon the act already in flight. Disarming only refuses the
+            // next call; the key this program pressed is already down, and the
+            // scope is the only thing that knows about it (§ 2.3).
+            bool aborted = _runtime.InputBackend is GatedInputBackend gate
+                && gate.AbortOpenScope("operator_emergency_stop");
+
             _health = RuntimeHealthStatus.Failed;
             _channel.TerminateSession("operator_emergency_stop");
             _logger.Warning("Operator emergency stop accepted; every acting power disarmed.", new Dictionary<string, object?>
             {
                 ["health"] = _health.ToString(),
                 ["liveInput"] = _runtime.SafetyPolicy.LiveInputEnabled,
-                ["packetInjection"] = _runtime.SafetyPolicy.PacketInjectionEnabled
+                ["packetInjection"] = _runtime.SafetyPolicy.PacketInjectionEnabled,
+                ["actInFlightAborted"] = aborted
             });
         }
     }

@@ -156,6 +156,43 @@ public sealed class GatedInputBackend : IInputBackend
         return true;
     }
 
+    /// <summary>
+    /// Abandons the act in flight, if any, releasing whatever it was holding down.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// § 2.3 requires the operator's suspend to stop everything <i>immediately</i>, and
+    /// disarming the policy alone does not: the policy is read on the way in, so it
+    /// refuses the next call and says nothing about the key the current act already
+    /// pressed. Without this, an emergency stop during a program that holds a key would
+    /// disarm the runtime and leave the key down — the one state where stopping made
+    /// things worse than not stopping.
+    /// </para>
+    /// <para>
+    /// The release goes out through <see cref="ReleaseHeld"/>, which cannot press
+    /// anything, so this is a way to let go and not a way back in. Nothing to abort is
+    /// success, not an error: an emergency stop has to be callable twice.
+    /// </para>
+    /// </remarks>
+    /// <returns>True when there was an act to abandon.</returns>
+    public bool AbortOpenScope(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        ActuationScope? open;
+        lock (_scopeLock)
+            open = _scope;
+
+        // An already-aborted scope stays registered until its owner disposes it, so
+        // "there is a scope" is not "there is an act to abandon". Reporting true twice
+        // would tell an operator that a second stop caught something.
+        if (open is null || open.IsAborted)
+            return false;
+
+        open.Abort(reason);
+        return true;
+    }
+
     internal void CloseScope(ActuationScope scope)
     {
         lock (_scopeLock)
