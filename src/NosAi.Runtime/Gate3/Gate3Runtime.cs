@@ -588,7 +588,9 @@ namespace NosAi.Runtime.Gate3
             SafetyToken token,
             CancellationToken cancellationToken = default)
         {
-            if (!_safetyGate.ValidateToken(token))
+            // R3: the digest is recomputed from the candidate being presented, so a
+            // token issued for one action no longer validates another that kept its id.
+            if (!_safetyGate.ValidateToken(token, candidate))
             {
                 return new ExecutionResult(
                     candidate.CandidateId,
@@ -621,7 +623,7 @@ namespace NosAi.Runtime.Gate3
             try
             {
                 ExecutionResult result = await _effector
-                    .ApplyAsync(candidate, cancellationToken)
+                    .ApplyAsync(candidate, token, cancellationToken)
                     .ConfigureAwait(false);
 
                 return result with { ActualDurationMs = (int)sw.ElapsedMilliseconds };
@@ -1547,7 +1549,8 @@ namespace NosAi.Runtime.Gate3
             public bool CanApply => true;
             public string? UnavailableReason => null;
 
-            public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
+            public Task<ExecutionResult> ApplyAsync(
+                ActionCandidate candidate, SafetyToken token, CancellationToken cancellationToken = default)
             {
                 Applications++;
                 return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
@@ -1608,9 +1611,10 @@ namespace NosAi.Runtime.Gate3
             // A token whose signature does not come from this gate's key must never
             // authorise: without the check, anyone able to construct the type could act.
             ActionTokenIssuer gate = Gate(TrustTier.Tier4_FullAutonomous);
-            var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
+            ActionCandidate candidate = Candidate();
+            var forged = new SafetyToken(candidate.CandidateId, TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
 
-            return !gate.ValidateToken(forged);
+            return !gate.ValidateToken(forged, candidate);
         }
 
         private static bool TestTokenSingleUse()
@@ -1636,7 +1640,7 @@ namespace NosAi.Runtime.Gate3
             var expired = new SafetyToken(
                 candidate.CandidateId, issued!.GrantedTier, issued.Signature, TimeSpan.FromMilliseconds(-1));
 
-            return !gate.ValidateToken(expired) && !expired.TryConsume();
+            return !gate.ValidateToken(expired, candidate) && !expired.TryConsume();
         }
 
         private static bool TestGuardBlocksWhenStopped()

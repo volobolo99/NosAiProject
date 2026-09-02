@@ -113,6 +113,12 @@ public sealed class InputActionEffector : IActionEffector
     /// </remarks>
     public const string KeybindsRelativePath = "data/keybinds.json";
 
+    /// <summary>Reported when the token names a different action from the one presented.</summary>
+    public const string TokenNotBoundReason = "safety_token_bound_to_another_candidate";
+
+    /// <summary>Reported when the authorisation had run out by the time the act would leave.</summary>
+    public const string TokenExpiredAtEmissionReason = "safety_token_expired_at_emission";
+
     /// <summary>
     /// Held down long enough for the client to register the key. Not tuned
     /// against the real client; F5-2's sequences are what will confirm it.
@@ -186,12 +192,40 @@ public sealed class InputActionEffector : IActionEffector
         !_policySource().LiveInputEnabled ? "live_input_disabled_by_policy" : _sessionAuthority?.Invoke();
 
     /// <inheritdoc />
+    /// <param name="token">
+    /// The authorisation for this exact action (ADR-0020 § 4).
+    /// </param>
+    /// <remarks>
+    /// <b>What the token adds here, and what it does not.</b> It does <i>not</i>
+    /// re-verify the signature: the signing key lives inside
+    /// <see cref="Safety.ActionTokenIssuer"/> and must not leave it, so the only place
+    /// that can tell a genuine token from a forgery is the issuer, one layer up. A
+    /// reader who believed otherwise would be trusting a defence that is not there,
+    /// which is the worst class of error this project has.
+    /// <para>
+    /// What it adds is the pair of checks the boundary <i>can</i> make and nobody was
+    /// making: that the token is bound to the candidate about to be executed, and that
+    /// it has not expired <b>at the instant of emission</b>. That second one covers
+    /// exactly the interval ADR-0020 § 4 names as covered by nothing — between the
+    /// executor consuming the token and the click leaving, this method resolves a
+    /// keybind and projects a coordinate, and an act emitted past its authorisation
+    /// window is an act nobody authorised now.
+    /// </para>
+    /// </remarks>
     public Task<ExecutionResult> ApplyAsync(
         ActionCandidate candidate,
+        SafetyToken token,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(token);
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (token.CandidateId != candidate.CandidateId)
+            return Task.FromResult(Result(candidate, ExecutionState.Refused, 0, TokenNotBoundReason));
+
+        if (token.IsExpired)
+            return Task.FromResult(Result(candidate, ExecutionState.Refused, 0, TokenExpiredAtEmissionReason));
 
         // Nothing is attempted while the policy is closed, and it reports as
         // suppressed rather than failed: the pipeline treats the cycle as not

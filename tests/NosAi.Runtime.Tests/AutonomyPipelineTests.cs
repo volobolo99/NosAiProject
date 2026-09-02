@@ -64,7 +64,7 @@ public sealed class AutonomyPipelineTests
 
         Assert.True(gate.TryAuthorize(candidate, Outcome(candidate.CandidateId),
             RuntimeMode.Normal, out SafetyToken? token, out _));
-        Assert.True(gate.ValidateToken(token!));
+        Assert.True(gate.ValidateToken(token!, candidate));
 
         Evidence.Live(_output, "durataToken", gate.TokenLifetime.TotalMilliseconds + " ms");
         Evidence.Live(_output, "validoAppenaEmesso", true);
@@ -72,12 +72,12 @@ public sealed class AutonomyPipelineTests
         Thread.Sleep(60);
 
         Evidence.Live(_output, "scaduto", token!.IsExpired);
-        Evidence.Live(_output, "validoDopoLaScadenza", gate.ValidateToken(token),
+        Evidence.Live(_output, "validoDopoLaScadenza", gate.ValidateToken(token, candidate),
             "la firma e' ancora buona: a cadere e' solo il tempo");
 
         // Same gate, same key, same token: only time has passed.
         Assert.True(token!.IsExpired);
-        Assert.False(gate.ValidateToken(token));
+        Assert.False(gate.ValidateToken(token, candidate));
         Assert.False(token.TryConsume());
     }
 
@@ -89,7 +89,7 @@ public sealed class AutonomyPipelineTests
 
         Assert.True(gate.TryAuthorize(candidate, Outcome(candidate.CandidateId),
             RuntimeMode.Normal, out SafetyToken? token, out _));
-        Assert.True(gate.ValidateToken(token!));
+        Assert.True(gate.ValidateToken(token!, candidate));
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class AutonomyPipelineTests
         issuer.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal,
             out SafetyToken? token, out _);
 
-        Assert.False(other.ValidateToken(token!));
+        Assert.False(other.ValidateToken(token!, candidate));
     }
 
     [Fact]
@@ -116,46 +116,51 @@ public sealed class AutonomyPipelineTests
 
         token!.Signature[0] ^= 0xFF;
 
-        Assert.False(gate.ValidateToken(token));
+        Assert.False(gate.ValidateToken(token, candidate));
     }
 
     /// <summary>
-    /// What the signature actually covers, written down because F2-1 had to ask
+    /// What the signature actually covers — the test that inverted when R3 landed.
     /// before changing the shape of the target.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <c>TryAuthorize</c> signs <c>candidate.CandidateId</c> and nothing else —
-    /// not the action type, not the target, not the trust required. So changing
-    /// the target's shape does not change what is signed, which is why the reuse,
-    /// expiry and forgery tests above passed unchanged through that refactor.
+    /// <b>This test used to assert the opposite, and that is the point of R3.</b>
+    /// <c>TryAuthorize</c> signed <c>candidate.CandidateId</c> and nothing else — not
+    /// the action type, not the target, not the trust required — so a candidate copied
+    /// with a different target kept its id and the token went on validating it. The
+    /// token authorised <i>an identifier</i>, not <i>an action</i>. It was recorded as a
+    /// limit in <c>docs/GATE3_PIPELINE.md</c> and written down here as a fact rather
+    /// than fixed, because widening the HMAC is a change to security behaviour and
+    /// needed its own decision (ADR-0020 § 3) instead of a refactor's coat-tails.
     /// </para>
     /// <para>
-    /// The other half of the same fact is a real limit: a candidate copied with a
-    /// different target keeps its id, and this token still validates it. The token
-    /// authorises <i>an identifier</i>, not <i>an action</i>. Recorded in
-    /// docs/GATE3_PIPELINE.md; widening the HMAC is a change to security
-    /// behaviour and needs its own decision, not a refactor's coat-tails.
+    /// The decision was taken and the digest now covers every field that changes what
+    /// the act does, so the same scenario refuses. The two assertions at the end are the
+    /// whole difference between the two designs.
     /// </para>
     /// </remarks>
     [Fact]
-    public void TheTokenBindsTheCandidateIdAndNotTheActionItAuthorised()
+    public void ATokenDoesNotValidateACandidateWhoseTargetWasRebound()
     {
         var gate = NewGate();
         ActionCandidate candidate = Candidate(ActionType.UseBasicAttack);
         gate.TryAuthorize(candidate, Outcome(candidate.CandidateId), RuntimeMode.Normal,
             out SafetyToken? token, out _);
 
-        // A different target, the same id.
+        // A different target, the same id: exactly what the old signature could not see.
         ActionCandidate elsewhere = candidate with
         {
             Target = new ActionTarget.Entity(999_999, new MapPoint(1, 1))
         };
 
         Assert.Equal(candidate.CandidateId, elsewhere.CandidateId);
-        Assert.NotEqual(candidate.Target, elsewhere.Target);
-        Assert.True(gate.ValidateToken(token!));
         Assert.Equal(token!.CandidateId, elsewhere.CandidateId);
+        Assert.NotEqual(candidate.Target, elsewhere.Target);
+
+        // The act it was issued for still validates; the substituted one does not.
+        Assert.True(gate.ValidateToken(token, candidate));
+        Assert.False(gate.ValidateToken(token, elsewhere));
     }
 
     [Fact]

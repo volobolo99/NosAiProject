@@ -97,9 +97,15 @@ public sealed class ActionTokenIssuer
             return false;
         }
 
-        byte[] signature = HMACSHA256.HashData(
-            _gateSigningKey,
-            candidate.CandidateId.ToByteArray());
+        // R3 / ADR-0020 § 3. This used to hash candidate.CandidateId alone, so
+        // `candidate with { Target = ... }` produced a different action carrying the
+        // same Guid and the token went on validating it. The signature now covers
+        // every field that changes what the act does.
+        Span<byte> intent = stackalloc byte[ActionIntentDigest.Size];
+        ActionIntentDigest.Write(candidate, intent);
+
+        var signature = new byte[HMACSHA256.HashSizeInBytes];
+        HMACSHA256.HashData(_gateSigningKey, intent, signature);
 
         token = new SafetyToken(
             candidate.CandidateId,
@@ -111,7 +117,8 @@ public sealed class ActionTokenIssuer
     }
 
     /// <summary>
-    /// True only for a token this gate signed that has not yet expired.
+    /// True only for a token this gate signed <i>for this exact action</i>, and that has
+    /// not yet expired.
     /// </summary>
     /// <remarks>
     /// The expiry check is load-bearing. Gate 6's copy of this method checked the
@@ -120,11 +127,24 @@ public sealed class ActionTokenIssuer
     /// Without the comparison an action authorised long ago could still be
     /// executed now, and that is why it must not be removed.
     /// </remarks>
-    public bool ValidateToken(SafetyToken token)
+    /// <param name="candidate">
+    /// The action being presented for execution. Required, and this is the point of
+    /// R3: the digest is recomputed from what the caller is <i>about to do</i>, so a
+    /// candidate whose target was rebound after authorisation produces different bytes
+    /// and fails the comparison. There is deliberately no overload that validates a
+    /// token on its own — that overload was the defect, and leaving it beside the fixed
+    /// method would leave every caller of it still broken.
+    /// </param>
+    public bool ValidateToken(SafetyToken token, ActionCandidate candidate)
     {
-        byte[] expected = HMACSHA256.HashData(
-            _gateSigningKey,
-            token.CandidateId.ToByteArray());
+        ArgumentNullException.ThrowIfNull(token);
+        ArgumentNullException.ThrowIfNull(candidate);
+
+        Span<byte> intent = stackalloc byte[ActionIntentDigest.Size];
+        ActionIntentDigest.Write(candidate, intent);
+
+        Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
+        HMACSHA256.HashData(_gateSigningKey, intent, expected);
 
         return CryptographicOperations.FixedTimeEquals(expected, token.Signature) &&
                token.ExpiresAtUtc >= DateTime.UtcNow;

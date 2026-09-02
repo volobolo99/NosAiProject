@@ -31,6 +31,22 @@ public sealed class InputActionEffectorTests
 
     private static readonly RuntimeSafetyPolicy Closed = RuntimeSafetyPolicy.SafeDefault;
 
+    /// <summary>
+    /// The authorisation the executor would be carrying, bound to this candidate.
+    /// </summary>
+    /// <remarks>
+    /// Minted directly rather than issued: what the effector checks at the emitting
+    /// boundary is the binding and the expiry, not the signature — the signing key never
+    /// leaves <see cref="ActionTokenIssuer"/>, so a genuine one would add nothing here
+    /// that these tests could observe. The tests that do exercise the signature live
+    /// beside the issuer, where it can be checked.
+    /// </remarks>
+    private static SafetyToken TokenFor(ActionCandidate candidate) =>
+        new(candidate.CandidateId, candidate.RequiredTrust, new byte[32], TimeSpan.FromSeconds(30));
+
+    private static Task<ExecutionResult> Apply(IActionEffector effector, ActionCandidate candidate) =>
+        effector.ApplyAsync(candidate, TokenFor(candidate));
+
     /// <summary>A projection calibrated to shift a map point by a known offset.</summary>
     private sealed class FakeProjection : IScreenProjection
     {
@@ -143,7 +159,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, Binds(("consumable.4", 49)));
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Completed, result.State);
@@ -156,7 +172,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, Binds(("skill.201", 112)));
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseSkill, skillOrItemId: 201));
 
         Assert.Equal(ExecutionState.Completed, result.State);
@@ -177,7 +193,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, projection: new FakeProjection(offsetX: 1000, offsetY: 500));
 
-        ExecutionResult result = await effector.ApplyAsync(Candidate(type, x: 125, y: 85));
+        ExecutionResult result = await Apply(effector, Candidate(type, x: 125, y: 85));
 
         Assert.Equal(ExecutionState.Completed, result.State);
         Assert.Equal(["move-absolute:1125,585", "click:Left"], backend.Events);
@@ -194,7 +210,7 @@ public sealed class InputActionEffectorTests
     {
         (InputActionEffector effector, RecordingInputBackend backend) = Build(Open);
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Refused, result.State);
@@ -212,7 +228,7 @@ public sealed class InputActionEffectorTests
     {
         (InputActionEffector effector, RecordingInputBackend backend) = Build(Open);
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseBasicAttack, x: 125, y: 85));
 
         Assert.Equal(ExecutionState.Refused, result.State);
@@ -230,7 +246,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, projection: new FakeProjection(refuseWith: "point_outside_client_area"));
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.MoveToPosition, x: 9999, y: 9999));
 
         Assert.Equal(ExecutionState.Refused, result.State);
@@ -249,7 +265,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, projection: new FakeProjection());
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseBasicAttack, x: 0, y: 0));
 
         Assert.Equal(ExecutionState.Refused, result.State);
@@ -271,7 +287,7 @@ public sealed class InputActionEffectorTests
             Guid.NewGuid(), ActionType.UseBasicAttack, ActionTarget.Entity.Unidentified, 0,
             NosAi.Runtime.Contracts.TrustTier.Tier1_Assisted, "test");
 
-        ExecutionResult result = await effector.ApplyAsync(candidate);
+        ExecutionResult result = await Apply(effector, candidate);
 
         Assert.Equal(ExecutionState.Refused, result.State);
         Assert.Equal("target_entity_unresolved", result.Reason);
@@ -288,7 +304,7 @@ public sealed class InputActionEffectorTests
         (InputActionEffector effector, RecordingInputBackend backend) =
             Build(Open, projection: new FakeProjection());
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseBasicAttack, entityId: 313816, x: 0, y: 0));
 
         Assert.Equal(ExecutionState.Refused, result.State);
@@ -307,7 +323,7 @@ public sealed class InputActionEffectorTests
     {
         (InputActionEffector effector, RecordingInputBackend backend) = Build(Open);
 
-        ExecutionResult result = await effector.ApplyAsync(Candidate(type, x: 10, y: 10));
+        ExecutionResult result = await Apply(effector, Candidate(type, x: 10, y: 10));
 
         Assert.Equal(ExecutionState.Refused, result.State);
         Assert.Equal($"action_not_implemented:{type}", result.Reason);
@@ -319,7 +335,7 @@ public sealed class InputActionEffectorTests
     {
         (InputActionEffector effector, RecordingInputBackend backend) = Build(Open);
 
-        ExecutionResult result = await effector.ApplyAsync(Candidate(ActionType.None));
+        ExecutionResult result = await Apply(effector, Candidate(ActionType.None));
 
         Assert.Equal(ExecutionState.Refused, result.State);
         Assert.Equal("action_type_not_executable:None", result.Reason);
@@ -341,7 +357,7 @@ public sealed class InputActionEffectorTests
         var gate = new GatedInputBackend(new RejectingInputBackend(), () => policy);
         var effector = new InputActionEffector(gate, Binds(("consumable.4", 49)), () => policy);
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
 
         Assert.Equal(ExecutionState.Failed, result.State);
@@ -357,7 +373,7 @@ public sealed class InputActionEffectorTests
         var effector = new InputActionEffector(
             gate, KeybindMap.Empty, () => policy, new FakeProjection());
 
-        ExecutionResult result = await effector.ApplyAsync(
+        ExecutionResult result = await Apply(effector, 
             Candidate(ActionType.MoveToPosition, x: 125, y: 85));
 
         Assert.Equal(ExecutionState.Failed, result.State);
@@ -385,7 +401,7 @@ public sealed class InputActionEffectorTests
             Binds(("consumable.1", 49), ("skill.0", 112)),
             new FakeProjection());
 
-        ExecutionResult result = await effector.ApplyAsync(Candidate(type, x: 125, y: 85));
+        ExecutionResult result = await Apply(effector, Candidate(type, x: 125, y: 85));
 
         Assert.Equal(ExecutionState.Disabled, result.State);
         Assert.True(result.SuppressedByPolicy);
@@ -408,12 +424,12 @@ public sealed class InputActionEffectorTests
 
         Assert.Equal(
             ExecutionState.Completed,
-            (await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4))).State);
+            (await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4))).State);
 
         policy = Closed;
 
         ExecutionResult afterClosing =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
+            await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Disabled, afterClosing.State);
         Assert.Single(backend.Events);
@@ -455,14 +471,14 @@ public sealed class InputActionEffectorTests
         // Composed while everything is off, exactly as the host does it.
         Assert.False(effector.CanApply);
         ExecutionResult beforeArming =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
+            await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4));
         Assert.Equal(ExecutionState.Disabled, beforeArming.State);
         Assert.Empty(backend.Events);
 
         policy = Open;
 
         ExecutionResult afterArming =
-            await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
+            await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Completed, afterArming.State);
         Assert.Equal("key:49", Assert.Single(backend.Events));
@@ -484,9 +500,9 @@ public sealed class InputActionEffectorTests
                 Binds(("consumable.4", 49)),
                 () => policy));
 
-        await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
+        await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4));
         policy = Closed;
-        ExecutionResult stopped = await effector.ApplyAsync(Candidate(ActionType.UseConsumable, 101, slot: 4));
+        ExecutionResult stopped = await Apply(effector, Candidate(ActionType.UseConsumable, 101, slot: 4));
 
         Assert.Equal(ExecutionState.Disabled, stopped.State);
         Assert.Single(backend.Events);

@@ -56,7 +56,17 @@ public interface IActionEffector
     /// <summary>Why it cannot act; null when it can.</summary>
     string? UnavailableReason { get; }
 
-    Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default);
+    /// <param name="token">
+    /// The authorisation for <paramref name="candidate"/>, carried all the way to the
+    /// boundary that emits (ADR-0020 § 4). Required by the signature on purpose: an
+    /// effector that cannot receive one cannot be composed into the pipeline, so
+    /// "nothing emits without an authorisation bound to this act" is a property of the
+    /// types rather than of the order in which somebody happened to call them.
+    /// </param>
+    Task<ExecutionResult> ApplyAsync(
+        ActionCandidate candidate,
+        SafetyToken token,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -79,7 +89,10 @@ public sealed class DisabledActionEffector : IActionEffector
 
     public string? UnavailableReason => _reason;
 
-    public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
+    public Task<ExecutionResult> ApplyAsync(
+        ActionCandidate candidate,
+        SafetyToken token,
+        CancellationToken cancellationToken = default)
         => Task.FromResult(new ExecutionResult(
             candidate.CandidateId,
             ExecutionState.Disabled,
@@ -161,12 +174,15 @@ public sealed class PolicyGatedActionEffector : IActionEffector
 
     /// <inheritdoc />
     public Task<ExecutionResult> ApplyAsync(
-        ActionCandidate candidate, CancellationToken cancellationToken = default)
+        ActionCandidate candidate,
+        SafetyToken token,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(token);
 
         return LiveInputAllowed
-            ? _inner.ApplyAsync(candidate, cancellationToken)
+            ? _inner.ApplyAsync(candidate, token, cancellationToken)
             : Task.FromResult(new ExecutionResult(
                 candidate.CandidateId,
                 ExecutionState.Disabled,

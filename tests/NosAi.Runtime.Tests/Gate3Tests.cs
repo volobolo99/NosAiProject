@@ -60,7 +60,8 @@ public sealed class Gate3Tests
         public bool CanApply => true;
         public string? UnavailableReason => null;
 
-        public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
+        public Task<ExecutionResult> ApplyAsync(
+            ActionCandidate candidate, SafetyToken token, CancellationToken cancellationToken = default)
         {
             Applications++;
             return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
@@ -412,9 +413,15 @@ public sealed class Gate3Tests
     public void AForgedTokenAuthorisesNothing()
     {
         var gate = new ActionTokenIssuer(new TrustBoundary(TrustTier.Tier4_FullAutonomous), new GuardPolicyEngine());
-        var forged = new SafetyToken(Guid.NewGuid(), TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
+        var candidate = new ActionCandidate(
+            Guid.NewGuid(), ActionType.MoveToPosition, Somewhere, 0, TrustTier.Tier4_FullAutonomous, "a");
+        
+        // Same candidate id, so only the signature is wrong: the digest is computed
+        // from the candidate presented, and a token nobody signed cannot match it.
+        var forged = new SafetyToken(
+            candidate.CandidateId, TrustTier.Tier4_FullAutonomous, new byte[32], TimeSpan.FromMinutes(1));
 
-        Assert.False(gate.ValidateToken(forged));
+        Assert.False(gate.ValidateToken(forged, candidate));
     }
 
     [Fact]

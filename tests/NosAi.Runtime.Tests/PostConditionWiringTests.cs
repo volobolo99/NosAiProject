@@ -285,7 +285,8 @@ public sealed class PostConditionWiringTests
         public bool CanApply => true;
         public string? UnavailableReason => null;
 
-        public Task<ExecutionResult> ApplyAsync(ActionCandidate candidate, CancellationToken cancellationToken = default)
+        public Task<ExecutionResult> ApplyAsync(
+            ActionCandidate candidate, SafetyToken token, CancellationToken cancellationToken = default)
         {
             Applications++;
             return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
