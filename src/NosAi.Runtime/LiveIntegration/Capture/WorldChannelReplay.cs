@@ -109,10 +109,14 @@ public sealed record WorldChannelReplaySummary(
 public static class WorldChannelReplay
 {
     /// <summary>The opcodes <see cref="NosTaleWorldProtocolDecoder"/> reads.</summary>
-    // cond joined the list when the decoder learned to read it; a display list
-    // that drifts from the decoder reports packets as ignored while they are being
-    // read, which is the sort of quiet inaccuracy this whole report exists against.
-    private static readonly string[] ReadOpcodes = { "stat", "st", "in", "mv", "die", "su", "cond" };
+    // cond joined the list when the decoder learned to read it, and sr, ivn, get,
+    // drop and ct joined it with C1-3 and A4; a display list that drifts from the
+    // decoder reports packets as ignored while they are being read, which is the
+    // sort of quiet inaccuracy this whole report exists against. The census is
+    // read as evidence of what the chain does and does not consume, so a stale
+    // entry here understates the chain in exactly the direction nobody checks.
+    private static readonly string[] ReadOpcodes =
+        { "stat", "st", "in", "mv", "die", "su", "cond", "sr", "ivn", "get", "drop", "ct" };
 
     /// <summary>Reads a recording file and reports what the world channel said.</summary>
     public static WorldChannelReplaySummary ReplayFile(string path)
