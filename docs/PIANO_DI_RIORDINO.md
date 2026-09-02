@@ -209,6 +209,308 @@ ci finisce dentro per inerzia.
 **Fatto quando** — nessun file supera le 400 righe in `Autonomy/`, i test sono verdi, e
 il `git diff` non mostra cambi di logica.
 
+### `R2` — assegnazione
+
+Decisa il 2 settembre 2026 leggendo i sedici tipi e ognuno dei loro consumatori, con
+`R1` già propagato: `Contracts.TrustTier` non esiste più, `Autonomy.SafetyGate` è
+`ActionTokenIssuer` e `Safety.SafetyGate` è `Safety/CapabilityAuthorizationGate.cs`.
+Questa sezione usa i nomi nuovi.
+
+I tipi pubblici in `AutonomyPipeline.cs` sono **diciassette**, non sedici. Il
+diciassettesimo è `AutonomyPipelineNotes`: una classe statica con dentro una `const
+string` che ripete il nome del proprio namespace, e sopra il commento che racconta la
+storia del file. Nessuno la costruisce, nessuno la legge, nessun documento la cita —
+misurato, zero riferimenti in `src/`, `tests/` e `docs/`. È il caso di prova migliore
+che il criterio potesse avere, ed è trattata qui come gli altri sedici.
+
+#### Il criterio
+
+> **Un tipo sta nel file del componente che può cambiarlo da solo. Se cambiarlo
+> richiede l'accordo di più componenti, non appartiene a nessuno di loro: è il
+> vocabolario su cui devono mettersi d'accordo, e sta in `Contracts/`.**
+
+La domanda da porre al diciottesimo tipo è una sola, e si risponde contando:
+
+**chi deve essere d'accordo per aggiungergli un valore, o un campo?**
+
+- **Uno solo** → il tipo sta nel file di quel componente. Non ha vita propria: è ciò
+  che quel componente dice.
+- **Più d'uno** → il tipo è un accordo, e sta in `Contracts/`, un file per accordo.
+- **Nessuno** → non serve a nessuno, e va cancellato. È la risposta per
+  `AutonomyPipelineNotes`.
+
+Due corollari, che decidono la granularità e chiudono le ambiguità che restano.
+
+**Un file, un soggetto.** Il file porta il nome del suo soggetto e contiene lui e
+nient'altro che i tipi di cui è l'unico produttore. Un file il cui nome non nomina un
+soggetto — `AutonomyPipeline`, `RuntimeContracts` — è un magazzino: il nome non
+respinge nulla, quindi tutto ci entra. È il difetto che `R2` sta togliendo, e il
+criterio lo previene per costruzione, perché un tipo nuovo o ha un produttore unico, e
+allora ha già un file, o è un accordo, e allora l'accordo ha già un nome.
+
+**La cartella dice a quale domanda il file risponde.**
+
+| Cartella | Domanda | Comportamento |
+|---|---|---|
+| `Contracts/` | su che cosa i componenti devono essere d'accordo | nessuno, o solo la regola che rende un valore inesprimibile |
+| `Safety/` | che cosa è permesso adesso | rifiuta, e riduce ciò che è permesso |
+| `Autonomy/` | che cosa fare | propone, e non permette mai nulla a se stesso |
+
+**Perché questo criterio e non gli altri due che si presentano per primi.**
+
+*« Dati di là, comportamento di qua »* si rompe sul primo tipo che si guarda.
+`ActionCandidate` è un `record` il cui costruttore **rifiuta** « attacca il nulla »;
+`SafetyToken` è un oggetto valore che fa un `CompareExchange` per essere spendibile una
+volta sola. Sono dati il cui comportamento è la loro ragione d'essere, e una regola che
+li separasse metterebbe la regola lontano dalla cosa su cui vale.
+
+*« Per strato del flusso canonico »* non risponde per `RuntimeMode` né per `TrustTier`,
+che attraversano tutti gli strati per costruzione: il primo è letto dal guard, scritto
+dal breaker e scritto anche dal throttling termico di Gate 6; il secondo è confrontato
+dalla policy di `Security`, da `Guard`, dagli adattatori e da `TrustBoundary`. Uno
+strato solo non li contiene, quindi la domanda « quale strato » non ha risposta, e un
+criterio senza risposta si risolve a maggioranza in una riunione — che è esattamente
+ciò che questa sezione esiste per evitare.
+
+#### Che cosa risponde il criterio, prima dell'elenco
+
+**Nessuno dei diciassette resta in `Autonomy/`.**
+
+Non è un effetto collaterale: è la diagnosi. `AutonomyPipeline.cs` non conteneva niente
+che rispondesse a « che cosa fare ». Conteneva il vocabolario con cui si dice un atto, e
+le tre macchine che decidono se quell'atto è permesso. Il file portava il nome della
+cartella invece del nome di un soggetto, e una cartella non respinge niente: è per
+questo che diciassette tipi ci sono finiti dentro e nessuno se n'è accorto.
+
+`Autonomy/` resta con ciò che sceglie che cosa fare — `GoalStack` (175 righe),
+`TargetEstablishment` (152), `TargetSelector` (279) — e diventa per la prima volta una
+cartella che dice il vero.
+
+#### L'assegnazione
+
+**`Contracts/` — sette tipi, cinque file.** Vocabolario: nessuno di questi ha un
+produttore unico, e nessuno può cambiare senza che qualcuno fuori dalla propria cartella
+se ne accorga.
+
+| Tipo | File | Chi deve essere d'accordo per cambiarlo |
+|---|---|---|
+| `TrustTier` | `Contracts/TrustTier.cs` | `Security/RuntimeAuthorization` (la policy confronta richiesto e concesso), `Safety/TrustBoundary`, `Guard/GuardAi`, `Adapters/NosTaleGameAdapter`, `Orchestration`, `LowLevel`, `LiveIntegration`, Gate 1/3/6 — **misurato: 17 file**. Nessuno lo possiede |
+| `RuntimeMode` | `Contracts/RuntimeMode.cs` | `RecoveryController` lo scrive per `ref`; `Gate6Runtime` lo scrive da sé sul throttling termico (`_currentMode = RuntimeMode.Cooling`, riga 230); `GuardPolicyEngine` lo legge per rifiutare. **Tre scrittori, e uno non è nella catena di recovery** |
+| `MapPoint` | `Contracts/MapPoint.cs` | `Perception` (proiezione schermo), `LiveIntegration` (i provider di posizione), `Navigation`, Gate 1/2/3/6, `Autonomy`, e `NosAi.ControlPanel` — **un secondo assembly**. È l'unità di misura del mondo, e appartiene a chi lo misura tanto quanto a chi ci cammina |
+| `ActionType` | `Contracts/ActionCandidate.cs` | i pianificatori (`Gate3DecisionLoop`, `GoalStack`, `LocalAiInferenceEngine`, `Dodekatheon`), l'effettore (`InputActionEffector`), le postcondizioni (`PostConditions`) |
+| `ActionTarget` | `Contracts/ActionCandidate.cs` | gli stessi, più `TargetSelector` che li risolve |
+| `ActionCandidate` | `Contracts/ActionCandidate.cs` | gli stessi |
+| `PredictedOutcome` | `Contracts/PredictedOutcome.cs` | lo costruiscono `Gate3Runtime` e `Gate6Runtime`; lo leggono `GuardPolicyEngine` (soglia di rischio) e `PostConditions` (`StateSignatureAfter`). Due produttori, due lettori, nessun proprietario |
+
+`ActionType`, `ActionTarget` e `ActionCandidate` **stanno in un file solo**, ed è il
+corollario « un file, un soggetto » che si guadagna il posto: la regola che lega i primi
+due — `ActionCandidate.RequireTarget`, che rende inesprimibile « attacca il nulla » e
+« cammina verso un'entità » — è scritta dentro il terzo. In tre file la regola starebbe
+lontana da entrambe le metà che vincola, e la prossima persona che aggiunge un
+`ActionType` non la vedrebbe. Sono un accordo solo: *la forma di un atto proposto*.
+
+`PredictedOutcome` no, ed è la stessa regola applicata al contrario: è un accordo
+**diverso** — non che cosa si propone, ma che cosa ci si aspetta che accada — fra chi
+predice e chi valuta il rischio. Un file di diciassette righe è il prezzo giusto per non
+far credere che la previsione sia un campo del candidato.
+
+**`Safety/` — nove tipi, quattro file.** Le tre macchine che decidono se un atto è
+permesso, ognuna col vocabolario che soltanto lei produce.
+
+| Tipo | File | Perché |
+|---|---|---|
+| `TrustBoundary` | `Safety/TrustBoundary.cs` | È lo stato « quanta autonomia è in vigore adesso », e il suo `DowngradeTrust` è a senso unico per costruzione. Un componente che può solo ridurre ciò che è permesso è un componente di sicurezza, qualunque cosa dica la cartella in cui è nato |
+| `GuardPolicyEngine` | `Safety/GuardPolicyEngine.cs` | Applica la politica operativa: rifiuta a runtime `Stopped`, rifiuta il combattimento in `Cooling`, rifiuta sopra il 75 % di rischio. Rifiuta soltanto: non autorizza mai niente che fosse vietato |
+| `GuardEvaluationResult` | `Safety/GuardPolicyEngine.cs` | **Produttore unico, misurato**: quattro `new`, tutti dentro `GuardPolicyEngine.Evaluate`. Non ha vita propria — è la frase con cui quel motore risponde |
+| `ActionTokenIssuer` | `Safety/ActionTokenIssuer.cs` | Emette e valida la credenziale di un singolo atto. La chiave di firma è generata per istanza e non esce mai, quindi un token vale solo al cancello che l'ha emesso |
+| `SafetyToken` | `Safety/ActionTokenIssuer.cs` | **Produttore unico**: un solo `new SafetyToken` in codice di produzione, dentro `TryAuthorize`. Gli altri sei `new` sono prove che fabbricano un token contraffatto o scaduto per verificare che venga rifiutato — costruiscono ciò che il cancello deve respingere, non ciò che emette. Firma ed emittente vivono e cambiano insieme, e devono: `R3` sposta il digest dal solo `CandidateId` all'intento, e in questa disposizione è una modifica a un file |
+| `RecoveryController` | `Safety/RecoveryController.cs` | Il potere che ha è rifiutare (`TryBeginAction`) e togliere fiducia (`DowngradeTrust` fino a `Tier0_ReadOnly`). Non ne ha altri: le sue osservazioni di classe dicono per esteso che non rialza mai la fiducia, e che chiudere il breaker restituisce il `RuntimeMode` e nient'altro. Un componente che può solo restringere sta in `Safety/` |
+| `RecoveryState` | `Safety/RecoveryController.cs` | **Produttore unico**: è lo stato interno di quel breaker, esposto in lettura |
+| `RecoveryStrategy` | `Safety/RecoveryController.cs` | **Produttore unico**: lo restituisce solo `HandleFailure`. Lo leggono Gate 3 e `PostConditions`, ma leggere non è essere d'accordo — nessuno dei due può aggiungerci un valore senza passare dal metodo che lo produce |
+| `RecoveryHaltTransition` | `Safety/RecoveryController.cs` | **Produttore unico, misurato**: un solo `new`, dentro `Halt`. È la fotografia che quel metodo scatta |
+
+`Safety/ActionTokenIssuer.cs` finisce accanto a `Safety/CapabilityAuthorizationGate.cs`,
+ed è voluto. `R1` ha stabilito che sono due stadi distinti di un percorso di
+autorizzazione — la politica e la credenziale — e li ha separati per nome; metterli
+nella stessa cartella li separa **senza nasconderli l'uno all'altro**, che è la
+condizione perché `R3` possa guardarli insieme e dire quale ordine hanno.
+
+**Cancellato — un tipo.**
+
+| Tipo | Dove va | Perché |
+|---|---|---|
+| `AutonomyPipelineNotes` | via | Zero riferimenti, misurati. La `const string Namespace = "NosAi.Runtime.Autonomy"` ripete un fatto che il compilatore già conosce e che questa stessa sezione rende falso. Un tipo che nessuno può dover cambiare, perché nessuno lo usa, non ha un posto: ha una data di scadenza |
+
+Delle osservazioni che `AutonomyPipelineNotes` portava, **una sola va salvata** e non è
+ancora scritta altrove: la copia di Gate 6 di `ValidateToken` controllava la firma e non
+la scadenza, quindi su quel percorso i 1500 ms erano un commento e non un limite. Va
+lasciata nelle osservazioni di `ActionTokenIssuer.ValidateToken`, dove è la ragione per
+cui quel confronto sulla scadenza non va tolto. Il resto — quali file contenevano che
+cosa prima di `R1` — è archeologia che `git log` conserva meglio.
+
+#### I tre casi di `R1`
+
+##### `Position2D` × 4 — due concetti, non uno
+
+Le quattro definizioni non sono quattro copie:
+
+| Definizione | Forma | Che cosa misura |
+|---|---|---|
+| `Events.InstantBattle` | `(int X, int Y)`, `DistanceTo` su `int` | caselle dell'arena del CI |
+| `Gate2` | `(int X, int Y)`, `DistanceTo` su `long` | la posizione di `WorldEntity` nel modello del mondo |
+| `Gate6` | `(int X, int Y)`, `DistanceTo` su `int` | caselle del mondo simulato |
+| `Raids.Dodekatheon` | **`(double X, double Y)`**, `DistanceTo`, `Zero` | il centro di un telegrafo celeste, con raggio in caselle e **angolo in gradi** |
+
+**Le prime tre sono `MapPoint`, e `MapPoint` è già la stessa cosa**: `readonly record
+struct (int X, int Y)`. Vanno su `Contracts/MapPoint.cs`, che guadagna `DistanceTo`. Un
+punto sulla mappa non è un concetto di Gate 2, di Gate 6 o degli eventi: è l'unità in cui
+il filo riporta le posizioni e in cui la proiezione schermo le consuma, e quattro nomi
+per essa sono quattro occasioni perché due moduli intendano cose diverse dicendo la
+stessa parola.
+
+**La quarta no, e non va unita.** `CelestialSafeSpotResolver.TryResolveSafePosition`
+calcola un punto sicuro dividendo per la lunghezza di un vettore e moltiplicando per un
+margine; `ProjectedCelestialTelegraph.ContainsPoint` fa un `Atan2` e confronta gradi. È
+geometria continua. Chiamarla `MapPoint` direbbe che una schivata di raid mira a una
+casella — che è falso — e portarla a `int` quantizzerebbe esattamente il calcolo per cui
+quel risolutore esiste. **Resta, e cambia nome: `Raids.Dodekatheon.TelegraphPoint`**,
+perché il nome condiviso è ciò che ha reso questo un duplicato a quattro vie: due
+concetti diversi che non portano lo stesso nome non possono essere confusi da nessuno.
+
+Conseguenza sulla prova: la voce `["Position2D"]` in `DuplicateTypeNameTests.Declared` va
+tolta, e `EveryDeclaredDuplicateStillExists` lo dirà da solo se qualcuno se ne dimentica.
+
+##### `IAgentVerifier` e `AutonomousAgentRuntime` — si cancella
+
+Il misurato, oggi, con `R1` propagato:
+
+- `IAgentPlanner`, `IAgentExecutor`, `IAgentVerifier`: **zero implementazioni**, in `src/`
+  e in `tests/`;
+- `AutonomousAgentRuntime`: **mai costruito**, nessun `new` da nessuna parte;
+- e una cosa che `R1` non aveva enumerato: `Orchestrator` **non è mai costruito**, e
+  `AutonomousOrchestratorLoop` non è mai costruito né mai nominato fuori dal proprio
+  file. `Orchestration/` è morto per intero **tranne `RuntimeComposition.cs`**, che è il
+  composition root vivo e provato.
+
+**Si cancella**, e la ragione non è che è inutilizzata — è che è **un secondo percorso di
+autorizzazione all'atto**. `ADR-0020` apre dichiarando che ne esistono due, uno progettato
+e mai costruito e uno costruito e provato, e che nulla dice quale vince.
+`AutonomousAgentRuntime.Run` è un terzo: pianifica, autorizza con `IGuardAi` e
+`ISafetyGate`, esegue, verifica e ripianifica. `AutonomousOrchestratorLoop` è un quarto,
+con `Func<CandidateAction, bool> execute` e `Func<CandidateAction, bool> verify` passati
+dal chiamante — cioè con l'esecuzione e la verifica lasciate a chi costruisce l'oggetto.
+`R3` si chiama « un solo percorso di autorizzazione »; tenere in vita due percorsi che
+nessuno ha mai eseguito significa che `R3` dovrà argomentare contro di essi invece di
+limitarsi a costruire quello vero. Un percorso senza implementazioni non è un progetto
+conservato: è una risposta alternativa alla domanda su cui il progetto ha deciso di
+averne una sola.
+
+**Che cosa se ne va con lei**, esattamente:
+
+| Da | Che cosa |
+|---|---|
+| `Orchestration/AutonomousAgentRuntime.cs` | il file intero: `AutonomousAgentRuntime`, `AutonomousStepTrace`, `AutonomousRunResult` |
+| `Orchestration/AutonomousOrchestratorLoop.cs` | il file intero |
+| `Orchestration/Orchestrator.cs` | il file intero: `Orchestrator`, `OrchestratorTickResult` |
+| `Contracts/RuntimeContracts.cs` | `IAgentPlanner`, `IAgentExecutor`, `IAgentVerifier`, `AgentPlan`, `AgentStep`, `AutonomousRuntimeOptions`, `VerificationResult` |
+
+**Che cosa non se ne va, e va detto perché il taglio non sbordi.** `ActionKind`,
+`CandidateAction`, `GuardDecision`, `IGuardAi` e `ISafetyGate` **restano**: sono vivi e
+provati fuori da questa pipeline — `RuntimeComposition.CreateSafe()` li compone,
+`Safety/CapabilityAuthorizationGate` implementa `ISafetyGate`, `Guard/GuardAi` implementa
+`IGuardAi`, `PlayAi/UtilityAi` e i tre file di `Tactical/` li usano, e dieci prove in
+`RuntimeAuthorizationTests` li coprono. Dopo il taglio `RuntimeContracts.cs` resta con
+esattamente questi cinque, che sono un accordo solo — *il vocabolario dell'autorizzazione
+per capability* — e per il corollario « un file, un soggetto » il file va rinominato
+`Contracts/CandidateAction.cs`. Non è uno dei sedici: è la conseguenza che il criterio
+produce sul file rimasto, e va fatta nello stesso passo, o il magazzino resta aperto col
+nome che invita a riempirlo.
+
+**Il conto delle prove.** Nessuna prova costruisce nessuno dei tipi cancellati —
+verificato sull'intero `tests/`. Il numero di prove C# non deve scendere; se scende, la
+cancellazione ha preso qualcosa che non era morto e va fermata lì. Le prove Python
+`tests/test_agent_runtime.py` e `test_agent_runtime_expansion.py` portano un nome simile e
+**non** verificano questo codice: sono di `R4`, corsia B, e non si toccano qui.
+
+##### `Contracts.VerificationResult` — se ne va con la pipeline
+
+`R1` aveva deciso che non era un duplicato dei due `VerificationResult` di gate, che era
+l'esito di `IAgentVerifier.Verify`, e che non andava unificata ma « rinominata insieme al
+resto di quella pipeline, o cancellata con essa ». La pipeline si cancella, quindi si
+cancella con essa. Non c'è una terza opzione: un tipo `(bool Passed, string Reason)` senza
+il verificatore che lo produce sarebbe un terzo modo di dire « com'è andata la verifica »,
+e il primo che ne avesse bisogno lo userebbe al posto della canonica di Gate 3 proprio
+perché è più semplice — perdendo `Unverified` e la provenienza, che è la perdita che
+`VER-05` vieta e che `R1` ha argomentato per esteso.
+
+Il vincolo di sicurezza da rispettare nell'esecuzione: **`Gate3.VerificationResult` non va
+toccato**, e dopo il taglio resta l'unica definizione del nome. La voce
+`["VerificationResult"]` in `DuplicateTypeNameTests.Declared` diventa allora obsoleta e va
+tolta; `EveryDeclaredDuplicateStillExists` fallisce se non lo si fa, ed è la prova che
+accorcia l'elenco da sé — esattamente il comportamento per cui è stata scritta.
+
+#### Meccanico, o serve una scelta
+
+`Cursor` sposta ciò che è meccanico. Le tre righe segnate **scelta** sono lavoro di questa
+sessione: le decisioni sono prese qui sotto, così il passo resta uno spostamento.
+
+| Spostamento | Meccanico? |
+|---|---|
+| I nove tipi di `Safety/` (`TrustBoundary`; `GuardPolicyEngine` + `GuardEvaluationResult`; `ActionTokenIssuer` + `SafetyToken`; `RecoveryController` + `RecoveryState` + `RecoveryStrategy` + `RecoveryHaltTransition`) | **Sì.** Cambia solo il namespace: i consumatori in Gate 1/3/6, `LowLevel`, `Navigation`, `Observability` e `Host` sostituiscono `using NosAi.Runtime.Autonomy` con `using NosAi.Runtime.Safety`. Nessuna firma cambia |
+| `RuntimeMode`, `ActionType`, `ActionTarget`, `ActionCandidate`, `PredictedOutcome` → `Contracts/` | **Sì.** Stessa sostituzione di `using`, verso `NosAi.Runtime.Contracts` |
+| `TrustTier` → `Contracts/TrustTier.cs` | **Sì**, e va detto perché non riapre `R1`. `R1` ha deciso **quale definizione sopravvive**: la scala `Tier0_ReadOnly … Tier4_FullAutonomous`, ed è quella che si sposta, byte per byte, con gli stessi nomi di membro che `R1` ha appena propagato. Cambia il file. Costo misurato: dei 17 file che la nominano, **11 hanno già `using NosAi.Runtime.Contracts`** e devono solo togliere quello di `Autonomy`. Il guadagno è di strato: oggi `Security/RuntimeAuthorization.cs` — la policy che decide se un principal può esercitare una capability — importa `NosAi.Runtime.Autonomy` per sapere che cos'è un grado di fiducia. La sicurezza che dipende dall'autonomia è il verso sbagliato, e `CLAUDE.md` dice che il runtime è l'autorità sulla sicurezza |
+| `AutonomyPipelineNotes` → cancellato | **Sì.** Zero riferimenti |
+| `MapPoint` → `Contracts/`, e assorbe i tre `Position2D` interi | **Scelta.** Due, decise qui sotto |
+| `Position2D` di `Dodekatheon` → `TelegraphPoint` | **Sì**, una volta scelto di non unirlo: il tipo è usato in un file solo, `Zero` compreso |
+| Cancellazione della pipeline agente | **Scelta.** Una, decisa qui sotto |
+
+**Scelta 1 — `MapPoint.DistanceTo` sottrae in `long`.** `MapPoint` non ha `DistanceTo`; i
+tre `Position2D` che assorbe sì, e non sono d'accordo: Gate 2 sottrae in `long`, gli eventi
+e Gate 6 in `int`. È una differenza silenziosa dello stesso tipo che `R1` ha passato la
+giornata a togliere, e va chiusa nel verso sicuro. **`long`**: su coordinate di casella non
+cambia mai risultato, e su coordinate che un giorno non fossero di casella è la differenza
+fra una distanza sbagliata e una giusta. Chi propaga non deve decidere: la firma è
+`public double DistanceTo(MapPoint other)` con le sottrazioni in `long`.
+
+**Scelta 2 — il formato su filo di Gate 2 non cambia, ed è verificato.** `Gate2DeltaSync`
+serializza una posizione come due `ReadInt32` consecutivi, campo per campo: il nome del
+tipo non compare sul filo, quindi rinominare `Position2D` in `MapPoint` non è un cambio di
+contratto ai sensi di `ADR-0005` e non richiede una versione. Se la propagazione trova un
+percorso che serializza per nome, si ferma e lo segnala invece di adattare il formato.
+
+**Scelta 3 — che cosa fa il consumatore di `AutonomousRunResult`.** Non ce n'è nessuno: è
+la scelta che non c'è da fare, ed è la ragione per cui la cancellazione è un taglio e non
+una migrazione. Se la propagazione trova anche un solo chiamante che questa sezione non ha
+visto, **la cancellazione si ferma** e torna qui: un consumatore vivo cambierebbe la misura
+su cui la decisione è presa.
+
+#### Che cosa cambia nel « Fatto quando » di `R2`
+
+Il criterio d'accettazione scritto sopra — « nessun file supera le 400 righe in
+`Autonomy/` » — è stato scritto prima che qualcuno contasse i soggetti, e le 400 righe
+erano un modo indiretto di dire « nessun file è un magazzino ». Va letto per la proprietà
+che sostituiva, perché la misura letterale ora è soddisfatta per il motivo sbagliato:
+`Autonomy/` resta con tre file da 175, 152 e 279 righe **perché è stato svuotato**, non
+perché sia stato equilibrato.
+
+La proprietà vera è il corollario: **un file, un soggetto**. Un file la viola quando il suo
+nome non nomina il soggetto — ed è quello, non la lunghezza, che fa entrare il
+diciottesimo tipo per inerzia.
+
+Con l'assegnazione qui sopra c'è **un file solo sopra le 400 righe**, ed è
+`Safety/RecoveryController.cs`, circa 560. Non si divide: `TryBeginAction`,
+`HandleFailure`, `HandleSuccess` e `ResetFailures` prendono lo stesso `_lock` e mutano la
+stessa finestra, lo stesso `_state` e lo stesso contatore di halt. Separarli
+significherebbe separare il lock, cioè cambiare il comportamento di un componente di
+sicurezza sotto concorrenza — esattamente ciò che `R2` vieta al passo di propagazione. È
+lungo perché ha molto da dichiarare, non perché contenga più di una cosa: più di metà delle
+sue righe sono le osservazioni che dicono perché il contatore di fallimenti consecutivi non
+bastava.
+
+**`R2` è fatta quando** — nessun file in `Contracts/`, `Safety/` e `Autonomy/` contiene più
+di un soggetto; `AutonomyPipeline.cs` non esiste più; il numero di prove C# non è sceso; e
+il `git diff` non mostra cambi di logica al di fuori delle tre scelte enumerate sopra.
+
 ### `R3` — Un solo percorso di autorizzazione
 
 `ADR-0020` è deciso e non applicato. Finché non lo è, il token firma un identificativo e
