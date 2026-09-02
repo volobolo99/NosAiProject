@@ -1,3 +1,4 @@
+using System.Linq;
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 
@@ -17,8 +18,68 @@ namespace NosAi.Runtime.Gate3;
 public sealed record ObservedState(ClassifiedValue<int> Hp, ClassifiedValue<int> Mp)
 {
     /// <summary>Whether both readings came from a real observation.</summary>
+    /// <remarks>
+    /// The strictest tier, kept for a caller that wants it. It is no longer what
+    /// gates verification: see <see cref="IsUsableForVerification"/> and VER-04.
+    /// </remarks>
     public bool IsFullyObserved =>
         Hp.Source == DataSourceKind.Live && Mp.Source == DataSourceKind.Live && Hp.HasValue && Mp.HasValue;
+
+    /// <summary>
+    /// Whether this reading is good enough to verify an action with (VER-04).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The verification tier is not stricter than the actuation tier.</b> That
+    /// was the fourth defect of docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md § 1: the
+    /// verifier refused to conclude anything unless both readings were LIVE, while
+    /// ADR-0016 § 2 had already settled that a runtime may <i>act</i> on LIVE,
+    /// DERIVED or CACHED within the freshness bound. The two rules were never
+    /// reconciled, so the runtime could act on a screen-derived reading and could
+    /// never verify one — every cycle ADR-0018 made possible ended
+    /// <c>Unverified</c>.
+    /// </para>
+    /// <para>
+    /// The severity was on the wrong side. A reading too weak to verify with is
+    /// too weak to act on; the converse does not follow. So this admits exactly
+    /// what <see cref="Gate3WorldState.IsActionable"/> admits, measured the same
+    /// way: real (not UNKNOWN, not SIMULATED) and no older than the bound.
+    /// </para>
+    /// </remarks>
+    public bool IsUsableForVerification(DateTime nowUtc, TimeSpan maxAge)
+    {
+        if (maxAge < TimeSpan.Zero) return false;
+        if (!Hp.HasValue && !Mp.HasValue) return false;
+        if (Known().Any(v => v.Source == DataSourceKind.Simulated)) return false;
+
+        DateTime oldest = Known().Min(v => v.ObservedAtUtc);
+        TimeSpan age = nowUtc - oldest;
+        // A reading stamped in the future is a clock disagreement, not a fresh
+        // one, and is unusable rather than maximally recent.
+        return age >= TimeSpan.Zero && age <= maxAge;
+    }
+
+    /// <summary>
+    /// This reading as one element of a post-condition's series.
+    /// </summary>
+    /// <remarks>
+    /// The vitals and nothing else, because this type holds nothing else. A card
+    /// that needs the position, the entities or the inventory finds them UNKNOWN
+    /// here and says so by name — which is the honest answer for a runtime whose
+    /// only bound observer reads two numbers.
+    /// </remarks>
+    public Gate3WorldState ToWorldState() => new(
+        Hp: Hp,
+        MaxHp: ClassifiedValue<int>.Unknown("max_hp_not_read_back"),
+        Mp: Mp,
+        HasTarget: ClassifiedValue<bool>.Unknown("target_not_read_back"),
+        InCombat: ClassifiedValue<bool>.Unknown("combat_not_read_back"));
+
+    private IEnumerable<ClassifiedValue<int>> Known()
+    {
+        if (Hp.HasValue) yield return Hp;
+        if (Mp.HasValue) yield return Mp;
+    }
 
     public static ObservedState Unobserved(string reason) =>
         new(ClassifiedValue<int>.Unknown(reason), ClassifiedValue<int>.Unknown(reason));

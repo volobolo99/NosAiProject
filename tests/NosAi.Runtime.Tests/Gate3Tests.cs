@@ -55,10 +55,30 @@ public sealed class Gate3Tests
         }
     }
 
+    /// <summary>An observer that reads the same numbers, freshly stamped each time.</summary>
+    /// <remarks>
+    /// The stamp is taken when the read happens, not when the test built the
+    /// observer. VER-03 measures every confirming observation from the instant the
+    /// act was dispatched, so a reading stamped at construction is older than the
+    /// action and establishes nothing — which is right, and is what
+    /// <see cref="AReadingOlderThanTheActConfirmsNothing"/> pins.
+    /// </remarks>
     private sealed class FixedObserver : IWorldStateObserver
     {
+        private readonly int _hp;
+        private readonly int _mp;
+        public FixedObserver(int hp, int mp) { _hp = hp; _mp = mp; }
+        public bool CanObserve => true;
+
+        public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(ObservedState.Live(_hp, _mp, DateTime.UtcNow));
+    }
+
+    /// <summary>An observer that hands back one reading, stamped once, for ever.</summary>
+    private sealed class StaleObserver : IWorldStateObserver
+    {
         private readonly ObservedState _state;
-        public FixedObserver(ObservedState state) => _state = state;
+        public StaleObserver(ObservedState state) => _state = state;
         public bool CanObserve => true;
         public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default) => Task.FromResult(_state);
     }
@@ -153,16 +173,50 @@ public sealed class Gate3Tests
         Assert.True(result.CountsAsFailure);
     }
 
+    /// <summary>
+    /// An observation that contradicts the action drives recovery.
+    /// </summary>
+    /// <remarks>
+    /// The property is unchanged; what changed underneath it is what counts as a
+    /// contradiction. It used to be a mismatch between two strings built from the
+    /// prediction and from the observation, which for this cycle's <c>UseSkill</c>
+    /// meant nothing about the skill. It is now the card's own predicate
+    /// (docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md § 4.4): the MP did not fall, so
+    /// the skill did not fire, so the cycle failed. Same outcome, and now for a
+    /// reason that is about the action that was taken.
+    /// </remarks>
     [Fact]
     public async Task AnObservedMismatchDrivesRecovery()
     {
+        // MP unchanged at 100 across the window: the skill was not cast.
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), new FixedObserver(ObservedState.Live(1, 1)));
+            ExecutionAllowed, new CountingEffector(), new FixedObserver(hp: 800, mp: 100));
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
         Assert.Equal(CycleOutcome.Failed, result.Outcome);
         Assert.NotNull(result.Strategy);
+        Assert.Contains("mp_did_not_fall", result.Summary, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// VER-03: a reading taken before the act describes a world the action had not
+    /// touched. It is not weak evidence, it is none.
+    /// </summary>
+    [Fact]
+    public async Task AReadingOlderThanTheActConfirmsNothing()
+    {
+        // Stamped well before the cycle runs, and never restamped.
+        var stale = ObservedState.Live(800, 10, DateTime.UtcNow.AddSeconds(-1));
+        var orchestrator = new Gate3ExecutionOrchestrator(
+            ExecutionAllowed, new CountingEffector(), new StaleObserver(stale));
+
+        Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
+
+        // The MP in that reading are far below the emission value, so under a
+        // rule that ignored the instant this would have been a confirmation.
+        Assert.Equal(CycleOutcome.Unverified, result.Outcome);
+        Assert.False(result.IsConfirmed);
     }
 
     [Fact]
@@ -313,7 +367,7 @@ public sealed class Gate3Tests
         // refusal after the fact.
         var effector = new CountingEffector();
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
+            ExecutionAllowed, effector, new FixedObserver(hp: 0, mp: 0), TrustTier.Tier0_ReadOnly);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 

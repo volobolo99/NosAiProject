@@ -7,6 +7,7 @@ using IGameplayProvider = NosAi.LiveIntegration.IGameplayProvider;
 using GameplayObservation = NosAi.LiveIntegration.GameplayObservation;
 using Aggressor = NosAi.Runtime.Perception.Network.Aggressor;
 using TargetedEntity = NosAi.Runtime.Perception.Network.TargetedEntity;
+using InventorySlotReading = NosAi.Runtime.Perception.Network.InventorySlotReading;
 
 namespace NosAi.Runtime.Gate3;
 
@@ -52,6 +53,16 @@ namespace NosAi.Runtime.Gate3;
 /// <i>whether</i>, and neither stands in for the other (ADR-0018). Null when
 /// nothing has looked; sticky when known, so the state does not age on it.
 /// </param>
+/// <param name="Inventory">
+/// What the character's inventory slots were last stated to hold, from
+/// <c>ivn</c>. Null when nothing has looked. It is here because
+/// <c>CollectGroundItem</c>'s post-condition is an inventory predicate and
+/// nothing else in the state can answer it
+/// (docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md § 4.6, § 6); no planning rule reads
+/// it, so an absent list costs that one post-condition and nothing else. An
+/// empty list is never published: a slot nothing has mentioned is a slot nobody
+/// has read, not a slot known to be empty.
+/// </param>
 public sealed record Gate3WorldState(
     ClassifiedValue<int> Hp,
     ClassifiedValue<int> MaxHp,
@@ -61,7 +72,8 @@ public sealed record Gate3WorldState(
     IReadOnlyList<SelectableEntity>? Entities = null,
     ClassifiedValue<MapPoint>? PlayerPosition = null,
     ClassifiedValue<Aggressor>? HitBy = null,
-    ClassifiedValue<TargetedEntity>? SelectedTarget = null)
+    ClassifiedValue<TargetedEntity>? SelectedTarget = null,
+    ClassifiedValue<IReadOnlyList<InventorySlotReading>>? Inventory = null)
 {
     /// <summary>Whether the character's own vitals are all known.</summary>
     /// <remarks>
@@ -215,7 +227,8 @@ public sealed record Gate3WorldState(
         Entities: null,
         PlayerPosition: ClassifiedValue<MapPoint>.Unknown(reason),
         HitBy: ClassifiedValue<Aggressor>.Unknown(reason),
-        SelectedTarget: ClassifiedValue<TargetedEntity>.Unknown(reason));
+        SelectedTarget: ClassifiedValue<TargetedEntity>.Unknown(reason),
+        Inventory: ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason));
 
     /// <summary>
     /// The planning state a gameplay observation implies, field by field.
@@ -247,7 +260,8 @@ public sealed record Gate3WorldState(
             Entities: observation.Entities.HasValue ? observation.Entities.Value : null,
             PlayerPosition: observation.PlayerPosition,
             HitBy: observation.HitBy,
-            SelectedTarget: observation.SelectedTarget);
+            SelectedTarget: observation.SelectedTarget,
+            Inventory: observation.Inventory);
     }
 
     /// <summary>State read from the real client.</summary>

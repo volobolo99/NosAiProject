@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -504,11 +505,21 @@ namespace NosAi.Runtime.Gate3
     /// </remarks>
     public sealed class ActionExecutionVerifier
     {
+        /// <param name="nowUtc">
+        /// When the check is being made, for VER-04's freshness bound. The system
+        /// clock when omitted, so a caller with no clock of its own is unchanged.
+        /// </param>
+        /// <param name="maxAge">
+        /// The freshness bound. <see cref="Gate3ExecutionOrchestrator.DefaultMaxObservationAge"/>
+        /// when omitted.
+        /// </param>
         public VerificationResult Verify(
             ActionCandidate candidate,
             PredictedOutcome predicted,
             ExecutionResult execution,
-            ObservedState observed)
+            ObservedState observed,
+            DateTime? nowUtc = null,
+            TimeSpan? maxAge = null)
         {
             if (execution.SuppressedByPolicy)
             {
@@ -530,7 +541,13 @@ namespace NosAi.Runtime.Gate3
                     DataSourceKind.Unknown);
             }
 
-            if (!observed.IsFullyObserved)
+            // VER-04: the verification tier is not stricter than the actuation
+            // tier. This used to demand both readings LIVE while ADR-0016 § 2
+            // already let the runtime act on a fresh DERIVED or CACHED one, so
+            // every screen-driven cycle ended Unverified by rule rather than by
+            // observation. The bound is the caller's, for the same reason the
+            // orchestrator owns the freshness policy.
+            if (!observed.IsUsableForVerification(nowUtc ?? DateTime.UtcNow, maxAge ?? Gate3ExecutionOrchestrator.DefaultMaxObservationAge))
             {
                 string reason = observed.Hp.FailureReason ?? observed.Mp.FailureReason ?? "stato non osservato";
                 return new VerificationResult(
@@ -552,6 +569,125 @@ namespace NosAi.Runtime.Gate3
                     ? $"Verifica confermata su stato osservato: {observedSignature}."
                     : $"Discrepanza: atteso {predicted.StateSignatureAfter}, osservato {observedSignature}.",
                 DataSourceKind.Live);
+        }
+
+        /// <summary>
+        /// Verifies an executed action against its own post-condition.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The path docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md defines, and the one
+        /// the orchestrator takes. The prediction is not a parameter: VER-01 says
+        /// the predicate is over observations and never over the prediction, and
+        /// the surest way to keep that is to make the prediction unreachable from
+        /// here.
+        /// </para>
+        /// <para>
+        /// An action with no card is not verified leniently — it is not executed.
+        /// Reaching this method without one is a wiring fault, and it reports as
+        /// <see cref="VerificationOutcome.Unverified"/> naming the missing card
+        /// rather than confirming anything.
+        /// </para>
+        /// </remarks>
+        public VerificationResult VerifyPostCondition(
+            ExecutionResult execution,
+            in PostConditionInput input,
+            PostConditionTable? table = null)
+        {
+            ActionCandidate candidate = input.Candidate;
+
+            if (execution.SuppressedByPolicy)
+            {
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.NotExecuted,
+                    0.0f,
+                    $"Nessuna esecuzione: {execution.Reason ?? "inibita da policy"}. Nulla da verificare.",
+                    DataSourceKind.Unknown);
+            }
+
+            if (!execution.Completed)
+            {
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.NotExecuted,
+                    1.0f,
+                    $"Esecuzione non completata: {execution.Reason ?? "motivo sconosciuto"}.",
+                    DataSourceKind.Unknown);
+            }
+
+            PostConditionTable catalogue = table ?? PostConditionTable.Catalogue;
+            if (!catalogue.TryGet(candidate.Type, out IPostCondition postCondition))
+            {
+                return new VerificationResult(
+                    candidate.CandidateId,
+                    VerificationOutcome.Unverified,
+                    0.0f,
+                    $"Nessuna post-condizione in tabella per {candidate.Type}: "
+                    + $"{PostConditionTable.RefusalReason(candidate.Type)}.",
+                    DataSourceKind.Unknown);
+            }
+
+            PostConditionVerdict verdict = postCondition.Evaluate(input);
+
+            return new VerificationResult(
+                candidate.CandidateId,
+                verdict.Outcome,
+                verdict.Divergence,
+                Describe(candidate, postCondition, verdict),
+                verdict.Outcome is VerificationOutcome.Confirmed or VerificationOutcome.Discrepant
+                    ? WeakestObservedSource(input)
+                    : DataSourceKind.Unknown);
+        }
+
+        private static string Describe(
+            ActionCandidate candidate, IPostCondition postCondition, PostConditionVerdict verdict)
+        {
+            string window = string.Create(
+                CultureInfo.InvariantCulture,
+                $"{postCondition.Window.TotalMilliseconds:F0}ms{(postCondition.WindowIsMeasured ? "" : " dichiarata")}");
+
+            return verdict.Outcome switch
+            {
+                VerificationOutcome.Confirmed => string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Post-condizione di {candidate.Type} soddisfatta ({verdict.Reason}), d={verdict.Divergence:F2}, finestra {window}."),
+                VerificationOutcome.Discrepant => string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Post-condizione di {candidate.Type} contraddetta ({verdict.Reason}), d={verdict.Divergence:F2}, finestra {window}."),
+                _ => $"Post-condizione di {candidate.Type} non verificabile: {verdict.Reason}. "
+                     + "Non è né riuscita né fallita (VER-05).",
+            };
+        }
+
+        /// <summary>
+        /// The provenance of the readings the verdict rests on: the weakest of
+        /// them, so a series holding one CACHED element is not reported LIVE.
+        /// </summary>
+        private static DataSourceKind WeakestObservedSource(in PostConditionInput input)
+        {
+            static int Rank(DataSourceKind kind) => kind switch
+            {
+                DataSourceKind.Live => 4,
+                DataSourceKind.Derived => 3,
+                DataSourceKind.Cached => 2,
+                DataSourceKind.Simulated => 1,
+                _ => 0,
+            };
+
+            DataSourceKind weakest = DataSourceKind.Unknown;
+            var seen = false;
+            foreach (Gate3WorldState state in input.AfterDispatch)
+            {
+                foreach (ClassifiedValue<int> vital in new[] { state.Hp, state.MaxHp, state.Mp })
+                {
+                    if (!vital.HasValue) continue;
+                    if (!seen || Rank(vital.Source) < Rank(weakest)) weakest = vital.Source;
+                    seen = true;
+                }
+            }
+
+            return seen ? weakest : DataSourceKind.Unknown;
         }
     }
 
@@ -644,6 +780,8 @@ namespace NosAi.Runtime.Gate3
         private readonly IWorldStateObserver _observer;
         private readonly TimeProvider _clock;
         private readonly Action? _ensureSessionVerified;
+        private readonly PostConditionTable _postConditions;
+        private readonly Func<CancellationToken, Task<Gate3WorldState>>? _worldSampler;
 
         public RuntimeMode CurrentMode { get; private set; } = RuntimeMode.Normal;
         public TrustBoundary Trust => _trust;
@@ -660,6 +798,14 @@ namespace NosAi.Runtime.Gate3
 
         /// <summary>Whether anything is bound that can read the world back.</summary>
         public bool CanVerify => _observer.CanObserve;
+
+        /// <summary>The post-conditions this loop admits actions against.</summary>
+        /// <remarks>
+        /// An action with no card here is refused at admission. That is the
+        /// property docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md § 7 asks to be fixed
+        /// by test: nothing executes that nothing can check.
+        /// </remarks>
+        public PostConditionTable PostConditions => _postConditions;
 
         /// <summary>
         /// How old an observation may be and still drive a real action.
@@ -716,7 +862,9 @@ namespace NosAi.Runtime.Gate3
             Func<RuntimeSafetyPolicy>? policySource = null,
             Action? ensureSessionVerified = null,
             RecoveryController? recovery = null,
-            PipelineStageBoard? stageBoard = null)
+            PipelineStageBoard? stageBoard = null,
+            PostConditionTable? postConditions = null,
+            Func<CancellationToken, Task<Gate3WorldState>>? worldSampler = null)
         {
             Policy = policy ?? policySource?.Invoke() ?? RuntimeSafetyPolicy.SafeDefault;
             TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
@@ -737,6 +885,8 @@ namespace NosAi.Runtime.Gate3
             _stageBoard = stageBoard ?? new PipelineStageBoard();
             _observer = observer ?? new UnavailableWorldStateObserver();
             _ensureSessionVerified = ensureSessionVerified;
+            _postConditions = postConditions ?? PostConditionTable.Catalogue;
+            _worldSampler = worldSampler;
         }
 
         /// <summary>
@@ -852,6 +1002,23 @@ namespace NosAi.Runtime.Gate3
             (ActionCandidate best, float utility) = ranked[0];
             PredictedOutcome predicted = predictions[best.CandidateId];
 
+            // Nothing executes that nothing can check. An action with no card in
+            // the post-condition table is refused here, by name, rather than
+            // executed and then found unverifiable — which is the difference
+            // between a declared gap and a silent one
+            // (docs/CATALOGO_AZIONI_E_POSTCONDIZIONI.md § 7).
+            if (!_postConditions.IsAdmissible(best.Type))
+            {
+                string refusal = PostConditionTable.RefusalReason(best.Type);
+                _stageBoard.Record("Safety", false, refusal);
+                return Result(
+                    CycleOutcome.Blocked,
+                    $"Azione non ammissibile: {refusal}. "
+                    + "Nessuna post-condizione dichiarata, quindi nessuna esecuzione.",
+                    best.Type,
+                    null);
+            }
+
             // Admission control before authorisation, because a breaker that only
             // labels the runtime does not slow it down: the previous version
             // escalated to Degraded and then went on acting at the same rate, so the
@@ -880,6 +1047,12 @@ namespace NosAi.Runtime.Gate3
             _stageBoard.Record("Safety", true);
             _stageBoard.Record("Guard", true);
 
+            // Taken before the act, because VER-03 measures every confirming
+            // observation from the instant the act left the runtime. Stamping it
+            // afterwards would silently admit a reading taken while the act was in
+            // flight, which describes a world the action had not finished touching.
+            DateTime dispatchedAt = _clock.GetUtcNow().UtcDateTime;
+
             ExecutionResult execution = await _executor
                 .ExecuteAuthorizedAsync(best, safetyToken!, token)
                 .ConfigureAwait(false);
@@ -896,9 +1069,22 @@ namespace NosAi.Runtime.Gate3
                     null);
             }
 
-            // The world is read back, never derived from the prediction being checked.
-            ObservedState observed = await _observer.ObserveAsync(token).ConfigureAwait(false);
-            VerificationResult verification = _verifier.Verify(best, predicted, execution, observed);
+            // The world is read back, never derived from the prediction being
+            // checked, and it is read as a series rather than as one endpoint:
+            // stat and st are sent when a number changes, not on a schedule, so
+            // two endpoints compare two moments the traffic chose (VER-09).
+            IReadOnlyList<Gate3WorldState> series =
+                await ReadBackAsync(state, token).ConfigureAwait(false);
+
+            VerificationResult verification = _verifier.VerifyPostCondition(
+                execution,
+                new PostConditionInput(
+                    best,
+                    dispatchedAt,
+                    series,
+                    CollectSightings(series),
+                    Deaths: null),
+                _postConditions);
 
             if (verification.IsConfirmed)
             {
@@ -925,19 +1111,152 @@ namespace NosAi.Runtime.Gate3
             {
                 // Executed but unconfirmed. Not counted as a failure -- the action may
                 // well have worked -- but never reported as success, and the failure
-                // counter is left untouched rather than reset.
-                return Result(CycleOutcome.Unverified, verification.AnalysisReport, best.Type, null);
+                // counter is left untouched rather than reset. § 5 gives it Replan and
+                // never Continue: nothing was established, so the next step is to
+                // plan again rather than to carry on as though it had been.
+                RecoveryStrategy unverifiedNext = Escalate(best.Type, RecoveryStrategy.Replan);
+
+                if (unverifiedNext == RecoveryStrategy.HaltAndAlert)
+                {
+                    // § 4.8: a flight nobody could verify is not repeated. The case
+                    // where the check fails is by construction the case where the
+                    // situation is worse, and a loop of unverified flights is what
+                    // the breaker exists to stop.
+                    RuntimeMode haltedMode = CurrentMode;
+                    _recovery.HandleFailure(ref haltedMode);
+                    CurrentMode = haltedMode;
+                    return Result(
+                        CycleOutcome.Failed,
+                        $"{verification.AnalysisReport} Fuga non verificata: nessuna ripetizione, "
+                        + "arresto e allarme all'operatore.",
+                        best.Type,
+                        RecoveryStrategy.HaltAndAlert);
+                }
+
+                return Result(CycleOutcome.Unverified, verification.AnalysisReport, best.Type, unverifiedNext);
             }
 
             RuntimeMode recoveredMode = CurrentMode;
-            RecoveryStrategy strategy = _recovery.HandleFailure(ref recoveredMode);
+            RecoveryStrategy fromBreaker = _recovery.HandleFailure(ref recoveredMode);
             CurrentMode = recoveredMode;
+
+            // The breaker decides from its own history; § 5 sets a floor from the
+            // measured divergence. The severer of the two wins, so a single badly
+            // divergent cycle is not softened by a clean history and a long run of
+            // small failures is not softened by a small divergence.
+            RecoveryStrategy strategy = Escalate(
+                best.Type, Severer(fromBreaker, DivergenceBands.Next(verification.DiscrepancyScore) ?? fromBreaker));
 
             return Result(
                 CycleOutcome.Failed,
                 $"Fallimento ciclo: {verification.AnalysisReport} -> strategia recovery: {strategy}",
                 best.Type,
                 strategy);
+        }
+
+        /// <summary>
+        /// Raises a strategy to a hard stop for an action whose card forbids a
+        /// retry, and leaves every other action's strategy alone.
+        /// </summary>
+        private RecoveryStrategy Escalate(ActionType action, RecoveryStrategy strategy)
+            => _postConditions.TryGet(action, out IPostCondition postCondition) && postCondition.RetryForbidden
+                ? RecoveryStrategy.HaltAndAlert
+                : strategy;
+
+        /// <summary>The stricter of two recovery strategies.</summary>
+        private static RecoveryStrategy Severer(RecoveryStrategy a, RecoveryStrategy b)
+        {
+            static int Rank(RecoveryStrategy strategy) => strategy switch
+            {
+                RecoveryStrategy.Retry => 0,
+                RecoveryStrategy.Replan => 1,
+                RecoveryStrategy.DegradedReplan => 2,
+                RecoveryStrategy.Cooling => 3,
+                RecoveryStrategy.HaltAndAlert => 4,
+                _ => 0,
+            };
+            return Rank(a) >= Rank(b) ? a : b;
+        }
+
+        /// <summary>
+        /// How many times the world is sampled across one action's window when a
+        /// sampler is bound.
+        /// </summary>
+        /// <remarks>
+        /// Enough for a minimum or a maximum to mean something (VER-09) and few
+        /// enough that a cycle does not spend its budget polling. The pacing of
+        /// those samples belongs to the sampler, which is the only part that knows
+        /// how its channel delivers: this loop asks, and does not sleep on the
+        /// caller's behalf.
+        /// </remarks>
+        public const int WorldSamplesPerWindow = 3;
+
+        /// <summary>
+        /// Reads the world back as a series: the state the act was planned on,
+        /// then what the window showed.
+        /// </summary>
+        /// <remarks>
+        /// The first element is the baseline every card measures against, and it
+        /// carries the instant it was really observed, so an action emitted on a
+        /// remembered reading is judged against that reading and not against the
+        /// moment the cycle ran. What follows is what came back afterwards: from
+        /// the sampler when one is bound, and otherwise the single vitals reading
+        /// the world-state observer can give — in which case a card that needs the
+        /// position, the entities or the inventory says so by name rather than
+        /// concluding anything.
+        /// </remarks>
+        private async Task<IReadOnlyList<Gate3WorldState>> ReadBackAsync(
+            Gate3WorldState planned, CancellationToken token)
+        {
+            var series = new List<Gate3WorldState> { planned };
+
+            if (_worldSampler is { } sample)
+            {
+                for (var i = 0; i < WorldSamplesPerWindow; i++)
+                {
+                    token.ThrowIfCancellationRequested();
+                    Gate3WorldState reading;
+                    try
+                    {
+                        reading = await sample(token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        // A perception fault leaves the cycle unverified, never
+                        // torn down: the samples already taken still stand.
+                        series.Add(Gate3WorldState.Unobserved($"world_sampler_failed:{ex.GetType().Name}"));
+                        break;
+                    }
+
+                    series.Add(reading);
+                }
+
+                return series;
+            }
+
+            ObservedState observed = await _observer.ObserveAsync(token).ConfigureAwait(false);
+            series.Add(observed.ToWorldState());
+            return series;
+        }
+
+        /// <summary>
+        /// Every entity sighting the series carried, each keeping its own instant.
+        /// </summary>
+        /// <remarks>
+        /// Flattened rather than deduplicated: VER-09 asks for the series, and a
+        /// target whose health fell and was healed inside one window is exactly
+        /// the case a last-value view would lose.
+        /// </remarks>
+        private static IReadOnlyList<SelectableEntity> CollectSightings(IReadOnlyList<Gate3WorldState> series)
+        {
+            var sightings = new List<SelectableEntity>();
+            foreach (Gate3WorldState state in series)
+                if (state.Entities is { } entities) sightings.AddRange(entities);
+            return sightings;
         }
 
         private Gate3CycleResult Result(CycleOutcome outcome, string summary, ActionType action, RecoveryStrategy? strategy)
