@@ -91,9 +91,23 @@ Uno stato in più rende la cosa dicibile. Un intento è in uno di tre stati:
 | `declared` | il catalogo o l'operatore lo affermano, nessuno l'ha verificato | **no** |
 | `confirmed` | premuto, e l'effetto atteso è stato osservato | sì |
 
-Il motivo di rifiuto oggi è `keybind_not_configured:<intento>`. Ne serve un secondo,
-`keybind_not_confirmed:<intento>`, perché « non lo so » e « lo credo ma non l'ho
-provato » sono due condizioni diverse e l'operatore deve poterle distinguere.
+I motivi di rifiuto sono due, **e da oggi esistono entrambi**:
+`keybind_not_configured:<intento>` e `keybind_not_confirmed:<intento>`, perché « non
+lo so » e « lo credo ma non l'ho provato » sono due condizioni diverse e l'operatore
+deve poterle distinguere.
+
+Come sono fatti nel file, 2 settembre 2026: ogni bind porta `"confirmed"`, e
+**assente vale `false`**. Il default sicuro è quello che non preme, quindi un file
+scritto prima che il campo esistesse dichiara e non conferma. `"confirmed": "true"`
+— la scrittura sbagliata più probabile — **rifiuta il file** invece di essere letta
+come vera: interpretarla accenderebbe un tasto mai provato.
+
+Ne segue una cosa che vale la pena dire per intero: **un bind dichiarato non copre il
+suo intento.** `--keybinds-check` conta come copertura solo i bind confermati, perché
+copertura significa « il runtime può agire », non « c'è una riga nel file »; il
+pannello disegna il bind dichiarato come *dichiarato, non premerà*, con provenienza
+`DERIVED` invece di `LIVE`. Le due letture passano dallo stesso lettore proprio
+perché non possano dissentire su questo.
 
 ---
 

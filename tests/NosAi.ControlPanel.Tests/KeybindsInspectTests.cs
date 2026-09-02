@@ -28,8 +28,8 @@ public sealed class KeybindsInspectTests : IDisposable
             {
               "version": 1,
               "binds": {
-                "consumable.0": { "virtualKey": 49, "label": "1" },
-                "skill.0": { "virtualKey": 112, "label": "F1" }
+                "consumable.0": { "virtualKey": 49, "label": "1", "confirmed": true },
+                "skill.0": { "virtualKey": 112, "label": "F1", "confirmed": true }
               }
             }
             """);
@@ -42,6 +42,39 @@ public sealed class KeybindsInspectTests : IDisposable
         Assert.Contains(view.Fields, f => f.Label == "skill.0" && f.Value.Contains("vk=112", StringComparison.Ordinal));
         Assert.DoesNotContain(view.Fields, f => f.Value == KeybindsInspect.MissingLabel);
         Assert.DoesNotContain(view.Fields, f => string.IsNullOrWhiteSpace(f.Label) || string.IsNullOrWhiteSpace(f.Value));
+    }
+
+    /// <summary>
+    /// The panel and the effector read one file through one reader, so they must
+    /// not disagree about whether a key will fire. A declared bind is drawn as
+    /// declared and its prefix is still named as missing.
+    /// </summary>
+    [Fact]
+    public void ADeclaredBindIsNotDrawnAsAWorkingOne()
+    {
+        string path = Write("""
+            {
+              "version": 1,
+              "binds": {
+                "consumable.1": { "virtualKey": 49, "label": "1" },
+                "skill.201": { "virtualKey": 50, "label": "2", "confirmed": true }
+              }
+            }
+            """);
+
+        KeybindsView view = KeybindsInspect.Inspect(path);
+
+        Assert.Contains(view.Fields, f => f.Label == "consumable.1"
+            && f.Value.Contains(KeybindsInspect.DeclaredLabel, StringComparison.Ordinal)
+            && f.Source == "DERIVED");
+
+        Assert.Contains(view.Fields, f => f.Label == "skill.201"
+            && !f.Value.Contains(KeybindsInspect.DeclaredLabel, StringComparison.Ordinal)
+            && f.Source == "LIVE");
+
+        // Declared is not coverage: the heal prefix is still missing.
+        Assert.Contains(view.Fields, f => f.Label == "consumable.*" && f.Value == KeybindsInspect.MissingLabel);
+        Assert.DoesNotContain(view.Fields, f => f.Label == "skill.*");
     }
 
     [Fact]

@@ -20,6 +20,13 @@ internal static class KeybindsInspect
     /// <summary>Operator-facing mark for an uncovered runtime intent prefix.</summary>
     public const string MissingLabel = "mancante";
 
+    /// <summary>
+    /// Operator-facing mark for a bind that is present but never observed on this
+    /// client. The row exists precisely so a declared bind does not read like a
+    /// working one: the runtime refuses it with <c>keybind_not_confirmed</c>.
+    /// </summary>
+    public const string DeclaredLabel = "dichiarato, non premera'";
+
     /// <summary>Formats the keybind row from the file <see cref="KeybindsCheck"/> would read.</summary>
     public static KeybindsView Inspect(string path)
     {
@@ -37,10 +44,14 @@ internal static class KeybindsInspect
 
         foreach (KeybindCheckEntry entry in report.Configured)
         {
-            fields.Add(new DisplayField(
-                entry.Intent,
-                $"vk={entry.VirtualKey} label={entry.Label}",
-                "LIVE"));
+            // A declared bind reads as configured everywhere else; here it has to
+            // read as what it is, or the panel would show a runtime ready to press
+            // a key that the effector will refuse.
+            string value = entry.Confirmed
+                ? $"vk={entry.VirtualKey} label={entry.Label}"
+                : $"vk={entry.VirtualKey} label={entry.Label} · {DeclaredLabel}";
+
+            fields.Add(new DisplayField(entry.Intent, value, entry.Confirmed ? "LIVE" : "DERIVED"));
         }
 
         string missingSource = report.LoadFailure is null ? "DERIVED" : "UNKNOWN";

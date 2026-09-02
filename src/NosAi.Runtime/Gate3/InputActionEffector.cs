@@ -113,6 +113,13 @@ public sealed class InputActionEffector : IActionEffector
     /// </remarks>
     public const string KeybindsRelativePath = "data/keybinds.json";
 
+    /// <summary>
+    /// Reported when the operator has bound a key to the intent but its effect has
+    /// never been observed on this client, so the bind is <c>declared</c> rather
+    /// than <c>confirmed</c>.
+    /// </summary>
+    public const string KeybindNotConfirmedReason = "keybind_not_confirmed:";
+
     /// <summary>Reported when the token names a different action from the one presented.</summary>
     public const string TokenNotBoundReason = "safety_token_bound_to_another_candidate";
 
@@ -268,6 +275,15 @@ public sealed class InputActionEffector : IActionEffector
         // fight, which is the reason C3 refuses to invent one.
         if (!_keybinds.TryGet(intent, out Keybind bind))
             return Result(candidate, ExecutionState.Refused, clock, $"keybind_not_configured:{intent}");
+
+        // « Non lo so » e « lo credo ma non l'ho provato » sono due condizioni
+        // diverse, e l'operatore deve poterle distinguere: il catalogo dei tasti
+        // aggiunge un'ipotesi da confermare, non un permesso
+        // (docs/TASTI_E_BERSAGLIO.md § 2). Gli slot rapidi li riempie il giocatore,
+        // quindi nessun default puo' sapere che cosa contengono: premere un bind
+        // dichiarato durante un combattimento vero premerebbe *un* tasto.
+        if (!bind.Confirmed)
+            return Result(candidate, ExecutionState.Refused, clock, $"{KeybindNotConfirmedReason}{intent}");
 
         bool accepted = _input.KeyPress(bind.VirtualKey, KeyPressMs);
 

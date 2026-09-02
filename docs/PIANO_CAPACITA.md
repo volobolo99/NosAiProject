@@ -77,8 +77,8 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 Misurato il 2 settembre 2026 su `69c200e` (`C2-7`, `R3`, l'oracolo del bersaglio e
 `HasTarget` dalla memoria compresi): `dotnet build -c Release` → **0 errori**, 1 warning
-preesistente (Android). `dotnet test` → **1713 test, 0 falliti** (1549 runtime, 66 core,
-98 control panel). I conteggi precedenti erano 1695, 1682, 1651, 1591 e prima 1322; le
+preesistente (Android). `dotnet test` → **1721 test, 0 falliti** (1556 runtime, 66 core,
+99 control panel). I conteggi precedenti erano 1713, 1695, 1682, 1651, 1591 e prima 1322; le
 catture reali in `data/` sono ignorate da git, quindi i test che le rigiocano passano a
 vuoto su un clone e portano il loro peso solo qui.
 
@@ -99,7 +99,7 @@ l'operatore può prendere.
 | Percorso: ammissione, rivalidazione, replan (`C2-7`) | **scritto e testato in locale** | un percorso è ammesso guardando **ogni** cella, non gli estremi, e ogni segmento è rivalidato prima di essere emesso; limite di 3 replan consecutivi, dove « consecutivi » significa senza avvicinarsi più di quanto ci si sia mai avvicinati. 24 test, 21 percorsi da ≥ 16 celle su 3 mappe, e la prova che un percorso attraverso una cella bloccata **non raggiunge affatto** il backend d'input |
 | Jump Point Search | **misurato e non introdotto** | rivalidare ogni cella di un percorso costa meno che pianificarlo una volta: JPS ottimizzerebbe la metà già economica. Un test fallisce se il rapporto si inverte, così la decisione resta falsificabile |
 | Emissione di un atto reale | **mai avvenuta** | `--step` non esiste ancora |
-| Tasti (skill, pozioni, interfaccia) | **impossibili oggi** | `data/keybinds.json` **non esiste**: ogni pressione rifiuta con `keybind_not_configured:` |
+| Tasti (skill, pozioni, interfaccia) | **il file c'è, i tasti sono `declared`** | `data/keybinds.json` esiste dal 2 settembre e copre i due soli intenti che il runtime sa chiedere — `consumable.1` e `skill.201`. Nessuno dei due è confermato, quindi la pressione rifiuta con `keybind_not_confirmed:` invece di `keybind_not_configured:`. Il passo che resta non è scrivere il file: è **premere e guardare l'effetto**, perché gli slot rapidi li riempie il giocatore e nessun catalogo può sapere cosa contengono |
 | Verifica dell'atto | **catalogo implementato** (`C4-1`) | sei schede con la loro finestra e il loro soggetto; `RestAndRecover` non ha scheda e per questo non è ammissibile. `VER-01` è impossibile da violare per firma, `VER-04` chiuso: il tier di verifica non è più severo di quello di attuazione |
 | Ciclo decisionale | **ha un motivo** (`C6-1`, `C6-2`, `C6-3`) | contrattacca chi l'ha colpito entro una finestra di decadimento; senza obiettivo attivo non sceglie nessun bersaglio e non cammina più verso il waypoint costante `(130, 90)`; attacca solo ciò che è stato **stabilito** attaccabile |
 | Identita' del bersaglio (**quale**) | **IPOTESI, non stabilita** | `[manager+0x44]+0x08` per analogia col giocatore, e un'analogia non e' una misura. La prova che manca e' quella che il progetto chiede ovunque: due sorgenti indipendenti sullo stesso numero — la memoria e il `ct` sul filo. `--target-chain` (banco, voce 16) la esegue e rifiuta per nome quando non concordano. Finche' non concordano l'identita' resta `UNKNOWN` e `HasTarget` funziona lo stesso |
@@ -114,8 +114,8 @@ che manca non è più codice di scrivania:
 
 - **la ROI del bersaglio** (`C1-6`) — venti minuti col client aperto, e sblocca ogni
   regola d'attacco che legge `HasTarget`;
-- **i tasti** (`C3-1`) — `data/keybinds.json` non esiste, quindi ogni skill e ogni
-  pozione rifiutano per nome;
+- **i tasti** (`C3-1`) — il file esiste e dichiara; manca la **conferma per effetto
+  osservato**, e finché manca ogni skill e ogni pozione rifiutano per nome;
 - **la proiezione** (`C2-3`) — senza di essa nessun clic è emesso, quindi il
   contrattacco pianifica e non colpisce.
 
@@ -193,7 +193,8 @@ percorso che attraversa una cella bloccata.
 
 | ID | Lavoro | Chi | File |
 |---|---|---|---|
-| `C3-1` | **Il file dei tasti non esiste.** Serve `data/keybinds.json` con gli intenti dell'operatore, e un `--keybinds-check` che stampi quali intenti sono configurati e quali no. Finché manca, ogni skill e ogni pozione rifiutano | Cursor + operatore | `LowLevel/KeybindMap.cs`, `Program.cs` |
+| `C3-1` | ~~Il file dei tasti non esiste~~ **fatto il 2 settembre.** `data/keybinds.json` c'è, lo schema porta `confirmed` (assente = `false`), `--keybinds-check` distingue configurato da confermato e conta come copertura solo il secondo | Claude | `LowLevel/KeybindMap.cs`, `LowLevel/KeybindsCheck.cs`, `Gate3/InputActionEffector.cs`, `ControlPanel/KeybindsInspect.cs` |
+| `C3-1b` | **La conferma per effetto osservato** (`TASTI_E_BERSAGLIO.md` § 3): il runtime preme fuori dal combattimento e classifica lo slot da ciò che cambia — `MP` giù = abilità, `HP` su = cura, `ivn` che decresce = consumabile, `sr` che nomina lo slot = conferma indipendente — e **scrive lui il file**. Fino ad allora i bind restano `declared` e non premono | Claude + operatore | nuovo comando, `LowLevel/KeybindMap.cs` |
 | `C3-2` | **Intenti d'interfaccia**, a partire da `ui.inventory`. Sono atti come gli altri: passano dal gate, dal commit point e dall'autorità | Claude | catalogo azioni |
 | `C3-3` | **Post-condizione di un intento d'interfaccia**: aprire l'inventario si verifica sullo schermo, non sui vitali. Finché non c'è un lettore, l'esito è `Unverified` **dichiarato**, mai un successo | Claude | `CATALOGO_AZIONI_E_POSTCONDIZIONI.md` |
 

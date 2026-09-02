@@ -77,8 +77,8 @@ public sealed class KeybindsCheckTests : IDisposable
             {
               "version": 1,
               "binds": {
-                "consumable.0": { "virtualKey": 49, "label": "1" },
-                "skill.0": { "virtualKey": 112, "label": "F1" }
+                "consumable.0": { "virtualKey": 49, "label": "1", "confirmed": true },
+                "skill.0": { "virtualKey": 112, "label": "F1", "confirmed": true }
               }
             }
             """);
@@ -104,7 +104,7 @@ public sealed class KeybindsCheckTests : IDisposable
             {
               "version": 1,
               "binds": {
-                "consumable.4": { "virtualKey": 49, "label": "1" }
+                "consumable.4": { "virtualKey": 49, "label": "1", "confirmed": true }
               }
             }
             """);
@@ -142,16 +142,60 @@ public sealed class KeybindsCheckTests : IDisposable
         Assert.Equal(["consumable.*", "skill.*"], report.UncoveredPrefixes);
     }
 
+    /// <summary>
+    /// The example is the schema, not a bind (<c>KeybindMap.RelativePath</c>), and
+    /// it now has to show both states: one confirmed entry that would fire and two
+    /// declared ones that would not. It parses; it deliberately does not report Ok,
+    /// because a schema nobody has confirmed on their own client should not read as
+    /// a runtime ready to press keys.
+    /// </summary>
     [Fact]
-    public void TheExampleFileInTheRepositoryParsesAndCoversTheRuntimePrefixes()
+    public void TheExampleFileInTheRepositoryParsesAndShowsBothStates()
     {
         string path = Path.Combine(RepositoryRoot(), "data", "keybinds.example.json");
         Assert.True(File.Exists(path));
 
         KeybindsCheckReport report = KeybindsCheck.Inspect(path);
-        Assert.True(report.Ok);
         Assert.True(KeybindMap.TryLoad(path, out _, out string? reason));
         Assert.Null(reason);
+        Assert.Null(report.LoadFailure);
+
+        Assert.Contains(report.Configured, e => e.Confirmed);
+        Assert.NotEmpty(report.DeclaredIntents);
+
+        // skill.0 is declared, so the attack prefix is not covered.
+        Assert.Contains("skill.*", report.UncoveredPrefixes);
+        Assert.False(report.Ok);
+    }
+
+    /// <summary>
+    /// A bind that is present but never observed is the case the check exists to
+    /// make visible: it is listed as configured, named as declared, and does not
+    /// count as coverage.
+    /// </summary>
+    [Fact]
+    public void A_declared_bind_is_listed_but_does_not_cover_its_prefix()
+    {
+        string path = Write("""
+            {
+              "version": 1,
+              "binds": {
+                "consumable.1": { "virtualKey": 49, "label": "1" },
+                "skill.201": { "virtualKey": 50, "label": "2", "confirmed": true }
+              }
+            }
+            """);
+
+        KeybindsCheckReport report = KeybindsCheck.Inspect(path);
+        string text = KeybindsCheck.Format(report);
+
+        Assert.Equal(2, report.Configured.Count);
+        Assert.Equal(["consumable.1"], report.DeclaredIntents);
+        Assert.Equal(["consumable.*"], report.UncoveredPrefixes);
+        Assert.False(report.Ok);
+        Assert.Contains("consumable.1  vk=49  label=1  declared", text, StringComparison.Ordinal);
+        Assert.Contains("skill.201  vk=50  label=2  confirmed", text, StringComparison.Ordinal);
+        Assert.Contains("declared, will refuse until confirmed:", text, StringComparison.Ordinal);
     }
 
     [Fact]

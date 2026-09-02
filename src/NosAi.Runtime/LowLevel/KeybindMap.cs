@@ -5,7 +5,15 @@ using System.Text.Json;
 namespace NosAi.Runtime.LowLevel;
 
 /// <summary>Un gesto che l'operatore ha associato a un'intenzione.</summary>
-public readonly record struct Keybind(ushort VirtualKey, string Label);
+/// <param name="VirtualKey">Il tasto virtuale che il runtime premerebbe.</param>
+/// <param name="Label">Come si chiama quel tasto per un umano.</param>
+/// <param name="Confirmed">
+/// Se la pressione e' gia' stata provata su <b>questo</b> client e l'effetto atteso
+/// e' stato osservato (<c>docs/TASTI_E_BERSAGLIO.md</c> § 2-3). Assente nel file
+/// significa <c>false</c>: un bind dichiarato e' un'ipotesi, non un permesso, e il
+/// default sicuro e' quello che non preme.
+/// </param>
+public readonly record struct Keybind(ushort VirtualKey, string Label, bool Confirmed);
 
 /// <summary>
 /// Quali tasti valgono quali intenzioni, secondo l'operatore. Una voce assente
@@ -226,7 +234,22 @@ public sealed class KeybindMap
             return false;
         }
 
-        bind = new Keybind((ushort)virtualKey, label);
+        // Assente vale false. Un catalogo di default puo' dichiarare un tasto; solo
+        // una pressione osservata puo' confermarlo, e finche' non lo e' il tasto
+        // non viene premuto.
+        var confirmed = false;
+        if (node.TryGetProperty("confirmed", out JsonElement confirmedNode))
+        {
+            if (confirmedNode.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+            {
+                failureReason = "confirmed_not_boolean";
+                return false;
+            }
+
+            confirmed = confirmedNode.GetBoolean();
+        }
+
+        bind = new Keybind((ushort)virtualKey, label, confirmed);
         return true;
     }
 }

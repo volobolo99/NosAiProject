@@ -93,10 +93,54 @@ public sealed class InputActionEffectorTests
         public bool ScrollWheel(int detents) => false;
     }
 
-    private static KeybindMap Binds(params (string Intent, ushort Key)[] binds)
+    /// <summary>
+    /// « Non lo so » e « lo credo ma non l'ho provato » sono due condizioni diverse
+    /// (<c>docs/TASTI_E_BERSAGLIO.md</c> § 2). Il catalogo dei default aggiunge
+    /// un'ipotesi da confermare, non un permesso.
+    /// </summary>
+    [Fact]
+    public async Task A_declared_bind_refuses_by_a_different_name_than_a_missing_one()
     {
+        (InputActionEffector effector, RecordingInputBackend backend) =
+            Build(Open, Binds(confirmed: false, ("consumable.4", 49)));
+
+        ExecutionResult result = await Apply(effector,
+            Candidate(ActionType.UseConsumable, skillOrItemId: 101, slot: 4));
+
+        Assert.Equal(ExecutionState.Refused, result.State);
+        Assert.Equal("keybind_not_confirmed:consumable.4", result.Reason);
+        Assert.NotEqual("keybind_not_configured:consumable.4", result.Reason);
+    }
+
+    /// <summary>
+    /// Il punto non e' il verdetto, e' che <b>niente esce</b>: gli slot rapidi li
+    /// riempie il giocatore, quindi premere un bind dichiarato durante un
+    /// combattimento vero premerebbe <i>un</i> tasto, non quello giusto.
+    /// </summary>
+    [Fact]
+    public async Task A_declared_bind_emits_no_keystroke_at_all()
+    {
+        (InputActionEffector effector, RecordingInputBackend backend) =
+            Build(Open, Binds(confirmed: false, ("skill.201", 112)));
+
+        await Apply(effector, Candidate(ActionType.UseSkill, skillOrItemId: 201));
+
+        Assert.Empty(backend.Events);
+    }
+
+    /// <summary>
+    /// Binds the operator has <b>confirmed</b>. These tests are about what happens
+    /// once a key is known to do what it claims; the declared case — bound but
+    /// never observed — has its own tests below.
+    /// </summary>
+    private static KeybindMap Binds(params (string Intent, ushort Key)[] binds)
+        => Binds(confirmed: true, binds);
+
+    private static KeybindMap Binds(bool confirmed, params (string Intent, ushort Key)[] binds)
+    {
+        string flag = confirmed ? "true" : "false";
         string entries = string.Join(",", binds.Select(b =>
-            $"\"{b.Intent}\": {{ \"virtualKey\": {b.Key}, \"label\": \"k\" }}"));
+            $"\"{b.Intent}\": {{ \"virtualKey\": {b.Key}, \"label\": \"k\", \"confirmed\": {flag} }}"));
         string path = Path.Combine(Path.GetTempPath(), $"nosai-keybinds-{Guid.NewGuid():N}.json");
         File.WriteAllText(path, $"{{ \"version\": 1, \"binds\": {{ {entries} }} }}");
         try

@@ -146,6 +146,52 @@ public sealed class KeybindMapTests : IDisposable
         Assert.Equal("F1", skill.Label);
     }
 
+    /// <summary>
+    /// Assente vale <c>false</c>. Il default sicuro e' quello che non preme: un
+    /// file scritto prima che questo campo esistesse dichiara, non conferma.
+    /// </summary>
+    [Fact]
+    public void A_bind_without_confirmed_is_declared_not_confirmed()
+    {
+        string path = Write("""
+            { "version": 1, "binds": { "skill.201": { "virtualKey": 50, "label": "2" } } }
+            """);
+
+        Assert.True(KeybindMap.TryLoad(path, out KeybindMap map, out _));
+        Assert.True(map.TryGet("skill.201", out Keybind bind));
+        Assert.False(bind.Confirmed);
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    public void Confirmed_is_read_as_written(string written, bool expected)
+    {
+        string path = Write($$"""
+            { "version": 1, "binds": { "skill.201": { "virtualKey": 50, "label": "2", "confirmed": {{written}} } } }
+            """);
+
+        Assert.True(KeybindMap.TryLoad(path, out KeybindMap map, out _));
+        Assert.True(map.TryGet("skill.201", out Keybind bind));
+        Assert.Equal(expected, bind.Confirmed);
+    }
+
+    /// <summary>
+    /// <c>"confirmed": "true"</c> e' la scrittura sbagliata piu' probabile, e
+    /// interpretarla come vera accenderebbe un tasto mai provato. Rifiuta il file.
+    /// </summary>
+    [Fact]
+    public void A_non_boolean_confirmed_is_refused_rather_than_coerced()
+    {
+        string path = Write("""
+            { "version": 1, "binds": { "skill.201": { "virtualKey": 50, "label": "2", "confirmed": "true" } } }
+            """);
+
+        Assert.False(KeybindMap.TryLoad(path, out _, out string? reason));
+        Assert.Contains("confirmed_not_boolean", reason, StringComparison.Ordinal);
+        Assert.Contains("skill.201", reason, StringComparison.Ordinal);
+    }
+
     private string Write(string json)
     {
         string path = Path.Combine(_dir, Guid.NewGuid().ToString("N") + ".json");

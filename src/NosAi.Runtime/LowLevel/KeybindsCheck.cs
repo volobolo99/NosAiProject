@@ -15,24 +15,36 @@ namespace NosAi.Runtime.LowLevel;
 /// </param>
 /// <param name="Configured">Every intent the file bound, in ordinal order.</param>
 /// <param name="UncoveredPrefixes">
-/// Runtime intent prefixes with no configured bind. Empty only when every prefix
-/// the runtime asks for has at least one bind.
+/// Runtime intent prefixes with no <b>confirmed</b> bind. A prefix covered only by
+/// declared binds is uncovered here, because a declared bind refuses at the press
+/// boundary with <c>keybind_not_confirmed</c>: coverage means the runtime can act,
+/// not that a line exists in the file.
+/// </param>
+/// <param name="DeclaredIntents">
+/// Configured intents whose effect has never been observed on this client. They
+/// load, they are listed, and they do not fire.
 /// </param>
 public readonly record struct KeybindsCheckReport(
     string Path,
     bool Exists,
     string? LoadFailure,
     IReadOnlyList<KeybindCheckEntry> Configured,
-    IReadOnlyList<string> UncoveredPrefixes)
+    IReadOnlyList<string> UncoveredPrefixes,
+    IReadOnlyList<string> DeclaredIntents)
 {
     /// <summary>
-    /// True only when the file is present, parses, and covers every runtime prefix.
+    /// True only when the file is present, parses, and every runtime prefix has a
+    /// confirmed bind — the condition under which a press actually leaves.
     /// </summary>
     public bool Ok => Exists && LoadFailure is null && UncoveredPrefixes.Count == 0;
 }
 
 /// <summary>One configured intent, as the check prints it.</summary>
-public readonly record struct KeybindCheckEntry(string Intent, ushort VirtualKey, string Label);
+public readonly record struct KeybindCheckEntry(
+    string Intent,
+    ushort VirtualKey,
+    string Label,
+    bool Confirmed);
 
 /// <summary>
 /// Prints which intents the operator has bound, and which the runtime can ask
@@ -112,7 +124,8 @@ public static class KeybindsCheck
                     if (!map.TryGet(intent, out Keybind bind))
                         continue;
 
-                    configured.Add(new KeybindCheckEntry(intent, bind.VirtualKey, bind.Label));
+                    configured.Add(new KeybindCheckEntry(
+                        intent, bind.VirtualKey, bind.Label, bind.Confirmed));
                 }
             }
         }
@@ -124,10 +137,14 @@ public static class KeybindsCheck
         var uncovered = new List<string>(RuntimeIntentPrefixes.Length);
         foreach (string prefix in RuntimeIntentPrefixes)
         {
-            bool covered = false;
+            var covered = false;
             for (var i = 0; i < configured.Count; i++)
             {
-                if (configured[i].Intent.StartsWith(prefix, StringComparison.Ordinal))
+                // Only a confirmed bind covers a prefix. A declared one is listed
+                // and still refuses when the press is attempted, so counting it as
+                // coverage would report a runtime that cannot act as ready.
+                if (configured[i].Confirmed
+                    && configured[i].Intent.StartsWith(prefix, StringComparison.Ordinal))
                 {
                     covered = true;
                     break;
@@ -138,7 +155,14 @@ public static class KeybindsCheck
                 uncovered.Add(prefix + "*");
         }
 
-        return new KeybindsCheckReport(path, exists, loadFailure, configured, uncovered);
+        var declared = new List<string>();
+        for (var i = 0; i < configured.Count; i++)
+        {
+            if (!configured[i].Confirmed)
+                declared.Add(configured[i].Intent);
+        }
+
+        return new KeybindsCheckReport(path, exists, loadFailure, configured, uncovered, declared);
     }
 
     /// <summary>The operator-facing block. Stable enough to assert against.</summary>
@@ -161,9 +185,17 @@ public static class KeybindsCheck
             text.AppendLine("configured:");
             foreach (KeybindCheckEntry entry in report.Configured)
             {
+                string state = entry.Confirmed ? "confirmed" : "declared";
                 text.AppendLine(string.Create(CultureInfo.InvariantCulture,
-                    $"  {entry.Intent}  vk={entry.VirtualKey}  label={entry.Label}"));
+                    $"  {entry.Intent}  vk={entry.VirtualKey}  label={entry.Label}  {state}"));
             }
+        }
+
+        if (report.DeclaredIntents.Count > 0)
+        {
+            text.AppendLine("declared, will refuse until confirmed:");
+            foreach (string intent in report.DeclaredIntents)
+                text.AppendLine("  " + intent);
         }
 
         if (report.UncoveredPrefixes.Count == 0)
