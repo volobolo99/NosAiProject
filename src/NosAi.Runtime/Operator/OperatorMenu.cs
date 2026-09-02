@@ -144,6 +144,44 @@ public static class OperatorMenu
     }
 
     /// <summary>
+    /// La misura che manca perche' il runtime possa combattere, o null.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Pura e separata da <see cref="NextStep"/> per la stessa ragione per cui
+    /// quella lo e': la caccia al codice mappa e' chiusa, e la frase su cui
+    /// l'operatore agisce adesso e' un'altra.
+    /// </para>
+    /// <para>
+    /// L'ordine non e' arbitrario. Finche' il riquadro bersaglio non e'
+    /// calibrato <c>HasTarget</c> resta UNKNOWN, e ADR-0016 salta ogni regola
+    /// che lo legge: nessuna riga scritta a tavolino puo' produrre un
+    /// combattimento prima di quella misura. I tasti vengono dopo perche'
+    /// servono a eseguire una decisione che senza il bersaglio non viene
+    /// nemmeno presa.
+    /// </para>
+    /// </remarks>
+    public static string? NextCalibration(bool targetRoiCalibrated, bool keybindsPresent)
+    {
+        if (!targetRoiCalibrated)
+        {
+            return "Il riquadro bersaglio non e' calibrato, quindi HasTarget resta UNKNOWN e ogni "
+                 + "regola d'attacco viene saltata. Seleziona un mostro nel client, usa la voce 10 e "
+                 + "guarda data/perception/crops/target_latest.bmp; quando il ritaglio e' il riquadro, "
+                 + "registralo con la voce 11.";
+        }
+
+        if (!keybindsPresent)
+        {
+            return "data/keybinds.json non esiste, quindi ogni skill e ogni pozione rifiutano con "
+                 + "keybind_not_configured. La voce 14 dice quali intenti il runtime sa chiedere e "
+                 + "quali non hanno un tasto.";
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Says so when the character is standing where the oracle barely filters.
     /// </summary>
     /// <remarks>
@@ -240,6 +278,27 @@ public static class OperatorMenu
                 case "8":
                     Perform("Stato delle guardie d'input", () => LowLevel.InputGuardsProbe.Run());
                     break;
+                case "9":
+                    Perform("Autorita' di sessione", () => LowLevel.InputAuthorityProbe.Run());
+                    break;
+                case "10":
+                    Perform("Barre e riquadro bersaglio", () => Perception.HudProbe.RunConsoleProbe());
+                    break;
+                case "11":
+                    Perform("Calibra il riquadro bersaglio", RunTargetCalibration);
+                    break;
+                case "12":
+                    Perform("Replay di una registrazione",
+                        () => RunReplay(path => Observability.WorldReplayCommand.Run(path)));
+                    break;
+                case "13":
+                    Perform("Replay della decisione",
+                        () => RunReplay(path =>
+                            Observability.DecideReplayCommand.RunAsync(path).GetAwaiter().GetResult()));
+                    break;
+                case "14":
+                    Perform("Tasti configurati", () => LowLevel.KeybindsCheck.Run());
+                    break;
                 case "0":
                 case "q":
                 case "Q":
@@ -278,12 +337,22 @@ public static class OperatorMenu
             ? string.Create(CultureInfo.InvariantCulture, $"griglie:  {progress.Grids} mappe estratte")
             : "griglie:  NON TROVATE (serve il volume NOSAI-SSD e la voce 5)");
         Console.WriteLine(DescribeHunt(progress));
+        Console.WriteLine(DescribeTargetRoi());
+        Console.WriteLine(DescribeKeybinds());
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"file:     {candidatePath}"));
         Console.WriteLine();
 
         Console.WriteLine("-- cosa fare adesso -------------------------------------");
         foreach (string line in Wrap(NextStep(progress), 56))
             Console.WriteLine("  " + line);
+
+        if (NextCalibration(LoadTargetRoi().IsCalibrated, KeybindsPresent()) is { } calibration)
+        {
+            Console.WriteLine();
+            foreach (string line in Wrap(calibration, 56))
+                Console.WriteLine("  " + line);
+        }
+
         Console.WriteLine();
 
         Console.WriteLine("-- voci -------------------------------------------------");
@@ -295,9 +364,18 @@ public static class OperatorMenu
         Console.WriteLine("  6  Scheda di una mappa          (dimensioni e hash)");
         Console.WriteLine("  7  SendInput arriva alla coda?  (non muove niente)");
         Console.WriteLine("  8  Stato delle guardie d'input  (commit point, sola lettura)");
+        Console.WriteLine("  9  Autorita' di sessione        (si puo' guidare questo client?)");
+        Console.WriteLine(" 10  Barre e riquadro bersaglio   (scrive i ritagli da guardare)");
+        Console.WriteLine(" 11  Calibra il riquadro bersaglio (chiede le quattro frazioni)");
+        Console.WriteLine(" 12  Replay di una registrazione  (cosa vede l'osservazione, senza client)");
+        Console.WriteLine(" 13  Replay della decisione       (la scala del ciclo, senza client)");
+        Console.WriteLine(" 14  Tasti configurati            (quali intenti hanno un tasto)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
-        Console.WriteLine("Tutto qui dentro e' in sola lettura: niente muove il personaggio.");
+        Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
+        Console.WriteLine("nemmeno il client: leggono una registrazione. La voce 9 e' l'unica che");
+        Console.WriteLine("emette qualcosa - sposta il puntatore e lo rimette dov'era, perche' e'");
+        Console.WriteLine("cosi' che l'autorita' di sessione si verifica.");
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"Ogni esito finisce in {Path.GetFullPath(TranscriptPath)}"));
         Console.WriteLine();
@@ -350,6 +428,117 @@ public static class OperatorMenu
         {
             return false;
         }
+    }
+
+    /// <summary>The recorded target-frame region, or the uncalibrated one.</summary>
+    private static Perception.TargetRoiCalibration LoadTargetRoi()
+        => Perception.TargetRoiCalibration.Load(
+            Path.GetFullPath(Perception.TargetRoiCalibration.RelativePath), out _);
+
+    private static string DescribeTargetRoi()
+    {
+        Perception.TargetRoiCalibration roi = LoadTargetRoi();
+        return roi.IsCalibrated
+            ? string.Create(CultureInfo.InvariantCulture,
+                $"bersaglio: calibrato il {roi.CalibratedAtUtc:yyyy-MM-dd} su {roi.ClientWidth}x{roi.ClientHeight}")
+            : "bersaglio: NON CALIBRATO (HasTarget resta UNKNOWN)";
+    }
+
+    /// <summary>Whether the operator has declared which key means what.</summary>
+    private static bool KeybindsPresent()
+        => File.Exists(Path.GetFullPath(Gate3.InputActionEffector.KeybindsRelativePath));
+
+    private static string DescribeKeybinds()
+        => KeybindsPresent()
+            ? "tasti:    data/keybinds.json presente"
+            : "tasti:    data/keybinds.json NON ESISTE (skill e pozioni rifiutano)";
+
+    /// <summary>
+    /// Records the four fractions of the client area the target frame occupies.
+    /// </summary>
+    /// <remarks>
+    /// The probe writes the calibration the moment it is handed fractions, so
+    /// there is no preview and no confirmation step to offer: every attempt
+    /// overwrites the last, and the crop is the only judge of whether the
+    /// region was right. Saying so is the whole point of this prompt.
+    /// </remarks>
+    private static int RunTargetCalibration()
+    {
+        Console.WriteLine("Frazioni dell'area client, origine sul suo angolo in alto a sinistra.");
+        Console.WriteLine("Per trovarlo la prima volta ritaglia largo - per esempio 0.20 0 0.60 0.20 -");
+        Console.WriteLine("guarda data/perception/crops/target_latest.bmp, poi restringi.");
+        Console.WriteLine("Ogni registrazione sovrascrive la precedente: vale l'ultima che lanci.");
+        Console.WriteLine("La virgola va bene quanto il punto.");
+        Console.WriteLine();
+
+        if (!TryReadFraction("x       ", out double x)) return 2;
+        if (!TryReadFraction("y       ", out double y)) return 2;
+        if (!TryReadFraction("larghezza", out double width)) return 2;
+        if (!TryReadFraction("altezza ", out double height)) return 2;
+
+        Console.WriteLine();
+        return Perception.HudProbe.RunConsoleProbe(calibrateTarget: (x, y, width, height));
+    }
+
+    /// <summary>Reads one fraction of the client area, comma or point.</summary>
+    private static bool TryReadFraction(string label, out double value)
+    {
+        Console.Write($"{label}: ");
+        string? typed = Console.ReadLine()?.Trim().Replace(',', '.');
+        if (!double.TryParse(typed, NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+            || value < 0
+            || value > 1)
+        {
+            Console.WriteLine("Serve un numero fra 0 e 1.");
+            value = 0;
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Runs a replay over one of the recordings in <c>data/</c>.
+    /// </summary>
+    /// <remarks>
+    /// The paths are listed rather than typed because a mistyped path is a
+    /// refusal the operator then has to read, and the recordings are the one
+    /// thing on this bench that needs no client, no driver and no elevation.
+    /// </remarks>
+    private static int RunReplay(Func<string, int> replay)
+    {
+        string directory = Path.GetFullPath("data");
+        string[] captures = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.noscap")
+            : Array.Empty<string>();
+
+        if (captures.Length == 0)
+        {
+            Console.WriteLine($"Nessuna registrazione .noscap in {directory}.");
+            return 2;
+        }
+
+        Array.Sort(captures, StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < captures.Length; i++)
+        {
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  {i + 1}  {Path.GetFileName(captures[i])}"));
+        }
+
+        Console.Write("Numero (INVIO per la prima): ");
+        string? typed = Console.ReadLine()?.Trim();
+        int index = 1;
+        if (!string.IsNullOrEmpty(typed)
+            && (!int.TryParse(typed, NumberStyles.Integer, CultureInfo.InvariantCulture, out index)
+                || index < 1
+                || index > captures.Length))
+        {
+            Console.WriteLine("Non e' una voce dell'elenco.");
+            return 2;
+        }
+
+        Console.WriteLine();
+        return replay(captures[index - 1]);
     }
 
     private static int RunMapInfo()

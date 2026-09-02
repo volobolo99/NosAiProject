@@ -224,6 +224,37 @@ public sealed class OperatorMenuTests
         Assert.StartsWith("data/", OperatorMenu.TranscriptPath, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void TheTargetFrameIsAskedForBeforeTheKeys()
+    {
+        // Both are missing, and the order is the point: while HasTarget is
+        // UNKNOWN every attack rule is skipped (ADR-0016), so a configured key
+        // would be a key for a decision that is never taken.
+        string? step = OperatorMenu.NextCalibration(targetRoiCalibrated: false, keybindsPresent: false);
+
+        Assert.NotNull(step);
+        Assert.Contains("riquadro bersaglio", step);
+        Assert.DoesNotContain("keybinds.json", step, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OnceTheTargetFrameIsCalibratedTheKeysAreAsked()
+    {
+        string? step = OperatorMenu.NextCalibration(targetRoiCalibrated: true, keybindsPresent: false);
+
+        Assert.NotNull(step);
+        Assert.Contains("keybinds.json", step);
+    }
+
+    [Fact]
+    public void WithBothMeasuredTheBenchAsksForNothingMore()
+    {
+        // Null rather than a cheerful sentence: the bench has no further
+        // measurement to demand, and inventing one would send the operator to
+        // repeat an experiment that is already recorded.
+        Assert.Null(OperatorMenu.NextCalibration(targetRoiCalibrated: true, keybindsPresent: true));
+    }
+
     private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
