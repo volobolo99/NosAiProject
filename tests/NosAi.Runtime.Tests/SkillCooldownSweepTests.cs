@@ -312,6 +312,36 @@ public sealed class SkillCooldownSweepTests
         Assert.Equal(6, found.Run.Count);
     }
 
+    // ---------- the one thing both sources agree on
+
+    [Fact]
+    public void OnlyTheCandidatesRestingAtZeroAreRanked()
+    {
+        // The spec says a word is a candidate only if it falls to zero when the
+        // skill becomes available, and the bot's own test is == 0. They contradict
+        // each other about the chain and the stride; on this they do not.
+        var mixed = new[]
+        {
+            At(0x0, ready: 0u),
+            At(0x10, ready: 161024409u),   // a repeated word in a module block
+            At(0x20, ready: 1065353216u),  // the float 1.0, beside MP
+            At(0x30, ready: 25700u),       // 0x6464: two bytes of 100, not a number
+        };
+
+        SweepWord only = Assert.Single(SkillCooldownSweep.RestingAtZero(mixed));
+        Assert.Equal(Region, only.Address);
+    }
+
+    [Fact]
+    public void NothingRestingAtZeroIsAnEmptyRankingAndNotAnError()
+    {
+        // Applied last and only among anchored candidates, so an empty result
+        // means the ranking said nothing -- the survivors stand as they were.
+        var none = new[] { At(0x0, ready: 7u), At(0x10, ready: 9u) };
+
+        Assert.Empty(SkillCooldownSweep.RestingAtZero(none));
+    }
+
     [Fact]
     public void TwoWordsAreNotARunHoweverEvenlySpaced()
     {

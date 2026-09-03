@@ -353,6 +353,66 @@ public static class PointerAnchorHunter
         return low;
     }
 
+    /// <summary>
+    /// Follows an anchor now and returns the address it currently reaches.
+    /// </summary>
+    /// <remarks>
+    /// The point of an anchor is that it can be followed again later, so this is
+    /// how a candidate stops being an address and becomes a reading. The base is
+    /// re-resolved by the caller and the pointer is re-read here: nothing is
+    /// remembered between calls, because the structure it names is replaced and a
+    /// remembered address is whatever occupies that memory afterwards.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    public static bool TryFollow(
+        ProcessMemoryReader reader,
+        in PointerAnchor anchor,
+        IntPtr moduleBase,
+        IntPtr playerManager,
+        IntPtr playerObject,
+        out IntPtr reached,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        reached = IntPtr.Zero;
+
+        IntPtr holderBase = anchor.Kind switch
+        {
+            AnchorKind.Module => moduleBase,
+            AnchorKind.PlayerManager => playerManager,
+            AnchorKind.PlayerObject => playerObject,
+            _ => IntPtr.Zero,
+        };
+
+        if (anchor.Kind != AnchorKind.Heap && holderBase == IntPtr.Zero)
+        {
+            failureReason = $"anchor_base_unresolved:{anchor.Kind}";
+            return false;
+        }
+
+        IntPtr holder = anchor.Kind == AnchorKind.Heap
+            ? new IntPtr(anchor.Offset)
+            : new IntPtr(holderBase.ToInt64() + anchor.Offset);
+
+        MemoryReadResult pointer = reader.Read(holder, sizeof(uint));
+        if (!pointer.Ok)
+        {
+            failureReason = pointer.FailureReason ?? "anchor_holder_unreadable";
+            return false;
+        }
+
+        var points = (IntPtr)BitConverter.ToUInt32(pointer.Bytes);
+        if (points == IntPtr.Zero)
+        {
+            failureReason = "anchor_holder_null";
+            return false;
+        }
+
+        reached = new IntPtr(points.ToInt64() + anchor.IntoTarget);
+        failureReason = null;
+        return true;
+    }
+
     /// <summary>Hunts and prints the anchors for one target against an open session.</summary>
     /// <returns>0 when a durable anchor was found, 1 otherwise.</returns>
     [SupportedOSPlatform("windows")]

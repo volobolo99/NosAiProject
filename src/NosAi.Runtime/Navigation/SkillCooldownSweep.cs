@@ -425,6 +425,38 @@ public static class SkillCooldownSweep
     public const string NoAnchorReason = "sweep_no_candidate_is_reachable_from_a_base";
 
     /// <summary>
+    /// Of the anchored candidates, those whose resting value is zero.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The one thing the two sources agree on. The spec says a word is a candidate
+    /// only if it "falls to zero exactly when the skill becomes available again",
+    /// and the bot's own test is <c>== 0</c>. They contradict each other about the
+    /// chain and about the stride; on this they do not.
+    /// </para>
+    /// <para>
+    /// It is applied last and on purpose. Searching for zero would have found
+    /// millions; ranking thirty-six survivors by it is a different act, and the
+    /// thirty-five it sets aside are explainable — repeated identical words in a
+    /// module block, floats like 0.4375 and 1.0, and 0x6464, which is two bytes of
+    /// 100 rather than a number.
+    /// </para>
+    /// </remarks>
+    public static List<SweepWord> RestingAtZero(IReadOnlyList<SweepWord> candidates)
+    {
+        ArgumentNullException.ThrowIfNull(candidates);
+
+        var kept = new List<SweepWord>();
+        foreach (SweepWord word in candidates)
+        {
+            if (word.ReadyValue == 0)
+                kept.Add(word);
+        }
+
+        return kept;
+    }
+
+    /// <summary>
     /// Of the candidates, those something durable points at.
     /// </summary>
     /// <remarks>
@@ -628,6 +660,16 @@ public static class SkillCooldownSweep
                     Console.WriteLine("anche fossero il cooldown, non ci sarebbe modo di rileggerle domani.");
                     return 1;
                 }
+
+                // Last, and only among what is already anchored: searching for
+                // zero would have found millions, ranking thirty-six by it is a
+                // different act. It is also the one thing the spec and the
+                // third-party source agree on.
+                List<SweepWord> atZero = RestingAtZero(found);
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"  di queste, a riposo su zero: {atZero.Count}"));
+                if (atZero.Count > 0)
+                    found = atZero;
             }
 
             Console.WriteLine();
