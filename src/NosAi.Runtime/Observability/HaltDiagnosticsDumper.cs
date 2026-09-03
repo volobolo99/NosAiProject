@@ -92,10 +92,27 @@ public sealed class HaltDiagnosticsDumper
     }
 
     /// <summary>Subscribes to a controller so a halt transition writes a dump.</summary>
+    /// <remarks>
+    /// I/O failure here is diagnostic. The halt has already happened inside
+    /// <see cref="RecoveryController.HandleFailure"/>; throwing back into that
+    /// call would make a missing photograph look like the breaker itself failed.
+    /// </remarks>
     public void Attach(RecoveryController recovery)
     {
         ArgumentNullException.ThrowIfNull(recovery);
-        recovery.Halted += transition => { _ = Write(transition); };
+        recovery.Halted += transition =>
+        {
+            try
+            {
+                _ = Write(transition);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        };
     }
 
     /// <summary>Photographs the transition and writes one file for it.</summary>

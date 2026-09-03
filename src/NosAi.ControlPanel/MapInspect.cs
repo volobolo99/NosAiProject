@@ -49,7 +49,7 @@ internal sealed class MapView
 }
 
 /// <summary>Map id and standing cell as classified readings, or the reason they are not.</summary>
-internal readonly record struct MapWorldReading(
+public readonly record struct MapWorldReading(
     ClassifiedValue<int> MapId,
     ClassifiedValue<int> CellX,
     ClassifiedValue<int> CellY)
@@ -126,20 +126,19 @@ internal static class MapInspect
     }
 
     /// <summary>
-    /// Composes the view for a live session. Idle is entirely UNKNOWN. Grid files
-    /// and the client process are read; nothing is written, armed, or commanded.
+    /// Composes the view for a live session. Idle is entirely UNKNOWN. Grid
+    /// files are read; the client process is not attached from here. Map id and
+    /// standing cell come from the snapshot.
     /// </summary>
     public static MapView Observe(
         SessionKind kind,
-        ClassifiedValue<int?> processId,
-        string? mapsDirectory = null,
-        MapWorldReading? world = null)
+        MapWorldReading world,
+        string? mapsDirectory = null)
     {
         if (kind == SessionKind.Idle)
             return UnknownAll("runtime_not_connected");
 
-        MapWorldReading reading = world ?? MapWorldReader.Read(ProcessIdOrZero(processId));
-        return Compose(reading, mapsDirectory);
+        return Compose(world, mapsDirectory);
     }
 
     /// <summary>Every field UNKNOWN with the same reason. The crop is unknown, not open.</summary>
@@ -403,7 +402,4 @@ internal static class MapInspect
 
         return text.ToString();
     }
-
-    private static int ProcessIdOrZero(ClassifiedValue<int?> processId)
-        => processId.HasValue && processId.Value is int pid && pid > 0 ? pid : 0;
 }

@@ -261,7 +261,7 @@ public partial class MainWindow : Window
 
     private void ApplyMap(SnapshotView snapshot)
     {
-        MapView map = MapInspect.Observe(_session.Kind, snapshot.ClientProcessId);
+        MapView map = MapInspect.Observe(_session.Kind, snapshot.MapWorld);
         MapFields.ItemsSource = map.Fields;
         StandingCellText.Text = map.StandingLine;
         StandingCellText.Foreground = map.StandingIsError

@@ -606,9 +606,9 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         {
             if (_runtime.InputBackend is not GatedInputBackend gated)
                 return null;
-            CommitDecision? decision = gated.LastCommitDecision;
-            if (decision is { IsAuthorised: false, RefusalReason: { } reason })
-                return new CommitPointRefusalDump(reason, gated.LastRefusal?.AtUtc);
+            CommitDecision? refusal = gated.LastCommitRefusal;
+            if (refusal is { RefusalReason: { } reason })
+                return new CommitPointRefusalDump(reason, null);
             return null;
         },
         LastSessionAuthority = () =>

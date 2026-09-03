@@ -320,6 +320,17 @@ entrambi, l'epoca cambia passando dall'uno all'altro nominando il componente che
 cambiato, e ogni calibrazione stimata prima del passaggio risulta scaduta. Le parti
 simulabili sono coperte da test; la parte fisica è una procedura d'operatore scritta.
 
+### Esito
+
+Le quattro consegne erano già nel tree: isolazioni in `GeometryEpochTests` (DPI /
+monitor / spostamento, ognuna col proprio motivo; `Unknown` non combacia), rifiuto
+di calibrazione sotto regime diverso in `ScreenProjectionRegimeTests` e
+`ClientWindowDpiProbeTests.TheApphostAndDotnetExecReportDifferentRegimes`,
+`--window-probe` con regime e riuso (uscita 3 se la calibrazione non è utilizzabile),
+procedura d'operatore in ATTUAZIONE § 6.3. Semantica del confronto invariata, nessuna
+cache. Livello: `Done`, non `Verified` — i due monitor a scale diverse restano da
+eseguire.
+
 ---
 
 ## 6. `S4` — Il primo passo (`X-P4`)

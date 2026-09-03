@@ -40,6 +40,11 @@ public sealed class SnapshotView
     /// <summary>Target as classified bool. The inspect maps it to three drawings.</summary>
     public ClassifiedValue<bool> HasTarget { get; init; }
         = ClassifiedValue<bool>.Unknown("runtime_not_connected");
+    /// <summary>
+    /// Map id and standing cell as classified readings. The map view draws
+    /// from this and never attaches to the client on its own.
+    /// </summary>
+    public MapWorldReading MapWorld { get; init; } = MapWorldReading.Unknown("runtime_not_connected");
     public string WireLabel { get; init; } = ChannelView.WireLabel;
     public string SlotLabel { get; init; } = "UNKNOWN";
     public string SlotHint { get; init; } = "";
@@ -71,6 +76,7 @@ public sealed class SnapshotView
             Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown("runtime_not_connected"),
             HitBy = ClassifiedValue<Aggressor>.Unknown("runtime_not_connected"),
             HasTarget = ClassifiedValue<bool>.Unknown("runtime_not_connected"),
+            MapWorld = MapWorldReading.Unknown("runtime_not_connected"),
             SlotLabel = slot,
             SlotHint = hint
         };
@@ -147,7 +153,8 @@ public sealed class SnapshotView
         ObservationLastMaxHp = snapshot.GameObservation.LastMaxHp,
         Entities = GameplayEntities(snapshot),
         HitBy = GameplayHitBy(snapshot),
-        HasTarget = GameplayHasTarget(snapshot)
+        HasTarget = GameplayHasTarget(snapshot),
+        MapWorld = GameplayMapWorld(snapshot)
         };
     }
 
@@ -210,6 +217,44 @@ public sealed class SnapshotView
         => snapshot.Client.Gameplay is { } gameplay
             ? gameplay.HasTarget
             : ClassifiedValue<bool>.Unknown(GameplayUnreadReason(snapshot));
+
+    private static MapWorldReading GameplayMapWorld(Gate1CanonicalSnapshot snapshot)
+    {
+        if (snapshot.Client.Gameplay is not { } gameplay)
+            return MapWorldReading.Unknown(GameplayUnreadReason(snapshot));
+
+        return Split(gameplay.MapId, gameplay.StandingCell);
+    }
+
+    /// <summary>
+    /// Standing cell is one classified point on the snapshot and two classified
+    /// integers on the view, so a missing axis cannot be invented from the other.
+    /// </summary>
+    internal static MapWorldReading Split(ClassifiedValue<int> mapId, ClassifiedValue<MapPoint> standing)
+    {
+        if (!standing.HasValue)
+        {
+            string reason = standing.FailureReason ?? GameplayObservation.StandingCellNotReadReason;
+            return new MapWorldReading(
+                mapId,
+                ClassifiedValue<int>.Unknown(reason),
+                ClassifiedValue<int>.Unknown(reason));
+        }
+
+        return new MapWorldReading(
+            mapId,
+            ClassifyAxis(standing.Value.X, standing),
+            ClassifyAxis(standing.Value.Y, standing));
+    }
+
+    private static ClassifiedValue<int> ClassifyAxis(int value, ClassifiedValue<MapPoint> standing) => standing.Source switch
+    {
+        DataSourceKind.Live => ClassifiedValue<int>.Live(value, standing.ObservedAtUtc, standing.Warning),
+        DataSourceKind.Derived => ClassifiedValue<int>.Derived(value, standing.ObservedAtUtc, standing.Warning),
+        DataSourceKind.Cached => ClassifiedValue<int>.Cached(value, standing.ObservedAtUtc, standing.Warning),
+        DataSourceKind.Simulated => ClassifiedValue<int>.Simulated(value, standing.ObservedAtUtc, standing.Warning),
+        _ => ClassifiedValue<int>.Unknown(standing.FailureReason ?? GameplayObservation.StandingCellNotReadReason)
+    };
 
     private static string GameplayUnreadReason(Gate1CanonicalSnapshot snapshot)
         => snapshot.Client.GameplayBaseline.FailureReason ?? GameplayObservation.NotPublishedReason;

@@ -188,6 +188,17 @@ public sealed class CommitPointValidator
     public CommitDecision? LastDecision { get; private set; }
 
     /// <summary>
+    /// The last refusal, kept through later authorised decisions.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="LastDecision"/> is whatever ran most recently, including a
+    /// success. A halt dump has to photograph the last time the commit point
+    /// said no, which is a different fact: a later authorised check does not
+    /// erase the refusal that the breaker is about to halt on.
+    /// </remarks>
+    public CommitDecision? LastRefusal { get; private set; }
+
+    /// <summary>
     /// Re-reads the world and decides whether the act may be emitted now.
     /// </summary>
     public CommitDecision Validate(in CommitRequest request)
@@ -205,7 +216,10 @@ public sealed class CommitPointValidator
             finished);
 
         if (refusal is not null)
+        {
             RefusedCount++;
+            LastRefusal = decision;
+        }
 
         LastDecision = decision;
         return decision;
@@ -227,6 +241,7 @@ public sealed class CommitPointValidator
         if (!decision.IsAuthorised)
         {
             refusalReason = decision.RefusalReason;
+            LastRefusal = decision;
             return false;
         }
 
@@ -235,6 +250,11 @@ public sealed class CommitPointValidator
             RefusedCount++;
             refusalReason = string.Create(CultureInfo.InvariantCulture,
                 $"{LatencyExceededReason}:{latency.TotalMilliseconds:F2}ms_of_{MaxEmissionLatency.TotalMilliseconds:F0}ms");
+            LastRefusal = new CommitDecision(
+                false,
+                refusalReason,
+                decision.ValidationDuration,
+                decision.ValidatedAtTimestamp);
             return false;
         }
 

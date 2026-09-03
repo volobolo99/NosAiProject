@@ -14,13 +14,17 @@ namespace NosAi.ControlPanel;
 internal readonly record struct GameplayPanelRead(
     ClassifiedValue<IReadOnlyList<SelectableEntity>> Entities,
     ClassifiedValue<Aggressor> HitBy,
-    ClassifiedValue<bool> HasTarget)
+    ClassifiedValue<bool> HasTarget,
+    ClassifiedValue<int> MapId,
+    ClassifiedValue<MapPoint> StandingCell)
 {
     /// <summary>Nothing on the wire. Not an empty surroundings list.</summary>
     public static GameplayPanelRead Unknown(string reason) => new(
         ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(reason),
         ClassifiedValue<Aggressor>.Unknown(reason),
-        ClassifiedValue<bool>.Unknown(reason));
+        ClassifiedValue<bool>.Unknown(reason),
+        ClassifiedValue<int>.Unknown(reason),
+        ClassifiedValue<MapPoint>.Unknown(reason));
 }
 
 /// <summary>
@@ -50,7 +54,9 @@ internal static class GameplayWireReader
         return new GameplayPanelRead(
             ReadEntities(value),
             ReadHitBy(value),
-            ReadHasTarget(value));
+            ReadHasTarget(value),
+            ReadMapId(value),
+            ReadStandingCell(value));
     }
 
     private static bool TryValueObject(JsonElement classified, out JsonElement value, out string reason)
@@ -129,6 +135,41 @@ internal static class GameplayWireReader
             return ClassifiedValue<bool>.Unknown(reason);
 
         return Classify(named, source, at);
+    }
+
+    private static ClassifiedValue<int> ReadMapId(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("mapId", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<int>.Unknown(GameplayObservation.MapIdNotReadReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<int>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement value) || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            return ClassifiedValue<int>.Unknown(reason);
+
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int id))
+            return Classify(id, source, at);
+        if (value.ValueKind == JsonValueKind.String && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
+            return Classify(id, source, at);
+
+        return ClassifiedValue<int>.Unknown(reason);
+    }
+
+    private static ClassifiedValue<MapPoint> ReadStandingCell(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("standingCell", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<MapPoint>.Unknown(GameplayObservation.StandingCellNotReadReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<MapPoint>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement value) || value.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<MapPoint>.Unknown(reason);
+        if (!TryInt32(value, "x", out int x) || !TryInt32(value, "y", out int y))
+            return ClassifiedValue<MapPoint>.Unknown(reason);
+
+        return Classify(new MapPoint(x, y), source, at);
     }
 
     private static bool TryOpen(JsonElement node, out string? source, out DateTime at, out string reason)

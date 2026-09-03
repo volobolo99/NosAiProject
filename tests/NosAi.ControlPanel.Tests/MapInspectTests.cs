@@ -135,7 +135,7 @@ public sealed class MapInspectTests
     {
         MapView view = MapInspect.Observe(
             SessionKind.Idle,
-            ClassifiedValue<int?>.Unknown("process_not_attached"));
+            MapWorldReading.Unknown("process_not_attached"));
 
         Assert.Equal(StandingCellKind.PositionUnknown, view.StandingKind);
         Assert.Contains("runtime_not_connected", view.StandingLine, StringComparison.Ordinal);
@@ -278,9 +278,8 @@ public sealed class MapInspectTests
 
         MapView view = MapInspect.Observe(
             SessionKind.Hosted,
-            ClassifiedValue<int?>.Live(0),
-            dir.Maps,
-            world);
+            world,
+            dir.Maps);
 
         Assert.Equal(StandingCellKind.Walkable, view.StandingKind);
         DisplayField dimensions = Assert.Single(view.Fields, f => f.Label == "Dimensioni");
