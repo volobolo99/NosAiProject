@@ -67,6 +67,7 @@ public static class CertificationSuites
             () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll())),
         new("perception", "--perception-test", "Pipeline di percezione",
             () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll())),
+        new("screen-hpmp", "--screen-hpmp-test", "Barre HP/MP da schermo (DERIVED)", () => Task.FromResult(NosAi.Runtime.Perception.HpMpBarReaderTestRunner.RunAll())),
         new("security", "--security-test", "Sessioni effimere e crittografia",
             () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()))
     };
