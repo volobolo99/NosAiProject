@@ -404,6 +404,26 @@ public static class Program
             return NosAi.LiveIntegration.PointerAnchorHunter.Run(target, span);
         }
 
+        // Phase 3 over the whole process instead of two 8 KB windows. The windowed
+        // finder returned zero survivors on a real client across two valid rounds,
+        // which is the shape phase 2 had before the search was widened rather than
+        // the window.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.SkillCooldownSweep.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Navigation.SkillCooldownSweep.Flag, StringComparison.OrdinalIgnoreCase));
+            if (flag + 1 >= args.Length
+                || !int.TryParse(args[flag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int sweepSlot)
+                || sweepSlot < 0)
+            {
+                Console.Error.WriteLine(
+                    "--sweep-cooldown <slot> requires the slot the wire numbers this skill with.");
+                return 2;
+            }
+
+            return NosAi.Runtime.Navigation.SkillCooldownSweep.Run(sweepSlot);
+        }
+
         // Phase 2 of the memory-layout extension: player HP/MP as candidates
         // found by scanning the resolved bases, beside the percentage a
         // recording derived from stat/st/in. Never LIVE. Never an RVA.
@@ -668,7 +688,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };
