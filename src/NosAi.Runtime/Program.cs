@@ -378,6 +378,18 @@ public static class Program
             return NosAi.Runtime.Navigation.SkillCooldownProbe.Run(skillSlot);
         }
 
+        // The one command allowed to write data/keybinds.json: presses a declared
+        // intent and classifies the effect per docs/TASTI_E_BERSAGLIO.md § 3.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.LowLevel.KeybindConfirmProbe.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.LowLevel.KeybindConfirmProbe.Flag, StringComparison.OrdinalIgnoreCase));
+            string? onlyIntent = flag + 1 < args.Length && !args[flag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 1]
+                : null;
+            return NosAi.Runtime.LowLevel.KeybindConfirmProbe.Run(onlyIntent);
+        }
+
         // What a recording says, read by the runtime's own decoder and needing no
         // driver. WinDivertProbe --world does the same, but it has to sit beside a
         // staged WinDivert.dll and it holds the runtime assembly open while it
@@ -568,7 +580,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--keybinds-confirm", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

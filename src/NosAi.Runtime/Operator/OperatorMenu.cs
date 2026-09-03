@@ -318,6 +318,9 @@ public static class OperatorMenu
                 case "21":
                     Perform("Calibra HP e MP dal filo", RunCalibrateVitals);
                     break;
+                case "22":
+                    Perform("Conferma tasti per effetto osservato", RunKeybindsConfirm);
+                    break;
                 case "15":
                     Perform("Cerca il bersaglio in memoria", RunTargetHunt);
                     break;
@@ -399,6 +402,7 @@ public static class OperatorMenu
         Console.WriteLine(" 19  Cooldown di un'abilita'      (tu la usi, il filo dice quando torna)");
         Console.WriteLine(" 20  Registra il filo             (una cattura .noscap della sessione in corso; console elevata)");
         Console.WriteLine(" 21  Calibra HP e MP dal filo     (due giri; il filo dice i numeri, la memoria li mostra; console elevata)");
+        Console.WriteLine(" 22  Conferma tasti per effetto osservato (premi, il filo dice cosa e' successo; scrive keybinds.json)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
@@ -727,6 +731,16 @@ public static class OperatorMenu
 
         return Navigation.SkillCooldownProbe.Run(slot);
     }
+
+    /// <summary>
+    /// Presses every declared-but-unconfirmed intent in turn, out of combat, and
+    /// writes <c>confirmed: true</c> for whichever ones the wire actually
+    /// witnessed. Needs the runtime observing the wire (--observe-game) in
+    /// another elevated console — without it there is no second source, and this
+    /// refuses rather than trusting the press alone.
+    /// </summary>
+    private static int RunKeybindsConfirm()
+        => LowLevel.KeybindConfirmProbe.Run();
 
     private static int RunEntityNames()
     {

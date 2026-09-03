@@ -142,6 +142,20 @@ post-condizioni:
 comando d'operatore avvia il giro, lo mostra intento per intento, e scrive il file. È
 lavoro di `C3`.
 
+**Implementato il 3 settembre 2026** (`--keybinds-confirm`, voce 22 del banco):
+`consumable.*` e `skill.*` sono gli unici intenti premuti — un intento d'interfaccia
+non ha ancora un lettore (`C3-3`), e premerlo per cercare un effetto che nessuno sa
+leggere sarebbe la falsa sicurezza che questo percorso esiste per evitare. La
+sorgente è sempre il filo, mai la memoria: le vitali lette dalla memoria (`C1-6`,
+fase 2) sono `Integrated`, non `Verified`, e usarle per confermare un tasto lo
+renderebbe affidabile solo quanto un'ipotesi. `MP` giù e `sr` bastano da soli a
+confermare un'abilità; `HP` su e lo slot d'inventario che scende bastano da soli a
+confermare un consumabile — non serve che concordino, perché arrivano da pacchetti
+diversi (`stat` contro `ivn`) che non sono tenuti ad arrivare nella stessa finestra.
+Uno slot che **sparisce** invece di leggersi a zero conta come consumato: è così che
+`ivn` riporta l'ultima unità. La scrittura su `keybinds.json` è tutto-o-niente per
+gruppo confermato in un giro — mai un file toccato a metà.
+
 ---
 
 ## 4. Chi decide cosa va negli slot vuoti

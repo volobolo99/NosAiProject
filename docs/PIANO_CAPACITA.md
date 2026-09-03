@@ -75,12 +75,12 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 ## 3. Dove siamo davvero
 
-Misurato il 2 settembre 2026 su `69c200e` (`C2-7`, `R3`, l'oracolo del bersaglio e
-`HasTarget` dalla memoria compresi): `dotnet build -c Release` → **0 errori**, 1 warning
-preesistente (Android). `dotnet test` → **1721 test, 0 falliti** (1556 runtime, 66 core,
-99 control panel). I conteggi precedenti erano 1713, 1695, 1682, 1651, 1591 e prima 1322; le
-catture reali in `data/` sono ignorate da git, quindi i test che le rigiocano passano a
-vuoto su un clone e portano il loro peso solo qui.
+Misurato il 3 settembre 2026, calibrazione della proiezione schermo e conferma dei
+tasti per effetto osservato comprese: `dotnet build -c Release` → **0 errori**, 1 warning
+preesistente (Android). `dotnet test` → **1844 test, 0 falliti** (1672 runtime, 106 control
+panel, 66 core). I conteggi precedenti erano 1721, 1713, 1695, 1682, 1651, 1591 e prima
+1322; le catture reali in `data/` sono ignorate da git, quindi i test che le rigiocano
+passano a vuoto su un clone e portano il loro peso solo qui.
 
 Il progetto non è in difficoltà tecnica. È in difficoltà di *ordine*: la quantità di
 codice sano è alta, e ciò che manca sono pochi collegamenti e tre misure che solo
@@ -194,7 +194,7 @@ percorso che attraversa una cella bloccata.
 | ID | Lavoro | Chi | File |
 |---|---|---|---|
 | `C3-1` | ~~Il file dei tasti non esiste~~ **fatto il 2 settembre.** `data/keybinds.json` c'è, lo schema porta `confirmed` (assente = `false`), `--keybinds-check` distingue configurato da confermato e conta come copertura solo il secondo | Claude | `LowLevel/KeybindMap.cs`, `LowLevel/KeybindsCheck.cs`, `Gate3/InputActionEffector.cs`, `ControlPanel/KeybindsInspect.cs` |
-| `C3-1b` | **La conferma per effetto osservato** (`TASTI_E_BERSAGLIO.md` § 3): il runtime preme fuori dal combattimento e classifica lo slot da ciò che cambia — `MP` giù = abilità, `HP` su = cura, `ivn` che decresce = consumabile, `sr` che nomina lo slot = conferma indipendente — e **scrive lui il file**. Fino ad allora i bind restano `declared` e non premono | Claude + operatore | nuovo comando, `LowLevel/KeybindMap.cs` |
+| `C3-1b` | ~~La conferma per effetto osservato~~ **fatto il 3 settembre.** `--keybinds-confirm` (voce 22) preme un intento dichiarato fuori dal combattimento e lo classifica da ciò che il **filo** dice — `MP` giù o `sr` che nomina uno slot = abilità, `HP` su o lo slot d'inventario che scende (o sparisce: l'ultima unità non si legge a zero) = consumabile — e scrive lui `confirmed:true` nel file, un intento alla volta, mai a metà. La memoria non è usata come prova: le vitali da memoria sono `Integrated`, non `Verified`, e usarle per confermare altro le renderebbe affidabili solo quanto un'ipotesi | Claude | `LowLevel/KeybindConfirmation.cs`, `LowLevel/KeybindConfirmProbe.cs`, `Operator/OperatorMenu.cs`, `Program.cs` |
 | `C3-2` | **Intenti d'interfaccia**, a partire da `ui.inventory`. Sono atti come gli altri: passano dal gate, dal commit point e dall'autorità | Claude | catalogo azioni |
 | `C3-3` | **Post-condizione di un intento d'interfaccia**: aprire l'inventario si verifica sullo schermo, non sui vitali. Finché non c'è un lettore, l'esito è `Unverified` **dichiarato**, mai un successo | Claude | `CATALOGO_AZIONI_E_POSTCONDIZIONI.md` |
 
