@@ -136,6 +136,104 @@ public static class SkillCooldownSweep
         return kept;
     }
 
+    /// <summary>
+    /// Of the candidates, those that never left their resting value while nothing
+    /// was happening.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The missing half of the oracle. "Moved when the skill was used and came
+    /// back" admits every word that churns: on a live client two rounds of it left
+    /// 8265 survivors, and their values gave them away — 490441108 and 842281263
+    /// are ASCII read as integers, so the sweep was walking string buffers.
+    /// </para>
+    /// <para>
+    /// A cooldown at rest does not move while nobody uses the skill. Anything that
+    /// deviates even once during a quiet stretch is doing something else, and this
+    /// is what the target pointer's oracle meant by <i>and not otherwise</i>.
+    /// Sampling repeatedly matters: a word checked once at the end would have had
+    /// time to churn and return, which is exactly the population being removed.
+    /// </para>
+    /// </remarks>
+    public static List<SweepWord> KeepStill(
+        IReadOnlyList<SweepWord> candidates, Func<IntPtr, uint?> read)
+    {
+        ArgumentNullException.ThrowIfNull(candidates);
+        ArgumentNullException.ThrowIfNull(read);
+
+        var kept = new List<SweepWord>();
+        foreach (SweepWord word in candidates)
+        {
+            if (read(word.Address) is { } now && now == word.ReadyValue)
+                kept.Add(word);
+        }
+
+        return kept;
+    }
+
+    /// <summary>The distance between one skill's cooldown word and the next.</summary>
+    /// <remarks>
+    /// From the third-party bot's own source, where the test for "skill n is
+    /// ready" is <c>*(DWORD*)(table + (n - 1) * 0x48) == 0</c>. Its starting
+    /// addresses are not used and are not trusted: the same source puts the
+    /// vitals at 0x004F4BA8 while this client's were derived at 0x51FEA4, so its
+    /// RVAs are for another build. A stride is a property of the structure rather
+    /// than of an address, and that is the part worth borrowing.
+    /// </remarks>
+    public const int SkillStride = 0x48;
+
+    /// <summary>How many neighbours at the stride make a table rather than a coincidence.</summary>
+    /// <remarks>
+    /// A character has several skills, so a real cooldown table has entries either
+    /// side at the stride. Two is deliberately low: the bot describes separate
+    /// tables for slots 1-4 and 5+, so a word can sit near the end of its own.
+    /// </remarks>
+    public const int MinNeighbours = 2;
+
+    public const string NoTableReason = "sweep_no_word_sits_in_a_skill_table";
+
+    /// <summary>
+    /// Of the candidates, those with neighbours at the skill stride.
+    /// </summary>
+    /// <remarks>
+    /// The second independent filter, and it discards a different population than
+    /// the quiet control does. Churn is scattered; a cooldown belongs to a table,
+    /// and its neighbours are other skills' cooldowns behaving the same way. A run
+    /// of survivors spaced exactly 0x48 apart is a structure, and string buffers
+    /// do not produce one.
+    /// </remarks>
+    public static List<SweepWord> KeepInSkillTable(
+        IReadOnlyList<SweepWord> candidates, int stride = SkillStride, int minNeighbours = MinNeighbours)
+    {
+        ArgumentNullException.ThrowIfNull(candidates);
+        if (stride <= 0) throw new ArgumentOutOfRangeException(nameof(stride));
+
+        var addresses = new HashSet<long>(candidates.Count);
+        foreach (SweepWord word in candidates)
+            addresses.Add(word.Address.ToInt64());
+
+        var kept = new List<SweepWord>();
+        foreach (SweepWord word in candidates)
+        {
+            long at = word.Address.ToInt64();
+            var neighbours = 0;
+
+            // Walk both ways: a word can be the first or the last of its table.
+            for (var step = 1; step <= minNeighbours; step++)
+            {
+                if (addresses.Contains(at - (long)step * stride))
+                    neighbours++;
+                if (addresses.Contains(at + (long)step * stride))
+                    neighbours++;
+            }
+
+            if (neighbours >= minNeighbours)
+                kept.Add(word);
+        }
+
+        return kept;
+    }
+
     /// <summary>The named verdict for a set of survivors, or null for the single one.</summary>
     public static string? Verdict(IReadOnlyList<SweepWord> survivors)
     {
@@ -221,6 +319,37 @@ public static class SkillCooldownSweep
     private const int ReadyTimeoutSeconds = 90;
     private const int PollMs = 250;
 
+    /// <summary>How long the quiet control watches for a word that will not sit still.</summary>
+    public const int QuietSeconds = 20;
+
+    private const int QuietSampleMs = 400;
+
+    /// <summary>Samples the candidates repeatedly while nothing is happening.</summary>
+    [SupportedOSPlatform("windows")]
+    private static List<SweepWord> Quiet(ClientMemorySession session, List<SweepWord> candidates)
+    {
+        Func<IntPtr, uint?> read = address =>
+        {
+            MemoryReadResult result = session.Reader.Read(address, sizeof(uint));
+            return result.Ok ? BitConverter.ToUInt32(result.Bytes) : null;
+        };
+
+        List<SweepWord> alive = candidates;
+        DateTime deadline = DateTime.UtcNow.AddSeconds(QuietSeconds);
+        var samples = 0;
+
+        while (DateTime.UtcNow < deadline && alive.Count > 1)
+        {
+            alive = KeepStill(alive, read);
+            samples++;
+            Thread.Sleep(QuietSampleMs);
+        }
+
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"  campionate {samples} volte"));
+        return alive;
+    }
+
     /// <summary>Two rounds of use-and-restore over the whole process.</summary>
     [SupportedOSPlatform("windows")]
     public static int Run(int slot, string? runtimeUrl = null)
@@ -283,6 +412,51 @@ public static class SkillCooldownSweep
             }
 
             List<SweepWord> found = previous ?? new List<SweepWord>();
+
+            // The negative control, and the half the first version was missing.
+            // Two active rounds left 8265 survivors on a live client because
+            // "moved and came back" admits everything that churns.
+            if (found.Count > 1)
+            {
+                Console.WriteLine();
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"--- controllo negativo: NON usare lo slot {slot} per {QuietSeconds}s ---"));
+                Console.WriteLine("  INVIO per cominciare, poi tieni le mani ferme:");
+                if (Console.ReadLine() is null)
+                {
+                    Console.WriteLine("[REFUSED] sweep_aborted");
+                    return 1;
+                }
+
+                found = Quiet(session, found);
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"  mai mosse mentre non succedeva nulla: {found.Count}"));
+            }
+
+            // The second filter, discarding a different population than the quiet
+            // control: churn is scattered, a cooldown belongs to a table.
+            if (found.Count > 1)
+            {
+                List<SweepWord> inTable = KeepInSkillTable(found);
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"  con vicini a 0x{SkillStride:X} (tabella abilita'): {inTable.Count}"));
+
+                if (inTable.Count == 0)
+                {
+                    // Saying which filter emptied the set is the useful half: it
+                    // means the table hypothesis is wrong here, not that nothing
+                    // behaved like a cooldown.
+                    Console.WriteLine();
+                    Console.WriteLine($"NON stabilito: {NoTableReason}");
+                    Console.WriteLine("Parole che si comportano da cooldown ce ne sono, ma nessuna sta in una");
+                    Console.WriteLine("tabella a passo 0x48. Su questa build le abilita' non sono disposte");
+                    Console.WriteLine("come la fonte terza descrive, e il passo va ricavato, non assunto.");
+                    return 1;
+                }
+
+                found = inTable;
+            }
+
             Console.WriteLine();
 
             if (Verdict(found) is { } verdict)

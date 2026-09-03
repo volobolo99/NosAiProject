@@ -166,4 +166,107 @@ public sealed class SkillCooldownSweepTests
     {
         Assert.Null(SkillCooldownSweep.Verdict(new[] { new SweepWord(Region, 0u) }));
     }
+
+    // ---------- and not otherwise
+
+    [Fact]
+    public void AWordThatSitsStillWhileNothingHappensIsKept()
+    {
+        var candidates = new[] { new SweepWord(Region, 0u) };
+
+        Assert.Single(SkillCooldownSweep.KeepStill(candidates, Memory((Region, 0u))));
+    }
+
+    [Fact]
+    public void AWordThatMovesWhileNothingHappensIsChurnAndIsDropped()
+    {
+        // The half the first version was missing. "Moved when the skill was used
+        // and came back" admits everything that churns: two rounds of it left 8265
+        // survivors on a live client, and their values -- 490441108, 842281263 --
+        // were ASCII read as integers, so the sweep was walking string buffers.
+        var candidates = new[] { new SweepWord(Region, 0u) };
+
+        Assert.Empty(SkillCooldownSweep.KeepStill(candidates, Memory((Region, 7u))));
+    }
+
+    [Fact]
+    public void RepeatedSamplingIsWhatRemovesAWordThatChurnsAndReturns()
+    {
+        // Checked once at the end, a word that churns has had time to come back.
+        // The quiet control samples repeatedly for exactly this population, so the
+        // filter has to be composable across samples rather than a single verdict.
+        var candidates = new List<SweepWord> { new(Region, 0u) };
+
+        List<SweepWord> afterQuietSample = SkillCooldownSweep.KeepStill(candidates, Memory((Region, 3u)));
+        List<SweepWord> afterItReturned = SkillCooldownSweep.KeepStill(afterQuietSample, Memory((Region, 0u)));
+
+        Assert.Empty(afterItReturned);
+    }
+
+    [Fact]
+    public void AnUnreadableWordDoesNotSurviveTheQuietControlEither()
+    {
+        var candidates = new[] { new SweepWord(Region, 0u) };
+
+        Assert.Empty(SkillCooldownSweep.KeepStill(candidates, Memory()));
+    }
+
+    // ---------- a cooldown belongs to a table
+
+    private static SweepWord At(long offset, uint ready = 0u) =>
+        new(new IntPtr(Region.ToInt64() + offset), ready);
+
+    [Fact]
+    public void WordsSpacedAtTheSkillStrideAreKeptAsATable()
+    {
+        // 0x48 is the bot's own stride, where "skill n is ready" is
+        // *(DWORD*)(table + (n - 1) * 0x48) == 0. The stride is borrowed; its
+        // starting addresses are not, because the same source puts the vitals at
+        // an RVA this client does not use.
+        var table = new[]
+        {
+            At(0x0),
+            At(SkillCooldownSweep.SkillStride),
+            At(SkillCooldownSweep.SkillStride * 2),
+            At(SkillCooldownSweep.SkillStride * 3),
+        };
+
+        Assert.Equal(4, SkillCooldownSweep.KeepInSkillTable(table).Count);
+    }
+
+    [Fact]
+    public void AWordWithNoNeighboursAtTheStrideIsScatteredChurn()
+    {
+        // The population this filter exists for: string buffers move and come
+        // back, but they do not line up 0x48 apart.
+        var scattered = new[] { At(0x0), At(0x13), At(0x2C1), At(0x9F4) };
+
+        Assert.Empty(SkillCooldownSweep.KeepInSkillTable(scattered));
+    }
+
+    [Fact]
+    public void ATableSurvivesEvenWhenScatteredWordsSurroundIt()
+    {
+        var mixed = new List<SweepWord>
+        {
+            At(0x11), At(0x2F),
+            At(0x1000), At(0x1000 + SkillCooldownSweep.SkillStride), At(0x1000 + SkillCooldownSweep.SkillStride * 2),
+            At(0x9001),
+        };
+
+        List<SweepWord> kept = SkillCooldownSweep.KeepInSkillTable(mixed);
+
+        Assert.Equal(3, kept.Count);
+        Assert.All(kept, w => Assert.True(w.Address.ToInt64() >= Region.ToInt64() + 0x1000));
+    }
+
+    [Fact]
+    public void AWordAtTheEndOfItsTableStillCounts()
+    {
+        // The bot describes separate tables for slots 1-4 and 5+, so a real entry
+        // can sit at an edge with neighbours on one side only.
+        var table = new[] { At(0x0), At(SkillCooldownSweep.SkillStride), At(SkillCooldownSweep.SkillStride * 2) };
+
+        Assert.Contains(SkillCooldownSweep.KeepInSkillTable(table), w => w.Address == Region);
+    }
 }
