@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -158,22 +159,50 @@ namespace NosAi.Host
 
     #region 3. Server Web Embedded per il Centro di Controllo (Eye AI View)
 
+    /// <remarks>
+    /// <see cref="TryStart"/> requires a real loopback HTTP round trip before it
+    /// reports success, not just a clean <c>HttpListener.Start()</c> call. This
+    /// wraps <see cref="HttpListener"/> the same trusting way
+    /// <see cref="NosAi.Runtime.Gate1.Gate1OperatorServer"/> used to: a 2026-09-03
+    /// investigation there found a real machine condition where an elevated run
+    /// had <c>Start()</c> succeed — a clean bind, a real bound port, no exception —
+    /// on four different ports while every one of them refused the connection
+    /// outright from a separate process. The identical build ran un-elevated on
+    /// the same machine bound the same way and answered real requests
+    /// immediately, so the difference was elevation, not this code; the exact
+    /// OS-level mechanism was not pinned down. Given a root cause outside this
+    /// process cannot be fixed here, the same self-verification is applied: after
+    /// <c>Start()</c> succeeds, one real request must complete before success is
+    /// reported.
+    /// </remarks>
     public sealed class EmbeddedControlCenterServer : IAsyncDisposable
     {
         private readonly HttpListener _listener;
         private readonly Func<MasterSystemTelemetry> _telemetryProvider;
         private readonly Action<string> _commandHandler;
         private readonly int _port;
+
+        /// <summary>
+        /// Proves a bound port actually accepts a connection. Real loopback HTTP by
+        /// default; overridable so a test can simulate a phantom-success bind
+        /// without needing the OS condition that produced one for real.
+        /// </summary>
+        private readonly Func<int, bool> _verifyReachable;
         private CancellationTokenSource? _serverCts;
 
         /// <summary>The port actually bound, or null while the control centre is not listening.</summary>
         public int? BoundPort { get; private set; }
 
-        public EmbeddedControlCenterServer(int port, Func<MasterSystemTelemetry> telemetryProvider, Action<string> commandHandler)
+        public EmbeddedControlCenterServer(
+            int port,
+            Func<MasterSystemTelemetry> telemetryProvider,
+            Action<string> commandHandler,
+            Func<int, bool>? verifyReachable = null)
         {
             _telemetryProvider = telemetryProvider;
             _commandHandler = commandHandler;
             _port = port;
+            _verifyReachable = verifyReachable ?? DefaultVerifyReachable;
             _listener = new HttpListener();
             _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
         }
@@ -200,8 +229,57 @@ namespace NosAi.Host
             BoundPort = _port;
             _serverCts = new CancellationTokenSource();
             _ = ServerLoopAsync(_serverCts.Token);
+
+            // Start() not throwing is evidence the API call succeeded, not evidence
+            // a client can connect (see the remarks on this class). Success needs
+            // both, so a bind nobody can reach is torn down and reported honestly
+            // rather than left looking live.
+            if (!_verifyReachable(_port))
+            {
+                failureReason = $"control_center_bind_unreachable:{_port}";
+                StopListening();
+                return false;
+            }
+
             failureReason = null;
             return true;
+        }
+
+        /// <summary>
+        /// One real loopback HTTP round trip against the default route, which
+        /// serves the dashboard HTML unconditionally and touches neither
+        /// <see cref="_telemetryProvider"/> nor <see cref="_commandHandler"/>. Any
+        /// completed response is proof the port is genuinely being served.
+        /// </summary>
+        private static bool DefaultVerifyReachable(int port)
+        {
+            try
+            {
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+                using var response = client.GetAsync($"http://127.0.0.1:{port}/").GetAwaiter().GetResult();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tears the listener down without disposing this object, so a failed
+        /// <see cref="TryStart"/> leaves nothing bound behind it.
+        /// </summary>
+        private void StopListening()
+        {
+            _serverCts?.Cancel();
+            if (_listener.IsListening)
+            {
+                _listener.Stop();
+                _listener.Close();
+            }
+            _serverCts?.Dispose();
+            _serverCts = null;
+            BoundPort = null;
         }
 
         public void Start()
@@ -220,6 +298,7 @@ namespace NosAi.Host
                     ProcessRequest(context);
                 }
                 catch (HttpListenerException) { break; }
+                catch (ObjectDisposedException) { break; }
                 catch (OperationCanceledException) { break; }
             }
         }
@@ -343,12 +422,7 @@ namespace NosAi.Host
 
         public ValueTask DisposeAsync()
         {
-            _serverCts?.Cancel();
-            if (_listener.IsListening)
-            {
-                _listener.Stop();
-                _listener.Close();
-            }
+            StopListening();
             return ValueTask.CompletedTask;
         }
     }
