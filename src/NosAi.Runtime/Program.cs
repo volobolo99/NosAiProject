@@ -359,6 +359,25 @@ public static class Program
             return NosAi.LiveIntegration.PlayerVitalsProbe.Run(capture, watchSeconds);
         }
 
+        // Phase 3 of the memory-layout extension: which word is this skill's
+        // cooldown, decided by how it behaves against the wire's `sr` rather than
+        // by either of the two chains the sources disagree about.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.SkillCooldownProbe.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Navigation.SkillCooldownProbe.Flag, StringComparison.OrdinalIgnoreCase));
+            if (flag + 1 >= args.Length
+                || !int.TryParse(args[flag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int skillSlot)
+                || skillSlot < 0)
+            {
+                Console.Error.WriteLine(
+                    "--skill-cooldowns <slot> requires the slot the wire numbers this skill with.");
+                return 2;
+            }
+
+            return NosAi.Runtime.Navigation.SkillCooldownProbe.Run(skillSlot);
+        }
+
         // What a recording says, read by the runtime's own decoder and needing no
         // driver. WinDivertProbe --world does the same, but it has to sit beside a
         // staged WinDivert.dll and it holds the runtime assembly open while it
@@ -549,7 +568,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

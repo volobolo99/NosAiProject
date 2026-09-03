@@ -308,6 +308,9 @@ public static class OperatorMenu
                 case "18":
                     Perform("HP e MP del personaggio", RunPlayerVitals);
                     break;
+                case "19":
+                    Perform("Cooldown di un'abilita'", RunSkillCooldowns);
+                    break;
                 case "15":
                     Perform("Cerca il bersaglio in memoria", RunTargetHunt);
                     break;
@@ -386,6 +389,7 @@ public static class OperatorMenu
         Console.WriteLine(" 16  Catena del bersaglio         (manager -> puntatore -> id, contro ct)");
         Console.WriteLine(" 17  Nomi delle entita'           (memoria e filo affiancati, candidati)");
         Console.WriteLine(" 18  HP e MP del personaggio      (scan sulle basi, candidati UNKNOWN)");
+        Console.WriteLine(" 19  Cooldown di un'abilita'      (tu la usi, il filo dice quando torna)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
@@ -692,6 +696,27 @@ public static class OperatorMenu
 
         Console.WriteLine();
         return replay(captures[index - 1]);
+    }
+
+    /// <summary>
+    /// Phase 3. Needs the wire running, because the operator supplies the press and
+    /// the wire supplies the restoration — the probe refuses rather than checking
+    /// the falls against the same clock that produced them.
+    /// </summary>
+    private static int RunSkillCooldowns()
+    {
+        Console.WriteLine("Serve il runtime avviato con --observe-game in una console elevata:");
+        Console.WriteLine("senza sr dal filo non c'e' una seconda sorgente e la sonda rifiuta.");
+        Console.Write("Slot dell'abilita' (come lo numera il filo): ");
+        string? typed = Console.ReadLine()?.Trim();
+
+        if (!int.TryParse(typed, NumberStyles.Integer, CultureInfo.InvariantCulture, out int slot) || slot < 0)
+        {
+            Console.WriteLine("Non e' uno slot.");
+            return 2;
+        }
+
+        return Navigation.SkillCooldownProbe.Run(slot);
     }
 
     private static int RunEntityNames()

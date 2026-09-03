@@ -138,6 +138,24 @@ Se uno cede: `UNKNOWN` con la ragione del controllo fallito.
 
 ## 6. Fase 3 — Cooldown delle abilità
 
+**Implementata il 3 settembre 2026.** Oracolo e comando esistono; classificazione
+`UNKNOWN` finché non converge. Concordanza su sessione reale ancora da registrare —
+livello raggiungibile: `Integrated`. Nessuna delle due catene discordanti è nel
+codice, e il passo `0x48` è **misurato e riportato**, mai assunto: `ObservedStride`
+restituisce `null` quando i salti non concordano invece di farne una media.
+
+Il vincolo richiede entrambe le direzioni, ed è la ragione per cui regge: una parola
+permanentemente zero soddisfa « zero quando è pronta » a ogni ripristino, gratis, per
+sempre, quindi è la *risalita* a escluderla. I ripristini richiesti sono due perché
+il primo registra soltanto ciò che la parola ha fatto, mentre il secondo è quello che
+la coincidenza non ripete.
+
+L'operatore preme il tasto e il filo dice quando l'abilità torna: `su` riporta il
+colpo e il bersaglio, non lo slot, quindi nessuna sorgente sul filo dice *quale*
+abilità è stata usata. Quello che l'operatore non fornisce mai è il momento del
+ripristino, che è `sr` — e senza filo la sonda **rifiuta** invece di controllare le
+discese sullo stesso cronometro che le ha prodotte.
+
 La fase più debole e va dichiarata tale: le due fonti disponibili **non concordano fra
 loro** sulla catena (`{…,0x0,0x24}` nel codice contro `{…,0x0,0x8,0x14}` nella tabella).
 Non partire dai numeri.
