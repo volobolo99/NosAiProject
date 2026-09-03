@@ -157,32 +157,26 @@ public static class TargetChainProbe
         try
         {
             using JsonDocument document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty("gameplayBaseline", out JsonElement baseline)
-                || baseline.ValueKind != JsonValueKind.Object)
+            if (!NosAi.Runtime.Observability.OperatorApiSnapshot.TryGameplayBaseline(
+                    document.RootElement, out JsonElement baseline, out failureReason))
             {
-                failureReason = "gameplay_provider_not_available";
                 return false;
             }
 
-            if (!baseline.TryGetProperty("selectedTarget", out JsonElement node)
-                || node.ValueKind != JsonValueKind.Object)
+            if (!NosAi.Runtime.Observability.OperatorApiSnapshot.TryField(
+                    baseline, "selectedTarget", out JsonElement value, out string? fieldReason))
             {
-                failureReason = WireSilentReason;
+                // The field's own reason says why the wire had no target, which is
+                // more use than a generic silence.
+                failureReason = fieldReason ?? WireSilentReason;
                 return false;
             }
 
-            if (node.TryGetProperty("failureReason", out JsonElement reason)
-                && reason.ValueKind == JsonValueKind.String)
-            {
-                failureReason = reason.GetString();
-            }
-
-            if (!node.TryGetProperty("value", out JsonElement value)
-                || value.ValueKind != JsonValueKind.Object
+            if (value.ValueKind != JsonValueKind.Object
                 || !value.TryGetProperty("entityId", out JsonElement id)
                 || !id.TryGetInt64(out entityId))
             {
-                failureReason ??= WireSilentReason;
+                failureReason = WireSilentReason;
                 return false;
             }
 

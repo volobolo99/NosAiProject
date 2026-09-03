@@ -102,8 +102,8 @@ public sealed class TargetChainProbeTests
     public void TheWiresAnswerIsReadFromTheOperatorApi()
     {
         const string Json = """
-            {"gameplayBaseline":{"selectedTarget":{"value":{"entityId":313906,"entityType":3},
-            "source":"LIVE","hasObservedValue":true}}}
+            {"client":{"gameplayBaseline":{"value":{"selectedTarget":{"value":{"entityId":313906,
+            "entityType":3},"source":"LIVE","hasObservedValue":true}}}}}
             """;
 
         Assert.True(TargetChainProbe.TryReadWireTarget(Json, out long id, out string? reason));
@@ -115,8 +115,8 @@ public sealed class TargetChainProbeTests
     public void AnUnknownSelectionOnTheWireCarriesItsOwnReason()
     {
         const string Json = """
-            {"gameplayBaseline":{"selectedTarget":{"value":null,"source":"UNKNOWN",
-            "hasObservedValue":false,"failureReason":"no_target_selection_observed"}}}
+            {"client":{"gameplayBaseline":{"value":{"selectedTarget":{"value":null,"source":"UNKNOWN",
+            "hasObservedValue":false,"failureReason":"no_target_selection_observed"}}}}}
             """;
 
         Assert.False(TargetChainProbe.TryReadWireTarget(Json, out _, out string? reason));

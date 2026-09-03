@@ -109,16 +109,14 @@ public static class SkillCooldownProbe
         try
         {
             using JsonDocument document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty("gameplayBaseline", out JsonElement baseline)
-                || baseline.ValueKind != JsonValueKind.Object)
+            if (!NosAi.Runtime.Observability.OperatorApiSnapshot.TryGameplayBaseline(
+                    document.RootElement, out JsonElement baseline, out failureReason))
             {
-                failureReason = "gameplay_provider_not_available";
                 return false;
             }
 
-            if (!baseline.TryGetProperty("skillsReady", out JsonElement node)
-                || node.ValueKind != JsonValueKind.Object
-                || !node.TryGetProperty("value", out JsonElement list)
+            if (!NosAi.Runtime.Observability.OperatorApiSnapshot.TryField(
+                    baseline, "skillsReady", out JsonElement list, out _)
                 || list.ValueKind != JsonValueKind.Array)
             {
                 failureReason = SlotNeverAnnouncedReason;

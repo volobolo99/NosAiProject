@@ -10,8 +10,16 @@ namespace NosAi.Runtime.Tests;
 /// </summary>
 public sealed class SkillCooldownProbeTests
 {
+    /// <summary>The document as the runtime serves it, not as the probe once expected.</summary>
+    /// <remarks>
+    /// This fixture used to be flat — <c>{ "gameplayBaseline": { "skillsReady": … } }</c> —
+    /// and every assertion below passed against it while the probe refused every
+    /// real call. The baseline is served two levels deeper and wrapped, because it
+    /// is a classified value. A fixture that agrees with the code and disagrees
+    /// with the runtime tests nothing.
+    /// </remarks>
     private static string Wire(string skillsReady) =>
-        $$"""{ "gameplayBaseline": { "skillsReady": {{skillsReady}} } }""";
+        $$"""{ "client": { "gameplayBaseline": { "value": { "skillsReady": {{skillsReady}} } } } }""";
 
     [Fact]
     public void The_slot_the_wire_named_is_read_with_its_moment()
