@@ -423,6 +423,7 @@ public static class SkillCooldownSweep
     private const int QuietSampleMs = 400;
 
     public const string NoAnchorReason = "sweep_no_candidate_is_reachable_from_a_base";
+    public const string ReactsToAnySkillReason = "sweep_every_candidate_reacts_to_any_skill";
 
     /// <summary>
     /// Of the anchored candidates, those whose resting value is zero.
@@ -670,6 +671,45 @@ public static class SkillCooldownSweep
                     $"  di queste, a riposo su zero: {atZero.Count}"));
                 if (atZero.Count > 0)
                     found = atZero;
+            }
+
+            // The control that separates "reacts to this skill" from "reacts to
+            // any skill". Four candidates survived everything above on a live
+            // client, all of them behaving identically, because every test so far
+            // asked the same question: does it move when slot N is used. A word
+            // that also moves for a different skill is a generic counter, an
+            // animation, or an action flag -- not this slot's cooldown.
+            if (found.Count > 1)
+            {
+                Console.WriteLine();
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"--- controllo incrociato: usa un'abilita' DIVERSA dallo slot {slot} ---"));
+                Console.WriteLine("  Usala ora, poi INVIO:");
+                if (Console.ReadLine() is null)
+                {
+                    Console.WriteLine("[REFUSED] sweep_aborted");
+                    return 1;
+                }
+
+                int before = found.Count;
+                found = KeepStill(found, address =>
+                {
+                    MemoryReadResult read = session.Reader.Read(address, sizeof(uint));
+                    return read.Ok ? BitConverter.ToUInt32(read.Bytes) : null;
+                });
+
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"  ferme mentre usavi un'altra abilita': {found.Count} di {before}"));
+
+                if (found.Count == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"NON stabilito: {ReactsToAnySkillReason}");
+                    Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                        $"Tutte e {before} si muovono anche per un'abilita' diversa, quindi nessuna e'"));
+                    Console.WriteLine("il cooldown di questo slot: contano gli usi, non questo cooldown.");
+                    return 1;
+                }
             }
 
             Console.WriteLine();

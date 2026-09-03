@@ -333,6 +333,26 @@ public sealed class SkillCooldownSweepTests
     }
 
     [Fact]
+    public void AWordThatMovesForADifferentSkillIsNotThisSkillsCooldown()
+    {
+        // The control that separates "reacts to this skill" from "reacts to any
+        // skill". Four candidates survived every earlier test identically,
+        // because every earlier test asked the same question: does it move when
+        // slot N is used. A generic use counter answers yes to all of them.
+        var candidates = new[] { At(0x0, ready: 0u) };
+
+        Assert.Empty(SkillCooldownSweep.KeepStill(candidates, Memory((Region, 1u))));
+    }
+
+    [Fact]
+    public void AWordUntouchedByADifferentSkillIsStillACandidate()
+    {
+        var candidates = new[] { At(0x0, ready: 0u) };
+
+        Assert.Single(SkillCooldownSweep.KeepStill(candidates, Memory((Region, 0u))));
+    }
+
+    [Fact]
     public void NothingRestingAtZeroIsAnEmptyRankingAndNotAnError()
     {
         // Applied last and only among anchored candidates, so an empty result
