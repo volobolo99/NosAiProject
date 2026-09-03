@@ -1,4 +1,5 @@
 using System.Globalization;
+using NosAi.Runtime.Navigation;
 
 namespace NosAi.LiveIntegration;
 
@@ -482,6 +483,84 @@ public sealed class NosTaleClientLayout
 
         return TryFollow(
             reader, playerManager + PlayerObjectOffset, "player_object", out playerObject, out failureReason);
+    }
+
+    /// <summary>
+    /// Scans the player manager and player object windows for the stats-block
+    /// shape. Followed on every call, never cached: both bases move, and a
+    /// remembered address is whatever occupies that memory after.
+    /// </summary>
+    /// <remarks>
+    /// Zero hits is a successful scan that found nothing, not a failed read.
+    /// Both windows unreadable is a failed read. The RVA the third source
+    /// printed is not consulted.
+    /// </remarks>
+    public bool TryScanPlayerVitals(
+        ProcessMemoryReader reader,
+        out IReadOnlyList<PlayerVitalsHit> hits,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        hits = Array.Empty<PlayerVitalsHit>();
+
+        if (!TryResolveBases(reader, out IntPtr manager, out IntPtr playerObject, out failureReason))
+            return false;
+
+        int window = (int)MapIdAnchors.StructWindow;
+        var found = new List<PlayerVitalsHit>();
+
+        MemoryReadResult managerBytes = reader.Read(manager, window);
+        if (managerBytes.Ok)
+            PlayerVitalsScan.Collect(managerBytes.Bytes, MapIdAnchorKind.PlayerManager, found);
+
+        MemoryReadResult objectBytes = reader.Read(playerObject, window);
+        if (objectBytes.Ok)
+            PlayerVitalsScan.Collect(objectBytes.Bytes, MapIdAnchorKind.PlayerObject, found);
+
+        if (!managerBytes.Ok && !objectBytes.Ok)
+        {
+            failureReason = managerBytes.FailureReason
+                            ?? objectBytes.FailureReason
+                            ?? "player_vitals_windows_unreadable";
+            return false;
+        }
+
+        hits = found;
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// The unique structural candidate, or a named refusal when the scan is
+    /// empty or ambiguous. Still UNKNOWN: uniqueness is not concordance.
+    /// </summary>
+    public bool TryReadPlayerVitals(
+        ProcessMemoryReader reader,
+        out PlayerVitalsCandidate reading,
+        out string? failureReason)
+    {
+        reading = default;
+        if (!TryScanPlayerVitals(reader, out IReadOnlyList<PlayerVitalsHit> hits, out failureReason))
+            return false;
+
+        if (hits.Count == 0)
+        {
+            reading = PlayerVitalsCandidate.Missing(PlayerVitalsCandidate.NotFoundReason);
+            failureReason = PlayerVitalsCandidate.NotFoundReason;
+            return false;
+        }
+
+        if (hits.Count > 1)
+        {
+            failureReason = string.Create(CultureInfo.InvariantCulture,
+                $"{PlayerVitalsCandidate.AmbiguousPrefix}:{hits.Count}");
+            reading = PlayerVitalsCandidate.Missing(failureReason);
+            return false;
+        }
+
+        reading = PlayerVitalsCandidate.From(hits[0]);
+        failureReason = null;
+        return true;
     }
 
     /// <summary>

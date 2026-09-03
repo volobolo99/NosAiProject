@@ -94,6 +94,11 @@ La discordanza deve essere visibile a occhio, non nascosta in un log.
 
 ## 5. Fase 2 — HP e MP
 
+**Implementata il 3 settembre 2026.** Ricerca sulle basi risolte e comando
+esistono; classificazione `UNKNOWN` (`player_vitals_not_established`). Concordanza
+su sessione reale ancora da registrare — livello raggiungibile: `Integrated`.
+L'RVA `0x004F4BA8` non è nel codice.
+
 ### Lettura
 
 Il blocco statistiche della fonte terza sta a `{MaxMP, MP, MaxHP, HP}` con offset

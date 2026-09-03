@@ -331,6 +331,34 @@ public static class Program
             return NosAi.LiveIntegration.EntityNameProbe.Run(capture);
         }
 
+        // Phase 2 of the memory-layout extension: player HP/MP as candidates
+        // found by scanning the resolved bases, beside the percentage a
+        // recording derived from stat/st/in. Never LIVE. Never an RVA.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.PlayerVitalsProbe.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.PlayerVitalsProbe.Flag, StringComparison.OrdinalIgnoreCase));
+            string? capture = null;
+            int watchSeconds = 0;
+            for (int i = flag + 1; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], "--watch", StringComparison.OrdinalIgnoreCase)
+                    && i + 1 < args.Length
+                    && int.TryParse(args[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+                    && seconds > 0)
+                {
+                    watchSeconds = seconds;
+                    i++;
+                    continue;
+                }
+
+                if (!args[i].StartsWith("--", StringComparison.Ordinal))
+                    capture = args[i];
+            }
+
+            return NosAi.LiveIntegration.PlayerVitalsProbe.Run(capture, watchSeconds);
+        }
+
         // What a recording says, read by the runtime's own decoder and needing no
         // driver. WinDivertProbe --world does the same, but it has to sit beside a
         // staged WinDivert.dll and it holds the runtime assembly open while it
@@ -521,7 +549,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

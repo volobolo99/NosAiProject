@@ -166,6 +166,26 @@ public sealed class ClientMemorySession : IDisposable
         return _layout.TryReadMapId(_reader, out mapId, out failureReason);
     }
 
+    /// <summary>
+    /// Every stats-block shape inside the player manager and player object
+    /// windows. Empty is a real answer, not a failed attach.
+    /// </summary>
+    public bool TryScanPlayerVitals(out IReadOnlyList<PlayerVitalsHit> hits, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryScanPlayerVitals(_reader, out hits, out failureReason);
+    }
+
+    /// <summary>
+    /// The unique structural candidate, still UNKNOWN. Ambiguous or empty is a
+    /// named refusal, not a guessed block.
+    /// </summary>
+    public bool TryReadPlayerVitals(out PlayerVitalsCandidate reading, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryReadPlayerVitals(_reader, out reading, out failureReason);
+    }
+
     /// <summary>Reads one of the client's entity lists for the current map.</summary>
     public bool TryReadEntities(
         MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)
