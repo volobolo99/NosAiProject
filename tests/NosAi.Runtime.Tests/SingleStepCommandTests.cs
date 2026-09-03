@@ -322,6 +322,95 @@ public sealed class SingleStepCommandTests : IDisposable
         Assert.Equal(SingleStepCommand.ExitDisplaced, displaced.ExitCode);
     }
 
+    [Fact]
+    public void NotAdjacentRefusalPrintsTheExactShapeReasonAndLeavesLaterGuardsUnevaluated()
+    {
+        var recorder = new RecordingInputBackend();
+        SingleStepRun run = Run(Request(from: new MapPoint(2, 2), to: new MapPoint(4, 2)), recorder: recorder);
+
+        Assert.Contains("Refused  " + StepGuardChain.NotAdjacentPrefix + ":2,0", GuardLine(run.Text, StepGuard.Shape), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Geometry), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Authority), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Policy), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Occupancy), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Projection), StringComparison.Ordinal);
+        Assert.Equal(SingleStepCommand.ExitGuardRefused, run.ExitCode);
+        Assert.Empty(recorder.Events);
+        Assert.Equal(SingleStepCommand.AuthorizationEventType, Assert.Single(run.Events).EventType);
+    }
+
+    [Fact]
+    public void OriginNotWalkableRefusalPrintsTheGeometryReason()
+    {
+        SingleStepRun run = Run(Request(from: new MapPoint(5, 2), to: new MapPoint(6, 2)));
+
+        Assert.Contains("Passed", GuardLine(run.Text, StepGuard.Shape), StringComparison.Ordinal);
+        Assert.Contains("Refused  " + StepGuardChain.OriginNotWalkablePrefix, GuardLine(run.Text, StepGuard.Geometry), StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Authority), StringComparison.Ordinal);
+        Assert.Equal(SingleStepCommand.ExitGuardRefused, run.ExitCode);
+    }
+
+    [Fact]
+    public void OccupiedDestinationPrintsTheOccupancyReasonAndWritesOnlyAuthorization()
+    {
+        var recorder = new RecordingInputBackend();
+        var occupied = new OccupancyView(
+            new[] { new SelectableEntity(77, new MapPoint(3, 2), null, Now) },
+            Now);
+        SingleStepRun run = Run(Request(view: occupied), recorder: recorder);
+
+        Assert.Contains("Passed", GuardLine(run.Text, StepGuard.Policy), StringComparison.Ordinal);
+        Assert.Contains(
+            "Refused  " + OccupancyFreshness.DestinationOccupiedPrefix + ":77",
+            GuardLine(run.Text, StepGuard.Occupancy),
+            StringComparison.Ordinal);
+        Assert.Contains("NotEvaluated", GuardLine(run.Text, StepGuard.Projection), StringComparison.Ordinal);
+        Assert.Empty(recorder.Events);
+        RuntimeEvent authorization = Assert.Single(run.Events);
+        Assert.Equal(SingleStepCommand.AuthorizationEventType, authorization.EventType);
+        Assert.DoesNotContain(run.Events, e => e.EventType == SingleStepCommand.EmissionEventType);
+        Assert.Equal(SingleStepCommand.ExitGuardRefused, run.ExitCode);
+    }
+
+    [Fact]
+    public void AuditPayloadsAreFlatJsonWithNoMachinePaths()
+    {
+        PositionReading arrival = new(new MapPoint(3, 2), Now.AddYears(1), DataSourceKind.Live);
+        SingleStepRun run = Run(Request(), readPosition: () => arrival);
+
+        Assert.Equal(3, run.Events.Count);
+        foreach (RuntimeEvent runtimeEvent in run.Events)
+        {
+            using JsonDocument document = JsonDocument.Parse(runtimeEvent.PayloadJson);
+            Assert.Equal(JsonValueKind.Object, document.RootElement.ValueKind);
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                Assert.Equal(JsonValueKind.String, property.Value.ValueKind);
+                string value = property.Value.GetString() ?? string.Empty;
+                Assert.DoesNotContain(":\\", value, StringComparison.Ordinal);
+                Assert.DoesNotContain("/Users/", value, StringComparison.Ordinal);
+                Assert.DoesNotContain("C:\\", value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+    }
+
+    [Fact]
+    public void TheLiveCommandTakesTheGatedBackendFromCompositionAndNamesTheOperator()
+    {
+        string root = RepositoryRoot();
+        string command = File.ReadAllText(Path.Combine(root, "src", "NosAi.Runtime", "Navigation", "SingleStepCommand.cs"));
+        string program = File.ReadAllText(Path.Combine(root, "src", "NosAi.Runtime", "Program.cs"));
+
+        Assert.Contains("RuntimeComposition.CreateSafe", command, StringComparison.Ordinal);
+        Assert.Contains("ActuationAuthority.Commanded(Flag)", command, StringComparison.Ordinal);
+        Assert.Contains("components.InputBackend is not GatedInputBackend", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("new Win32InputBackend", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("--force", command, StringComparison.Ordinal);
+        Assert.DoesNotContain("--force", program, StringComparison.Ordinal);
+        Assert.Contains("SingleStepCommand.ExitUsage", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("EnsureVerified", command, StringComparison.Ordinal);
+    }
+
     private static JsonElement Payload(RuntimeEvent runtimeEvent) =>
         JsonDocument.Parse(runtimeEvent.PayloadJson).RootElement;
 

@@ -895,16 +895,13 @@ accorgesse.
 
 ## 8. Corsa dei 100 passi (`--step`) — procedura d'operatore
 
-Non è un test automatico. Premere `--step` sul client vivo richiede prima le prove di
-`P2` (`--input-guards --watch 20`: finestra spostata, punto coperto, mano sul mouse) e
-quella di `P3` (client elevato ⇒ sessione non attuante, puntatore fermo; client non
-elevato ⇒ sessione attuante). Senza quelle, il primo passo è anche la prima occasione
-per scoprire che una guardia non rifiutava.
+Non è un test automatico. Prima: prove di `P2` (`--input-guards --watch 20`) e di `P3`
+(client elevato ⇒ non attuante, puntatore fermo; non elevato ⇒ attuante). Nessun `--force`.
 
-1. NosTale aperto, personaggio fermo su cella aperta, finestra in primo piano, input armato.
-2. `NosAi.Runtime.exe --step 1 0` (una cella est). Stampa le sei guardie, il pixel, il verifier.
-3. Uscita 0 solo su `Succeeded`. Ogni altro esito è non-zero; non ritentare da solo.
-4. Ripetere su celle adiacenti calpestabili fino a 100 passi. Fermarsi al primo atto
-   fuori dal client, con finestra non in primo piano, o senza autorità nominata nel registro.
-5. `--event-log-report`: tre eventi per un passo emesso (`step.authorization`,
-   `step.emission`, `step.verification`), uno solo per un rifiuto; ognuno porta `authority`.
+1. Aprire NosTale, personaggio fermo su cella aperta, finestra in primo piano.
+2. Armare l'input live sul runtime (policy); senza, `--step` stampa il ladder, si ferma a `Policy`, esce non-zero, non emette.
+3. Lanciare `NosAi.Runtime.exe --step 1 0` (una cella est). Stampa: richiesta (mappa, partenza, destinazione); le sei guardie (`Passed` / `Refused` / `NotEvaluated`, motivo sulla rifiutata); se autorizzato, pixel e scala; se emesso, verifier con ms; se non emesso, il motivo.
+4. Uscita 0 solo su `Succeeded`. Ogni altro esito è non-zero; non ritentare da solo.
+5. Ripetere su celle adiacenti calpestabili fino a 100 passi.
+6. Fermarsi al primo atto fuori dal client, con finestra non in primo piano, o senza `authority` nominata nel registro.
+7. `--event-log-report`: tre eventi per un passo emesso (`step.authorization`, `step.emission`, `step.verification`); uno solo (`step.authorization`) per un rifiuto. Un `step.emission` senza emissione è la bugia da rifiutare.
