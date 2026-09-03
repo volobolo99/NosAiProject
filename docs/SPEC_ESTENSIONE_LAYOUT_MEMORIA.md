@@ -94,36 +94,112 @@ La discordanza deve essere visibile a occhio, non nascosta in un log.
 
 ## 5. Fase 2 — HP e MP
 
-**Implementata il 3 settembre 2026.** Ricerca sulle basi risolte e comando
-esistono; classificazione `UNKNOWN` (`player_vitals_not_established`). Concordanza
-su sessione reale ancora da registrare — livello raggiungibile: `Integrated`.
-L'RVA `0x004F4BA8` non è nel codice.
+**Implementata il 3 settembre 2026 e provata su client reale lo stesso giorno.**
+La concordanza con il filo c'è ed è registrata sotto; l'RVA `0x004F4BA8` non è nel
+codice. Livello raggiunto: **`Integrated`**, non `Verified`, e il motivo non è la
+concordanza ma l'ancora che manca — vedi «Quel che resta aperto». Classificazione
+in codice: `UNKNOWN` (`player_vitals_not_established`).
 
-### Lettura
+### Che cosa non ha funzionato
 
-Il blocco statistiche della fonte terza sta a `{MaxMP, MP, MaxHP, HP}` con offset
-`+0x00, +0x04, +0xF0, +0xF4`, tutti `uint32`. **L'RVA di partenza non si usa.**
+La procedura scritta qui in origine cercava il blocco della fonte terza nelle
+finestre attorno alle basi già risolte e sceglieva i candidati per **forma**:
+quattro `uint32` con `0 <= valore <= massimo`, i massimi non nulli, la distanza fra
+le coppie costante fra due letture. Su un client reale non ha prodotto niente di
+utile, per una ragione che vale la pena scrivere perché leggendo il filtro non si
+vede: **la forma non discrimina.** Una parola a zero soddisfa `0 <= valore <=
+massimo` contro qualunque massimo, sempre e a costo zero, e un heap grande è pieno
+di quadruple che passano. Il filtro ha restituito rumore, e nella lista non c'era
+vita.
 
-Procedura corretta, nell'ordine:
+Il blocco cercato non c'era comunque: su questa build `MaxMP` e `MP` non stanno a
+`-0xF4` e `-0xF0` da HP, e in 128 byte attorno a HP il valore che il filo dava per
+`maxMp` non compare affatto — § 7.3 del documento di ingresso. Le costanti
+`0x00/0x04/0xF0/0xF4` di `PlayerVitalsBlock` descrivono quel blocco.
 
-1. Cercare il blocco a partire dalle basi già risolte (player manager, player object)
-   usando l'oracolo: HP e MP sono gli unici due valori che *cambiano quando il
-   personaggio subisce danno e non altrimenti*, e i rispettivi massimi sono gli unici
-   che restano fermi mentre quelli cambiano e saltano al passaggio di livello.
-2. Filtrare i candidati con la relazione strutturale: quattro `uint32` con
-   `0 <= valore <= massimo`, i due massimi diversi da zero, e la distanza fra le coppie
-   costante fra due letture.
-3. Esprimere il risultato come distanza da una base risolta, non come indirizzo.
-4. Ripetere dopo un riavvio del client. Un offset che non sopravvive al riavvio è un
+Una scansione differenziale sull'intero processo, invece, HP lo trova: tre passaggi
+di `--memory-scan` / `--memory-narrow` mentre il valore si muoveva hanno portato a
+`0x1F7AEC7C`. Ma è una procedura che l'operatore guida a mano un passaggio per
+volta, dice *dove* è HP e non *che cosa* lo tiene, e consegna un indirizzo assoluto
+— cioè proprio la cosa che la § 3 vieta di conservare.
+
+### Che cosa ha funzionato — invertire la domanda
+
+Il filo non porta solo percentuali: `stat` porta `hp maxHp mp maxMp` come quattro
+interi assoluti, confermati contro l'HUD (`docs/PROTOCOLLO_NOSTALE.md`). Con quei
+numeri in mano la domanda smette di essere «che cosa somiglia a della vita», che non
+ha una risposta finita, e diventa «dove stanno questi due numeri, uno accanto
+all'altro», che ne ha una.
+
+Procedura, nell'ordine — è quella che esegue `--calibrate-vitals`:
+
+1. Prendere dal `stat` più recente i quattro interi. Senza `stat` la sonda rifiuta:
+   non c'è niente da cercare, e cercare comunque vorrebbe dire tornare alla forma.
+2. Scandire la memoria privata del processo e tenere solo gli indirizzi che portano
+   `maxHp` con `hp` nella parola successiva (`[a] == maxHp`, `[a+4] == hp`). Idem
+   per la coppia MP. Un giro solo non prova niente: su un heap grande qualche coppia
+   non correlata terrà quei due numeri per caso.
+3. Aspettare che il filo riporti un corrente **diverso** e rifare lo stesso
+   controllo sui soli sopravvissuti. Chi teneva la coppia per coincidenza non ha
+   ragione di seguirla quando cambia; chi è vita la segue. Se il valore non si è
+   mosso, il secondo giro rifà la prima domanda e non conferma niente: va detto,
+   non contato.
+4. Un solo sopravvissuto è il campo. Zero e più di uno sono due esiti nominati e
+   distinti, non un fallimento generico.
+5. Esprimere il risultato come distanza da una base risolta, non come indirizzo.
+   **Questo passo non è fatto** — vedi sotto.
+6. Ripetere dopo un riavvio del client. Un offset che non sopravvive al riavvio è un
    indirizzo che ha funzionato una volta.
+
+Nessuno di questi passi chiede a una persona quale candidato sembri giusto. È la
+differenza fra la scansione differenziale del paragrafo precedente e questa: la
+stessa evidenza, ma il giudizio sta in un predicato invece che nell'occhio
+dell'operatore.
+
+### Che cosa la sessione del 3 settembre ha stabilito
+
+Client reale, personaggio `3443217`, `stat` come seconda fonte. I dump e i numeri
+stanno in [MAPPA_MEMORIA_CLIENT_CANDIDATI.md § 7](MAPPA_MEMORIA_CLIENT_CANDIDATI.md);
+qui l'esito:
+
+- **`MaxHP` sta nei quattro byte immediatamente prima di `HP`.** È l'unica parte
+  della descrizione della fonte terza che ha retto, ed è la forma che la procedura
+  sopra cerca.
+- **Il blocco unico `{MaxMP, MP, MaxHP, HP}` non esiste su questa build.**
+- **Le due coppie distano `0x78`**, che è anche il passo con cui la struttura si
+  ripete: HP e MP sono lo stesso campo di due record consecutivi, non due campi
+  della stessa struttura. Che cosa siano quei record non è noto.
+- **Del vecchio indirizzo hanno resistito al riavvio i 16 bit bassi**, non gli altri.
+  Due campioni: è un fatto misurato, non ancora una regola.
+
+### Quel che resta aperto — l'ancora
+
+L'indirizzo trovato è heap, e il riavvio ne ha ucciso uno: la domanda se un'ancora
+serva è chiusa, la risposta è sì. Finché la coppia non si esprime come distanza da
+una base che `TryResolveBases` risolve a ogni aggancio, quello che esiste è una
+calibrazione da rifare a ogni sessione, non una lettura — e la § 3 lo chiede a ogni
+campo.
+
+Sui criteri della § 8 questo si legge senza ambiguità: il punto 4 è soddisfatto,
+una sessione reale ha registrato la concordanza; il punto 1 no, perché la lettura
+non si regge su una base risolta. Livello: **`Integrated`**. A `Verified` manca
+l'ancora, non la prova.
 
 ### Seconda fonte
 
-Il filo porta HP e MP come **percentuali** (`cond`, `st`). La memoria porta valori
-assoluti e i massimi. Il controllo incrociato è diretto: `hp / maxHp` letto dalla
-memoria deve corrispondere alla percentuale del filo entro la tolleranza di
-arrotondamento del client. Due rappresentazioni diverse dello stesso fatto da due
-sorgenti indipendenti: è esattamente la forma di prova che ADR-0014 chiede.
+Il filo porta HP e MP del personaggio come **valori assoluti**, sul pacchetto `stat`
+(`hp maxHp mp maxMp`, confermati contro l'HUD in `docs/PROTOCOLLO_NOSTALE.md`). È la
+seconda fonte usata dalla procedura sopra, ed è ciò che rende possibile invertire la
+domanda: il controllo incrociato è un'uguaglianza fra interi, non il confronto fra un
+rapporto letto dalla memoria e una percentuale che il client ha arrotondato.
+
+Il filo non vede la memoria del client e la memoria non vede il filo: è esattamente
+la forma di prova che ADR-0014 chiede.
+
+Una conseguenza operativa: `stat` è mandato quando il numero cambia, non a intervalli
+regolari (ADR-0012). Il secondo giro quindi non si programma, si aspetta — e senza un
+`stat` nuovo con un corrente diverso la sonda dichiara che non può confermare, invece
+di riconfermare la prima domanda.
 
 ### Predicato di validità permanente
 
@@ -132,7 +208,11 @@ Girano a ogni lettura, non solo in fase di scoperta:
 - `0 <= hp <= maxHp` e `0 <= mp <= maxMp`, con i massimi non nulli;
 - continuità: una variazione di HP superiore al massimo in un intervallo troppo breve è
   un puntatore che si è spostato, non un colpo;
-- coerenza con la percentuale del filo, quando il filo ha parlato di recente.
+- coerenza con l'ultimo `stat`, quando il filo ha parlato di recente: i massimi devono
+  coincidere esattamente — cambiano di rado, quindi un massimo diverso da quello del
+  filo è un puntatore che si è spostato — e il corrente deve stare entro la variazione
+  plausibile nell'intervallo fra le due letture, perché le due sorgenti non sono
+  campionate nello stesso istante.
 
 Se uno cede: `UNKNOWN` con la ragione del controllo fallito.
 
