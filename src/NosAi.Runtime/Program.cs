@@ -331,6 +331,34 @@ public static class Program
             return NosAi.LiveIntegration.EntityNameProbe.Run(capture);
         }
 
+        // The second source the phases above are checked against, taken now
+        // rather than read out of an archive. Entity ids are per-session and
+        // vitals are per-instant, so a recording corroborates only the session it
+        // was taken in; the probes had no way to obtain one until this flag.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.Capture.WireRecorder.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.Capture.WireRecorder.Flag, StringComparison.OrdinalIgnoreCase));
+            string? endpoint = flag + 1 < args.Length && !args[flag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 1]
+                : null;
+            string? file = flag + 2 < args.Length && !args[flag + 2].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 2]
+                : null;
+
+            var watchSeconds = 0;
+            int watchAt = Array.FindIndex(args, a => string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            if (watchAt >= 0
+                && watchAt + 1 < args.Length
+                && int.TryParse(args[watchAt + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+                && seconds > 0)
+            {
+                watchSeconds = seconds;
+            }
+
+            return NosAi.LiveIntegration.Capture.WireRecorder.Run(endpoint, file, watchSeconds);
+        }
+
         // Phase 2 of the memory-layout extension: player HP/MP as candidates
         // found by scanning the resolved bases, beside the percentage a
         // recording derived from stat/st/in. Never LIVE. Never an RVA.
@@ -568,7 +596,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--record-wire", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };
