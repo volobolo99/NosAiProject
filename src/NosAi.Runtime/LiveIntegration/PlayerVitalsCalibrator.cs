@@ -65,6 +65,44 @@ public static class PlayerVitalsCalibrator
     public const string NoCandidatePrefix = "calibrate_no_address_held_the_pair";
     public const string AmbiguousPrefix = "calibrate_ambiguous";
     public const string SameAddressReason = "calibrate_hp_and_mp_are_one_address";
+    public const string MovedDuringScanPrefix = "calibrate_value_moved_during_scan";
+
+    /// <summary>
+    /// Whether the search was run against a truth that had already expired.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The whole-process scan is not atomic with the wire reading, and it takes
+    /// real time. If a value moved while the scan ran, the authoritative address
+    /// stopped holding the number being searched for and was dropped — while a
+    /// copy that refreshes only on a UI event still held it and survived. The race
+    /// does not merely lose the answer, it prefers the wrong one, and MP is the
+    /// exposed field because regeneration ticks with no fighting at all.
+    /// </para>
+    /// <para>
+    /// The earliest reading of the next round is the first thing the wire said
+    /// after the scan, so the pair of readings brackets it. A value that already
+    /// differs there was searched for against something that had stopped being
+    /// true, and the result is refused rather than reported.
+    /// </para>
+    /// </remarks>
+    public static string? MovedDuringScanReason(
+        int? hpAfterScan, int? mpAfterScan, uint hpSearched, uint mpSearched)
+    {
+        if (hpAfterScan is { } hp && (uint)hp != hpSearched)
+        {
+            return string.Create(CultureInfo.InvariantCulture,
+                $"{MovedDuringScanPrefix}:hp:{hpSearched}->{hp}");
+        }
+
+        if (mpAfterScan is { } mp && (uint)mp != mpSearched)
+        {
+            return string.Create(CultureInfo.InvariantCulture,
+                $"{MovedDuringScanPrefix}:mp:{mpSearched}->{mp}");
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Keeps the candidates that hold <paramref name="max"/> with
@@ -195,7 +233,7 @@ public static class PlayerVitalsCalibrator
             Console.WriteLine();
 
             Console.WriteLine("--- round 1 ---");
-            if (!TryListen(address, port, player.CharacterId, seconds, 1, out WirePlayerVitals first, out string? firstWhy))
+            if (!TryListen(address, port, player.CharacterId, seconds, 1, out WirePlayerVitals first, out _, out string? firstWhy))
             {
                 Console.WriteLine($"[REFUSED] {firstWhy}");
                 return 1;
@@ -217,7 +255,7 @@ public static class PlayerVitalsCalibrator
 
             Console.WriteLine();
             Console.WriteLine("--- round 2 (make the numbers move) ---");
-            if (!TryListen(address, port, player.CharacterId, seconds, 2, out WirePlayerVitals second, out string? secondWhy))
+            if (!TryListen(address, port, player.CharacterId, seconds, 2, out WirePlayerVitals second, out WirePlayerVitals bracket, out string? secondWhy))
             {
                 Console.WriteLine($"[REFUSED] {secondWhy}");
                 return 1;
@@ -233,6 +271,15 @@ public static class PlayerVitalsCalibrator
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                 $"wire says: hp {hp2}/{maxHp2}, mp {mp2}/{maxMp2}"));
             Console.WriteLine();
+
+            if (MovedDuringScanReason(bracket.Hp, bracket.Mp, (uint)hp1, (uint)mp1) is { } raced)
+            {
+                Console.WriteLine($"[REFUSED] {raced}");
+                Console.WriteLine("The search ran against a number that had already changed, so the");
+                Console.WriteLine("address holding it may have been dropped. Hold still until the two");
+                Console.WriteLine("search lines print, then fight for round 2.");
+                return 1;
+            }
 
             VitalsPairHit? hpHit = Settle(read, hp, (uint)hp1, (uint)hp2, (uint)maxHp2, "hp");
             VitalsPairHit? mpHit = Settle(read, mp, (uint)mp1, (uint)mp2, (uint)maxMp2, "mp");
@@ -322,9 +369,11 @@ public static class PlayerVitalsCalibrator
         int seconds,
         int round,
         out WirePlayerVitals vitals,
+        out WirePlayerVitals earliest,
         out string? failureReason)
     {
         vitals = default;
+        earliest = default;
 
         string path = Path.Combine(
             WireRecorder.DefaultDirectory,
@@ -361,6 +410,7 @@ public static class PlayerVitalsCalibrator
         }
 
         vitals = parsed.Value;
+        earliest = WirePlayerVitalsParser.FromCapture(path, characterId, firstInsteadOfLast: true) ?? parsed.Value;
         failureReason = null;
         return true;
     }

@@ -81,7 +81,16 @@ public static class WirePlayerVitalsParser
     /// that opcode is the player's by definition, and <c>st</c>/<c>in</c>
     /// without an id would mix in other entities.
     /// </summary>
-    public static WirePlayerVitals? FromCapture(string path, long? playerId)
+    /// <param name="firstInsteadOfLast">
+    /// Take the earliest reading in the recording rather than the newest.
+    /// </param>
+    /// <remarks>
+    /// The newest is what a reading is compared against. The earliest exists for
+    /// one question: whether a value moved while something slow ran between two
+    /// recordings. Bracketing that interval needs the reading from just after it
+    /// ended, and the last one in the file is minutes too late to say.
+    /// </remarks>
+    public static WirePlayerVitals? FromCapture(string path, long? playerId, bool firstInsteadOfLast = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -97,8 +106,12 @@ public static class WirePlayerVitalsParser
 
             foreach (string line in NosTaleWorldDecoder.Decode(frame.Frame.Body.Span))
             {
-                if (TryParsePacket(line, playerId, out WirePlayerVitals entry))
-                    last = entry;
+                if (!TryParsePacket(line, playerId, out WirePlayerVitals entry))
+                    continue;
+                if (firstInsteadOfLast && last is not null)
+                    continue;
+
+                last = entry;
             }
         };
 

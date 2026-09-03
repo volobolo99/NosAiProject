@@ -169,4 +169,45 @@ public sealed class PlayerVitalsCalibratorTests
     {
         Assert.Equal("0x1F7AEC78  6891/7305", new VitalsPairHit(Real, MaxHp, HpSecond).Describe());
     }
+
+    // ---------- the scan is not atomic with the wire
+
+    [Fact]
+    public void AValueStillTheSameAfterTheScanMeansTheSearchWasRunAgainstTheTruth()
+    {
+        Assert.Null(PlayerVitalsCalibrator.MovedDuringScanReason(7060, 1420, HpFirst, 1420));
+    }
+
+    [Fact]
+    public void AValueThatMovedWhileTheScanRanRefusesAndShowsBothNumbers()
+    {
+        // The authoritative address stopped holding the searched number and was
+        // dropped; a copy that refreshes on a UI event kept it and survived. The
+        // race prefers the wrong answer, so the result cannot be reported.
+        string? why = PlayerVitalsCalibrator.MovedDuringScanReason(6891, 1420, HpFirst, 1420);
+
+        Assert.NotNull(why);
+        Assert.StartsWith(PlayerVitalsCalibrator.MovedDuringScanPrefix, why, StringComparison.Ordinal);
+        Assert.Contains("7060", why, StringComparison.Ordinal);
+        Assert.Contains("6891", why, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MpIsCheckedTooBecauseItRegeneratesWithNobodyFighting()
+    {
+        string? why = PlayerVitalsCalibrator.MovedDuringScanReason((int)HpFirst, 1371, HpFirst, 1420);
+
+        Assert.NotNull(why);
+        Assert.Contains("mp", why, StringComparison.Ordinal);
+        Assert.Contains("1420", why, StringComparison.Ordinal);
+        Assert.Contains("1371", why, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AReadingTheWireNeverGaveCannotAccuseTheScanOfAnything()
+    {
+        // Absence is not evidence that something moved. The run refuses elsewhere
+        // when the wire said nothing at all; here it must not invent a race.
+        Assert.Null(PlayerVitalsCalibrator.MovedDuringScanReason(null, null, HpFirst, 1420));
+    }
 }
