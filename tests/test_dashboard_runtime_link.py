@@ -11,6 +11,7 @@ import socket
 from pathlib import Path
 
 from nosai.dashboard import server
+from nosai.dashboard.presentation import flatten_gate1_observations
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 GATE1_OPTIONS = REPO_ROOT / "src" / "NosAi.Runtime" / "Configuration" / "Gate1HostOptions.cs"
@@ -55,3 +56,55 @@ def test_busy_dashboard_port_is_reported_not_shared():
         assert server.serve("127.0.0.1", port) == 1
     finally:
         holder.close()
+
+
+def test_observation_inspector_keeps_live_cached_and_unknown_fields_distinct():
+    """A renderer that drops a source or an UNKNOWN reason could mislead the operator."""
+    snapshot = {
+        "client": {
+            "gameplayBaseline": {
+                "value": {
+                    "hp": {
+                        "value": 7305,
+                        "source": "LIVE",
+                        "observedAtUtc": "2026-09-03T17:34:27.7169578Z",
+                        "hasObservedValue": True,
+                        "failureReason": None,
+                    },
+                    "hasTarget": {
+                        "value": None,
+                        "source": "UNKNOWN",
+                        "observedAtUtc": "2026-09-03T17:34:28.9175404Z",
+                        "hasObservedValue": False,
+                        "failureReason": "target_flag_not_mapped",
+                    },
+                    "entities": {
+                        "value": [{"entityId": 2848, "x": 14, "y": 156}],
+                        "source": "CACHED",
+                        "observedAtUtc": "2026-09-03T17:34:28.9174096Z",
+                        "hasObservedValue": True,
+                        "failureReason": None,
+                    },
+                },
+                "source": "DERIVED",
+                "observedAtUtc": "2026-09-03T17:34:28.9174096Z",
+                "hasObservedValue": True,
+                "failureReason": None,
+            }
+        }
+    }
+
+    fields = {field["path"]: field for field in flatten_gate1_observations(snapshot)}
+
+    assert fields["client.gameplayBaseline.hp"] == {
+        "path": "client.gameplayBaseline.hp",
+        "value": 7305,
+        "source": "LIVE",
+        "observed_at_utc": "2026-09-03T17:34:27.7169578Z",
+        "failure_reason": None,
+    }
+    assert fields["client.gameplayBaseline.hasTarget"]["value"] is None
+    assert fields["client.gameplayBaseline.hasTarget"]["source"] == "UNKNOWN"
+    assert fields["client.gameplayBaseline.hasTarget"]["failure_reason"] == "target_flag_not_mapped"
+    assert fields["client.gameplayBaseline.entities[0].entityId"]["source"] == "CACHED"
+    assert fields["client.gameplayBaseline.entities[0].entityId"]["value"] == 2848

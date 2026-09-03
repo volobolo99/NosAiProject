@@ -18,6 +18,7 @@ import urllib.error
 import urllib.request
 
 from nosai.core.data_classification import unknown_published_value_errors
+from nosai.dashboard.presentation import flatten_gate1_observations
 
 ROOT = Path(__file__).resolve().parent / "static"
 HOST = os.getenv("NOSAI_DASHBOARD_HOST", "127.0.0.1")
@@ -99,6 +100,7 @@ def runtime_snapshot() -> dict[str, Any]:
         payload["telemetry_source"] = "UNKNOWN"
         payload["gate1"] = None
         payload["gate1_failure"] = failure
+        payload["observation_inspector"] = []
         return payload
     payload["connected"] = True
     payload["provider"] = "gate1-runtime"
@@ -106,6 +108,7 @@ def runtime_snapshot() -> dict[str, Any]:
     payload["mode"] = str(gate1.get("runtimeStatus") or payload["mode"])
     payload["gate1"] = gate1
     payload["gate1_failure"] = None
+    payload["observation_inspector"] = flatten_gate1_observations(gate1)
     return payload
 
 

@@ -31,6 +31,105 @@ function fieldLabel(field) {
   return source === 'UNKNOWN' ? 'UNKNOWN' : `${value} [${source}]`;
 }
 
+function inspectorField(state, path) {
+  return (state.observation_inspector || []).find(field => field.path === path) || null;
+}
+
+function valueText(value) {
+  if (value === null || value === undefined) return 'UNKNOWN';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function observationMeta(field) {
+  if (!field) return 'UNKNOWN';
+  const source = field.source || 'UNCLASSIFIED';
+  const reason = field.failure_reason ? ` · ${field.failure_reason}` : '';
+  const observed = field.observed_at_utc ? ` · ${field.observed_at_utc}` : '';
+  return `${source}${observed}${reason}`;
+}
+
+function setLiveMetric(id, field, value = field && field.value) {
+  document.querySelector(`#${id}`).textContent = valueText(value);
+  document.querySelector(`#${id}-meta`).textContent = observationMeta(field);
+}
+
+function renderLiveTelemetry(state) {
+  const hp = inspectorField(state, 'client.gameplayBaseline.hp');
+  const mp = inspectorField(state, 'client.gameplayBaseline.mp');
+  const map = inspectorField(state, 'client.gameplayBaseline.mapId');
+  const cellX = inspectorField(state, 'client.gameplayBaseline.standingCell.x');
+  const cellY = inspectorField(state, 'client.gameplayBaseline.standingCell.y');
+  const entities = inspectorField(state, 'client.gameplayBaseline.entitiesInView');
+  const observed = inspectorField(state, 'gameObservation.packetsObserved');
+  const decoded = inspectorField(state, 'gameObservation.packetsDecoded');
+  const active = inspectorField(state, 'gameObservation.active');
+  const target = inspectorField(state, 'client.gameplayBaseline.hasTarget');
+  const combat = inspectorField(state, 'client.gameplayBaseline.inCombat');
+  setLiveMetric('live-hp', hp, hp && `${valueText(hp.value)}/${valueText(inspectorField(state, 'client.gameplayBaseline.maxHp')?.value)}`);
+  setLiveMetric('live-mp', mp, mp && `${valueText(mp.value)}/${valueText(inspectorField(state, 'client.gameplayBaseline.maxMp')?.value)}`);
+  setLiveMetric('live-map', map, map && `${valueText(map.value)} · ${valueText(cellX?.value)},${valueText(cellY?.value)}`);
+  setLiveMetric('live-entities', entities);
+  setLiveMetric('live-packets', observed, observed && `${valueText(observed.value)} / ${valueText(decoded?.value)} decodificati`);
+  setLiveMetric('live-observation', active);
+  setLiveMetric('live-target', target);
+  setLiveMetric('live-combat', combat);
+  document.querySelector('#live-observed-at').textContent = hp?.observed_at_utc || state.gate1?.capturedAtUtc || 'in attesa del runtime';
+}
+
+function displayPath(path) {
+  return path.replace(/\[(\d+)\]/g, ' #$1').replaceAll('.', ' › ');
+}
+
+function renderInspector(state) {
+  const fields = state.observation_inspector || [];
+  document.querySelector('#inspector-count').textContent = String(fields.length);
+  const active = inspectorField(state, 'gameObservation.active');
+  document.querySelector('#inspector-observation').textContent = valueText(active?.value);
+  document.querySelector('#inspector-observation-meta').textContent = observationMeta(active);
+  const search = document.querySelector('#inspector-search').value.trim().toLowerCase();
+  const source = document.querySelector('#inspector-source').value;
+  const selected = fields.filter(field => (!source || field.source === source) && (!search || `${field.path} ${valueText(field.value)} ${field.failure_reason || ''}`.toLowerCase().includes(search)));
+  const groups = selected.reduce((all, field) => {
+    const group = field.path.split('.')[0] || 'runtime';
+    (all[group] ||= []).push(field);
+    return all;
+  }, {});
+  const container = document.querySelector('#inspector-groups');
+  container.replaceChildren();
+  if (!selected.length) {
+    const empty = document.createElement('p');
+    empty.className = 'muted-text';
+    empty.textContent = fields.length ? 'Nessun campo corrisponde al filtro.' : 'Il runtime non ha ancora fornito campi da ispezionare.';
+    container.append(empty);
+    return;
+  }
+  Object.entries(groups).sort(([left], [right]) => left.localeCompare(right)).forEach(([group, rows]) => {
+    const details = document.createElement('details');
+    details.open = group === 'client' || group === 'gameObservation';
+    const summary = document.createElement('summary');
+    summary.textContent = `${group} (${rows.length} campi)`;
+    details.append(summary);
+    const table = document.createElement('table');
+    table.className = 'inspector-table';
+    table.innerHTML = '<thead><tr><th>Campo</th><th>Valore</th><th>Fonte</th><th>Osservato</th><th>Motivo</th></tr></thead>';
+    const body = document.createElement('tbody');
+    rows.forEach(field => {
+      const row = document.createElement('tr');
+      [displayPath(field.path), valueText(field.value), field.source || 'UNCLASSIFIED', field.observed_at_utc || '—', field.failure_reason || '—'].forEach((value, index) => {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        if (index === 2) cell.className = `source source-${String(value).toLowerCase()}`;
+        row.append(cell);
+      });
+      body.append(row);
+    });
+    table.append(body);
+    details.append(table);
+    container.append(details);
+  });
+}
+
 function render(state) {
   document.querySelector('#mode').textContent = state.mode;
   document.querySelector('#watchdog').textContent = state.mode;
@@ -73,6 +172,8 @@ function render(state) {
     : 'UNKNOWN';
   document.querySelector('#client-warning').textContent = (client && (client.warning || client.failureReason))
     || (state.gate1_failure ? `runtime: ${state.gate1_failure}` : 'No client warning.');
+  renderLiveTelemetry(state);
+  renderInspector(state);
   document.querySelectorAll('[data-config]').forEach(el => {
     const key = el.dataset.config;
     if (key in state.config) {
@@ -105,6 +206,8 @@ document.querySelectorAll('.nav').forEach(button => button.addEventListener('cli
 }));
 
 document.querySelector('#refresh').addEventListener('click', refreshState);
+document.querySelector('#inspector-search').addEventListener('input', refreshState);
+document.querySelector('#inspector-source').addEventListener('change', refreshState);
 document.querySelectorAll('.toggle').forEach(t => t.addEventListener('click', () => t.classList.toggle('active')));
 refreshState();
 setInterval(refreshState, 2000);

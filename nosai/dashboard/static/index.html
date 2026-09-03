@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NosAi Control Center</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/inspector.css">
 </head>
 <body>
   <aside class="sidebar">
@@ -35,6 +36,18 @@
         <article class="metric"><span>Trust</span><b id="trust">2 · REVERSIBLE</b><small>authorization ceiling</small></article>
         <article class="metric"><span>Provider</span><b id="provider">—</b><small>decision source</small></article>
       </div>
+      <article class="panel live-panel"><div class="panel-title"><b>Dati rilevati ora</b><span id="live-observed-at">in attesa del runtime</span></div>
+        <div class="grid four live-metrics">
+          <article class="metric"><span>HP</span><b id="live-hp">UNKNOWN</b><small id="live-hp-meta">—</small></article>
+          <article class="metric"><span>MP</span><b id="live-mp">UNKNOWN</b><small id="live-mp-meta">—</small></article>
+          <article class="metric"><span>Mappa / cella</span><b id="live-map">UNKNOWN</b><small id="live-map-meta">—</small></article>
+          <article class="metric"><span>Entità</span><b id="live-entities">UNKNOWN</b><small id="live-entities-meta">—</small></article>
+          <article class="metric"><span>Pacchetti</span><b id="live-packets">UNKNOWN</b><small id="live-packets-meta">—</small></article>
+          <article class="metric"><span>Osservazione</span><b id="live-observation">UNKNOWN</b><small id="live-observation-meta">—</small></article>
+          <article class="metric"><span>Bersaglio</span><b id="live-target">UNKNOWN</b><small id="live-target-meta">—</small></article>
+          <article class="metric"><span>Combattimento</span><b id="live-combat">UNKNOWN</b><small id="live-combat-meta">—</small></article>
+        </div>
+      </article>
       <div class="grid two"><article class="panel"><div class="panel-title"><b>Control Matrix</b><span>user authority</span></div><div class="control-list">
         <label>Perception <input type="checkbox" data-config="perception_enabled"></label>
         <label>Simulation <input type="checkbox" data-config="simulation_enabled"></label>
@@ -57,7 +70,7 @@
 
     <section id="eye" class="view"><div class="eye-toolbar"><div><b>Eye Ai View</b><span>Client projection + AI perception overlay</span></div><div><button class="toggle active">PERCEPTION</button><button class="toggle active">ROI</button><button class="toggle">PREDICTION</button><button class="toggle active">PARAMETERS</button></div></div><div class="eye-stage"><div class="screen-placeholder"><div class="screen-grid"></div><div class="crosshair"></div><div class="screen-note"><b>CLIENT CAPTURE UNAVAILABLE</b><span>Connect DXGI/Perception backend to display the real client frame.</span></div></div><div class="overlay-card"><div class="tag">AI PERCEPTION</div><h3>No live frame</h3><div class="kv"><span>Capture</span><b>not connected</b><span>ROI</span><b>—</b><span>Objects</span><b>—</b><span>Confidence</span><b>—</b><span>Prediction</span><b>not available</b></div></div></div><div class="grid three"><article class="panel compact"><b>What AI sees</b><p>Semantic entities, UI regions, coordinates, OCR and temporal tracking when the perception backend is connected.</p></article><article class="panel compact"><b>What AI estimates</b><p>Predicted outcomes and confidence are shown separately from observed facts.</p></article><article class="panel compact"><b>Provenance</b><p>Every overlay item must identify source, timestamp, WorldState version and confidence.</p></article></div></section>
 
-    <section id="world" class="view"><div class="grid three"><article class="metric"><span>Observation source</span><b>—</b><small>awaiting backend</small></article><article class="metric"><span>Confidence</span><b>—</b><small>no synthetic value</small></article><article class="metric"><span>Previous state</span><b id="prev-state">—</b><small>immutable history</small></article></div><article class="panel"><div class="panel-title"><b>WorldState Inspector</b><span>facts only</span></div><pre id="world-json">No live WorldState received.</pre></article></section>
+    <section id="world" class="view"><div class="grid three"><article class="metric"><span>Campi pubblicati</span><b id="inspector-count">0</b><small>con provenienza verificabile</small></article><article class="metric"><span>Osservazione</span><b id="inspector-observation">UNKNOWN</b><small id="inspector-observation-meta">nessun runtime</small></article><article class="metric"><span>Previous state</span><b id="prev-state">—</b><small>immutable history</small></article></div><article class="panel"><div class="panel-title"><b>Ispettore dati runtime</b><span>valore · fonte · orario · motivo</span></div><div class="inspector-filters"><label>Cerca <input id="inspector-search" type="search" placeholder="es. hp, entity, safety"></label><label>Fonte <select id="inspector-source"><option value="">Tutte</option><option>LIVE</option><option>CACHED</option><option>DERIVED</option><option>UNKNOWN</option><option>UNCLASSIFIED</option></select></label></div><div id="inspector-groups" class="inspector-groups"><p class="muted-text">In attesa dei dati del runtime.</p></div></article><article class="panel"><div class="panel-title"><b>Snapshot completo</b><span>JSON tecnico</span></div><pre id="world-json">No live WorldState received.</pre></article></section>
 
     <section id="decision" class="view"><div class="notice"><b>Decision Trace ≠ hidden chain-of-thought.</b> NosAi should expose structured inputs, candidates, scores, policies, evidence and outcomes—not private model reasoning or hidden chain-of-thought.</div><article class="panel"><div class="panel-title"><b>Decision timeline</b><span>auditable events</span></div><div id="trace" class="timeline"><div class="empty">No runtime events received.</div></div></article></section>
 
