@@ -144,6 +144,10 @@ public sealed class NosTaleClientLayoutTests
         Assert.Equal(0x24, NosTaleClientLayout.PlayerIdOffset);
         Assert.Equal(0x08, NosTaleClientLayout.EntityIdOffset);
         Assert.Equal(0x0C, NosTaleClientLayout.PositionOffset);
+        Assert.Equal(0x1BC, NosTaleClientLayout.MonsterNameObjectOffset);
+        Assert.Equal(0x04, NosTaleClientLayout.MonsterNamePointerOffset);
+        Assert.Equal(0xC4, NosTaleClientLayout.GroundItemNameObjectOffset);
+        Assert.Equal(0x38, NosTaleClientLayout.GroundItemNamePointerOffset);
     }
 }
 

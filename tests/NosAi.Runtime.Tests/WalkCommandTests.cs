@@ -388,6 +388,23 @@ public sealed class WalkCommandTests : IDisposable
     }
 
     [Fact]
+    public void ANeverObservedWorldAbandonsBeforeAnyEmission()
+    {
+        var rig = new WalkRig();
+        WalkRun run = Run(
+            new MapPoint(6, 2),
+            view: new OccupancyView(null, Now),
+            dryRun: false,
+            rig: rig);
+
+        Assert.Equal(OccupancyFreshness.NeverObservedReason, run.StoppedBecause);
+        Assert.Equal(WalkCommand.ExitAbandoned, run.ExitCode);
+        Assert.Empty(rig.Recorder.Events);
+        Assert.Equal(0, run.StepsEmitted);
+        Assert.DoesNotContain("verifier:", run.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AlreadyOnTheDestinationIsAnArrivalWithoutEmission()
     {
         var rig = new WalkRig();

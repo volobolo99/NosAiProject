@@ -302,6 +302,9 @@ public static class OperatorMenu
                 case "16":
                     Perform("Catena del bersaglio", () => Navigation.TargetChainProbe.Run());
                     break;
+                case "17":
+                    Perform("Nomi delle entita'", RunEntityNames);
+                    break;
                 case "15":
                     Perform("Cerca il bersaglio in memoria", RunTargetHunt);
                     break;
@@ -378,6 +381,7 @@ public static class OperatorMenu
         Console.WriteLine(" 14  Tasti configurati            (quali intenti hanno un tasto)");
         Console.WriteLine(" 15  Cerca il bersaglio in memoria (un giro dell'oracolo)");
         Console.WriteLine(" 16  Catena del bersaglio         (manager -> puntatore -> id, contro ct)");
+        Console.WriteLine(" 17  Nomi delle entita'           (memoria e filo affiancati, candidati)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
@@ -684,6 +688,40 @@ public static class OperatorMenu
 
         Console.WriteLine();
         return replay(captures[index - 1]);
+    }
+
+    private static int RunEntityNames()
+    {
+        string directory = Path.GetFullPath("data");
+        string[] captures = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.noscap")
+            : Array.Empty<string>();
+
+        if (captures.Length == 0)
+            return EntityNameProbe.Run();
+
+        Array.Sort(captures, StringComparer.OrdinalIgnoreCase);
+        Console.WriteLine("Registrazione da cui prendere i nomi del filo (INVIO = nessuna):");
+        for (int i = 0; i < captures.Length; i++)
+        {
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  {i + 1}  {Path.GetFileName(captures[i])}"));
+        }
+
+        Console.Write("Numero: ");
+        string? typed = Console.ReadLine()?.Trim();
+        if (string.IsNullOrEmpty(typed))
+            return EntityNameProbe.Run();
+
+        if (!int.TryParse(typed, NumberStyles.Integer, CultureInfo.InvariantCulture, out int index)
+            || index < 1
+            || index > captures.Length)
+        {
+            Console.WriteLine("Non e' una voce dell'elenco.");
+            return 2;
+        }
+
+        return EntityNameProbe.Run(captures[index - 1]);
     }
 
     private static int RunMapInfo()

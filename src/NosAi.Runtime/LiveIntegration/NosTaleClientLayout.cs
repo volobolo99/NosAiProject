@@ -218,6 +218,26 @@ public sealed class NosTaleClientLayout
     /// </remarks>
     public const int PositionOffset = 0x0C;
 
+    /// <summary>
+    /// Monster object → the object that holds the display name.
+    /// </summary>
+    /// <remarks>
+    /// Candidate chain from <c>docs/MAPPA_MEMORIA_CLIENT_CANDIDATI.md</c> § 4.1,
+    /// not an established offset. The string predicate refuses a wrong landing;
+    /// concordance with <c>in</c> is what would establish it. Not used for
+    /// players or NPCs: each kind stays its own case until demonstrated.
+    /// </remarks>
+    public const int MonsterNameObjectOffset = 0x1BC;
+
+    /// <summary>Name object → the ANSI <c>char*</c> for a monster.</summary>
+    public const int MonsterNamePointerOffset = 0x04;
+
+    /// <summary>Ground item object → the object that holds the display name.</summary>
+    public const int GroundItemNameObjectOffset = 0xC4;
+
+    /// <summary>Name object → the ANSI <c>char*</c> for a ground item.</summary>
+    public const int GroundItemNamePointerOffset = 0x38;
+
     private readonly IntPtr _pointerHolder;
     private readonly IntPtr _moduleBase;
 
@@ -609,12 +629,81 @@ public sealed class NosTaleClientLayout
             found.Add(new MapEntityReading(
                 BitConverter.ToInt32(idBytes.Bytes),
                 (ushort)(packed & 0xFFFF),
-                (ushort)(packed >> 16)));
+                (ushort)(packed >> 16),
+                TryReadEntityName(reader, entity, kind)));
         }
 
         entities = found;
         failureReason = null;
         return true;
+    }
+
+    /// <summary>
+    /// Which name chain this kind has, when it has one.
+    /// </summary>
+    /// <remarks>
+    /// Player and NPC have no demonstrated chain. Returning false is the
+    /// honest answer, not an invitation to reuse the monster offsets.
+    /// </remarks>
+    public static bool TryNameChain(
+        MapEntityKind kind, out int fromEntity, out int fromNameObject, out string? failureReason)
+    {
+        switch (kind)
+        {
+            case MapEntityKind.Monster:
+                fromEntity = MonsterNameObjectOffset;
+                fromNameObject = MonsterNamePointerOffset;
+                failureReason = null;
+                return true;
+            case MapEntityKind.GroundItem:
+                fromEntity = GroundItemNameObjectOffset;
+                fromNameObject = GroundItemNamePointerOffset;
+                failureReason = null;
+                return true;
+            default:
+                fromEntity = 0;
+                fromNameObject = 0;
+                failureReason =
+                    $"{EntityNameCandidate.ChainNotEstablishedPrefix}:{kind.ToString().ToLowerInvariant()}";
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Follows this kind's candidate name chain and parses the ANSI string.
+    /// </summary>
+    /// <remarks>
+    /// Followed on every call, never cached: the manager is replaced on a map
+    /// change, and a remembered pointer is whatever occupies that address after.
+    /// A successful parse is still
+    /// <see cref="EntityNameCandidate.NotEstablishedReason"/>.
+    /// </remarks>
+    public static EntityNameCandidate TryReadEntityName(
+        ProcessMemoryReader reader, IntPtr entity, MapEntityKind kind)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+
+        if (entity == IntPtr.Zero)
+            return EntityNameCandidate.Missing("entity_name_object_null");
+
+        if (!TryNameChain(kind, out int fromEntity, out int fromNameObject, out string? noChain))
+            return EntityNameCandidate.Missing(noChain!);
+
+        if (!TryFollow(reader, entity + fromEntity, $"{kind.ToString().ToLowerInvariant()}_name_object",
+                out IntPtr nameObject, out string? objectFailure))
+            return EntityNameCandidate.Missing(objectFailure!);
+
+        if (!TryFollow(reader, nameObject + fromNameObject, $"{kind.ToString().ToLowerInvariant()}_name_pointer",
+                out IntPtr namePointer, out string? pointerFailure))
+            return EntityNameCandidate.Missing(pointerFailure!);
+
+        MemoryReadResult bytes = reader.Read(namePointer, EntityNameText.MaxBytes);
+        if (!bytes.Ok)
+            return EntityNameCandidate.Missing(bytes.FailureReason ?? "entity_name_unreadable");
+
+        return EntityNameText.TryParseAnsi(bytes.Bytes, out string? name, out string? parseFailure)
+            ? EntityNameCandidate.Candidate(name!)
+            : EntityNameCandidate.Missing(parseFailure!);
     }
 
     /// <summary>
@@ -939,7 +1028,15 @@ public readonly record struct PlayerObjectReading(
 }
 
 /// <summary>One entity the client has on the current map.</summary>
-public readonly record struct MapEntityReading(long EntityId, ushort X, ushort Y);
+/// <param name="Name">
+/// Candidate display name. Always UNKNOWN: see
+/// <see cref="EntityNameCandidate"/>.
+/// </param>
+public readonly record struct MapEntityReading(
+    long EntityId,
+    ushort X,
+    ushort Y,
+    EntityNameCandidate Name = default);
 
 /// <summary>Which of the scene manager's four lists to read.</summary>
 public enum MapEntityKind

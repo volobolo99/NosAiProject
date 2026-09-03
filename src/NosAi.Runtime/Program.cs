@@ -318,6 +318,19 @@ public static class Program
             return NosAi.LiveIntegration.PlayerObjectProbe.Run(targetPid, expectedId);
         }
 
+        // Phase 1 of the memory-layout extension: entity names as candidates,
+        // beside the name an `in` (or `drop`) gave for the same id when a
+        // recording has one. Never LIVE.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.EntityNameProbe.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.EntityNameProbe.Flag, StringComparison.OrdinalIgnoreCase));
+            string? capture = flag + 1 < args.Length && !args[flag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 1]
+                : null;
+            return NosAi.LiveIntegration.EntityNameProbe.Run(capture);
+        }
+
         // What a recording says, read by the runtime's own decoder and needing no
         // driver. WinDivertProbe --world does the same, but it has to sit beside a
         // staged WinDivert.dll and it holds the runtime assembly open while it
@@ -508,7 +521,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };
