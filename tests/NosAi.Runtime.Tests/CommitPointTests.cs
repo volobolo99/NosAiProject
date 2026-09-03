@@ -229,6 +229,8 @@ public sealed class CommitPointTests
         Assert.False(validator.MayEmit(decision, out string? reason, out TimeSpan latency));
         Assert.StartsWith(CommitPointValidator.LatencyExceededReason, reason, StringComparison.Ordinal);
         Assert.True(latency > TimeSpan.Zero);
+        Assert.False(validator.LastRefusal!.Value.IsAuthorised);
+        Assert.StartsWith(CommitPointValidator.LatencyExceededReason, validator.LastRefusal.Value.RefusalReason, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -239,6 +241,28 @@ public sealed class CommitPointTests
 
         Assert.False(validator.MayEmit(decision, out string? reason, out _));
         Assert.Equal(CommitPointValidator.NotForegroundReason, reason);
+        Assert.Equal(CommitPointValidator.NotForegroundReason, validator.LastRefusal!.Value.RefusalReason);
+    }
+
+    /// <summary>
+    /// A later authorised check does not erase the last refusal. The halt dump
+    /// photographs that refusal, not the last decision.
+    /// </summary>
+    [Fact]
+    public void TheLastRefusalSurvivesALaterAuthorisedDecision()
+    {
+        var desktop = new FakeDesktop { Foreground = Other };
+        var validator = Validator(desktop, new FakeHuman());
+
+        CommitDecision refused = validator.Validate(Request());
+        Assert.False(refused.IsAuthorised);
+        Assert.Equal(CommitPointValidator.NotForegroundReason, validator.LastRefusal!.Value.RefusalReason);
+
+        desktop.Foreground = Session;
+        CommitDecision authorised = validator.Validate(Request());
+        Assert.True(authorised.IsAuthorised, authorised.RefusalReason);
+        Assert.True(validator.LastDecision!.Value.IsAuthorised);
+        Assert.Equal(CommitPointValidator.NotForegroundReason, validator.LastRefusal!.Value.RefusalReason);
     }
 
     // ---------------------------------------------------------- the graft

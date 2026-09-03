@@ -1,8 +1,10 @@
 using System.Text.Json;
-using NosAi.Runtime.Observability;
-using Xunit;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Observability;
+using NosAi.Runtime.Perception;
 using NosAi.Runtime.Safety;
+using Xunit;
 
 namespace NosAi.Runtime.Tests;
 
@@ -125,6 +127,85 @@ public sealed class HaltDiagnosticsTests : IDisposable
 
         Assert.Equal(2, dumper.Written);
         Assert.Equal(2, Directory.GetFiles(_directory, "halt-*.json").Length);
+    }
+
+    [Fact]
+    public void TheDumpPhotographsTheLastCommitRefusalEvenAfterALaterAuthorisedDecision()
+    {
+        var desktop = new FakeCommitDesktop();
+        var validator = new CommitPointValidator(desktop, new FakeCommitHuman());
+        desktop.Foreground = new IntPtr(0x2000);
+        Assert.False(validator.Validate(Request()).IsAuthorised);
+
+        desktop.Foreground = new IntPtr(0x1000);
+        Assert.True(validator.Validate(Request()).IsAuthorised);
+
+        var dumper = new HaltDiagnosticsDumper(_directory, new HaltDiagnosticsContext
+        {
+            LastCommitPointRefusal = () =>
+            {
+                CommitDecision? refusal = validator.LastRefusal;
+                return refusal is { RefusalReason: { } reason }
+                    ? new CommitPointRefusalDump(reason, null)
+                    : null;
+            }
+        });
+
+        RecoveryController recovery = Controller();
+        dumper.Attach(recovery);
+        var mode = RuntimeMode.Normal;
+        for (var i = 0; i < 4; i++)
+            recovery.HandleFailure(ref mode);
+
+        using var doc = JsonDocument.Parse(File.ReadAllText(Assert.Single(Directory.GetFiles(_directory, "halt-*.json"))));
+        Assert.Equal(
+            CommitPointValidator.NotForegroundReason,
+            doc.RootElement.GetProperty("lastCommitPointRefusal").GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public void ADumpWriteFailureDoesNotThrowOutOfTheHaltTransition()
+    {
+        string blocker = Path.Combine(_directory, "not-a-directory");
+        File.WriteAllText(blocker, "x");
+        var dumper = new HaltDiagnosticsDumper(blocker);
+        RecoveryController recovery = Controller();
+        dumper.Attach(recovery);
+
+        var mode = RuntimeMode.Normal;
+        for (var i = 0; i < 4; i++)
+            recovery.HandleFailure(ref mode);
+
+        Assert.Equal(RecoveryState.Halted, recovery.State);
+        Assert.Equal(1, recovery.Halts);
+        Assert.Equal(0, dumper.Written);
+    }
+
+    private static GeometryEpoch Epoch() =>
+        new(new IntPtr(0x1000), new PixelRect(0, 0, 1024, 768), 96, new IntPtr(0xABCD));
+
+    private static CommitRequest Request() =>
+        new(
+            new GeometryStamp(Epoch(), DateTimeOffset.UnixEpoch),
+            ScreenX: 500,
+            ScreenY: 400,
+            Scale: new GeometryShape(1024, 768, 96));
+
+    private sealed class FakeCommitDesktop : ICommitEnvironment
+    {
+        public IntPtr Foreground { get; set; } = new IntPtr(0x1000);
+        public IntPtr ForegroundWindow() => Foreground;
+        public IntPtr RootWindowFromPoint(int x, int y) => new IntPtr(0x1000);
+        public bool? IsCloaked(IntPtr window) => false;
+        public GeometryEpoch ReadEpoch(IntPtr window) => Epoch();
+    }
+
+    private sealed class FakeCommitHuman : IHumanInputMonitor
+    {
+        public bool IsWatching => true;
+        public TimeSpan? SinceLastHumanInput => TimeSpan.FromMinutes(1);
+        public long HumanEventCount => 0;
+        public long InjectedEventCount => 0;
     }
 
     private sealed class FakeClock(DateTimeOffset now) : TimeProvider

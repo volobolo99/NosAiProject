@@ -57,6 +57,19 @@ public sealed record GameplayObservation(
     public const string PlayerPositionNotReadReason = "player_position_not_read";
 
     /// <summary>
+    /// The reason the map id carries when nothing has read it. Distinct from
+    /// "the wire does not carry a map id": this one means no reader was bound.
+    /// </summary>
+    public const string MapIdNotReadReason = "map_id_not_read";
+
+    /// <summary>
+    /// The reason the standing cell carries when nothing has read it. The
+    /// square the character is on is the <c>--grid-check</c> reading, not the
+    /// identity-checked <see cref="PlayerPosition"/> used to aim.
+    /// </summary>
+    public const string StandingCellNotReadReason = "standing_cell_not_read";
+
+    /// <summary>
     /// Every entity the provider currently holds a position for, each with the
     /// instant that position was stated.
     /// </summary>
@@ -86,6 +99,56 @@ public sealed record GameplayObservation(
     /// </remarks>
     public ClassifiedValue<MapPoint> PlayerPosition { get; init; }
         = ClassifiedValue<MapPoint>.Unknown(PlayerPositionNotReadReason);
+
+    /// <summary>
+    /// The map the character is on, read from the client's own global, or why
+    /// nobody knows.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Additive on <c>gate1.snapshot.v1</c>, the same way C1 added
+    /// <see cref="PlayerPosition"/>. The wire never names the current map
+    /// (<c>c_map</c> is a change-of-map packet, and no capture in the archive
+    /// contains one), so <see cref="NetworkGameplayProvider"/> publishes this
+    /// UNKNOWN with <c>map_id_not_on_wire</c>. <see cref="MemoryMapWorldProvider"/>
+    /// is where a memory reader fills it in, using the same
+    /// <see cref="NosTaleClientLayout.TryReadMapId"/> path <c>--grid-check</c>
+    /// uses. Until one is bound it stays UNKNOWN: not zero, not the last map.
+    /// </para>
+    /// <para>
+    /// Classification follows that read's own check — a negative word is
+    /// refused as implausible — and does not invent a second bar. Whether the
+    /// id repeatedly resolves to a grid that contains the character is the
+    /// standing-cell proof the control panel draws, not a precondition of
+    /// publishing the number.
+    /// </para>
+    /// </remarks>
+    public ClassifiedValue<int> MapId { get; init; }
+        = ClassifiedValue<int>.Unknown(MapIdNotReadReason);
+
+    /// <summary>
+    /// The square the character is standing on, as the client stores it, or why
+    /// nobody knows.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is the <c>--grid-check</c> reading: <see cref="NosTaleClientLayout.TryReadPlayer"/>
+    /// coordinates, LIVE while that read's own chain holds. It is deliberately
+    /// not <see cref="PlayerPosition"/>. That field is what aiming uses, and it
+    /// stays behind <see cref="MemoryGameplayProvider"/>'s identity, range,
+    /// map and continuity checks. Folding the two together would hide the
+    /// standing-cell proof behind a wire id that observation may not have, or
+    /// would let an unchecked coordinate into the selector. Each field keeps
+    /// the check that belongs to it.
+    /// </para>
+    /// <para>
+    /// A standing cell that is not walkable is still a reading: the map view
+    /// must be able to show that disagreement as an error rather than having
+    /// nothing to show.
+    /// </para>
+    /// </remarks>
+    public ClassifiedValue<MapPoint> StandingCell { get; init; }
+        = ClassifiedValue<MapPoint>.Unknown(StandingCellNotReadReason);
 
     /// <summary>
     /// Who last hit the controlled character, with the instant of the hit as the
@@ -142,6 +205,8 @@ public sealed record GameplayObservation(
     {
         Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(reason),
         PlayerPosition = ClassifiedValue<MapPoint>.Unknown(reason),
+        MapId = ClassifiedValue<int>.Unknown(reason),
+        StandingCell = ClassifiedValue<MapPoint>.Unknown(reason),
         HitBy = ClassifiedValue<Aggressor>.Unknown(reason),
         SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason),
         SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason),
@@ -191,11 +256,12 @@ public sealed record GameplayObservation(
     /// C1 adds <c>entities</c>, <c>playerPosition</c>, <c>hitBy</c>,
     /// <c>skillsReady</c>, <c>inventory</c>, <c>lastPickup</c> and
     /// <c>groundItems</c> on the same precedent: new keys beside the existing
-    /// ones, no existing key renamed or given a new meaning. Each is one
-    /// classified value whose inner shape is spelled out here rather than left
-    /// to a serializer, so the C# and Python sides cannot drift on casing, and
-    /// every instant inside is formatted the way
-    /// <see cref="ClassifiedValue{T}.ToWire"/> formats its own.
+    /// ones, no existing key renamed or given a new meaning. S5 adds
+    /// <c>mapId</c> and <c>standingCell</c> the same way, for the control
+    /// panel's standing-cell proof. Each is one classified value whose inner
+    /// shape is spelled out here rather than left to a serializer, so the C#
+    /// and Python sides cannot drift on casing, and every instant inside is
+    /// formatted the way <see cref="ClassifiedValue{T}.ToWire"/> formats its own.
     /// </para>
     /// </remarks>
     public object ToWire() => new
@@ -218,6 +284,8 @@ public sealed record GameplayObservation(
             observedAtUtc = Iso(e.ObservedAtUtc),
         }).ToArray()),
         playerPosition = Project(PlayerPosition, p => new { x = p.X, y = p.Y }),
+        mapId = MapId.ToWire(),
+        standingCell = Project(StandingCell, p => new { x = p.X, y = p.Y }),
         hitBy = Project(HitBy, a => new { entityId = a.EntityId, entityType = a.EntityType }),
         selectedTarget = Project(SelectedTarget, t => new { entityId = t.EntityId, entityType = t.EntityType }),
         skillsReady = Project(SkillsReady, list => list.Select(s => new
@@ -388,6 +456,15 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
 
     /// <summary>The reason the position carries while nothing but the wire is bound.</summary>
     public const string PlayerPositionNotOnWireReason = "player_position_not_on_wire";
+
+    /// <summary>The reason the map id carries while nothing but the wire is bound.</summary>
+    public const string MapIdNotOnWireReason = "map_id_not_on_wire";
+
+    /// <summary>
+    /// The reason the standing cell carries while nothing but the wire is bound.
+    /// Same fact as the player's own position: the server does not send it.
+    /// </summary>
+    public const string StandingCellNotOnWireReason = "standing_cell_not_on_wire";
 
     private readonly NetworkWorldFeed _feed;
     private readonly TimeProvider _clock;
@@ -725,6 +802,8 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     {
         Entities = PublishEntities(),
         PlayerPosition = ClassifiedValue<MapPoint>.Unknown(PlayerPositionNotOnWireReason),
+        MapId = ClassifiedValue<int>.Unknown(MapIdNotOnWireReason),
+        StandingCell = ClassifiedValue<MapPoint>.Unknown(StandingCellNotOnWireReason),
         HitBy = _lastHit is { } hit
             ? Classify(hit.By, _lastHitFresh ? hit.Source : Remembered(hit.Source), hit.ObservedAtUtc)
             : ClassifiedValue<Aggressor>.Unknown(

@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 using System.Security.Principal;
 using System.Text;
 using NosAi.LiveIntegration;
+using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Navigation;
 
 namespace NosAi.Runtime.Operator;
@@ -311,6 +312,12 @@ public static class OperatorMenu
                 case "19":
                     Perform("Cooldown di un'abilita'", RunSkillCooldowns);
                     break;
+                case "20":
+                    Perform("Registra il filo", RunWireRecord);
+                    break;
+                case "21":
+                    Perform("Calibra HP e MP dal filo", RunCalibrateVitals);
+                    break;
                 case "15":
                     Perform("Cerca il bersaglio in memoria", RunTargetHunt);
                     break;
@@ -390,6 +397,8 @@ public static class OperatorMenu
         Console.WriteLine(" 17  Nomi delle entita'           (memoria e filo affiancati, candidati)");
         Console.WriteLine(" 18  HP e MP del personaggio      (scan sulle basi, candidati UNKNOWN)");
         Console.WriteLine(" 19  Cooldown di un'abilita'      (tu la usi, il filo dice quando torna)");
+        Console.WriteLine(" 20  Registra il filo             (una cattura .noscap della sessione in corso; console elevata)");
+        Console.WriteLine(" 21  Calibra HP e MP dal filo     (due giri; il filo dice i numeri, la memoria li mostra; console elevata)");
         Console.WriteLine("  0  Esci");
         Console.WriteLine();
         Console.WriteLine("Niente qui dentro muove il personaggio. Le voci 12 e 13 non toccano");
@@ -785,6 +794,101 @@ public static class OperatorMenu
         }
 
         return PlayerVitalsProbe.Run(captures[index - 1]);
+    }
+
+    /// <summary>
+    /// Reads the duration the operator typed, distinguishing silence from a number.
+    /// </summary>
+    /// <remarks>
+    /// A blank line is not a duration: it tells the caller to use the command's
+    /// own rest value rather than inventing one. A line that is not an integer
+    /// is a refusal, because a typo and silence are different answers.
+    /// </remarks>
+    /// <returns>
+    /// True when the line is empty (<paramref name="seconds"/> is then null) or a
+    /// parsed integer; false when the line is not a number.
+    /// </returns>
+    internal static bool TryReadOptionalDurationSeconds(string? typed, out int? seconds)
+    {
+        if (string.IsNullOrWhiteSpace(typed))
+        {
+            seconds = null;
+            return true;
+        }
+
+        if (!int.TryParse(typed.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
+        {
+            seconds = null;
+            return false;
+        }
+
+        seconds = parsed;
+        return true;
+    }
+
+    /// <summary>
+    /// One contemporaneous <c>.noscap</c> of the session that is running now.
+    /// </summary>
+    /// <remarks>
+    /// The archived recordings cannot corroborate a live read: entity ids are
+    /// per-session and vitals are per-instant. The endpoint is passed as typed
+    /// to <see cref="WireRecorder.TryParseEndpoint"/>; an empty or malformed
+    /// line is a named refusal, never a rest host. An empty duration uses
+    /// <see cref="WireRecorder.Run"/>'s own rest (until Ctrl+C).
+    /// </remarks>
+    private static int RunWireRecord()
+    {
+        Console.WriteLine("Serve una console elevata: senza di essa il driver rifiuta, e il rifiuto arriva tardi.");
+        Console.Write("Endpoint del server (ip:porta): ");
+        string? endpoint = Console.ReadLine();
+        if (!WireRecorder.TryParseEndpoint(endpoint, out _, out _, out string? why))
+        {
+            Console.WriteLine($"[REFUSED] {why}");
+            return 2;
+        }
+
+        Console.Write("Secondi (INVIO per il riposo del comando): ");
+        if (!TryReadOptionalDurationSeconds(Console.ReadLine(), out int? seconds))
+        {
+            Console.WriteLine("Non e' un numero di secondi.");
+            return 2;
+        }
+
+        return seconds is int n
+            ? WireRecorder.Run(endpoint, path: null, n)
+            : WireRecorder.Run(endpoint);
+    }
+
+    /// <summary>
+    /// Two rounds: the wire names HP and MP, then memory is searched for those numbers.
+    /// </summary>
+    /// <remarks>
+    /// Same endpoint rule as <see cref="RunWireRecord"/>: the string is passed as
+    /// typed, and <see cref="WireRecorder.TryParseEndpoint"/> names the refusal.
+    /// An empty duration uses <see cref="PlayerVitalsCalibrator.Run"/>'s own rest.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static int RunCalibrateVitals()
+    {
+        Console.WriteLine("Serve una console elevata: senza di essa il driver rifiuta, e il rifiuto arriva tardi.");
+        Console.Write("Endpoint del server (ip:porta): ");
+        string? endpoint = Console.ReadLine();
+        if (!WireRecorder.TryParseEndpoint(endpoint, out _, out _, out string? why))
+        {
+            Console.WriteLine($"[REFUSED] {why}");
+            return 2;
+        }
+
+        Console.Write("Secondi (INVIO per il riposo del comando): ");
+        if (!TryReadOptionalDurationSeconds(Console.ReadLine(), out int? seconds))
+        {
+            Console.WriteLine("Non e' un numero di secondi.");
+            return 2;
+        }
+
+        return seconds is int n
+            ? PlayerVitalsCalibrator.Run(endpoint, n)
+            : PlayerVitalsCalibrator.Run(endpoint);
     }
 
     private static int RunMapInfo()

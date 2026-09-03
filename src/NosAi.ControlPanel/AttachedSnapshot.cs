@@ -99,7 +99,8 @@ internal static class AttachedSnapshot
             ObservationLastMaxHp = ReadClassifiedInt(gameObservation, "lastMaxHp", "game_observation_absent"),
             Entities = gameplay.Entities,
             HitBy = gameplay.HitBy,
-            HasTarget = gameplay.HasTarget
+            HasTarget = gameplay.HasTarget,
+            MapWorld = SnapshotView.Split(gameplay.MapId, gameplay.StandingCell)
         };
     }
 

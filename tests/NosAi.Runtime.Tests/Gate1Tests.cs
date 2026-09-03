@@ -2,6 +2,7 @@ using NosAi.Host;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Hardware;
+using NosAi.Runtime.Safety;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -95,6 +96,24 @@ public sealed class Gate1Tests
         Assert.Equal("recovery_controller_not_configured", resilience.GetProperty("state").GetProperty("failureReason").GetString());
         Assert.True(document.RootElement.TryGetProperty("safety", out var safety));
         Assert.True(safety.TryGetProperty("executionMode", out _));
+    }
+
+    [Fact]
+    public void AConfiguredRecoveryControllerIsReadOntoTheSnapshotNotInvented()
+    {
+        var recovery = new RecoveryController(new TrustBoundary(TrustTier.Tier4_FullAutonomous));
+        var view = Gate1ResilienceView.From(recovery);
+
+        Assert.Equal(DataSourceKind.Live, view.State.Source);
+        Assert.Equal("Closed", view.State.Value);
+        Assert.Equal(0, view.FailuresInWindow.Value);
+        Assert.Equal(0d, view.CooldownRemainingSeconds.Value);
+        Assert.Equal(RecoveryController.DefaultWindowSize, view.WindowSize.Value);
+        Assert.Equal(RecoveryController.DefaultProbeSuccessesToClose, view.ProbeSuccessesToClose.Value);
+        Assert.Equal(RecoveryController.DefaultBaseCooldown.TotalSeconds, view.BaseCooldownSeconds.Value);
+        Assert.Equal(RecoveryController.DefaultMaxCooldown.TotalSeconds, view.MaxCooldownSeconds.Value);
+        Assert.Equal(DataSourceKind.Derived, view.WindowSize.Source);
+        Assert.Equal(DataSourceKind.Live, view.Halts.Source);
     }
 
     private static void AssertUnknownFieldsHaveNullValue(System.Text.Json.JsonElement element)
