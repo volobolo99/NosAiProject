@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.LowLevel;
 
 namespace NosAi.Runtime.AI.Decision;
 
@@ -39,6 +40,10 @@ public static class DecisionEngineTestRunner
         allPassed &= Run("Vitals adapter carries the phase's refusal reason, never a value", TestVitalsAdapterRefusalCarriesReason);
         allPassed &= Run("Vitals ratio flows with provenance once the phase trusts it", TestVitalsRatioFlowsWhenTrusted);
         allPassed &= Run("A trusted vitals fact actually drives a decision end to end", TestTrustedVitalsDrivesDecision);
+        allPassed &= Run("Actuation gate refuses when there is no decision", TestActuationRefusedNoDecision);
+        allPassed &= Run("Actuation gate refuses an untrusted decision even under valid authority", TestActuationRefusedUntrustedSource);
+        allPassed &= Run("Actuation gate refuses without a usable authority", TestActuationRefusedNoAuthority);
+        allPassed &= Run("A trusted decision under a usable authority is cleared to actuate", TestActuationClearedWhenTrustedAndAuthorised);
         allPassed &= Run("Rules load from a file with all operators", TestRuleFileRoundTrip);
         allPassed &= Run("A malformed rule file is refused, naming the rule", TestMalformedRuleFileRefused);
         allPassed &= Run("Duplicate rule ids are refused", TestDuplicateIdsRefused);
@@ -308,6 +313,65 @@ public static class DecisionEngineTestRunner
         return outcome.Action == "ACTION_EMERGENCY_FLEE"
             && outcome.RuleId == "survival.flee"
             && outcome.Source == DataSourceKind.Derived;
+    }
+
+    // ------------------------------------------------------------- decide -> act gate
+
+    /// <summary>A real Derived decision: critical HP drives survival.flee at Derived provenance.</summary>
+    private static DecisionOutcome DerivedFlee()
+    {
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        return engine.Decide(new DecisionContext().WithDerived("player.hp_ratio", 0.10));
+    }
+
+    private static bool TestActuationRefusedNoDecision()
+    {
+        // Nothing observed -> no decision -> nothing to actuate.
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        DecisionOutcome none = engine.Decide(new DecisionContext());
+        ActuationVerdict verdict = DecisionActuationPolicy.Evaluate(none, ActuationAuthority.Commanded("test"), DateTime.UtcNow);
+        return !verdict.ShouldActuate && verdict.RefusalReason == DecisionActuationPolicy.NoDecisionReason;
+    }
+
+    private static bool TestActuationRefusedUntrustedSource()
+    {
+        // The safety heart of the gate: a decision taken on a SIMULATED fact is
+        // refused for actuation even when the authority is perfectly valid. This
+        // is what stops the bot acting on the real client from unverified data --
+        // and today the memory phases are UNKNOWN, so this branch is what holds.
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        DecisionOutcome simulated = engine.Decide(
+            new DecisionContext().With("player.hp_ratio", ClassifiedValue<double>.Simulated(0.10)));
+        if (simulated.Source != DataSourceKind.Simulated) return false;   // guard the premise
+
+        ActuationVerdict verdict = DecisionActuationPolicy.Evaluate(simulated, ActuationAuthority.Commanded("test"), DateTime.UtcNow);
+        return !verdict.ShouldActuate
+            && verdict.Action == "ACTION_EMERGENCY_FLEE"
+            && verdict.RefusalReason == $"{DecisionActuationPolicy.UntrustedSourcePrefix}:SIMULATED";
+    }
+
+    private static bool TestActuationRefusedNoAuthority()
+    {
+        // A trusted decision is still refused with no authority: an unattributable
+        // act does not proceed (ADR-0020). default(ActuationAuthority) is Kind None.
+        ActuationVerdict verdict = DecisionActuationPolicy.Evaluate(DerivedFlee(), default, DateTime.UtcNow);
+        return !verdict.ShouldActuate
+            && verdict.RefusalReason == ActuationAuthority.MissingReason;
+    }
+
+    private static bool TestActuationClearedWhenTrustedAndAuthorised()
+    {
+        // Trusted decision + usable authority -> cleared to actuate, carrying the
+        // authority forward for the actuation layer to emit under.
+        DecisionOutcome flee = DerivedFlee();
+        if (flee.Source != DataSourceKind.Derived) return false;   // guard the premise
+
+        var authority = ActuationAuthority.Commanded("operator_test");
+        ActuationVerdict verdict = DecisionActuationPolicy.Evaluate(flee, authority, DateTime.UtcNow);
+        return verdict.ShouldActuate
+            && verdict.RefusalReason is null
+            && verdict.Action == "ACTION_EMERGENCY_FLEE"
+            && verdict.Authority.Kind == ActuationAuthorityKind.Commanded;
     }
 
     // ------------------------------------------------------------- rule files
