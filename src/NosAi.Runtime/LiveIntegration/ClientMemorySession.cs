@@ -170,6 +170,16 @@ public sealed class ClientMemorySession : IDisposable
     /// Every stats-block shape inside the player manager and player object
     /// windows. Empty is a real answer, not a failed attach.
     /// </summary>
+    /// <summary>
+    /// HP and MP through the established chain. Empty is a refusal with a reason,
+    /// never the last good numbers.
+    /// </summary>
+    public bool TryReadPlayerVitals(out PlayerVitalsReading reading, out string? failureReason)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return _layout.TryReadPlayerVitals(_reader, out reading, out failureReason);
+    }
+
     public bool TryScanPlayerVitals(
         out IReadOnlyList<PlayerVitalsHit> hits,
         out string? failureReason,

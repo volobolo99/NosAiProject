@@ -340,6 +340,35 @@ public static class PlayerVitalsOracle
 /// <see cref="PlayerVitalsOracle"/> drops it.
 /// </para>
 /// </remarks>
+/// <summary>
+/// The character's vitals, read through the established chain rather than found.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Distinct from <see cref="PlayerVitalsBlock"/> on purpose. That type describes
+/// the contiguous four-word block the third-party source claims, which a live
+/// client refuted: it is still the right home for the range predicate, which is
+/// about four numbers and not about where they sit, and the wrong home for a
+/// layout this build does not have.
+/// </para>
+/// <para>
+/// Reaching this type means the permanent predicate held at the moment of the
+/// read. It is the concordance recorded on 3 September 2026 that authorises
+/// calling it <see cref="NosAi.Runtime.Contracts.DataSourceKind.Live"/> — two
+/// rounds against the wire in two sessions, and an anchor that survived a client
+/// restart — and the predicate is what withdraws that on any later read where it
+/// stops holding.
+/// </para>
+/// </remarks>
+public readonly record struct PlayerVitalsReading(uint Hp, uint MaxHp, uint Mp, uint MaxMp)
+{
+    public int HpPercent => PlayerVitalsBlock.Percent(Hp, MaxHp);
+    public int MpPercent => PlayerVitalsBlock.Percent(Mp, MaxMp);
+
+    public string Describe() => string.Create(CultureInfo.InvariantCulture,
+        $"hp {Hp}/{MaxHp} ({HpPercent}%), mp {Mp}/{MaxMp} ({MpPercent}%)");
+}
+
 public static class PlayerVitalsScan
 {
     /// <summary>How far past each resolved base the stats block is looked for.</summary>

@@ -1,17 +1,27 @@
 using System.Globalization;
+using System.Runtime.Versioning;
 using NosAi.Runtime.Navigation;
 
 namespace NosAi.LiveIntegration;
 
 /// <summary>
-/// Prints every structural HP/MP candidate in the player manager and player
-/// object windows, beside the percentage the wire last gave for this character.
+/// Prints the established HP/MP reading and then every structural candidate,
+/// each beside what the wire last said for this character.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Phase 2 operator command. Discordance is a column, not a log line. A match
-/// is still UNKNOWN — it is evidence for the operator, not a promotion this
-/// command is allowed to make.
+/// Phase 2 operator command, and it now shows two different things that must not
+/// be confused. The <b>reading</b> follows the chain established on 3 September
+/// 2026 and carries its own classification: LIVE while the permanent predicate
+/// holds, UNKNOWN with the reason when it does not. The <b>candidates</b> below
+/// it are the old window scan, and a structural match among them is still
+/// UNKNOWN — evidence for the operator, not a promotion this command may make.
+/// </para>
+/// <para>
+/// Keeping the scan is deliberate. It is the contrast: against a live client it
+/// produced thirty-seven candidates and no match, while the chain read the right
+/// numbers on the first try. A reader who sees only the working answer cannot
+/// tell how little the shape filter was worth.
 /// </para>
 /// <para>
 /// Read-only. The capture is optional; without it the wire column is empty and
@@ -57,7 +67,7 @@ public static class PlayerVitalsProbe
 
             WirePlayerVitals? wire = LoadWire(capturePath, player.CharacterId, out string wireSource);
 
-            Console.WriteLine("=== player vitals (candidates; UNKNOWN until concordance) ===");
+            Console.WriteLine("=== player vitals: the established reading, then the candidates ===");
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                 $"client: pid {session.ProcessId}, character {player.CharacterId}"));
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"wire:   {wireSource}"));
@@ -65,6 +75,9 @@ public static class PlayerVitalsProbe
             // without it: "not found" and "not looked for" read the same.
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                 $"window: 0x{window:X} bytes from each of player manager and player object"));
+            Console.WriteLine();
+
+            PrintEstablished(session, wire);
             Console.WriteLine();
 
             PrintTable(hits, wire);
@@ -89,8 +102,15 @@ public static class PlayerVitalsProbe
                 PrintTable(survivors, wire);
             }
 
+            // Scoped to the table above it. It used to be the last word of the
+            // whole command, which stopped being true the moment an established
+            // reading appeared higher up: the output would say LIVE and then deny
+            // it four lines later, and a reader has no way to tell which sentence
+            // is about what.
             Console.WriteLine();
-            Console.WriteLine("A match is not LIVE. Nothing downstream may decide on these vitals.");
+            Console.WriteLine("The candidates above are not the reading. A structural match is not LIVE,");
+            Console.WriteLine("and nothing downstream may decide on them. The chain at the top is the");
+            Console.WriteLine("reading, and it carries its own classification.");
         }
 
         return 0;
@@ -116,6 +136,53 @@ public static class PlayerVitalsProbe
 
         return string.Create(CultureInfo.InvariantCulture,
             $"{hit.Key,-14}  {hit.Block.Hp,5}/{hit.Block.MaxHp,-5}  {hit.Block.Mp,5}/{hit.Block.MaxMp,-5}  {memory.HpPercent,3}%/{memory.MpPercent,3}%  {Pad(wireHp, 11)}  {Pad(wireMp, 11)}  {vs}");
+    }
+
+    /// <summary>
+    /// The established reading beside the wire, which is what the phase's fourth
+    /// acceptance criterion asks an operator command to show.
+    /// </summary>
+    /// <remarks>
+    /// This is the only line here that may say LIVE. It earned that on 3 September
+    /// 2026: two rounds of concordance in two sessions, and an anchor that came
+    /// back identical after a client restart while the heap address it reaches
+    /// moved. The scan table below it is still candidates, and still UNKNOWN.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static void PrintEstablished(ClientMemorySession session, WirePlayerVitals? wire)
+    {
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"chain:  Module+0x{NosTaleClientLayout.PlayerVitalsModuleOffset:X} -> +0x{NosTaleClientLayout.MaxHpChainOffset:X} (hp) / +0x{NosTaleClientLayout.MaxMpChainOffset:X} (mp)"));
+
+        if (!session.TryReadPlayerVitals(out PlayerVitalsReading reading, out string? why))
+        {
+            // The predicate withdrew it. Never the last good numbers.
+            Console.WriteLine($"reading: UNKNOWN ({why})");
+            return;
+        }
+
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"reading: {reading.Describe()}  [LIVE]"));
+
+        if (wire is not { Hp: { } wireHp, MaxHp: { } wireMaxHp, Mp: { } wireMp, MaxMp: { } wireMaxMp })
+        {
+            Console.WriteLine("wire:    no absolute stat in the recording, so nothing corroborates this read");
+            return;
+        }
+
+        bool agrees = reading.Hp == (uint)wireHp && reading.MaxHp == (uint)wireMaxHp
+                      && reading.Mp == (uint)wireMp && reading.MaxMp == (uint)wireMaxMp;
+
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"wire:    hp {wireHp}/{wireMaxHp}, mp {wireMp}/{wireMaxMp}  {(agrees ? "MATCH" : "MISMATCH")}"));
+
+        if (!agrees)
+        {
+            Console.WriteLine(
+                "         A recording taken at another moment disagrees by construction.");
+            Console.WriteLine(
+                "         Only a capture of this session says anything: --record-wire.");
+        }
     }
 
     private static void PrintTable(IReadOnlyList<PlayerVitalsHit> hits, WirePlayerVitals? wire)

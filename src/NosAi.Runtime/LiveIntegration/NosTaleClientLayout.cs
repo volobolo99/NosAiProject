@@ -94,6 +94,57 @@ public sealed class NosTaleClientLayout
     /// <summary>Reported when the word at that offset cannot be a map id.</summary>
     public const string MapIdImplausiblePrefix = "map_id_implausible";
 
+    /// <summary>Client image base to the pointer the character's vitals hang from.</summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Derived here, not copied.</b> A third-party bot reaches the stats through
+    /// four dereferences from a different RVA, and half of what it claims about
+    /// their layout was measured false on this build: MaxHP does sit beside HP,
+    /// but the single <c>{MaxMP, MP, MaxHP, HP}</c> block it describes does not
+    /// exist — the address it computes holds 0 and 107 where 1420 belongs.
+    /// </para>
+    /// <para>
+    /// <b>How this number was obtained.</b> <see cref="PlayerVitalsCalibrator"/>
+    /// took the four absolute integers from the wire's <c>stat</c> packet, scanned
+    /// the whole process for the maximum, kept the address with the current beside
+    /// it, and required both to move together across two rounds. It then asked
+    /// what points at the survivor. On 3 September 2026 that produced
+    /// <c>Module+0x51FEA4</c> in two separate sessions across a client restart,
+    /// while the heap address it reaches moved from <c>0x1F52EC78</c> to
+    /// <c>0x1EBCEC78</c>. The address died and the distance did not, which is the
+    /// difference between an offset and an address that worked once.
+    /// </para>
+    /// <para>
+    /// A second candidate, <c>Module+0x3232E4</c>, appeared in the first session
+    /// and not in the second. It is recorded here as the reason this one is not
+    /// trusted on its own: the validity predicate runs on every read, and a
+    /// pointer that stops being populated has to be caught rather than assumed
+    /// away.
+    /// </para>
+    /// </remarks>
+    public const int PlayerVitalsModuleOffset = 0x51FEA4;
+
+    /// <summary>That pointer to MaxHP. HP is the word immediately after it.</summary>
+    /// <remarks>
+    /// The adjacency is measured, not assumed: a dump on a live client showed
+    /// 7305 at both <c>0x1F7AEC78</c> and <c>0x1F7AEC7C</c> while the wire
+    /// reported a maximum of 7305 and the character was at full health.
+    /// </remarks>
+    public const int MaxHpChainOffset = 0x138;
+
+    /// <summary>That pointer to MaxMP. MP is the word immediately after it.</summary>
+    /// <remarks>
+    /// <c>0x1B0 − 0x138 = 0x78</c>, the stride between consecutive records that a
+    /// dump showed independently. Two pointers reaching the same pair of fields at
+    /// the same distance is why the stride is described as measured rather than
+    /// inferred.
+    /// </remarks>
+    public const int MaxMpChainOffset = 0x1B0;
+
+    public const string VitalsPointerUnreadableReason = "player_vitals_pointer_unreadable";
+    public const string VitalsPointerNullReason = "player_vitals_pointer_null";
+    public const string VitalsBlockUnreadablePrefix = "player_vitals_block_unreadable";
+
     /// <summary>
     /// Player manager → the square the character is walking to.
     /// </summary>
@@ -639,6 +690,87 @@ public sealed class NosTaleClientLayout
         }
 
         mapId = value;
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// The character's HP and MP, followed from the module every call.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Two hops: a static pointer in the client's own image, then the two pairs at
+    /// their measured distances. Nothing is cached — the pointer is re-read every
+    /// time, because the structure it names is replaced and a remembered address
+    /// is whatever occupies that memory afterwards.
+    /// </para>
+    /// <para>
+    /// The permanent predicate runs here, not only while searching:
+    /// <see cref="PlayerVitalsBlock.TryRange"/> refuses zero maxima, currents
+    /// above their maximum, and values past what a vital can be. A pointer that
+    /// stops being populated, or one that starts naming something else after a
+    /// patch, fails those checks and is reported as <c>UNKNOWN</c> with the reason
+    /// rather than returning the last plausible-looking numbers.
+    /// </para>
+    /// </remarks>
+    public bool TryReadPlayerVitals(
+        ProcessMemoryReader reader,
+        out PlayerVitalsReading reading,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        reading = default;
+
+        if (_moduleBase == IntPtr.Zero)
+        {
+            failureReason = "client_module_not_located";
+            return false;
+        }
+
+        MemoryReadResult pointerBytes = reader.Read(_moduleBase + PlayerVitalsModuleOffset, sizeof(int));
+        if (!pointerBytes.Ok)
+        {
+            failureReason = pointerBytes.FailureReason ?? VitalsPointerUnreadableReason;
+            return false;
+        }
+
+        var vitals = (IntPtr)BitConverter.ToUInt32(pointerBytes.Bytes);
+        if (vitals == IntPtr.Zero)
+        {
+            // Null before the character is in the world. A named refusal, not an
+            // error: attaching at the login screen is an ordinary thing to do.
+            failureReason = VitalsPointerNullReason;
+            return false;
+        }
+
+        if (!TryReadWord(reader, vitals + MaxHpChainOffset, "max_hp", out uint maxHp, out failureReason)
+            || !TryReadWord(reader, vitals + MaxHpChainOffset + sizeof(uint), "hp", out uint hp, out failureReason)
+            || !TryReadWord(reader, vitals + MaxMpChainOffset, "max_mp", out uint maxMp, out failureReason)
+            || !TryReadWord(reader, vitals + MaxMpChainOffset + sizeof(uint), "mp", out uint mp, out failureReason))
+        {
+            return false;
+        }
+
+        if (!PlayerVitalsBlock.TryRange(hp, maxHp, mp, maxMp, out failureReason))
+            return false;
+
+        reading = new PlayerVitalsReading(hp, maxHp, mp, maxMp);
+        failureReason = null;
+        return true;
+    }
+
+    private static bool TryReadWord(
+        ProcessMemoryReader reader, IntPtr at, string what, out uint value, out string? failureReason)
+    {
+        value = 0;
+        MemoryReadResult result = reader.Read(at, sizeof(uint));
+        if (!result.Ok)
+        {
+            failureReason = result.FailureReason ?? $"{VitalsBlockUnreadablePrefix}:{what}";
+            return false;
+        }
+
+        value = BitConverter.ToUInt32(result.Bytes);
         failureReason = null;
         return true;
     }
