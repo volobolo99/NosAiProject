@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.AI.Decision;
@@ -34,6 +35,10 @@ public static class DecisionEngineTestRunner
         allPassed &= Run("A ready skill (cooldown+MP observed) is preferred over the basic attack", TestSkillPreferredWhenReady);
         allPassed &= Run("An unknown cooldown falls back to the basic attack, never a blind cast", TestUnknownCooldownFallsBackToBasicAttack);
         allPassed &= Run("No MP skips the skill even when the cooldown is ready", TestNoMpSkipsTheSkill);
+        allPassed &= Run("Vitals adapter mirrors the phase: not-established vitals are UNKNOWN facts", TestVitalsAdapterUnknownWhileNotEstablished);
+        allPassed &= Run("Vitals adapter carries the phase's refusal reason, never a value", TestVitalsAdapterRefusalCarriesReason);
+        allPassed &= Run("Vitals ratio flows with provenance once the phase trusts it", TestVitalsRatioFlowsWhenTrusted);
+        allPassed &= Run("A trusted vitals fact actually drives a decision end to end", TestTrustedVitalsDrivesDecision);
         allPassed &= Run("Rules load from a file with all operators", TestRuleFileRoundTrip);
         allPassed &= Run("A malformed rule file is refused, naming the rule", TestMalformedRuleFileRefused);
         allPassed &= Run("Duplicate rule ids are refused", TestDuplicateIdsRefused);
@@ -239,6 +244,70 @@ public static class DecisionEngineTestRunner
         // so the skill rule does not fire and the basic attack does.
         if (outcome.Action != "ACTION_ATTACK_TARGET") return false;
         return outcome.Skipped.Any(s => s.RuleId == "combat.skill_ready" && s.Reason == RuleSkipReason.ConditionFalse);
+    }
+
+    // ------------------------------------------------------------- wiring: Fase 2 vitals -> facts
+
+    private static bool TestVitalsAdapterUnknownWhileNotEstablished()
+    {
+        // The only candidate the phase can hand out today: numbers present
+        // (HasValue), but Source == Unknown (not yet established via concordance).
+        var vitals = new PlayerVitalsCandidate(80, 100, 30, 60, default, 0, PlayerVitalsCandidate.NotEstablishedReason);
+        if (!vitals.HasValue || vitals.Source != DataSourceKind.Unknown) return false;   // guard the premise
+
+        var ctx = new DecisionContext();
+        GameplayVitalsAdapter.Populate(ctx, vitals);
+
+        // Both facts must be present-as-UNKNOWN, never a readable number: the
+        // runtime must not act on vitals the phase has not established.
+        bool hpReadable = ctx.TryRead(GameplayVitalsAdapter.PlayerHpRatioFact, out _, out DataSourceKind hpSrc);
+        bool mpReadable = ctx.TryRead(GameplayVitalsAdapter.PlayerMpRatioFact, out _, out DataSourceKind mpSrc);
+        return !hpReadable && hpSrc == DataSourceKind.Unknown
+            && !mpReadable && mpSrc == DataSourceKind.Unknown
+            && ctx.FactNames.Contains(GameplayVitalsAdapter.PlayerHpRatioFact);
+    }
+
+    private static bool TestVitalsAdapterRefusalCarriesReason()
+    {
+        // A refused read (predicate failure) is not a value: it maps to UNKNOWN
+        // carrying the phase's own reason, and never the last good number.
+        var refused = PlayerVitalsCandidate.Missing(PlayerVitalsBlock.MaxMpZeroReason);
+        ClassifiedValue<double> mp = GameplayVitalsAdapter.MapMp(refused);
+        return !mp.HasValue
+            && mp.Source == DataSourceKind.Unknown
+            && mp.FailureReason == PlayerVitalsBlock.MaxMpZeroReason;
+    }
+
+    private static bool TestVitalsRatioFlowsWhenTrusted()
+    {
+        // When the phase eventually grants trust (Source != Unknown), the ratio
+        // flows with that provenance -- and out-of-range inputs are clamped, not
+        // passed through. Exercised through the core because the candidate type
+        // cannot yet express a trusted Source.
+        ClassifiedValue<double> derived = GameplayVitalsAdapter.RatioCore(50, 200, DataSourceKind.Derived, hasValue: true, reason: "x");
+        if (!derived.HasValue || derived.Source != DataSourceKind.Derived || Math.Abs(derived.Value - 0.25) > 1e-9) return false;
+
+        ClassifiedValue<double> clamped = GameplayVitalsAdapter.RatioCore(250, 200, DataSourceKind.Live, hasValue: true, reason: "x");
+        if (Math.Abs(clamped.Value - 1.0) > 1e-9) return false;
+
+        // A zero max is refused rather than dividing, even when hasValue is set.
+        ClassifiedValue<double> zeroMax = GameplayVitalsAdapter.RatioCore(10, 0, DataSourceKind.Derived, hasValue: true, reason: "x");
+        return !zeroMax.HasValue && zeroMax.FailureReason == GameplayVitalsAdapter.MaxZeroReason;
+    }
+
+    private static bool TestTrustedVitalsDrivesDecision()
+    {
+        // Proof that the wiring closes observe->decide: once a vitals fact is
+        // trusted, it drives a real rule. Critical HP (0.10) must trigger the
+        // flee, exactly as it would from any other observed source.
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        var ctx = new DecisionContext()
+            .With("player.hp_ratio", GameplayVitalsAdapter.RatioCore(10, 100, DataSourceKind.Derived, hasValue: true, reason: "x"));
+
+        DecisionOutcome outcome = engine.Decide(ctx);
+        return outcome.Action == "ACTION_EMERGENCY_FLEE"
+            && outcome.RuleId == "survival.flee"
+            && outcome.Source == DataSourceKind.Derived;
     }
 
     // ------------------------------------------------------------- rule files
