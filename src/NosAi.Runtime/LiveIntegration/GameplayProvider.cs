@@ -26,12 +26,13 @@ namespace NosAi.LiveIntegration;
 /// <para>
 /// The fields C1 added — <see cref="Entities"/>, <see cref="PlayerPosition"/>,
 /// <see cref="HitBy"/>, <see cref="SkillsReady"/>, <see cref="Inventory"/>,
-/// <see cref="LastPickup"/>, <see cref="GroundItems"/> — are init-only rather
-/// than positional so that every existing construction site keeps compiling and
-/// keeps meaning what it meant, the same treatment the new fields on
-/// <see cref="NetworkObservationReport"/> received. A provider that does not
-/// set them publishes them UNKNOWN with a reason, which is the truth about that
-/// provider and is not a zero, an empty list or the map origin.
+/// <see cref="LastPickup"/>, <see cref="GroundItems"/> — and the fields S5
+/// added — <see cref="MapId"/>, <see cref="StandingCell"/> — are init-only
+/// rather than positional so that every existing construction site keeps
+/// compiling and keeps meaning what it meant, the same treatment the new
+/// fields on <see cref="NetworkObservationReport"/> received. A provider that
+/// does not set them publishes them UNKNOWN with a reason, which is the truth
+/// about that provider and is not a zero, an empty list or the map origin.
 /// </para>
 /// </remarks>
 public sealed record GameplayObservation(
@@ -220,8 +221,9 @@ public sealed record GameplayObservation(
     /// <see cref="MaxMp"/> is deliberately not among them. No rule reads it yet,
     /// and requiring it would make every decoder that does not map it unable to
     /// plan — a behaviour change smuggled in behind a published field. The C1
-    /// fields are not among them either, for the same reason: each gates only
-    /// the rule that reads it (ADR-0016).
+    /// fields, and S5's <see cref="MapId"/> and <see cref="StandingCell"/>, are
+    /// not among them either, for the same reason: each gates only the rule that
+    /// reads it (ADR-0016).
     /// </remarks>
     public bool HasVitals => Hp.HasValue && MaxHp.HasValue && Mp.HasValue;
 

@@ -29,6 +29,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly LiveHardwareTelemetry _hardware;
     private readonly Gate1RuntimeSnapshotProvider _snapshot;
     private readonly Gate1ObservationChannel _observation;
+    private readonly ClientMapWorldSource _mapWorld;
 
     /// <summary>
     /// The Gate 3 decision loop, or null when the operator did not ask for it.
@@ -178,6 +179,13 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         _observation = _options.ObserveGame is { } endpoint
             ? Gate1ObservationChannel.TryOpenLive(endpoint, _logger)
             : Gate1ObservationChannel.None();
+        // S5: map id and standing cell ride the snapshot so the panel never
+        // attaches on its own. Observation only; PlayerPosition is not filled
+        // here (that field keeps MemoryGameplayProvider's checks).
+        _mapWorld = new ClientMapWorldSource(() => _client.AttachedProcessId);
+        IGameplayProvider gameplay = new MemoryMapWorldProvider(
+            _observation.Provider ?? UnavailableGameplayProvider.Instance,
+            _mapWorld.Read);
         _snapshot = new Gate1RuntimeSnapshotProvider(
             runtime,
             world,
@@ -186,7 +194,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             _client,
             () => _health,
             _correlationId,
-            gameplay: _observation.Provider,
+            gameplay: gameplay,
             observation: _observation,
             recovery: () => _decisions?.Orchestrator.Recovery);
         _channel.SetSnapshotSource(_snapshot.Capture);
@@ -785,6 +793,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             await _discovery.DisposeAsync().ConfigureAwait(false);
         if (_dashboard is not null)
             await _dashboard.DisposeAsync().ConfigureAwait(false);
+        _mapWorld.Dispose();
         await _client.DisposeAsync().ConfigureAwait(false);
         _observation.Dispose();
         _auth.Dispose();

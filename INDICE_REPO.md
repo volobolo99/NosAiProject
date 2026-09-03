@@ -95,15 +95,14 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 - `PerceptionProbe.cs` (334) — sonda percezione dal pannello. Tipi: `ClientWindowLookup`, `PerceptionProbe`, `PerceptionProbeResult`
 - `AttachedSnapshot.cs` (276) — snapshot del processo agganciato. Tipi: `AttachedSnapshot`
 - `TargetInspect.cs` (411) — caccia all'id bersaglio e ROI. Tipi: `TargetHuntKind`, `TargetRoiKind`, `TargetHuntView`, `TargetInspect`
-- `MapInspect.cs` (410) — cella di stazione e griglia. Tipi: `MapCellDraw`, `StandingCellKind`, `MapView`, `MapWorldReading`, `MapInspect`
-- `GameplayWireReader.cs` (230) — entità, colpo e bersaglio dal payload `gameplayBaseline`. Tipi: `GameplayPanelRead`, `GameplayWireReader`
+- `MapInspect.cs` — cella di stazione e griglia. Tipi: `MapCellDraw`, `StandingCellKind`, `MapView`, `MapWorldReading`, `MapInspect`
+- `GameplayWireReader.cs` — entità, colpo, bersaglio, id mappa e cella di appoggio dal payload `gameplayBaseline`. Tipi: `GameplayPanelRead`, `GameplayWireReader`
 - `RuntimeSession.cs` (194) — sessione verso il runtime. Tipi: `SessionKind`, `RuntimeSession`
 - `OperatorSettings.cs` (161) — impostazioni operatore. Tipi: `OperatorSettings`
 - `SnapshotView.cs` (155) — rendering campi. Tipi: `DisplayField`, `SnapshotView`
 - `SurroundingsInspect.cs` (148) — dintorni osservati. Tipi: `SurroundingsKind`, `NearbyEntityRow`, `SurroundingsView`, `SurroundingsInspect`
 - `MapGridManifest.cs` (112) — identità registrata delle griglie estratte. Tipi: `MapGridManifest`
 - `CombatInspect.cs` (96) — ultimo colpo e bersaglio a tre valori. Tipi: `CombatView`, `CombatInspect`
-- `MapWorldReader.cs` (60) — id mappa e cella di stazione dal client agganciato. Tipi: `MapWorldReader`
 - `KeybindsInspect.cs` (60) — tasti configurati e intenti scoperti. Tipi: `KeybindsView`, `KeybindsInspect`
 - `DecisionInspect.cs` (87), `ToolRunner.cs` (84), `EventLogInspect.cs` (79), `NetworkInspect.cs` (56), `ResilienceInspect.cs` (50), `ChannelView.cs` (44), `UiLogger.cs` (44), `ObserveGameDetector.cs` (43), `OperatorHealth.cs` (36), `SecurityInspect.cs` (36), `WorkspaceLocator.cs` (29), `SuiteCatalog.cs` (28), `App.xaml.cs` (27), `OperatorLogFile.cs` (26), `LocalPortProbe.cs` (24), `HudCropStore.cs` (21), `ElevationInspect.cs` (19), `AutoSetup.cs` (60)
 
@@ -212,7 +211,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 - `LiveIntegration/RealClientConnector.cs` (533) — baseline del client reale. Tipi: `ClientBaselineAvailability`, `ClientBaselineSnapshot`, `RealClientConnector`
 - `LiveIntegration/ProcessMemoryReader.cs` (320), `MemoryScanProbe.cs` (255), `MemoryScanner.cs` (180), `PlayerObjectProbe.cs` (238), `ClientMemorySession.cs` (223)
 - `LiveIntegration/GameplayProvider.cs` (837) — contratto di gameplay. Tipi: `GameplayObservation`, `IGameplayProvider`, `NetworkGameplayProvider`, `UnavailableGameplayProvider`
-- `LiveIntegration/MemoryGameplayProvider.cs` (255), `TargetAwareGameplayProvider.cs` (96), `PositionAwareGameplayProvider.cs` (79), `NetworkWorldStateObserver.cs` (32)
+- `LiveIntegration/MemoryGameplayProvider.cs` (255), `TargetAwareGameplayProvider.cs` (96), `PositionAwareGameplayProvider.cs` (79), `MemoryMapWorldProvider.cs`, `ClientMapWorldSource.cs`, `NetworkWorldStateObserver.cs` (32)
 - `LiveIntegration/ClientNetworkObserver.cs` (266) — connessioni TCP del client
 - `LiveIntegration/Capture/` — `ScopedLiveCaptureBackend.cs` (286), `TcpStreamReassembler.cs` (228), `WorldChannelReplay.cs` (228), `CaptureFile.cs` (202), `ReassembledObservationSource.cs` (184), `NosTaleWorldFramer.cs` (171), `GameTrafficCaptureEngine.cs` (163), `CaptureAnalysis.cs` (161), `WinDivertPacketSource.cs` (153), `ProtocolMapFramer.cs` (148), `Ipv4TcpParser.cs` (134), `GameStreamFramer.cs` (88), `TcpSegment.cs` (48), `IPacketSource.cs` (47), `InMemoryPacketSource.cs` (42)
 

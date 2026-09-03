@@ -445,6 +445,16 @@ public sealed class EntityPipeTests
         Assert.Equal(JsonValueKind.Null, position.GetProperty("value").ValueKind);
         Assert.Equal(NetworkGameplayProvider.PlayerPositionNotOnWireReason, position.GetProperty("failureReason").GetString());
 
+        JsonElement mapId = json.GetProperty("mapId");
+        Assert.Equal("UNKNOWN", mapId.GetProperty("source").GetString());
+        Assert.Equal(JsonValueKind.Null, mapId.GetProperty("value").ValueKind);
+        Assert.Equal(NetworkGameplayProvider.MapIdNotOnWireReason, mapId.GetProperty("failureReason").GetString());
+
+        JsonElement standing = json.GetProperty("standingCell");
+        Assert.Equal("UNKNOWN", standing.GetProperty("source").GetString());
+        Assert.Equal(JsonValueKind.Null, standing.GetProperty("value").ValueKind);
+        Assert.Equal(NetworkGameplayProvider.StandingCellNotOnWireReason, standing.GetProperty("failureReason").GetString());
+
         Assert.Equal("UNKNOWN", json.GetProperty("hitBy").GetProperty("source").GetString());
     }
 

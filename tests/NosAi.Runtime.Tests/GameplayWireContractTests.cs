@@ -175,6 +175,8 @@ public sealed class GameplayWireContractTests
             // C1 added these on the same precedent; the same rule holds them open.
             foreach (string key in C1Keys)
                 Assert.DoesNotContain($"\"{key}\"", source, StringComparison.Ordinal);
+            foreach (string key in S5Keys)
+                Assert.DoesNotContain($"\"{key}\"", source, StringComparison.Ordinal);
         }
     }
 
@@ -184,6 +186,9 @@ public sealed class GameplayWireContractTests
         "entities", "playerPosition", "hitBy", "selectedTarget",
         "skillsReady", "inventory", "lastPickup", "groundItems",
     ];
+
+    /// <summary>The keys S5 added inside <c>gameplayBaseline</c>, additively.</summary>
+    private static readonly string[] S5Keys = ["mapId", "standingCell"];
 
     /// <summary>
     /// Each C1 key is one classified value beside the existing ones, unknown with a
@@ -218,6 +223,33 @@ public sealed class GameplayWireContractTests
         Assert.Null(observation.UnusableReason);
         Assert.False(observation.Entities.HasValue);
         Assert.False(observation.PlayerPosition.HasValue);
+    }
+
+    [Fact]
+    public void Every_s5_field_is_published_as_one_classified_value_with_its_reason()
+    {
+        JsonElement wire = Wire(Full());
+
+        JsonElement mapId = wire.GetProperty("mapId");
+        Assert.Equal("UNKNOWN", mapId.GetProperty("source").GetString());
+        Assert.Equal(JsonValueKind.Null, mapId.GetProperty("value").ValueKind);
+        Assert.Equal(GameplayObservation.MapIdNotReadReason, mapId.GetProperty("failureReason").GetString());
+
+        JsonElement standing = wire.GetProperty("standingCell");
+        Assert.Equal("UNKNOWN", standing.GetProperty("source").GetString());
+        Assert.Equal(JsonValueKind.Null, standing.GetProperty("value").ValueKind);
+        Assert.Equal(GameplayObservation.StandingCellNotReadReason, standing.GetProperty("failureReason").GetString());
+    }
+
+    [Fact]
+    public void Publishing_map_id_and_standing_cell_did_not_make_them_a_precondition_for_planning()
+    {
+        GameplayObservation observation = Full();
+
+        Assert.True(observation.HasVitals);
+        Assert.Null(observation.UnusableReason);
+        Assert.False(observation.MapId.HasValue);
+        Assert.False(observation.StandingCell.HasValue);
     }
 
     private static string Snapshot(bool withMaxMp)

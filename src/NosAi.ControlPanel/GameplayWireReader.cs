@@ -8,8 +8,9 @@ using NosAi.Runtime.Perception.Network;
 namespace NosAi.ControlPanel;
 
 /// <summary>
-/// Entities, last hit, and target as classified values, parsed from the wire
-/// form of <c>gameplayBaseline</c> without inventing members the payload omitted.
+/// Entities, last hit, target, map id and standing cell as classified values,
+/// parsed from the wire form of <c>gameplayBaseline</c> without inventing members
+/// the payload omitted.
 /// </summary>
 internal readonly record struct GameplayPanelRead(
     ClassifiedValue<IReadOnlyList<SelectableEntity>> Entities,
@@ -28,9 +29,9 @@ internal readonly record struct GameplayPanelRead(
 }
 
 /// <summary>
-/// Reads the C1 fields inside an attached <c>gameplayBaseline</c>. Missing keys
-/// stay UNKNOWN with the reason the producer already uses; an empty array is
-/// forwarded as an empty list, which is not UNKNOWN.
+/// Reads the C1 and S5 fields inside an attached <c>gameplayBaseline</c>.
+/// Missing keys stay UNKNOWN with the reason the producer already uses; an
+/// empty array is forwarded as an empty list, which is not UNKNOWN.
 /// </summary>
 internal static class GameplayWireReader
 {

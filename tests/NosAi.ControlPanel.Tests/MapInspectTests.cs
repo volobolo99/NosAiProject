@@ -1,7 +1,10 @@
 using System.Buffers.Binary;
 using System.IO;
 using NosAi.ControlPanel;
+using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Gate1;
+using NosAi.Runtime.Hardware;
 using NosAi.Runtime.Navigation;
 using Xunit;
 
@@ -294,8 +297,9 @@ public sealed class MapInspectTests
         string[] files =
         [
             Path.Combine(root, "src", "NosAi.ControlPanel", "MapInspect.cs"),
-            Path.Combine(root, "src", "NosAi.ControlPanel", "MapWorldReader.cs"),
-            Path.Combine(root, "src", "NosAi.ControlPanel", "MapGridManifest.cs")
+            Path.Combine(root, "src", "NosAi.ControlPanel", "MapGridManifest.cs"),
+            Path.Combine(root, "src", "NosAi.ControlPanel", "GameplayWireReader.cs"),
+            Path.Combine(root, "src", "NosAi.ControlPanel", "SnapshotView.cs")
         ];
 
         string[] forbidden =
@@ -335,7 +339,146 @@ public sealed class MapInspectTests
         Assert.True(mapStart > 0 && mapEnd > mapStart);
         string mapView = xaml[mapStart..mapEnd];
         Assert.DoesNotContain("<Button", mapView, StringComparison.Ordinal);
+
+        string inspect = File.ReadAllText(Path.Combine(root, "src", "NosAi.ControlPanel", "MapInspect.cs"));
+        Assert.DoesNotContain("TryAttach", inspect, StringComparison.Ordinal);
+        Assert.DoesNotContain("ClientMemorySession", inspect, StringComparison.Ordinal);
+        Assert.DoesNotContain("MapWorldReader", inspect, StringComparison.Ordinal);
+
+        string window = File.ReadAllText(Path.Combine(root, "src", "NosAi.ControlPanel", "MainWindow.xaml.cs"));
+        Assert.Contains("snapshot.MapWorld", window, StringComparison.Ordinal);
+        Assert.DoesNotContain("MapWorldReader", window, StringComparison.Ordinal);
+        Assert.DoesNotContain("ClientMemorySession.TryAttach", window, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void AHostedSnapshotCopiesMapIdAndStandingCell()
+    {
+        DateTime at = new(2026, 9, 3, 12, 0, 0, DateTimeKind.Utc);
+        var observation = new GameplayObservation(
+            ClassifiedValue<int>.Derived(100, at),
+            ClassifiedValue<int>.Derived(100, at),
+            ClassifiedValue<int>.Derived(50, at),
+            ClassifiedValue<int>.Derived(50, at),
+            ClassifiedValue<bool>.Unknown("target_flag_not_mapped"),
+            ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"),
+            ClassifiedValue<int>.Unknown("not_counted"),
+            at)
+        {
+            MapId = ClassifiedValue<int>.Live(7, at),
+            StandingCell = ClassifiedValue<MapPoint>.Live(new MapPoint(12, 8), at),
+        };
+
+        SnapshotView snapshot = SnapshotView.From(Hosted(observation));
+        MapView view = MapInspect.Observe(SessionKind.Hosted, snapshot.MapWorld);
+
+        Assert.Equal(7, snapshot.MapWorld.MapId.Value);
+        Assert.Equal(DataSourceKind.Live, snapshot.MapWorld.MapId.Source);
+        Assert.Equal(12, snapshot.MapWorld.CellX.Value);
+        Assert.Equal(8, snapshot.MapWorld.CellY.Value);
+        Assert.Equal(StandingCellKind.GridUnknown, view.StandingKind);
+        Assert.Contains("UNKNOWN", view.StandingLine, StringComparison.Ordinal);
+        DisplayField id = Assert.Single(view.Fields, f => f.Label == "Id mappa");
+        Assert.Contains("7", id.Value, StringComparison.Ordinal);
+        Assert.Equal("LIVE", id.Source);
+        DisplayField provenance = Assert.Single(view.Fields, f => f.Label == "Provenienza id mappa");
+        Assert.Contains(MapInspect.MapIdProvenanceLive, provenance.Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnAttachedSnapshotParsesMapIdAndStandingCell()
+    {
+        SnapshotView snapshot = AttachedSnapshot.Parse("""
+            {
+              "contractVersion": "gate1.snapshot.v1",
+              "client": {
+                "gameplayBaseline": {
+                  "source": "DERIVED",
+                  "hasObservedValue": true,
+                  "value": {
+                    "mapId": {
+                      "source": "LIVE",
+                      "hasObservedValue": true,
+                      "value": 9
+                    },
+                    "standingCell": {
+                      "source": "LIVE",
+                      "hasObservedValue": true,
+                      "value": { "x": 1, "y": 2 }
+                    }
+                  }
+                }
+              }
+            }
+            """);
+
+        Assert.Equal(9, snapshot.MapWorld.MapId.Value);
+        Assert.Equal(1, snapshot.MapWorld.CellX.Value);
+        Assert.Equal(2, snapshot.MapWorld.CellY.Value);
+        Assert.Equal(DataSourceKind.Live, snapshot.MapWorld.MapId.Source);
+        Assert.Equal(DataSourceKind.Live, snapshot.MapWorld.CellX.Source);
+    }
+
+    [Fact]
+    public void AnAttachedSnapshotWithoutMapKeysKeepsTheNamedUnknown()
+    {
+        SnapshotView snapshot = AttachedSnapshot.Parse("""
+            {
+              "contractVersion": "gate1.snapshot.v1",
+              "client": {
+                "gameplayBaseline": {
+                  "source": "DERIVED",
+                  "hasObservedValue": true,
+                  "value": {
+                    "entities": { "source": "UNKNOWN", "failureReason": "not_published_by_provider" }
+                  }
+                }
+              }
+            }
+            """);
+
+        Assert.False(snapshot.MapWorld.MapId.HasValue);
+        Assert.Equal(GameplayObservation.MapIdNotReadReason, snapshot.MapWorld.MapId.FailureReason);
+        Assert.False(snapshot.MapWorld.CellX.HasValue);
+        Assert.Equal(GameplayObservation.StandingCellNotReadReason, snapshot.MapWorld.CellX.FailureReason);
+        Assert.Equal(GameplayObservation.StandingCellNotReadReason, snapshot.MapWorld.CellY.FailureReason);
+        Assert.All(MapInspect.Observe(SessionKind.Attached, snapshot.MapWorld).Crop,
+            cell => Assert.Equal(MapCellDraw.Unknown, cell));
+    }
+
+    [Fact]
+    public void AnEmptySnapshotMapWorldIsUnknownAndNotAFreeCell()
+    {
+        SnapshotView snapshot = SnapshotView.Empty("offline");
+        MapView view = MapInspect.Observe(SessionKind.Idle, snapshot.MapWorld);
+
+        Assert.False(snapshot.MapWorld.MapId.HasValue);
+        Assert.Equal("runtime_not_connected", snapshot.MapWorld.MapId.FailureReason);
+        Assert.All(view.Crop, cell => Assert.Equal(MapCellDraw.Unknown, cell));
+        Assert.DoesNotContain(MapInspect.WalkableGlyph, view.CropGlyphs);
+    }
+
+    private static Gate1CanonicalSnapshot Hosted(GameplayObservation observation) =>
+        Gate1SnapshotFactory.Create(
+            RuntimeHealthStatus.Healthy,
+            "test",
+            new LiveHardwareTelemetry(new FallbackHardwareProbe()).Capture().View,
+            new ClientBaselineSnapshot(
+                ProcessDetected: false,
+                WindowDetected: false,
+                ClientAttached: false,
+                ProcessId: null,
+                WindowHandle: IntPtr.Zero,
+                Source: "test",
+                ObservedAtUtc: observation.ObservedAtUtc,
+                Availability: ClientBaselineAvailability.Unavailable,
+                Status: "client_unavailable",
+                Warning: null,
+                FailureReason: "connector_not_bound"),
+            new Gate1ConnectionSnapshot(string.Empty, false, false, default, null),
+            NosAi.Runtime.Safety.RuntimeSafetyPolicy.SafeDefault,
+            warning: null,
+            gameplay: observation);
 
     private static MapView Standing(MapGrid grid, int x, int y) => MapInspect.Build(
         ClassifiedValue<int>.Live(grid.MapId),
