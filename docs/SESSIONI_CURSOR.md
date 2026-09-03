@@ -506,7 +506,93 @@ dotnet build -c Release senza warning e dotnet test verdi prima di riportare.
 
 ---
 
-## 8. Come riportare
+## 8. `S6` — Le due voci che mancano al menu
+
+`--record-wire` e `--calibrate-vitals` esistono e sono verdi, ma si raggiungono solo
+dalla riga di comando. Ogni altra sonda ha la sua voce nel menu operatore; queste due no,
+e sono proprio quelle che l'operatore usa più spesso, perché la calibrazione va rifatta
+a ogni riavvio del client.
+
+Sessione piccola, tutta dentro un file più i suoi test. Non tocca la memoria, non tocca
+il filo, non attua nulla: aggiunge due voci che chiamano codice già scritto e già testato.
+
+### Cosa esiste già
+
+- `src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs` — `Run(endpoint, path, seconds)`,
+  flag `--record-wire <ip>:<port> [file.noscap] [--watch N]`.
+- `src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs` — `Run(endpoint, seconds)`,
+  flag `--calibrate-vitals <ip>:<port> [--watch N]`.
+- `src/NosAi.Runtime/Operator/OperatorMenu.cs` — il menu arriva alla voce `19`.
+  Le prime libere sono `20` e `21`.
+
+### Il comando
+
+```
+CONTESTO — voci di menu per registrazione del filo e calibrazione delle statistiche
+
+Normativi: CLAUDE.md, docs/SPEC_ESTENSIONE_LAYOUT_MEMORIA.md, docs/adr/ADR-0014.
+
+Aggiungi due voci al menu operatore in src/NosAi.Runtime/Operator/OperatorMenu.cs:
+
+  20  Registra il filo             (una cattura .noscap della sessione in corso)
+  21  Calibra HP e MP dal filo     (due giri; il filo dice i numeri, la memoria li mostra)
+
+La voce 20 chiama NosAi.LiveIntegration.Capture.WireRecorder.Run.
+La voce 21 chiama NosAi.LiveIntegration.PlayerVitalsCalibrator.Run.
+
+Il meccanismo del menu, che devi rispettare:
+1. Lo switch in Run() e l'elenco stampato in Draw() sono DUE blocchi separati e non
+   generati dalla stessa fonte. Vanno modificati entrambi, o la voce esiste e non si
+   vede, oppure si vede e non esiste.
+2. Ogni gestore passa da Perform(titolo, Func<int>), che restituisce 0 per successo.
+3. I gestori esistenti non ricevono nulla per iniezione: si procurano da soli quel che
+   serve. Guarda RunEntityNames e RunReplay come modello.
+
+Entrambe le voci hanno bisogno di un endpoint `<ip>:<porta>` che l'operatore non
+conosce a memoria. Chiedilo con Console.ReadLine, e se la riga è vuota o malformata
+NON inventare un valore di riposo: stampa il rifiuto e restituisci 2. Non serve che
+tu validi l'IP a mano — WireRecorder.TryParseEndpoint lo fa già e nomina il motivo
+(record_endpoint_missing, record_host_not_an_ip:{host}, record_port_implausible:{p}).
+Passa la stringa così com'è e lascia rifiutare al codice che sa farlo.
+
+Per la durata: chiedi i secondi, e se la riga è vuota usa il valore di riposo del
+comando chiamato invece di scriverne uno tuo.
+
+Vincoli:
+- Entrambe richiedono una console elevata. Scrivilo nella riga di menu o subito
+  prima di lanciare: il rifiuto che arriva senza elevazione è leggibile ma tardivo.
+- Il test OperatorMenuTests.TheMenuOffersNothingThatActuates legge il sorgente del
+  menu e vieta le stringhe "--arm-input", "ScreenProjectionAutoCalibrator" e
+  "ActuationScope". Non introdurle.
+- Apostrofi ASCII nelle stringhe italiane, come fa già il file (Entita', d'input).
+- Non toccare nessun altro file di src/. In particolare NON toccare Program.cs,
+  PlayerVitalsCalibrator.cs, PointerAnchorHunter.cs, NosTaleClientLayout.cs.
+
+Test: aggiungi un file NUOVO in tests/NosAi.Runtime.Tests/ (non modificare
+OperatorMenuTests.cs). Copri le funzioni pure che estrai — la lettura dei secondi
+con riga vuota, e il fatto che il sorgente del menu contenga entrambe le voci in
+entrambi i blocchi. xUnit, namespace NosAi.Runtime.Tests, classe public sealed,
+nomi di metodo in prosa PascalCase, <summary> che dice perché il comportamento conta.
+
+Build e test, entrambi verdi prima di riportare:
+  dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release
+  dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj --configuration Release
+
+Non fare push e non toccare main. Commit sul tuo branch, messaggio imperativo nello
+stile del repo.
+```
+
+### DoD di `S6`
+
+1. Le voci `20` e `21` compaiono nell'elenco e rispondono nello switch.
+2. Un endpoint vuoto o malformato produce un rifiuto nominato e `2`, mai un valore
+   di riposo inventato.
+3. Nessuna delle tre stringhe vietate compare nel sorgente del menu.
+4. Build senza warning, suite runtime verde, e il numero di test cresce solo dei tuoi.
+
+---
+
+## 9. Come riportare
 
 Alla fine di ogni sessione, e non prima:
 

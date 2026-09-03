@@ -384,6 +384,26 @@ public static class Program
             return NosAi.LiveIntegration.PlayerVitalsCalibrator.Run(endpoint, roundSeconds);
         }
 
+        // What points at an address, so a calibrated heap address can become a
+        // distance from something the runtime resolves again on every read. A
+        // reboot killed one confirmed address during this work; that is the whole
+        // reason this exists.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.PointerAnchorHunter.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.PointerAnchorHunter.Flag, StringComparison.OrdinalIgnoreCase));
+            string? target = flag + 1 < args.Length && !args[flag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 1]
+                : null;
+
+            int span = NosAi.LiveIntegration.PointerAnchorHunter.DefaultSpan;
+            int spanAt = Array.FindIndex(args, a => string.Equals(a, "--window", StringComparison.OrdinalIgnoreCase));
+            if (spanAt >= 0 && spanAt + 1 < args.Length && TryParseWindow(args[spanAt + 1], out int requestedSpan))
+                span = requestedSpan;
+
+            return NosAi.LiveIntegration.PointerAnchorHunter.Run(target, span);
+        }
+
         // Phase 2 of the memory-layout extension: player HP/MP as candidates
         // found by scanning the resolved bases, beside the percentage a
         // recording derived from stat/st/in. Never LIVE. Never an RVA.
@@ -648,7 +668,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--record-wire", "--calibrate-vitals", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input"
         };

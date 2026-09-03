@@ -34,11 +34,21 @@ public readonly record struct VitalsPairHit(IntPtr Address, uint Max, uint Curre
 /// numbers sit side by side".
 /// </para>
 /// <para>
-/// One round of that is a coincidence filter, not a proof: on a big heap some
-/// unrelated pair will hold those two numbers. The second round is the proof.
-/// After the wire reports a <b>different</b> current, an address that is really
-/// health follows it, and an address that merely happened to hold the old pair
-/// does not. Nothing here asks a human to judge which candidate looks right.
+/// The adjacency does most of the narrowing, and it does it in the first round:
+/// on a live client seven addresses held the maximum and one had the current
+/// beside it, thirty-eight and one for MP. The second round removes what is left
+/// of coincidence — an unrelated pair that happened to hold the old numbers has
+/// no reason to hold the new ones.
+/// </para>
+/// <para>
+/// It does <b>not</b> remove a mirror, and that limit is the honest part. A HUD
+/// binding, a stats cache, or the value a health bar animates toward is written
+/// from the same packet that writes the authoritative field, so it follows the
+/// wire exactly as well — twenty rounds would confirm it too, because following
+/// the wire is what a mirror does. What separates the two is not more rounds: it
+/// is reachability at a fixed distance from a base the runtime resolves, which
+/// is why this ends by asking what points at the survivor rather than by
+/// declaring it found.
 /// </para>
 /// <para>
 /// Agreement is still not <see cref="NosAi.Runtime.Contracts.DataSourceKind.Live"/>.
@@ -54,6 +64,7 @@ public static class PlayerVitalsCalibrator
     public const string UnchangedPrefix = "calibrate_value_did_not_move";
     public const string NoCandidatePrefix = "calibrate_no_address_held_the_pair";
     public const string AmbiguousPrefix = "calibrate_ambiguous";
+    public const string SameAddressReason = "calibrate_hp_and_mp_are_one_address";
 
     /// <summary>
     /// Keeps the candidates that hold <paramref name="max"/> with
@@ -92,8 +103,9 @@ public static class PlayerVitalsCalibrator
     /// </summary>
     /// <remarks>
     /// The same predicate as <see cref="KeepAdjacent"/> against a later truth.
-    /// An address that held the old pair by coincidence has no reason to hold
-    /// the new one, and that is the whole argument.
+    /// An address that held the old pair by coincidence has no reason to hold the
+    /// new one. A copy written from the same packet does hold it, so surviving
+    /// here rules out luck and not mirrors.
     /// </remarks>
     public static List<VitalsPairHit> Confirm(
         IReadOnlyList<VitalsPairHit> previous,
@@ -222,19 +234,33 @@ public static class PlayerVitalsCalibrator
                 $"wire says: hp {hp2}/{maxHp2}, mp {mp2}/{maxMp2}"));
             Console.WriteLine();
 
-            var established = 0;
-            established += Settle(read, hp, (uint)hp1, (uint)hp2, (uint)maxHp2, "hp");
-            established += Settle(read, mp, (uint)mp1, (uint)mp2, (uint)maxMp2, "mp");
+            VitalsPairHit? hpHit = Settle(read, hp, (uint)hp1, (uint)hp2, (uint)maxHp2, "hp");
+            VitalsPairHit? mpHit = Settle(read, mp, (uint)mp1, (uint)mp2, (uint)maxMp2, "mp");
 
+            if (hpHit is null && mpHit is null)
+                return 1;
+
+            // Two fields cannot be the same word. Equal pools would normally make
+            // both searches ambiguous and refuse on their own, but relying on that
+            // is reasoning where a comparison will do.
+            if (hpHit is { } h && mpHit is { } m && h.Address == m.Address)
+            {
+                Console.WriteLine($"[REFUSED] {SameAddressReason}");
+                return 1;
+            }
+
+            // An agreed address is heap and dies with the client, so the run does
+            // not stop at proving which one it is. Asking what points at it is the
+            // difference between a calibration and a reading.
             Console.WriteLine();
-            Console.WriteLine(
-                "An address that agreed twice is evidence, not a promotion. It is a heap");
-            Console.WriteLine(
-                "address and dies with the client: turning it into a reading needs a chain");
-            Console.WriteLine(
-                "from a resolved base, which is the next question, not this one.");
+            Console.WriteLine("--- what could anchor these ---");
+            var anchored = 0;
+            if (hpHit is { } confirmedHp)
+                anchored += PointerAnchorHunter.Report(session, confirmedHp.Address, PointerAnchorHunter.DefaultSpan, "hp") == 0 ? 1 : 0;
+            if (mpHit is { } confirmedMp)
+                anchored += PointerAnchorHunter.Report(session, confirmedMp.Address, PointerAnchorHunter.DefaultSpan, "mp") == 0 ? 1 : 0;
 
-            return established == 2 ? 0 : 1;
+            return hpHit is not null && mpHit is not null && anchored == 2 ? 0 : 1;
         }
     }
 
@@ -259,7 +285,8 @@ public static class PlayerVitalsCalibrator
         return kept;
     }
 
-    private static int Settle(
+    /// <summary>The one address that agreed twice, or null with the reason printed.</summary>
+    private static VitalsPairHit? Settle(
         Func<IntPtr, uint?> read,
         IReadOnlyList<VitalsPairHit> candidates,
         uint before,
@@ -270,7 +297,7 @@ public static class PlayerVitalsCalibrator
         if (UnchangedReason(before, after, field) is { } stuck)
         {
             Console.WriteLine($"{field}: [REFUSED] {stuck}");
-            return 0;
+            return null;
         }
 
         List<VitalsPairHit> survivors = Confirm(candidates, read, max, after);
@@ -279,12 +306,12 @@ public static class PlayerVitalsCalibrator
             Console.WriteLine($"{field}: [REFUSED] {why}");
             foreach (VitalsPairHit hit in survivors)
                 Console.WriteLine($"    {hit.Describe()}");
-            return 0;
+            return null;
         }
 
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"{field}: AGREED TWICE at {survivors[0].Describe()}"));
-        return 1;
+        return survivors[0];
     }
 
     [SupportedOSPlatform("windows")]
