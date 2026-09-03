@@ -122,22 +122,56 @@ public static class WireRecorder
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
         long written;
-        try
+
+        // Cancelling has to close the source, not merely set a flag.
+        // WinDivertPacketSource.TryRead ignores its timeout argument: WinDivertRecv
+        // blocks until a packet matches the filter, so CaptureFile.Record reaches
+        // its token check only between packets and a quiet endpoint never gets
+        // there. Closing the handle is what makes a pending read return, so
+        // cancellation disposes the source. Dispose is idempotent, so the caller's
+        // own using still runs.
+        using (cancellationToken.Register(source.Dispose))
         {
-            written = CaptureFile.Record(source, path, cancellationToken);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
-        {
-            return new RecordingOutcome(0, path, string.Create(CultureInfo.InvariantCulture,
-                $"{PathUnwritablePrefix}:{ex.GetType().Name}"));
+            try
+            {
+                written = CaptureFile.Record(source, path, cancellationToken);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
+            {
+                return new RecordingOutcome(0, path, string.Create(CultureInfo.InvariantCulture,
+                    $"{PathUnwritablePrefix}:{ex.GetType().Name}"));
+            }
         }
 
         // Zero packets is a well-formed file with a header and nothing else. It
         // would be accepted by every reader and corroborate nothing, so it is
-        // refused here rather than discovered three commands later.
-        return written == 0
-            ? new RecordingOutcome(0, path, NoPacketsReason)
-            : new RecordingOutcome(written, path, null);
+        // refused here rather than discovered three commands later — and removed,
+        // because the refusal protects this command's exit code while the file
+        // would sit in the directory the replay commands scan.
+        if (written == 0)
+        {
+            Discard(path);
+            return new RecordingOutcome(0, path, NoPacketsReason);
+        }
+
+        return new RecordingOutcome(written, path, null);
+    }
+
+    /// <summary>Removes a recording this call created and then refused.</summary>
+    /// <remarks>
+    /// Best effort: failing to delete a file that was already refused is not worth
+    /// turning into a second, different failure.
+    /// </remarks>
+    private static void Discard(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 
     /// <summary>Opens the driver on one endpoint and records until stopped.</summary>
@@ -168,11 +202,20 @@ public static class WireRecorder
             if (seconds > 0)
                 stopping.CancelAfter(TimeSpan.FromSeconds(seconds));
 
-            // Cancel rather than let the runtime kill the process: Record only
-            // flushes when its loop exits, so a hard Ctrl+C would cost the
-            // operator the recording they just sat through.
+            // The first interrupt cancels rather than letting the runtime kill the
+            // process: Record only flushes when its loop exits, so a hard Ctrl+C
+            // would cost the operator the recording they just sat through.
+            //
+            // A second interrupt must still end the process. Suppressing every one
+            // of them trades a lost recording for an operator who cannot get out,
+            // which is the worse bargain — and it was reachable here, because a
+            // filter that matches nothing leaves the read blocked in the driver.
+            var interrupts = 0;
             ConsoleCancelEventHandler onCancel = (_, e) =>
             {
+                if (Interlocked.Increment(ref interrupts) > 1)
+                    return;
+
                 e.Cancel = true;
                 stopping.Cancel();
             };

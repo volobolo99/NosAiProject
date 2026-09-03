@@ -157,26 +157,24 @@ public sealed class WireRecorderTests : IDisposable
     }
 
     [Fact]
-    public void AnEmptyRecordingIsStillAWellFormedFileWhichIsWhyItIsRefused()
+    public void AnEmptyRecordingIsRemovedRatherThanLeftWhereTheReadersLook()
     {
-        // The header is written before the first packet, so a silent run leaves a
-        // file every reader accepts and no reading can be checked against. The
-        // refusal is the only thing that distinguishes it from a good capture.
+        // The header is written before the first packet, so a silent run would
+        // leave a file every reader accepts and no reading can be checked
+        // against — in the very directory the replay commands scan. Refusing
+        // protects this call's exit code; deleting protects the next command.
         string path = TempPath();
         var silent = new InMemoryPacketSource(Server, ServerPort, Array.Empty<CapturedPacket>());
 
         RecordingOutcome outcome = WireRecorder.RecordFrom(silent, path);
 
         Assert.False(outcome.Ok);
-        Assert.True(File.Exists(path));
-
-        using CaptureFileSource replay = CaptureFile.Open(path);
-        Assert.Equal(Server, replay.ServerAddress);
-        Assert.False(replay.TryRead(TimeSpan.Zero, out _));
+        Assert.Equal(WireRecorder.NoPacketsReason, outcome.FailureReason);
+        Assert.False(File.Exists(path));
     }
 
     [Fact]
-    public void ACancelledRunStopsAndKeepsTheFileReadable()
+    public void ACancelledRunThatCapturedNothingLeavesNothingBehind()
     {
         string path = TempPath();
         using var cancelled = new CancellationTokenSource();
@@ -189,12 +187,50 @@ public sealed class WireRecorderTests : IDisposable
 
         RecordingOutcome outcome = WireRecorder.RecordFrom(source, path, cancelled.Token);
 
-        // Cancellation is how the operator ends a session, so it must leave a file
-        // that opens rather than a truncated one.
         Assert.Equal(0, outcome.Packets);
         Assert.Equal(WireRecorder.NoPacketsReason, outcome.FailureReason);
-        using CaptureFileSource replay = CaptureFile.Open(path);
-        Assert.Equal(ServerPort, replay.ServerPort);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public void CancellingDisposesTheSourceBecauseAWinDivertReadCannotBeInterruptedAnyOtherWay()
+    {
+        // WinDivertPacketSource.TryRead ignores its timeout and WinDivertRecv
+        // blocks, so a quiet endpoint never returns to the loop's token check.
+        // Closing the handle is the only thing that unblocks it, which is why
+        // cancellation must reach the source and not just the loop. Without this,
+        // --record-wire and --calibrate-vitals hang and Ctrl+C cannot recover.
+        string path = TempPath();
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+
+        var source = new DisposalWatchingSource(Server, ServerPort);
+
+        WireRecorder.RecordFrom(source, path, cancelled.Token);
+
+        Assert.True(source.Disposed);
+    }
+
+    /// <summary>A source that records whether cancellation reached it.</summary>
+    private sealed class DisposalWatchingSource : IPacketSource
+    {
+        public DisposalWatchingSource(IPAddress serverAddress, int serverPort)
+        {
+            ServerAddress = serverAddress;
+            ServerPort = serverPort;
+        }
+
+        public IPAddress ServerAddress { get; }
+        public int ServerPort { get; }
+        public bool Disposed { get; private set; }
+
+        public bool TryRead(TimeSpan timeout, out CapturedPacket packet)
+        {
+            packet = default;
+            return false;
+        }
+
+        public void Dispose() => Disposed = true;
     }
 
     [Fact]
