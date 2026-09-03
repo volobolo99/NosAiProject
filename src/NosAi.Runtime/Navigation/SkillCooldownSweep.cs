@@ -190,7 +190,6 @@ public static class SkillCooldownSweep
     /// </remarks>
     public const int MinNeighbours = 2;
 
-    public const string NoTableReason = "sweep_no_word_sits_in_a_skill_table";
 
     /// <summary>
     /// Of the candidates, those with neighbours at the skill stride.
@@ -232,6 +231,105 @@ public static class SkillCooldownSweep
         }
 
         return kept;
+    }
+
+    /// <summary>A spacing that repeats among the survivors, and the run at it.</summary>
+    public readonly record struct StrideFinding(int Stride, IReadOnlyList<SweepWord> Run)
+    {
+        public string Describe() => string.Create(CultureInfo.InvariantCulture,
+            $"passo 0x{Stride:X} su {Run.Count} parole, da 0x{Run[0].Address.ToInt64():X}");
+    }
+
+    /// <summary>The widest spacing worth calling a table rather than a coincidence.</summary>
+    public const int MaxDerivedStride = 0x2000;
+
+    /// <summary>
+    /// The spacing the survivors actually have, rather than the one a bot from
+    /// another build reports.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 0x48 came from the third-party source and produced nothing here: on a live
+    /// client the negative control left 114 words behaving like cooldowns and not
+    /// one of them was 0x48 from another. That is a finding about this build, and
+    /// the honest response is to measure the spacing instead of assuming it.
+    /// </para>
+    /// <para>
+    /// A table shows itself as one distance repeating: several skills, laid out
+    /// evenly, all resting at zero and all moving when their own skill is used.
+    /// Scattered churn produces no repeated distance, so no run, and that is again
+    /// an answer rather than an absence.
+    /// </para>
+    /// </remarks>
+    public static StrideFinding? DeriveStride(IReadOnlyList<SweepWord> candidates, int minRun = 3)
+    {
+        ArgumentNullException.ThrowIfNull(candidates);
+        if (minRun < 2) throw new ArgumentOutOfRangeException(nameof(minRun));
+        if (candidates.Count < minRun)
+            return null;
+
+        long[] sorted = candidates.Select(w => w.Address.ToInt64()).Distinct().OrderBy(a => a).ToArray();
+        var present = new HashSet<long>(sorted);
+
+        // Every distance between two survivors that is small enough to be a
+        // structure rather than an accident of the address space.
+        var counts = new Dictionary<int, int>();
+        for (var i = 0; i < sorted.Length; i++)
+        {
+            for (int j = i + 1; j < sorted.Length; j++)
+            {
+                long delta = sorted[j] - sorted[i];
+                if (delta > MaxDerivedStride)
+                    break;
+                if (delta % sizeof(uint) != 0)
+                    continue;
+
+                counts[(int)delta] = counts.GetValueOrDefault((int)delta) + 1;
+            }
+        }
+
+        StrideFinding? best = null;
+        foreach ((int stride, int _) in counts.OrderByDescending(p => p.Value))
+        {
+            List<SweepWord> run = LongestRun(candidates, present, stride);
+            if (run.Count < minRun)
+                continue;
+            if (best is null || run.Count > best.Value.Run.Count)
+                best = new StrideFinding(stride, run);
+
+            // The counts are ordered by how often the distance occurs, so once a
+            // run beats what any rarer distance could produce, looking further
+            // only costs time.
+            if (best.Value.Run.Count >= run.Count && best.Value.Run.Count > 8)
+                break;
+        }
+
+        return best;
+    }
+
+    private static List<SweepWord> LongestRun(
+        IReadOnlyList<SweepWord> candidates, HashSet<long> present, int stride)
+    {
+        var byAddress = new Dictionary<long, SweepWord>();
+        foreach (SweepWord word in candidates)
+            byAddress[word.Address.ToInt64()] = word;
+
+        var longest = new List<SweepWord>();
+        foreach (long start in present)
+        {
+            // Only start a run where one begins, so each is walked once.
+            if (present.Contains(start - stride))
+                continue;
+
+            var run = new List<SweepWord>();
+            for (long at = start; present.Contains(at); at += stride)
+                run.Add(byAddress[at]);
+
+            if (run.Count > longest.Count)
+                longest = run;
+        }
+
+        return longest;
     }
 
     /// <summary>The named verdict for a set of survivors, or null for the single one.</summary>
@@ -323,6 +421,57 @@ public static class SkillCooldownSweep
     public const int QuietSeconds = 20;
 
     private const int QuietSampleMs = 400;
+
+    public const string NoAnchorReason = "sweep_no_candidate_is_reachable_from_a_base";
+
+    /// <summary>
+    /// Of the candidates, those something durable points at.
+    /// </summary>
+    /// <remarks>
+    /// The filter that decided phase 2, and the one that has to be passed anyway:
+    /// a heap address dies with the client, so a candidate nothing durable reaches
+    /// cannot become a reading however well it behaves. One pass over the process
+    /// answers it for every candidate at once.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static List<SweepWord> KeepAnchored(ClientMemorySession session, List<SweepWord> candidates)
+    {
+        if (!session.TryResolveBases(out IntPtr manager, out IntPtr playerObject, out string? baseFailure))
+        {
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  basi non risolte ({baseFailure}): solo un'ancora nel modulo puo' contare"));
+            manager = IntPtr.Zero;
+            playerObject = IntPtr.Zero;
+        }
+
+        Dictionary<long, List<(IntPtr Holder, IntPtr Points)>> holders =
+            PointerAnchorHunter.FindPointersIntoAny(
+                session.Reader,
+                candidates.Select(c => c.Address).ToList(),
+                PointerAnchorHunter.DefaultSpan);
+
+        var kept = new List<SweepWord>();
+        foreach (SweepWord word in candidates)
+        {
+            if (!holders.TryGetValue(word.Address.ToInt64(), out List<(IntPtr Holder, IntPtr Points)>? reaching))
+                continue;
+
+            List<PointerAnchor> anchors = PointerAnchorHunter.Anchor(
+                reaching, word.Address, session.ModuleBase, session.ModuleSize,
+                manager, playerObject, PointerAnchorHunter.DefaultSpan);
+
+            if (PointerAnchorHunter.Best(anchors) is { IsDurable: true } best)
+            {
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"    {word.Describe()}  <- {best.Describe()}"));
+                kept.Add(word);
+            }
+        }
+
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"  raggiungibili da una base risolta: {kept.Count}"));
+        return kept;
+    }
 
     /// <summary>Samples the candidates repeatedly while nothing is happening.</summary>
     [SupportedOSPlatform("windows")]
@@ -433,28 +582,52 @@ public static class SkillCooldownSweep
                     $"  mai mosse mentre non succedeva nulla: {found.Count}"));
             }
 
-            // The second filter, discarding a different population than the quiet
-            // control: churn is scattered, a cooldown belongs to a table.
+            // The spacing is measured, not assumed. 0x48 came from the
+            // third-party source and matched nothing here: the negative control
+            // left 114 words behaving like cooldowns and not one was 0x48 from
+            // another, so the stride is derived from the survivors themselves.
             if (found.Count > 1)
             {
-                List<SweepWord> inTable = KeepInSkillTable(found);
+                Console.WriteLine();
+                Console.WriteLine("--- struttura ---");
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-                    $"  con vicini a 0x{SkillStride:X} (tabella abilita'): {inTable.Count}"));
+                    $"  vicini al passo della fonte terza (0x{SkillStride:X}): {KeepInSkillTable(found).Count}"));
 
-                if (inTable.Count == 0)
+                // Reported, never used to filter. Forcing the survivors into the
+                // best run discarded eighty-two of eighty-six and kept four floats
+                // alternating 0.375 and 0.4296875 at 0x24 — a graphics structure,
+                // not a skill table. The data had already said the layout is not
+                // the one the third-party source describes; imposing a run anyway
+                // was answering a question the evidence had closed.
+                if (DeriveStride(found) is { } table)
                 {
-                    // Saying which filter emptied the set is the useful half: it
-                    // means the table hypothesis is wrong here, not that nothing
-                    // behaved like a cooldown.
-                    Console.WriteLine();
-                    Console.WriteLine($"NON stabilito: {NoTableReason}");
-                    Console.WriteLine("Parole che si comportano da cooldown ce ne sono, ma nessuna sta in una");
-                    Console.WriteLine("tabella a passo 0x48. Su questa build le abilita' non sono disposte");
-                    Console.WriteLine("come la fonte terza descrive, e il passo va ricavato, non assunto.");
-                    return 1;
+                    Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                        $"  passo che si ripete di piu': {table.Describe()} (solo informativo)"));
+                }
+                else
+                {
+                    Console.WriteLine("  nessuna distanza si ripete fra le sopravvissute");
                 }
 
-                found = inTable;
+                // The filter that actually decided phase 2: a reading has to be
+                // reachable from a base the runtime resolves, so a candidate that
+                // nothing durable points at cannot become one whatever it does.
+                int behaved = found.Count;
+                found = KeepAnchored(session, found);
+
+                if (found.Count == 0)
+                {
+                    // Not "nothing behaved like a cooldown" — some did, and the
+                    // count says how many. Naming the filter that emptied the set
+                    // is the difference between a reason and a wrong reason.
+                    Console.WriteLine();
+                    Console.WriteLine($"NON stabilito: {NoAnchorReason}");
+                    Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                        $"{behaved} parole si comportano da cooldown, e nessuna e' raggiungibile da"));
+                    Console.WriteLine("una base che il runtime risolve. Sono heap che muore col client:");
+                    Console.WriteLine("anche fossero il cooldown, non ci sarebbe modo di rileggerle domani.");
+                    return 1;
+                }
             }
 
             Console.WriteLine();

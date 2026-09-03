@@ -258,6 +258,101 @@ public static class PointerAnchorHunter
         return found;
     }
 
+    /// <summary>
+    /// Every target reached by a pointer, found in one pass rather than one pass
+    /// each.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FindPointersInto"/> walks the whole process for a single
+    /// address, which is right when there is one address and hopeless when there
+    /// are eighty-six: the cooldown hunt leaves a set of candidates and needs to
+    /// know which of them anything points at. The work is the same walk with a
+    /// sorted lookup per word, so the cost is one pass regardless of how many
+    /// targets are asked about.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    public static Dictionary<long, List<(IntPtr Holder, IntPtr Points)>> FindPointersIntoAny(
+        ProcessMemoryReader reader, IReadOnlyList<IntPtr> targets, int span)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(targets);
+        if (span <= 0 || span > 0x100000) throw new ArgumentOutOfRangeException(nameof(span));
+
+        long[] sorted = targets.Select(t => t.ToInt64()).Distinct().OrderBy(a => a).ToArray();
+        var found = new Dictionary<long, List<(IntPtr, IntPtr)>>();
+        if (sorted.Length == 0)
+            return found;
+
+        long lowest = sorted[0] - span;
+        long highest = sorted[^1];
+
+        foreach (MemoryRegion region in reader.EnumerateRegions())
+        {
+            long offset = 0;
+            while (offset < region.Size)
+            {
+                int length = (int)Math.Min(ChunkSize, region.Size - offset);
+                var address = new IntPtr(region.BaseAddress.ToInt64() + offset);
+
+                MemoryReadResult read = reader.Read(address, length);
+                if (!read.Ok)
+                {
+                    offset += length;
+                    continue;
+                }
+
+                ReadOnlySpan<byte> window = read.Bytes;
+                for (int i = 0; i + 4 <= window.Length; i += 4)
+                {
+                    long value = BitConverter.ToUInt32(window[i..(i + 4)]);
+                    if (value < lowest || value > highest)
+                        continue;
+
+                    // The first target at or after this value, then every further
+                    // target still inside the span: one pointer can name a record
+                    // that holds several candidates.
+                    int at = IndexOfFirstAtLeast(sorted, value);
+                    for (int t = at; t < sorted.Length && sorted[t] - value <= span; t++)
+                    {
+                        if (!found.TryGetValue(sorted[t], out List<(IntPtr, IntPtr)>? holders))
+                        {
+                            holders = new List<(IntPtr, IntPtr)>();
+                            found[sorted[t]] = holders;
+                        }
+
+                        holders.Add((new IntPtr(address.ToInt64() + i), new IntPtr(value)));
+                    }
+                }
+
+                offset += length;
+            }
+        }
+
+        return found;
+    }
+
+    /// <summary>Index of the first target at or after <paramref name="value"/>.</summary>
+    /// <remarks>
+    /// Internal to the batched walk and public only so it can be tested: it runs
+    /// once per word over the whole process, so an off-by-one here is a pointer
+    /// attributed to the wrong candidate, silently.
+    /// </remarks>
+    public static int IndexOfFirstAtLeast(long[] sorted, long value)
+    {
+        var low = 0;
+        int high = sorted.Length;
+        while (low < high)
+        {
+            int mid = low + ((high - low) / 2);
+            if (sorted[mid] < value)
+                low = mid + 1;
+            else
+                high = mid;
+        }
+
+        return low;
+    }
+
     /// <summary>Hunts and prints the anchors for one target against an open session.</summary>
     /// <returns>0 when a durable anchor was found, 1 otherwise.</returns>
     [SupportedOSPlatform("windows")]

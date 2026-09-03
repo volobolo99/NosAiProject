@@ -269,4 +269,56 @@ public sealed class SkillCooldownSweepTests
 
         Assert.Contains(SkillCooldownSweep.KeepInSkillTable(table), w => w.Address == Region);
     }
+
+    // ---------- the stride is measured, not borrowed
+
+    [Fact]
+    public void TheSpacingTheSurvivorsActuallyHaveIsTheOneReported()
+    {
+        // 0x48 is what the third-party source says and it matched nothing on this
+        // client: the negative control left 114 words behaving like cooldowns and
+        // not one was 0x48 from another. So the spacing is measured.
+        const int Real = 0x60;
+        var table = new[] { At(0x0), At(Real), At(Real * 2), At(Real * 3), At(Real * 4) };
+
+        SkillCooldownSweep.StrideFinding found = Assert.NotNull(SkillCooldownSweep.DeriveStride(table));
+
+        Assert.Equal(Real, found.Stride);
+        Assert.Equal(5, found.Run.Count);
+        Assert.NotEqual(SkillCooldownSweep.SkillStride, found.Stride);
+    }
+
+    [Fact]
+    public void AddressesWithNoRepeatedDistanceAreNotATable()
+    {
+        // Scattered churn produces no run, and that is an answer rather than an
+        // absence: it says these words are not laid out like skills.
+        var scattered = new[] { At(0x0), At(0x14), At(0x2C8), At(0x9F4), At(0x1B30) };
+
+        Assert.Null(SkillCooldownSweep.DeriveStride(scattered));
+    }
+
+    [Fact]
+    public void ATableIsFoundEvenWithScatteredWordsAroundIt()
+    {
+        const int Real = 0x50;
+        var mixed = new List<SweepWord> { At(0x7), At(0x1F3) };
+        for (var i = 0; i < 6; i++)
+            mixed.Add(At(0x4000 + Real * i));
+
+        SkillCooldownSweep.StrideFinding found = Assert.NotNull(SkillCooldownSweep.DeriveStride(mixed));
+
+        Assert.Equal(Real, found.Stride);
+        Assert.Equal(6, found.Run.Count);
+    }
+
+    [Fact]
+    public void TwoWordsAreNotARunHoweverEvenlySpaced()
+    {
+        // Any two addresses are a constant distance apart. A table needs enough
+        // entries that the distance means something.
+        var pair = new[] { At(0x0), At(0x40) };
+
+        Assert.Null(SkillCooldownSweep.DeriveStride(pair));
+    }
 }

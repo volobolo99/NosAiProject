@@ -168,6 +168,30 @@ public sealed class PointerAnchorHunterTests
         Assert.Equal(PointerAnchorHunter.OnlyHeapReason, PointerAnchorHunter.Verdict(anchors));
     }
 
+    // ---------- many targets, one pass
+
+    [Fact]
+    public void TheLowerBoundIsWhatMakesOnePassAnswerForEveryTarget()
+    {
+        // FindPointersInto walks the whole process for one address, which is right
+        // for one and hopeless for eighty-six: the cooldown hunt leaves a set of
+        // candidates and needs to know which of them anything points at. The batched
+        // walk does a sorted lookup per word, so its correctness is the lookup's.
+        long[] sorted = { 0x1000, 0x2000, 0x3000 };
+
+        Assert.Equal(0, PointerAnchorHunter.IndexOfFirstAtLeast(sorted, 0x0F));
+        Assert.Equal(0, PointerAnchorHunter.IndexOfFirstAtLeast(sorted, 0x1000));
+        Assert.Equal(1, PointerAnchorHunter.IndexOfFirstAtLeast(sorted, 0x1001));
+        Assert.Equal(2, PointerAnchorHunter.IndexOfFirstAtLeast(sorted, 0x3000));
+        Assert.Equal(3, PointerAnchorHunter.IndexOfFirstAtLeast(sorted, 0x3001));
+    }
+
+    [Fact]
+    public void AnEmptyTargetSetHasNoFirstAtLeast()
+    {
+        Assert.Equal(0, PointerAnchorHunter.IndexOfFirstAtLeast(Array.Empty<long>(), 0x1000));
+    }
+
     [Fact]
     public void OneDurableHolderAmongHeapOnesIsEnough()
     {
