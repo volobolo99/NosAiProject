@@ -31,6 +31,9 @@ public static class DecisionEngineTestRunner
         allPassed &= Run("A decision is no more trusted than its weakest fact", TestProvenanceFolding);
         allPassed &= Run("No observation at all yields no decision", TestBlindContextDecidesNothing);
         allPassed &= Run("Built-in rule set keeps a dying character alive first", TestBuiltInSurvivalOrdering);
+        allPassed &= Run("A ready skill (cooldown+MP observed) is preferred over the basic attack", TestSkillPreferredWhenReady);
+        allPassed &= Run("An unknown cooldown falls back to the basic attack, never a blind cast", TestUnknownCooldownFallsBackToBasicAttack);
+        allPassed &= Run("No MP skips the skill even when the cooldown is ready", TestNoMpSkipsTheSkill);
         allPassed &= Run("Rules load from a file with all operators", TestRuleFileRoundTrip);
         allPassed &= Run("A malformed rule file is refused, naming the rule", TestMalformedRuleFileRefused);
         allPassed &= Run("Duplicate rule ids are refused", TestDuplicateIdsRefused);
@@ -187,6 +190,55 @@ public static class DecisionEngineTestRunner
         var healthy = new DecisionContext()
             .WithLive("player.hp_ratio", 0.90).WithLive("target.hp_ratio", 0.10).WithLive("player.in_combat", 1);
         return engine.Decide(healthy).RuleId == "combat.finish_target";
+    }
+
+    // ------------------------------------------------------------- consuming Fase 2 (MP) + Fase 3 (cooldown)
+
+    /// <summary>A full-HP target so combat.finish_target (0.90) does not pre-empt the skill rule.</summary>
+    private static DecisionContext CombatContext() => new DecisionContext()
+        .WithLive("player.hp_ratio", 0.90)
+        .WithLive("target.hp_ratio", 0.80)
+        .WithLive("player.in_combat", 1);
+
+    private static bool TestSkillPreferredWhenReady()
+    {
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        var ctx = CombatContext()
+            .WithLive("player.mp_ratio", 0.60)
+            .WithLive("skill.primary.cooldown_ready", 1);   // Fase 3 observed the skill off cooldown
+
+        DecisionOutcome outcome = engine.Decide(ctx);
+        // A ready skill (0.80) beats the basic attack (combat.engage, 0.60).
+        return outcome.Action == "ACTION_CAST_SKILL" && outcome.RuleId == "combat.skill_ready";
+    }
+
+    private static bool TestUnknownCooldownFallsBackToBasicAttack()
+    {
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        var ctx = CombatContext()
+            .WithLive("player.mp_ratio", 0.60)
+            .WithUnknown("skill.primary.cooldown_ready", "cooldown_not_established");   // Fase 3's honest default
+
+        DecisionOutcome outcome = engine.Decide(ctx);
+        // The skill rule is skipped for the unobserved cooldown, not evaluated as
+        // ready: the basic attack fires instead. A blind cast is what Verify would
+        // fail one by one.
+        if (outcome.Action != "ACTION_ATTACK_TARGET" || outcome.RuleId != "combat.engage") return false;
+        return outcome.Skipped.Any(s => s.RuleId == "combat.skill_ready" && s.Reason == RuleSkipReason.FactNotObserved);
+    }
+
+    private static bool TestNoMpSkipsTheSkill()
+    {
+        var engine = new UtilityDecisionEngine(BuiltInRuleSet.Create());
+        var ctx = CombatContext()
+            .WithLive("player.mp_ratio", 0.05)              // observed, but too low to cast
+            .WithLive("skill.primary.cooldown_ready", 1);
+
+        DecisionOutcome outcome = engine.Decide(ctx);
+        // MP is observed and fails the condition (a false condition, not unknown),
+        // so the skill rule does not fire and the basic attack does.
+        if (outcome.Action != "ACTION_ATTACK_TARGET") return false;
+        return outcome.Skipped.Any(s => s.RuleId == "combat.skill_ready" && s.Reason == RuleSkipReason.ConditionFalse);
     }
 
     // ------------------------------------------------------------- rule files
