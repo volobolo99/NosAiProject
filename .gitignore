@@ -39,6 +39,11 @@ Thumbs.db
 bin/
 obj/
 *.user
+# `dotnet test -l trx` writes its logs to a TestResults/ beside each test
+# .csproj, so this must match at any depth exactly like bin/ and obj/ above.
+# The run is reproducible from the tests themselves; the .trx files are not
+# evidence anyone reviews, only untracked noise in every later diff.
+TestResults/
 
 # Enrollment key material. A committed public key is a trust anchor nobody
 # enrolled deliberately: a runtime started from a fresh clone would accept the
