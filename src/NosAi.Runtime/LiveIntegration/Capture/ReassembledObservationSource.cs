@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception.Network;
 
@@ -161,8 +162,19 @@ public sealed class ReassembledObservationSource : INetworkObservationSource, ID
         if (_disposed)
             return false;
 
+        // Bounded by the same budget the read is given, and not only by the read
+        // returning false. Packets that arrive but never complete a frame are
+        // ordinary — a scoped filter admits traffic the framer discards, and
+        // reassembly waits for a segment that has not come — so this loop can
+        // consume packets indefinitely while producing nothing. It did: the
+        // operator API served the dashboard and hung on every JSON route,
+        // because they all take a snapshot and the snapshot ends up here.
+        long started = Stopwatch.GetTimestamp();
         while (_ready.Count == 0)
         {
+            if (Stopwatch.GetElapsedTime(started) >= _readTimeout)
+                return false;   // pumped for the whole budget without completing a frame
+
             if (!_packets.TryRead(_readTimeout, out CapturedPacket captured))
                 return false;   // timeout on a live source, or end of a recording
 

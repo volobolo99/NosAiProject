@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -40,7 +41,19 @@ public sealed class WinDivertPacketSource : IPacketSource
 
     private const int ErrorNoData = 232;
 
+    /// <summary>How many packets may wait for a reader before the oldest are lost.</summary>
+    /// <remarks>
+    /// A live capture cannot pause the network. If nobody reads for a while the
+    /// choice is to buffer without bound or to lose packets, and losing them
+    /// while <see cref="Dropped"/> says so is the honest half of it. 4096 is two
+    /// orders above what a busy world channel produces between two polls.
+    /// </remarks>
+    public const int QueueCapacity = 4096;
+
     private readonly IntPtr _handle;
+    private readonly BlockingCollection<CapturedPacket> _queue = new(QueueCapacity);
+    private readonly Thread _pump;
+    private long _dropped;
     private bool _disposed;
 
     private WinDivertPacketSource(IntPtr handle, IPAddress serverAddress, int serverPort)
@@ -48,10 +61,32 @@ public sealed class WinDivertPacketSource : IPacketSource
         _handle = handle;
         ServerAddress = serverAddress;
         ServerPort = serverPort;
+
+        // The blocking recv happens here and not on the caller's thread. The
+        // interface promises TryRead honours a timeout, every consumer is written
+        // against that promise, and WinDivertRecv cannot keep it: it returns when
+        // a packet matches the filter or when the handle closes, and nothing else.
+        // The operator API hung on every JSON route because a snapshot ended up
+        // waiting inside it, and the recorder could not be stopped with Ctrl+C for
+        // the same reason.
+        _pump = new Thread(Pump)
+        {
+            IsBackground = true,
+            Name = "windivert-recv",
+        };
+        _pump.Start();
     }
 
     public IPAddress ServerAddress { get; }
     public int ServerPort { get; }
+
+    /// <summary>Packets the driver handed over that no reader took in time.</summary>
+    /// <remarks>
+    /// Non-zero means the capture is incomplete, which a caller reporting on what
+    /// it observed has to be able to say. Silent loss would make a quiet session
+    /// and a starved reader look identical.
+    /// </remarks>
+    public long Dropped => Interlocked.Read(ref _dropped);
 
     /// <summary>
     /// Opens a live capture of one server endpoint, or returns null with a reason.
@@ -102,44 +137,90 @@ public sealed class WinDivertPacketSource : IPacketSource
         return new WinDivertPacketSource(handle, serverAddress, serverPort);
     }
 
+    /// <summary>
+    /// Takes the next captured packet, waiting no longer than
+    /// <paramref name="timeout"/>.
+    /// </summary>
+    /// <remarks>
+    /// The timeout is real. It used to be documented and ignored, which is worse
+    /// than not offering one: every caller was written to rely on it, and each of
+    /// them inherited a hang instead of a false.
+    /// </remarks>
     public bool TryRead(TimeSpan timeout, out CapturedPacket packet)
     {
         packet = default;
         if (_disposed)
             return false;
 
-        // WinDivertRecv blocks; the timeout is honoured by the driver's own
-        // shutdown path on Close, and the SNIFF handle returns per packet. A
-        // dedicated read here keeps the buffer local so concurrent reads are safe.
-        var buffer = new byte[65535];
-        if (!WinDivertRecv(_handle, buffer, (uint)buffer.Length, out uint received, _addressScratch))
+        TimeSpan wait = timeout < TimeSpan.Zero ? TimeSpan.Zero : timeout;
+        try
         {
-            if (Marshal.GetLastWin32Error() == ErrorNoData)
-                return false; // handle shutting down
+            return _queue.TryTake(out packet, wait);
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+        {
+            // Disposed underneath the caller, or the pump completed the queue.
+            // Both mean there is nothing more to read, which is a false.
             return false;
         }
-
-        if (received == 0)
-            return false;
-
-        var raw = new byte[received];
-        Array.Copy(buffer, raw, received);
-        packet = new CapturedPacket(DateTime.UtcNow, raw);
-        return true;
     }
 
-    // WINDIVERT_ADDRESS is opaque to this source: it labels direction from the
-    // parsed endpoint, not from the driver's metadata, so the address struct is a
-    // scratch sink here.
-    private readonly byte[] _addressScratch = new byte[64];
+    /// <summary>The blocking recv, kept on its own thread so callers get a timeout.</summary>
+    private void Pump()
+    {
+        // WINDIVERT_ADDRESS is opaque to this source: direction is labelled from
+        // the parsed endpoint, not from the driver's metadata, so the address
+        // struct is a scratch sink. One buffer for the life of the thread —
+        // nothing else touches it.
+        var buffer = new byte[65535];
+        var address = new byte[64];
+
+        while (!_disposed)
+        {
+            if (!WinDivertRecv(_handle, buffer, (uint)buffer.Length, out uint received, address))
+            {
+                // The handle was closed, or the driver is shutting down
+                // (ERROR_NO_DATA). Either way there is nothing further to read.
+                return;
+            }
+
+            if (received == 0)
+                continue;
+
+            var raw = new byte[received];
+            Array.Copy(buffer, raw, received);
+
+            try
+            {
+                if (!_queue.TryAdd(new CapturedPacket(DateTime.UtcNow, raw)))
+                    Interlocked.Increment(ref _dropped);
+            }
+            catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+            {
+                return; // disposed while this packet was in hand
+            }
+        }
+    }
 
     public void Dispose()
     {
         if (_disposed)
             return;
         _disposed = true;
+
+        // Closing the handle is what makes the pump's pending recv return; the
+        // queue is completed afterwards so a reader waiting on it gets a false
+        // rather than the full timeout.
         if (_handle != IntPtr.Zero && _handle != new IntPtr(-1))
             WinDivertClose(_handle);
+
+        try
+        {
+            _queue.CompleteAdding();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     [DllImport("WinDivert.dll", SetLastError = true, CharSet = CharSet.Ansi)]
