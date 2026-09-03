@@ -51,6 +51,14 @@
 *.sqlite3 binary
 *.dpapi  binary
 
+# The vendored WinDivert driver and its loader. Declared rather than left to
+# git's own detection: core.autocrlf is true on the machine that committed them,
+# detection is a heuristic, and a signed kernel driver that acquires a single
+# translated line ending stops loading. The failure would surface as
+# driver_signature_rejected, which reads like a problem with the machine.
+*.dll    binary
+*.sys    binary
+
 # Generated, and not worth reading in a review or counting as authored code.
 proto/**/*_pb2.py     linguist-generated=true
 proto/**/*_pb2.pyi    linguist-generated=true

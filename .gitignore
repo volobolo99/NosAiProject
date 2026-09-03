@@ -55,10 +55,8 @@ tools/windivert/
 # Worktree e stato degli agenti (contiene copie complete del repository)
 .claude/
 
-# WinDivert: la regola di copia in NosAi.Runtime.csproj li porta in output, ma i
-# binari non si versionano (LGPLv3/GPLv2 + driver kernel firmato). third_party/windivert/README.md
-third_party/windivert/*.dll
-third_party/windivert/*.sys
+# WinDivert: i binari sono versionati di proposito, con LICENSE e VERSION accanto,
+# perche' ogni macchina compili senza scaricarli a mano. third_party/windivert/README.md
 
 # I log dei test (dotnet test -l trx) non sono sorgente. Senza questa riga
 # restano come file non tracciati in un albero gia condiviso fra piu sessioni.
