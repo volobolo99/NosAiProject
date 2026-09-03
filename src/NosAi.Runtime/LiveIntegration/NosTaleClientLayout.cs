@@ -498,7 +498,8 @@ public sealed class NosTaleClientLayout
     public bool TryScanPlayerVitals(
         ProcessMemoryReader reader,
         out IReadOnlyList<PlayerVitalsHit> hits,
-        out string? failureReason)
+        out string? failureReason,
+        int windowBytes = PlayerVitalsScan.DefaultWindowBytes)
     {
         ArgumentNullException.ThrowIfNull(reader);
         hits = Array.Empty<PlayerVitalsHit>();
@@ -506,7 +507,9 @@ public sealed class NosTaleClientLayout
         if (!TryResolveBases(reader, out IntPtr manager, out IntPtr playerObject, out failureReason))
             return false;
 
-        int window = (int)MapIdAnchors.StructWindow;
+        // Bounded before it sizes a read, and by this scan's own limit rather
+        // than the map id finder's anchor rule, which is a different question.
+        int window = PlayerVitalsScan.ClampWindow(windowBytes);
         var found = new List<PlayerVitalsHit>();
 
         MemoryReadResult managerBytes = reader.Read(manager, window);

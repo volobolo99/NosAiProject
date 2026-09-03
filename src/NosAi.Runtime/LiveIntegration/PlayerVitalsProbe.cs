@@ -25,8 +25,16 @@ public static class PlayerVitalsProbe
     public const string Flag = "--player-vitals";
     public const string ClientNotReadable = "client_not_readable";
 
-    public static int Run(string? capturePath = null, int watchSeconds = 0)
+    public static int Run(
+        string? capturePath = null,
+        int watchSeconds = 0,
+        int windowBytes = PlayerVitalsScan.DefaultWindowBytes)
     {
+        // One window for both passes: the oracle compares offsets between them,
+        // and a second pass over a different span would drop survivors for the
+        // reason that they were never looked for.
+        int window = PlayerVitalsScan.ClampWindow(windowBytes);
+
         if (!ClientMemorySession.TryAttach(out ClientMemorySession? session, out string? failure))
         {
             Console.WriteLine($"[REFUSED] {ClientNotReadable}:{failure}");
@@ -41,7 +49,7 @@ public static class PlayerVitalsProbe
                 return 1;
             }
 
-            if (!session.TryScanPlayerVitals(out IReadOnlyList<PlayerVitalsHit> hits, out string? scanFailure))
+            if (!session.TryScanPlayerVitals(out IReadOnlyList<PlayerVitalsHit> hits, out string? scanFailure, window))
             {
                 Console.WriteLine($"[REFUSED] {scanFailure}");
                 return 1;
@@ -53,6 +61,10 @@ public static class PlayerVitalsProbe
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                 $"client: pid {session.ProcessId}, character {player.CharacterId}"));
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"wire:   {wireSource}"));
+            // The searched span is printed because an empty result means nothing
+            // without it: "not found" and "not looked for" read the same.
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"window: 0x{window:X} bytes from each of player manager and player object"));
             Console.WriteLine();
 
             PrintTable(hits, wire);
@@ -64,7 +76,7 @@ public static class PlayerVitalsProbe
                     $"Waiting {watchSeconds}s: take a hit. Survivors are offsets whose HP fell and whose maxima held."));
                 Thread.Sleep(TimeSpan.FromSeconds(watchSeconds));
 
-                if (!session.TryScanPlayerVitals(out IReadOnlyList<PlayerVitalsHit> after, out string? afterFailure))
+                if (!session.TryScanPlayerVitals(out IReadOnlyList<PlayerVitalsHit> after, out string? afterFailure, window))
                 {
                     Console.WriteLine($"[REFUSED] {afterFailure}");
                     return 1;

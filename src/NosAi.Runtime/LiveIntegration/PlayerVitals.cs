@@ -342,6 +342,45 @@ public static class PlayerVitalsOracle
 /// </remarks>
 public static class PlayerVitalsScan
 {
+    /// <summary>How far past each resolved base the stats block is looked for.</summary>
+    /// <remarks>
+    /// <para>
+    /// This is deliberately <b>not</b> <see cref="MapIdAnchors.StructWindow"/>.
+    /// That constant answers a different question — how far an offset may sit
+    /// from an anchor and still be called anchor-relative by the map id finder —
+    /// and borrowing it capped this scan at 0x1000 by coincidence rather than by
+    /// argument.
+    /// </para>
+    /// <para>
+    /// 0x1000 was measured to be too narrow on a real client: with the wire
+    /// reporting a maximum of 7305, not one candidate in either window carried
+    /// that maximum. A stable maximum absent from the scan is the scan looking
+    /// in the wrong place, so the bound is widened until the evidence says
+    /// otherwise. Widening costs noise, not correctness: the oracle drops every
+    /// extra candidate that does not behave like health.
+    /// </para>
+    /// </remarks>
+    public const int DefaultWindowBytes = 0x10000;
+
+    /// <summary>
+    /// The widest window a caller may ask for.
+    /// </summary>
+    /// <remarks>
+    /// A window sizes a read and a loop, so it is bounded before either. Kept
+    /// well under <c>ProcessMemoryReader.MaxReadLength</c> so an oversized ask
+    /// is refused here, by a number chosen for this scan, rather than by a
+    /// generic read guard.
+    /// </remarks>
+    public const int MaxWindowBytes = 0x40000;
+
+    /// <summary>Clamps a requested window into what this scan will read.</summary>
+    public static int ClampWindow(int requestedBytes) => requestedBytes switch
+    {
+        < PlayerVitalsBlock.Size => PlayerVitalsBlock.Size,
+        > MaxWindowBytes => MaxWindowBytes,
+        _ => requestedBytes,
+    };
+
     /// <summary>
     /// Last start offset still inside the struct window with room for HP.
     /// </summary>
@@ -357,8 +396,8 @@ public static class PlayerVitalsScan
         if (last < 0)
             return;
 
-        if (last >= MapIdAnchors.StructWindow)
-            last = (int)MapIdAnchors.StructWindow - PlayerVitalsBlock.Size;
+        if (last >= MaxWindowBytes)
+            last = MaxWindowBytes - PlayerVitalsBlock.Size;
 
         for (int offset = 0; offset <= last; offset += sizeof(uint))
         {

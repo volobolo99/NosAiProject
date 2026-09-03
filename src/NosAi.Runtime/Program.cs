@@ -368,6 +368,7 @@ public static class Program
                 string.Equals(a, NosAi.LiveIntegration.PlayerVitalsProbe.Flag, StringComparison.OrdinalIgnoreCase));
             string? capture = null;
             int watchSeconds = 0;
+            int windowBytes = NosAi.LiveIntegration.PlayerVitalsScan.DefaultWindowBytes;
             for (int i = flag + 1; i < args.Length; i++)
             {
                 if (string.Equals(args[i], "--watch", StringComparison.OrdinalIgnoreCase)
@@ -380,11 +381,23 @@ public static class Program
                     continue;
                 }
 
+                // How far past each base to look, so the span can be widened
+                // against a real client without a rebuild. Hex is accepted
+                // because every offset in this area is written that way.
+                if (string.Equals(args[i], "--window", StringComparison.OrdinalIgnoreCase)
+                    && i + 1 < args.Length
+                    && TryParseWindow(args[i + 1], out int requested))
+                {
+                    windowBytes = requested;
+                    i++;
+                    continue;
+                }
+
                 if (!args[i].StartsWith("--", StringComparison.Ordinal))
                     capture = args[i];
             }
 
-            return NosAi.LiveIntegration.PlayerVitalsProbe.Run(capture, watchSeconds);
+            return NosAi.LiveIntegration.PlayerVitalsProbe.Run(capture, watchSeconds, windowBytes);
         }
 
         // Phase 3 of the memory-layout extension: which word is this skill's
@@ -584,6 +597,20 @@ public static class Program
         }
 
         return 0;
+    }
+
+    /// <summary>A window size as decimal or as 0x-prefixed hex, positive only.</summary>
+    private static bool TryParseWindow(string text, out int bytes)
+    {
+        bytes = 0;
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        bool parsed = text.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? int.TryParse(text.AsSpan(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out bytes)
+            : int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out bytes);
+
+        return parsed && bytes > 0;
     }
 
     private static string FormatClassified<T>(ClassifiedValue<T> field)
