@@ -175,14 +175,45 @@ public sealed class NosTaleClientLayout
     /// The scene manager: every entity the client has on the current map.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The address is a direct pointer, so only one dereference follows the match
     /// (offsets <c>{1}</c> against the operand at <see cref="SceneOperandOffset"/>).
+    /// </para>
+    /// <para>
+    /// <b>This is data, not code, and it is weak.</b> Twenty-five bytes of which
+    /// eleven are <c>00</c>, seven are <c>FF</c> and five are wildcards — and the
+    /// four bytes taken as the pointer are wildcards of its own pattern, so the
+    /// signature places no constraint whatever on the value it hands back. A run
+    /// of <c>FF</c> bytes in the image satisfies it and yields <c>0xFFFFFFFF</c> as
+    /// an address; that is exactly what happened on the live client on
+    /// 3 September 2026 (see <see cref="IsPlausibleSceneOperand"/>).
+    /// </para>
+    /// <para>
+    /// It is left as it was measured all the same. A replacement pattern cannot be
+    /// tested without the client in front of it, and a guessed signature is the
+    /// same unverifiable number this file refuses everywhere else. What can be
+    /// fixed without the client is what is done with a match: an operand that
+    /// cannot be a pointer is rejected by name before anything follows it.
+    /// </para>
     /// </remarks>
     public const string SceneManagerSignature =
         "FF ?? ?? ?? ?? ?? FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF";
 
     /// <summary>Where the scene manager's address sits inside its match.</summary>
     public const int SceneOperandOffset = 1;
+
+    /// <summary>Reported when a matched operand is zero, so there is nothing to follow.</summary>
+    public const string SceneOperandNullReason = "scene_operand_null";
+
+    /// <summary>Reported when a matched operand has every one of its 32 bits set.</summary>
+    public const string SceneOperandAllBitsSetReason = "scene_operand_all_bits_set";
+
+    /// <summary>Reported when a matched operand is not four-byte aligned.</summary>
+    public const string SceneOperandMisalignedReason = "scene_operand_misaligned";
+
+    /// <summary>Reported when a matched operand sits below the client's own image.</summary>
+    /// <remarks>The base it was compared against is appended, since nothing else names it.</remarks>
+    public const string SceneOperandBelowModuleBasePrefix = "scene_operand_below_module_base";
 
     /// <summary>Scene manager → the four entity lists.</summary>
     public const int PlayerListOffset = 0x0C;
@@ -789,6 +820,115 @@ public sealed class NosTaleClientLayout
     }
 
     /// <summary>
+    /// Whether a matched operand could be an object pointer at all, and which
+    /// check says it could not.
+    /// </summary>
+    /// <param name="operand">The four bytes the match hands back, read as little-endian.</param>
+    /// <param name="moduleBase">Base of the client image this match was found in.</param>
+    /// <param name="rejection">The named check that refused. Null exactly when the operand passes.</param>
+    /// <remarks>
+    /// <para>
+    /// <b>Where this came from.</b> On 3 September 2026, on a live client in game
+    /// with the console elevated, <c>--entity-names</c> refused all four lists
+    /// with <c>scene_manager_not_confirmed:1_candidates:0xFFFFFFFF:</c>
+    /// <c>player_list_pointer_unreadable_at+0xC</c>. Two things were wrong with
+    /// that. The address was <c>0xFFFFFFFF</c> — every bit set, which no allocator
+    /// returns — so the pattern had landed in a run of <c>FF</c> filler and read
+    /// more <c>FF</c> filler as an address. And the reason blamed the list pointer,
+    /// pointing the next hour of work at <see cref="PlayerListOffset"/>, when
+    /// nothing was ever wrong at <c>+0x0C</c>: the operand should never have been
+    /// followed. A refusal that names the wrong cause costs more than no refusal.
+    /// </para>
+    /// <para>
+    /// <b>The three things a pointer on this client cannot be.</b> Zero is nothing
+    /// to follow. <c>0xFFFFFFFF</c> is filler — it is also the last addressable
+    /// byte of a 32-bit space, so a four-byte read there could not complete even
+    /// if something were mapped. An address that is not four-byte aligned is not
+    /// the start of an object this layout can read: every field it reaches through
+    /// the scene manager is a 32-bit word at a fixed offset, and Windows hands back
+    /// heap blocks aligned to at least eight bytes in a 32-bit process, so an
+    /// unaligned base would be a coincidence rather than an allocation. And an
+    /// address below the image base is below anything this client has been seen to
+    /// allocate: the two object pointers actually measured on it are
+    /// <c>0x22C8A4F0</c> and <c>0x1F5BA4F0</c> (recorded at
+    /// <see cref="TargetPointerOffset"/>), more than a hundred times a typical
+    /// <c>0x400000</c> image base.
+    /// </para>
+    /// <para>
+    /// <b>Order matters.</b> All-bits-set is tested before alignment because
+    /// <c>0xFFFFFFFF</c> fails alignment too, and reporting the misalignment would
+    /// name a symptom where the evidence names filler.
+    /// </para>
+    /// <para>
+    /// <b>What is deliberately not checked.</b> Not an upper bound: a
+    /// <c>LARGEADDRESSAWARE</c> 32-bit process on 64-bit Windows can hold pointers
+    /// up to <c>0xFFFFFFFE</c>, so any ceiling short of the whole space would be a
+    /// guess that could reject a real address. Not "inside the image" either: every
+    /// object pointer this project has measured on this client is a heap address,
+    /// but one client is one sample and a static in <c>.data</c> is possible in
+    /// principle — this rejects what cannot be a pointer, not what is unlikely to
+    /// be one.
+    /// </para>
+    /// <para>
+    /// <b>And not a committed-region check.</b>
+    /// <see cref="ProcessMemoryReader.EnumerateRegions"/> could say whether the
+    /// address is mapped, but it answers a question the very next step already
+    /// answers: <see cref="TryConfirmSceneManager"/> reads at the candidate and
+    /// reports the OS failure by name when it is not mapped. Paying a full
+    /// <c>VirtualQueryEx</c> walk of the address space per candidate to pre-empt a
+    /// read that costs one syscall is the wrong trade, and caching the walk is not
+    /// available: this chain is deliberately re-followed on every call, so a
+    /// remembered region map would be a statement about a previous moment. Keeping
+    /// it out is also what makes this predicate pure — no process, no platform, no
+    /// handle — and therefore testable at all.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The module base is not positive. A base is resolved before any match is
+    /// examined, so a missing one is a caller defect and not a reading: refusing it
+    /// by name here would let the bound silently vanish, and a bound that quietly
+    /// stops applying is the decoration this file exists to avoid.
+    /// </exception>
+    public static bool IsPlausibleSceneOperand(uint operand, IntPtr moduleBase, out string? rejection)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(moduleBase.ToInt64());
+
+        if (operand == 0)
+        {
+            rejection = SceneOperandNullReason;
+            return false;
+        }
+
+        if (operand == uint.MaxValue)
+        {
+            rejection = SceneOperandAllBitsSetReason;
+            return false;
+        }
+
+        if ((operand & 0x3) != 0)
+        {
+            rejection = SceneOperandMisalignedReason;
+            return false;
+        }
+
+        // Compared as signed 64-bit on both sides: the operand is 32-bit and
+        // unsigned, the base is a pointer-sized value, and narrowing either one to
+        // meet the other is how a comparison silently stops meaning what it says.
+        if ((long)operand < moduleBase.ToInt64())
+        {
+            // The operand is not repeated: every caller already has it — the
+            // resolver prefixes it onto the reason, a direct caller passed it in.
+            // The base is what the reason adds, because nothing else names it.
+            rejection = string.Create(CultureInfo.InvariantCulture,
+                $"{SceneOperandBelowModuleBasePrefix}:0x{moduleBase.ToInt64():X}");
+            return false;
+        }
+
+        rejection = null;
+        return true;
+    }
+
+    /// <summary>
     /// Finds the scene manager, whose match holds a direct pointer.
     /// </summary>
     /// <remarks>
@@ -800,11 +940,15 @@ public sealed class NosTaleClientLayout
     /// ERROR_PARTIAL_COPY.
     /// </para>
     /// <para>
-    /// So every match is tried and each candidate has to prove itself: its four
-    /// list pointers must be readable and their lengths plausible. This is the
-    /// same rule the character id enforces one level up — a signature is a
-    /// hypothesis, and the thing that turns it into a reading is a check it could
-    /// not have passed by accident.
+    /// So every match is tried and each candidate has to prove itself, in two
+    /// stages that fail differently. First the operand has to be capable of being
+    /// a pointer at all — <see cref="IsPlausibleSceneOperand"/>, which costs no
+    /// read and is what stops <c>0xFFFFFFFF</c> from being dereferenced and then
+    /// blamed on a list offset. Only then is it followed: its four list pointers
+    /// must be readable and their lengths plausible. This is the same rule the
+    /// character id enforces one level up — a signature is a hypothesis, and the
+    /// thing that turns it into a reading is a check it could not have passed by
+    /// accident.
     /// </para>
     /// </remarks>
     private static bool TryResolveScene(
@@ -814,7 +958,11 @@ public sealed class NosTaleClientLayout
         scene = IntPtr.Zero;
         failureReason = null;
 
-        if (moduleBase == IntPtr.Zero || moduleSize <= 0)
+        // Not simply non-zero: a base that is zero or negative is not a base, and
+        // IsPlausibleSceneOperand throws on one rather than let its bound quietly
+        // stop applying. The refusal is named here so that never becomes an
+        // exception escaping a read path.
+        if (moduleBase.ToInt64() <= 0 || moduleSize <= 0)
         {
             failureReason = "client_module_not_located";
             return false;
@@ -850,9 +998,27 @@ public sealed class NosTaleClientLayout
                 if (!operand.Ok)
                     continue;
 
-                var pointer = (IntPtr)BitConverter.ToUInt32(operand.Bytes);
-                if (pointer == IntPtr.Zero)
+                uint operandValue = BitConverter.ToUInt32(operand.Bytes);
+                if (!IsPlausibleSceneOperand(operandValue, moduleBase, out string? implausible))
+                {
+                    // A zero operand is not a candidate and never was one: this
+                    // signature is eleven zero bytes long in the middle and lands
+                    // in padding routinely, so counting those would bury the count
+                    // the operator reads. Every other implausible operand is
+                    // counted, because it is a place that looked like the scene
+                    // manager right up until the operand was examined — and saying
+                    // so is the difference between "one candidate, and here is what
+                    // was wrong with it" and a signature that must be re-derived.
+                    if (implausible == SceneOperandNullReason)
+                        continue;
+
+                    candidates++;
+                    firstRejection ??= string.Create(CultureInfo.InvariantCulture,
+                        $"0x{operandValue:X}:{implausible}");
                     continue;
+                }
+
+                var pointer = (IntPtr)operandValue;
 
                 candidates++;
                 if (!TryConfirmSceneManager(reader, pointer, out string? rejection))
