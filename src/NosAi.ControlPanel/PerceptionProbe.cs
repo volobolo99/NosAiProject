@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Diagnostics;
 using System.IO;
 using NosAi.Runtime.Contracts;
@@ -300,7 +301,16 @@ internal static class PerceptionProbe
             new DisplayField("HP massimo", FormatVital(observation.Hp.Maximum), observation.Hp.Maximum.Source.ToWire()),
             new DisplayField("Glifi HP nel ritaglio", observation.HpGlyphs.ToString(), "DERIVED"),
             new DisplayField("Glifi MP nel ritaglio", observation.MpGlyphs.ToString(), "DERIVED"),
-            new DisplayField("Glifi addestrati", observation.TrainedGlyphs.ToString(), observation.TrainedGlyphs == 0 ? "UNKNOWN" : "DERIVED"),
+            // Zero glifi significa « nessun atlante », non « zero »: il campo lo
+            // dichiarava UNKNOWN e poi stampava 0, cioe' pubblicava il valore che
+            // la classificazione diceva di non avere. Ora nomina il motivo, come
+            // gia' fa la riga sotto per i ritagli.
+            new DisplayField(
+                "Glifi addestrati",
+                observation.TrainedGlyphs == 0
+                    ? "UNKNOWN · atlas_not_trained"
+                    : observation.TrainedGlyphs.ToString(CultureInfo.InvariantCulture),
+                observation.TrainedGlyphs == 0 ? "UNKNOWN" : "DERIVED"),
             new DisplayField("Ritagli HUD", cropDir is null ? "UNKNOWN · crop_not_saved" : cropDir, cropDir is null ? "UNKNOWN" : "LIVE")
         ];
     }
