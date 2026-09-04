@@ -1,179 +1,180 @@
-# NosAiProject — Architecture Baseline & Source of Truth
+# NosAiProject — Autonomous Player Architecture Baseline
 
-**Version:** 1.0
-**Date:** 2026-08-30
-**Status:** SUPERSEDED for new work as of 2026-09-01 (see `docs/adr/ADR-0015-adopt-roadmap-esecutiva-as-canonical-architecture.md`). Still the accurate description of the existing `NosAi.Runtime`/`NosAi.Protocol` implementation, which keeps building and keeps its tests; new work follows `docs/ROADMAP_ESECUTIVA.md` instead.
+**Version:** 2.0
+**Date:** 2026-09-05
+**Status:** CANONICAL
 
 ## 1. Purpose
 
-This document is the architectural baseline for NosAiProject v1.0. It defines the canonical boundaries used for implementation, review, testing and AI-assisted development.
+This document defines the architecture for NosAiProject as an autonomous player running on a Windows PC in a private educational/test environment.
 
-Existing code is not automatically authoritative when it conflicts with this baseline. A conflict must be documented and resolved through an Architecture Decision Record (ADR).
+The target is operational autonomy: perception, world modelling, mapping, navigation, combat, quest reasoning, character progression, memory, learning, recovery and verification. The system must remain reproducible and non-privileged.
 
-## 2. Canonical system flow
+## 2. Canonical pipeline
 
 ```text
-PC Runtime
-   │
-   ├── Hardware / OS telemetry
-   │
-   ├── Real Client Integration
-   │          │
-   │          ▼
-   │     Perception / Input
-   │          │
-   │          ▼
-   │      World Model
-   │          │
-   │          ▼
-   │     Decision / Policy
-   │          │
-   │          ▼
-   │       Safety Gate
-   │          │
-   │          ▼
-   │       Execution
-   │          │
-   │          ▼
-   │      Verification
-   │          │
-   │          └──────────► Re-observe
-   │
-   └── Control Gateway ──► Control Panel
-              │
-              └──────────► Guard AI Smartphone
+Client / PC Environment
+        │
+        ▼
+Observation Sources
+(Network | Memory | Screen | Local)
+        │
+        ▼
+Sensor Fusion + Provenance
+        │
+        ▼
+Unified World Model
+        │
+        ├────────► Spatial/Map Model
+        ├────────► Combat Model
+        ├────────► Quest Model
+        └────────► Character/Inventory Model
+        │
+        ▼
+Prediction / Local Simulation
+        │
+        ▼
+Utility / Risk Ranking
+        │
+        ▼
+Strategic Orchestrator
+        │
+        ▼
+HTN / Deterministic GOAP / Reactive Rules
+        │
+        ▼
+Guard → Trust/Authorization → Safety Gate
+        │
+        ▼
+Execution Adapter
+        │
+        ▼
+Verification
+        │
+        └──────────────► Re-observation / Learning
 ```
 
-## 3. Architectural layers
+## 3. Layers
 
-### Runtime
-Owns process lifecycle, orchestration, health, state transitions and controlled execution of the system.
-
-### Live Integration
-Owns adapters to supported real client/environment signals. It must not invent gameplay state when no real source exists.
+### Observation
+Only client-observable, locally available evidence is admitted: client-visible network traffic, legitimately readable client memory, screen/pixel capture, OCR/CV, local OS telemetry and NosAi-owned state.
 
 ### Perception
-Converts external observations into validated internal observations. Providers must be explicit about whether data is live, simulated, cached or unavailable.
+Transforms raw observations into typed observations with provenance, timestamp, confidence and freshness. Sensor disagreement reduces confidence rather than silently selecting convenient data.
 
 ### World Model
-Maintains the canonical state consumed by decision and monitoring components. It must distinguish unknown from zero/default values.
+Single semantic state for planning. Important facts distinguish `LIVE`, `DERIVED`, `CACHED`, `SIMULATED` and `UNKNOWN`.
 
-### Decision / Policy
-Determines what the system intends to do from available state and policy. It must not bypass safety boundaries.
+### Spatial Model
+Maintains map identity, coordinate system, observed bounds, walkability, landmarks, portals, obstacles, map transitions and persistent versions. Supports coarse/global routing plus local movement planning.
+
+### Domain Models
+Combat, quest, character, inventory, equipment, resources, NPCs, mobs, drops and interactables are first-class models linked to WorldState.
+
+### Planning
+Strategic selection chooses goals; HTN decomposes complex objectives; deterministic cost-aware GOAP selects executable action sequences; reactive rules handle immediate interruptions and recovery.
+
+### Simulation
+Short-horizon deterministic simulation estimates consequences before consequential actions. Simulation is advisory and never authoritative gameplay truth.
+
+### Learning and Memory
+Persistent memory records observations, decisions, outcomes, failures and learned effectiveness. Retrieval is provenance/freshness aware. ML/RL/world-model experiments are sandboxed/offline until validated.
 
 ### Safety
-Enforces trust boundaries, authorization, validation, capability restrictions and fail-safe behavior before execution.
+Safety is the final execution authority. No LLM, ML model, planner or UI component can bypass it.
 
 ### Execution
-Performs only authorized and validated actions against supported targets.
+Execution adapters are replaceable. Mouse and keyboard are permitted but optional. No external automation hardware beyond those permitted devices is required or allowed.
 
 ### Verification
-Confirms the expected result and feeds new observations back into the system.
+Every consequential action must produce an observable result or explicit failure/unknown outcome and feed the next decision cycle.
 
-### Network / Gateway
-Provides authenticated transport, framing, versioning, session management and event delivery between runtime and authorized clients.
+## 4. PC hardware target
 
-### Control Panel
-Provides operational visibility and supported controls; it is not a replacement for runtime safety enforcement.
+Baseline target:
 
-### Guard AI Smartphone
-Provides remote monitoring and authorized controls through the same authenticated trust boundary as other clients.
+- ASUS Nitro V16 laptop;
+- AMD Ryzen processor;
+- NVIDIA GeForce RTX 5060 Laptop GPU, 8 GB GDDR7 class;
+- 16 GB DDR5 system RAM;
+- external 2 TB SSD dedicated to NosAiProject and its runtime data.
 
-### Hardware / Observability
-Provides machine capability, resource telemetry, diagnostics, logging and health information.
+The exact ASUS SKU, CPU model, RAM topology, GPU power envelope, driver version and external SSD USB mode must be detected at runtime rather than hardcoded.
 
-### Storage
-Provides persistence for explicitly durable state, sessions, configuration, audit records and other approved data.
+NVIDIA lists the RTX 5060 Laptop GPU with 8 GB GDDR7, 3328 CUDA cores and a 45–100 W GPU subsystem range depending on laptop implementation. The architecture therefore treats VRAM and power/thermal headroom as dynamic capabilities, not fixed guarantees.
 
-## 4. Data classification
+## 5. Resource strategy
 
-Every externally visible value must be classifiable as one of:
+### CPU
+Prioritize WorldState, planning, navigation queries, orchestration, persistence and lightweight preprocessing.
 
-- `LIVE` — obtained from a real supported source;
-- `DERIVED` — deterministically calculated from trusted input;
-- `CACHED` — previously observed and explicitly marked stale/age-aware;
-- `SIMULATED` — generated for development/testing only;
-- `UNKNOWN` — no trustworthy value is currently available.
+### GPU
+Prioritize vision inference, object detection, OCR where GPU acceleration is available, embeddings and other batchable inference. Model selection must respect the 8 GB VRAM ceiling.
 
-Production dashboards and decision paths must not silently present `SIMULATED` data as `LIVE`.
+### RAM
+16 GB is the primary system-memory constraint. Avoid loading several large models simultaneously. Use bounded queues, streaming, memory-mapped datasets where useful, explicit caches and aggressive disposal of large frame buffers.
 
-## 5. Trust boundaries
+### External SSD
+The SSD is the canonical project/runtime storage target. Separate hot runtime data from cold research/archive data. SQLite WAL, replay, model caches and map datasets must use bounded retention and checkpoint policies. Performance tests must measure real USB connection mode and latency rather than assuming internal-NVMe characteristics.
 
-The minimum trust boundaries are:
+### Thermal/power
+The laptop is a constrained thermal system. Hardware profiling must expose CPU/GPU temperature, utilization, clocks, memory pressure and power state where safely available. In thermal degradation, inference frequency and non-critical background work must reduce before critical control is affected.
 
-1. local runtime process boundary;
-2. real client/environment boundary;
-3. network transport boundary;
-4. authenticated smartphone/control-client boundary;
-5. execution/safety boundary;
-6. persistent-storage boundary.
+## 6. AI execution policy
 
-Security validation must occur at the boundary where trust is established, not only in UI code.
-
-## 6. Interface rules
-
-- Prefer interfaces/contracts over direct cross-layer dependencies.
-- Runtime orchestration must not embed transport implementation details.
-- UI must not directly perform privileged execution.
-- Safety checks must remain server/runtime-side and cannot depend on client UI behavior.
-- Network messages must be versioned and validated.
-- Unknown fields should be handled according to explicit compatibility policy.
-- Public contract changes require an ADR and corresponding tests.
-
-## 7. Real-vs-demo rule
-
-Any demo, fixture or simulated provider must be clearly named and isolated. It must never be selected implicitly in a production path.
-
-For Gate 1, the authoritative path is:
-
-`bootstrap → real client connection → minimum real data → authenticated smartphone → coherent dashboard → error/disconnect handling`
-
-The current repository contains substantial implementation along this path, but `RealClientConnector` is still a partial real-data source and several dashboard/telemetry paths contain mixed or demonstrative values. These areas remain verification work rather than being declared complete.
-
-## 8. Verification hierarchy
+Use adaptive inference tiers:
 
 ```text
-Present
-  ↓
-Integrated
-  ↓
-Done (build + local tests)
-  ↓
-Verified (integration / real evidence)
+Tier 0 — deterministic rules / geometry / cached models
+Tier 1 — lightweight local ML inference
+Tier 2 — GPU accelerated vision/embeddings
+Tier 3 — expensive local reasoning/model inference
 ```
 
-No release milestone may be considered complete from source inspection alone.
+The runtime chooses the cheapest tier that satisfies the confidence requirement. Expensive inference must never block safety, recovery or time-critical control indefinitely.
 
-## 9. Architectural invariants
+## 7. Capture and perception policy
 
-1. Safety cannot be bypassed by UI or network clients.
-2. Real and simulated data are never silently interchangeable.
-3. Unknown state is represented explicitly.
-4. Execution requires an authorized and validated path.
-5. Observations are the source of truth for verified state.
-6. Every critical remote session has explicit lifecycle and failure semantics.
-7. Security-sensitive events are auditable.
-8. Components must fail closed where safety requires it.
-9. Protocol changes are versioned.
-10. Tests must validate behavior at the appropriate layer.
+Windows Graphics Capture is the preferred screen/window capture abstraction when supported. Capture should use frame pools and bounded processing queues. ROI processing is preferred over full-frame inference whenever the target region is known.
 
-## 10. ADR index
+OCR is treated as one sensor, not as ground truth. Text extracted from quest/dialog/inventory UI must be associated with source region, timestamp and confidence.
 
-| ADR | Decision | Status |
-|---|---|---|
-| ADR-0001 | Canonical layered architecture | Accepted |
-| ADR-0002 | Real/demo data separation | Accepted |
-| ADR-0003 | Safety boundary is runtime authoritative | Accepted |
-| ADR-0004 | Verification required before release completion | Accepted |
-| ADR-0005 | Protocol/API changes require explicit versioning | Accepted |
+## 8. Navigation policy
 
-## 11. Change management
+The navigation architecture should evolve from the current prototype grid planner toward a hierarchical representation inspired by Recast/Detour/DotRecast capabilities:
 
-When a proposed implementation conflicts with this baseline:
+```text
+Map observation
+ → geometry/walkability
+ → tiled spatial representation
+ → global graph/navmesh
+ → local path corridor
+ → obstacle avoidance
+ → movement execution
+ → verification
+```
 
-1. stop the affected architectural change;
-2. describe the conflict;
-3. create/update an ADR;
-4. evaluate compatibility and migration cost;
-5. update tests/contracts;
-6. only then implement the approved decision.
+Persistent map versions must support partial discovery, invalidation and incremental refinement.
+
+## 9. Performance invariants
+
+- no unbounded queues on critical paths;
+- bounded frame retention;
+- no synchronous expensive inference in Safety/Guard;
+- cancellation and timeout on all long-running inference/planning operations;
+- deterministic planning for identical state/configuration;
+- benchmark p50/p95/p99 latency and allocation rate;
+- thermal degradation is observable and fail-safe;
+- external SSD throughput/latency is measured on the real laptop.
+
+## 10. Non-privileged invariant
+
+No architectural optimization may introduce a new information channel that an ordinary client cannot observe or use. Performance, AI quality or autonomy must never be improved by server administration, hidden state, debug flags, privileged APIs or external automation hardware.
+
+## 11. Verification hierarchy
+
+```text
+Present → Integrated → Done → Verified
+```
+
+`Verified` requires evidence from the applicable real/test environment. Source presence alone is never verification.
