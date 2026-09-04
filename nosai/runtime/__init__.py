@@ -15,7 +15,7 @@ from .agent_loop import AgentLoop, LoopResult, RecoveryPolicy, StepTrace
 from .recovery import RecoveryController, RecoveryEvent
 from .watchdog import RuntimeWatchdog, WatchdogMode, WatchdogPolicy
 from .tools import ToolRegistry, ToolSpec
-from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile
+from .hardware import HardwareProfiler, HardwareSnapshot, RuntimeProfile, InferenceBudget, recommended_profile_for_nitro_v16
 from .hardware_watchdog import HardwareTelemetry, HardwareProbe, PsutilNvmlProbe, WatchdogDecision, NOSAIHardwareWatchdog
 from .context_slimming import ExceptionSignature, VRAMContextSlimmer
 from .adaptive_throttling import AdaptiveLimits, AdaptiveThrottler, ResourcePlan, ThrottleMode
@@ -32,7 +32,7 @@ __all__ = [
     "HardwareCapabilities", "Permission", "PrivacyClass", "ProviderCapabilities", "ResourceSnapshot", "RuntimeContext", "VerificationResult",
     "MemoryBus", "MemoryEvent", "ExecutionPolicy", "RoutingPolicy", "ProviderRegistry", "ProviderRouter", "ResourceManager",
     "AgentSession", "SessionManager", "TrustBoundary", "TrustPolicy", "TrustTier", "AgentLoop", "LoopResult", "RecoveryPolicy", "StepTrace",
-    "RecoveryController", "RecoveryEvent", "RuntimeWatchdog", "WatchdogMode", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler", "HardwareSnapshot",
+    "RecoveryController", "RecoveryEvent", "RuntimeWatchdog", "WatchdogMode", "WatchdogPolicy", "ToolRegistry", "ToolSpec", "HardwareProfiler", "HardwareSnapshot", "RuntimeProfile", "InferenceBudget", "recommended_profile_for_nitro_v16",
     "HardwareTelemetry", "HardwareProbe", "PsutilNvmlProbe", "WatchdogDecision", "NOSAIHardwareWatchdog", "ExceptionSignature", "VRAMContextSlimmer",
     "AdaptiveLimits", "AdaptiveThrottler", "ResourcePlan", "ThrottleMode",
     "MessageType", "SessionMessage", "SequenceGuard", "AgentTrace", "EvaluationRecorder", "EvaluationScore", "NosAiRuntimeBridge", "RuntimeIntegrationConfig",
