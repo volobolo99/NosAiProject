@@ -1,66 +1,61 @@
 # NosAiProject
 
-Implementazione sorgente di **NosAi**, runtime di intelligenza artificiale per NosTale.
+Implementazione sorgente di **NosAi**, agente software per un giocatore autonomo nel contesto privato/test dichiarato.
 
 **Versione:** 1.0 Beta  
-**Creatore:** Volodymyr Ryzhuk
+**Data architettura:** 2026-09-05
 
-> La versione rimane **1.0 Beta** finché il creatore non richiede esplicitamente un cambiamento.
+## Obiettivo
 
-## Deployment PC
+NosAi deve operare come un giocatore autonomo: percepire il client, ricostruire il mondo, riconoscere e imparare le mappe, navigare, combattere, comprendere ed eseguire missioni, gestire inventario/equipaggiamento/progressione, imparare dalle esperienze e recuperare dagli errori.
 
-Il runtime PC è progettato per essere installato sul **Crucial X6 CT2000X6SSD9 da 2 TB**, collegato via USB-C/USB 3.2. Il volume dedicato usa l'etichetta `NOSAI-SSD` e una root `NosAi\`; Windows rimane sul disco interno.
+Il target è autonomia operativa completa nel perimetro dichiarato. Non è ammessa onniscienza: informazione insufficiente o conflittuale = `UNKNOWN`, replan o safe-stop.
 
-Il sistema individua il volume tramite etichetta, non tramite una lettera fissa, e valida filesystem NTFS, accessibilità e spazio disponibile. Il bootstrap Windows è non distruttivo e non formatta il dispositivo.
+## Boundary non privilegiato
 
-Codice, runtime locale, modelli, SQLite/WAL, memoria persistente, evidence, log, cache, configurazioni e artefatti NosAi sono destinati al volume dedicato. Driver e dipendenze realmente globali di Windows restano gestiti dal sistema operativo.
+NosAi può usare CPU/GPU/NPU/RAM/storage del PC, normali API Windows, rete visibile al client, memoria locale legittimamente leggibile, cattura schermo/pixel, OCR/CV, audio disponibile al PC, telemetria locale e meccanismi software di controllo compatibili con il client.
 
-La policy SQLite è centralizzata: WAL, `synchronous=FULL` per la persistenza critica, busy timeout, cache, limite WAL e incremental vacuum.
+Mouse e tastiera sono **permessi ma non obbligatori**. Non sono ammessi server DB, GM/mod/admin tools, console, API privilegiate, debug/hidden state, credenziali amministrative o hardware esterno di automazione.
 
-## Stato del progetto
+## Architettura
 
-Il repository è la sorgente di sviluppo ufficiale. Il repository legacy `volobolo99/NosAi` è utilizzato esclusivamente come riferimento: il codice viene analizzato e reimplementato selettivamente, senza copia indiscriminata.
+`Observe → Sensor Fusion → World Model → Simulation/Prediction → Ranking/Utility → Strategic Orchestrator → HTN/GOAP → Guard → Trust → Safety → Execute → Verify → Re-observe`
 
-Il runtime realizza un ciclo autonomo controllato: osservazione → orchestrazione → autorizzazione → esecuzione → verifica → nuova osservazione → recupero e ripianificazione adattivi.
+Nessun LLM, planner, modello ML o euristica ha autorità diretta di esecuzione.
 
-Sono presenti EventBus tipizzato e bounded, WorldState versionato, riduzione del contesto per VRAM, RecoveryController adattivo, circuit breaker, watchdog hardware/runtime, nucleo di cifratura per sessioni effimere, logger SQLite per sessioni/traiettorie e controller Miniland tramite adapter.
+## Documentazione canonica
 
-È presente inoltre la fondazione di deployment su SSD dedicato e provisioning ADB della phone Guard AI (`com.nosai.guard`). La fondazione C# del Gate 1 è ora allineata al framing canonico `NOSA` a 12 byte, autenticazione RSA-2048/SHA-256, sequence guard bidirezionale e heartbeat fail-closed a 2000 ms. L'interoperabilità PC↔smartphone, il client NosTale reale e la dashboard/runtime adapter restano da validare end-to-end.
+- `docs/ROADMAP_ESECUTIVA.md` — roadmap canonica.
+- `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md` — specifica del giocatore autonomo e boundary.
+- `docs/SOURCE_OF_TRUTH.md` — gerarchia documentale.
+- `docs/NOSAI_ARCHITECTURE_BASELINE.md` — baseline architetturale.
+- `docs/UNPRIVILEGED_DEMO_SPEC.md` — specifica di riproducibilità senza accessi privilegiati.
+- `docs/adr/` — decisioni architetturali.
+- `third_party/` — vault di codice, ricerca, licenze e provenance.
 
-## Documentazione
+## Supporto allo sviluppo
 
-- `docs/METADATI_PROGETTO.md` — metadati ufficiali.
-- `docs/REGOLE_PROGETTO.md` — regole e vincoli del progetto.
-- `docs/ARCHITETTURA.md` — architettura e comunicazioni, incluso storage SSD e PC-Phone.
-- `docs/STATO_IMPLEMENTAZIONE.md` — registro dell'implementazione e validazione.
-- `docs/EXTERNAL_SSD_DEPLOYMENT.md` — specifica del deployment Crucial X6.
-- `docs/ROADMAP.md` — roadmap e traguardi.
-- `docs/REQUISITI.md` — requisiti funzionali e non funzionali.
-- `docs/CONTRIBUTING.md` — regole per contribuire.
-- `docs/TESTING.md` — strategia e procedure di test.
-- `docs/SICUREZZA.md` — modello di sicurezza.
-- `docs/OSSERVABILITA.md` — EventBus, trace, audit e replay.
-- `docs/RECOVERY_WATCHDOG.md` — recupero adattivo e controllo hardware/runtime.
-- `docs/PERCEZIONE.md` — pipeline di percezione e stato di implementazione.
-- `docs/RETE_LAN.md` — comunicazione locale/LAN.
-- `docs/LLM_PROVIDER.md` — provider decisionali e instradamento.
-- `docs/CONTRATTI.md` — contratti tra componenti.
-- `docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md` — trasporto sicuro e chiavi effimere.
-- `docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md` — persistenza e fondazioni Shared Memory.
-- `docs/GLOSSARIO.md` — terminologia ufficiale.
-- `docs/CHANGELOG.md` — storico delle modifiche.
+- `CLAUDE.md` — istruzioni per Claude Code.
+- `.cursor/rules/` — regole Cursor.
+- `docs/BUILD_TEST_RELEASE.md` — build/test/release.
+- `docs/TESTING.md` — strategia di test.
+- `docs/GIT_WORKFLOW.md` — workflow Git.
+- `docs/CONTROLLO_PERSONAGGIO_ARCHITETTURA.md` — controllo personaggio.
+- `docs/CONTROLLO_PERSONAGGIO_ATTUAZIONE.md` — attuazione e verifica.
+- `docs/PROGRESSION_ENGINE_SPEC.md` — progressione ed equipaggiamento.
+- `docs/PROTOCOLLO_NOSTALE.md` — riferimento al protocollo osservabile.
+- `docs/RECOVERY_WATCHDOG.md` — recovery/watchdog.
+- `docs/research/` — ricerca tecnica datata.
 
 ## Principi
 
-1. Sicurezza e autorizzazione esplicita.
-2. Percorso critico deterministico e verificabile.
-3. WorldState come fonte canonica dello stato corrente.
-4. Separazione tra decisione ed esecuzione.
-5. Recupero adattivo e verifica a ciclo chiuso.
-6. Osservabilità e provenienza dei dati.
-7. Persistenza separata dallo stato operativo canonico.
-8. Adapter espliciti per le integrazioni esterne.
-9. Testabilità senza client di gioco reale.
-10. Integrazioni live dietro traguardi espliciti.
-11. Storage dedicato validato prima dell'avvio del runtime PC.
-12. Nessuna fase successiva senza esito positivo dei test PC/Smartphone pertinenti.
+1. Autonomia senza dati privilegiati.
+2. World Model come rappresentazione semantica corrente.
+3. Sensor fusion con provenance, confidence e freshness.
+4. Pianificazione gerarchica: strategica → HTN/GOAP → reattiva.
+5. Separazione assoluta tra decisione ed esecuzione.
+6. Safety e authorization come autorità finale.
+7. Verifica dopo ogni azione significativa.
+8. Memoria persistente e failure learning senza contaminare la truth layer.
+9. Testabilità, replay ed evidenza end-to-end.
+10. Codice third-party sempre con licenza e provenance preservate.
