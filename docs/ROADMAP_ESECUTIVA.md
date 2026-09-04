@@ -1,259 +1,160 @@
 # NosAiProject — Roadmap Esecutiva Autonomous Player
 
-**Versione:** 2.0  
-**Data:** 2026-09-05  
-**Stato:** CANONICA  
-**Target:** giocatore autonomo per ambiente privato/test riproducibile
+**Versione:** 2.1
+**Data:** 2026-09-05
+**Stato:** CANONICA
+**Target:** giocatore autonomo per ambiente privato/test riproducibile, ottimizzato per ASUS Nitro V16 + RTX 5060 Laptop 8 GB class + 16 GB DDR5 + SSD esterno 2 TB
 
 ## 1. Obiettivo
 
-Portare NosAiProject da insieme di sottosistemi a **Autonomous Player**: un agente capace di osservare il client, costruire un modello coerente del mondo, esplorare mappe sconosciute, navigare, combattere, comprendere ed eseguire missioni, gestire inventario/equipaggiamento/progressione, apprendere dalle esperienze e recuperare autonomamente dagli errori.
+Portare NosAiProject a un Autonomous Player capace di percepire il client, costruire il proprio modello del mondo, scoprire mappe, stimarne dimensioni e percorribilità, navigare, combattere, comprendere ed eseguire missioni, gestire inventario/equipaggiamento/progressione, imparare dalle esperienze e recuperare autonomamente dagli errori.
 
-L'autonomia è operativa, non onniscienza: dati insufficienti o conflittuali diventano `UNKNOWN` e possono causare replan, attesa o safe-stop.
+L'autonomia è operativa, non onniscienza: evidenza insufficiente o conflittuale = `UNKNOWN` → attesa, riconciliazione, replan o safe-stop.
 
-## 2. Vincolo di osservazione e controllo
+## 2. Vincoli hardware e di accesso
 
-### Consentito
+### Hardware target
 
-- risorse hardware del PC: CPU, GPU/NPU, RAM, storage;
-- software/API locali del PC;
-- rete visibile al client;
-- memoria locale del processo client quando legittimamente leggibile dal runtime;
-- cattura schermo/pixel, OCR, computer vision e audio disponibile al PC;
-- telemetria e memoria persistente NosAi;
-- meccanismi software di controllo del client compatibili con il confine non privilegiato;
-- mouse e tastiera come dispositivi **permessi ma non obbligatori**.
+- ASUS Nitro V16;
+- AMD Ryzen, modello esatto rilevato a runtime;
+- 16 GB DDR5 RAM;
+- NVIDIA RTX 5060 Laptop GPU, 8 GB-class GDDR7;
+- SSD esterno dedicato da 2 TB per NosAiProject.
+
+Il runtime deve rilevare SKU, CPU, GPU, driver, TGP/power state, RAM disponibile, temperature, VRAM e modalità/velocità del collegamento SSD. Nessun valore hardware specifico deve essere hardcoded quando può variare tra configurazioni Nitro V16.
+
+### Accesso consentito
+
+CPU/GPU/NPU/RAM/storage del PC, API Windows, processi locali, rete visibile al client, memoria del processo client quando legittimamente leggibile, screen/pixel/OCR/CV/audio disponibile, telemetria locale, database NosAi e software di controllo compatibile con il confine non privilegiato. Mouse e tastiera sono permessi ma opzionali.
 
 ### Vietato
 
-- server database, console, admin/GM/mod tools;
-- API privilegiate o debug-only;
-- credenziali segrete/amministrative;
-- informazioni nascoste non disponibili al normale client;
-- modifiche al server finalizzate a rivelare stato nascosto;
-- hardware/periferiche esterne di automazione oltre a mouse e tastiera;
-- qualunque scorciatoia che trasformi un'informazione privilegiata in gameplay truth.
+Server DB, console/admin/GM/mod, API privilegiate, debug/hidden flags, credenziali amministrative, server modifications per esporre stato nascosto, hardware esterno di automazione oltre ai dispositivi input consentiti, informazioni non disponibili al normale client.
 
 ## 3. Percorso canonico
 
-```text
-Observe
- -> Sensor Fusion
- -> World Model
- -> Simulation/Prediction
- -> Ranking/Utility
- -> Strategic Orchestrator
- -> HTN/GOAP Planner
- -> Guard
- -> Trust/Authorization
- -> Safety Gate
- -> Execute
- -> Verify
- -> Re-observe
-```
+`Observe → Sensor Fusion → World Model → Simulation/Prediction → Ranking/Utility → Strategic Orchestrator → HTN/GOAP → Guard → Trust → Safety → Execute → Verify → Re-observe`
 
-Nessun LLM, modello ML, planner euristico o modulo stocastico ha autorità di esecuzione diretta.
+Nessun LLM/ML/planner euristico ha autorità diretta di esecuzione.
 
-## 4. Fasi di sviluppo
+## 4. Fasi
+
+### AP-00 — Hardware & Runtime Capability Foundation
+
+Rilevare e governare CPU/GPU/RAM/VRAM/thermal/SSD capabilities. Introdurre budget per inferenza, capture, memoria e I/O. Validare provider ONNX/Windows ML disponibili e scegliere dinamicamente il backend.
+
+**DoD:** profilo hardware riproducibile; nessun overcommit VRAM/RAM; benchmark archiviati.
 
 ### AP-01 — Unified World Model
 
-**Obiettivo:** modello semantico unico e versionato.
+Modello semantico versionato per Player, Map, Tile/Polygon, Portal, Mob, NPC, Drop, Quest, InventoryItem, EquipmentItem, Skill, Buff, Debuff, Cooldown, Resource, Action e Goal. Ogni fatto importante ha provenance, confidence, timestamp e freshness.
 
-Entità minime: Player, Map, Tile/Polygon, Portal, Mob, NPC, Drop, Quest, InventoryItem, EquipmentItem, Skill, Buff, Debuff, Cooldown, Resource, Action, Goal.
-
-Ogni fatto importante deve avere provenance, confidence, timestamp e freshness.
-
-**DoD:** fusione Network/Memory/Screen/Local; conflitti gestiti; `UNKNOWN` preservato; snapshot/replay deterministici.
+**DoD:** fusione Network/Memory/Screen/Local; conflitti gestiti; UNKNOWN preservato; replay deterministico.
 
 ### AP-02 — Multimodal Perception
 
-**Obiettivo:** osservazione reale del client.
+Capture via Windows Graphics Capture dove supportato, ROI manager, bounded frame queues, OCR, object detection/tracking, HUD extraction, network observation e validated memory readers.
 
-Componenti:
+Pipeline a cascata: change/ROI detection → lightweight detector/tracker → OCR mirato → reasoning costoso solo se necessario.
 
-- frame capture;
-- ROI manager;
-- OCR;
-- object detection/tracking;
-- HUD/state extraction;
-- network observation;
-- validated process-memory readers;
-- sensor fusion e confidence scoring.
-
-**DoD:** riconoscimento riproducibile di player, mob, NPC, target, UI essenziale e stato di combattimento in ambiente test.
+**DoD:** player/mob/NPC/target/UI/combat state riconosciuti nel test environment con provenance.
 
 ### AP-03 — Map Reconstruction
 
-**Obiettivo:** il giocatore deve saper imparare una mappa senza una mappa hardcoded.
+Ricostruire mappe sconosciute da osservazioni. Stimare dimensioni, confini, walkability, ostacoli, landmarks, portals e transizioni. Persistenza versionata e incrementale.
 
-Pipeline:
-
-```text
-Observation -> Geometry -> Walkability -> Landmarks -> Portals
-            -> Map Graph -> NavMesh/Local Grid -> Persistent Map
-```
-
-Stimare dimensioni, confini, zone raggiungibili, ostacoli, transizioni e punti di interesse. Usare rappresentazione gerarchica e versionamento della mappa.
-
-**DoD:** esplorazione parziale produce una mappa persistente con confidence e provenance; nuove osservazioni aggiornano la mappa senza distruggerne la storia.
+**DoD:** una mappa parzialmente esplorata può essere salvata, aggiornata e ripresa senza perdere la storia precedente.
 
 ### AP-04 — Exploration & Navigation
 
-**Obiettivo:** raggiungere obiettivi su mappe note e sconosciute.
+Hierarchical pathfinding, tiled spatial model/navmesh, local path corridor, dynamic obstacles, frontier exploration, stuck detection, local/global replan e map transitions.
 
-- hierarchical pathfinding;
-- navmesh/local grid;
-- dynamic obstacle handling;
-- frontier exploration;
-- stuck detection;
-- local/global replan;
-- map transition handling.
-
-**DoD:** il sistema può scoprire, memorizzare e attraversare progressivamente una mappa senza percorsi preconfezionati.
+**DoD:** scoperta e attraversamento progressivo di mappe senza percorso hardcoded.
 
 ### AP-05 — Combat Intelligence
 
-**Obiettivo:** combattere contro classi di mob osservate e scegliere dinamicamente le azioni migliori.
+Candidate generation → hard constraints → short-horizon simulation → utility/risk → combo prefix → execute → verify → learn.
 
-```text
-Combat Observation
- -> Candidate Generation
- -> Hard Constraints
- -> Short-Horizon Simulation
- -> Utility/Risk Ranking
- -> Action/Combo Prefix
- -> Execute
- -> Verify
- -> Learn
-```
+Ottimizzare per DPS, time-to-kill, cooldown, risorse, survivability, positioning, crowd risk, escape probability, mission value e storico per mob/build.
 
-Il modello considera danno atteso, tempo, cooldown, MP/risorse, posizione, distanza, sopravvivenza, crowd risk, escape probability, mission objective ed esperienza storica.
-
-La combo non è una macro fissa: è una policy adattiva con opening, continuation e recovery branches.
-
-**DoD:** decisioni spiegabili e replayabili; aggiornamento dell'efficacia per mob/build; recovery dopo interruzione o fallimento.
+**DoD:** combat policy adattiva e replayabile, con recovery e apprendimento senza bypass Safety.
 
 ### AP-06 — Quest Intelligence
 
-**Obiettivo:** leggere, comprendere e pianificare missioni tramite sole evidenze client-observable.
+OCR/UI/network evidence → semantic extraction → Quest Graph → HTN/GOAP → execute → verify. Supportare travel, dialogue, collect, kill, interact, deliver, quantities, prerequisites, rewards e catene multi-step.
 
-```text
-Quest UI/Dialog
- -> OCR/Network/Memory evidence
- -> Semantic Extraction
- -> Quest Graph
- -> Subgoals
- -> HTN/GOAP
- -> Execute
- -> Verify
-```
+**DoD:** missioni non hardcoded convertite in grafo verificabile e completate quando gli obiettivi osservabili risultano soddisfatti.
 
-Supportare travel, dialogue, collect, kill, interact, deliver, conditional objectives, quantities, prerequisites e multi-step chains.
+### AP-07 — Character / Inventory / Equipment
 
-**DoD:** missione non hardcoded convertita in grafo verificabile e completata quando tutte le condizioni osservabili risultano soddisfatte.
+Modello di build che valuta statistiche, DPS, survivability, resource efficiency, sinergie, enemy-specific performance, movement/utility, costo upgrade, opportunity cost e quest relevance.
 
-### AP-07 — Character / Inventory / Equipment Optimization
-
-**Obiettivo:** gestire autonomamente crescita e configurazione del personaggio.
-
-Valutare:
-
-- statistiche;
-- DPS e survivability;
-- risorse;
-- sinergie equipaggiamento;
-- efficacia contro mob/missioni;
-- costo di upgrade;
-- opportunity cost;
-- rischio.
-
-Azioni: equip/unequip, confronto, uso risorse, upgrade quando disponibile, gestione inventario, vendita/conservazione quando osservabile e consentito.
-
-**DoD:** decisioni motivate dal modello del personaggio e verificate dopo ogni modifica.
+**DoD:** equip/upgrade/inventory actions sono motivate, autorizzate e verificate.
 
 ### AP-08 — Strategic Autonomy + Hierarchical Planning
 
-**Obiettivo:** trasformare obiettivi di alto livello in piani eseguibili.
+Strategic Utility → HTN → deterministic cost-aware GOAP → reactive rules → Guard/Trust/Safety. Gestire survival, recovery, quest urgency, progression, farming, exploration e optimization in modo contestuale.
 
-Strategic layer: utility, priorità, rischio, missioni, progressione.  
-Tactical layer: HTN/GOAP.  
-Reactive layer: regole deterministiche per interruzioni e recovery.
-
-**DoD:** nessuna azione viene eseguita senza attraversare planner → guard → trust → safety.
+**DoD:** ogni azione live deriva da un piano verificabile e attraversa l'unico execution path autorizzato.
 
 ### AP-09 — Memory / Learning / Simulation
 
-**Obiettivo:** migliorare tra sessioni senza contaminare la truth layer.
+Working, episodic, semantic, procedural, spatial, combat, quest, character, failure e reasoning memory. Retrieval ibrido, provenance/freshness aware. Action-outcome ledger. Simulazione deterministica locale per conseguenze a breve termine.
 
-Memorie: working, episodic, semantic, procedural, spatial, combat, quest, character, failure e reasoning.
+RL/world-model learning: offline/sandboxed → evaluation → shadow policy → constrained live ranking solo dopo validazione.
 
-Persistire decisione, osservazione, outcome, confidence, provenance e causa del fallimento. Retrieval ibrido e provenance-aware.
-
-La simulazione locale valuta possibili conseguenze; non diventa mai fonte privilegiata di stato reale.
-
-Apprendimento RL/world-model può essere sviluppato offline/sandboxed e introdotto solo dopo validazione indipendente.
-
-**DoD:** restart/replay mantiene conoscenza utile; memoria vecchia non sovrascrive silenziosamente evidenza fresca.
+**DoD:** conoscenza utile persiste tra sessioni senza contaminare la truth layer.
 
 ### AP-10 — Full Autonomous Player Certification
 
-Scenario end-to-end:
+Scenario completo: startup → attach → perception → map discovery → exploration → navigation → target recognition → combat → loot/inventory → multi-step quest → equipment/progression → recovery → persistence → evidence.
 
-1. avvio pulito;
-2. attach al client;
-3. acquisizione osservazioni;
-4. riconoscimento player/world;
-5. ingresso in una mappa;
-6. esplorazione e ricostruzione;
-7. navigazione verso obiettivo;
-8. riconoscimento e combattimento;
-9. loot/inventory;
-10. lettura e completamento di una missione multi-step;
-11. valutazione equipaggiamento/progressione;
-12. gestione errore/disconnessione/ostacolo;
-13. persistenza memoria;
-14. verifica completa dell'evidenza.
+**DoD:** segmento autonomo senza gameplay commands umani, dati privilegiati o hardware di automazione esterno; funzionamento entro i budget misurati del laptop.
 
-**Certificazione:** nessun comando di gameplay umano durante il segmento autonomo; nessun dato privilegiato; nessun hardware esterno di automazione; tutte le azioni passano dal percorso di autorizzazione e Safety.
+## 5. Resource-aware AI policy
 
-## 5. Quality gates
+```text
+Tier 0: deterministic rules / geometry / cached knowledge
+Tier 1: lightweight local ML
+Tier 2: GPU-accelerated vision/embeddings
+Tier 3: expensive local reasoning
+```
 
-Ogni fase richiede:
+Ogni job dichiara CPU/GPU/VRAM/RAM/thermal/latency budget. Il runtime sceglie il tier minimo che soddisfa confidence e deadline. Tier 3 non può bloccare Safety/recovery.
 
-- build Release senza warning;
-- unit + integration tests;
-- test negativi/fail-closed;
-- benchmark quando il componente è sul percorso critico;
-- replay deterministico dove applicabile;
-- evidenza reale per integrazioni client;
-- provenance verificabile;
-- nessuna regressione delle boundary rules.
+16 GB RAM e 8 GB VRAM sono vincoli reali: usare bounded queues, pooled buffers, lazy loading, ROI inference, quantizzazione quando valida, frame dropping sotto pressione e background jobs preemptible.
 
-`Present`, `Integrated`, `Done`, `Verified` restano livelli distinti. Nessuna fase è `Verified` per sola presenza del codice.
+## 6. Storage policy
 
-## 6. Priorità tecnica immediata
+SSD esterno 2 TB = storage canonico del progetto. Separare hot/warm/cold data; misurare throughput/latency reale del collegamento USB; retention bounded per replay/dataset/log; SQLite WAL/FULL per persistenza critica.
 
-1. sostituire il GOAP prototipale con planner deterministico cost-aware e bounded;
-2. collegare World Model a CharacterActionPlanner;
-3. introdurre contratti Map/Entity/Combat/Quest/Inventory;
-4. costruire sensor fusion reale Network/Memory/Screen;
-5. introdurre Map Reconstruction + navmesh abstraction;
-6. introdurre Combat Engine con simulator/ranking;
-7. introdurre Quest Graph + planner;
-8. introdurre Character Build Optimizer;
-9. completare Memory/Failure Learning;
-10. eseguire AP-10 solo dopo integrazione e test delle fasi precedenti.
+## 7. Quality gates
 
-## 7. Third-party policy
+Ogni fase richiede build Release senza warning, unit/integration tests, test negativi/fail-closed, benchmark quando rilevante, replay deterministico, provenance verificabile e nessuna regressione dei confini di accesso.
 
-Consultare prima `third_party/`. Conservare sempre licenze e provenance. I file GPL/LGPL/MIT/Apache/ZLib presenti nel vault non devono essere eliminati automaticamente. Il codice terzo è riferimento finché non viene deliberatamente integrato, verificato e compatibilizzato con la boundary non privilegiata.
+`Present ≠ Integrated ≠ Done ≠ Verified`.
 
 ## 8. Document hierarchy
 
-- `docs/ROADMAP_ESECUTIVA.md` — ordine canonico dello sviluppo;
-- `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md` — capacità e confini del prodotto;
-- `docs/SOURCE_OF_TRUTH.md` — indice delle autorità;
-- `docs/adr/` — decisioni architetturali accettate;
-- `CLAUDE.md` e `.cursor/rules/` — regole degli agenti;
-- `third_party/` — vault di codice e ricerca con provenance/licenze.
+- `docs/ROADMAP_ESECUTIVA.md` — ordine canonico;
+- `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md` — capacità e confini;
+- `docs/NOSAI_ARCHITECTURE_BASELINE.md` — architettura;
+- `docs/HARDWARE_PROFILE_ASUS_NITRO_V16.md` — target hardware e performance policy;
+- `docs/SOURCE_OF_TRUTH.md` — autorità documentali;
+- `docs/research/` — evidenza di ricerca datata;
+- `docs/adr/` — decisioni architetturali;
+- `CLAUDE.md` / `.cursor/rules/` — regole agenti;
+- `third_party/` — vault di codice, licenze e provenance.
+
+## 9. Immediate implementation order
+
+1. AP-00 hardware/capability profiling;
+2. World Model contracts;
+3. sensor fusion + capture/ROI;
+4. map reconstruction;
+5. hierarchical navigation;
+6. combat model + simulator/ranking;
+7. quest graph + planner;
+8. character/build optimizer;
+9. memory/action-outcome ledger;
+10. end-to-end autonomous certification.
