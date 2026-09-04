@@ -1,5 +1,5 @@
 from nosai.runtime import (
-    AgentLoop, AgentPlan, HardwareProfiler, HardwareSnapshot, LoopResult,
+    AgentLoop, AgentPlan, HardwareProfiler, HardwareSnapshot, InferenceBudget, LoopResult,
     MessageType, SequenceGuard, SessionMessage, TrustBoundary, TrustPolicy,
     TrustTier, VerificationResult, RecoveryPolicy, RuntimeWatchdog, WatchdogPolicy,
 )
@@ -18,6 +18,22 @@ def test_hardware_profiles_are_deterministic():
     assert profiler.profile(HardwareSnapshot(vram_mb=24000, ram_mb=32000)).name == "high"
     assert profiler.profile(HardwareSnapshot(vram_mb=8000, ram_mb=16000)).name == "balanced"
     assert profiler.profile(HardwareSnapshot()).name == "constrained"
+
+
+def test_target_laptop_profile_is_bounded():
+    profile = HardwareProfiler().profile(HardwareSnapshot(vram_mb=8192, ram_mb=16384))
+    assert profile.name == "balanced"
+    assert isinstance(profile.inference_budget, InferenceBudget)
+    assert profile.inference_budget.max_vram_mb <= 2048
+    assert profile.inference_budget.max_ram_mb <= 3072
+    assert profile.inference_budget.max_concurrency == 1
+    assert profile.inference_budget.max_latency_ms <= 30
+
+
+def test_negative_hardware_values_cannot_expand_budget():
+    profile = HardwareProfiler().profile(HardwareSnapshot(vram_mb=-1, ram_mb=-1))
+    assert profile.name == "constrained"
+    assert profile.inference_budget.max_vram_mb == 768
 
 
 def test_session_sequence_guard_rejects_replay():
