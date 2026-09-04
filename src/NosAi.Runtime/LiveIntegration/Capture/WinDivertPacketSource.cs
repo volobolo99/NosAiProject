@@ -165,8 +165,35 @@ public sealed class WinDivertPacketSource : IPacketSource
         }
     }
 
+    /// <summary>Why the pump stopped, or null while it is running.</summary>
+    /// <remarks>
+    /// A capture that died has to be able to say so. Without this the queue simply
+    /// stops filling and every reader sees a quiet wire, which is the same shape
+    /// as a quiet game.
+    /// </remarks>
+    public string? PumpFailure { get; private set; }
+
     /// <summary>The blocking recv, kept on its own thread so callers get a timeout.</summary>
+    /// <remarks>
+    /// Nothing here is allowed to escape. An unhandled exception on any thread
+    /// ends the process in .NET, so a capture thread that threw would take the
+    /// whole runtime with it — silently, from the operator's side, because the
+    /// window just closes. Observation must not be able to kill the thing it is
+    /// observing for.
+    /// </remarks>
     private void Pump()
+    {
+        try
+        {
+            PumpLoop();
+        }
+        catch (Exception ex)
+        {
+            PumpFailure = $"windivert_pump_failed:{ex.GetType().Name}";
+        }
+    }
+
+    private void PumpLoop()
     {
         // WINDIVERT_ADDRESS is opaque to this source: direction is labelled from
         // the parsed endpoint, not from the driver's metadata, so the address
