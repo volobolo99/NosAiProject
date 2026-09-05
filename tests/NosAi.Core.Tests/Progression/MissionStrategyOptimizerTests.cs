@@ -10,8 +10,8 @@ public sealed class MissionStrategyOptimizerTests
         var objective = new MissionObjective("ts-001", MissionStrategyKind.TimeSpace, "Fast TS", "private-test-2026.09");
         var candidates = new[]
         {
-            Candidate("slow", 120, 0.95),
-            Candidate("fast", 60, 0.95)
+            Candidate("slow", "ts-001", 120, 0.95),
+            Candidate("fast", "ts-001", 60, 0.95)
         };
 
         var result = new DeterministicMissionStrategyOptimizer().SelectBest(objective, candidates);
@@ -26,9 +26,9 @@ public sealed class MissionStrategyOptimizerTests
         var objective = new MissionObjective("sp-001", MissionStrategyKind.SpecialistMission, "SP", "ruleset-a");
         var candidates = new[]
         {
-            Candidate("privileged", 10, 1, humanPlausible: true, permittedObservation: false),
-            Candidate("wrong-ruleset", 5, 1, ruleset: "ruleset-b"),
-            Candidate("valid", 30, 0.8, ruleset: "ruleset-a")
+            Candidate("privileged", "sp-001", 10, 1, permittedObservation: false),
+            Candidate("wrong-ruleset", "sp-001", 5, 1, ruleset: "ruleset-b"),
+            Candidate("valid", "sp-001", 30, 0.8, ruleset: "ruleset-a")
         };
 
         var result = new DeterministicMissionStrategyOptimizer().SelectBest(objective, candidates);
@@ -57,12 +57,13 @@ public sealed class MissionStrategyOptimizerTests
 
     private static MissionStrategyCandidate Candidate(
         string id,
+        string objectiveId,
         double executionSeconds,
         double successProbability,
         bool humanPlausible = true,
         bool permittedObservation = true,
         string ruleset = "private-test-2026.09")
-        => new(id, "ts-001", MissionStrategyKind.TimeSpaceOptimization, id,
+        => new(id, objectiveId, MissionStrategyKind.TimeSpaceOptimization, id,
             5, 5, executionSeconds, 0, 0, 0, 0, successProbability, 0.9,
             true, humanPlausible, permittedObservation, ruleset);
 }
