@@ -5,6 +5,18 @@
         Width="1180" Height="760" MinWidth="980" MinHeight="620"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}">
+  <Window.Resources>
+    <DataTemplate x:Key="TestFieldTemplate">
+      <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBlock Text="{Binding Label}" Foreground="{StaticResource MutedBrush}"/>
+          <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap"/>
+          <TextBlock Grid.Column="2" Text="{Binding Source}" FontSize="11" FontWeight="SemiBold"/>
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </Window.Resources>
   <DockPanel Margin="20">
     <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,12,0,0">
       <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Text="Test Center: in attesa del runtime…"/>
@@ -18,7 +30,7 @@
           <Border Style="{StaticResource CardChrome}" Margin="0,0,0,12">
             <StackPanel>
               <TextBlock Style="{StaticResource CardLabel}">LIVE SNAPSHOT</TextBlock>
-              <ItemsControl x:Name="LiveFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+              <ItemsControl x:Name="LiveFields" ItemTemplate="{StaticResource TestFieldTemplate}"/>
             </StackPanel>
           </Border>
           <Border Style="{StaticResource CardChrome}" Margin="0,0,0,12">
@@ -33,7 +45,7 @@
       <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <TextBlock FontSize="18" FontWeight="SemiBold">Test pratici</TextBlock>
-          <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap">Stato consentito: PASS / FAIL / UNKNOWN / BLOCKED. T5–T10 restano non eseguiti finché non esiste una verifica concreta per quella capacità.</TextBlock>
+          <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap">Stato consentito: PASS / FAIL / UNKNOWN / BLOCKED. T5–T10 restano bloccati finché non esiste una verifica concreta per quella capacità.</TextBlock>
           <WrapPanel x:Name="TestButtons" Margin="0,0,0,12"/>
           <Border Style="{StaticResource CardChrome}">
             <StackPanel>
@@ -43,7 +55,7 @@
             </StackPanel>
           </Border>
           <TextBlock FontWeight="SemiBold" Margin="0,18,0,8">Diario test</TextBlock>
-          <ItemsControl x:Name="RunLog" ItemTemplate="{StaticResource FieldTemplate}"/>
+          <ItemsControl x:Name="RunLog" ItemTemplate="{StaticResource TestFieldTemplate}"/>
         </StackPanel>
       </ScrollViewer>
     </Grid>
