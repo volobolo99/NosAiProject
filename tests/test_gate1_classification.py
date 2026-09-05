@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime, timezone
 
 from nosai.core.data_classification import ClassifiedValue, DataSource, unknown_published_value_errors
@@ -22,8 +23,18 @@ def test_dashboard_does_not_invent_runtime_when_disconnected(monkeypatch):
     assert snapshot["gate1"] is None
 
 
-def test_classified_local_pc_does_not_fake_ram_or_gpu():
+def test_classified_local_pc_does_not_fake_ram_or_gpu(monkeypatch):
+    # Force the optional psutil/pynvml probes off regardless of what happens
+    # to be installed in the environment running this test, so the assertion
+    # below is about "no probe available" rather than this machine's specific
+    # hardware. See tests/test_hardware_profiling.py for the fuller matrix
+    # covering both the absent- and present-dependency cases, negative/absurd
+    # readings, and the pynvml-installed-but-driverless case.
+    monkeypatch.setitem(sys.modules, "psutil", None)
+    monkeypatch.setitem(sys.modules, "pynvml", None)
+
     snapshot = classified_local_pc()
+
     assert snapshot["ram_mb"]["source"] == "UNKNOWN"
     assert snapshot["ram_mb"]["value"] is None
     assert snapshot["gpu_name"]["source"] == "UNKNOWN"

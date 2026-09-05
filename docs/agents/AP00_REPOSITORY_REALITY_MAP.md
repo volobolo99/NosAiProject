@@ -154,6 +154,35 @@ git diff --name-status
 
 ## 12. AP-00 decisione corrente
 
-**Decisione: OPEN — audit strutturale in corso.**
+**Decisione: OPEN — audit strutturale in corso** per l'ambito descritto sopra
+(Runtime/Gate1/Gate3/Dashboard, §§1-11 di questa mappa).
 
 La repository è presente e il grafo applicativo è sostanziale. AP-00.2 ha confermato il wiring hosted Runtime → Gate3 → CognitiveRuntimeTraceBridge → Control Panel, ma ha anche confermato che la cognitive observability completa non è cross-process. Il prossimo passo corretto è validare build/test su Windows e poi affrontare esclusivamente i blocker dimostrati. Nessuna feature AP-01 deve essere usata per mascherare blocker AP-00.
+
+### 12.1 Aggiornamento 2026-09-05 — primo pacchetto AP-00 "Hardware & Runtime Capability"
+
+Nota di stato precisa, limitata al sotto-ambito hardware-capability di AP-00
+(`docs/ROADMAP_ESECUTIVA.md` §4 "AP-00 — Hardware & Runtime Capability
+Foundation"), che è **distinto** dall'audit strutturale Runtime/Gate1/Gate3
+sopra e non lo sostituisce: quell'audit resta `OPEN` esattamente come
+descritto nelle sezioni precedenti.
+
+Per il sotto-ambito hardware-capability, il ciclo a 5+1 agenti previsto da
+`docs/agents/AGENT_EXECUTION_MATRIX.md` è stato eseguito per la prima volta:
+contratti di capacità hardware (A1), politica di budget AI (A3), gate di
+autorizzazione runtime (A4) e profiling hardware Python (A2) esistono ora nel
+repository con test propri, più un audit di copertura test/benchmark/docs
+(A5). Stato onesto: **`Present`/`Integrated` a livello di codice, non
+`Verified`** — nessun hardware ASUS Nitro V16 / RTX 5060 reale è stato
+disponibile per questa esecuzione, interamente su sandbox Linux.
+
+L'audit A5 ha trovato e documentato (senza correggerli, essendo fuori dal
+proprio ownership di file) due difetti reali con test di regressione
+dedicati e intenzionalmente rossi finché non vengono risolti: un overcommit
+concorrente nello scheduler AI budget di A3, e un overflow intero nel calcolo
+della VRAM libera di A1. Dettagli completi, comando di benchmark
+riproducibile e checklist di integrazione per A6 in
+`docs/agents/phases/AP-00/AP-00_STATUS.md`.
+
+Questo aggiornamento non promuove il resto di AP-00 (Runtime/Gate1/Gate3
+cross-process, §§1-11) oltre lo stato `OPEN` già registrato sopra.
