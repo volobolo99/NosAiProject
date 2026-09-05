@@ -65,13 +65,58 @@ dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
     lavoro)
 ```
 
-## 6. Livello di verifica
+## 6. A4 (Claude, agente in background) — Wiring runtime
 
-**`Present`/`Integrated` a livello di codice**: build pulita, 21 nuovi test tutti verdi, nessuna regressione sui test esistenti di Perception/A1/A2/A3/A4 di AP-01. **Non `Verified`**: nessuna validazione contro un client NosTale reale (la pipeline vision reale richiede un modello ONNX addestrato che non esiste in questo repository). `VisualObservation`/`VisualObservationFusion` non sono ancora richiamati da nessun host di produzione (stesso stato "non ancora cablato" che A2/A3 di AP-01 avevano prima del wiring di A4) — quel collegamento (chiamare `PerceptionPipeline`/`ScreenVitalReader` reali da un loop e passarne il risultato a `VisualObservationFusion.FuseVitals`) resta lavoro di wiring runtime aperto, non affrontato qui.
+**File creato:** `src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs` — sequenza reale: `host.Capture().Client.ProcessId` → `ClientWindowLocator.TryFind` → `DxgiDesktopDuplicationSource.TryCreate` (aperto una sola volta, riusato; ritentato da zero se la creazione fallisce) → `PerceptionPipeline` con `NullObjectDetector` (nessun modello ONNX addestrato esiste — scelta onesta, non un compromesso) → `ScreenVitalReader.Read(...)` sullo stesso frame → `VisualObservation`. Ogni modo di fallimento (process id assente, piattaforma non Windows, finestra non trovata, DXGI non disponibile, frame non acquisito) produce `VisualObservation.Unobserved(reason)` con motivo specifico, mai un'eccezione.
 
-## 7. Item aperti, esplicitamente rimandati
+**File modificati (solo additivi):**
+- `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs` — nuovo parametro opzionale del costruttore `Func<VisualObservation>? visualSource`; se fornito, dopo il ciclo rete+temporal-belief applica `VisualObservationFusion.FuseVitals`. Un'eccezione da `visualSource` non fa fallire il ciclo rete (loggata, sostituita con `Unobserved`). Nessun default cambiato → nessuna regressione per chi non lo passa.
+- `src/NosAi.Runtime/Program.cs` — se `--fuse-world-model` è attivo, costruisce anche un `ScreenVitalsCapture` e lo passa come `visualSource`. Nessun nuovo flag CLI.
+
+**Limite dichiarato**: `HasTarget` prodotto da `ScreenVitalsCapture` resta sempre `Unknown` — `TargetStateComposer.Compose` richiede una `TargetRoiCalibration` calibrata che nessun codice di questo pass costruisce. Fail-closed su Linux confermato con test reale (`ScreenVitalsCaptureTests.cs`), non solo dichiarato.
+
+## 7. A5 (Claude, agente in background) — Audit indipendente
+
+42 nuovi test, **2 difetti reali trovati** (stessa classe di bug del leak wall-clock già corretta 4 volte in AP-01/A6, ora in un quarto e un quinto punto di chiamata mai toccati prima), con evidenza empirica, non solo ispezione. Report completo: `docs/agents/phases/AP-02/AP-02_A5_AUDIT.md`.
+
+1. `WorldModelTemporalEnricher.EnrichMobs` (riga 68): il ramo "nessun avvistamento precedente" ometteva l'istante nella chiamata `Unknown(...)`, facendo trapelare `DateTime.UtcNow` reale — quarto punto di chiamata con lo stesso difetto strutturale di AP-01/A5, mai coperto prima perché `Mobs` è sempre vuoto nel wiring odierno; trovato incatenando le primitive come richiesto dal comando.
+2. `GameplayObservation.Unobserved` (`GameplayProvider.cs`): **tutti e 16** i campi per-campo chiamavano `ClassifiedValue<T>.Unknown(reason)` ignorando il parametro esplicito `atUtc` del metodo — solo il campo posizionale `ObservedAtUtc` lo rispettava. Rompeva il determinismo di `GameplayObservationProjector.Project` ogni volta che si costruisce una baseline `Unobserved` sovrascrivendo solo alcuni campi — esattamente il pattern usato da molti test di questa stessa sessione (`GameplayObservation.Unobserved("reason", Now) with { Hp = ... }`).
+
+Verificato inoltre, senza trovare difetto: `ClassifiedValueBridge` equivalente byte-per-byte al vecchio codice privato pre-refactor; `ResourceKind.Custom` preservato intatto nella fusione; entrambi i canali più vecchi di `maxAge` → onestamente `Unknown`; confidence persa nel bridge (sempre 1.0) è un limite accettato e motivato, non un difetto (segnalato come rischio futuro per AP-05).
+
+## 8. A6 (Claude) — Integrazione finale AP-02
+
+Applicate entrambe le correzioni suggerite dall'audit A5:
+
+1. **`src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs`** — `EnrichMobs`: il ramo senza avvistamento precedente ora passa esplicitamente `mob.Position.ObservedAtUtc`.
+2. **`src/NosAi.Runtime/Contracts/DataClassification.cs`** — `ClassifiedValue<T>.Unknown` guadagna un parametro opzionale `observedAtUtc` (stessa forma già offerta da `WorldFact<T>.Unknown` in Core.WorldModel), backward-compatible (276 siti di chiamata esistenti invariati, nessuno passa il nuovo parametro). **`src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs`** — `GameplayObservation.Unobserved` ora risolve l'istante una sola volta e lo passa a tutti e 17 i campi classificati, inclusi i 10 aggiuntivi C1.
+
+**Evidenza:**
+```
+dotnet build src/NosAi.Core/NosAi.Core.csproj -c Release      → 0 Warning(s), 0 Error(s)
+dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release → 0 Warning(s), 0 Error(s)
+
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --filter "FullyQualifiedName~MultimodalPipelineDeterminismTests"
+  → Passed! Failed: 0, Passed: 5, Total: 5   (entrambi i difetti ora verdi)
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 357, Skipped: 0, Total: 357
+
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 1880, Skipped: 58, Total: 1938
+```
+
+Nessuna regressione: tutti i test pre-esistenti di A1/A2/A3/A4/A5 restano verdi.
+
+## 9. Livello di verifica finale — AP-02 (Multimodal Perception, ambito vitali)
+
+**`Integrated`**: A1 (contratto `VisualObservation`) + A3 (fusione vitali) + A4 (wiring runtime con capture DXGI reale, fail-closed su Linux) costruiscono un albero unico che compila pulito e passa tutti i test combinati, inclusi i 2 difetti reali trovati dall'audit indipendente A5 e corretti in questo passaggio. **Non `Verified`**: nessuna validazione contro un client NosTale reale — l'intero percorso DXGI/`ClientWindowLocator` resta esercitato solo nel suo ramo di fallimento onesto in questo ambiente Linux.
+
+## 10. Item aperti, esplicitamente rimandati
 
 - **OCR reale e decoder ONNX addestrato**: problema di dati/ML, non di architettura — nessun modello/training pipeline esiste in questo repository. Bloccante per qualunque classificazione Mob/NPC/oggetti da visione.
-- **Wiring runtime**: nessun host chiama ancora `VisualObservation`/`VisualObservationFusion` con dati reali dalla pipeline di capture.
+- **`HasTarget` da `TargetStateComposer`**: non cablato in `ScreenVitalsCapture` — richiede una `TargetRoiCalibration` calibrata che nessun codice di questo pass costruisce.
 - **Inventario/finestre di dialogo**: nessun codice di lettura esiste (nessuna ROI, nessun reader) — costruzione da zero, non affrontata.
 - **DirectX draw-call interception** (ADR-0022 "Reading the world from what the client draws"): **proposta ma non adottata**, esplicitamente gated su un esperimento che spetta all'operatore umano, non a un agente ("The experiment is the operator's, not an agent's"). Nessun lavoro di questa fase tenta hook/injection — la capture resta esclusivamente DXGI Desktop Duplication (cattura legittima dei pixel), mai intercettazione di chiamate di disegno.
+- **Gestione `DXGI_ERROR_ACCESS_LOST` a metà sessione** (lock/unlock desktop, reset GPU): `ScreenVitalsCapture` non la distingue da un frame semplicemente non disponibile — richiederebbe modificare `DxgiCapture.cs`, fuori ambito per questo pass (sola lettura).
+- Triplicazione di `DataSourceKind`/`ClassifiedValue<T>`/`WorldFact<T>` tra `NosAi.Runtime.Contracts`, `NosAi.Core.Hardware` e `NosAi.Core.WorldModel` — segnalata da A1/A5 in AP-01, ancora aperta, non ri-analizzata qui.

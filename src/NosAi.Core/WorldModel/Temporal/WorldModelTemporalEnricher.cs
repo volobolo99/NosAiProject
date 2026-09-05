@@ -63,9 +63,14 @@ public static class WorldModelTemporalEnricher
         {
             Mob mob = current[i];
             WorldFact<WorldPosition> decayedPosition = TemporalBelief.DecayConfidence(mob.Position, nowUtc, maxAge);
+            // Stamped from mob.Position.ObservedAtUtc -- one of this method's
+            // own inputs -- rather than omitted, for the same reason as
+            // TemporalBelief's early returns (AP-01/A6): omitting it would
+            // leak real DateTime.UtcNow into a supposedly pure function's
+            // result (AP-02/A5 audit finding).
             WorldFact<WorldVelocity> velocity = previousById.TryGetValue(mob.Id, out Mob? matched)
                 ? TemporalBelief.EstimateVelocity(matched.Position, mob.Position, maxObservationGap)
-                : WorldFact<WorldVelocity>.Unknown("no_prior_sighting_of_this_entity");
+                : WorldFact<WorldVelocity>.Unknown("no_prior_sighting_of_this_entity", mob.Position.ObservedAtUtc);
 
             enriched[i] = mob with { Position = decayedPosition, Velocity = velocity };
         }

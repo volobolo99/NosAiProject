@@ -192,28 +192,40 @@ public sealed record GameplayObservation(
     public ClassifiedValue<IReadOnlyList<GroundItem>> GroundItems { get; init; }
         = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(NotPublishedReason);
 
-    /// <summary>Nothing was read. Every field says why.</summary>
-    public static GameplayObservation Unobserved(string reason, DateTime? atUtc = null) => new(
-        ClassifiedValue<int>.Unknown(reason),
-        ClassifiedValue<int>.Unknown(reason),
-        ClassifiedValue<int>.Unknown(reason),
-        ClassifiedValue<int>.Unknown(reason),
-        ClassifiedValue<bool>.Unknown(reason),
-        ClassifiedValue<bool>.Unknown(reason),
-        ClassifiedValue<int>.Unknown(reason),
-        atUtc ?? DateTime.UtcNow)
+    /// <summary>
+    /// Nothing was read. Every field says why, all stamped with the same
+    /// resolved instant (<paramref name="atUtc"/>, or <see cref="DateTime.UtcNow"/>
+    /// when omitted) so a caller that passes an explicit instant gets a
+    /// value consistent across every field -- previously only the top-level
+    /// <see cref="ObservedAtUtc"/> honoured <paramref name="atUtc"/>, while
+    /// all sixteen per-field <c>Unknown(...)</c> calls silently fell back to
+    /// real wall-clock time regardless (AP-02/A5 audit finding).
+    /// </summary>
+    public static GameplayObservation Unobserved(string reason, DateTime? atUtc = null)
     {
-        Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(reason),
-        PlayerPosition = ClassifiedValue<MapPoint>.Unknown(reason),
-        MapId = ClassifiedValue<int>.Unknown(reason),
-        StandingCell = ClassifiedValue<MapPoint>.Unknown(reason),
-        HitBy = ClassifiedValue<Aggressor>.Unknown(reason),
-        SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason),
-        SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason),
-        Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason),
-        LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason),
-        GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason),
-    };
+        DateTime resolvedAtUtc = atUtc ?? DateTime.UtcNow;
+        return new(
+            ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<bool>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<bool>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            resolvedAtUtc)
+        {
+            Entities = ClassifiedValue<IReadOnlyList<SelectableEntity>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            PlayerPosition = ClassifiedValue<MapPoint>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            MapId = ClassifiedValue<int>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            StandingCell = ClassifiedValue<MapPoint>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            HitBy = ClassifiedValue<Aggressor>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+        };
+    }
 
     /// <summary>Whether the vitals a planner needs are all present.</summary>
     /// <remarks>

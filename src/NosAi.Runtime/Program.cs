@@ -637,11 +637,32 @@ public static class Program
         // task); `await using` on a possibly-null value disposes it only when
         // one was actually created, the same as every other optional component
         // in this method.
+        //
+        // AP-02/A4: when the same flag is on, the fusion loop also gets a real
+        // screen-vitals source (host.Capture().Client.ProcessId feeds process
+        // discovery -> client window -> DXGI frame -> ScreenVitalReader, all
+        // inside ScreenVitalsCapture). No separate flag: the vitals fusion is
+        // an enrichment of the same cycle --fuse-world-model already runs, not
+        // an independent feature. `visualCapture` is declared before `fusion`
+        // so it disposes AFTER fusion on the way out (using declarations
+        // unwind in reverse order): the pump must stop calling into it before
+        // its DXGI resource is released.
+        int? AttachedProcessId()
+        {
+            NosAi.Runtime.Contracts.ClassifiedValue<int?> processId = host.Capture().Client.ProcessId;
+            return processId.HasValue ? processId.Value : null;
+        }
+
+        using NosAi.Runtime.Perception.ScreenVitalsCapture? visualCapture = options.FuseWorldModel
+            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId)
+            : null;
+
         await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
             ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
                 host.Capture,
                 logger,
-                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs))
+                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs),
+                visualSource: visualCapture!.Capture)
             : null;
         fusion?.Start(cts.Token);
 

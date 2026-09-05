@@ -3,6 +3,7 @@ using NosAi.Core.WorldModel.Temporal;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Gate1;
 using NosAi.Runtime.Observability;
+using NosAi.Runtime.Perception;
 
 namespace NosAi.Runtime.WorldModel.Fusion;
 
@@ -43,6 +44,21 @@ namespace NosAi.Runtime.WorldModel.Fusion;
 /// that invokes <see cref="RunOnce"/> concurrently from two threads, which
 /// nothing in this runtime does.
 /// </para>
+/// <para>
+/// <b>AP-02/A4: optional vision-side vitals.</b> The constructor's
+/// <c>visualSource</c> parameter is additive and defaults to <c>null</c>, so
+/// every existing caller that does not pass it keeps the exact network-only
+/// behavior this type shipped with in AP-01/A4 -- no regression. When
+/// supplied, each <see cref="RunOnce"/> call reads one
+/// <see cref="VisualObservation"/> after the network-only <c>enriched</c>
+/// snapshot is computed, and resolves HP/MP between the two channels via
+/// <see cref="VisualObservationFusion.FuseVitals"/> before publishing. A
+/// vision source that throws is treated as a missed vision cycle, never as a
+/// reason to fail the network cycle: the exception is logged and fusion runs
+/// against <see cref="VisualObservation.Unobserved(string, DateTime?)"/>
+/// instead, which -- carrying only UNKNOWN fields -- resolves to the network
+/// reading unchanged. The network channel stays autonomous either way.
+/// </para>
 /// </remarks>
 public sealed class WorldModelFusionLoop : IAsyncDisposable
 {
@@ -82,6 +98,9 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     /// </remarks>
     public static readonly TimeSpan DefaultMaxObservationGap = TimeSpan.FromSeconds(5);
 
+    /// <summary>Reason carried by the synthetic <see cref="VisualObservation"/> fused in for a missed vision cycle (the source threw).</summary>
+    public const string VisualSourceThrewReason = "visual_source_threw";
+
     private readonly Func<Gate1CanonicalSnapshot> _source;
     private readonly IRuntimeLogger _logger;
     private readonly TimeSpan _interval;
@@ -89,6 +108,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     private readonly TimeSpan _maxObservationGap;
     private readonly TimeProvider _clock;
     private readonly EntityId _playerId;
+    private readonly Func<VisualObservation>? _visualSource;
 
     private WorldModelSnapshot _current = WorldModelSnapshot.Unknown("no_prior_fusion_cycle");
     private long _version;
@@ -103,6 +123,14 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     /// <param name="maxObservationGap">Passed through to <see cref="WorldModelTemporalEnricher.Enrich"/>. Defaults to <see cref="DefaultMaxObservationGap"/>. Must be positive.</param>
     /// <param name="clock">Time source for the pump's own ticks. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <param name="playerId">Overrides <see cref="UnknownPlayerSentinelId"/>, for a future caller that does obtain the real id.</param>
+    /// <param name="visualSource">
+    /// Reads one <see cref="VisualObservation"/> on demand (in production, e.g.
+    /// <c>NosAi.Runtime.Perception.ScreenVitalsCapture.Capture</c>). Optional and
+    /// <c>null</c> by default: with no source, <see cref="RunOnce"/> behaves
+    /// exactly as it did before this parameter existed -- network-only, no
+    /// vitals fusion. See the class remarks, "AP-02/A4: optional vision-side
+    /// vitals".
+    /// </param>
     public WorldModelFusionLoop(
         Func<Gate1CanonicalSnapshot> source,
         IRuntimeLogger logger,
@@ -110,7 +138,8 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         TimeSpan? maxAge = null,
         TimeSpan? maxObservationGap = null,
         TimeProvider? clock = null,
-        EntityId? playerId = null)
+        EntityId? playerId = null,
+        Func<VisualObservation>? visualSource = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -125,6 +154,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
             throw new ArgumentOutOfRangeException(nameof(maxObservationGap), "A max observation gap must be positive.");
         _clock = clock ?? TimeProvider.System;
         _playerId = playerId ?? new EntityId(UnknownPlayerSentinelId);
+        _visualSource = visualSource;
     }
 
     /// <summary>The most recently fused snapshot. Starts at <see cref="WorldModelSnapshot.Unknown"/> before the first tick.</summary>
@@ -171,9 +201,30 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         WorldModelSnapshot projected = GameplayObservationProjector.Project(gameplay, _playerId, version, nowUtc);
         WorldModelSnapshot enriched = WorldModelTemporalEnricher.Enrich(previous, projected, nowUtc, _maxAge, _maxObservationGap);
 
-        Volatile.Write(ref _current, enriched);
-        SnapshotFused?.Invoke(enriched);
-        return enriched;
+        WorldModelSnapshot result = enriched;
+        if (_visualSource is not null)
+        {
+            VisualObservation visual;
+            try
+            {
+                visual = _visualSource();
+            }
+            catch (Exception ex)
+            {
+                // A missed vision cycle, never a reason to fail the network
+                // cycle: fuse against an honestly-UNKNOWN observation, which
+                // resolves back to the network reading unchanged (see class
+                // remarks, "AP-02/A4: optional vision-side vitals").
+                _logger.Error("World Model fusion loop's vision source threw; fusing network-only for this cycle.", ex);
+                visual = VisualObservation.Unobserved(VisualSourceThrewReason, nowUtc);
+            }
+
+            result = VisualObservationFusion.FuseVitals(enriched, visual, nowUtc);
+        }
+
+        Volatile.Write(ref _current, result);
+        SnapshotFused?.Invoke(result);
+        return result;
     }
 
     /// <summary>Starts the periodic pump. A no-op if already running.</summary>
