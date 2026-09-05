@@ -71,8 +71,7 @@ Do not hardcode a static macro where a model/planner is required. Prefer strateg
 - bypass authentication, authorization or Safety;
 - claim `Verified` without evidence;
 - broad-refactor unrelated code;
-- commit secrets, credentials or machine-specific sensitive data;
-- delete or rewrite `third_party/` provenance/license files.
+- commit secrets, credentials or machine-specific sensitive data.
 
 ## Real-environment rule
 

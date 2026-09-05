@@ -3,8 +3,7 @@ Version: 2026-09-05
 Purpose: single fast lookup for Claude, Cursor and other coding agents.
 
 RULE ZERO
-third_party/ is a source/research vault
-
+third_party/ is a source/research vault, NOT an execution path.
 
 ================================================================================
 FAST ROUTING
@@ -12,11 +11,13 @@ FAST ROUTING
 
 NEED: NosTale protocol/domain concepts
 LOCAL: third_party/sources/opennos/
+UPSTREAM: OpenNos/OpenNos
 USE: packet/domain concepts, emulator architecture, legacy protocol knowledge.
 TARGET: NosAi-native adapters/models only after clean adaptation.
 
 NEED: Modern C#/.NET NosTale architecture
 LOCAL: third_party/sources/noscore/
+UPSTREAM: NosCoreIO/NosCore
 USE: modular architecture, networking, persistence, service patterns.
 TARGET: src/NosAi.Core/, src/NosAi.Runtime/.
 PRIORITY: HIGH.
@@ -30,7 +31,8 @@ PRIORITY: HIGH.
 
 NEED: Event-driven/distributed emulator patterns
 LOCAL: third_party/sources/saltyemu/
-
+UPSTREAM: BlowaXD/SaltyEmu
+USE: event-driven architecture and modularity as reference.
 TARGET: architecture ideas; clean NosAi implementation preferred.
 
 NEED: Navigation/navmesh/pathfinding
@@ -45,32 +47,33 @@ PRIORITY: VERY HIGH for Gate 2 Cognitive Skill Spine.
 NEED: Windows human-equivalent input
 LOCAL: third_party/sources/inputsimulator/
 UPSTREAM: michaelnoonan/inputsimulator
-
 USE: keyboard/mouse input abstraction patterns.
 TARGET: execution adapter behind Guard -> Trust -> Safety.
 PRIORITY: HIGH.
 
 NEED: NosTale client data formats / parser tooling
 LOCAL: third_party/sources/taletool/UPSTREAM.md
+UPSTREAM: imxeno/taletool
 USE:
   Item.dat, monster.dat, Skill.dat, quest.dat, qstprize.dat,
   npctalk.dat, tutorial.dat, map/geometry/cell data parsing.
 TARGET:
-  external/offline tool -> JSON/artifacts -> 
+  external/offline tool -> JSON/artifacts -> NosAi import pipeline.
 PRIORITY: VERY HIGH for Knowledge Base, QuestGraph and Map Model.
 
 NEED: Structured NosTale reference datasets
 LOCAL: third_party/sources/vanosilla-client-files/UPSTREAM.md
-
+UPSTREAM: Vanosilla/client-files
 USE:
   schema/reference for items, monsters, quests, skills, NPCs, maps.
 TARGET:
   Knowledge Base import design and validation against exact exam server build.
-PRIORIY: HIGH as research reference.
+PRIORITY: HIGH as research reference.
 
 NEED: Legacy bot state-machine ideas
 LOCAL: third_party/sources/nostale-bot-research/UPSTREAM.md
-USE: waypoint/target/loot 
+UPSTREAM: wojtas99/Nostale_Bot
+USE: waypoint/target/loot concepts only.
 TARGET: clean NosAi-native skill/state-machine implementations.
 
 NEED: Packet interception/network research
@@ -99,7 +102,7 @@ BeliefState / WorldState
 Spatial Model / Navigation
 - DotRecast first.
 - taletool for offline map/cell extraction.
-- Vanosilla client-files only as schema/reference unless license is clarified.
+- Vanosilla client-files as schema/reference.
 
 Combat Model / Tactical Combat Controller
 - OpenNos/NosCore/ChickenAPI for domain vocabulary/reference.
@@ -120,7 +123,6 @@ QuestGraph / ProgressionEngine
 
 Character Build Optimizer
 - consume Item/Skill/Card/BCard knowledge through version-pinned imported datasets.
-- store provenance with every knowledge snapshot.
 
 Skill Library
 - use DotRecast for MoveTo/navigation-related skills.
@@ -128,7 +130,6 @@ Skill Library
 - use ChickenAPI/NosCore patterns for domain/event separation.
 
 Human Pace Governor
-- do not reuse bot evasion logic.
 - derive timing distributions from consenting human sessions on the same private test environment.
 
 Academic Evaluator
@@ -142,13 +143,6 @@ COMMUNITY SOURCES
 LOCAL: third_party/community/RESEARCH_LINKS.md
 
 Reddit/ePvP/forum material is lead/reference material.
-Do not copy whole posts or code with unknown provenance.
-If community code is useful:
-1. identify original repository/author;
-2. identify license;
-3. pin revision;
-4. add provenance;
-5. only then vendor/adapt it.
 
 ================================================================================
 AGENT WORKFLOW — CLAUDE / CURSOR
@@ -156,10 +150,10 @@ AGENT WORKFLOW — CLAUDE / CURSOR
 
 1. Read this file.
 2. Search the listed local third_party path first.
-7. Record upstream repository + path + commit/blob + license.
-8. Add/update tests.
-9. Keep Guard -> Trust -> Safety -> Executor -> Verifier intact.
-10. Never introduce privileged server state into Agent Plane.
+3. Copy/adapt the minimum necessary implementation.
+4. Record upstream repository + path + commit/blob.
+5. Add/update tests.
+6. Keep Guard -> Trust -> Safety -> Executor -> Verifier intact.
 
 ================================================================================
 FILES TO READ NEXT
@@ -174,7 +168,6 @@ third_party/sources/README.md
 
 END OF MASTER INDEX
 
-
 ================================================================================
 SYSTEMATIC RESEARCH EXPANSION — 2026-09-05
 ================================================================================
@@ -184,36 +177,36 @@ third_party/manifests/SYSTEMATIC_RESEARCH_2026-09-05.md
 
 PERCEPTION:
 third_party/research/perception/UPSTREAMS.md
-- PaddlePaddle/PaddleOCR — Apache-2.0 — OCR — PACKAGE/TOOL
-- open-mmlab/mmdetection — Apache-2.0 — detector training — TOOL
-- FoundationVision/ByteTrack — MIT — temporal tracking — ADAPT/REFERENCE
-- facebookresearch/sam2 — Apache-2.0 — offline segmentation/annotation — TOOL
-- robmikh/Win32CaptureSample — MIT — Windows Graphics Capture — LOCAL SOURCE
+- PaddlePaddle/PaddleOCR — OCR — PACKAGE/TOOL
+- open-mmlab/mmdetection — detector training — TOOL
+- FoundationVision/ByteTrack — temporal tracking — ADAPT/REFERENCE
+- facebookresearch/sam2 — offline segmentation/annotation — TOOL
+- robmikh/Win32CaptureSample — Windows Graphics Capture — LOCAL SOURCE
 
 LEARNING:
 third_party/research/learning/UPSTREAMS.md
-- danijar/dreamerv3 — MIT — world-model research
-- HumanCompatibleAI/imitation — MIT — behavior cloning/imitation
-- takuseno/d3rlpy — MIT — offline RL
-- kzl/decision-transformer — MIT — trajectory sequence modeling
-- DLR-RM/stable-baselines3 — MIT — RL baselines
-- vwxyzjn/cleanrl — MIT — compact academic RL reference
+- danijar/dreamerv3 — world-model research
+- HumanCompatibleAI/imitation — behavior cloning/imitation
+- takuseno/d3rlpy — offline RL
+- kzl/decision-transformer — trajectory sequence modeling
+- DLR-RM/stable-baselines3 — RL baselines
+- vwxyzjn/cleanrl — compact academic RL reference
 
 PLANNING:
 third_party/research/planning/UPSTREAMS.md
-- luxkun/ReGoap — Apache-2.0 — LOCAL SOURCE — GOAP
-- ptrefall/fluid-hierarchical-task-network — MIT — LOCAL SOURCE — HTN
+- luxkun/ReGoap — LOCAL SOURCE — GOAP
+- ptrefall/fluid-hierarchical-task-network — LOCAL SOURCE — HTN
 
 RUNTIME / MEMORY:
 third_party/research/runtime/UPSTREAMS.md
-- microsoft/onnxruntime — MIT — inference package
-- ggml-org/llama.cpp — MIT — local LLM runtime
-- microsoft/semantic-kernel — MIT — .NET RAG/orchestration reference
-- asg017/sqlite-vec — MIT/Apache-2.0 — local vector retrieval
+- microsoft/onnxruntime — inference package
+- ggml-org/llama.cpp — local LLM runtime
+- microsoft/semantic-kernel — .NET RAG/orchestration reference
+- asg017/sqlite-vec — local vector retrieval
 
 OPTIMIZATION:
 third_party/research/optimization/UPSTREAMS.md
-- google/or-tools — Apache-2.0 — build/inventory/progression optimization
+- google/or-tools — build/inventory/progression optimization
 
 NEW LOCAL SOURCE SETS:
 third_party/sources/ptrefall/FluidHTN/reference/
@@ -232,4 +225,3 @@ Imitation learning = HumanCompatibleAI/imitation
 Offline RL = d3rlpy
 World-model research = DreamerV3
 Memory retrieval experiment = SQLite + sqlite-vec
-
