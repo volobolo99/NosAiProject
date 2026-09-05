@@ -1,6 +1,6 @@
 # NosAi Dashboard — Live Data & Practical Test Center
 
-Version: 1.0  
+Version: 1.1  
 Date: 2026-09-05  
 Status: CANONICAL PRODUCT REQUIREMENT
 
@@ -67,7 +67,14 @@ No test may use server DB, GM/mod/admin controls, hidden server state, secret cr
 - Core practical-test contracts: implemented.
 - T1–T4 live snapshot evaluator: implemented in `LivePracticalTestService`.
 - Existing certification suites: already exposed by the Control Panel.
-- WPF Test Center visual integration: next integration step.
-- 250 ms WPF live refresh: target; current console polling remains a slower baseline until the bounded live-stream subscription is integrated.
+- WPF Live Test Center window: implemented and reachable with `Ctrl+F9`.
+- Live monitor polling target: 250 ms in the Test Center.
+- T1–T4 are evaluable from canonical `/api/gate1` data; T5–T10 remain `BLOCKED` until their concrete live verification paths are implemented.
 
-The distinction is intentional: the repository must not claim real-time verification before the live stream is physically exercised against the private test client.
+## Explicit limits
+
+T2 currently verifies that the client window is detected and visible; this is **not yet proof of an acquired Windows Graphics Capture frame**.
+
+T4 currently verifies decoded packet availability; this is **not yet proof of a complete WorldState**.
+
+The repository must not claim live-game verification until the corresponding capabilities are physically exercised against the private test client.
