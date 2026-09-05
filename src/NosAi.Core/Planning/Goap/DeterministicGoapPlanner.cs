@@ -23,11 +23,14 @@ public sealed class DeterministicGoapPlanner
     {
         count = 0;
         fault = FaultCode.None;
-        if (output.IsEmpty) { fault = FaultCode.Timeout; return false; }
+        if (output.IsEmpty)
+        {
+            fault = FaultCode.Timeout;
+            return false;
+        }
 
         var states = new List<Node>(_maxNodes);
-        var root = new FactState(initial);
-        states.Add(new Node(root, -1, 0));
+        states.Add(new Node(new FactState(initial), -1, 0));
         var expanded = 0;
 
         for (var i = 0; i < states.Count && expanded < _maxNodes; i++)
@@ -36,23 +39,51 @@ public sealed class DeterministicGoapPlanner
             if (current.State.Satisfies(goal))
             {
                 var reverse = new List<int>();
-                for (var n = i; n != 0; n = states[n].ParentIndex) reverse.Add(states[n].ActionIndex);
-                if (reverse.Count > output.Length) { fault = FaultCode.Timeout; return false; }
+                var nodeIndex = i;
+                while (nodeIndex != 0)
+                {
+                    var node = states[nodeIndex];
+                    reverse.Add(node.ActionIndex);
+                    nodeIndex = node.ParentIndex;
+                }
+
+                if (reverse.Count > output.Length)
+                {
+                    fault = FaultCode.Timeout;
+                    return false;
+                }
+
                 reverse.Reverse();
-                for (var j = 0; j < reverse.Count; j++) output[j] = _actions[reverse[j]].Step;
+                for (var j = 0; j < reverse.Count; j++)
+                    output[j] = _actions[reverse[j]].Step;
+
                 count = reverse.Count;
                 return true;
             }
 
             expanded++;
-            for (var a = 0; a < _actions.Count; a++)
+            for (var actionIndex = 0; actionIndex < _actions.Count; actionIndex++)
             {
-                var action = _actions[a];
-                if (!current.State.Satisfies(action.Preconditions.Span)) continue;
+                var action = _actions[actionIndex];
+                if (!current.State.Satisfies(action.Preconditions.Span))
+                    continue;
+
                 var next = current.State.Apply(action.Effects.Span);
-                if (states.Exists(n => n.State.Equals(next))) continue;
-                states.Add(new Node(next, i, a));
-                if (states.Count >= _maxNodes) break;
+                var duplicate = false;
+                for (var stateIndex = 0; stateIndex < states.Count; stateIndex++)
+                {
+                    if (!states[stateIndex].State.Equals(next))
+                        continue;
+                    duplicate = true;
+                    break;
+                }
+
+                if (duplicate)
+                    continue;
+
+                states.Add(new Node(next, i, actionIndex));
+                if (states.Count >= _maxNodes)
+                    break;
             }
         }
 
@@ -65,34 +96,63 @@ public sealed class DeterministicGoapPlanner
     private readonly struct FactState : IEquatable<FactState>
     {
         private readonly Dictionary<string, int> _facts;
+
         public FactState(ReadOnlySpan<GoapFact> facts)
         {
             _facts = new Dictionary<string, int>(StringComparer.Ordinal);
-            foreach (var fact in facts) _facts[fact.Key] = fact.Value;
+            foreach (var fact in facts)
+                _facts[fact.Key] = fact.Value;
         }
+
         private FactState(Dictionary<string, int> facts) => _facts = facts;
+
         public bool Satisfies(ReadOnlySpan<GoapFact> facts)
         {
             foreach (var fact in facts)
-                if (!_facts.TryGetValue(fact.Key, out var value) || value != fact.Value) return false;
+            {
+                if (!_facts.TryGetValue(fact.Key, out var value) || value != fact.Value)
+                    return false;
+            }
+
             return true;
         }
+
         public FactState Apply(ReadOnlySpan<GoapFact> effects)
         {
             var copy = new Dictionary<string, int>(_facts, StringComparer.Ordinal);
-            foreach (var effect in effects) copy[effect.Key] = effect.Value;
+            foreach (var effect in effects)
+                copy[effect.Key] = effect.Value;
             return new FactState(copy);
         }
-        public bool Equals(FactState other) => _facts.Count == other._facts.Count && _facts.All(x => other._facts.TryGetValue(x.Key, out var v) && v == x.Value);
+
+        public bool Equals(FactState other)
+        {
+            if (_facts.Count != other._facts.Count)
+                return false;
+
+            foreach (var pair in _facts)
+            {
+                if (!other._facts.TryGetValue(pair.Key, out var value) || value != pair.Value)
+                    return false;
+            }
+
+            return true;
+        }
+
         public override bool Equals(object? obj) => obj is FactState other && Equals(other);
+
         public override int GetHashCode()
         {
+            var keys = _facts.Keys.ToArray();
+            Array.Sort(keys, StringComparer.Ordinal);
+
             var hash = new HashCode();
-            foreach (var pair in _facts.OrderBy(x => x.Key, StringComparer.Ordinal))
+            foreach (var key in keys)
             {
-                hash.Add(pair.Key, StringComparer.Ordinal);
-                hash.Add(pair.Value);
+                hash.Add(key, StringComparer.Ordinal);
+                hash.Add(_facts[key]);
             }
+
             return hash.ToHashCode();
         }
     }
