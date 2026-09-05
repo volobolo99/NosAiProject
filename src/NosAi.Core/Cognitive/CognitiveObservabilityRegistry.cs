@@ -4,12 +4,14 @@ namespace NosAi.Core.Cognitive;
 public static class CognitiveObservabilityRegistry
 {
     private static readonly object Gate = new();
-    private static ICognitiveObservabilityReader? _current;
+    private static ICognitiveObservabilityReader _current = new InMemoryCognitiveObservability();
 
-    public static ICognitiveObservabilityReader? Current
+    public static ICognitiveObservabilityReader Current
     {
         get { lock (Gate) return _current; }
     }
+
+    public static ICognitiveObservabilityReader Reader => Current;
 
     public static void Publish(ICognitiveObservabilityReader reader)
     {
@@ -22,7 +24,8 @@ public static class CognitiveObservabilityRegistry
         ArgumentNullException.ThrowIfNull(reader);
         lock (Gate)
         {
-            if (ReferenceEquals(_current, reader)) _current = null;
+            if (ReferenceEquals(_current, reader))
+                _current = new InMemoryCognitiveObservability();
         }
     }
 }
