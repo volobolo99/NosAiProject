@@ -1,17 +1,17 @@
 # NosAiProject — Architettura del Sistema
 
-**Versione:** 2.0  
+**Versione:** 2.1  
 **Data:** 2026-09-05  
 **Stato:** CANONICO  
 **Ambiente target:** Windows PC + client NosTale in ambiente privato educativo/test
 
-> Questo documento descrive **come è costruito NosAi**, quali componenti esistono, come comunicano e dove sono i confini di autorità. Le descrizioni sono brevi, ma ogni area è rappresentata.
+> Questo documento descrive come è costruito NosAi, quali componenti esistono, come comunicano e dove sono i confini di autorità. Le descrizioni sono brevi, ma ogni area è rappresentata.
 
 ---
 
 ## 1. Obiettivo architetturale
 
-NosAi è progettato come un **autonomous player osservazionale e verificabile**.
+NosAi è progettato come un **autonomous player osservazionale, adattivo e verificabile**.
 
 Il ciclo fondamentale è:
 
@@ -51,14 +51,14 @@ Nessun componente AI può saltare i controlli e passare direttamente all'esecuzi
 ┌─────────────────────────────────────────────────────────────┐
 │                    NOSAI RUNTIME HOST                       │
 │                                                             │
-│  Scheduler / Session / Watchdog / Recovery / Resources      │
+│ Scheduler / Session / Watchdog / Recovery / Resources       │
 └──────────────────────────────┬──────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    OBSERVATION LAYER                        │
 │                                                             │
-│ Network │ Client Memory │ Screen/CV/OCR │ OS Telemetry      │
+│ Network │ Client Memory │ Screen/CV/OCR │ OS │ Hardware     │
 └──────────────────────────────┬──────────────────────────────┘
                                │
                                ▼
@@ -161,7 +161,7 @@ NosAiProject/
 - `docs/` contiene architettura, decisioni e procedure.
 - `proto/` contiene contratti di comunicazione.
 - `scripts/` contiene automazione riproducibile.
-- `third_party/` contiene dipendenze di terze parti e **non deve essere cancellato o alterato senza una decisione esplicita di licensing/provenienza**.
+- `third_party/` contiene dipendenze di terze parti e non deve essere cancellato o alterato senza una decisione esplicita di licensing/provenienza.
 
 ---
 
@@ -171,9 +171,7 @@ NosAiProject/
 
 Nucleo di dominio e contratti condivisi.
 
-Contiene concetti indipendenti dall'I/O: stato, modelli, contratti, policy e logica riutilizzabile.
-
-**Dipendenze:** deve rimanere il più indipendente possibile da client, UI e infrastruttura.
+Contiene stato, modelli, contratti, policy e logica riutilizzabile.
 
 ### `NosAi.Runtime`
 
@@ -185,7 +183,7 @@ Coordina osservazione, world model, decisione, sicurezza, esecuzione, verifica, 
 
 ### `NosAi.ControlPanel`
 
-Dashboard Windows per osservabilità e controllo operativo consentito.
+Dashboard Windows per osservabilità e controllo operativo autorizzato.
 
 Visualizza stato runtime, telemetria, eventi, trace, test e diagnostica.
 
@@ -195,9 +193,9 @@ Visualizza stato runtime, telemetria, eventi, trace, test e diagnostica.
 
 ## 5. Runtime Host
 
-Il Runtime Host coordina il ciclo principale.
+Coordina il ciclo principale.
 
-Responsabilità principali:
+Responsabilità:
 
 - bootstrap;
 - configurazione;
@@ -210,25 +208,30 @@ Responsabilità principali:
 - resource management;
 - collegamento dei moduli.
 
-Il Runtime Host non deve contenere logica di dominio eccessiva: deve coordinare, non diventare un monolite.
+Il Runtime Host coordina; non deve diventare un monolite di dominio.
 
 ---
 
 ## 6. Observation Layer
 
-### Fonti ammesse
+### Fonti tecniche disponibili
+
+NosAi può utilizzare le capacità tecnologiche e informatiche disponibili nel proprio ambiente, tra cui:
 
 ```text
-Client-visible network
-        │
-Legitimately readable client memory
-        │
+Rete / protocolli osservabili
+Memoria del client e del sistema locale
 Screen / pixels / OCR / CV
-        │
-Local OS / hardware telemetry
-        │
-NosAi-owned state
+Filesystem
+Processi e finestre
+API Windows
+CPU / GPU / RAM / storage
+Input e periferiche
+Telemetry e diagnostica
+Software e librerie locali
 ```
+
+La lista è estensibile: una tecnologia non è esclusa solo perché non è elencata qui.
 
 ### Principio
 
@@ -246,7 +249,7 @@ Ogni dato importante deve poter indicare:
 
 `LiveObservationGateway` unifica client baseline e gameplay observation in uno snapshot immutabile.
 
-È read-only e non possiede autorità di esecuzione.
+È read-only rispetto alla sorgente osservata e non possiede autorità di esecuzione.
 
 ---
 
@@ -266,10 +269,10 @@ Capture
  → Semantic Observation
 ```
 
-### Componenti
+Componenti principali:
 
-- **Capture:** acquisisce il frame del client.
-- **ROI:** limita l'area analizzata.
+- **Capture:** acquisisce immagini o dati disponibili.
+- **ROI:** limita l'area analizzata quando conveniente.
 - **CV/YOLO:** rileva elementi visivi.
 - **OCR:** legge testo e UI.
 - **Tracking:** stabilizza le osservazioni nel tempo.
@@ -302,18 +305,9 @@ WorldState
 └── Partner
 ```
 
-### WorldState Store
+`WorldStateStore` mantiene versioni successive dello stato.
 
-Mantiene versioni successive dello stato.
-
-Ogni aggiornamento deve conservare almeno:
-
-- versione;
-- versione precedente;
-- observation id;
-- sorgente;
-- confidence;
-- timestamp.
+Ogni aggiornamento conserva almeno versione, observation id, sorgente, confidence e timestamp.
 
 ---
 
@@ -339,17 +333,7 @@ Movement
 Verification
 ```
 
-Supporta progressivamente:
-
-- coordinate;
-- celle;
-- ostacoli;
-- aree osservate;
-- landmark;
-- portali;
-- transizioni;
-- versioni della mappa;
-- pathfinding globale e locale.
+Supporta coordinate, celle, ostacoli, aree osservate, landmark, portali, transizioni, versioni della mappa e pathfinding globale/locale.
 
 ---
 
@@ -357,19 +341,19 @@ Supporta progressivamente:
 
 ### Combat Model
 
-Rappresenta HP, MP, target, skill, cooldown, distanza, minacce e stato combattimento.
+HP, MP, target, skill, cooldown, distanza, minacce e stato combattimento.
 
 ### Quest Model
 
-Rappresenta missioni, obiettivi, prerequisiti, progressione e stato corrente.
+Missioni, obiettivi, prerequisiti, progressione e stato corrente.
 
 ### Character Model
 
-Rappresenta livello, statistiche, equipaggiamento, inventario, risorse e progressione.
+Livello, statistiche, equipaggiamento, inventario, risorse e progressione.
 
 ### Party Model
 
-Rappresenta party, pet e partner osservati e rilevanti per la decisione.
+Party, pet e partner osservati e rilevanti per la decisione.
 
 ---
 
@@ -377,17 +361,9 @@ Rappresenta party, pet e partner osservati e rilevanti per la decisione.
 
 Prevede gli effetti delle possibili azioni.
 
-Esempi:
+Esempi: percorso, rischio combattimento, consumo risorse, tempo stimato e risultato atteso.
 
-- percorso più breve;
-- rischio combattimento;
-- consumo risorse;
-- tempo stimato;
-- risultato atteso.
-
-Output principale:
-
-`PredictedOutcome`
+Output principale: `PredictedOutcome`.
 
 La simulazione è **advisory**: non può dichiarare realtà di gioco.
 
@@ -414,23 +390,7 @@ Il ranking non esegue azioni.
 
 ## 13. Strategic Orchestrator
 
-Decide **quale obiettivo perseguire** in base allo stato corrente e alle priorità.
-
-Esempi:
-
-```text
-Sopravvivere
-↓
-Recuperare risorse
-↓
-Completare quest
-↓
-Combattere
-↓
-Esplorare
-↓
-Progredire
-```
+Decide quale obiettivo perseguire in base allo stato corrente e alle priorità.
 
 Coordina i planner senza bypassare Guard e Safety.
 
@@ -460,14 +420,7 @@ Può proporre interpretazioni, strategie o candidati.
 
 Controllo preliminare dell'azione.
 
-Verifica:
-
-- validità del piano;
-- prerequisiti;
-- coerenza dello stato;
-- policy;
-- limiti;
-- rischio evidente.
+Verifica validità del piano, prerequisiti, coerenza dello stato, policy, limiti e rischio evidente.
 
 Output: decisione strutturata di ammissione o rifiuto.
 
@@ -477,20 +430,11 @@ Output: decisione strutturata di ammissione o rifiuto.
 
 Definisce se il piano ha sufficiente autorità per procedere.
 
-Principio fondamentale:
-
 ```text
 Decisione AI ≠ Autorizzazione
 ```
 
-Il Trust non viene aumentato automaticamente da:
-
-- LLM;
-- Recovery;
-- Watchdog;
-- UI;
-- EventBus;
-- risultati non verificati.
+Il Trust non viene aumentato automaticamente da LLM, Recovery, Watchdog, UI, EventBus o risultati non verificati.
 
 ---
 
@@ -512,27 +456,17 @@ Executor
 
 Un `DENY` blocca l'azione corrente.
 
-Safety non delega la propria autorità a modelli probabilistici.
-
 ---
 
 ## 18. Execution Layer
 
 L'Executor esegue esclusivamente azioni autorizzate.
 
-### Adapter
-
 Il Game Adapter separa il dominio dall'I/O concreto.
 
-Canali ammessi:
+Tecnologie locali e di sistema disponibili possono essere utilizzate quando tecnicamente appropriate. Non esiste un vincolo artificiale che limiti il progetto a mouse e tastiera: la scelta del canale dipende dall'architettura e dall'ambiente di esecuzione.
 
-- API Windows ordinarie;
-- mouse;
-- tastiera;
-- meccanismi client-side consentiti;
-- altri canali osservabili e non privilegiati previsti dall'architettura.
-
-L'Executor non deve ottenere hidden state o privilegi server.
+L'Executor non deve dipendere da credenziali o accessi amministrativi del server di gioco.
 
 ---
 
@@ -552,13 +486,11 @@ PASS / FAIL / UNKNOWN
 
 Un'azione non verificata non diventa automaticamente successo.
 
-Il Verifier alimenta WorldState, Memory e Recovery.
-
 ---
 
 ## 20. Recovery Controller
 
-Gestisce gli errori senza bypassare la sicurezza.
+Gestisce gli errori senza bypassare i confini di autorizzazione.
 
 Strategie:
 
@@ -571,8 +503,6 @@ Critical Deadlock
 ```
 
 Include circuit breaker e backoff.
-
-Recovery può cambiare strategia o modalità, ma non concede nuova autorità di Trust.
 
 ---
 
@@ -592,37 +522,19 @@ STOPPED
 
 Può fermare o degradare il runtime secondo policy.
 
-Non esegue direttamente azioni di gioco.
-
 ---
 
 ## 22. Adaptive Throttling
 
-Adatta il carico alle risorse disponibili.
+Adatta il carico alle risorse disponibili: CPU, GPU, VRAM, RAM, temperatura, I/O, rete, latenza ed errori critici.
 
-Input principali:
-
-- CPU;
-- GPU;
-- VRAM;
-- RAM;
-- temperatura;
-- I/O;
-- rete;
-- latenza;
-- errori critici.
-
-Output:
-
-`ResourcePlan`
+Output: `ResourcePlan`.
 
 Il throttler decide il carico, non l'autorizzazione alle azioni.
 
 ---
 
 ## 23. Memory & Learning
-
-Ciclo cognitivo operativo:
 
 ```text
 Observation
@@ -638,24 +550,13 @@ Evidence
 Reusable Strategy
 ```
 
-La memoria deve conservare:
-
-- provenienza;
-- confidenza;
-- timestamp;
-- contesto;
-- outcome;
-- evidenze di supporto.
-
-Un fallimento non diventa automaticamente conoscenza valida.
+La memoria conserva provenienza, confidenza, timestamp, contesto, outcome ed evidenze di supporto.
 
 ---
 
 ## 24. Cognitive Runtime Trace
 
 Il trace rappresenta il **flusso tecnico verificabile della decisione**, non il pensiero privato di un modello.
-
-Esempio:
 
 ```text
 OBSERVE        ✓
@@ -678,22 +579,9 @@ La Dashboard può visualizzare questi nodi in sola lettura.
 
 L'EventBus è trasversale e osservazionale.
 
-Eventi principali:
+Eventi principali: runtime, observation, world state, decision, safety, execution, verification, recovery, resource e audit.
 
-- runtime;
-- observation;
-- world state;
-- decision;
-- safety;
-- execution;
-- verification;
-- recovery;
-- resource;
-- audit.
-
-Ogni evento importante dovrebbe avere:
-
-`EventId + SessionId + ExecutionId + Timestamp + Source + Type + SchemaVersion + Payload`
+Ogni evento importante dovrebbe avere `EventId + SessionId + ExecutionId + Timestamp + Source + Type + SchemaVersion + Payload`.
 
 Il bus non è un canale di esecuzione.
 
@@ -711,7 +599,7 @@ Favoriscono scritture efficienti e riducono contention.
 
 ### Replay
 
-Deve permettere analisi e simulazione senza eseguire I/O live.
+Permette analisi e simulazione senza eseguire I/O live.
 
 ### Knowledge Base
 
@@ -719,37 +607,7 @@ Destinata a conoscenza verificata con provenienza e storico delle evidenze.
 
 ---
 
-## 27. PC ↔ Smartphone
-
-Il telefono è un **client di osservabilità/controllo autorizzato**, non il cervello del sistema.
-
-Flusso previsto:
-
-```text
-PC Runtime
-   ↕
-Authenticated Session
-   ↕
-Mobile App
-```
-
-Bring-up:
-
-```text
-HELLO
- → CAPABILITIES
- → AUTH
- → HEARTBEAT / STATUS
- → COMMAND / EVENT
- → ACK / ERROR
- → DISCONNECT
-```
-
-Il trasporto deve verificare autenticazione, sequenza, replay e validità della sessione.
-
----
-
-## 28. Control Panel
+## 27. Control Panel
 
 La Dashboard Windows deve fornire:
 
@@ -768,7 +626,7 @@ La Dashboard Windows deve fornire:
 - errori e recovery;
 - stato Safety.
 
-### Regola architetturale
+Regola:
 
 ```text
 Dashboard → osserva / comanda tramite contratti autorizzati
@@ -777,19 +635,19 @@ Dashboard ≠ Executor
 
 ---
 
-## 29. Gate architetturali
+## 28. Gate architetturali
 
 ### Gate 1 — Physical Spine
 
-Verifica la connessione operativa:
+Verifica:
 
 ```text
-PC ↔ NosTale ↔ Runtime ↔ Dashboard
+PC ↔ Client NosTale ↔ Runtime ↔ Dashboard
 ```
 
 ### Gate 3 — Decision / Action Safety
 
-Verifica il percorso:
+Verifica:
 
 ```text
 Observe
@@ -797,6 +655,7 @@ Observe
  → Simulation
  → Ranking
  → Guard
+ → Trust
  → Safety
  → Execute
  → Verify
@@ -804,7 +663,7 @@ Observe
 
 ### Gate finali
 
-Ogni capacità live deve passare da:
+Ogni capacità live passa da:
 
 ```text
 Present
@@ -820,23 +679,41 @@ La sola presenza del codice non è evidenza di funzionamento.
 
 ---
 
-## 30. Sicurezza e confini non negoziabili
+## 29. Sicurezza e confini di accesso
 
-1. Nessun LLM esegue direttamente.
-2. Perception non esegue.
-3. Simulation non esegue.
-4. Ranking non esegue.
-5. Recovery non aumenta Trust.
-6. Watchdog non aumenta Trust.
-7. AdaptiveThrottler non autorizza azioni.
-8. Safety può bloccare qualsiasi azione.
-9. Verifier decide se l'esito è osservabilmente riuscito.
-10. EventBus non diventa execution path.
-11. UI non bypassa Safety.
-12. Nessun server DB o admin tool è richiesto.
-13. Nessun hidden/debug state può diventare sorgente decisionale.
-14. Nessuna automazione hardware esterna è necessaria oltre ai dispositivi di input consentiti.
-15. `third_party/` deve mantenere provenienza e licenze.
+### Principio generale
+
+NosAi può utilizzare **tutta la tecnologia e l'informatica disponibili nel proprio ambiente di esecuzione**: hardware, software, API, librerie, filesystem, processi, memoria, rete, acquisizione video, OCR/CV, GPU, CPU, storage, periferiche, automazione software e altri strumenti tecnicamente disponibili.
+
+Non viene imposto un limite artificiale alla tecnologia solo perché è avanzata o sofisticata.
+
+### Vietato in modo assoluto
+
+Sono fuori architettura e non devono mai diventare dipendenze del progetto:
+
+1. **dati di accesso amministratore al server**;
+2. **account amministratore del server**;
+3. **account GM, moderatore o equivalenti**;
+4. **dati di accesso al server riservati a ruoli privilegiati**;
+5. **credenziali o dati di accesso al database server**;
+6. **accesso diretto al database del server**;
+7. **qualsiasi credenziale, token o chiave il cui scopo sia ottenere uno dei privilegi sopra indicati**.
+
+### Non è vietato
+
+L'uso di tecnologie locali, analisi tecnica, reverse engineering del client, osservazione della rete, lettura della memoria del client, computer vision, OCR, debugging locale, profiling, strumenti Windows, API di sistema, GPU/NPU/CPU, storage, automazione software e altre tecniche informatiche resta disponibile al progetto, purché non richieda o introduca uno degli accessi server privilegiati vietati sopra.
+
+---
+
+## 30. Smartphone
+
+**RIMOSSO.**
+
+Lo smartphone, l'app mobile e la comunicazione PC↔smartphone **non fanno più parte di NosAiProject**.
+
+Non sono componenti runtime, non sono requisiti, non sono canali di controllo, non sono canali di telemetria e non fanno parte dei gate.
+
+Qualsiasi precedente documentazione che descriva smartphone/mobile deve essere considerata obsoleta e rimossa o aggiornata durante la bonifica documentale.
 
 ---
 
@@ -854,13 +731,7 @@ ROI Processing
 Adaptive Inference
 ```
 
-Obiettivi:
-
-- bassa latenza sul percorso critico;
-- p50/p95/p99 misurabili;
-- niente crescita memoria incontrollata;
-- nessuna inferenza pesante dentro Safety;
-- degradazione controllata sotto pressione hardware.
+Obiettivi: bassa latenza, p50/p95/p99 misurabili, niente crescita memoria incontrollata, nessuna inferenza pesante dentro Safety e degradazione controllata sotto pressione hardware.
 
 ---
 
@@ -874,25 +745,13 @@ Baseline di progetto:
 - 16 GB DDR5;
 - SSD esterno dedicato al progetto/runtime.
 
-Il runtime deve rilevare le caratteristiche reali invece di assumere un SKU fisso.
-
-La temperatura, VRAM, RAM e potenza disponibile sono **capacità dinamiche**.
+Il runtime deve rilevare le caratteristiche reali invece di assumere uno SKU fisso.
 
 ---
 
 ## 33. AI Provider Router
 
-Seleziona il provider più adatto in base a:
-
-- latenza;
-- privacy;
-- costo computazionale;
-- RAM/VRAM;
-- GPU;
-- temperatura;
-- carico;
-- disponibilità;
-- qualità recente.
+Seleziona il provider più adatto in base a latenza, costo computazionale, RAM/VRAM, GPU, temperatura, carico, disponibilità e qualità recente.
 
 Tier indicativi:
 
@@ -919,24 +778,15 @@ Miniland Adapter
 Client Integration
 ```
 
-Questo permette test deterministici con adapter simulati e successiva integrazione reale attraverso i normali confini di sicurezza.
+Questo permette test deterministici con adapter simulati e integrazione reale attraverso i confini di sicurezza.
 
 ---
 
 ## 35. Progressione del personaggio
 
-Il progression engine dovrà modellare:
+Il progression engine modella quest, prerequisiti, missioni concatenate, TS, SP, equipaggiamento, risorse e obiettivi di livello.
 
-- quest;
-- prerequisiti;
-- missioni concatenate;
-- TS;
-- SP;
-- equipaggiamento;
-- risorse;
-- obiettivi di livello.
-
-La progressione diventa operativa solo quando collegata a WorldState, Simulation, Planning, Execution e Verification.
+La progressione diventa operativa quando collegata a WorldState, Simulation, Planning, Execution e Verification.
 
 ---
 
@@ -982,8 +832,7 @@ La progressione diventa operativa solo quando collegata a WorldState, Simulation
 | Verifier | Recovery | Failure Evidence |
 | Runtime | EventBus | RuntimeEvent |
 | Runtime | Dashboard | Telemetry / Trace |
-| WorldState | Mobile | Versioned / Delta State |
-| Mobile | Runtime | Authenticated Command |
+| Runtime | Local Storage | Session / Memory / Evidence |
 
 ---
 
@@ -1010,7 +859,6 @@ La progressione diventa operativa solo quando collegata a WorldState, Simulation
 ### Da integrare o verificare
 
 - full live perception production pipeline;
-- end-to-end PC ↔ smartphone;
 - provider AI produttivi;
 - binding Protobuf completo nella toolchain;
 - replay durevole completo;
