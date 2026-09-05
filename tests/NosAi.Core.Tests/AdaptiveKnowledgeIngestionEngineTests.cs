@@ -1,5 +1,6 @@
 using NosAi.Core.Knowledge;
 using NosAi.Core.Memory;
+using Xunit;
 
 namespace NosAi.Core.Tests;
 
@@ -23,7 +24,7 @@ public sealed class AdaptiveKnowledgeIngestionEngineTests
             var candidate = await engine.IngestAsync(
                 source,
                 "Spider Raid button sequence",
-                KnowledgeScope.Context,
+                NosAi.Core.Knowledge.KnowledgeScope.Context,
                 new Dictionary<string, string> { ["rulesetVersion"] = "2026" });
 
             Assert.Equal(KnowledgeLifecycle.Candidate, candidate.Lifecycle);
@@ -48,7 +49,7 @@ public sealed class AdaptiveKnowledgeIngestionEngineTests
         var candidate = new KnowledgeCandidate(
             "candidate-1",
             "Lure grouping",
-            KnowledgeScope.Context,
+            NosAi.Core.Knowledge.KnowledgeScope.Context,
             null,
             null,
             "2026",
@@ -82,7 +83,7 @@ public sealed class AdaptiveKnowledgeIngestionEngineTests
                 "Hidden server state");
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await engine.IngestAsync(source, "hidden state", KnowledgeScope.Environment));
+                await engine.IngestAsync(source, "hidden state", NosAi.Core.Knowledge.KnowledgeScope.Environment));
         }
         finally
         {

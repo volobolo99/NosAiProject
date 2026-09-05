@@ -1,4 +1,5 @@
 using NosAi.Core.Memory;
+using Xunit;
 
 namespace NosAi.Core.Tests.Memory;
 

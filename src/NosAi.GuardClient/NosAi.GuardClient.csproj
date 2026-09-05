@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>NosAi.GuardClient</RootNamespace>
+    <AssemblyName>NosAi.GuardClient</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- Plain net8.0, no Windows dependency: this is the phone side of the ADR-0006
+         channel (see src/NosAi.GuardAi.App/README.md), so it has to build for the
+         net8.0-android host it ships in as well as for the Windows loopback tests
+         in tests/NosAi.Runtime.Tests that drive both ends of the handshake. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WireHeader, WireMessageType, PooledWireBuffer and SequenceGuard live in
+         NosAi.Runtime.Gate1 (src/NosAi.Protocol), the one assembly the runtime and
+         the phone are both required to agree on. -->
+    <ProjectReference Include="..\NosAi.Protocol\NosAi.Protocol.csproj" />
+  </ItemGroup>
+</Project>

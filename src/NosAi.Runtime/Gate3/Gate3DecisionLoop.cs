@@ -38,8 +38,8 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
         _interval = interval ?? DefaultInterval;
         if (_interval <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(interval));
         _clock = clock ?? TimeProvider.System;
-        _cognitive = cognitive ?? CognitiveObservabilityRegistry.Current as ICognitiveObservabilitySink ?? new InMemoryCognitiveObservability();
-        if (_cognitive is ICognitiveObservabilityReader reader) CognitiveObservabilityRegistry.Publish(reader);
+        _cognitive = cognitive ?? NosAi.Core.Cognitive.CognitiveObservabilityRegistry.Current as ICognitiveObservabilitySink ?? new InMemoryCognitiveObservability();
+        if (_cognitive is ICognitiveObservabilityReader reader) NosAi.Core.Cognitive.CognitiveObservabilityRegistry.Publish(reader);
     }
 
     public Gate3ExecutionOrchestrator Orchestrator => _orchestrator;

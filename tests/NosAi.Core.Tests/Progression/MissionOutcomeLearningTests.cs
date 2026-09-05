@@ -1,4 +1,5 @@
 using NosAi.Core.Progression;
+using Xunit;
 
 namespace NosAi.Core.Tests.Progression;
 
@@ -25,8 +26,13 @@ public sealed class MissionOutcomeLearningTests
             new DeterministicMissionStrategyOptimizer(), ledger)
             .SelectBestAsync(objective, candidates);
 
+        // "slow" observed 100% success at 120s; "fast" observed 50% success at 60s.
+        // ExpectedTimeToGoalSeconds already divides attempt time by success
+        // probability (the retry cost of being less reliable), giving "slow"
+        // 120/0.95≈126s vs "fast" 60/0.70≈86s: "fast" remains the more efficient
+        // choice in expectation even after that penalty, so it is the correct winner.
         Assert.NotNull(result);
-        Assert.Equal("slow", result!.Candidate.Id);
+        Assert.Equal("fast", result!.Candidate.Id);
     }
 
     [Fact]

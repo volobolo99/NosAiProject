@@ -45,8 +45,16 @@ jobs:
         # miss a test project nested more than one directory deep, reporting
         # success. This mirrors scripts/test.sh so CI and the scripts agree.
         # No --no-restore: only NosAi.Runtime.csproj was restored above.
+        #
+        # NosAi.ControlPanel.Tests is skipped here: it hosts real WPF windows
+        # (UseWPF, src/NosAi.ControlPanel/NosAi.ControlPanel.csproj), which needs
+        # the Microsoft.WindowsDesktop.App shared runtime. That runtime has no
+        # Linux build at all, so the test host cannot even launch on ubuntu-latest
+        # regardless of what is installed -- this is not an environment gap to
+        # close. dotnet-windows.yml already runs this project's tests on
+        # windows-latest, so coverage is not lost, only moved to where it can run.
         run: |
-          mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*')
+          mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*' -not -name 'NosAi.ControlPanel.Tests.csproj')
           if [ ${#tests[@]} -eq 0 ]; then
             echo "No .NET test projects found; skipping."
           else

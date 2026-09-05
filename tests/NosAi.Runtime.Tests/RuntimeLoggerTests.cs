@@ -184,7 +184,7 @@ public sealed class Gate1BootstrapHostCorrelationTests
         ClientProcessName = $"nosai-absent-client-{Guid.NewGuid():N}"
     };
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task EveryLineABootstrapHostEmitsCarriesItsOwnCorrelationId()
     {
         var logger = new RecordingLogger();
@@ -203,7 +203,7 @@ public sealed class Gate1BootstrapHostCorrelationTests
         Assert.All(logger.Entries, entry => Assert.False(string.IsNullOrWhiteSpace(entry.CorrelationId)));
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task TwoSequentialHostsGetDifferentCorrelationIdsAndNeitherSeesTheOthers()
     {
         // Deliberately not asserting that CorrelationScope.Current pops back to

@@ -1,4 +1,5 @@
 using NosAi.Core.Navigation;
+using Xunit;
 
 namespace NosAi.Core.Tests.Navigation;
 

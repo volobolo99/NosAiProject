@@ -14,7 +14,7 @@ public static class NavigationEvidenceEvaluator
         DateTime nowUtc,
         TimeSpan maxAge)
     {
-        if (before.ObservedAtUtc == default || after.ObservedAtUtc == default)
+        if (before.Provenance == "Unknown" || after.Provenance == "Unknown")
             return NavigationObservation.Unknown(MissingObservationReason, nowUtc);
 
         if (!before.IsFresh(maxAge, nowUtc) || !after.IsFresh(maxAge, nowUtc))

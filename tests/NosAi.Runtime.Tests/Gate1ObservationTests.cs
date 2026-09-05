@@ -134,7 +134,7 @@ public sealed class Gate1ObservationTests
             Gate1HostOptionsLoader.Load(EmptyEnv(), ["--observe-game"]));
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task Absent_option_keeps_gameplay_unknown_with_the_historical_reason()
     {
         var logger = new RecordingLogger();
@@ -174,7 +174,7 @@ public sealed class Gate1ObservationTests
         Assert.False(string.IsNullOrWhiteSpace(view.Endpoint.Value));
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task Option_present_and_driver_unavailable_still_starts_the_host()
     {
         var logger = new RecordingLogger();

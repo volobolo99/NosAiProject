@@ -1,4 +1,5 @@
 using NosAi.Core.Statistics;
+using Xunit;
 
 namespace NosAi.Core.Tests.Statistics;
 

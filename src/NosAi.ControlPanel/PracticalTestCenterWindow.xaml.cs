@@ -50,8 +50,20 @@ public partial class PracticalTestCenterWindow : Window
         if (sender is not Button { Tag: PracticalTestDefinition definition }) return;
         _activeTestId = definition.Id;
         InstructionText.Text = $"Prerequisiti: {definition.Preconditions}\nAzione: {definition.OperatorAction}\nAtteso: {definition.ExpectedObservation}";
+        AcknowledgeButton.IsEnabled = true;
         await RefreshAsync();
         Evaluate(definition);
+    }
+
+    /// <summary>
+    /// The operator confirms they performed <see cref="PracticalTestDefinition.OperatorAction"/>
+    /// in the client. Re-evaluates the active test against the latest snapshot
+    /// immediately, rather than waiting for the next 250 ms poll tick.
+    /// </summary>
+    private void OnAcknowledge(object sender, RoutedEventArgs e)
+    {
+        if (_activeTestId is { } id && PracticalTestCatalog.All.FirstOrDefault(x => x.Id == id) is { } definition)
+            Evaluate(definition);
     }
 
     private async Task RefreshAsync()
