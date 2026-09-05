@@ -1,6 +1,6 @@
 # NosAiProject — Autonomous Player Architecture Baseline
 
-**Version:** 2.0
+**Version:** 2.1
 **Date:** 2026-09-05
 **Status:** CANONICAL
 
@@ -8,7 +8,9 @@
 
 This document defines the architecture for NosAiProject as an autonomous player running on a Windows PC in a private educational/test environment.
 
-The target is operational autonomy: perception, world modelling, mapping, navigation, combat, quest reasoning, character progression, memory, learning, recovery and verification. The system must remain reproducible and non-privileged.
+The target is operational autonomy: perception, world modelling, mapping, navigation, combat, quest reasoning, character progression, memory, learning, recovery and verification.
+
+The project is PC/Windows-first. Smartphone/mobile components are not part of the product architecture.
 
 ## 2. Canonical pipeline
 
@@ -17,7 +19,7 @@ Client / PC Environment
         │
         ▼
 Observation Sources
-(Network | Memory | Screen | Local)
+(Network | Memory | Screen | Local | Hardware | Software)
         │
         ▼
 Sensor Fusion + Provenance
@@ -40,7 +42,7 @@ Utility / Risk Ranking
 Strategic Orchestrator
         │
         ▼
-HTN / Deterministic GOAP / Reactive Rules
+HTN / Deterministic GOAP / Reactive Rules / AI Reasoning
         │
         ▼
 Guard → Trust/Authorization → Safety Gate
@@ -57,7 +59,9 @@ Verification
 ## 3. Layers
 
 ### Observation
-Only client-observable, locally available evidence is admitted: client-visible network traffic, legitimately readable client memory, screen/pixel capture, OCR/CV, local OS telemetry and NosAi-owned state.
+NosAi può sfruttare le tecnologie disponibili nel proprio ambiente di esecuzione: rete, memoria del client e del sistema locale, screen capture, pixel, OCR/CV, filesystem, processi, finestre, API Windows, hardware, periferiche, software, librerie, telemetry e altri strumenti tecnicamente disponibili.
+
+Sono esclusi esclusivamente gli accessi privilegiati al server definiti nella sezione 10.
 
 ### Perception
 Transforms raw observations into typed observations with provenance, timestamp, confidence and freshness. Sensor disagreement reduces confidence rather than silently selecting convenient data.
@@ -72,7 +76,7 @@ Maintains map identity, coordinate system, observed bounds, walkability, landmar
 Combat, quest, character, inventory, equipment, resources, NPCs, mobs, drops and interactables are first-class models linked to WorldState.
 
 ### Planning
-Strategic selection chooses goals; HTN decomposes complex objectives; deterministic cost-aware GOAP selects executable action sequences; reactive rules handle immediate interruptions and recovery.
+Strategic selection chooses goals; HTN decomposes complex objectives; deterministic cost-aware GOAP selects executable action sequences; reactive rules handle immediate interruptions and recovery. AI/LLM reasoning may assist planning but does not bypass Guard, Trust or Safety.
 
 ### Simulation
 Short-horizon deterministic simulation estimates consequences before consequential actions. Simulation is advisory and never authoritative gameplay truth.
@@ -84,7 +88,7 @@ Persistent memory records observations, decisions, outcomes, failures and learne
 Safety is the final execution authority. No LLM, ML model, planner or UI component can bypass it.
 
 ### Execution
-Execution adapters are replaceable. Mouse and keyboard are permitted but optional. No external automation hardware beyond those permitted devices is required or allowed.
+Execution adapters are replaceable. NosAi may use any technically appropriate local/system technology available to the runtime, subject to the absolute server-access prohibitions in section 10.
 
 ### Verification
 Every consequential action must produce an observable result or explicit failure/unknown outcome and feed the next decision cycle.
@@ -109,7 +113,7 @@ NVIDIA lists the RTX 5060 Laptop GPU with 8 GB GDDR7, 3328 CUDA cores and a 45�
 Prioritize WorldState, planning, navigation queries, orchestration, persistence and lightweight preprocessing.
 
 ### GPU
-Prioritize vision inference, object detection, OCR where GPU acceleration is available, embeddings and other batchable inference. Model selection must respect the 8 GB VRAM ceiling.
+Prioritize vision inference, object detection, OCR where GPU acceleration is available, embeddings and other batchable inference. Model selection must respect the actual available VRAM.
 
 ### RAM
 16 GB is the primary system-memory constraint. Avoid loading several large models simultaneously. Use bounded queues, streaming, memory-mapped datasets where useful, explicit caches and aggressive disposal of large frame buffers.
@@ -135,7 +139,7 @@ The runtime chooses the cheapest tier that satisfies the confidence requirement.
 
 ## 7. Capture and perception policy
 
-Windows Graphics Capture is the preferred screen/window capture abstraction when supported. Capture should use frame pools and bounded processing queues. ROI processing is preferred over full-frame inference whenever the target region is known.
+Windows Graphics Capture is a preferred screen/window capture abstraction when supported. Capture should use frame pools and bounded processing queues. ROI processing is preferred over full-frame inference whenever the target region is known.
 
 OCR is treated as one sensor, not as ground truth. Text extracted from quest/dialog/inventory UI must be associated with source region, timestamp and confidence.
 
@@ -167,9 +171,20 @@ Persistent map versions must support partial discovery, invalidation and increme
 - thermal degradation is observable and fail-safe;
 - external SSD throughput/latency is measured on the real laptop.
 
-## 10. Non-privileged invariant
+## 10. Access boundary — absolute server prohibitions
 
-No architectural optimization may introduce a new information channel that an ordinary client cannot observe or use. Performance, AI quality or autonomy must never be improved by server administration, hidden state, debug flags, privileged APIs or external automation hardware.
+NosAi may use the technology and computing capabilities available in its environment. There is no artificial architectural restriction against advanced local technology, reverse engineering, network analysis, memory inspection, debugging, profiling, computer vision, automation, GPU/NPU/CPU computation, Windows APIs, storage, peripherals or other technical methods.
+
+The following are **absolutely prohibited** and must never become dependencies of NosAi:
+
+1. administrator credentials or administrator access data for the game server;
+2. GM, moderator, administrator or equivalent privileged server accounts;
+3. privileged server login credentials or access tokens;
+4. server database credentials;
+5. direct access to the game server database;
+6. private server credentials, keys or tokens whose purpose is to obtain one of the privileged accesses above.
+
+The prohibition is specifically about privileged server administration and direct server-database access. Local technology remains available to the project.
 
 ## 11. Verification hierarchy
 
@@ -178,3 +193,7 @@ Present → Integrated → Done → Verified
 ```
 
 `Verified` requires evidence from the applicable real/test environment. Source presence alone is never verification.
+
+## 12. Product boundary
+
+NosAi is a Windows PC autonomous-player system. Smartphone, mobile app and PC↔smartphone communication are removed from the product scope and are not required by any runtime gate or operational flow.
