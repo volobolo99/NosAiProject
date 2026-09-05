@@ -8,7 +8,7 @@
 
 ---
 
-## Coda attiva (AP-00 → AP-04)
+## Coda attiva (AP-00 → AP-05)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |
 |---|---|---|---|---|---|---|
@@ -41,18 +41,22 @@
 | Q-027 | AP-04 | A1 mancante — Contratto `MovementExecutionEvidence`/`MovementExecutionResult` (evidenza esecuzione movimento, WorldFact-based) | **Claude** | Q-025 | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante" | **DONE** |
 | Q-028 | AP-04 | A2 — `MovementVerificationProjector` (`MovementVerification` reale → `MovementExecutionEvidence`) | DeepSeek | Q-027 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
 | Q-029 | AP-04 | A4 — Comando operatore `--explore` (`ExploreCommand`, chiama `WalkCommand.Execute` con `ActuationAuthority.Commanded`) | DeepSeek | Q-026, Q-028 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
+| Q-030 | AP-05 | A1 — Contratti Combat Intelligence (`CombatActionCandidate`, `CombatConstraintCheck`, `CombatSimulationResult`, `ComboStep`/`ComboPlan`) | **Claude** | Q-018 (eccezione: dipende solo da AP-01) | `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` | **DONE** |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
 I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di proposito**: scriverli ora, prima che i contratti di AP-01 esistano davvero, rischierebbe di fissare dettagli sbagliati che poi vanno disfatti (esattamente il tipo di "casino" da evitare). La regola è: **quando una voce `PENDING` diventa la prima della coda, Claude scrive il suo comando dettagliato (stile dei file già prodotti oggi, non gli stub telegrafici originali) prima di farla partire**, poi la esegue lui stesso o la assegna a DeepSeek a seconda della colonna Esecutore.
 
-## Fasi successive (AP-05 → AP-10) — solo sequenza, nessun dettaglio ancora
+## Fasi successive (AP-06 → AP-10) — solo sequenza, nessun dettaglio ancora
 
-Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata). Routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`). A2/A4 (Q-028/Q-029, DeepSeek) sono `PENDING`, specifica pubblicata: comando operatore `--explore` (`ActuationAuthority.Commanded`, chiama `WalkCommand.Execute` reale invariato) — non un bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è chiusa/hardcoded e le mancano tre pezzi reali, lavoro futuro di AP-08 "Strategic Autonomy + HTN", non di AP-04). A5/A6 seguono a valle di Q-028/Q-029. Le fasi seguenti non hanno ancora task numerati in coda.
+Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata). Routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`). A2/A4 (Q-028/Q-029, DeepSeek) sono `PENDING`, specifica pubblicata: comando operatore `--explore` (`ActuationAuthority.Commanded`, chiama `WalkCommand.Execute` reale invariato) — non un bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è chiusa/hardcoded e le mancano tre pezzi reali, lavoro futuro di AP-08 "Strategic Autonomy + HTN", non di AP-04). A5/A6 seguono a valle di Q-028/Q-029.
+
+AP-05 ha A1 `Present` (Q-030, eccezione dichiarata: dipende solo da AP-01) — vedi `AP-05_A1_STATUS.md`. Prossimo passo reale: Claude scrive AP-05/A3 (generazione candidati da `Player.Skills`/`Cooldowns`/`Mob` in range, simulazione, selezione combo). Prima di specificare AP-05/A2+A4 per DeepSeek, **investigare** (non assumere) se `Gate3Runtime.ActionPlanner` produce già oggi una simulazione di combattimento reale riusabile e se le sue azioni di skill/attacco passano già per Guard/Trust/Safety in modo reale — potrebbe essere un caso diverso da AP-04/movimento, dato che `TryAuthorize`/`SafetyToken` sono già usati lì per skill/attacchi (vedi nota in `AP-05_A1_STATUS.md`).
+
+Le fasi seguenti non hanno ancora task numerati in coda.
 
 | Fase | Obiettivo |
 |---|---|
-| AP-05 | Combat Intelligence — policy di combattimento adattiva con recovery |
 | AP-06 | Quest Intelligence — missioni non hardcoded → grafo verificabile |
 | AP-07 | Character/Inventory/Equipment — azioni di equip motivate e verificate |
 | AP-08 | Strategic Autonomy + HTN — ogni azione deriva da un piano verificabile |
