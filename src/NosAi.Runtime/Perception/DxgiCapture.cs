@@ -382,7 +382,9 @@ public sealed class TripleBufferedCapture : IFrameSource, IDisposable
     private readonly TripleFrameBuffer _buffer = new();
     private readonly CancellationTokenSource _cts = new();
     private readonly Thread _captureThread;
+    private readonly CaptureHealthPolicy _healthPolicy;
     private long _acquireFailures;
+    private long _successfulAcquisitions;
 
     public DataSourceKind Source => _inner.Source;
     public TripleFrameBuffer Buffer => _buffer;
@@ -390,9 +392,16 @@ public sealed class TripleBufferedCapture : IFrameSource, IDisposable
     /// <summary>Acquisition attempts that yielded no frame (idle screen or a lost frame).</summary>
     public long AcquireFailures => Interlocked.Read(ref _acquireFailures);
 
-    public TripleBufferedCapture(IFrameSource inner, bool startImmediately = true)
+    /// <summary>Acquisition attempts that produced a complete frame.</summary>
+    public long SuccessfulAcquisitions => Interlocked.Read(ref _successfulAcquisitions);
+
+    public TripleBufferedCapture(
+        IFrameSource inner,
+        bool startImmediately = true,
+        CaptureHealthPolicy? healthPolicy = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        _healthPolicy = healthPolicy ?? new CaptureHealthPolicy();
         _captureThread = new Thread(CaptureLoop)
         {
             IsBackground = true,
@@ -412,7 +421,11 @@ public sealed class TripleBufferedCapture : IFrameSource, IDisposable
         {
             try
             {
-                if (_inner.TryAcquire(out CaptureFrame frame)) _buffer.Publish(frame);
+                if (_inner.TryAcquire(out CaptureFrame frame))
+                {
+                    Interlocked.Increment(ref _successfulAcquisitions);
+                    _buffer.Publish(frame);
+                }
                 else Interlocked.Increment(ref _acquireFailures);
             }
             catch (ObjectDisposedException) { break; }
@@ -427,6 +440,17 @@ public sealed class TripleBufferedCapture : IFrameSource, IDisposable
 
     /// <summary>Takes the newest published frame; false when none is pending.</summary>
     public bool TryAcquire(out CaptureFrame frame) => _buffer.TryTakeLatest(out frame);
+
+    /// <summary>
+    /// Returns a deterministic point-in-time health classification based only on
+    /// observable capture counters. It does not alter capture behavior.
+    /// </summary>
+    public CaptureHealthSnapshot GetHealthSnapshot()
+        => _healthPolicy.Evaluate(
+            SuccessfulAcquisitions,
+            _buffer.PublishedCount,
+            _buffer.DroppedCount,
+            AcquireFailures);
 
     public void Dispose()
     {
