@@ -109,20 +109,21 @@ In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`
 
 ## Pronto ora
 
-**Nessun file in questo istante** — ma non per struttura, solo per
-sequenza reale: in AP-03 (Map Reconstruction, fase attiva) A2
-(`MapGridObservationProjector`) e A4 (`MapModelStore` +
-`MapReconstructionSource`) erano già stati completati da Claude, o assegnati
-a un agente Claude in background, prima che DeepSeek venisse attivato — non
-rifatti per non sprecare lavoro già fatto e verificato. Questa è l'ultima
-volta che succede: da AP-04 in poi Claude fa partire DeepSeek sui file
-pesanti (A2/A4) appena il contratto A1 minimo necessario esiste, in
-parallelo con il proprio lavoro su A3/A5, non dopo. Vedi "Prossimo lotto"
-sotto per lo stato esatto di AP-04, aggiornato quando Claude apre A1.
-
-Il resto di AP-03 (A5 audit indipendente, A6 integrazione finale) è in corso
-lato Claude in questo momento. Nessuna azione richiesta da DeepSeek su
-AP-03.
+**Sì — AP-04/A2+A4, comando `--explore`.** Specifica completa e precisa:
+`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md`. Non è
+un bridge verso `Gate3Runtime` (un'indagine ha confermato che quella
+pipeline è chiusa/hardcoded e le manca comunque una predizione di
+movimento reale — lavoro futuro di AP-08, non di AP-04): è un nuovo
+comando operatore `--explore` che calcola il `NavigationPlan` (già reale,
+Claude/A3) e lo esegue chiamando **direttamente** `WalkCommand.Execute`
+(già reale, invariato) con `ActuationAuthority.Commanded("--explore")` —
+stessa famiglia legittima di `--walk`, zero bypass di Guard/Trust/Safety.
+File da creare: `MovementVerificationProjector.cs` (A2, piccolo,
+meccanico) + `ExploreCommand.cs` (A4, il lotto pesante) + i rispettivi
+test. Un solo file esistente da toccare, in modo additivo e minimo:
+`WalkCommand.cs` (un parametro opzionale in più su `Execute`, dettagliato
+nella specifica). Tutto il resto nella specifica stessa — seguila alla
+lettera, non improvvisare la forma dei parametri.
 
 ---
 
@@ -147,13 +148,25 @@ il dato, non l'architettura).
 
 **Ambito ristretto di conseguenza, onestamente**: il prossimo lotto di
 AP-04 copre solo esplorazione/routing sulla stessa mappa (nessun portale).
-Claude sta scrivendo AP-04/A3 (selezione frontiera + `NavigationPlan` a
-singolo waypoint) e il contratto A1 mancante per l'evidenza di esecuzione
-movimento; appena pronti, la specifica precisa AP-04/A2+A4 per DeepSeek
-(bridge verso `PathWalkController`/`WalkCommand`, già reali e invariati)
-arriva come comando dedicato. Il routing multi-mappa via portali resta un
-candidato in "Candidati da investigare" sotto, non uno spunto per
-DeepSeek adesso.
+Il routing multi-mappa via portali resta un candidato in "Candidati da
+investigare" sotto, non uno spunto per DeepSeek adesso.
+
+**A3 fatto** (2026-09-05): `ExplorationPlanner` (footprint, ranking
+frontiera, `NavigationPlan` a singolo waypoint) + il contratto A1
+mancante (`MovementExecutionEvidence`/`MovementExecutionResult`). 27 test
+verdi. Dettaglio in `AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante".
+
+**A2+A4 pronto ora**, vedi "Pronto ora" in cima a questo file — non un
+bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è
+chiusa/hardcoded, le manca una predizione di movimento reale, e il suo
+effettore per `MoveToPosition` è un click-teleport, non una camminata
+verificata — tre pezzi mancanti che sono lavoro futuro di AP-08
+"Strategic Autonomy + HTN", non di AP-04). Il ponte reale e costruibile
+oggi è un nuovo comando operatore `--explore` che chiama direttamente
+`WalkCommand.Execute` (già reale, Gate-1-verificato, invariato) con
+un'authority `Commanded` — stessa famiglia legittima di `--walk`, nessun
+bypass di Guard/Trust/Safety, nessuna authority "autonoma" inventata
+(ADR-0020 ne vieta una terza).
 
 Per studiare in anticipo il dominio (non per scrivere codice ancora):
 `third_party/sources/ikpil/DotRecast/` (navmesh/pathfinding di riferimento),
@@ -218,7 +231,7 @@ precisa quando la fase corrispondente parte (mai prima che la precedente sia
 | AP-05 Combat Intelligence | adapter di osservazione combattimento, evidenza target/stato | orchestrazione azioni a runtime attraverso Guard/Trust/Safety esistenti |
 | AP-06 Quest Intelligence | adapter osservazione quest e UI/eventi | integrazione stato quest a runtime |
 | AP-07 Character/Inventory/Equipment | adapter osservazione inventario/personaggio client-osservabile | integrazione controllo personaggio a runtime e verifica |
-| AP-08 Strategic Autonomy | adapter di aggregazione attenzione/stato | integrazione orchestratore/ciclo di vita a runtime |
+| AP-08 Strategic Autonomy | adapter di aggregazione attenzione/stato | integrazione orchestratore/ciclo di vita a runtime — **include** i tre pezzi mancanti trovati dall'indagine AP-04 (`AP-04_A1_STATUS.md`): un `Goal`/sorgente-candidati non legata alla caccia dentro `Gate3Runtime.ActionPlanner`, una `PredictedOutcome` reale per `MoveToPosition` (oggi placeholder fisso), un effettore che guidi `PathWalkController` invece di un click-teleport |
 | AP-09 Memory/Learning/Simulation | adapter di persistenza/runtime | bridge memoria runtime e integrazione osservabilità |
 | AP-10 Autonomous Certification | adapter di osservazione certificazione | integrazione runtime/test-center |
 

@@ -175,3 +175,59 @@ codice esatte, prima di fissare per DeepSeek un'architettura sbagliata
 che poi va disfatta — stesso principio già applicato per il router
 portali in questa stessa fase. Risultato e decisione finale nella
 prossima sezione di questo file.
+
+## Indagine su Gate3Runtime conclusa — decisione finale sull'ambito A2/A4
+
+Risultato (citazioni esatte nel report dell'agente, non ripetute qui in
+dettaglio): **non è un'estensione piccola e pulita**. `ActionPlanner.Plan`
+(`Gate3Runtime.cs`) genera una lista di candidati **chiusa e hardcoded**
+dentro il file stesso (rami `if` letterali per HP-critico/contrattacco/
+skill/attacco/`TargetEntity`/`MoveToPosition` legato a un `Goal` di
+caccia); aggiungere l'esplorazione come sorgente richiederebbe modificare
+`Gate3Runtime.cs` stesso, non iniettare un componente. Inoltre mancano
+altri due pezzi reali, non solo l'innesto: (X1) `GoalStack` produce un
+`Goal` solo via `Hunt(...)` (richiede un vnum) — non esiste un `Goal`
+"esplora e basta, niente da cacciare" da cui far nascere il candidato
+`MoveToPosition` di AP-04; (X2) `SimulationEngine.Simulate` per
+`MoveToPosition` è un placeholder fisso (`timeMs=400`, rischio da HP,
+**mai** letto `candidate.Target` — nessuna predizione reale di arrivo);
+(X3) l'effettore live per `MoveToPosition`
+(`InputActionEffector.ClickPoint`) è un singolo click-teleport sul
+pixel proiettato, **non** la camminata cella-per-cella verificata di
+`PathWalkController`/`WalkCommand` — quindi anche un candidato
+autorizzato non percorrerebbe davvero il tragitto.
+
+**Conclusione onesta, coerente con la roadmap canonica stessa**: il
+percorso "Strategic Orchestrator → HTN/GOAP → Guard → Trust → Safety" per
+la *nuova* architettura AP-00→AP-10 non è compito di AP-04 — è
+letteralmente **AP-08 "Strategic Autonomy + HTN"**
+(`docs/ROADMAP_ESECUTIVA.md`), una fase futura non ancora iniziata.
+`Gate3Runtime` è il sistema Gate 1-6 preesistente (binario diverso, non
+ancora riconciliato con la nuova architettura — vedi il doppio binario
+già segnalato nell'analisi iniziale del repository); forzare AP-04 dentro
+`Gate3Runtime` oggi vorrebbe dire o modificare un file non di proprietà
+di questa fase per costruire tre pezzi mancanti (X1/X2/X3) che sono fuori
+ambito, oppure aggirare Guard/Trust/Safety con un'authority `Commanded`
+inventata — entrambe le strade sono escluse.
+
+**Ambito reale e onesto per AP-04/A2+A4, costruibile oggi senza toccare
+Gate3Runtime e senza bypassare nulla:** un nuovo comando operatore
+`--explore`, esattamente della stessa famiglia legittima di `--walk`/
+`--screen-autocalibrate` (un umano digita il comando; l'automazione che
+segue è "comandata", non "autonoma inventata" — nessuna violazione di
+ADR-0020). `--explore` calcola il `NavigationPlan` dal World Model reale
+(via `ExplorationPlanner`, questa fase) e lo esegue chiamando
+**direttamente** `WalkCommand.Execute` (invariato) con
+`ActuationAuthority.Commanded("--explore")` — riusa il 100% della catena
+Guard→Trust→Safety→Execute→Verify già reale e verificata su Gate 1 per
+`--walk`, zero duplicazione, zero bypass. Questo è il lotto pesante reale
+per DeepSeek (A4) più il piccolo bridge A2 (`MovementVerification` reale
+→ `MovementExecutionEvidence`, contratto già scritto). X1/X2/X3 restano
+segnalati come lavoro futuro di AP-08, non di AP-04 — vedi
+`docs/agents/DEEPSEEK_TASKS.md`.
+
+Specifica dettagliata: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md`.
+
+**Livello di verifica AP-04 complessivo:** `Present` (A1+A3, contratti e
+algoritmo puro) + A2/A4 `PENDING` (specifica pubblicata, in attesa che
+DeepSeek la esegua).

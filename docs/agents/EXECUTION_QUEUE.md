@@ -39,8 +39,8 @@
 | Q-025 | AP-04 | A1 — Contratti esplorazione/navigazione (`ExplorationFootprint`, `FrontierCandidate`, `NavigationWaypoint`, `NavigationPlan`) | **Claude** | Q-024 (eccezione: avviato prima, dipende solo da AP-01) | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` | **DONE** |
 | Q-026 | AP-04 | A3 — Algoritmo `ExplorationPlanner` (footprint, ranking frontiera, `NavigationPlan` a singolo waypoint, stessa mappa) | **Claude** | Q-025 | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante" | **DONE** |
 | Q-027 | AP-04 | A1 mancante — Contratto `MovementExecutionEvidence`/`MovementExecutionResult` (evidenza esecuzione movimento, WorldFact-based) | **Claude** | Q-025 | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante" | **DONE** |
-| Q-028 | AP-04 | A2 — Projector `MovementVerification` (reale) → `MovementExecutionEvidence` | DeepSeek | Q-027, indagine Gate3Runtime | (da pubblicare) | **BLOCKED** (in attesa esito indagine sull'autorità di esecuzione, vedi AP-04_A1_STATUS.md) |
-| Q-029 | AP-04 | A4 — Bridge esecuzione reale del `NavigationPlan` (waypoint -> azione autorizzata -> `WalkCommand`/`PathWalkController`) | DeepSeek | Q-026, Q-028, indagine Gate3Runtime | (da pubblicare) | **BLOCKED** (idem) |
+| Q-028 | AP-04 | A2 — `MovementVerificationProjector` (`MovementVerification` reale → `MovementExecutionEvidence`) | DeepSeek | Q-027 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
+| Q-029 | AP-04 | A4 — Comando operatore `--explore` (`ExploreCommand`, chiama `WalkCommand.Execute` con `ActuationAuthority.Commanded`) | DeepSeek | Q-026, Q-028 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
@@ -48,7 +48,7 @@ I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di propos
 
 ## Fasi successive (AP-05 → AP-10) — solo sequenza, nessun dettaglio ancora
 
-Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata) — routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`), e A2/A4 (Q-028/Q-029, DeepSeek) restano `BLOCKED` in attesa dell'indagine su come autorizzare un'esecuzione autonoma senza bypassare Guard/Trust/Safety (ADR-0020: nessuna terza authority "autonoma" oltre `Commanded`/`Planned`). A5/A6 seguono a valle di quelli. Le fasi seguenti non hanno ancora task numerati in coda.
+Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata). Routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`). A2/A4 (Q-028/Q-029, DeepSeek) sono `PENDING`, specifica pubblicata: comando operatore `--explore` (`ActuationAuthority.Commanded`, chiama `WalkCommand.Execute` reale invariato) — non un bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è chiusa/hardcoded e le mancano tre pezzi reali, lavoro futuro di AP-08 "Strategic Autonomy + HTN", non di AP-04). A5/A6 seguono a valle di Q-028/Q-029. Le fasi seguenti non hanno ancora task numerati in coda.
 
 | Fase | Obiettivo |
 |---|---|
