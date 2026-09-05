@@ -36,10 +36,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// Composed here because this is where the snapshot it plans from lives.
-    /// <see cref="Gate3.Gate1SnapshotWorldStateSource"/> has existed as the adapter
-    /// between the two gates for some time; nothing had ever constructed it, so
-    /// Gate 3 could pass its whole suite while no code path in the runtime ever
-    /// formed a decision about the real client.
+    /// <see cref="Gate3.WorldModelWorldStateSource"/> fuses that snapshot into
+    /// the classified World Model; Safety still authorizes every act.
     /// </remarks>
     private readonly Gate3.Gate3DecisionLoop? _decisions;
     private readonly HaltDiagnosticsDumper _haltDump;
@@ -198,11 +196,16 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             observation: _observation,
             recovery: () => _decisions?.Orchestrator.Recovery);
         _channel.SetSnapshotSource(_snapshot.Capture);
-        // Reads the same snapshot the operator page shows, so what the loop planned
-        // on and what the operator is looking at cannot diverge.
+        // Reads the same snapshot the operator page shows, then fuses the
+        // existing observation channels into the classified World Model. The
+        // loop still cannot act: Safety starts off and the effector is gated.
         _decisions = _options.RunDecisionLoop
             ? new Gate3.Gate3DecisionLoop(
-                new Gate3.Gate1SnapshotWorldStateSource(_snapshot.Capture),
+                new Gate3.WorldModelWorldStateSource(
+                    _snapshot.Capture,
+                    new ClassifiedWorldModel(),
+                    world,
+                    mapWorld: () => _mapWorld.Read()),
                 new Gate3.Gate3ExecutionOrchestrator(
                     effector: BuildLiveEffector(runtime),
                     policySource: () => runtime.Safety.Policy,
