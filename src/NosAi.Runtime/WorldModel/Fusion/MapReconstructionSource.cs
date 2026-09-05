@@ -169,8 +169,22 @@ public sealed class MapReconstructionSource : IDisposable
 
     private MapModel LoadPersistedOrUnknown(MapId mapId, DateTime nowUtc)
     {
-        if (_store is not null && _store.TryLoad(mapId, out MapModel persisted))
-            return persisted;
+        if (_store is null)
+            return MapModel.Unknown(mapId, MapNotPersistedReason, nowUtc);
+
+        try
+        {
+            if (_store.TryLoad(mapId, out MapModel persisted))
+                return persisted;
+        }
+        catch (Exception ex)
+        {
+            // Mirrors PersistIfPossible's treatment of the write path: a
+            // store that cannot be read this cycle is a missed read, not a
+            // reason for Resolve to throw. The reconstruction pipeline
+            // still runs against an honest Unknown baseline below.
+            _logger?.Error("MapReconstructionSource failed to load a persisted map; reconstructing from an Unknown baseline for this cycle.", ex);
+        }
 
         return MapModel.Unknown(mapId, MapNotPersistedReason, nowUtc);
     }

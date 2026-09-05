@@ -135,20 +135,25 @@ l'eccezione dichiarata in `docs/agents/EXECUTION_QUEUE.md`):
 `NavigationPlan`. 12 test verdi, build pulita. Dettaglio completo in
 `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`.
 
-**Ancora non pubblicata una specifica precisa AP-04/A2/A4 per DeepSeek** —
-non per il motivo originale (A1 non esisteva) ma per uno nuovo, più
-importante: il sistema di navigazione legacy Gate 1-6 già esistente
-(`PathWalkController`, `MovementVerifier`, `StepGuardChain`, e
-soprattutto `NosAi.Runtime.Navigation.Pathfinding.NavigationPathfinding.cs`,
-che sembra già fare routing multi-mappa attraverso portali) potrebbe già
-risolvere gran parte di quello che AP-04 dovrebbe costruire. Pubblicare ora
-una specifica A2/A4 senza saperlo rischierebbe di far scrivere a DeepSeek
-un adapter/wiring contro la forma sbagliata, o di fargli reinventare un
-pathfinder multi-mappa che esiste già e funziona. Un'indagine (read-only,
-in background) su questo è in corso; il risultato decide se AP-04/A2 è un
-bridge verso codice già reale (probabile, stesso schema di AP-03/A2 verso
-`MapGrid`) o un algoritmo nuovo. Aggiornamento a breve, appena
-l'indagine torna.
+**Indagine conclusa.** `NavigationPathfinding.cs`'s `WorldMapPortalRouter`
+fa routing multi-mappa reale come algoritmo (Dijkstra su portali,
+deterministico) ma su un grafo **hardcoded** (5 mappe/4 portali, fixture di
+test) raggiungibile solo dalla propria suite di test — nessuna fonte dati
+reale per i portali esiste da nessuna parte nel repository (`Portal` è
+sempre vuoto in ogni `MapModel` prodotto oggi, confermato per grep). Non
+c'è quindi nessun bridge/adapter possibile verso quel router: il dato reale
+a cui fare da ponte non esiste, stesso blocco di AP-02 con OCR/ONNX (manca
+il dato, non l'architettura).
+
+**Ambito ristretto di conseguenza, onestamente**: il prossimo lotto di
+AP-04 copre solo esplorazione/routing sulla stessa mappa (nessun portale).
+Claude sta scrivendo AP-04/A3 (selezione frontiera + `NavigationPlan` a
+singolo waypoint) e il contratto A1 mancante per l'evidenza di esecuzione
+movimento; appena pronti, la specifica precisa AP-04/A2+A4 per DeepSeek
+(bridge verso `PathWalkController`/`WalkCommand`, già reali e invariati)
+arriva come comando dedicato. Il routing multi-mappa via portali resta un
+candidato in "Candidati da investigare" sotto, non uno spunto per
+DeepSeek adesso.
 
 Per studiare in anticipo il dominio (non per scrivere codice ancora):
 `third_party/sources/ikpil/DotRecast/` (navmesh/pathfinding di riferimento),
@@ -166,6 +171,14 @@ a una specifica di file precisa. Vanno investigati prima di diventare un
 task DeepSeek — se vuoi che Claude apra uno di questi come prossimo lotto
 indipendente da AP-04, chiedilo esplicitamente.
 
+- **Fonte dati reale per i portali** (identità, mappa sorgente/destinazione,
+  posizione): non esiste nel repository. `NosAi.Navigation.Pathfinding.
+  WorldMapPortalRouter` ha un grafo di routing multi-mappa reale come
+  algoritmo ma su dati hardcoded/fixture. Blocca `NavigationPlan` con più
+  di un waypoint (AP-04) finché non esiste. Possibile pista:
+  `third_party/sources/taletool/` (parsing offline di dati client) o
+  lettura da memoria client in stile `MapIdFinder`/`TargetIdFinder` — da
+  verificare prima di specificarlo come task.
 - **`TargetStateComposer` non cablato in `ScreenVitalsCapture`**
   (`docs/agents/phases/AP-02/AP-02_STATUS.md` §10): serve una
   `TargetRoiCalibration` calibrata. Esiste già un sistema di calibrazione

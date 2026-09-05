@@ -31,36 +31,59 @@ popola a runtime.
 Test: `tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs`
 (12 test, tutti verdi). Build `NosAi.Core` pulita, 0 warning/0 errori.
 
-## Cosa NON è ancora deciso (blocca la specifica precisa DeepSeek A2/A4)
+## Indagine conclusa — decisione presa
 
-Prima di pubblicare per DeepSeek una specifica precisa di AP-04/A2
-(adapter/estrazione) e AP-04/A4 (wiring runtime), serve sapere:
+Agente read-only tornato. Risultato per i 4 punti aperti:
 
-1. **`NosAi.Runtime.Navigation.Pathfinding.NavigationPathfinding.cs`**
-   sembra già fare routing multi-mappa attraverso portali (route con
-   `CurrentMapId`/`UsePortalToNextMap`). Se è reale (non solo testato su
-   fixture) e ha una fonte dati portali vera, allora costruire
-   `NavigationPlan` è un lavoro di **bridge/adapter (A2)**, non un nuovo
-   algoritmo (A3) — esattamente come AP-03/A2 ha fatto ponte verso
-   `MapGrid` invece di reinventare la lettura della griglia statica.
-2. Se invece è test-only o la connettività dei portali non ha ancora una
-   fonte dati reale, `NavigationPlan`'s costruzione è un vero algoritmo
-   nuovo (A3, Claude) da scrivere sopra il grafo mappa/portali.
-3. `ExplorationFootprint`'s derivazione (quali tile marcare visitate dalla
-   storia delle posizioni del player) è più probabilmente **A3** (algoritmo
-   puro, stesso genere di `WorldModelTemporalEnricher` in AP-01), non A2 —
-   correzione rispetto a una prima ipotesi.
-4. Manca ancora un contratto A1 per l'evidenza di esecuzione movimento
-   (bridge di `WalkOutcome`/`MovementOutcome`/`StepGuardOutcome` verso una
-   forma `WorldFact`-based) — necessario prima che un vero task A2 di
-   "adapter" possa essere specificato con precisione.
+1. **`NavigationPathfinding.cs` — `WorldMapPortalRouter.PlanMultiMapRoute`**
+   fa davvero ricerca su grafo (Dijkstra/BFS per numero di hop) su portali,
+   deterministica e corretta come algoritmo. Ma gira su un grafo
+   **hardcoded** (`InitializeStandardNosTaleWorldGraph()`: 5 mappe, 4
+   portali, coordinate letterali) — nessun loader, nessun parsing, nessuna
+   fonte dati reale. È raggiungibile solo dalla propria suite di test
+   (`--navigation-test`), da nessun percorso di produzione. **Conclusione:
+   non c'è nulla da "fare da ponte"** — non è un bridge/adapter (A2)
+   possibile, perché il dato reale a cui fare da ponte non esiste.
+2. Confermato con grep (`new Portal(` su tutto `src/`): **zero risultati**.
+   `Portal`/`EquatableArray<Portal>` sono sempre vuoti in ogni `MapModel`
+   prodotto oggi, ovunque. Nessuna fonte dati reale per identità/
+   destinazione dei portali esiste nel repository.
+3. Confermato: la derivazione di `ExplorationFootprint` (quali tile
+   marcare visitate) resta **A3** (algoritmo puro, Claude), non A2.
+4. Il contratto A1 per l'evidenza di esecuzione movimento resta da
+   scrivere, ma è un problema secondario rispetto al punto 1-2.
 
-Un agente di investigazione (read-only) è in corso su questi 4 punti.
-Appena torna, questo file viene sostituito con la decisione presa e, se il
-risultato lo permette, con la specifica precisa AP-04/A2 e/o A4 per
-DeepSeek in un comando dedicato (stesso livello di dettaglio di
-`docs/agents/phases/AP-03/AP-03_A4_CLAUDE_persistence_and_wiring.md`).
+**Decisione:** il routing multi-mappa via portali (`NavigationPlan` con più
+di un waypoint / `UsePortal` valorizzato) è **bloccato dagli stessi motivi
+di AP-02**: non manca un'architettura, manca un dato reale (una tabella
+portali) che nessun codice in questo repository produce ancora. Non si
+inventa una fonte finta per sbloccarlo — stesso principio di
+`NullObjectDetector`/OCR in AP-02.
+
+**Ambito onesto per il prossimo passo di AP-04**, quindi ristretto
+esattamente come AP-02 lo fu per la percezione:
+
+- **Esplorazione/routing sulla stessa mappa** (nessun portale,
+  `NavigationWaypoint.UsePortal = null`) è pienamente costruibile oggi:
+  `ExplorationFootprint`/`FrontierCandidate` derivati da `MapModel` +
+  storico posizione player (A3, Claude), `NavigationPlan` a un solo
+  waypoint verso il candidato scelto (A3), poi un bridge A2/A4 (DeepSeek)
+  che cabla il waypoint scelto verso l'esecuzione già reale
+  (`PathWalkController`/`WalkCommand`, invariata) e riporta l'evidenza
+  (`WalkOutcome`/`MovementVerification`) indietro come fatto canonico.
+- **Routing multi-mappa via portali resta esplicitamente rimandato**,
+  segnalato in `docs/agents/DEEPSEEK_TASKS.md` come candidato che richiede
+  prima una fonte dati reale (es. parsing di una tabella portali dal
+  client, stesso genere di lavoro di `MapGridExtractor` per la geometria —
+  non ancora investigato).
+
+Prossimo passo reale: Claude scrive AP-04/A3 (footprint + selezione
+frontiera + `NavigationPlan` a singolo waypoint, stessa mappa) e il
+contratto A1 mancante per l'evidenza di esecuzione movimento; poi
+pubblica per DeepSeek la specifica precisa AP-04/A2+A4 (bridge verso
+`PathWalkController`/`WalkCommand` reali) — questo sì è il lotto pesante
+per DeepSeek, appena la piccola parte A1/A3 è pronta.
 
 **Livello di verifica:** `Present` — contratti scritti, testati,
 compilano puliti; non ancora `Integrated` in nessun ciclo runtime, perché
-niente li produce/consuma ancora (previsto per AP-04/A2-A4).
+niente li produce/consuma ancora.

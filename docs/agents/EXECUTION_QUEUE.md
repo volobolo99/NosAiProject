@@ -8,7 +8,7 @@
 
 ---
 
-## Coda attiva (AP-00 → AP-03)
+## Coda attiva (AP-00 → AP-04)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |
 |---|---|---|---|---|---|---|
@@ -34,20 +34,20 @@
 | Q-020 | AP-03 | A2 — Projector `MapGrid` (client-archive reale) → `MapObservationBatch`, classificato Cached | **Claude** | Q-019 | (nessun file comando separato, ambito piccolo e meccanico — vedi diff `MapGridObservationProjector.cs`) | **DONE** |
 | Q-021 | AP-03 | A3 — Algoritmo di fusione incrementale `MapReconstructionFusion.Merge` (mai perdita di storia, bounds monotoni, idempotente) | **Claude** | Q-019 | (vedi diff `MapReconstructionFusion.cs`) | **DONE** |
 | Q-022 | AP-03 | A4 — Persistenza SQLite (`MapModelStore`, WAL/FULL/busy_timeout=5000) + wiring runtime (`MapReconstructionSource` in `WorldModelFusionLoop`/`Program.cs`, dietro `--fuse-world-model`) | Claude (agente in background) | Q-020, Q-021 | `docs/agents/phases/AP-03/AP-03_A4_CLAUDE_persistence_and_wiring.md` | **IN_PROGRESS** |
-| Q-023 | AP-03 | A5 — Audit indipendente AP-03 | Claude (agente in background) | Q-022 | (da scrivere quando Q-022 completa) | PENDING |
-| Q-024 | AP-03 | A6 — Integrazione finale AP-03 | **Claude** | Q-023 | (vedi AP-03_STATUS.md quando esiste) | PENDING |
+| Q-023 | AP-03 | A5 — Audit indipendente AP-03 (1 difetto reale trovato: `Resolve` non exception-safe sul percorso di lettura store) | Claude (agente in background) | Q-022 | `docs/agents/phases/AP-03/AP-03_A5_AUDIT.md` | **DONE** |
+| Q-024 | AP-03 | A6 — Integrazione finale AP-03 (1 correzione applicata, build/test combinati verdi) | **Claude** | Q-023 | `docs/agents/phases/AP-03/AP-03_STATUS.md` | **DONE** |
+| Q-025 | AP-04 | A1 — Contratti esplorazione/navigazione (`ExplorationFootprint`, `FrontierCandidate`, `NavigationWaypoint`, `NavigationPlan`) | **Claude** | Q-024 (eccezione: avviato prima, dipende solo da AP-01) | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` | **DONE** |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
 I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di proposito**: scriverli ora, prima che i contratti di AP-01 esistano davvero, rischierebbe di fissare dettagli sbagliati che poi vanno disfatti (esattamente il tipo di "casino" da evitare). La regola è: **quando una voce `PENDING` diventa la prima della coda, Claude scrive il suo comando dettagliato (stile dei file già prodotti oggi, non gli stub telegrafici originali) prima di farla partire**, poi la esegue lui stesso o la assegna a DeepSeek a seconda della colonna Esecutore.
 
-## Fasi successive (AP-04 → AP-10) — solo sequenza, nessun dettaglio ancora
+## Fasi successive (AP-05 → AP-10) — solo sequenza, nessun dettaglio ancora
 
-Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è ora attiva (Q-019+ sopra); le fasi seguenti non hanno ancora task numerati in coda — verranno aggiunti qui, con lo stesso formato sopra, quando AP-03 sarà `Integrated`.
+Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 è attiva solo per A1 (Q-025, eccezione dichiarata) — A2/A3/A4/A5/A6 restano gated fino alla decisione su come costruire il routing multi-mappa (vedi `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`: nessuna fonte dati reale per i portali esiste ancora). Le fasi seguenti non hanno ancora task numerati in coda.
 
 | Fase | Obiettivo |
 |---|---|
-| AP-04 | Exploration & Navigation — scoperta/attraversamento senza percorsi hardcoded |
 | AP-05 | Combat Intelligence — policy di combattimento adattiva con recovery |
 | AP-06 | Quest Intelligence — missioni non hardcoded → grafo verificabile |
 | AP-07 | Character/Inventory/Equipment — azioni di equip motivate e verificate |
