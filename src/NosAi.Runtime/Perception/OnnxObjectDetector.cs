@@ -153,7 +153,7 @@ public sealed class OnnxObjectDetector : IObjectDetector, IDisposable
             _options.InputHeight,
             _options.PixelScale);
 
-        using var input = NamedOnnxValue.CreateFromTensor(_options.InputName, tensor);
+        var input = NamedOnnxValue.CreateFromTensor(_options.InputName, tensor);
         using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results =
             _session.Run(new[] { input });
 
