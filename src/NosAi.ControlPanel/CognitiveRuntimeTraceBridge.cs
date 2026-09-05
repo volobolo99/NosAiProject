@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using NosAi.Core.Cognitive;
 using NosAi.Runtime.Gate3;
 using NosAi.Runtime.Observability;
@@ -17,9 +18,7 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
     private long _sequence;
     private bool _disposed;
 
-    public CognitiveRuntimeTraceBridge(
-        Gate3DecisionLoop loop,
-        ICognitiveObservabilitySink sink)
+    public CognitiveRuntimeTraceBridge(Gate3DecisionLoop loop, ICognitiveObservabilitySink sink)
     {
         _loop = loop ?? throw new ArgumentNullException(nameof(loop));
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
@@ -83,7 +82,7 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
             RiskFor(cycle.Outcome),
             cycle.Outcome.ToString(),
             DateTimeOffset.UtcNow,
-            Array.Empty<DecisionCandidateView>()));
+            ImmutableArray<DecisionCandidateView>.Empty));
 
         _ = PublishTraceAsync(new CognitiveTraceEvent(
             Guid.NewGuid().ToString("N"),
@@ -103,27 +102,15 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
     private async Task PublishTraceAsync(CognitiveTraceEvent trace)
     {
         if (_disposed) return;
-        try
-        {
-            await _sink.PublishAsync(trace).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Observability must never be able to stop the runtime.
-        }
+        try { await _sink.PublishAsync(trace).ConfigureAwait(false); }
+        catch { }
     }
 
     private async Task PublishDecisionAsync(CognitiveDecisionView decision)
     {
         if (_disposed) return;
-        try
-        {
-            await _sink.PublishDecisionAsync(decision).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Observability must never be able to stop the runtime.
-        }
+        try { await _sink.PublishDecisionAsync(decision).ConfigureAwait(false); }
+        catch { }
     }
 
     private static CognitiveNodeKind MapNode(string stage) => stage switch
