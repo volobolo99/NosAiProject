@@ -203,6 +203,13 @@ indipendente da AP-04, chiedilo esplicitamente.
   codice di lettura esiste. Potenzialmente bloccato da OCR reale (asset ML
   mancante, vedi sotto) o parzialmente affrontabile senza OCR per gli slot
   con icone fisse — da verificare.
+- **Statistiche reali per skill** (danno, costo risorsa, se richiede un
+  target) — `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` §"Gap dati
+  reali": `Skill` (AP-01) porta solo `Id`/`Name`/`Level`/`IsUsable`.
+  Blocca una simulazione di combattimento reale (AP-05) e la generazione
+  di candidati self-cast/buff. Possibile pista: tabella statistiche skill
+  dal client (stesso genere di lavoro di `MapGridExtractor` per la
+  geometria) — da verificare prima di specificarlo come task.
 
 **Esplicitamente fuori portata per DeepSeek** (non richiederli, non sono un
 problema di codice mancante):

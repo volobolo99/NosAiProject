@@ -1,0 +1,222 @@
+namespace NosAi.Core.WorldModel.Combat;
+
+/// <summary>
+/// Turns the current <see cref="Player"/>/<see cref="Mob"/> state into
+/// candidate combat acts and filters them against hard constraints
+/// (docs/ROADMAP_ESECUTIVA.md S:AP-05's "Candidate generation" and "hard
+/// constraints" stages). Pure and stateless, mirroring
+/// <c>NosAi.Core.WorldModel.Exploration.ExplorationPlanner</c>: no I/O, no
+/// clock reads, safe to call once per decision cycle.
+/// </summary>
+/// <remarks>
+/// <b>Scope, honestly restricted.</b> This type does not attempt the
+/// "short-horizon simulation" or "combo prefix" stages
+/// (<see cref="CombatSimulationResult"/>/<see cref="ComboPlan"/> stay
+/// unproduced here). Both would need per-skill damage and resource-cost
+/// figures to be anything but fabricated, and <see cref="Skill"/> (AP-01)
+/// carries neither -- only <c>Id</c>/<c>Name</c>/<c>Level</c>/<c>IsUsable</c>.
+/// Inventing placeholder damage numbers to fill that gap would be exactly
+/// the kind of simulated data this project refuses to pass off as real
+/// (docs/NOSAI_ARCHITECTURE_BASELINE.md's classification discipline). The
+/// real fix is a data source for those figures (a client-derived skill
+/// stat table, or an empirically observed-damage history -- AP-09's
+/// "learn" stage), not a formula invented here.
+/// </remarks>
+public static class CombatPlanner
+{
+    /// <summary>Default melee/basic-attack range, in the same units as <see cref="WorldPosition"/>.</summary>
+    public const double DefaultBasicAttackRange = 2.0;
+
+    /// <summary>Default skill range. Real per-skill range is not modelled by AP-01's <see cref="Skill"/> contract; this is a single conservative default until it is.</summary>
+    public const double DefaultSkillRange = 6.0;
+
+    /// <summary>
+    /// One <see cref="CombatActionKind.BasicAttack"/> candidate per viable
+    /// mob within <paramref name="basicAttackRange"/>, and one
+    /// <see cref="CombatActionKind.UseSkill"/> candidate per (ready skill,
+    /// viable mob within <paramref name="skillRange"/>) pair.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately does not generate untargeted/self-cast
+    /// <see cref="CombatActionKind.UseSkill"/> candidates: <see cref="Skill"/>
+    /// carries no fact saying whether a given skill needs a target or can be
+    /// self/AoE-cast, so generating one for every ready skill would guess
+    /// at a distinction the data does not make. A future AP-01 extension
+    /// (or an AP-05 data-gap task) naming that fact is a prerequisite for
+    /// generating self-cast candidates honestly, not something to
+    /// approximate here.
+    /// </remarks>
+    /// <param name="player">Must have a known <see cref="Player.Position"/> for any candidate to be generated -- an unknown player position makes every range check meaningless, so this method returns an empty list rather than guessing.</param>
+    /// <param name="mobs">This cycle's known mobs.</param>
+    public static IReadOnlyList<CombatActionCandidate> GenerateCandidates(
+        Player player,
+        EquatableArray<Mob> mobs,
+        double basicAttackRange = DefaultBasicAttackRange,
+        double skillRange = DefaultSkillRange)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        var candidates = new List<CombatActionCandidate>();
+        if (!player.Position.HasValue)
+            return candidates;
+
+        WorldPosition playerPosition = player.Position.Value;
+
+        foreach (Mob mob in mobs)
+        {
+            if (!IsViableTarget(mob) || !mob.Position.HasValue)
+                continue;
+
+            double distance = Distance(playerPosition, mob.Position.Value);
+
+            if (distance <= basicAttackRange)
+                candidates.Add(new CombatActionCandidate(CombatActionKind.BasicAttack, target: mob.Id));
+
+            if (distance <= skillRange)
+            {
+                foreach (Skill skill in player.Skills)
+                {
+                    if (IsSkillReady(skill, player.Cooldowns))
+                        candidates.Add(new CombatActionCandidate(CombatActionKind.UseSkill, target: mob.Id, skill: skill.Id));
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    /// <summary>A mob worth generating a candidate against: known hostile and known alive. Unknown either fact -- never assumed viable by omission.</summary>
+    public static bool IsViableTarget(Mob mob) =>
+        mob.IsHostile is { HasValue: true, Value: true } && mob.IsAlive is { HasValue: true, Value: true };
+
+    /// <summary>Usable and not on cooldown. Unknown usability -- never assumed ready by omission.</summary>
+    public static bool IsSkillReady(Skill skill, EquatableArray<Cooldown> cooldowns)
+    {
+        if (skill.IsUsable is not { HasValue: true, Value: true })
+            return false;
+
+        foreach (Cooldown cooldown in cooldowns)
+        {
+            if (cooldown.SkillId.Equals(skill.Id) && cooldown.IsActive)
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The hard-constraint stage: range, target validity (hostile/alive/
+    /// positioned) and skill readiness, checked from already-known facts
+    /// only. Does <b>not</b> check a resource cost -- <see cref="Skill"/>
+    /// carries none, so a real check cannot be written; do not add a
+    /// fabricated one here, add the missing fact to AP-01 first.
+    /// </summary>
+    public static CombatConstraintCheck CheckHardConstraints(
+        CombatActionCandidate candidate,
+        Player player,
+        EquatableArray<Mob> mobs,
+        double basicAttackRange = DefaultBasicAttackRange,
+        double skillRange = DefaultSkillRange)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(player);
+
+        var violations = new List<string>();
+
+        if (!player.Position.HasValue)
+        {
+            violations.Add("player_position_unknown");
+            return CombatConstraintCheck.Violated(candidate, EquatableArray<string>.From(violations));
+        }
+
+        if (candidate.Target is { } target)
+        {
+            double range = candidate.Kind == CombatActionKind.BasicAttack ? basicAttackRange : skillRange;
+            CheckTarget(target, mobs, player.Position.Value, range, violations);
+        }
+
+        if (candidate.Kind == CombatActionKind.UseSkill && candidate.Skill is { } skillId)
+            CheckSkillReady(skillId, player, violations);
+
+        return violations.Count == 0
+            ? CombatConstraintCheck.Allowed(candidate)
+            : CombatConstraintCheck.Violated(candidate, EquatableArray<string>.From(violations));
+    }
+
+    private static void CheckTarget(
+        EntityId target,
+        EquatableArray<Mob> mobs,
+        WorldPosition playerPosition,
+        double range,
+        List<string> violations)
+    {
+        Mob? found = null;
+        foreach (Mob mob in mobs)
+        {
+            if (mob.Id.Equals(target))
+            {
+                found = mob;
+                break;
+            }
+        }
+
+        if (found is not { } mobFound)
+        {
+            violations.Add("target_not_found");
+            return;
+        }
+
+        if (mobFound.IsHostile is not { HasValue: true, Value: true })
+            violations.Add("target_not_hostile");
+
+        if (mobFound.IsAlive is not { HasValue: true, Value: true })
+            violations.Add("target_not_alive");
+
+        if (!mobFound.Position.HasValue)
+        {
+            violations.Add("target_position_unknown");
+            return;
+        }
+
+        if (Distance(playerPosition, mobFound.Position.Value) > range)
+            violations.Add("target_out_of_range");
+    }
+
+    private static void CheckSkillReady(SkillId skillId, Player player, List<string> violations)
+    {
+        Skill? found = null;
+        foreach (Skill skill in player.Skills)
+        {
+            if (skill.Id.Equals(skillId))
+            {
+                found = skill;
+                break;
+            }
+        }
+
+        if (found is not { } skillFound)
+        {
+            violations.Add("skill_not_found");
+            return;
+        }
+
+        if (skillFound.IsUsable is not { HasValue: true, Value: true })
+            violations.Add("skill_not_usable");
+
+        foreach (Cooldown cooldown in player.Cooldowns)
+        {
+            if (cooldown.SkillId.Equals(skillId) && cooldown.IsActive)
+            {
+                violations.Add("skill_on_cooldown");
+                break;
+            }
+        }
+    }
+
+    private static double Distance(WorldPosition a, WorldPosition b)
+    {
+        double dx = a.X - b.X;
+        double dy = a.Y - b.Y;
+        return Math.Sqrt((dx * dx) + (dy * dy));
+    }
+}

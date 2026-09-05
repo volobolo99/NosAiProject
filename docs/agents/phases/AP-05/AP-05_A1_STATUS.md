@@ -105,3 +105,58 @@ già fatto per AP-04.
 **Livello di verifica:** `Present` — contratti scritti, testati,
 compilano puliti; non ancora `Integrated` in nessun ciclo runtime, perché
 niente li produce/consuma ancora.
+
+## A3 (parziale, onestamente limitato) — consegnato
+
+`src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs` — solo le due tappe
+della pipeline che si possono costruire oggi **senza inventare dati**:
+
+- `GenerateCandidates` — un `BasicAttack` per ogni mob ostile+vivo+
+  posizionato entro `DefaultBasicAttackRange` (2.0), un `UseSkill` per
+  ogni coppia (skill pronta, mob viable) entro `DefaultSkillRange` (6.0).
+  Skill "pronta" = `IsUsable.Value == true` e nessun `Cooldown` attivo per
+  quello `SkillId`. **Non genera candidati `UseSkill` senza target**
+  (self-cast/buff): `Skill` (AP-01) non porta alcun fatto su se una skill
+  richieda un target o sia auto/AoE-castabile — generare comunque un
+  candidato self-cast per ogni skill pronta avrebbe indovinato una
+  distinzione che il dato non fa. Vedi "Gap dati reali" sotto.
+- `CheckHardConstraints` — range, validità target (ostile/vivo/
+  posizionato), esistenza/prontezza skill. **Non controlla un costo in
+  risorsa** (mana/stamina): `Skill` non porta alcun costo, quindi un
+  controllo reale non è scrivibile. Nessun controllo fittizio aggiunto.
+
+Test: `tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs`
+(19 test, tutti verdi). `dotnet build NosAi.sln -c Release`: 0 errori (1
+warning preesistente non collegato). `dotnet test .../NosAi.Core.Tests.csproj -c Release`:
+**463/463**, 0 falliti (444 precedenti + 19 nuovi, zero regressioni).
+
+## Gap dati reali — non affrontati qui, segnalati esplicitamente
+
+`Skill` (AP-01, `src/NosAi.Core/WorldModel/StatusEffectContracts.cs`)
+porta solo `Id`/`Name`/`Level`/`IsUsable` — **nessun danno, nessun costo
+risorsa, nessuna indicazione se richiede un target**. Questo blocca,
+onestamente, non per pigrizia:
+
+- **`CombatSimulationResult`/`ComboPlan` reali** ("short-horizon
+  simulation" + "combo prefix" della DoD di AP-05): senza un danno/tempo
+  di cast/costo reali per skill, qualunque "simulazione" sarebbe una
+  formula inventata spacciata per predizione — esattamente il tipo di
+  dato simulato etichettato come reale che l'architettura vieta. Serve
+  prima una fonte dati reale (tabella statistiche skill dal client, sullo
+  stesso modello di `MapGridExtractor` per la geometria mappe) oppure uno
+  storico osservato (danno HP-delta osservato dopo l'uso di una skill,
+  correlato nel tempo — la tappa "learn" della DoD, che la roadmap
+  canonica assegna comunque ad **AP-09 Memory/Learning/Simulation**, non
+  ad AP-05). Non si inventa una formula qui.
+- **Candidati `UseSkill` self-cast/buff**: bloccato dalla stessa assenza
+  di un fatto "questa skill richiede un target?" su `Skill`.
+
+Questi sono candidati per "Candidati da investigare" in
+`docs/agents/DEEPSEEK_TASKS.md`, non un blocco per il resto di AP-05: la
+generazione candidati + i vincoli reali restano utili così come sono
+(es. per un futuro comando operatore `--engage` nello stile di
+`--explore`, che userebbe `BasicAttack`/`UseSkill` verso mob senza
+bisogno di una simulazione di danno per decidere *se* attaccare, solo
+*se è lecito* farlo).
+
+**Livello di verifica A3 (parziale):** `Present`, stesso motivo di sopra.

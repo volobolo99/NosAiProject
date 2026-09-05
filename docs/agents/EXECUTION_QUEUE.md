@@ -42,6 +42,7 @@
 | Q-028 | AP-04 | A2 — `MovementVerificationProjector` (`MovementVerification` reale → `MovementExecutionEvidence`) | DeepSeek | Q-027 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
 | Q-029 | AP-04 | A4 — Comando operatore `--explore` (`ExploreCommand`, chiama `WalkCommand.Execute` con `ActuationAuthority.Commanded`) | DeepSeek | Q-026, Q-028 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md` | **PENDING** |
 | Q-030 | AP-05 | A1 — Contratti Combat Intelligence (`CombatActionCandidate`, `CombatConstraintCheck`, `CombatSimulationResult`, `ComboStep`/`ComboPlan`) | **Claude** | Q-018 (eccezione: dipende solo da AP-01) | `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` | **DONE** |
+| Q-031 | AP-05 | A3 (parziale) — `CombatPlanner.GenerateCandidates`/`CheckHardConstraints` da dati reali; simulazione/combo rimandati (nessun dato reale di danno/costo skill in AP-01) | **Claude** | Q-030 | `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` §"A3 (parziale)" | **DONE** |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
