@@ -36,6 +36,7 @@ public static class PerceptionPipelineTestRunner
         allPassed &= Run("Pipeline maps tracks into the canonical WorldState", TestPipelineToWorldState);
         allPassed &= Run("Triple buffer hands out the newest frame and counts drops", TestTripleBufferSemantics);
         allPassed &= Run("Triple-buffered capture publishes from its own thread", TestTripleBufferedCapturePublishes);
+        allPassed &= Run("Capture health classifies starvation and backpressure", TestCaptureHealthClassification);
         allPassed &= Run("DXGI backend either opens or names why it cannot", TestDxgiBackendIsFailClosed);
         allPassed &= Run("A DXGI frame, when available, is LIVE and fully sized", TestDxgiFrameIsLiveWhenAvailable);
 
@@ -245,6 +246,22 @@ public static class PerceptionPipelineTestRunner
             && taken.Source == DataSourceKind.Simulated
             && capture.Source == DataSourceKind.Simulated
             && capture.Buffer.PublishedCount > 0;
+    }
+
+    private static bool TestCaptureHealthClassification()
+    {
+        var policy = new CaptureHealthPolicy(minimumSamples: 10);
+
+        var healthy = policy.Evaluate(95, 95, 5, 5);
+        if (healthy.State != CaptureHealthState.Healthy) return false;
+
+        var degraded = policy.Evaluate(100, 100, 30, 0);
+        if (degraded.State != CaptureHealthState.Degraded
+            || degraded.Reason != "consumer_backpressure_elevated") return false;
+
+        var unhealthy = policy.Evaluate(5, 5, 0, 95);
+        return unhealthy.State == CaptureHealthState.Unhealthy
+            && unhealthy.Reason == "capture_starvation";
     }
 
     private static bool TestDxgiBackendIsFailClosed()
