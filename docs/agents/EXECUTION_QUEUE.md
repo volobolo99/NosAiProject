@@ -8,7 +8,7 @@
 
 ---
 
-## Coda attiva (AP-00 → AP-01)
+## Coda attiva (AP-00 → AP-02)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |
 |---|---|---|---|---|---|---|
@@ -24,18 +24,23 @@
 | Q-010 | AP-01 | A4 — Runtime wiring (WorldModelFusionLoop, flag `--fuse-world-model`, ModuleReachability → Integrated) | Claude (agente in background) | Q-007, Q-008, Q-009 | (comando dato in linea all'agente, non un file separato — vedi AP-01_STATUS.md §9) | **DONE** |
 | Q-011 | AP-01 | A5 — Test/benchmark/doc AP-01 (audit indipendente, 4 difetti reali trovati) | Claude (agente in background) | Q-007, Q-008, Q-009, Q-010 | `docs/agents/phases/AP-01/AP-01_A5_AUDIT.md` | **DONE** |
 | Q-012 | AP-01 | A6 — Integrazione finale AP-01 (4 correzioni applicate, build/test combinati verdi) | **Claude** | Q-011 | (vedi AP-01_STATUS.md §11) | **DONE** |
+| Q-013 | AP-02 | A1 — Contratti Perception (osservazioni multimodali con provenance) | **Claude** | Q-012 | ricognizione infrastruttura Perception esistente in corso, comando da scrivere subito dopo | IN_PROGRESS |
+| Q-014 | AP-02 | A2 — Screen/OCR/CV adapters (client-observable) | Claude (Cursor non disp.) | Q-013 | da scrivere quando si arriva qui | PENDING |
+| Q-015 | AP-02 | A3 — Fusione multimodale, confidence e gestione contraddizioni | Claude | Q-013 | da scrivere quando si arriva qui | PENDING |
+| Q-016 | AP-02 | A4 — Runtime ingestion, throttling, lifecycle wiring | Claude (Cursor non disp.) | Q-013, Q-014 | da scrivere quando si arriva qui | PENDING |
+| Q-017 | AP-02 | A5 — Test/benchmark/doc AP-02 | Claude | Q-013, Q-014, Q-015, Q-016 | da scrivere quando si arriva qui | PENDING |
+| Q-018 | AP-02 | A6 — Integrazione finale AP-02 | Claude | Q-017 | da scrivere quando si arriva qui | PENDING |
 
-## Regola per Q-009/Q-010/Q-011/Q-012 e per tutte le fasi successive
+## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
 I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di proposito**: scriverli ora, prima che i contratti di AP-01 esistano davvero, rischierebbe di fissare dettagli sbagliati che poi vanno disfatti (esattamente il tipo di "casino" da evitare). La regola è: **quando una voce `PENDING` diventa la prima della coda, Claude scrive il suo comando dettagliato (stile dei file già prodotti oggi, non gli stub telegrafici originali) prima di farla partire**, poi la esegue lui stesso o la assegna a DeepSeek a seconda della colonna Esecutore.
 
-## Fasi successive (AP-02 → AP-10) — solo sequenza, nessun dettaglio ancora
+## Fasi successive (AP-03 → AP-10) — solo sequenza, nessun dettaglio ancora
 
-Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). Non hanno ancora task numerati in coda: verranno aggiunti qui, con lo stesso formato sopra, quando AP-01 sarà `DONE`.
+Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-02 è ora attiva (Q-013+ sopra); le fasi seguenti non hanno ancora task numerati in coda — verranno aggiunti qui, con lo stesso formato sopra, quando AP-02 sarà `Integrated`.
 
 | Fase | Obiettivo |
 |---|---|
-| AP-02 | Multimodal Perception — riconoscimento player/mob/NPC/UI con provenance |
 | AP-03 | Map Reconstruction — mappe salvabili/aggiornabili incrementalmente |
 | AP-04 | Exploration & Navigation — scoperta/attraversamento senza percorsi hardcoded |
 | AP-05 | Combat Intelligence — policy di combattimento adattiva con recovery |
