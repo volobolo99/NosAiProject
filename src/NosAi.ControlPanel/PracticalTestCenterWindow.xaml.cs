@@ -160,12 +160,12 @@ public partial class PracticalTestCenterWindow : Window
             case "T2":
                 result = Both(snapshot, "client", "windowDetected", "windowVisible") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.client.windowDetected+windowVisible";
-                detail = "Questo non certifica ancora un frame WGC reale: richiede provider screen dedicato.";
+                detail = "Non certifica ancora il contenuto di un frame WGC reale.";
                 break;
             case "T3":
                 result = ReadBool(snapshot, "gameObservation", "active") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.gameObservation.active";
-                detail = "Traffico/observation channel attivo.";
+                detail = "Observation channel attivo.";
                 break;
             case "T4":
                 result = ReadLong(snapshot, "gameObservation", "packetsDecoded") > 0 ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
@@ -173,85 +173,86 @@ public partial class PracticalTestCenterWindow : Window
                 detail = "Decodifica osservata; non equivale ancora a WorldState completo.";
                 break;
             case "T5":
-                result = HasAny(snapshot, "mapWorld", "entities") ? PracticalTestResult.Pass : PracticalTestResult.Blocked;
+                result = HasProperty(snapshot, "mapWorld") || HasProperty(snapshot, "entities") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
                 evidence = "canonical.map/entities";
-                detail = result == PracticalTestResult.Pass ? "Superficie spaziale disponibile." : "Nessun contratto live sufficiente per certificare navigation.";
+                detail = "Superficie spaziale presente ma serve una verifica before/after di movimento/replan.";
                 break;
             case "T6":
-                result = ReadBool(snapshot, "safety", "sessionActuating") && ReadBool(snapshot, "guard", "authenticated") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
-                evidence = "canonical.guard+safety";
-                detail = "La presenza di Guard non prova da sola una decisione di combat verificata.";
+                result = ReadBool(snapshot, "guard", "authenticated") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
+                evidence = "canonical.guard.authenticated";
+                detail = "Guard autenticato non prova una decisione combat eseguita e verificata.";
                 break;
             case "T7":
                 result = PracticalTestResult.Blocked;
                 evidence = "quest_state_not_published";
-                detail = "Serve un contratto quest/interaction osservabile prima di certificare il test.";
+                detail = "Manca un contratto quest/interaction live verificabile.";
                 break;
             case "T8":
                 result = PracticalTestResult.Blocked;
                 evidence = "character_inventory_state_not_published";
-                detail = "Serve un contratto character/inventory osservabile.";
+                detail = "Manca un contratto character/inventory live verificabile.";
                 break;
             case "T9":
                 result = ReadBool(snapshot, "guard", "authenticated") && ReadBool(snapshot, "safety", "requireGuardApproval") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
                 evidence = "canonical.guard+safety";
-                detail = "Precondizioni presenti, ma la catena completa richiede execution/verification evidence.";
+                detail = "Precondizioni presenti, ma manca evidenza execution/verification completa.";
                 break;
             case "T10":
-                result = HasProperty(snapshot, "resilience", "state") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
+                result = HasProperty(snapshot, "resilience", "state") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
                 evidence = "canonical.resilience";
-                detail = "Recovery state esposto; la perturbazione fisica resta da eseguire.";
+                detail = "Recovery state esposto; la perturbazione fisica deve ancora essere eseguita.";
                 break;
             case "T11":
                 result = HasProperty(snapshot, "hardware", "logicalCores") && HasProperty(snapshot, "hardware", "systemRamMb") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.hardware";
-                detail = "Profilo hardware letto dal runtime.";
+                detail = "Hardware/runtime osservato dal processo.";
                 break;
             case "T12":
                 result = HasProperty(snapshot, "safety", "executionMode") && HasProperty(snapshot, "safety", "requireGuardApproval") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.safety";
-                detail = "Policy safety presente nel canonical snapshot.";
+                detail = "Safety policy esposta nel canonical snapshot.";
                 break;
             case "T13":
                 result = HasProperty(snapshot, "guard", "connected") && HasProperty(snapshot, "guard", "authenticated") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.guard";
-                detail = "Stato Guard osservato; autenticazione reale deve essere presente per certificazione finale.";
+                detail = "Guard state osservato; la certificazione finale richiede scenario reale.";
                 break;
             case "T14":
-                result = ReadRootString(snapshot, "runtimeStatus") is { Length: > 0 } status && status != "Failed" ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
+                string? status = ReadRootString(snapshot, "runtimeStatus");
+                result = status is { Length: > 0 } && status != "Failed" ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.runtimeStatus";
                 detail = "Runtime status osservato.";
                 break;
             case "T15":
-                long ageMs = (long)(DateTime.UtcNow - _lastSnapshotAtUtc).TotalMilliseconds;
+                long ageMs = Math.Max(0, (long)(DateTime.UtcNow - _lastSnapshotAtUtc).TotalMilliseconds);
                 result = ageMs <= 1000 && HasProperty(snapshot, "capturedAtUtc") && HasProperty(snapshot, "correlationId") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.capturedAtUtc+correlationId";
-                detail = $"Snapshot age lato Dashboard={Math.Max(0, ageMs)} ms.";
+                detail = $"Snapshot age lato Dashboard={ageMs} ms.";
                 break;
             case "T16":
                 result = HasProperty(snapshot, "client", "attached") && HasProperty(snapshot, "gameObservation", "active") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.classified-values";
-                detail = "Le superfici usate dal Test Center sono classificate; UNKNOWN non viene convertito in zero.";
+                detail = "Classified values presenti; UNKNOWN resta esplicito.";
                 break;
             case "T17":
-                result = HasProperty(snapshot, "correlationId") ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
+                result = PracticalTestResult.Blocked;
                 evidence = "event-log-endpoint-required";
-                detail = "Il canonical snapshot non basta per certificare integrità/gap del journal: serve endpoint event-log.";
+                detail = "Serve il controllo persistente del journal/gap; non viene inferito dal solo snapshot.";
                 break;
             case "T18":
-                result = ReadRootString(snapshot, "runtimeStatus") is "Healthy" or "Degraded" ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
-                evidence = "canonical.runtimeStatus";
-                detail = "Reconnect/recovery richiede una perturbazione controllata e verifica before/after.";
+                result = PracticalTestResult.Blocked;
+                evidence = "controlled-reconnect-required";
+                detail = "Richiede perturbazione controllata e verifica before/after.";
                 break;
             case "T19":
                 result = HasProperty(snapshot, "safety", "sessionAuthorityTerminal") && HasProperty(snapshot, "safety", "sessionAuthorityReason") ? PracticalTestResult.Pass : PracticalTestResult.Unknown;
                 evidence = "canonical.safety.sessionAuthority";
-                detail = "Il pannello osserva l'autorità; non può autorizzare autonomamente l'esecuzione.";
+                detail = "Il pannello osserva l'autorità e non può autorizzare autonomamente l'esecuzione.";
                 break;
             case "T20":
                 result = PracticalTestResult.Blocked;
                 evidence = "certification_requires_physical_e2e";
-                detail = "Certificazione finale bloccata finché le evidenze fisiche T1-T19 non sono disponibili nel server privato.";
+                detail = "Richiede evidenze fisiche T1-T19 nel server privato e build .exe riproducibile.";
                 break;
             default:
                 result = PracticalTestResult.Blocked;
@@ -278,11 +279,11 @@ public partial class PracticalTestCenterWindow : Window
         return Unwrap(value);
     }
 
+    private static bool HasProperty(JsonElement root, string section)
+        => root.TryGetProperty(section, out _);
+
     private static bool HasProperty(JsonElement root, string section, string property)
         => root.TryGetProperty(section, out var node) && node.TryGetProperty(property, out _);
-
-    private static bool HasAny(JsonElement root, params string[] properties)
-        => properties.Any(root.TryGetProperty);
 
     private static string? ReadRootString(JsonElement root, string property)
         => root.TryGetProperty(property, out var value) ? value.ToString() : null;
@@ -296,7 +297,7 @@ public partial class PracticalTestCenterWindow : Window
     private void AppendRun(string testId, PracticalTestResult result, string evidence)
     {
         _runs.Insert(0, new DisplayField(testId, result.ToString().ToUpperInvariant(), evidence));
-        if (_runs.Count > 20) _runs.RemoveAt(_runs.Count - 1);
+        if (_runs.Count > 20) _runs.RemoveAt(20);
         RunLog.ItemsSource = null;
         RunLog.ItemsSource = _runs.ToArray();
     }
