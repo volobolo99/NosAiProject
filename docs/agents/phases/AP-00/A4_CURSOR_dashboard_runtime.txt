@@ -1,0 +1,15 @@
+AGENT: Cursor A4
+PHASE: AP-00
+TASK: Dashboard/runtime integration stabilization
+
+READ FIRST:
+docs/agents/AGENT_WORK_PROTOCOL.md
+docs/adr/ADR-0024-cognitive-dashboard-read-only-boundary.md
+src/NosAi.ControlPanel/App.xaml.cs
+src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs
+
+SCOPE: Validate Control Panel startup, cognitive observability wiring, polling lifecycle and read-only boundary. Fix complete implementation defects in owned Dashboard files only.
+
+RULE: Dashboard never executes gameplay actions and never displays fabricated runtime state.
+
+VALIDATION: Build the Windows Control Panel project and run available tests.

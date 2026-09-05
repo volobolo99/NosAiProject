@@ -1,0 +1,15 @@
+AGENT: Claude A3
+PHASE: AP-00
+TASK: Core architecture and duplicate implementation audit
+
+READ FIRST:
+docs/SOURCE_OF_TRUTH.md
+docs/ROADMAP_ESECUTIVA.md
+docs/adr/
+docs/agents/REPOSITORY_STABILIZATION_PROTOCOL.md
+
+SCOPE: Audit Core for duplicate contracts, compatibility files, namespace collisions, ambiguous ownership and stale implementations. Do not delete third_party material.
+
+DELIVERABLE: Complete corrective files only where required. Otherwise provide an exact audit handoff identifying files and recommended owner.
+
+RULE: Never silently remove public APIs or tests. Prefer compatibility preservation when justified.
