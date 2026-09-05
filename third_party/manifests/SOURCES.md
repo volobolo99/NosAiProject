@@ -58,3 +58,34 @@
 ## Decisione di integrazione
 
 Il codice del prodotto deve rimanere indipendente dalle sorgenti third-party. Quando una tecnica è adottata, preferire un'implementazione NosAi-native e citare la sorgente nel relativo manifest/ADR. Copiare codice solo quando la licenza lo consente e quando il beneficio supera il costo di manutenzione/provenienza.
+
+
+## 7. taletool
+
+- Repository: `imxeno/taletool`
+- URL: https://github.com/imxeno/taletool
+- Stato: `ISOLATED TOOL / REFERENCE`
+- Licenza verificata: AGPL-3.0
+- Utilizzo previsto: parsing/conversione dei formati dati client NosTale, incluse quest, item, monster, skill e map/geometry.
+- Boundary consigliato: esecuzione offline esterna -> JSON/artifacts -> importer NosAi.
+- Vincolo: non incorporare implementazione AGPL nel core/runtime senza decisione esplicita di licensing.
+- Scheda locale: `third_party/sources/taletool/UPSTREAM.md`.
+
+## 8. Vanosilla/client-files
+
+- Repository: `Vanosilla/client-files`
+- URL: https://github.com/Vanosilla/client-files
+- Stato: `RESEARCH / REFERENCE ONLY`
+- Licenza: non chiaramente identificata durante l'intake.
+- Utilizzo previsto: schemi/dati di riferimento per item, monster, quest, skill, NPC e mappe.
+- Vincolo: non copiare dataset/codice nel prodotto finché la licenza/provenienza non è chiarita; validare sempre contro la build esatta del server d'esame.
+- Scheda locale: `third_party/sources/vanosilla-client-files/UPSTREAM.md`.
+
+## 9. wojtas99/Nostale_Bot
+
+- Repository: `wojtas99/Nostale_Bot`
+- URL: https://github.com/wojtas99/Nostale_Bot
+- Stato: `QUARANTINED REFERENCE ONLY`
+- Utilizzo previsto: idee legacy su waypoint, target e loot state machines.
+- Vincolo: non riusare injection o tecniche di aggiramento delle protezioni; reimplementare solo concetti innocui nell'architettura NosAi.
+- Scheda locale: `third_party/sources/nostale-bot-research/UPSTREAM.md`.
