@@ -1,4 +1,5 @@
 using NosAi.Core.Navigation;
+using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Gate1;
 
