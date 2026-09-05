@@ -1,0 +1,203 @@
+NOSAI PROJECT — THIRD PARTY MASTER INDEX
+Version: 2026-09-05
+Purpose: single fast lookup for Claude, Cursor and other coding agents.
+
+RULE ZERO
+third_party/ is a source/research vault, NOT an execution path.
+Before copying/adapting code into src/, verify license + provenance + architecture compatibility + tests.
+Never introduce GM/admin/database privileges, secrets, hidden server state, or protection-bypass logic into the autonomous-player runtime.
+
+================================================================================
+FAST ROUTING
+================================================================================
+
+NEED: NosTale protocol/domain concepts
+LOCAL: third_party/sources/opennos/
+UPSTREAM: OpenNos/OpenNos
+LICENSE: GPL-2.0
+USE: packet/domain concepts, emulator architecture, legacy protocol knowledge.
+TARGET: NosAi-native adapters/models only after clean adaptation.
+DO NOT: blindly copy GPL code into core without licensing decision.
+
+NEED: Modern C#/.NET NosTale architecture
+LOCAL: third_party/sources/noscore/
+UPSTREAM: NosCoreIO/NosCore
+LICENSE: MIT (recorded in project manifests)
+USE: modular architecture, networking, persistence, service patterns.
+TARGET: src/NosAi.Core/, src/NosAi.Runtime/.
+PRIORITY: HIGH.
+
+NEED: Plugin/event/entity architecture
+LOCAL: third_party/sources/chickenapi/
+UPSTREAM: BlowaXD/ChickenAPI
+USE: event system, entity/domain separation, plugin-style modularity.
+TARGET: EventBus/domain modules/AcademicEvaluator adapter patterns.
+PRIORITY: HIGH.
+
+NEED: Event-driven/distributed emulator patterns
+LOCAL: third_party/sources/saltyemu/
+UPSTREAM: BlowaXD/SaltyEmu
+LICENSE: GPL-3.0
+USE: event-driven architecture and modularity as reference.
+TARGET: architecture ideas; clean NosAi implementation preferred.
+
+NEED: Navigation/navmesh/pathfinding
+LOCAL: third_party/sources/ikpil/DotRecast/
+UPSTREAM: ikpil/DotRecast
+USE: hierarchical navigation, navmesh, path corridor, obstacle avoidance.
+TARGET:
+  src/NosAi.Core/Navigation/
+  src/NosAi.Runtime/Navigation/
+PRIORITY: VERY HIGH for Gate 2 Cognitive Skill Spine.
+
+NEED: Windows human-equivalent input
+LOCAL: third_party/sources/inputsimulator/
+UPSTREAM: michaelnoonan/inputsimulator
+LICENSE: MIT
+USE: keyboard/mouse input abstraction patterns.
+TARGET: execution adapter behind Guard -> Trust -> Safety.
+PRIORITY: HIGH.
+RULE: no protection circumvention.
+
+NEED: NosTale client data formats / parser tooling
+LOCAL: third_party/sources/taletool/UPSTREAM.md
+UPSTREAM: imxeno/taletool
+LICENSE: AGPL-3.0
+USE:
+  Item.dat, monster.dat, Skill.dat, quest.dat, qstprize.dat,
+  npctalk.dat, tutorial.dat, map/geometry/cell data parsing.
+TARGET:
+  external/offline tool -> JSON/artifacts -> NosAi import pipeline.
+DO NOT link/copy implementation into core without explicit AGPL decision.
+PRIORITY: VERY HIGH for Knowledge Base, QuestGraph and Map Model.
+
+NEED: Structured NosTale reference datasets
+LOCAL: third_party/sources/vanosilla-client-files/UPSTREAM.md
+UPSTREAM: Vanosilla/client-files
+LICENSE: UNKNOWN/UNCLEAR during intake
+USE:
+  schema/reference for items, monsters, quests, skills, NPCs, maps.
+TARGET:
+  Knowledge Base import design and validation against exact exam server build.
+DO NOT copy dataset into product until licensing/provenance is clarified.
+PRIORITY: HIGH as research reference.
+
+NEED: Legacy bot state-machine ideas
+LOCAL: third_party/sources/nostale-bot-research/UPSTREAM.md
+UPSTREAM: wojtas99/Nostale_Bot
+LICENSE: not established
+STATUS: QUARANTINED REFERENCE
+USE: waypoint/target/loot concepts only.
+DO NOT reuse injection or anti-cheat-circumvention implementation.
+TARGET: clean NosAi-native skill/state-machine implementations.
+
+NEED: Packet interception/network research
+LOCAL: third_party/windivert/
+USE: local lab networking/telemetry only when allowed by architecture.
+TARGET: observation/research tooling, not hidden execution authority.
+RULE: never implement anti-cheat bypass or server-protection circumvention.
+
+NEED: Other existing local research packs
+LOCAL:
+  third_party/sources/joslat/
+  third_party/sources/luxkun/
+  third_party/sources/microsoft/
+Consult their local provenance/readme before reuse.
+
+================================================================================
+NOSAI 3.0 MODULE -> THIRD PARTY ROUTING
+================================================================================
+
+Perception / Active Perception
+- Prefer Microsoft/Windows capture references already in vault.
+- External inference libraries should be consumed as packages where possible, not copied wholesale.
+
+BeliefState / WorldState
+- NosCore + ChickenAPI architectural patterns.
+- Keep implementation NosAi-native.
+
+Spatial Model / Navigation
+- DotRecast first.
+- taletool for offline map/cell extraction.
+- Vanosilla client-files only as schema/reference unless license is clarified.
+
+Combat Model / Tactical Combat Controller
+- OpenNos/NosCore/ChickenAPI for domain vocabulary/reference.
+- Vanosilla datasets for research on monster/skill schemas.
+- Never use server-only hidden state in the live agent.
+
+QuestGraph / ProgressionEngine
+- taletool parser output is preferred.
+- Vanosilla client-files is secondary cross-check.
+- Goal for academic certification:
+  Combat Level 55
+  + sufficient Job Level
+  + main progression
+  + SP1 + SP2 + SP3
+  + pet + partner
+  + coherent equipment
+  + autonomous inventory management.
+
+Character Build Optimizer
+- consume Item/Skill/Card/BCard knowledge through version-pinned imported datasets.
+- store provenance with every knowledge snapshot.
+
+Skill Library
+- use DotRecast for MoveTo/navigation-related skills.
+- use InputSimulator concepts for human-equivalent action primitives.
+- use ChickenAPI/NosCore patterns for domain/event separation.
+
+Human Pace Governor
+- do not reuse bot evasion logic.
+- derive timing distributions from consenting human sessions on the same private test environment.
+
+Academic Evaluator
+- may use separate server-side ground truth only for scoring/certification.
+- evaluator output MUST NOT feed the autonomous player's decision loop.
+
+================================================================================
+COMMUNITY SOURCES
+================================================================================
+
+LOCAL: third_party/community/RESEARCH_LINKS.md
+
+Reddit/ePvP/forum material is lead/reference material.
+Do not copy whole posts or code with unknown provenance.
+If community code is useful:
+1. identify original repository/author;
+2. identify license;
+3. pin revision;
+4. add provenance;
+5. only then vendor/adapt it.
+
+================================================================================
+AGENT WORKFLOW — CLAUDE / CURSOR
+================================================================================
+
+1. Read this file.
+2. Search the listed local third_party path first.
+3. Read third_party/manifests/CODE_REUSE_POLICY.md.
+4. Read matching provenance/license record.
+5. Decide one of:
+   REFERENCE_ONLY
+   ISOLATED_TOOL
+   VENDOR_ALLOWED
+   CLEAN_REIMPLEMENTATION
+6. Copy/adapt the minimum necessary implementation.
+7. Record upstream repository + path + commit/blob + license.
+8. Add/update tests.
+9. Keep Guard -> Trust -> Safety -> Executor -> Verifier intact.
+10. Never introduce privileged server state into Agent Plane.
+
+================================================================================
+FILES TO READ NEXT
+================================================================================
+
+third_party/manifests/AGENT_LOOKUP.md
+third_party/manifests/SOURCES.md
+third_party/manifests/CODE_REUSE_POLICY.md
+third_party/provenance/REUSE_INDEX.md
+third_party/community/RESEARCH_LINKS.md
+third_party/sources/README.md
+
+END OF MASTER INDEX
