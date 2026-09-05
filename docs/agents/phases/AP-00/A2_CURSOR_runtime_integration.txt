@@ -1,0 +1,25 @@
+AGENT: Cursor A2
+PHASE: AP-00
+TASK: Runtime integration and dependency validation
+
+READ FIRST:
+- docs/SOURCE_OF_TRUTH.md
+- docs/ROADMAP_ESECUTIVA.md
+- docs/NOSAI_ARCHITECTURE_BASELINE.md
+- docs/agents/AGENT_WORK_PROTOCOL.md
+- docs/agents/FILE_OWNERSHIP_MATRIX.md
+
+SCOPE:
+Inspect runtime bootstrap, Gate1/Gate3 integration points and project references. Identify compile-risk dependencies and implement only complete, localized fixes within owned files.
+
+OWNERSHIP:
+Runtime integration files only; do not edit Core contracts owned by A1 or shared project files.
+
+REQUIREMENTS:
+Preserve the canonical execution chain and fail-closed behavior. Do not invent live evidence.
+
+VALIDATION:
+Build the affected runtime project and run targeted tests. Report exact results.
+
+HANDOFF:
+Complete file list, test/build results, integration assumptions, blockers and commit SHA.

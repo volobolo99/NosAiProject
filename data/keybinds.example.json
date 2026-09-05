@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "binds": {
-    "consumable.0": { "virtualKey": 49, "label": "1", "confirmed": false },
-    "consumable.1": { "virtualKey": 50, "label": "2", "confirmed": true },
-    "skill.0": { "virtualKey": 112, "label": "F1", "confirmed": false }
-  }
-}

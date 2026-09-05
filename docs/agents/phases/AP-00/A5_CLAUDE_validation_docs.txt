@@ -1,0 +1,16 @@
+AGENT: Claude A5
+PHASE: AP-00
+TASK: Validation and documentation audit
+
+READ FIRST:
+- docs/SOURCE_OF_TRUTH.md
+- docs/BUILD_TEST_RELEASE.md
+- docs/TESTING.md
+- docs/RELEASE_CHECKLIST.md
+- docs/agents/REPOSITORY_STATE_TEMPLATE.md
+
+SCOPE:
+Audit documentation against current repository state. Correct stale references and produce a repository-state record. Do not claim Verified without evidence.
+
+VALIDATION:
+Cross-check documented commands, project names, paths and current CI state.

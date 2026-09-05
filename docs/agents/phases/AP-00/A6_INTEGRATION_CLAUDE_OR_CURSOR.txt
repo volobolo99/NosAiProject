@@ -1,0 +1,18 @@
+AGENT: Claude or Cursor A6
+PHASE: AP-00
+TASK: Final integration gate
+
+READ FIRST:
+- All AP-00 agent handoffs
+- docs/agents/REPOSITORY_STABILIZATION_PROTOCOL.md
+- docs/agents/FILE_OWNERSHIP_MATRIX.md
+- docs/ROADMAP_ESECUTIVA.md
+
+SCOPE:
+Integrate completed outputs only after verifying ownership and handoffs. Resolve conflicts explicitly. Run full applicable build and tests. Inspect git diff for unrelated changes and boundary violations.
+
+STOP CONDITIONS:
+Any incomplete file, unresolved compile error, missing test evidence, ownership conflict or boundary violation blocks integration.
+
+DELIVERABLE:
+Integrated repository state, exact validation commands/results, changed-file list and commit SHA. Do not label Verified unless the roadmap evidence gate is satisfied.

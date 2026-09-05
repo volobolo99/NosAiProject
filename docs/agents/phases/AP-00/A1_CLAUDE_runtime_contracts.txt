@@ -1,0 +1,30 @@
+AGENT: Claude A1
+PHASE: AP-00
+TASK: Runtime and hardware contracts stabilization
+
+READ FIRST:
+- docs/SOURCE_OF_TRUTH.md
+- docs/ROADMAP_ESECUTIVA.md
+- docs/NOSAI_ARCHITECTURE_BASELINE.md
+- docs/agents/AGENT_WORK_PROTOCOL.md
+- docs/agents/FILE_OWNERSHIP_MATRIX.md
+
+SCOPE:
+Inspect runtime contracts, hardware profiling contracts and their tests. Implement only missing or incorrect pieces required for a complete buildable contract surface.
+
+OWNERSHIP:
+Only files explicitly assigned to this task. Do not modify solution/project files or files owned by another active agent.
+
+REQUIREMENTS:
+- Complete files only.
+- Strong typing and validation.
+- Preserve UNKNOWN semantics.
+- No execution authority in cognition.
+- No privileged game/server interfaces.
+- No TODO/FIXME/stubs/pseudocode in delivered implementation.
+
+VALIDATION:
+Run targeted unit tests, then the smallest applicable build. Record exact commands and results.
+
+HANDOFF:
+List files changed, tests, build, dependencies, limitations and commit SHA.
