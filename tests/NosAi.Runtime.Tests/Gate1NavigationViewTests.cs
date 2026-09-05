@@ -13,8 +13,8 @@ public sealed class Gate1NavigationViewTests
 
         Assert.False(view.PathFound.Value);
         Assert.Equal(0, view.Confidence.Value);
-        Assert.Equal("Unknown", view.PathFound.Classification.ToString());
-        Assert.Equal("navigation_observation_not_available", view.PathFound.Reason);
+        Assert.Equal("Unknown", view.PathFound.Source.ToString());
+        Assert.Equal("navigation_observation_not_available", view.PathFound.FailureReason);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using NosAi.Core.CharacterControl;
+using Xunit;
 
 namespace NosAi.Core.Tests.CharacterControl;
 

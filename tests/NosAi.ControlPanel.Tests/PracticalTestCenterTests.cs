@@ -25,10 +25,13 @@ public sealed class PracticalTestCenterTests
     }
 
     [Fact]
-    public void TestCatalogContainsAllTenPracticalPillars()
+    public void TestCatalogContainsAllTwentyPracticalPillars()
     {
-        Assert.Equal(10, NosAi.Core.Testing.PracticalTestCatalog.All.Count);
+        // Grew from the original 10 pillars (T1-T10) to 10 more infra/certification
+        // checks (T11-T20, see PracticalTestContracts.cs); this assertion is the
+        // one place that count is pinned, so it drifts loudly instead of quietly.
+        Assert.Equal(20, NosAi.Core.Testing.PracticalTestCatalog.All.Count);
         Assert.Equal("T1", NosAi.Core.Testing.PracticalTestCatalog.All[0].Id);
-        Assert.Equal("T10", NosAi.Core.Testing.PracticalTestCatalog.All[^1].Id);
+        Assert.Equal("T20", NosAi.Core.Testing.PracticalTestCatalog.All[^1].Id);
     }
 }

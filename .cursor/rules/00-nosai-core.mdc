@@ -5,7 +5,7 @@ alwaysApply: true
 
 # NosAiProject Core Rules
 
-Read `NOSAI_MASTER_ROADMAP.md`, `CLAUDE.md`, `docs/NOSAI_ARCHITECTURE_BASELINE.md`, and relevant ADRs before substantial changes.
+Read `docs/ROADMAP_ESECUTIVA.md`, `CLAUDE.md`, `docs/NOSAI_ARCHITECTURE_BASELINE.md`, and relevant ADRs before substantial changes.
 
 Canonical flow:
 `Observe → World Model → Decision/Policy → Safety → Execute → Verify → Re-observe`

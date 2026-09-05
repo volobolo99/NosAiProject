@@ -20,7 +20,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 | `scripts/` | `build/test/validate` in PowerShell e bash |
 | `tools/` | `NosAi.Analyzers`, `find-vitals.ps1`, `windivert` |
 | `data/` | configurazioni, chiavi (`guard_public_key.pem`, `runtime_identity.dpapi`), catture `.noscap`, evidenze test |
-| Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `CLAUDE.md`, `NOSAI_MASTER_ROADMAP.md` |
+| Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `CLAUDE.md` |
 
 ---
 

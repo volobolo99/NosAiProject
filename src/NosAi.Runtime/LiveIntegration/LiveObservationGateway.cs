@@ -19,15 +19,15 @@ public sealed record LiveObservationSnapshot(
     public bool IsClientAttached => Client.ClientAttached;
 
     public bool HasLiveGameplayObservation =>
-        Gameplay.Hp.IsKnown ||
-        Gameplay.MaxHp.IsKnown ||
-        Gameplay.Mp.IsKnown ||
-        Gameplay.MaxMp.IsKnown ||
-        Gameplay.Entities.IsKnown ||
-        Gameplay.PlayerPosition.IsKnown ||
-        Gameplay.MapId.IsKnown ||
-        Gameplay.StandingCell.IsKnown ||
-        Gameplay.SelectedTarget.IsKnown;
+        Gameplay.Hp.HasValue ||
+        Gameplay.MaxHp.HasValue ||
+        Gameplay.Mp.HasValue ||
+        Gameplay.MaxMp.HasValue ||
+        Gameplay.Entities.HasValue ||
+        Gameplay.PlayerPosition.HasValue ||
+        Gameplay.MapId.HasValue ||
+        Gameplay.StandingCell.HasValue ||
+        Gameplay.SelectedTarget.HasValue;
 }
 
 /// <summary>

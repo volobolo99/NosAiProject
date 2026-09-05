@@ -184,7 +184,11 @@ public static class PerceptionPipelineTestRunner
     private static bool TestPipelineToWorldState()
     {
         int frame = 0;
-        var source = new SyntheticFrameSource(1280, 720);
+        // Real-time clock, not the default fixed-calendar one: PerceptionPipeline
+        // now runs frames through CaptureFreshnessPolicy (MaxAge=500ms against
+        // DateTime.UtcNow), and a frame timestamped on a fixed past date would be
+        // rejected as stale the moment wall-clock time moves past that date.
+        var source = new SyntheticFrameSource(1280, 720, clock: _ => DateTime.UtcNow);
         // A detector that reports one moving monster, derived from the frame index.
         var pipeline = new PerceptionPipeline(source, f =>
         {

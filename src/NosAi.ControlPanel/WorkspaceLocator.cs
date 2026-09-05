@@ -8,7 +8,7 @@ namespace NosAi.ControlPanel;
 /// </summary>
 public static class WorkspaceLocator
 {
-    public const string MarkerFile = "NOSAI_MASTER_ROADMAP.md";
+    public const string MarkerFile = "NosAi.sln";
 
     public static string Find(string? start = null)
     {

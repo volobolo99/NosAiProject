@@ -644,7 +644,7 @@ public sealed class ScreenProjectionTests : IDisposable
     /// is added here. A window that has been dragged has not invalidated the
     /// mapping, only moved it.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void A_projected_point_is_offset_by_where_the_window_currently_is()
     {
         (double a, double b, double c, double d, double e, double f) = Isometric;
@@ -664,7 +664,7 @@ public sealed class ScreenProjectionTests : IDisposable
     /// absolute model this returned the same point both times, and a click aimed at
     /// a monster landed wherever the character used to be standing.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void The_same_square_projects_elsewhere_once_the_character_has_moved()
     {
         var area = new PixelRect(0, 0, ClientWidth, ClientHeight);
@@ -685,7 +685,7 @@ public sealed class ScreenProjectionTests : IDisposable
     /// every click at a real point on screen with nothing behind it — ADR-0014's
     /// rule at the exact place where breaking it becomes an action in the world.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void An_unknown_character_position_is_refused_and_carries_why()
     {
         CalibratedScreenProjection projection = Projection(
@@ -706,7 +706,7 @@ public sealed class ScreenProjectionTests : IDisposable
     /// that follows the character, a target far away is simply not drawn, which is
     /// an ordinary event rather than an error.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void A_point_outside_the_client_area_is_refused_not_clamped()
     {
         var area = new PixelRect(0, 0, ClientWidth, ClientHeight);
@@ -724,7 +724,7 @@ public sealed class ScreenProjectionTests : IDisposable
     /// full screen safe rather than silently wrong: it refuses, and the
     /// auto-calibration can then measure the new size.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void A_client_resized_since_the_calibration_is_refused()
     {
         var resized = new PixelRect(0, 0, 1280, 1024);

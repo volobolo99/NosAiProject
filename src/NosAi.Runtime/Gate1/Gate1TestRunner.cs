@@ -45,10 +45,14 @@ public static class Gate1TestRunner
         allPassed &= await RunAsync("Heartbeat timeout fails closed", TestHeartbeatFailClosedAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Reconnect accepted after heartbeat timeout", TestReconnectAfterHeartbeatTimeoutAsync).ConfigureAwait(false);
         allPassed &= await RunAsync("Authenticated session receives classified telemetry", TestAuthenticatedSessionReceivesClassifiedTelemetryAsync).ConfigureAwait(false);
-        allPassed &= await RunAsync("Bootstrap without a client reports DEGRADED", TestBootstrapWithoutClientIsDegradedAsync).ConfigureAwait(false);
-        allPassed &= await RunAsync("Busy dashboard port degrades the dashboard, not the runtime", TestBusyDashboardPortDoesNotKillTheRuntimeAsync).ConfigureAwait(false);
-        allPassed &= await RunAsync("Ephemeral dashboard port binds and serves the snapshot", TestEphemeralDashboardPortServesSnapshotAsync).ConfigureAwait(false);
-        allPassed &= await RunAsync("Busy Guard port fails closed with a named reason", TestBusyGuardPortFailsClosedWithAReasonAsync).ConfigureAwait(false);
+        // These four construct a Gate1BootstrapHost, which requires DPAPI key
+        // custody (ADR-0010) and is fail-closed on any platform that cannot
+        // provide it. On Windows a failure here is real; on any other platform
+        // it is expected and not this suite's to report as broken.
+        allPassed &= await RunAsync("Bootstrap without a client reports DEGRADED", TestBootstrapWithoutClientIsDegradedAsync, skippableOnNonWindows: true).ConfigureAwait(false);
+        allPassed &= await RunAsync("Busy dashboard port degrades the dashboard, not the runtime", TestBusyDashboardPortDoesNotKillTheRuntimeAsync, skippableOnNonWindows: true).ConfigureAwait(false);
+        allPassed &= await RunAsync("Ephemeral dashboard port binds and serves the snapshot", TestEphemeralDashboardPortServesSnapshotAsync, skippableOnNonWindows: true).ConfigureAwait(false);
+        allPassed &= await RunAsync("Busy Guard port fails closed with a named reason", TestBusyGuardPortFailsClosedWithAReasonAsync, skippableOnNonWindows: true).ConfigureAwait(false);
 
         Console.WriteLine(allPassed
             ? "=== Gate 1 checks passed. Local only: this is not real-environment verification. ==="
@@ -68,11 +72,23 @@ public static class Gate1TestRunner
         }
     }
 
-    private static async Task<bool> RunAsync(string name, Func<Task<bool>> check)
+    /// <param name="skippableOnNonWindows">
+    /// The check constructs a component that is fail-closed on a required
+    /// precondition this platform cannot satisfy (e.g. DPAPI key custody,
+    /// ADR-0010). On Windows that precondition holds and a failure here is
+    /// real; anywhere else it is an environment limitation, not a broken
+    /// invariant, so it is reported as skipped and does not fail the suite.
+    /// </param>
+    private static async Task<bool> RunAsync(string name, Func<Task<bool>> check, bool skippableOnNonWindows = false)
     {
         try
         {
             return Report(name, await check().ConfigureAwait(false), null);
+        }
+        catch (RuntimeEnvironmentException ex) when (skippableOnNonWindows && !OperatingSystem.IsWindows())
+        {
+            Console.WriteLine($"[SKIP] {name} [{ex.Message}]");
+            return true;
         }
         catch (Exception ex)
         {

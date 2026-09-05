@@ -68,6 +68,14 @@ public interface IRuntimeLogger
     void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null);
 }
 
+/// <summary>A logger that discards everything, for tests that need an <see cref="IRuntimeLogger"/> but assert nothing about it.</summary>
+public sealed class NullRuntimeLogger : IRuntimeLogger
+{
+    public void Info(string message, IReadOnlyDictionary<string, object?>? properties = null) { }
+    public void Warning(string message, IReadOnlyDictionary<string, object?>? properties = null) { }
+    public void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null) { }
+}
+
 public sealed class ConsoleRuntimeLogger : IRuntimeLogger
 {
     public void Info(string message, IReadOnlyDictionary<string, object?>? properties = null) => Write("INFO", message, properties);

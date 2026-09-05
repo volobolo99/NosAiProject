@@ -2,7 +2,7 @@
 
 ## Before changing code
 
-Read `CLAUDE.md`, `NOSAI_MASTER_ROADMAP.md`, `docs/NOSAI_ARCHITECTURE_BASELINE.md` and the relevant ADRs.
+Read `CLAUDE.md`, `docs/ROADMAP_ESECUTIVA.md`, `docs/NOSAI_ARCHITECTURE_BASELINE.md` and the relevant ADRs.
 
 ## Development cycle
 

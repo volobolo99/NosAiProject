@@ -93,7 +93,7 @@ public sealed class RuntimeEnvironmentTests : IDisposable
         }
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public void NoConfiguredGuardKeyIsUnknownAndAdvisoryRatherThanAFailure()
     {
         EnvironmentReport report = RuntimeEnvironmentValidator.Validate(OptionsWithoutKey(), _dataDirectory);
@@ -217,7 +217,7 @@ public sealed class RuntimeEnvironmentTests : IDisposable
         Assert.False(exception.Report.IsSatisfied);
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task AHostThatConstructsPublishesTheReportThatLetItStart()
     {
         using var key = RSA.Create(2048);

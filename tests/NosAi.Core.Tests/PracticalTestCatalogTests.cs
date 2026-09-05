@@ -1,4 +1,5 @@
 using NosAi.Core.Testing;
+using Xunit;
 
 namespace NosAi.Core.Tests;
 

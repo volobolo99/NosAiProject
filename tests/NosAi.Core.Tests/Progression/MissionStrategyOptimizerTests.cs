@@ -1,4 +1,5 @@
 using NosAi.Core.Progression;
+using Xunit;
 
 namespace NosAi.Core.Tests.Progression;
 
