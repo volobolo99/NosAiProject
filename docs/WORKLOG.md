@@ -121,3 +121,42 @@ Regola: ogni intervento deve aggiungere una voce con:
 - IMPLEMENTATO su `main`.
 - Boundary pronta per adapter ONNX/ByteTrack.
 - Test xUnit aggiunti; stato CI verificato separatamente.
+
+
+## 2026-09-05 — Perception: primo adapter ONNX dietro IObjectDetector
+
+**Obiettivo:** collegare un runtime di inferenza ONNX alla nuova boundary `IObjectDetector` senza accoppiare NosAi a YOLO o a una specifica famiglia di modelli.
+
+**File toccati**
+- `src/NosAi.Runtime/Perception/OnnxObjectDetector.cs` — creato.
+- `src/NosAi.Runtime/NosAi.Runtime.csproj` — modificato.
+- `tests/NosAi.Runtime.Tests/OnnxObjectDetectorTests.cs` — creato.
+- `src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs` — modificato.
+- `docs/WORKLOG.md` — aggiornato.
+
+**Perché**
+- La production boundary detector/tracker era pronta ma non esisteva ancora un backend di inferenza reale.
+- NosAi deve poter cambiare modello/provider tramite AutoSet senza riscrivere la pipeline.
+- Le semantiche degli output variano fra YOLO, RT-DETR e altri modelli: il runtime non deve assumerne una specifica.
+
+**Cosa è stato fatto**
+- Aggiunta dipendenza `Microsoft.ML.OnnxRuntime 1.29.0`.
+- Creato `OnnxObjectDetector : IObjectDetector, IDisposable`.
+- Creato `OnnxDetectorOptions` per model path, input name, width/height e pixel scale.
+- Creato `IOnnxDetectionDecoder`: la sessione ONNX produce tensor output grezzi e il decoder specifico del modello li converte in `Detection`.
+- Creato `OnnxTensorOutput` per separare gli output dal lifetime nativo di ONNX Runtime.
+- Creato preprocessing deterministico BGRA -> RGB NCHW con resize nearest-neighbour.
+- Aggiunto `TryCreate` fail-closed con reason code per modello mancante/input assente/runtime initialization/IO/access.
+- Creato `EmptyOnnxDetectionDecoder` che restituisce zero detection finché non viene installato un decoder/model spec valido.
+- Aggiunti test per:
+  - modello mancante;
+  - ordine canali RGB/NCHW;
+  - resize deterministico;
+  - decoder vuoto che non fabbrica detection.
+- Estesa la certification suite Perception con check ONNX fail-closed.
+
+**Stato**
+- IMPLEMENTATO su `main`.
+- Adapter ONNX base pronto.
+- Manca volutamente il decoder di una specifica architettura di detector e un modello validato.
+- Prossimo passo: model manifest + decoder specifico benchmarkabile, senza rendere il modello obbligatorio.
