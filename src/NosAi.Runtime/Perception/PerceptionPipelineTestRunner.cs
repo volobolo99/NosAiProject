@@ -37,6 +37,7 @@ public static class PerceptionPipelineTestRunner
         allPassed &= Run("Triple buffer hands out the newest frame and counts drops", TestTripleBufferSemantics);
         allPassed &= Run("Triple-buffered capture publishes from its own thread", TestTripleBufferedCapturePublishes);
         allPassed &= Run("Capture health classifies starvation and backpressure", TestCaptureHealthClassification);
+        allPassed &= Run("ONNX detector missing model fails closed", TestOnnxDetectorMissingModelFailsClosed);
         allPassed &= Run("DXGI backend either opens or names why it cannot", TestDxgiBackendIsFailClosed);
         allPassed &= Run("A DXGI frame, when available, is LIVE and fully sized", TestDxgiFrameIsLiveWhenAvailable);
 
@@ -262,6 +263,24 @@ public static class PerceptionPipelineTestRunner
         var unhealthy = policy.Evaluate(5, 5, 0, 95);
         return unhealthy.State == CaptureHealthState.Unhealthy
             && unhealthy.Reason == "capture_starvation";
+    }
+
+    private static bool TestOnnxDetectorMissingModelFailsClosed()
+    {
+        var options = new OnnxDetectorOptions(
+            Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".onnx"),
+            "images",
+            640,
+            640);
+
+        bool opened = OnnxObjectDetector.TryCreate(
+            options,
+            new EmptyOnnxDetectionDecoder(),
+            out var detector,
+            out var reason);
+
+        detector?.Dispose();
+        return !opened && detector is null && reason == "onnx_model_not_found";
     }
 
     private static bool TestDxgiBackendIsFailClosed()
