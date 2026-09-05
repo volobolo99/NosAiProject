@@ -29,3 +29,24 @@ Usare questo file come indice prima di eseguire ricerche esterne.
 ## Important
 
 If a required file is not present in `third_party/sources/`, the agent may search the upstream repository. When it does, it must add the useful source reference to the appropriate manifest instead of repeatedly rediscovering it.
+
+
+## NosAi 3.0 fast routing — systematic research
+
+| Need | Local entry |
+|---|---|
+| Production screen capture | `third_party/sources/robmikh/Win32CaptureSample/reference/` |
+| OCR | `third_party/research/perception/UPSTREAMS.md` -> PaddleOCR |
+| Detection training/export | `third_party/research/perception/UPSTREAMS.md` -> MMDetection |
+| Temporal entity tracking | `third_party/research/perception/UPSTREAMS.md` -> ByteTrack |
+| Dataset segmentation/annotation | `third_party/research/perception/UPSTREAMS.md` -> SAM2 |
+| HTN long-horizon planning | `third_party/sources/ptrefall/FluidHTN/reference/` |
+| GOAP executable planning | `third_party/sources/luxkun/ReGoap/reference/` |
+| ONNX GPU inference | `third_party/research/runtime/UPSTREAMS.md` |
+| Local LLM | `third_party/research/runtime/UPSTREAMS.md` -> llama.cpp |
+| Local semantic memory | `third_party/research/runtime/UPSTREAMS.md` -> sqlite-vec |
+| Build/inventory optimization | `third_party/research/optimization/UPSTREAMS.md` -> OR-Tools |
+| Behavior cloning | `third_party/research/learning/UPSTREAMS.md` -> imitation |
+| Offline RL | `third_party/research/learning/UPSTREAMS.md` -> d3rlpy |
+| World model experiments | `third_party/research/learning/UPSTREAMS.md` -> DreamerV3 |
+| Full research matrix | `third_party/manifests/SYSTEMATIC_RESEARCH_2026-09-05.md` |
