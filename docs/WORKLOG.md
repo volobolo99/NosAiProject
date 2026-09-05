@@ -90,3 +90,34 @@ Regola: ogni intervento deve aggiungere una voce con:
 **Stato**
 - IMPLEMENTATO su `main`.
 - Verifica strutturale completata; stato CI verificato separatamente dopo il commit.
+
+
+## 2026-09-05 — Perception: detector/tracker production boundary
+
+**Obiettivo:** rendere la pipeline percettiva indipendente da uno specifico motore di object detection o tracking, così da poter collegare ONNX Runtime, DirectML/CUDA/TensorRT e un futuro adapter ByteTrack senza riscrivere il core della pipeline.
+
+**File toccati**
+- `src/NosAi.Runtime/Perception/DetectionContracts.cs` — creato.
+- `src/NosAi.Runtime/Perception/PerceptionPipeline.cs` — modificato.
+- `tests/NosAi.Runtime.Tests/DetectionBoundaryTests.cs` — creato.
+- `docs/WORKLOG.md` — aggiornato.
+
+**Perché**
+- La pipeline precedente riceveva direttamente un `Func<CaptureFrame, IReadOnlyList<Detection>>`, sufficiente per test ma troppo accoppiato per un backend di inferenza produttivo.
+- Il tracker concreto `TemporalEntityTracker` era incorporato come tipo specifico.
+- Servono contratti stabili per poter benchmarkare e sostituire detector/tracker in base all'hardware senza modificare il ciclo percettivo.
+
+**Cosa è stato fatto**
+- Creato `IObjectDetector` con nome backend e metodo `Detect`.
+- Creato `IObjectTracker` con `ActiveTrackCount` e metodo `Track`.
+- Creato `DelegateObjectDetector` per mantenere compatibilità con il codice/test esistente.
+- Creato `NullObjectDetector` fail-closed: nessun modello disponibile significa zero detection, non dati inventati.
+- `TemporalEntityTracker` implementa ora `IObjectTracker` mantenendo invariata la sua API pubblica precedente.
+- `PerceptionPipeline` dipende ora dai contratti e non da implementazioni specifiche.
+- Conservato il costruttore basato su delegate per backward compatibility.
+- Aggiunti test per detector sostituibile, tracker sostituibile, compatibilità delegate e comportamento fail-closed del null detector.
+
+**Stato**
+- IMPLEMENTATO su `main`.
+- Boundary pronta per adapter ONNX/ByteTrack.
+- Test xUnit aggiunti; stato CI verificato separatamente.
