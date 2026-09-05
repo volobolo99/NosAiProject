@@ -27,6 +27,7 @@ public sealed class RuntimeSession : IAsyncDisposable
     private readonly UiLogger _logger;
     private readonly object _gate = new();
     private Gate1BootstrapHost? _host;
+    private CognitiveRuntimeTraceBridge? _cognitiveBridge;
     private SessionKind _kind = SessionKind.Idle;
 
     public RuntimeSession(UiLogger logger) => _logger = logger;
@@ -63,9 +64,15 @@ public sealed class RuntimeSession : IAsyncDisposable
         await StopAsync().ConfigureAwait(false);
         var host = new Gate1BootstrapHost(options, _logger);
         await host.StartAsync().ConfigureAwait(false);
+
+        CognitiveRuntimeTraceBridge? bridge = host.Decisions is { } loop
+            ? new CognitiveRuntimeTraceBridge(loop, CognitiveObservabilityRegistry.Sink)
+            : null;
+
         lock (_gate)
         {
             _host = host;
+            _cognitiveBridge = bridge;
             _kind = SessionKind.Hosted;
             DashboardPort = host.DashboardPort;
             GuardPort = host.GuardPort;
@@ -130,10 +137,6 @@ public sealed class RuntimeSession : IAsyncDisposable
         return SnapshotView.Empty("runtime non avviato");
     }
 
-    /// <summary>
-    /// Gate 3 loop state. Null unless this process hosts the runtime: an attached
-    /// console cannot see another process's loop, and inventing zeros would hide that.
-    /// </summary>
     public Gate3LoopView? DescribeDecisions()
     {
         lock (_gate)
@@ -172,7 +175,6 @@ public sealed class RuntimeSession : IAsyncDisposable
         }
     }
 
-    /// <summary>Durable event-log health. Hosted reads the store; attached asks the runtime.</summary>
     public async Task<EventLogHealth> ReadEventLogAsync(CancellationToken token = default)
     {
         lock (_gate)
@@ -273,15 +275,19 @@ public sealed class RuntimeSession : IAsyncDisposable
     public async Task StopAsync()
     {
         Gate1BootstrapHost? hosted;
+        CognitiveRuntimeTraceBridge? bridge;
         lock (_gate)
         {
             hosted = _host;
+            bridge = _cognitiveBridge;
             _host = null;
+            _cognitiveBridge = null;
             _kind = SessionKind.Idle;
             DashboardPort = null;
             Detail = null;
         }
 
+        bridge?.Dispose();
         if (hosted is not null)
         {
             await hosted.DisposeAsync().ConfigureAwait(false);
