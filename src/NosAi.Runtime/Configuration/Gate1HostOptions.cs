@@ -93,10 +93,31 @@ public sealed class Gate1HostOptions
     /// <summary>How often a decision cycle runs. Ignored unless <see cref="RunDecisionLoop"/>.</summary>
     public int DecisionIntervalMs { get; init; } = 500;
 
+    /// <summary>
+    /// Run the AP-01 World Model fusion loop (<c>NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop</c>)
+    /// over whatever is being observed, projecting the existing Gate 1
+    /// gameplay observation into a versioned <c>WorldModelSnapshot</c> on
+    /// every tick.
+    /// </summary>
+    /// <remarks>
+    /// Off by default for the same reason <see cref="RunDecisionLoop"/> is:
+    /// with no observation configured the loop would only ever fuse
+    /// <c>gameplay_provider_not_available</c>, which is honest but not useful
+    /// to run unattended. Independent of <see cref="RunDecisionLoop"/> --
+    /// either, both or neither may run, since the fusion loop only reads the
+    /// same Gate 1 snapshot the decision loop reads and never acts on it.
+    /// </remarks>
+    public bool FuseWorldModel { get; init; }
+
+    /// <summary>How often a fusion cycle runs. Ignored unless <see cref="FuseWorldModel"/>.</summary>
+    public int FuseWorldModelIntervalMs { get; init; } = 500;
+
     public void Validate()
     {
         if (DecisionIntervalMs is < 50 or > 60_000)
             throw new InvalidOperationException("DecisionIntervalMs must be between 50 and 60000 milliseconds.");
+        if (FuseWorldModelIntervalMs is < 50 or > 60_000)
+            throw new InvalidOperationException("FuseWorldModelIntervalMs must be between 50 and 60000 milliseconds.");
         if (DashboardPort is < 0 or > 65535)
             throw new InvalidOperationException("DashboardPort must be between 0 and 65535.");
         if (GuardPort is < 0 or > 65535)
@@ -130,7 +151,9 @@ public static class Gate1HostOptionsLoader
             ClientProcessName = ReadString(environment, argList, "NOSAI_CLIENT_PROCESS", "--client-process", new Gate1HostOptions().ClientProcessName),
             ObserveGame = ReadObserveGame(environment, argList),
             RunDecisionLoop = HasFlag(argList, "--decide") || IsTruthy(environment, "NOSAI_DECIDE"),
-            DecisionIntervalMs = ReadInt(environment, argList, "NOSAI_DECIDE_INTERVAL_MS", "--decide-interval-ms", 500)
+            DecisionIntervalMs = ReadInt(environment, argList, "NOSAI_DECIDE_INTERVAL_MS", "--decide-interval-ms", 500),
+            FuseWorldModel = HasFlag(argList, "--fuse-world-model") || IsTruthy(environment, "NOSAI_FUSE_WORLD_MODEL"),
+            FuseWorldModelIntervalMs = ReadInt(environment, argList, "NOSAI_FUSE_WORLD_MODEL_INTERVAL_MS", "--fuse-world-model-interval-ms", 500)
         };
         options.Validate();
         return options;

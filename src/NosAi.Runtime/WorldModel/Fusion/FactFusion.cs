@@ -112,8 +112,22 @@ public static class FactFusion
         if (candidateRank != currentRank)
             return candidateRank > currentRank;
 
-        if (candidate.Fact.Confidence != current.Fact.Confidence)
-            return candidate.Fact.Confidence > current.Fact.Confidence;
+        // Normalizes a NaN confidence to -1 (worse than any legitimate
+        // [0,1] reading) before comparing. WorldFact<T>'s own factories no
+        // longer let a NaN confidence through (see ClampConfidence), but
+        // this resolver receives facts assembled from external
+        // network/memory/screen data and must not silently trust that every
+        // caller went through those factories -- a raw `!=`/`>` comparison
+        // against NaN is asymmetric under IEEE-754 (NaN != x is always true,
+        // but both x > NaN and NaN > x are always false), which let a
+        // same-rank NaN-confidence candidate win or lose depending purely on
+        // which side of the comparison it happened to land on, defeating
+        // this method's own documented "two runs over the same candidates
+        // always agree" guarantee (AP-01/A5 audit finding).
+        double candidateConfidence = double.IsNaN(candidate.Fact.Confidence) ? -1d : candidate.Fact.Confidence;
+        double currentConfidence = double.IsNaN(current.Fact.Confidence) ? -1d : current.Fact.Confidence;
+        if (candidateConfidence != currentConfidence)
+            return candidateConfidence > currentConfidence;
 
         if (candidate.Fact.ObservedAtUtc != current.Fact.ObservedAtUtc)
             return candidate.Fact.ObservedAtUtc > current.Fact.ObservedAtUtc;

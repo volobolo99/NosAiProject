@@ -92,5 +92,21 @@ public sealed record WorldFact<T>(
     public static WorldFact<T> Unknown(string reason, DateTime? observedAtUtc = null)
         => new(default!, DataSourceKind.Unknown, 0d, observedAtUtc ?? DateTime.UtcNow, false, reason);
 
-    private static double ClampConfidence(double confidence) => Math.Clamp(confidence, 0d, 1d);
+    /// <summary>
+    /// Clamps into [0, 1] -- except <see cref="double.NaN"/>, which
+    /// <see cref="Math.Clamp(double, double, double)"/> leaves untouched
+    /// (both its internal `value &lt; min` and `value &gt; max` comparisons
+    /// are false for NaN under IEEE-754, so the original NaN falls through).
+    /// A NaN confidence would otherwise silently violate this type's own
+    /// promise that <see cref="Confidence"/> is always in [0, 1] while still
+    /// reporting <see cref="HasValue"/> as true (AP-01/A5 audit finding;
+    /// see <c>WorldFactBoundaryTests.Confidence_NaNInput_...</c> and its
+    /// downstream consequence in
+    /// <c>NosAi.Runtime.WorldModel.Fusion.FactFusion</c>'s own tie-break
+    /// order). Treated as the least trustworthy possible reading -- zero --
+    /// rather than rejected outright, since every other input on the same
+    /// call already produced a real observation; only the confidence itself
+    /// was corrupt.
+    /// </summary>
+    private static double ClampConfidence(double confidence) => double.IsNaN(confidence) ? 0d : Math.Clamp(confidence, 0d, 1d);
 }

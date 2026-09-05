@@ -77,14 +77,23 @@ public static class TemporalBelief
         ArgumentNullException.ThrowIfNull(previous);
         ArgumentNullException.ThrowIfNull(current);
 
+        // Every early return below stamps its Unknown result from
+        // current.ObservedAtUtc -- an instant already present on one of this
+        // method's own inputs -- rather than omitting the argument and
+        // letting WorldFact<T>.Unknown fall back to its own default
+        // (real DateTime.UtcNow). Omitting it here previously leaked real
+        // wall-clock time into a supposedly pure function's result, breaking
+        // WorldModelTemporalEnricher's "same inputs, same output" guarantee
+        // on exactly the most common case this method exists to handle: an
+        // entity's first sighting (AP-01/A5 audit finding).
         if (!previous.HasValue || !current.HasValue)
-            return WorldFact<WorldVelocity>.Unknown("insufficient_position_history");
+            return WorldFact<WorldVelocity>.Unknown("insufficient_position_history", current.ObservedAtUtc);
 
         TimeSpan elapsed = current.ObservedAtUtc - previous.ObservedAtUtc;
         if (elapsed <= TimeSpan.Zero)
-            return WorldFact<WorldVelocity>.Unknown("non_increasing_observation_order");
+            return WorldFact<WorldVelocity>.Unknown("non_increasing_observation_order", current.ObservedAtUtc);
         if (elapsed > maxObservationGap)
-            return WorldFact<WorldVelocity>.Unknown("observation_gap_too_large_for_a_reliable_estimate");
+            return WorldFact<WorldVelocity>.Unknown("observation_gap_too_large_for_a_reliable_estimate", current.ObservedAtUtc);
 
         double seconds = elapsed.TotalSeconds;
         var velocity = new WorldVelocity(
@@ -118,8 +127,14 @@ public static class TemporalBelief
         if (horizon < TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(horizon), "A prediction horizon cannot be negative.");
 
+        // Stamped from this method's own asOfUtc parameter -- not omitted --
+        // for the same reason as EstimateVelocity's early returns above
+        // (AP-01/A5 audit finding): this method already receives an
+        // explicit instant, so falling back to WorldFact<T>.Unknown's own
+        // DateTime.UtcNow default would leak real wall-clock time into an
+        // otherwise pure function's result.
         if (!lastKnown.HasValue)
-            return WorldFact<WorldPosition>.Unknown("no_last_known_position_to_extrapolate_from");
+            return WorldFact<WorldPosition>.Unknown("no_last_known_position_to_extrapolate_from", asOfUtc);
 
         DateTime predictedAt = asOfUtc + horizon;
 

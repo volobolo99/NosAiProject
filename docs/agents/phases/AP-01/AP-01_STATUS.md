@@ -154,3 +154,65 @@ dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
 ### Livello di verifica — A3
 
 **`Present`/`Integrated` a livello di codice**, non `Verified` (nessun ciclo di decisione reale lo invoca ancora — stessa nota di A2). Handoff per A4: `WorldModelTemporalEnricher.Enrich(previous, current, nowUtc, maxAge, maxObservationGap)` va chiamato dal loop runtime subito dopo `GameplayObservationProjector.Project(...)`, passando come `previous` l'ultimo snapshot arricchito conservato dal loop stesso (questo tipo non conserva stato proprio, per design).
+
+## 9. A4 (Claude) — Runtime wiring del World Model
+
+Prima ricognizione (non modifica) sul composition root reale: `IGameplayProvider.Observe()` era **già** chiamato in produzione da `Gate1RuntimeSnapshotProvider.Capture()`, consumato dal `Gate3DecisionLoop` esistente (l'unico loop periodico reale, 500ms) — ma trasformato in `Gate3WorldState`, un tipo minimale pre-esistente e distinto, mai in `WorldModelSnapshot`. Nessun binding esisteva verso il Control Panel per il World Model AP-01.
+
+**File creati:**
+- `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs` — componente che tiene lo stato tra i cicli (`_current`, versione monotona via `Interlocked.Increment`), un metodo di tick puro e testabile `RunOnce(Gate1CanonicalSnapshot, DateTime)` (estrae `Client.Gameplay`, fallback onesto a `GameplayObservation.Unobserved(...)` se assente, chiama in sequenza `GameplayObservationProjector.Project` poi `WorldModelTemporalEnricher.Enrich`), e uno scaffolding di loop periodico (`PeriodicTimer`, `Start`/`PumpAsync`/`DisposeAsync`) nello stesso stile di `Gate3DecisionLoop`. Espone `Current` (Volatile.Read/Write) ed evento `SnapshotFused`.
+
+**File modificati (solo additivi, come richiesto):**
+- `src/NosAi.Runtime/Configuration/Gate1HostOptions.cs` — nuovo flag opt-in `FuseWorldModel`/`FuseWorldModelIntervalMs` (CLI `--fuse-world-model[-interval-ms]`, env `NOSAI_FUSE_WORLD_MODEL[_INTERVAL_MS]`), stesso pattern esatto di `RunDecisionLoop`/`DecisionIntervalMs`. Indipendente dal decision loop: nessuno dei due dipende dall'altro.
+- `src/NosAi.Runtime/Program.cs` — dopo l'avvio dell'host, se il flag è attivo, costruisce e avvia un `WorldModelFusionLoop` usando `host.Capture` come sorgente; smaltito correttamente in uscita (`await using`).
+- `src/NosAi.Runtime/Observability/ModuleReachability.cs` — `NosAi.Runtime.WorldModel.Fusion` spostato da `Unreferenced` a `Integrated` (ora referenziato realmente da `Program.cs`), verificato da `ModuleReachabilityTests`.
+
+**Limite dichiarato:** nessun percorso pubblico espone l'`EntityId` reale del personaggio controllato (`NetworkWorldFeed.PlayerEntityId` resta privato lungo tutta la catena). Usato il sentinel `"unknown-player"` (`WorldModelFusionLoop.UnknownPlayerSentinelId`), stesso trattamento di `GameplayObservationProjector.UnknownMapSentinelId` per la mappa. Esporre l'id reale resta follow-up esplicito, volutamente non affrontato qui per non rifattorizzare `Gate1ObservationChannel`/`NetworkGameplayProvider`/`Gate1BootstrapHost`.
+
+## 10. A5 (Claude) — Audit indipendente
+
+Audit completo di A1+A2+A3, stesso metodo di AP-00/A5: 25 nuovi test (18 in Core.Tests, 7 in Runtime.Tests), **4 difetti reali trovati** con test di regressione deliberatamente rossi, mai corretti da A5 (fuori dal suo ownership) né nascosti. Riportati con evidenza empirica contro il runtime .NET reale, non per sola ispezione del codice. Report completo: `docs/agents/phases/AP-01/AP-01_A5_AUDIT.md`.
+
+Sintesi dei 4 difetti (dettagli/scenari completi nel report A5):
+1. `WorldFact<T>.ClampConfidence` non gestiva `NaN` (`Math.Clamp(NaN, 0, 1)` restituisce `NaN` invariato).
+2. Conseguenza a valle: `FactFusion.IsBetter` con `Confidence = NaN` rompeva la catena di tie-break deterministica, facendo vincere il candidato semplicemente in base all'ordine nella lista.
+3-4. `TemporalBelief.EstimateVelocity`/`PredictPosition`: i rami di ritorno anticipato `Unknown(reason)` omettevano l'istante, facendo trapelare `DateTime.UtcNow` reale invece di un istante derivato dagli input — scoperto empiricamente da un test di determinismo multi-ciclo che falliva in modo intermittente.
+
+Più 5 lacune documentate (non difetti, decisioni esplicite registrate): ambiguità di `Resource.Custom` con nomi coincidenti, overflow/NaN nell'aritmetica IEEE-754 di posizioni estreme, `EntityId` duplicati non validati (né in `current.Mobs` né in `previous.Mobs`), vnum/slot/quantità negativi non validati in `GameplayObservationProjector` (nessun catalogo di riferimento esiste ancora), e una stranezza diagnostica minore nel testo di `DisagreementDetail` per canali duplicati.
+
+## 11. A6 (Claude) — Integrazione finale AP-01
+
+Applicate tutte e 4 le correzioni suggerite dall'audit A5, verificate una per una e poi in combinazione:
+
+1. **`src/NosAi.Core/WorldModel/WorldModelClassification.cs`** — `ClampConfidence`: `double.IsNaN(confidence) ? 0d : Math.Clamp(confidence, 0d, 1d)`.
+2. **`src/NosAi.Runtime/WorldModel/Fusion/FactFusion.cs`** — `IsBetter`: normalizza una confidence `NaN` a `-1` (peggiore di qualunque lettura legittima) prima del confronto, su entrambi i lati — corretto separatamente dal fix #1 perché `FactFusion` riceve dati da fonti esterne e non deve fidarsi ciecamente che ogni `WorldFact<T>` sia stato costruito tramite le factory di A1 (fail-closed).
+3-4. **`src/NosAi.Core/WorldModel/Temporal/TemporalBelief.cs`** — tutti e 4 i rami di ritorno anticipato `Unknown(...)` (3 in `EstimateVelocity`, 1 in `PredictPosition`) ora passano esplicitamente `current.ObservedAtUtc`/`asOfUtc`.
+
+**Evidenza:**
+```
+dotnet build src/NosAi.Core/NosAi.Core.csproj -c Release      → 0 Warning(s), 0 Error(s)
+dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release → 0 Warning(s), 0 Error(s)
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release --filter "FullyQualifiedName~WorldFactBoundaryTests|FullyQualifiedName~TemporalBeliefBoundaryTests"
+  → Passed! Failed: 0, Passed: 12, Total: 12   (i 3 difetti Core ora verdi)
+
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --filter "FullyQualifiedName~FactFusionBoundaryTests|FullyQualifiedName~FactFusionTests"
+  → Passed! Failed: 0, Passed: 12, Total: 12   (il 4° difetto ora verde, i test companion restano verdi)
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 357, Skipped: 0, Total: 357
+
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 1812, Skipped: 58, Total: 1870
+```
+
+Nessuna regressione: tutti i test pre-esistenti di A1/A2/A3/A4/A5 restano verdi, i 4 test-difetto sono ora verdi senza che i loro test companion (che verificano il comportamento corretto nel caso opposto) siano cambiati di esito.
+
+### Livello di verifica finale — AP-01 (Unified World Model)
+
+**`Integrated`**: A1 (contratti) + A2 (sensor fusion) + A3 (temporal belief/prediction) + A4 (wiring runtime) costruiscono un albero unico che compila pulito e passa tutti i test combinati, inclusi i 4 difetti reali trovati dall'audit indipendente A5 e corretti in questo passaggio di integrazione. **Non `Verified`**: nessuna validazione contro un client NosTale reale è stata eseguita in nessun punto di questa fase — resta il collo di bottiglia dichiarato, coerente con quanto già registrato per il sistema Gate 1-6 pre-esistente.
+
+Item aperti, deliberatamente rimandati (non bloccanti per dichiarare `Integrated`):
+- Triplicazione di `DataSourceKind`/`ClassifiedValue<T>`/`WorldFact<T>` tra `NosAi.Runtime.Contracts`, `NosAi.Core.Hardware` e `NosAi.Core.WorldModel` (segnalata da A1, ribadita da A5).
+- Sentinel `"unknown-player"` — esporre l'`EntityId` reale del personaggio richiede toccare `Gate1ObservationChannel`/`NetworkGameplayProvider`/`Gate1BootstrapHost`, esplicitamente fuori ambito per A4.
+- Le 5 lacune documentate da A5 (§10) — nessuna bloccante, da tenere presenti in AP-02 (catalogo vnum/nomi) e fasi successive (validazione unicità `EntityId`).

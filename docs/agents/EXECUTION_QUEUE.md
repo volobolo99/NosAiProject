@@ -21,9 +21,9 @@
 | Q-007 | AP-01 | A1 — Contratti World Model (Player/Map/Tile/Portal/Mob/NPC/Drop/Quest/Inventory/Equipment/Skill/Buff/Debuff/Cooldown/Resource/Action/Goal) | **Claude** | Q-006 | `docs/agents/phases/AP-01/A1_CLAUDE_world_model_contracts.md` | **DONE** |
 | Q-008 | AP-01 | A2 — Sensor Fusion (Network/Memory/Screen/Local → World Model) | Claude (DeepSeek/Cursor non ancora attivi) | Q-007 | `docs/agents/phases/AP-01/A2_DEEPSEEK_sensor_fusion.md` | **DONE** |
 | Q-009 | AP-01 | A3 — Temporal belief (decadimento confidence continuo) + derived state (velocità stimata) + prediction (estrapolazione posizione, advisory-only) | **Claude** | Q-007 | `src/NosAi.Core/WorldModel/Temporal/` (nessun comando dedicato scritto: ambito chiarito in conversazione con l'utente, non serviva un file separato) | **DONE** |
-| Q-010 | AP-01 | A4 — (da definire: probabile Runtime/Gate3 integration, per analogia con AP-00 A4) | DeepSeek | Q-007, Q-008 | **da scrivere quando si arriva qui** | PENDING |
-| Q-011 | AP-01 | A5 — Test/benchmark/doc AP-01 | Claude | Q-007, Q-008, Q-009, Q-010 | **da scrivere quando si arriva qui** | PENDING |
-| Q-012 | AP-01 | A6 — Integrazione finale AP-01 | Claude | Q-011 | **da scrivere quando si arriva qui** | PENDING |
+| Q-010 | AP-01 | A4 — Runtime wiring (WorldModelFusionLoop, flag `--fuse-world-model`, ModuleReachability → Integrated) | Claude (agente in background) | Q-007, Q-008, Q-009 | (comando dato in linea all'agente, non un file separato — vedi AP-01_STATUS.md §9) | **DONE** |
+| Q-011 | AP-01 | A5 — Test/benchmark/doc AP-01 (audit indipendente, 4 difetti reali trovati) | Claude (agente in background) | Q-007, Q-008, Q-009, Q-010 | `docs/agents/phases/AP-01/AP-01_A5_AUDIT.md` | **DONE** |
+| Q-012 | AP-01 | A6 — Integrazione finale AP-01 (4 correzioni applicate, build/test combinati verdi) | **Claude** | Q-011 | (vedi AP-01_STATUS.md §11) | **DONE** |
 
 ## Regola per Q-009/Q-010/Q-011/Q-012 e per tutte le fasi successive
 

@@ -629,6 +629,22 @@ public static class Program
             return 3;
         }
 
+        // AP-01/A4: optional runtime wiring of the existing Gate 1 observation
+        // snapshot into the Unified World Model. Independent of the decision
+        // loop above -- it only reads the same snapshot and fuses it, it never
+        // acts -- so it is its own opt-in flag rather than folded into --decide.
+        // Owned here rather than by Gate1BootstrapHost (out of scope for this
+        // task); `await using` on a possibly-null value disposes it only when
+        // one was actually created, the same as every other optional component
+        // in this method.
+        await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
+            ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
+                host.Capture,
+                logger,
+                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs))
+            : null;
+        fusion?.Start(cts.Token);
+
         var snapshot = host.Capture();
         Console.WriteLine("NosAi Runtime 1.0 Beta — Gate 1");
         Console.WriteLine($"Health: {host.Health}");
