@@ -16,6 +16,10 @@ con acquisizione dei primi dati di base del client e del PC e visualizzazione/ge
 
 Ogni obiettivo significativo crea un gate. Il gate deve essere superato con test pertinenti prima di iniziare implementazioni successive. Un test fallito blocca l'avanzamento fino alla correzione e alla ripetizione del test con esito positivo.
 
+## Nota di riconciliazione — scope mobile (2026-09-05, ADR-0025)
+
+Il canale `PC ↔ smartphone Guard AI` descritto sopra e nel Gate 1 (vedi sotto) resta **evidenza storica valida**: è stato realmente verificato su dispositivo fisico, via USB e Wi-Fi, e questo stato non viene ritrattato. Tuttavia `docs/NOSAI_ARCHITECTURE_BASELINE.md` §12 dichiara il prodotto "PC/Windows-first" con lo smartphone/mobile **rimosso dallo scope di prodotto** per la roadmap corrente (`AP-00`…`AP-10`). Le due cose sono riconciliate per scope, non per fatto: `NosAi.GuardClient` (libreria PC-side del canale) resta nella solution e viene mantenuto buildabile perché i test reali del Gate 1 lo esercitano (`tests/NosAi.Runtime.Tests`), ma `NosAi.GuardAi.App` (l'app Android/MAUI) resta sorgente storico **non incluso nella build automatica** e non è pianificato per ulteriore sviluppo sotto questa roadmap. Vedi ADR-0025 per i dettagli.
+
 ---
 
 ## Classificazione di maturità adottata

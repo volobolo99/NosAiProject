@@ -16,7 +16,7 @@ Before changing code, inspect only the canonical entry points required by the as
 6. only the files explicitly listed by that command
 7. relevant tests/ADRs named by that command
 
-`NOSAI_MASTER_ROADMAP.md` is superseded and must not be treated as canonical.
+`NOSAI_MASTER_ROADMAP.md` has been removed: it was fully superseded by `docs/ROADMAP_ESECUTIVA.md` (see ADR-0015 and ADR-0025) and its content added nothing not already tracked in `docs/STATO_IMPLEMENTAZIONE.md` and this repository's git history.
 
 ## Mandatory agent completion protocol
 

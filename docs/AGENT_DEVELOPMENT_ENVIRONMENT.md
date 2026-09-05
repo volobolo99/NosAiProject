@@ -9,7 +9,7 @@ Provide one operational contract for Cursor and Claude Code so both agents follo
 
 ## Authoritative documents
 
-1. `NOSAI_MASTER_ROADMAP.md`
+1. `docs/ROADMAP_ESECUTIVA.md`
 2. `CLAUDE.md`
 3. `docs/NOSAI_ARCHITECTURE_BASELINE.md`
 4. `docs/adr/`

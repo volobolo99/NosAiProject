@@ -5,7 +5,7 @@ Use this checklist for every Cursor/Claude Code task.
 ## Before implementation
 
 - [ ] Read `CLAUDE.md`.
-- [ ] Read `NOSAI_MASTER_ROADMAP.md`.
+- [ ] Read `docs/ROADMAP_ESECUTIVA.md`.
 - [ ] Read `docs/NOSAI_ARCHITECTURE_BASELINE.md`.
 - [ ] Read relevant ADRs.
 - [ ] Inspect existing implementation and tests.
