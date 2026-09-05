@@ -1,0 +1,51 @@
+<Window x:Class="NosAi.ControlPanel.PracticalTestCenterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NosAi — Live Test Center"
+        Width="1180" Height="760" MinWidth="980" MinHeight="620"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}">
+  <DockPanel Margin="20">
+    <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,12,0,0">
+      <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" Text="Test Center: in attesa del runtime…"/>
+    </Border>
+    <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="3*"/></Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,14,0">
+        <StackPanel>
+          <TextBlock FontSize="24" FontWeight="SemiBold">Live Test Center</TextBlock>
+          <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,16" TextWrapping="Wrap">Dati letti dal canonical runtime endpoint. Nessun valore viene sintetizzato per far passare un test.</TextBlock>
+          <Border Style="{StaticResource CardChrome}" Margin="0,0,0,12">
+            <StackPanel>
+              <TextBlock Style="{StaticResource CardLabel}">LIVE SNAPSHOT</TextBlock>
+              <ItemsControl x:Name="LiveFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            </StackPanel>
+          </Border>
+          <Border Style="{StaticResource CardChrome}" Margin="0,0,0,12">
+            <StackPanel>
+              <TextBlock Style="{StaticResource CardLabel}">OPERATORE</TextBlock>
+              <TextBlock x:Name="InstructionText" Text="Se un test richiede un'azione, eseguila nel client solo quando indicato." TextWrapping="Wrap" Margin="0,0,0,8"/>
+              <Button x:Name="AcknowledgeButton" Content="Confermo azione operatore" Click="OnAcknowledge" IsEnabled="False" Style="{StaticResource PrimaryButton}"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <TextBlock FontSize="18" FontWeight="SemiBold">Test pratici</TextBlock>
+          <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap">Stato consentito: PASS / FAIL / UNKNOWN / BLOCKED. T5–T10 restano non eseguiti finché non esiste una verifica concreta per quella capacità.</TextBlock>
+          <WrapPanel x:Name="TestButtons" Margin="0,0,0,12"/>
+          <Border Style="{StaticResource CardChrome}">
+            <StackPanel>
+              <TextBlock Style="{StaticResource CardLabel}">ULTIMO RISULTATO</TextBlock>
+              <TextBlock x:Name="ResultText" FontSize="18" FontWeight="SemiBold" Text="NON ESEGUITO"/>
+              <TextBlock x:Name="EvidenceText" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+          </Border>
+          <TextBlock FontWeight="SemiBold" Margin="0,18,0,8">Diario test</TextBlock>
+          <ItemsControl x:Name="RunLog" ItemTemplate="{StaticResource FieldTemplate}"/>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </DockPanel>
+</Window>
