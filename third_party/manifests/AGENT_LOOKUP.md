@@ -10,6 +10,11 @@ Usare questo file come indice prima di eseguire ricerche esterne.
 | Event-driven/distributed patterns | `third_party/sources/saltyemu/` | SaltyEmu |
 | Resource/packet/TimeSpace tooling | `third_party/sources/nosgm/` | NosGm |
 | RAG/vector/hybrid retrieval | `third_party/sources/llm-rag-architecture/` | LLM-RAG-Architecture |
+| NosTale client data parsing | `third_party/sources/taletool/` | imxeno/taletool |
+| NosTale item/monster/quest/map schemas | `third_party/sources/vanosilla-client-files/` | Vanosilla/client-files |
+| Legacy waypoint/target/loot concepts | `third_party/sources/nostale-bot-research/` | wojtas99/Nostale_Bot (quarantined) |
+| Community research leads | `third_party/community/RESEARCH_LINKS.md` | Reddit/ePvP/forum leads |
+| Unified Claude/Cursor routing | `third_party/THIRD_PARTY_MASTER_INDEX.txt` | all |
 | Provenance/license | `third_party/provenance/` + `third_party/licenses/` | all |
 
 ## Routing rules
