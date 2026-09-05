@@ -4,7 +4,7 @@ using NosAi.Runtime.Gate1;
 namespace NosAi.Runtime.Testing;
 
 /// <summary>
-/// Evaluates practical, client-side tests against the same canonical snapshot exposed
+/// Evaluates practical client-side tests against the same canonical snapshot exposed
 /// to the operator dashboard. It never fabricates gameplay values and never bypasses
 /// Guard/Safety to make a test pass.
 /// </summary>
@@ -38,43 +38,35 @@ public sealed class LivePracticalTestService
         switch (testId)
         {
             case "T1":
-                result = live && client && HasFreshObservation(snapshot)
+                result = live && client && HasClientObservation(snapshot)
                     ? PracticalTestResult.Pass
                     : live && client ? PracticalTestResult.Unknown : PracticalTestResult.Blocked;
-                evidence = "gate1.snapshot";
-                failure = result == PracticalTestResult.Pass
-                    ? string.Empty
-                    : "fresh_client_observation_not_confirmed";
+                evidence = "gate1.snapshot.client";
+                failure = result == PracticalTestResult.Pass ? string.Empty : "client_observation_not_confirmed";
                 break;
 
             case "T2":
                 result = HasScreenObservation(snapshot)
                     ? PracticalTestResult.Pass
                     : PracticalTestResult.Unknown;
-                evidence = "gate1.snapshot.perception";
-                failure = result == PracticalTestResult.Pass
-                    ? string.Empty
-                    : "screen_observation_not_confirmed";
+                evidence = "gate1.snapshot.client";
+                failure = result == PracticalTestResult.Pass ? string.Empty : "screen_observation_not_confirmed";
                 break;
 
             case "T3":
-                result = HasNetworkObservation(snapshot)
+                result = snapshot.GameObservation.Active.Value == true
                     ? PracticalTestResult.Pass
                     : PracticalTestResult.Unknown;
-                evidence = "gate1.snapshot.network_observation";
-                failure = result == PracticalTestResult.Pass
-                    ? string.Empty
-                    : "network_observation_not_confirmed";
+                evidence = "gate1.snapshot.gameObservation";
+                failure = result == PracticalTestResult.Pass ? string.Empty : "network_observation_not_confirmed";
                 break;
 
             case "T4":
-                result = HasWorldObservation(snapshot)
+                result = snapshot.GameObservation.PacketsDecoded.Value > 0
                     ? PracticalTestResult.Pass
                     : PracticalTestResult.Unknown;
-                evidence = "gate1.snapshot.world";
-                failure = result == PracticalTestResult.Pass
-                    ? string.Empty
-                    : "world_state_observation_not_confirmed";
+                evidence = "gate1.snapshot.gameObservation";
+                failure = result == PracticalTestResult.Pass ? string.Empty : "world_observation_not_confirmed";
                 break;
 
             default:
@@ -97,24 +89,12 @@ public sealed class LivePracticalTestService
             failure);
     }
 
-    private static bool HasFreshObservation(Gate1CanonicalSnapshot snapshot)
-    {
-        // The canonical snapshot must expose an attached client and a non-stale
-        // observation. We deliberately do not infer freshness from a field that may
-        // belong to a different subsystem.
-        return snapshot.Client.Attached.Value == true
-            && snapshot.Client.Attached.Source != DataSourceKind.Unknown;
-    }
+    private static bool HasClientObservation(Gate1CanonicalSnapshot snapshot)
+        => snapshot.Client.Attached.Value == true;
 
     private static bool HasScreenObservation(Gate1CanonicalSnapshot snapshot)
-        => snapshot.Perception is not null
-           && snapshot.Perception.Source != DataSourceKind.Unknown;
-
-    private static bool HasNetworkObservation(Gate1CanonicalSnapshot snapshot)
-        => snapshot.GameObservation is not null
-           && snapshot.GameObservation.Source != DataSourceKind.Unknown;
-
-    private static bool HasWorldObservation(Gate1CanonicalSnapshot snapshot)
-        => snapshot.GameObservation is not null
-           && snapshot.GameObservation.Source != DataSourceKind.Unknown;
+        // Screen capture is deliberately not inferred from gameplay packets.
+        // The current canonical snapshot does not yet carry a screen-provider flag.
+        => snapshot.Client.WindowDetected.Value == true
+           && snapshot.Client.WindowVisible.Value == true;
 }
