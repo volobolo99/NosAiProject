@@ -35,7 +35,7 @@ public sealed class AdaptiveStrategyMemory : IStrategyMemory
         ArgumentException.ThrowIfNullOrWhiteSpace(objective);
 
         var matches = new List<StrategyMemoryItem>();
-        foreach (var scope in Enum.GetValues<KnowledgeScope>())
+        foreach (var scope in Enum.GetValues<Memory.KnowledgeScope>())
         {
             var entries = await _store.QueryAsync(scope, objective, cancellationToken);
             foreach (var entry in entries)
@@ -50,7 +50,8 @@ public sealed class AdaptiveStrategyMemory : IStrategyMemory
                 var tags = entry.Tags ?? new Dictionary<string, string>();
                 var strategy = tags.TryGetValue("strategy", out var value) ? value : entry.Content;
                 var priority = tags.TryGetValue("priority", out var priorityText) &&
-                               double.TryParse(priorityText, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+                               double.TryParse(priorityText, System.Globalization.NumberStyles.Float,
+                                   System.Globalization.CultureInfo.InvariantCulture, out var parsed)
                     ? parsed
                     : entry.Confidence;
 
