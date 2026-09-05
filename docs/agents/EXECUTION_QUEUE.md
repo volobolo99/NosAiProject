@@ -27,8 +27,8 @@
 | Q-013 | AP-02 | A1 — Contratto `VisualObservation` (osservazione visiva unificata con provenance) | **Claude** | Q-012 | (vedi AP-02_STATUS.md §3; nessun file comando separato — ricognizione approfondita ha sostituito la stesura preventiva) | **DONE** |
 | Q-014 | AP-02 | A2 — Screen/OCR/CV adapters | Claude (Cursor non disp.) | Q-013 | in gran parte già presente da prima (DXGI capture, ROI, ONNX detector contract — vedi AP-02_STATUS.md §1); OCR reale/modello addestrato bloccati da asset ML non producibili in questo ambiente | **BLOCKED** (asset ML mancanti) |
 | Q-015 | AP-02 | A3 — Fusione multimodale vitali (HP/MP schermo↔rete via FactFusion) | **Claude** | Q-013 | (vedi AP-02_STATUS.md §4) | **DONE** (ambito ristretto ai vitali; fusione entità Mob/Npc rimandata, stesso blocco ML di Q-014) |
-| Q-016 | AP-02 | A4 — Wiring runtime (collegare `VisualObservationFusion` a un loop reale) | Claude (Cursor non disp.) | Q-013, Q-015 | da scrivere quando si arriva qui | PENDING |
-| Q-017 | AP-02 | A5 — Audit indipendente AP-02 | Claude (agente in background) | Q-013, Q-015 | da scrivere quando si arriva qui | IN_PROGRESS |
+| Q-016 | AP-02 | A4 — Wiring runtime (estende `WorldModelFusionLoop` con capture schermo reale via `ScreenVitalReader`, `NullObjectDetector` per le entità) | Claude (agente in background) | Q-013, Q-015 | comando dato in linea all'agente | IN_PROGRESS |
+| Q-017 | AP-02 | A5 — Audit indipendente AP-02 | Claude (agente in background) | Q-013, Q-015 | comando dato in linea all'agente | IN_PROGRESS |
 | Q-018 | AP-02 | A6 — Integrazione finale AP-02 | Claude | Q-017 | da scrivere quando si arriva qui | PENDING |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
