@@ -47,9 +47,13 @@ indebolito.
 - `tests/NosAi.Runtime.Tests/WorldModel/Fusion/GameplayObservationProjectorBoundaryTests.cs`
 - `docs/agents/phases/AP-01/AP-01_A5_AUDIT.md` (questo file)
 
-18 nuovi test in NosAi.Core.Tests, 7 nuovi test in NosAi.Runtime.Tests.
-**4 falliscono di proposito** (4 difetti reali, mai introdotti da A5, non
-correggibili dall'ownership di A5); tutti gli altri 21 passano.
+18 nuovi test in NosAi.Core.Tests, 7 nuovi test in NosAi.Runtime.Tests (25
+totali). Al momento della scrittura, **4 fallivano di proposito** contro il
+codice di A1/A2/A3 così com'era (4 difetti reali, mai introdotti da A5, non
+correggibili dall'ownership di A5) e 21 passavano da subito. Come descritto
+in §2.5, tutti e 4 sono stati corretti da un'altra sessione nel corso di
+questo stesso audit: **oggi tutti e 25 passano** (vedi §4.6 per l'evidenza
+finale).
 
 ## 2. Difetti reali trovati
 
@@ -207,6 +211,69 @@ ciecamente del fatto che ogni `WorldFact<T>` in ingresso sia stato costruito
 tramite le factory di A1 — è un modulo di fusione che riceve dati da fonti
 esterne (rete/memoria/screen), quindi difendersi da un input scorretto è
 nel suo stesso interesse (fail-closed).
+
+## 2.5 Aggiornamento: i 4 difetti sono stati corretti durante questa stessa sessione
+
+Mentre questo audit era in corso, una sessione concorrente attiva sullo
+stesso working tree (verosimilmente A6/integrazione, o A1/A2/A3 stessi in
+riconsiderazione) ha applicato correttivi che seguono **esattamente** le
+direzioni suggerite sopra, citando questo audit nei propri commenti XML
+(`"AP-01/A5 audit finding"`). Diff esatto osservato (nessuna riga toccata da
+A5):
+
+```diff
+--- a/src/NosAi.Core/WorldModel/Temporal/TemporalBelief.cs
++++ b/src/NosAi.Core/WorldModel/Temporal/TemporalBelief.cs
+@@ EstimateVelocity
+         if (!previous.HasValue || !current.HasValue)
+-            return WorldFact<WorldVelocity>.Unknown("insufficient_position_history");
++            return WorldFact<WorldVelocity>.Unknown("insufficient_position_history", current.ObservedAtUtc);
+
+         TimeSpan elapsed = current.ObservedAtUtc - previous.ObservedAtUtc;
+         if (elapsed <= TimeSpan.Zero)
+-            return WorldFact<WorldVelocity>.Unknown("non_increasing_observation_order");
++            return WorldFact<WorldVelocity>.Unknown("non_increasing_observation_order", current.ObservedAtUtc);
+         if (elapsed > maxObservationGap)
+-            return WorldFact<WorldVelocity>.Unknown("observation_gap_too_large_for_a_reliable_estimate");
++            return WorldFact<WorldVelocity>.Unknown("observation_gap_too_large_for_a_reliable_estimate", current.ObservedAtUtc);
+@@ PredictPosition
+         if (!lastKnown.HasValue)
+-            return WorldFact<WorldPosition>.Unknown("no_last_known_position_to_extrapolate_from");
++            return WorldFact<WorldPosition>.Unknown("no_last_known_position_to_extrapolate_from", asOfUtc);
+
+--- a/src/NosAi.Core/WorldModel/WorldModelClassification.cs
++++ b/src/NosAi.Core/WorldModel/WorldModelClassification.cs
+-    private static double ClampConfidence(double confidence) => Math.Clamp(confidence, 0d, 1d);
++    private static double ClampConfidence(double confidence) => double.IsNaN(confidence) ? 0d : Math.Clamp(confidence, 0d, 1d);
+
+--- a/src/NosAi.Runtime/WorldModel/Fusion/FactFusion.cs
++++ b/src/NosAi.Runtime/WorldModel/Fusion/FactFusion.cs
+-        if (candidate.Fact.Confidence != current.Fact.Confidence)
+-            return candidate.Fact.Confidence > current.Fact.Confidence;
++        double candidateConfidence = double.IsNaN(candidate.Fact.Confidence) ? -1d : candidate.Fact.Confidence;
++        double currentConfidence = double.IsNaN(current.Fact.Confidence) ? -1d : current.Fact.Confidence;
++        if (candidateConfidence != currentConfidence)
++            return candidateConfidence > currentConfidence;
+```
+
+Rieseguendo l'intera suite **senza modificare una sola riga dei test scritti
+da questo audit** (nessun test indebolito, nessuno saltato, nessuno
+cancellato):
+
+- I 4 test di regressione (Difetti 1-4) sono passati da rossi a **verdi**.
+- I test "compagni" pensati per restare verdi lo sono rimasti
+  (`Confidence_InfiniteInput_IsStillCorrectlyClamped_UnlikeNaN`,
+  `NaNConfidenceCandidate_WhenListedSecond_CorrectlyLoses_ProvingTheDefectIsAnOrderingArtifact`).
+- Nessun altro test, tra i 25 aggiunti da questo audit o tra quelli
+  preesistenti di A1/A2/A3, ha cambiato esito.
+- L'intera suite combinata Core.Tests + Runtime.Tests è verde (evidenza
+  esatta di build/test dopo la correzione in §4.6 di questo stesso
+  documento: 357/357 Core.Tests, 1812/1870 Runtime.Tests con 58 skip
+  Windows-only invariati e 0 falliti).
+
+Questo è precisamente il ciclo trovato→documentato→corretto→riconfermato che
+il protocollo di questo progetto richiede, solo compresso nella stessa
+finestra temporale invece che in due sessioni separate come in AP-00.
 
 ## 3. Lacune di copertura documentate (test verdi, nessuna correzione necessaria)
 
@@ -457,18 +524,43 @@ richiedono ambiente Windows/hardware reale — sono omesse qui per brevità; il
 conteggio esatto (58) è invariato rispetto a quanto atteso e nessuna riga
 SKIP proviene da un file toccato da questo audit.) **Nessun test
 pre-esistente di A2 in `NosAi.Runtime.Tests` è stato indebolito**: l'unico
-fallimento è il nuovo test-difetto di A5.
+fallimento era il test-difetto di A5, corretto poco dopo (§4.6).
+
+### 4.6 Riverifica finale, dopo la correzione dei 4 difetti (§2.5)
+
+Rebuild pulito e riesecuzione completa di entrambe le suite, dopo che la
+sessione concorrente ha applicato le correzioni. Nessun file di test è stato
+toccato da A5 tra la prima e la seconda esecuzione.
+
+```
+$ dotnet build src/NosAi.Core/NosAi.Core.csproj -c Release
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+$ dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+$ dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release --no-build
+Passed!  - Failed:     0, Passed:   357, Skipped:     0, Total:   357, Duration: 4 s - NosAi.Core.Tests.dll (net8.0)
+
+$ dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
+Passed!  - Failed:     0, Passed:  1812, Skipped:    58, Total:  1870, Duration: 15 s - NosAi.Runtime.Tests.dll (net8.0)
+```
+
+**Zero fallimenti in entrambe le suite** (il precedente singolo fallimento
+di `TransportLoopTests` in un run intermedio è stato il flake noto,
+riconfermato tale — vedi §4.4 — e non riappare in questo run finale). I 4
+test di regressione dei Difetti 1-4 sono ora verdi; nessun test è stato
+rimosso, saltato o indebolito per ottenere questo risultato.
 
 ## 5. Limiti dichiarati / non affrontati (rimandati ad A6 o a fasi successive)
 
-- I 4 difetti reali (§2) **non sono stati corretti** — fuori ownership di
-  A5. A6 deve applicare le correzioni suggerite in §2, poi confermare che i 4
-  test rossi diventino verdi **senza** che nessun altro test (in particolare
-  i controlli d'isolamento
-  `WorldFactBoundaryTests.Confidence_InfiniteInput_IsStillCorrectlyClamped_UnlikeNaN`
-  e
-  `FactFusionBoundaryTests.NaNConfidenceCandidate_WhenListedSecond_CorrectlyLoses_ProvingTheDefectIsAnOrderingArtifact`)
-  cambi esito.
+- I 4 difetti reali (§2) sono stati corretti durante questa stessa sessione
+  da un agente concorrente (§2.5), non da A5 (fuori ownership di A5 in ogni
+  caso). Nessuna azione residua su di essi.
 - Le 5 lacune documentate in §3 sono limiti accettati o stranezze minori, non
   bloccanti — nessuna azione richiesta se non tenerle presenti nelle fasi
   successive (AP-02 per il catalogo vnum/nomi, AP-04+ per un'eventuale
@@ -478,14 +570,31 @@ fallimento è il nuovo test-difetto di A5.
   già segnalata da A1 in `AP-01_STATUS.md` §3 punto 1 e §6, resta un item
   aperto per l'integrazione futura — non ri-analizzata qui, non è compito di
   A5 duplicare quell'audit.
+- Durante questo audit è stata osservata attività concorrente, non di A5, su
+  file al di fuori della sua ownership: `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs`
+  (nuovo), `src/NosAi.Runtime/Program.cs`, `src/NosAi.Runtime/Configuration/Gate1HostOptions.cs`,
+  `src/NosAi.Runtime/Observability/ModuleReachability.cs` e
+  `tests/NosAi.Runtime.Tests/Gate1ObservationTests.cs` (verosimilmente
+  lavoro A4, "runtime wiring from existing observation snapshots into the
+  World Model" per `AGENT_COMMAND_REGISTRY.md`). Non fanno parte
+  dell'ambito di questo audit (né dei contratti A1, né della fusion A2, né
+  del belief temporale A3) e non sono stati ispezionati né toccati da A5;
+  segnalati qui solo per trasparenza, dato che condividono lo stesso working
+  tree. Le suite complete in §4.6 li includono già nel proprio build/test e
+  risultano verdi.
 - Nessuna evidenza da client NosTale reale esiste per questa fase — coerente
   con quanto già dichiarato da A1/A2/A3 stessi in `AP-01_STATUS.md` §5/§7/§8.
-  **Questo audit non eleva il livello di verifica oltre `Present`.**
+  **Questo audit non eleva il livello di verifica oltre `Integrated`.**
 
 ## 6. Non dichiarato: `Verified`
 
 Come richiesto: questo audit non dichiara mai `Verified`. Il massimo
-onestamente dichiarabile per il pacchetto AP-01 così com'è oggi, considerati
-i 4 difetti reali ancora aperti, è `Present` per il lavoro di questo task, e
-**non ancora `Integrated`** per la fase nel suo complesso finché A6 non
-applica le correzioni e non riconferma build/test puliti.
+onestamente dichiarabile per il pacchetto AP-01 così com'è oggi è
+**`Integrated`**: l'albero combinato builda pulito e l'intera suite di test
+Core+Runtime passa (357/357 e 1812/1812 non-skippati rispettivamente), i 4
+difetti reali trovati da questo audit sono stati corretti e i loro test di
+regressione lo confermano senza alcuna regressione altrove. Resta
+**non `Verified`**: nessuna evidenza da client NosTale reale esiste per
+questa fase — tutto quanto sopra è stato eseguito in una sandbox Linux senza
+hardware ASUS Nitro V16/RTX 5060 né client Windows reale, come già dichiarato
+onestamente da A1/A2/A3 in `AP-01_STATUS.md`.
