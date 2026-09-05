@@ -504,16 +504,22 @@ public sealed class PerceptionPipeline
     private readonly IFrameSource _frameSource;
     private readonly TemporalEntityTracker _tracker;
     private readonly Func<CaptureFrame, IReadOnlyList<Detection>> _detector;
+    private readonly CaptureFreshnessPolicy _freshnessPolicy;
+    private readonly Func<DateTime> _clock;
     private long _frameIndex;
     private DateTime? _lastFrameUtc;
 
     public PerceptionPipeline(IFrameSource frameSource,
         Func<CaptureFrame, IReadOnlyList<Detection>> detector,
-        TemporalEntityTracker? tracker = null)
+        TemporalEntityTracker? tracker = null,
+        CaptureFreshnessPolicy? freshnessPolicy = null,
+        Func<DateTime>? clock = null)
     {
         _frameSource = frameSource ?? throw new ArgumentNullException(nameof(frameSource));
         _detector = detector ?? throw new ArgumentNullException(nameof(detector));
         _tracker = tracker ?? new TemporalEntityTracker();
+        _freshnessPolicy = freshnessPolicy ?? new CaptureFreshnessPolicy();
+        _clock = clock ?? (() => DateTime.UtcNow);
     }
 
     public PerceptionResult ProcessNext()
@@ -524,6 +530,14 @@ public sealed class PerceptionPipeline
             return new PerceptionResult(index, DataSourceKind.Unknown, false,
                 ImmutableArray<RegionOfInterest>.Empty, ImmutableArray<TrackedEntity>.Empty,
                 "no_frame_acquired");
+        }
+
+        var freshness = _freshnessPolicy.Evaluate(frame, _clock());
+        if (!freshness.IsAccepted)
+        {
+            return new PerceptionResult(index, DataSourceKind.Unknown, false,
+                ImmutableArray<RegionOfInterest>.Empty, ImmutableArray<TrackedEntity>.Empty,
+                freshness.RejectionReason);
         }
 
         double dt = _lastFrameUtc is { } last ? Math.Max(0.0, (frame.CapturedUtc - last).TotalSeconds) : 0.0;
