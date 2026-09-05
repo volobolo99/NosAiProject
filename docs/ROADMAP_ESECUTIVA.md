@@ -1,6 +1,6 @@
 # NosAiProject — Roadmap Esecutiva Autonomous Player
 
-**Versione:** 2.1
+**Versione:** 2.2
 **Data:** 2026-09-05
 **Stato:** CANONICA
 **Target:** giocatore autonomo per ambiente privato/test riproducibile, ottimizzato per ASUS Nitro V16 + RTX 5060 Laptop 8 GB class + 16 GB DDR5 + SSD esterno 2 TB
@@ -101,9 +101,15 @@ Strategic Utility → HTN → deterministic cost-aware GOAP → reactive rules �
 
 Working, episodic, semantic, procedural, spatial, combat, quest, character, failure e reasoning memory. Retrieval ibrido, provenance/freshness aware. Action-outcome ledger. Simulazione deterministica locale per conseguenze a breve termine.
 
-RL/world-model learning: offline/sandboxed → evaluation → shadow policy → constrained live ranking solo dopo validazione.
+**Adaptive Knowledge Expansion:** la memoria è gerarchica e auto-estensibile. NosAi distingue conoscenza `Universal`, `Progression`, `Class`, `Specialist`, `Context`, `Character` ed `Environment`. Il percorso iniziale Level 1→20 Job alimenta una memoria riutilizzabile; le conoscenze verificate di una classe vengono ereditate dai nuovi personaggi della stessa classe senza duplicare la truth layer.
 
-**DoD:** conoscenza utile persiste tra sessioni senza contaminare la truth layer.
+Quando il runtime incontra un oggetto, drop, NPC, interazione, meccanica, segnale o relazione non catalogata, deve poter creare un nuovo topic, sottocartella e record di conoscenza persistente. L'espansione riguarda dati/evidenze/indici, non codice di sicurezza o autorizzazione. Ogni scoperta segue `Observe → Normalize → Candidate → Test → Measure → Validate → Persist → Reuse` e conserva anche i fallimenti.
+
+Ogni strategia ha lifecycle `Discovered → Candidate → Testing → Promising → Validated → Verified → Deprecated`, con confidence, evidence count, provenance, timestamp e ruleset version. La ricerca online genera candidate knowledge; solo l'evidenza osservabile nel client/test environment può promuoverla a conoscenza verificata.
+
+**RL/world-model learning:** offline/sandboxed → evaluation → shadow policy → constrained live ranking solo dopo validazione.
+
+**DoD:** conoscenza utile persiste tra sessioni e personaggi senza contaminare la truth layer; nuove categorie possono essere create senza modificare il binario; strategie fallite non vengono ripetute ciecamente; conoscenza obsoleta viene marcata per revalidazione.
 
 ### AP-10 — Full Autonomous Player Certification
 
@@ -156,5 +162,5 @@ Ogni fase richiede build Release senza warning, unit/integration tests, test neg
 6. combat model + simulator/ranking;
 7. quest graph + planner;
 8. character/build optimizer;
-9. memory/action-outcome ledger;
+9. adaptive knowledge + action-outcome ledger;
 10. end-to-end autonomous certification.
