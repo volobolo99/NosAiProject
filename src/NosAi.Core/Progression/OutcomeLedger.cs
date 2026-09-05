@@ -37,6 +37,8 @@ public sealed class InMemoryOutcomeLedger : IOutcomeLedger
     {
         ArgumentNullException.ThrowIfNull(outcome);
         cancellationToken.ThrowIfCancellationRequested();
+        Validate(outcome);
+
         lock (_sync)
         {
             _outcomes.RemoveAll(x => x.OutcomeId == outcome.OutcomeId);
@@ -71,9 +73,24 @@ public sealed class InMemoryOutcomeLedger : IOutcomeLedger
                 items.Length,
                 items.Count(x => x.Success),
                 items.Count(x => x.Success) / (double)items.Length,
-                items.Average(x => Math.Max(0, x.DurationSeconds)),
-                items.Average(x => Math.Max(0, x.ResourceCost)),
+                items.Average(x => x.DurationSeconds),
+                items.Average(x => x.ResourceCost),
                 items.Max(x => x.ObservedAtUtc)));
         }
+    }
+
+    private static void Validate(MissionOutcome outcome)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome.OutcomeId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome.ObjectiveId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome.StrategyId);
+        if (double.IsNaN(outcome.DurationSeconds) || double.IsInfinity(outcome.DurationSeconds) || outcome.DurationSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(outcome.DurationSeconds), "DurationSeconds must be finite and non-negative.");
+        if (double.IsNaN(outcome.RecoverySeconds) || double.IsInfinity(outcome.RecoverySeconds) || outcome.RecoverySeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(outcome.RecoverySeconds), "RecoverySeconds must be finite and non-negative.");
+        if (double.IsNaN(outcome.ResourceCost) || double.IsInfinity(outcome.ResourceCost) || outcome.ResourceCost < 0)
+            throw new ArgumentOutOfRangeException(nameof(outcome.ResourceCost), "ResourceCost must be finite and non-negative.");
+        if (outcome.ObservedAtUtc == default)
+            throw new ArgumentException("ObservedAtUtc must be populated.", nameof(outcome.ObservedAtUtc));
     }
 }
