@@ -1,6 +1,6 @@
 # NosAiProject — Source of Truth
 
-**Version:** 2.1  
+**Version:** 2.2  
 **Date:** 2026-09-05  
 **Status:** ACTIVE
 
@@ -20,7 +20,12 @@ This file defines which project documents are authoritative. When documents disa
 
 - `docs/agents/AGENT_WORK_PROTOCOL.md` — mandatory multi-agent execution contract.
 - `docs/agents/AGENT_EXECUTION_MATRIX.md` — ownership and synchronization rules.
+- `docs/agents/FILE_OWNERSHIP_MATRIX.md` — exclusive file ownership and conflict rules.
 - `docs/agents/DEVELOPMENT_MASTER_PLAN.md` — phase/agent development topology.
+- `docs/agents/COMMAND_INDEX.md` — operator index for Cursor/Claude command files.
+- `docs/agents/PHASE_EXECUTION_TEMPLATE.md` — mandatory phase/handoff template.
+- `docs/agents/REPOSITORY_STABILIZATION_PROTOCOL.md` — stabilization and no-deletion protocol.
+- `docs/agents/REPOSITORY_STATE_TEMPLATE.md` — evidence/state record template.
 - `docs/agents/phases/` — one executable command document per agent and phase.
 - `docs/BUILD_TEST_RELEASE.md` — reproducible build/test/release procedure.
 - `docs/GIT_WORKFLOW.md` — Git workflow.
@@ -32,6 +37,10 @@ This file defines which project documents are authoritative. When documents disa
 - `docs/PROTOCOLLO_NOSTALE.md` — protocol reference for client-observable traffic.
 - `docs/RECOVERY_WATCHDOG.md` — recovery/watchdog constraints.
 - `docs/research/` — dated research evidence; research never overrides an ADR or canonical specification.
+
+## Multi-agent operating rule
+
+A1–A5 may work in parallel only on disjoint ownership sets. A6 integrates only after complete handoffs. Agents must write complete files and may not introduce TODO/FIXME/pseudocode/stubs/partial implementations. No phase command authorizes deletion of existing project files. `third_party/` is not a deletion target.
 
 ## Architecture and execution rule
 
