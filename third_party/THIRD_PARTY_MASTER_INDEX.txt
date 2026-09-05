@@ -201,3 +201,63 @@ third_party/community/RESEARCH_LINKS.md
 third_party/sources/README.md
 
 END OF MASTER INDEX
+
+
+================================================================================
+SYSTEMATIC RESEARCH EXPANSION — 2026-09-05
+================================================================================
+
+MASTER CATALOG:
+third_party/manifests/SYSTEMATIC_RESEARCH_2026-09-05.md
+
+PERCEPTION:
+third_party/research/perception/UPSTREAMS.md
+- PaddlePaddle/PaddleOCR — Apache-2.0 — OCR — PACKAGE/TOOL
+- open-mmlab/mmdetection — Apache-2.0 — detector training — TOOL
+- FoundationVision/ByteTrack — MIT — temporal tracking — ADAPT/REFERENCE
+- facebookresearch/sam2 — Apache-2.0 — offline segmentation/annotation — TOOL
+- robmikh/Win32CaptureSample — MIT — Windows Graphics Capture — LOCAL SOURCE
+
+LEARNING:
+third_party/research/learning/UPSTREAMS.md
+- danijar/dreamerv3 — MIT — world-model research
+- HumanCompatibleAI/imitation — MIT — behavior cloning/imitation
+- takuseno/d3rlpy — MIT — offline RL
+- kzl/decision-transformer — MIT — trajectory sequence modeling
+- DLR-RM/stable-baselines3 — MIT — RL baselines
+- vwxyzjn/cleanrl — MIT — compact academic RL reference
+
+PLANNING:
+third_party/research/planning/UPSTREAMS.md
+- luxkun/ReGoap — Apache-2.0 — LOCAL SOURCE — GOAP
+- ptrefall/fluid-hierarchical-task-network — MIT — LOCAL SOURCE — HTN
+
+RUNTIME / MEMORY:
+third_party/research/runtime/UPSTREAMS.md
+- microsoft/onnxruntime — MIT — inference package
+- ggml-org/llama.cpp — MIT — local LLM runtime
+- microsoft/semantic-kernel — MIT — .NET RAG/orchestration reference
+- asg017/sqlite-vec — MIT/Apache-2.0 — local vector retrieval
+
+OPTIMIZATION:
+third_party/research/optimization/UPSTREAMS.md
+- google/or-tools — Apache-2.0 — build/inventory/progression optimization
+
+NEW LOCAL SOURCE SETS:
+third_party/sources/ptrefall/FluidHTN/reference/
+third_party/sources/robmikh/Win32CaptureSample/reference/
+third_party/sources/luxkun/ReGoap/reference/ (expanded with planner implementation)
+
+PREFERRED NOSAI 3.0 STACK:
+Capture = Windows.Graphics.Capture reference
+Detection = train externally -> export ONNX -> ONNX Runtime
+Tracking = ByteTrack-derived/adapted tracker
+OCR = PaddleOCR on-demand/ROI
+Long horizon planning = FluidHTN
+Executable planning = ReGoap/GOAP
+Optimization = OR-Tools
+Imitation learning = HumanCompatibleAI/imitation
+Offline RL = d3rlpy
+World-model research = DreamerV3
+Memory retrieval experiment = SQLite + sqlite-vec
+
