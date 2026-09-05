@@ -480,6 +480,9 @@ public sealed class TemporalEntityTracker : IObjectTracker
             .ToImmutableArray();
     }
 
+    IReadOnlyList<TrackedEntity> IObjectTracker.Track(IReadOnlyList<Detection> detections, double deltaSeconds)
+        => Track(detections, deltaSeconds);
+
     private static double Square(double v) => v * v;
 }
 
