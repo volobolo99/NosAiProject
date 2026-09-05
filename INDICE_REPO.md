@@ -315,7 +315,7 @@ Dopo il taglio R4 restano i pacchetti in `docs/INVENTARIO_PYTHON.md` che non son
 
 **Sicurezza e rete**: `CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md`, `INTEGRAZIONE_RSA_SESSION_AUTH.md`, `SICUREZZA.md`, `PROTOCOLLO_NOSTALE.md`, `WIFI_BRINGUP.md`
 
-**Runtime e infrastruttura**: `PERSISTENZA_SQLITE_E_SHARED_MEMORY.md`, `HARDWARE_BASELINE_AND_AUTOSCALE.md`, `RECOVERY_WATCHDOG.md`, `EXTERNAL_SSD_DEPLOYMENT.md`, `DASHBOARD.md`, `PROGRESSION_ENGINE_SPEC.md`
+**Runtime e infrastruttura**: `PERSISTENZA_SQLITE_E_SHARED_MEMORY.md`, `HARDWARE_BASELINE_AND_AUTOSCALE.md`, `RECOVERY_WATCHDOG.md`, `EXTERNAL_SSD_DEPLOYMENT.md`, `DASHBOARD.md`, `PROGRESSION_ENGINE_SPEC.md`, `WORLD_MODEL_AP01.md`
 
 **Ordine dei lavori**: `PIANO_CAPACITA.md` — quale capacità si costruisce, in che ordine, e chi la fa · `PIANO_DI_RIORDINO.md` — quale disordine si toglie, senza aggiungere capacità
 
