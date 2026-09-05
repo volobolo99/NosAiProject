@@ -186,6 +186,15 @@ public static class ModuleReachability
         new("NosAi.Runtime.Telemetry", ModuleReach.Unreferenced,
             "Superseded in practice by the durable event log in Gate 2, which is "
             + "what the runtime records through."),
+
+        new("NosAi.Runtime.WorldModel.Fusion", ModuleReach.Unreferenced,
+            "AP-01/A2 sensor fusion: projects the existing GameplayObservation "
+            + "into NosAi.Core.WorldModel.WorldModelSnapshot, plus the generic "
+            + "FactFusion precedence/disagreement resolver. Exercised only by its "
+            + "own unit tests today -- no bootstrap host calls it yet. Wiring it "
+            + "into a live decision loop is AP-01/A4's job (runtime wiring from "
+            + "existing observation snapshots into the World Model), not this "
+            + "contracts-and-projection task's."),
     ];
 
     /// <summary>Modules at a given reach, in declaration order.</summary>

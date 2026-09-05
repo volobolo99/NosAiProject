@@ -18,8 +18,8 @@
 | Q-004 | AP-00 | A4 — Runtime capability gate | Claude (Cursor non disp.) | Q-001 | `docs/agents/phases/AP-00/A4_CURSOR_runtime_gate.md` | **DONE** |
 | Q-005 | AP-00 | A5 — Test/benchmark/doc | Claude | Q-001, Q-003, Q-004 | `docs/agents/phases/AP-00/A5_CLAUDE_tests_docs.md` | **DONE** |
 | Q-006 | AP-00 | A6 — Integrazione finale (dedup `InferenceTier` Hardware/Scheduling, build/test completo, commit) | **Claude** | Q-005 | `docs/agents/phases/AP-00/A6_CLAUDE_integration_gate.md` | **DONE** |
-| Q-007 | AP-01 | A1 — Contratti World Model (Player/Map/Tile/Portal/Mob/NPC/Drop/Quest/Inventory/Equipment/Skill/Buff/Debuff/Cooldown/Resource/Action/Goal) | **Claude** | Q-006 | `docs/agents/phases/AP-01/A1_CLAUDE_world_model_contracts.md` | PENDING |
-| Q-008 | AP-01 | A2 — Sensor Fusion (Network/Memory/Screen/Local → World Model) | **DeepSeek** | Q-007 | `docs/agents/phases/AP-01/A2_DEEPSEEK_sensor_fusion.md` | PENDING |
+| Q-007 | AP-01 | A1 — Contratti World Model (Player/Map/Tile/Portal/Mob/NPC/Drop/Quest/Inventory/Equipment/Skill/Buff/Debuff/Cooldown/Resource/Action/Goal) | **Claude** | Q-006 | `docs/agents/phases/AP-01/A1_CLAUDE_world_model_contracts.md` | **DONE** |
+| Q-008 | AP-01 | A2 — Sensor Fusion (Network/Memory/Screen/Local → World Model) | Claude (DeepSeek/Cursor non ancora attivi) | Q-007 | `docs/agents/phases/AP-01/A2_DEEPSEEK_sensor_fusion.md` | **DONE** |
 | Q-009 | AP-01 | A3 — (da definire: probabile Navigation/Progression per analogia con la matrice di ownership) | Claude o DeepSeek (da assegnare) | Q-007 | **da scrivere quando si arriva qui** | PENDING |
 | Q-010 | AP-01 | A4 — (da definire: probabile Runtime/Gate3 integration, per analogia con AP-00 A4) | DeepSeek | Q-007, Q-008 | **da scrivere quando si arriva qui** | PENDING |
 | Q-011 | AP-01 | A5 — Test/benchmark/doc AP-01 | Claude | Q-007, Q-008, Q-009, Q-010 | **da scrivere quando si arriva qui** | PENDING |
