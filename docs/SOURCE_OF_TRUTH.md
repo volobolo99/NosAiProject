@@ -1,6 +1,6 @@
 # NosAiProject — Source of Truth
 
-**Version:** 2.0  
+**Version:** 2.1  
 **Date:** 2026-09-05  
 **Status:** ACTIVE
 
@@ -18,6 +18,10 @@ This file defines which project documents are authoritative. When documents disa
 
 ## Development-support documents
 
+- `docs/agents/AGENT_WORK_PROTOCOL.md` — mandatory multi-agent execution contract.
+- `docs/agents/AGENT_EXECUTION_MATRIX.md` — ownership and synchronization rules.
+- `docs/agents/DEVELOPMENT_MASTER_PLAN.md` — phase/agent development topology.
+- `docs/agents/phases/` — one executable command document per agent and phase.
 - `docs/BUILD_TEST_RELEASE.md` — reproducible build/test/release procedure.
 - `docs/GIT_WORKFLOW.md` — Git workflow.
 - `docs/TESTING.md` — testing strategy.
