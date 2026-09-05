@@ -1,0 +1,64 @@
+<UserControl x:Class="NosAi.ControlPanel.CognitiveDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Style="{StaticResource CardChrome}" Margin="0,0,12,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+                    <TextBlock Style="{StaticResource CardLabel}" Text="COGNITIVE FLOW"/>
+                    <TextBlock FontSize="12" Foreground="{StaticResource MutedBrush}" Text="Trace tecnico live: osservazione → decisione → verifica"/>
+                </StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="NodeList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,8" Padding="12" CornerRadius="10" Background="#121C30" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <Ellipse Width="9" Height="9" VerticalAlignment="Center" Fill="{Binding Accent}"/>
+                                        <StackPanel Grid.Column="1" Margin="10,0,10,0">
+                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Detail}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="{Binding Status}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardLabel}" Text="DECISION COMMITTED"/>
+                    <TextBlock x:Name="DecisionAction" FontSize="19" FontWeight="SemiBold" Text="UNKNOWN" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="DecisionMeta" Foreground="{StaticResource MutedBrush}" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Row="1" Style="{StaticResource CardChrome}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource CardLabel}" Text="DECISION TRACE" Margin="0,0,0,8"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="TraceList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Meta}" Foreground="{StaticResource MutedBrush}" FontSize="10" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
