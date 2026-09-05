@@ -1,6 +1,6 @@
 # AP-00 — Repository Reality Map
 
-**Audit baseline:** `b4f7eaf4c1b59e42be26104b75c0de83ee2f0adb` (`main`)
+**Audit baseline:** `221daea2676bc8a096ef8045b1042c5af3da58c9` (`main`)
 
 ## Purpose
 
@@ -15,7 +15,7 @@ Questa mappa separa ciò che è **presente nel repository** da ciò che deve anc
 | `third_party/` | Vault/provenance gestito separatamente | PRESENT / PRESERVARE |
 | CI | `.github/workflows/ci.yml` presente; restore/build Runtime espliciti | PRESENT / DA VERIFICARE SU RUN REALE |
 
-La solution contiene effettivamente un grafo multi-progetto, quindi l'ipotesi di un singolo Runtime isolato è errata. fileciteturn204file0L2-L2
+La solution contiene effettivamente un grafo multi-progetto, quindi l'ipotesi di un singolo Runtime isolato è errata.
 
 ## 2. Runtime
 
@@ -30,7 +30,7 @@ Evidenze:
 - package references per Management, SQLite, BouncyCastle e ProtectedData;
 - copia opzionale di WinDivert DLL/SYS se presenti nel vault third-party.
 
-Il progetto Runtime è quindi un'applicazione reale, non una semplice libreria. fileciteturn205file0L2-L2
+Il progetto Runtime è quindi un'applicazione reale, non una semplice libreria.
 
 **Stato:** PRESENT. Build locale non eseguita da questo audit remoto.
 
@@ -52,21 +52,33 @@ Percorso critico documentato e cercato nel repository:
 
 `Observe → Plan → Simulation → Ranking → Guard → Safety → Execute → Verify`
 
-`Gate3Runtime.cs` è indicato dal repository index come percorso critico completo. fileciteturn203file1L23-L30
+`Gate3Runtime.cs` espone anche `StageBoard` attraverso l'orchestratore, rendendo gli stage osservabili senza concedere al pannello autorità di esecuzione.
 
 **Stato:** PRESENT. Deve essere verificato con test/build e con controllo dei punti di ingresso all'esecuzione.
 
 ## 5. Dashboard / Control Panel
 
-`NosAi.ControlPanel` esiste nella solution e contiene il wiring del pannello verso Runtime. La ricerca del repository mostra un riferimento esplicito a `NosAi.Runtime.csproj` dal Control Panel. fileciteturn206file8L105-L113
+`NosAi.ControlPanel` esiste nella solution e ospita `Gate1BootstrapHost` in-process tramite `ProjectReference` a `NosAi.Runtime.csproj`.
 
-**Stato:** PRESENT.
+Il Control Panel dispone di:
+- `RuntimeSession` per sessioni `Hosted` e `Attached`;
+- `CaptureAsync()` via snapshot in-process oppure HTTP `/api/gate1` per runtime collegato;
+- `CognitiveMemoryWindow` read-only;
+- `CognitiveObservabilityRegistry` locale al processo del pannello;
+- `CognitiveRuntimeTraceBridge` che ascolta `Gate3DecisionLoop` e `StageBoard` quando il pannello avvia il runtime hosted.
 
-Da verificare:
-- se il flusso cognitive observability è realmente condiviso tra processi o solo in-process;
-- se il polling ha lifecycle/cancellation corretti;
-- se ogni dato visualizzato proviene da osservazione reale;
-- che il pannello non possieda execution authority.
+**Stato:** PRESENT / INTEGRATION PATH IDENTIFICATO.
+
+### AP-00.2 — risultato audit Runtime → Gate1 → Gate3 → Dashboard
+
+1. `RuntimeSession` costruisce un `CognitiveRuntimeTraceBridge` quando `host.Decisions` è disponibile.
+2. Il bridge esistente ascolta `loop.Orchestrator.StageBoard.StageRecorded` e `loop.CycleCompleted`, quindi non esiste un riferimento a una classe bridge inesistente: il simbolo `CognitiveRuntimeTraceBridge` è effettivamente presente nel progetto ControlPanel.
+3. `Gate3DecisionLoop` pubblica inoltre trace cognitivi dettagliati sul registry statico del progetto Runtime.
+4. Il Control Panel mantiene però un **secondo registry statico**, separato da quello Runtime, e il bridge riversa nel registry del Control Panel gli stage/decisioni necessari alla UI.
+5. Di conseguenza il percorso dashboard **hosted/in-process** è osservabile tramite bridge, mentre il percorso **attached/cross-process** non può condividere uno static registry e deve usare una superficie IPC/HTTP esplicita se in futuro si vorrà una cognitive trace completa anche per runtime esterno.
+6. Questa separazione non è un blocker per il Test Center Gate1, ma è un limite architetturale da mantenere esplicito: non dichiarare “live cognitive dashboard cross-process” finché non esiste un endpoint/transport dedicato per la cognitive observability.
+
+**Verdetto AP-00.2:** `INTEGRATION PATH PRESENT`, con **limite cross-process documentato**. Nessuna modifica al critical path Gate3 è giustificata da questa sola evidenza.
 
 ## 6. Navigation
 
@@ -76,7 +88,7 @@ Il repository contiene contratti/planner/evaluator di navigation e il Test Cente
 
 ## 7. Core / Storage / Security / Adapter / Host
 
-I progetti sono membri della solution e `Directory.Build.props` applica a diversi di essi nullable, warnings-as-errors e analyzer reference. fileciteturn202file0L2-L2
+I progetti sono membri della solution e `Directory.Build.props` applica a diversi di essi nullable, warnings-as-errors e analyzer reference.
 
 **Stato:** PRESENT / BUILD DA ESEGUIRE.
 
@@ -87,15 +99,15 @@ Esistono almeno:
 - `tests/NosAi.ControlPanel.Tests`;
 - `tests/NosAi.Core.Tests`.
 
-Il Runtime test project referenzia direttamente `NosAi.Runtime.csproj`. fileciteturn206file12L160-L168
+Esiste un test dedicato al `CognitiveRuntimeTraceBridge` nel progetto ControlPanel.Tests e test dedicati al `CognitiveObservabilityBridge` nel progetto Runtime.Tests. La presenza dei test non sostituisce l'esecuzione.
 
 **Stato:** PRESENT / RESULT NON VERIFICATO IN QUESTO AUDIT.
 
 ## 9. Build scripts e CI
 
-Il repository contiene script PowerShell/Shell per restore/build Runtime. fileciteturn206file1L13-L20
+Il repository contiene script PowerShell/Shell per restore/build Runtime.
 
-La CI contiene uno step di restore del Runtime e una pipeline di build dedicata. fileciteturn206file13L171-L179
+La CI contiene uno step di restore del Runtime e una pipeline di build dedicata.
 
 **Nota:** la presenza dello script o della workflow non equivale a un risultato PASS. Serve una run effettiva.
 
@@ -103,15 +115,15 @@ La CI contiene uno step di restore del Runtime e una pipeline di build dedicata.
 
 ### R1 — Scope di `Directory.Build.props`
 
-La configurazione root non è globale per tutti i progetti. Questo è intenzionale secondo il commento del file, ma va mantenuto coerente con la roadmap e con il project graph. fileciteturn202file0L2-L2
+La configurazione root non è globale per tutti i progetti. Questo è intenzionale secondo il commento del file, ma va mantenuto coerente con la roadmap e con il project graph.
 
 ### R2 — Runtime e ControlPanel
 
-Il Control Panel referenzia Runtime. Va verificato che questo non introduca un secondo orchestratore o un ciclo architetturale indesiderato.
+Il Control Panel referenzia Runtime e ospita `Gate1BootstrapHost` in-process. Il repository non mostra un secondo orchestratore indipendente nel pannello: le decisioni rimangono nel Runtime/Gate3.
 
 ### R3 — Cognitive observability cross-process
 
-La sola presenza di un registry statico non dimostra che un Runtime separato e il Control Panel condividano eventi. Questa è una verifica architetturale obbligatoria prima di dichiarare “live cognitive dashboard”.
+Il registry del Runtime e quello del Control Panel sono process-local. `CognitiveRuntimeTraceBridge` copre il caso hosted/in-process. Per `Attached` serve un transport esplicito per portare trace cognitivi al pannello; il solo registry statico non basta.
 
 ### R4 — T5
 
@@ -142,6 +154,6 @@ git diff --name-status
 
 ## 12. AP-00 decisione corrente
 
-**Decisione: OPEN — audit strutturale avviato, non ancora Verified.**
+**Decisione: OPEN — audit strutturale in corso.**
 
-La repository è presente e il grafo applicativo è sostanziale. Il prossimo passo corretto è eseguire i comandi di build/test su ambiente Windows e poi correggere esclusivamente i problemi dimostrati. Nessuna feature AP-01 deve essere usata per mascherare blocker AP-00.
+La repository è presente e il grafo applicativo è sostanziale. AP-00.2 ha confermato il wiring hosted Runtime → Gate3 → CognitiveRuntimeTraceBridge → Control Panel, ma ha anche confermato che la cognitive observability completa non è cross-process. Il prossimo passo corretto è validare build/test su Windows e poi affrontare esclusivamente i blocker dimostrati. Nessuna feature AP-01 deve essere usata per mascherare blocker AP-00.
