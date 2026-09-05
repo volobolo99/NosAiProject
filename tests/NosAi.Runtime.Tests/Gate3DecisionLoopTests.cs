@@ -165,7 +165,7 @@ public sealed class Gate3DecisionLoopTests
     /// The Gate 1 adapter, over a snapshot with no gameplay provider: the state a
     /// runtime started without <c>--observe-game</c> actually produces.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public async Task Gate1_snapshot_without_a_provider_is_unobserved_with_the_snapshot_reason()
     {
         var host = new Gate1.Gate1BootstrapHost(new Configuration.Gate1HostOptions

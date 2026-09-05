@@ -146,7 +146,7 @@ public sealed class ClientWindowDpiProbeTests
     /// and leaves with a non-zero code when it is not — even when no client window
     /// is there to compare a shape against.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable()
     {
         string directory = Path.Combine(Path.GetTempPath(), "nosai-window-probe-" + Guid.NewGuid().ToString("N"));
