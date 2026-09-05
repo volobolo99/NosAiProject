@@ -61,6 +61,6 @@ Una fase (AP-XX) non inizia finché la precedente non è almeno `Integrated` (bu
 
 ## Chi fa cosa, in breve
 
-- **DeepSeek**: scrive la maggior parte dei singoli file di implementazione nuovi, quando il task è assegnato a lui in questa coda.
+- **DeepSeek: ATTIVO dal 2026-09-05 (in questa sessione).** Da questo momento i task futuri il cui esecutore naturale è DeepSeek (per `docs/agents/AGENT_COMMAND_REGISTRY.md`) vanno assegnati a lui, non più eseguiti da Claude al suo posto: Claude scrive/aggiorna il file di comando dettagliato, l'utente lo apre e lo passa a DeepSeek. I task già completati da Claude "al posto di DeepSeek" prima di questa attivazione (marcati così in coda, es. Q-008) restano `DONE`/`Integrated` così come sono — non vengono rifatti.
 - **Claude**: scrive i comandi dettagliati per ogni task man mano che diventa il prossimo in coda; esegue i task assegnati a "Claude"; per i task DeepSeek fa da integratore — collegamenti tra moduli, deduplicazione, risoluzione conflitti, build/test finale, commit.
-- **Cursor**: non disponibile al momento di scrivere questo file. I suoi ruoli originali in AP-00 (A2, A4) sono stati eseguiti da Claude per non bloccare la coda; se torna disponibile, i ruoli futuri assegnati a "DeepSeek" possono essere ridistribuiti a Cursor su richiesta.
+- **Cursor**: non disponibile al momento di scrivere questo file, e non ancora dichiarato attivo dall'utente (a differenza di DeepSeek). I suoi ruoli originali in AP-00 (A2, A4) e in AP-03 (A2, A4) sono stati eseguiti da Claude per non bloccare la coda; se torna disponibile, i ruoli futuri assegnati a "Cursor"/"DeepSeek" possono essere ridistribuiti su richiesta.
