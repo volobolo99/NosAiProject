@@ -24,11 +24,11 @@
 | Q-010 | AP-01 | A4 — Runtime wiring (WorldModelFusionLoop, flag `--fuse-world-model`, ModuleReachability → Integrated) | Claude (agente in background) | Q-007, Q-008, Q-009 | (comando dato in linea all'agente, non un file separato — vedi AP-01_STATUS.md §9) | **DONE** |
 | Q-011 | AP-01 | A5 — Test/benchmark/doc AP-01 (audit indipendente, 4 difetti reali trovati) | Claude (agente in background) | Q-007, Q-008, Q-009, Q-010 | `docs/agents/phases/AP-01/AP-01_A5_AUDIT.md` | **DONE** |
 | Q-012 | AP-01 | A6 — Integrazione finale AP-01 (4 correzioni applicate, build/test combinati verdi) | **Claude** | Q-011 | (vedi AP-01_STATUS.md §11) | **DONE** |
-| Q-013 | AP-02 | A1 — Contratti Perception (osservazioni multimodali con provenance) | **Claude** | Q-012 | ricognizione infrastruttura Perception esistente in corso, comando da scrivere subito dopo | IN_PROGRESS |
-| Q-014 | AP-02 | A2 — Screen/OCR/CV adapters (client-observable) | Claude (Cursor non disp.) | Q-013 | da scrivere quando si arriva qui | PENDING |
-| Q-015 | AP-02 | A3 — Fusione multimodale, confidence e gestione contraddizioni | Claude | Q-013 | da scrivere quando si arriva qui | PENDING |
-| Q-016 | AP-02 | A4 — Runtime ingestion, throttling, lifecycle wiring | Claude (Cursor non disp.) | Q-013, Q-014 | da scrivere quando si arriva qui | PENDING |
-| Q-017 | AP-02 | A5 — Test/benchmark/doc AP-02 | Claude | Q-013, Q-014, Q-015, Q-016 | da scrivere quando si arriva qui | PENDING |
+| Q-013 | AP-02 | A1 — Contratto `VisualObservation` (osservazione visiva unificata con provenance) | **Claude** | Q-012 | (vedi AP-02_STATUS.md §3; nessun file comando separato — ricognizione approfondita ha sostituito la stesura preventiva) | **DONE** |
+| Q-014 | AP-02 | A2 — Screen/OCR/CV adapters | Claude (Cursor non disp.) | Q-013 | in gran parte già presente da prima (DXGI capture, ROI, ONNX detector contract — vedi AP-02_STATUS.md §1); OCR reale/modello addestrato bloccati da asset ML non producibili in questo ambiente | **BLOCKED** (asset ML mancanti) |
+| Q-015 | AP-02 | A3 — Fusione multimodale vitali (HP/MP schermo↔rete via FactFusion) | **Claude** | Q-013 | (vedi AP-02_STATUS.md §4) | **DONE** (ambito ristretto ai vitali; fusione entità Mob/Npc rimandata, stesso blocco ML di Q-014) |
+| Q-016 | AP-02 | A4 — Wiring runtime (collegare `VisualObservationFusion` a un loop reale) | Claude (Cursor non disp.) | Q-013, Q-015 | da scrivere quando si arriva qui | PENDING |
+| Q-017 | AP-02 | A5 — Audit indipendente AP-02 | Claude (agente in background) | Q-013, Q-015 | da scrivere quando si arriva qui | IN_PROGRESS |
 | Q-018 | AP-02 | A6 — Integrazione finale AP-02 | Claude | Q-017 | da scrivere quando si arriva qui | PENDING |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive

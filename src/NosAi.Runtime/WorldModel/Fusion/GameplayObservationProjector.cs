@@ -16,11 +16,11 @@ namespace NosAi.Runtime.WorldModel.Fusion;
 /// id, version and instant, it always returns the same snapshot (the
 /// "replay deterministico" requirement in AP-01's Definition of Done). It
 /// does not itself resolve conflicts between multiple live channels --
-/// today <see cref="GameplayObservation"/> is the only real observation
-/// source wired into the runtime, so there is nothing yet to fuse against.
-/// <see cref="FactFusion"/> is the mechanism that would combine this
-/// projection's output with a second channel's reading of the same fact
-/// (e.g. a future AP-02 screen/OCR reading of HP) once one exists.
+/// <see cref="FactFusion"/> is the mechanism that combines this projection's
+/// output with a second channel's reading of the same fact once one exists,
+/// and AP-02/A3's <see cref="VisualObservationFusion"/> is the first real
+/// caller: it fuses this projection's network-derived vitals with the
+/// vision channel's screen-derived reading of the same HP/MP facts.
 ///
 /// Honest, deliberate gaps -- populated as <c>Unknown</c>/empty rather than
 /// guessed, and left for the phase that actually owns closing them:
@@ -40,38 +40,38 @@ public static class GameplayObservationProjector
     {
         ArgumentNullException.ThrowIfNull(observation);
 
-        WorldFact<WorldPosition> position = ToWorldFact(observation.PlayerPosition, p => new WorldPosition(p.X, p.Y));
-        WorldFact<MapId> currentMap = ToWorldFact(observation.MapId, id => new MapId($"map-{id.ToString(CultureInfo.InvariantCulture)}"));
+        WorldFact<WorldPosition> position = ClassifiedValueBridge.ToWorldFact(observation.PlayerPosition, p => new WorldPosition(p.X, p.Y));
+        WorldFact<MapId> currentMap = ClassifiedValueBridge.ToWorldFact(observation.MapId, id => new MapId($"map-{id.ToString(CultureInfo.InvariantCulture)}"));
         WorldFact<bool> isAlive = DeriveIsAlive(observation.Hp);
 
         var status = new CombatantStatus(
             EquatableArray<Resource>.From(new[]
             {
-                new Resource(ResourceKind.Health, ToWorldFact(observation.Hp, v => (double)v), ToWorldFact(observation.MaxHp, v => (double)v)),
-                new Resource(ResourceKind.Mana, ToWorldFact(observation.Mp, v => (double)v), ToWorldFact(observation.MaxMp, v => (double)v))
+                new Resource(ResourceKind.Health, ClassifiedValueBridge.ToWorldFact(observation.Hp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxHp, v => (double)v)),
+                new Resource(ResourceKind.Mana, ClassifiedValueBridge.ToWorldFact(observation.Mp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxMp, v => (double)v))
             }),
             EquatableArray<StatusEffect>.Empty);
 
         EquatableArray<Cooldown> cooldowns = observation.SkillsReady.HasValue
             ? EquatableArray<Cooldown>.From(observation.SkillsReady.Value.Select(ready => new Cooldown(
                 new SkillId(ready.Slot.ToString(CultureInfo.InvariantCulture)),
-                MapSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc))))
+                ClassifiedValueBridge.WithSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc))))
             : EquatableArray<Cooldown>.Empty;
 
         EquatableArray<InventoryItem> inventory = observation.Inventory.HasValue
             ? EquatableArray<InventoryItem>.From(observation.Inventory.Value.Select(slot => new InventoryItem(
                 new ItemId(slot.Vnum.ToString(CultureInfo.InvariantCulture)),
                 WorldFact<string>.Unknown("item_name_catalog_not_available", slot.ObservedAtUtc),
-                MapSource(slot.Source, slot.Amount, slot.ObservedAtUtc),
-                MapSource(slot.Source, slot.Slot, slot.ObservedAtUtc))))
+                ClassifiedValueBridge.WithSource(slot.Source, slot.Amount, slot.ObservedAtUtc),
+                ClassifiedValueBridge.WithSource(slot.Source, slot.Slot, slot.ObservedAtUtc))))
             : EquatableArray<InventoryItem>.Empty;
 
         EquatableArray<Drop> drops = observation.GroundItems.HasValue
             ? EquatableArray<Drop>.From(observation.GroundItems.Value.Select(item => new Drop(
                 new EntityId($"drop-{item.DropId.ToString(CultureInfo.InvariantCulture)}"),
                 new ItemId(item.Vnum.ToString(CultureInfo.InvariantCulture)),
-                MapSource(item.Source, new WorldPosition(item.X, item.Y), item.ObservedAtUtc),
-                MapSource(item.Source, item.Amount, item.ObservedAtUtc))))
+                ClassifiedValueBridge.WithSource(item.Source, new WorldPosition(item.X, item.Y), item.ObservedAtUtc),
+                ClassifiedValueBridge.WithSource(item.Source, item.Amount, item.ObservedAtUtc))))
             : EquatableArray<Drop>.Empty;
 
         var player = new Player(
@@ -119,20 +119,4 @@ public static class GameplayObservationProjector
         return WorldFact<bool>.Derived(hp.Value > 0, 1.0, hp.ObservedAtUtc);
     }
 
-    private static WorldFact<TResult> ToWorldFact<TSource, TResult>(RuntimeContracts.ClassifiedValue<TSource> value, Func<TSource, TResult> project)
-    {
-        if (!value.HasValue)
-            return WorldFact<TResult>.Unknown(value.FailureReason ?? "not_observed", value.ObservedAtUtc);
-
-        return MapSource(value.Source, project(value.Value), value.ObservedAtUtc);
-    }
-
-    private static WorldFact<T> MapSource<T>(RuntimeContracts.DataSourceKind source, T value, DateTime observedAtUtc) => source switch
-    {
-        RuntimeContracts.DataSourceKind.Live => WorldFact<T>.Live(value, 1.0, observedAtUtc),
-        RuntimeContracts.DataSourceKind.Derived => WorldFact<T>.Derived(value, 1.0, observedAtUtc),
-        RuntimeContracts.DataSourceKind.Cached => WorldFact<T>.Cached(value, 1.0, observedAtUtc),
-        RuntimeContracts.DataSourceKind.Simulated => WorldFact<T>.Simulated(value, 1.0, observedAtUtc),
-        _ => WorldFact<T>.Unknown("source_unknown", observedAtUtc)
-    };
 }
