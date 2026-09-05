@@ -30,6 +30,23 @@ public sealed class MissionOutcomeLearningTests
     }
 
     [Fact]
+    public async Task Ranker_PreservesCandidate_WhenNoObservedOutcomeExists()
+    {
+        var ledger = new InMemoryOutcomeLedger();
+        var objective = new MissionObjective("ts", MissionStrategyKind.TimeSpaceOptimization, "TS", "ruleset");
+        var candidate = Candidate("unseen", 75, 0.8);
+
+        var result = await new OutcomeAwareMissionStrategyRanker(
+            new DeterministicMissionStrategyOptimizer(), ledger)
+            .SelectBestAsync(objective, new[] { candidate });
+
+        Assert.NotNull(result);
+        Assert.Equal("unseen", result!.Candidate.Id);
+        Assert.Equal(75, result.Candidate.EstimatedExecutionSeconds);
+        Assert.Equal(0.8, result.Candidate.SuccessProbability);
+    }
+
+    [Fact]
     public async Task Ledger_RejectsInvalidMeasurements()
     {
         var ledger = new InMemoryOutcomeLedger();
