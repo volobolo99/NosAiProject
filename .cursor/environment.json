@@ -1,0 +1,22 @@
+{
+  "name": "NosAiProject",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "install": "python -m pip install -e \".[test]\" && dotnet restore src/NosAi.Runtime/NosAi.Runtime.csproj && dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release --no-restore",
+  "terminals": [
+    {
+      "name": "runtime",
+      "command": "dotnet run --project src/NosAi.Runtime/NosAi.Runtime.csproj --configuration Release -- --guard-loopback-only --dev-enroll"
+    },
+    {
+      "name": "dashboard",
+      "command": "python -m nosai.dashboard.server"
+    }
+  ],
+  "ports": [
+    { "name": "operator-dashboard", "port": 8765 },
+    { "name": "runtime-operator-api", "port": 8766 }
+  ]
+}
