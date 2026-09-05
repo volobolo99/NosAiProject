@@ -33,10 +33,14 @@
 | Q-019 | AP-03 | A1 — Contratto `MapObservationBatch` (evidenza tile/portali osservazione-side) | **Claude** | Q-018 | `docs/agents/phases/AP-03/AP-03_A1_CLAUDE_map_observation_contract.md` | **DONE** |
 | Q-020 | AP-03 | A2 — Projector `MapGrid` (client-archive reale) → `MapObservationBatch`, classificato Cached | **Claude** | Q-019 | (nessun file comando separato, ambito piccolo e meccanico — vedi diff `MapGridObservationProjector.cs`) | **DONE** |
 | Q-021 | AP-03 | A3 — Algoritmo di fusione incrementale `MapReconstructionFusion.Merge` (mai perdita di storia, bounds monotoni, idempotente) | **Claude** | Q-019 | (vedi diff `MapReconstructionFusion.cs`) | **DONE** |
-| Q-022 | AP-03 | A4 — Persistenza SQLite (`MapModelStore`, WAL/FULL/busy_timeout=5000) + wiring runtime (`MapReconstructionSource` in `WorldModelFusionLoop`/`Program.cs`, dietro `--fuse-world-model`) | Claude (agente in background) | Q-020, Q-021 | `docs/agents/phases/AP-03/AP-03_A4_CLAUDE_persistence_and_wiring.md` | **IN_PROGRESS** |
+| Q-022 | AP-03 | A4 — Persistenza SQLite (`MapModelStore`, WAL/FULL/busy_timeout=5000) + wiring runtime (`MapReconstructionSource` in `WorldModelFusionLoop`/`Program.cs`, dietro `--fuse-world-model`) | Claude (agente in background) | Q-020, Q-021 | `docs/agents/phases/AP-03/AP-03_A4_CLAUDE_persistence_and_wiring.md` | **DONE** |
 | Q-023 | AP-03 | A5 — Audit indipendente AP-03 (1 difetto reale trovato: `Resolve` non exception-safe sul percorso di lettura store) | Claude (agente in background) | Q-022 | `docs/agents/phases/AP-03/AP-03_A5_AUDIT.md` | **DONE** |
 | Q-024 | AP-03 | A6 — Integrazione finale AP-03 (1 correzione applicata, build/test combinati verdi) | **Claude** | Q-023 | `docs/agents/phases/AP-03/AP-03_STATUS.md` | **DONE** |
 | Q-025 | AP-04 | A1 — Contratti esplorazione/navigazione (`ExplorationFootprint`, `FrontierCandidate`, `NavigationWaypoint`, `NavigationPlan`) | **Claude** | Q-024 (eccezione: avviato prima, dipende solo da AP-01) | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` | **DONE** |
+| Q-026 | AP-04 | A3 — Algoritmo `ExplorationPlanner` (footprint, ranking frontiera, `NavigationPlan` a singolo waypoint, stessa mappa) | **Claude** | Q-025 | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante" | **DONE** |
+| Q-027 | AP-04 | A1 mancante — Contratto `MovementExecutionEvidence`/`MovementExecutionResult` (evidenza esecuzione movimento, WorldFact-based) | **Claude** | Q-025 | `docs/agents/phases/AP-04/AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante" | **DONE** |
+| Q-028 | AP-04 | A2 — Projector `MovementVerification` (reale) → `MovementExecutionEvidence` | DeepSeek | Q-027, indagine Gate3Runtime | (da pubblicare) | **BLOCKED** (in attesa esito indagine sull'autorità di esecuzione, vedi AP-04_A1_STATUS.md) |
+| Q-029 | AP-04 | A4 — Bridge esecuzione reale del `NavigationPlan` (waypoint -> azione autorizzata -> `WalkCommand`/`PathWalkController`) | DeepSeek | Q-026, Q-028, indagine Gate3Runtime | (da pubblicare) | **BLOCKED** (idem) |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
@@ -44,7 +48,7 @@ I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di propos
 
 ## Fasi successive (AP-05 → AP-10) — solo sequenza, nessun dettaglio ancora
 
-Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 è attiva solo per A1 (Q-025, eccezione dichiarata) — A2/A3/A4/A5/A6 restano gated fino alla decisione su come costruire il routing multi-mappa (vedi `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`: nessuna fonte dati reale per i portali esiste ancora). Le fasi seguenti non hanno ancora task numerati in coda.
+Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata) — routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`), e A2/A4 (Q-028/Q-029, DeepSeek) restano `BLOCKED` in attesa dell'indagine su come autorizzare un'esecuzione autonoma senza bypassare Guard/Trust/Safety (ADR-0020: nessuna terza authority "autonoma" oltre `Commanded`/`Planned`). A5/A6 seguono a valle di quelli. Le fasi seguenti non hanno ancora task numerati in coda.
 
 | Fase | Obiettivo |
 |---|---|
