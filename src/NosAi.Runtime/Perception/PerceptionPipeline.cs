@@ -399,7 +399,7 @@ public readonly record struct Detection(string Kind, double X, double Y, double 
 public sealed record TrackedEntity(long TrackId, string Kind, double X, double Y,
     double VelocityX, double VelocityY, double HpRatio, int MissedFrames);
 
-public sealed class TemporalEntityTracker
+public sealed class TemporalEntityTracker : IObjectTracker
 {
     private sealed class TrackState
     {
@@ -502,16 +502,17 @@ public sealed record PerceptionResult(
 public sealed class PerceptionPipeline
 {
     private readonly IFrameSource _frameSource;
-    private readonly TemporalEntityTracker _tracker;
-    private readonly Func<CaptureFrame, IReadOnlyList<Detection>> _detector;
+    private readonly IObjectTracker _tracker;
+    private readonly IObjectDetector _detector;
     private readonly CaptureFreshnessPolicy _freshnessPolicy;
     private readonly Func<DateTime> _clock;
     private long _frameIndex;
     private DateTime? _lastFrameUtc;
 
-    public PerceptionPipeline(IFrameSource frameSource,
-        Func<CaptureFrame, IReadOnlyList<Detection>> detector,
-        TemporalEntityTracker? tracker = null,
+    public PerceptionPipeline(
+        IFrameSource frameSource,
+        IObjectDetector detector,
+        IObjectTracker? tracker = null,
         CaptureFreshnessPolicy? freshnessPolicy = null,
         Func<DateTime>? clock = null)
     {
@@ -520,6 +521,21 @@ public sealed class PerceptionPipeline
         _tracker = tracker ?? new TemporalEntityTracker();
         _freshnessPolicy = freshnessPolicy ?? new CaptureFreshnessPolicy();
         _clock = clock ?? (() => DateTime.UtcNow);
+    }
+
+    public PerceptionPipeline(
+        IFrameSource frameSource,
+        Func<CaptureFrame, IReadOnlyList<Detection>> detector,
+        IObjectTracker? tracker = null,
+        CaptureFreshnessPolicy? freshnessPolicy = null,
+        Func<DateTime>? clock = null)
+        : this(
+            frameSource,
+            new DelegateObjectDetector(detector),
+            tracker,
+            freshnessPolicy,
+            clock)
+    {
     }
 
     public PerceptionResult ProcessNext()
@@ -544,8 +560,8 @@ public sealed class PerceptionPipeline
         _lastFrameUtc = frame.CapturedUtc;
 
         var regions = RoiSegmenter.Segment(frame.Width, frame.Height);
-        var detections = _detector(frame);
-        var entities = _tracker.Track(detections, dt);
+        var detections = _detector.Detect(frame);
+        var entities = _tracker.Track(detections, dt).ToImmutableArray();
         return new PerceptionResult(index, frame.Source, true, regions, entities, null);
     }
 }
