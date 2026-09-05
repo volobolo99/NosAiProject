@@ -128,31 +128,27 @@ AP-03.
 
 ## Prossimo lotto: AP-04 — Exploration & Navigation
 
-**In corso ora, in parallelo all'audit A5 di AP-03** (non si aspetta che
-AP-03 chiuda del tutto: AP-04/A1 dipende dai contratti `MapModel`/`Tile`/
-`TileCoordinate`/`TileTraversability`/`Portal`, già stabili e `Integrated`
-da AP-01 — non da come AP-03 popola quei contratti a runtime, che è quanto
-resta aperto in AP-03/A5-A6. Farlo ora invece che aspettare è esattamente il
-lavoro in parallelo richiesto):
+**A1 fatto** (2026-09-05, in parallelo all'audit A5 di AP-03 — vedi
+l'eccezione dichiarata in `docs/agents/EXECUTION_QUEUE.md`):
+`src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs` —
+`ExplorationFootprint`, `FrontierCandidate`, `NavigationWaypoint`,
+`NavigationPlan`. 12 test verdi, build pulita. Dettaglio completo in
+`docs/agents/phases/AP-04/AP-04_A1_STATUS.md`.
 
-1. Claude scrive AP-04/A1 — i contratti di navigazione/esplorazione
-   (obiettivi di esplorazione, rappresentazione del percorso
-   coarse+locale, evidenza di rilevamento blocco/replan) in
-   `src/NosAi.Core/Navigation/` o cartella dedicata, appoggiandosi ai
-   contratti già stabili di AP-01/AP-03 (`MapModel`, `Tile`,
-   `TileCoordinate`, `TileTraversability`, `Portal` — questi non cambiano
-   più, sono già `Integrated`).
-2. Appena A1 esiste, questa sezione viene sostituita con la lista precisa
-   dei file AP-04/A2 e AP-04/A4 per DeepSeek — stesso livello di dettaglio
-   di `docs/agents/phases/AP-03/AP-03_A4_CLAUDE_persistence_and_wiring.md`
-   (firme esatte, file da leggere, comportamento fail-closed richiesto,
-   test richiesti).
-
-Non viene pubblicata una specifica AP-04/A2/A4 precisa *prima* che A1
-esista: significherebbe indovinare una forma che quasi certamente cambia,
-esattamente il tipo di lavoro da disfare che questo progetto evita da
-sempre (vedi `docs/agents/EXECUTION_QUEUE.md`, sezione "Regola per
-Q-014...").
+**Ancora non pubblicata una specifica precisa AP-04/A2/A4 per DeepSeek** —
+non per il motivo originale (A1 non esisteva) ma per uno nuovo, più
+importante: il sistema di navigazione legacy Gate 1-6 già esistente
+(`PathWalkController`, `MovementVerifier`, `StepGuardChain`, e
+soprattutto `NosAi.Runtime.Navigation.Pathfinding.NavigationPathfinding.cs`,
+che sembra già fare routing multi-mappa attraverso portali) potrebbe già
+risolvere gran parte di quello che AP-04 dovrebbe costruire. Pubblicare ora
+una specifica A2/A4 senza saperlo rischierebbe di far scrivere a DeepSeek
+un adapter/wiring contro la forma sbagliata, o di fargli reinventare un
+pathfinder multi-mappa che esiste già e funziona. Un'indagine (read-only,
+in background) su questo è in corso; il risultato decide se AP-04/A2 è un
+bridge verso codice già reale (probabile, stesso schema di AP-03/A2 verso
+`MapGrid`) o un algoritmo nuovo. Aggiornamento a breve, appena
+l'indagine torna.
 
 Per studiare in anticipo il dominio (non per scrivere codice ancora):
 `third_party/sources/ikpil/DotRecast/` (navmesh/pathfinding di riferimento),
