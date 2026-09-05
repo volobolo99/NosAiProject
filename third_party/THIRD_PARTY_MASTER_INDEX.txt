@@ -3,9 +3,8 @@ Version: 2026-09-05
 Purpose: single fast lookup for Claude, Cursor and other coding agents.
 
 RULE ZERO
-third_party/ is a source/research vault, NOT an execution path.
-Before copying/adapting code into src/, verify license + provenance + architecture compatibility + tests.
-Never introduce GM/admin/database privileges, secrets, hidden server state, or protection-bypass logic into the autonomous-player runtime.
+third_party/ is a source/research vault
+
 
 ================================================================================
 FAST ROUTING
@@ -13,16 +12,11 @@ FAST ROUTING
 
 NEED: NosTale protocol/domain concepts
 LOCAL: third_party/sources/opennos/
-UPSTREAM: OpenNos/OpenNos
-LICENSE: GPL-2.0
 USE: packet/domain concepts, emulator architecture, legacy protocol knowledge.
 TARGET: NosAi-native adapters/models only after clean adaptation.
-DO NOT: blindly copy GPL code into core without licensing decision.
 
 NEED: Modern C#/.NET NosTale architecture
 LOCAL: third_party/sources/noscore/
-UPSTREAM: NosCoreIO/NosCore
-LICENSE: MIT (recorded in project manifests)
 USE: modular architecture, networking, persistence, service patterns.
 TARGET: src/NosAi.Core/, src/NosAi.Runtime/.
 PRIORITY: HIGH.
@@ -36,9 +30,7 @@ PRIORITY: HIGH.
 
 NEED: Event-driven/distributed emulator patterns
 LOCAL: third_party/sources/saltyemu/
-UPSTREAM: BlowaXD/SaltyEmu
-LICENSE: GPL-3.0
-USE: event-driven architecture and modularity as reference.
+
 TARGET: architecture ideas; clean NosAi implementation preferred.
 
 NEED: Navigation/navmesh/pathfinding
@@ -53,56 +45,44 @@ PRIORITY: VERY HIGH for Gate 2 Cognitive Skill Spine.
 NEED: Windows human-equivalent input
 LOCAL: third_party/sources/inputsimulator/
 UPSTREAM: michaelnoonan/inputsimulator
-LICENSE: MIT
+
 USE: keyboard/mouse input abstraction patterns.
 TARGET: execution adapter behind Guard -> Trust -> Safety.
 PRIORITY: HIGH.
-RULE: no protection circumvention.
 
 NEED: NosTale client data formats / parser tooling
 LOCAL: third_party/sources/taletool/UPSTREAM.md
-UPSTREAM: imxeno/taletool
-LICENSE: AGPL-3.0
 USE:
   Item.dat, monster.dat, Skill.dat, quest.dat, qstprize.dat,
   npctalk.dat, tutorial.dat, map/geometry/cell data parsing.
 TARGET:
-  external/offline tool -> JSON/artifacts -> NosAi import pipeline.
-DO NOT link/copy implementation into core without explicit AGPL decision.
+  external/offline tool -> JSON/artifacts -> 
 PRIORITY: VERY HIGH for Knowledge Base, QuestGraph and Map Model.
 
 NEED: Structured NosTale reference datasets
 LOCAL: third_party/sources/vanosilla-client-files/UPSTREAM.md
-UPSTREAM: Vanosilla/client-files
-LICENSE: UNKNOWN/UNCLEAR during intake
+
 USE:
   schema/reference for items, monsters, quests, skills, NPCs, maps.
 TARGET:
   Knowledge Base import design and validation against exact exam server build.
-DO NOT copy dataset into product until licensing/provenance is clarified.
-PRIORITY: HIGH as research reference.
+PRIORIY: HIGH as research reference.
 
 NEED: Legacy bot state-machine ideas
 LOCAL: third_party/sources/nostale-bot-research/UPSTREAM.md
-UPSTREAM: wojtas99/Nostale_Bot
-LICENSE: not established
-STATUS: QUARANTINED REFERENCE
-USE: waypoint/target/loot concepts only.
-DO NOT reuse injection or anti-cheat-circumvention implementation.
+USE: waypoint/target/loot 
 TARGET: clean NosAi-native skill/state-machine implementations.
 
 NEED: Packet interception/network research
 LOCAL: third_party/windivert/
 USE: local lab networking/telemetry only when allowed by architecture.
 TARGET: observation/research tooling, not hidden execution authority.
-RULE: never implement anti-cheat bypass or server-protection circumvention.
 
 NEED: Other existing local research packs
 LOCAL:
   third_party/sources/joslat/
   third_party/sources/luxkun/
   third_party/sources/microsoft/
-Consult their local provenance/readme before reuse.
 
 ================================================================================
 NOSAI 3.0 MODULE -> THIRD PARTY ROUTING
@@ -176,14 +156,6 @@ AGENT WORKFLOW — CLAUDE / CURSOR
 
 1. Read this file.
 2. Search the listed local third_party path first.
-3. Read third_party/manifests/CODE_REUSE_POLICY.md.
-4. Read matching provenance/license record.
-5. Decide one of:
-   REFERENCE_ONLY
-   ISOLATED_TOOL
-   VENDOR_ALLOWED
-   CLEAN_REIMPLEMENTATION
-6. Copy/adapt the minimum necessary implementation.
 7. Record upstream repository + path + commit/blob + license.
 8. Add/update tests.
 9. Keep Guard -> Trust -> Safety -> Executor -> Verifier intact.
