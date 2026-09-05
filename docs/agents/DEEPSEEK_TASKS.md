@@ -77,32 +77,48 @@ DeepSeek scrive da oggi in poi, per tutta la durata del progetto.
 
 ## Ruolo di DeepSeek nel progetto
 
-Dal 2026-09-05, DeepSeek **è** il ruolo "Cursor" della topologia a 6 agenti
-(`docs/agents/AGENT_WORK_PROTOCOL.md`), per ogni fase, senza eccezioni:
+**Principio (istruzione esplicita dell'utente, 2026-09-05): Claude gestisce
+il lavoro — quindi decide ownership, scrive i contratti fondanti, fa audit e
+integrazione — ma continua anche lei a programmare, su compiti più piccoli;
+DeepSeek riceve il carico più pesante di sviluppo/compilazione file. I due
+lavorano in parallelo, non in sequenza rigida, per finire prima.** Non è "Claude
+scrive le specifiche, DeepSeek scrive il codice": Claude scrive codice reale
+anche lei, ogni fase, insieme a DeepSeek — solo che la porzione più grande e
+più pesante va sempre a DeepSeek.
 
-- **A2** — adapter di osservazione/estrazione/normalizzazione (percezione,
-  dati grezzi → forma consumabile dal resto della pipeline).
-- **A4** — wiring runtime, integrazione, cicli di vita, verifica a runtime.
+In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`):
 
-A1 (contratti), A3 (algoritmi puri) e A5 (test/benchmark/doc) restano
-sempre di Claude. A6 (integrazione finale di fase) resta sempre di Claude.
-Un file A2/A4 dipende quasi sempre da un contratto A1 scritto da Claude —
-per questo la coda qui sotto è ordinata per disponibilità reale, non per
-numero di fase: un file appare in "Pronto ora" solo quando il contratto da
-cui dipende esiste già ed è stabile.
+- **A1** (contratti) e **A3** (algoritmi puri) restano di Claude — sono
+  tipicamente i file più piccoli e devono esistere prima che il resto possa
+  partire, quindi Claude li scrive per primi e in fretta, non perché siano
+  "il suo lavoro riservato".
+- **A2** (adapter di osservazione/estrazione) e **A4** (wiring
+  runtime/integrazione) — che finora, in questo progetto, sono anche stati
+  i blocchi di lavoro più grandi (in AP-03, A4 da solo: 8 file, 1421 righe,
+  contro le ~250 di A1+A2+A3 insieme) — vanno a DeepSeek.
+- **A5** (test/audit indipendente) e **A6** (integrazione finale) restano di
+  Claude: richiedono di vedere l'intero risultato combinato.
+- **Appena A1 esiste** (spesso nel giro di poco, essendo il pezzo più
+  piccolo), A2 e A4 partono per DeepSeek **subito**, in parallelo — non si
+  aspetta che Claude finisca anche A3 prima di far partire DeepSeek, a meno
+  che A2/A4 dipendano davvero da A3 (da dichiarare esplicitamente nel
+  comando se succede). L'obiettivo è avere sempre sia Claude sia DeepSeek al
+  lavoro nello stesso momento sulla stessa fase.
 
 ---
 
 ## Pronto ora
 
-**Nessun file.** Motivo: in AP-03 (Map Reconstruction, la fase attiva
-adesso) il task A2 (`MapGridObservationProjector`) era già stato completato
-da Claude prima dell'attivazione di DeepSeek, e il task A4
-(`MapModelStore` + `MapReconstructionSource`) era già stato assegnato a un
-agente Claude in background nello stesso istante in cui DeepSeek è stato
-attivato — non è stato interrotto a metà per non sprecare il lavoro già
-fatto. Nessuno dei due viene rifatto. Da AP-04 in poi, ogni nuovo task
-A2/A4 va a DeepSeek senza eccezioni: vedi "Prossimo lotto" sotto.
+**Nessun file in questo istante** — ma non per struttura, solo per
+sequenza reale: in AP-03 (Map Reconstruction, fase attiva) A2
+(`MapGridObservationProjector`) e A4 (`MapModelStore` +
+`MapReconstructionSource`) erano già stati completati da Claude, o assegnati
+a un agente Claude in background, prima che DeepSeek venisse attivato — non
+rifatti per non sprecare lavoro già fatto e verificato. Questa è l'ultima
+volta che succede: da AP-04 in poi Claude fa partire DeepSeek sui file
+pesanti (A2/A4) appena il contratto A1 minimo necessario esiste, in
+parallelo con il proprio lavoro su A3/A5, non dopo. Vedi "Prossimo lotto"
+sotto per lo stato esatto di AP-04, aggiornato quando Claude apre A1.
 
 Il resto di AP-03 (A5 audit indipendente, A6 integrazione finale) è in corso
 lato Claude in questo momento. Nessuna azione richiesta da DeepSeek su
@@ -112,8 +128,12 @@ AP-03.
 
 ## Prossimo lotto: AP-04 — Exploration & Navigation
 
-Appena AP-03 raggiunge `Integrated` (build+test combinati verdi — criterio
-in `docs/agents/EXECUTION_QUEUE.md`), il prossimo passo è:
+**In corso ora, in parallelo all'audit A5 di AP-03** (non si aspetta che
+AP-03 chiuda del tutto: AP-04/A1 dipende dai contratti `MapModel`/`Tile`/
+`TileCoordinate`/`TileTraversability`/`Portal`, già stabili e `Integrated`
+da AP-01 — non da come AP-03 popola quei contratti a runtime, che è quanto
+resta aperto in AP-03/A5-A6. Farlo ora invece che aspettare è esattamente il
+lavoro in parallelo richiesto):
 
 1. Claude scrive AP-04/A1 — i contratti di navigazione/esplorazione
    (obiettivi di esplorazione, rappresentazione del percorso
