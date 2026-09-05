@@ -23,36 +23,20 @@
 
   <ItemGroup>
     <PackageReference Include="System.Management" Version="8.0.0" />
-    <!-- Gate 2 mandates the real WAL SQLite store defined by the centralized policy
-         (docs/PERSISTENZA_SQLITE_E_SHARED_MEMORY.md); this replaces the earlier
-         placeholder file-append logger in Gate2Runtime.cs. -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
-    <!-- X25519 for the ephemeral-session crypto (docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md):
-         the .NET BCL has no Curve25519, so the vetted BouncyCastle primitive backs
-         the C# counterpart of nosai/security/ephemeral_session.py. AEAD (ChaCha20-
-         Poly1305) and HKDF come from the BCL. -->
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
-    <!-- DPAPI for the runtime identity (docs/adr/ADR-0010-key-custody.md). .NET 8
-         moved ProtectedData out of the BCL into this first-party package, and it is
-         the only way to reach DPAPI from managed code; the runtime is already
-         Windows-only, so nothing portable is given up. -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The canonical PC/phone wire format, shared with the Guard AI client so the
-         two ends cannot drift. See docs/adr/ADR-0006-canonical-phone-channel.md. -->
     <ProjectReference Include="..\NosAi.Protocol\NosAi.Protocol.csproj" />
+    <!-- PracticalTestRun and the canonical T1-T20 catalog are Core contracts.
+         Keep the dependency explicit so Runtime and the Control Panel consume
+         the same test definitions instead of duplicating them. -->
+    <ProjectReference Include="..\NosAi.Core\NosAi.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- WinDivert has to sit beside the executable, because WinDivertPacketSource
-         reaches it through [DllImport("WinDivert.dll")] and the loader looks in the
-         application directory. It used to arrive there by hand, which meant Debug
-         had it and Release silently did not: the wire observer then refused to open on
-         a Release build for a reason that had nothing to do with the game.
-         Condition keeps a machine without the driver building; the capture reports
-         its own named failure at run time, which is the honest place for it. -->
     <None Include="$(MSBuildThisFileDirectory)../../third_party/windivert/WinDivert.dll"
           Condition="Exists('$(MSBuildThisFileDirectory)../../third_party/windivert/WinDivert.dll')"
           CopyToOutputDirectory="PreserveNewest"
@@ -64,10 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The test project reaches a few internals on purpose. ScopedLiveCaptureBackend
-         keeps its raw-source constructor internal so no production caller can wrap a
-         replayed source in a class that labels its packets LIVE; the tests still have
-         to exercise it, and this is how without widening that door. -->
     <InternalsVisibleTo Include="NosAi.Runtime.Tests" />
   </ItemGroup>
 </Project>
