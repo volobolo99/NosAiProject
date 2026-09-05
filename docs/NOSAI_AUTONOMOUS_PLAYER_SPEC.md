@@ -238,7 +238,7 @@ The autonomy certification suite must prove at minimum:
 
 ## 7. Research and implementation policy
 
-Use the local `third_party/` vault before external code search. Preserve all GPL/LGPL/MIT/Apache/ZLib provenance and license notices; third-party source is reference material unless explicitly integrated and reviewed.
+Use the local `third_party/` vault before external code search.
 
 Preferred technical directions:
 
