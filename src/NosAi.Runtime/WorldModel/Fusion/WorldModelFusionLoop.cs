@@ -59,6 +59,25 @@ namespace NosAi.Runtime.WorldModel.Fusion;
 /// instead, which -- carrying only UNKNOWN fields -- resolves to the network
 /// reading unchanged. The network channel stays autonomous either way.
 /// </para>
+/// <para>
+/// <b>AP-03/A4: optional map reconstruction.</b> The constructor's
+/// <c>mapSource</c> parameter is additive and defaults to <c>null</c>, the
+/// same treatment <c>visualSource</c> already got in AP-02/A4 -- no existing
+/// caller's behavior changes by not passing it. Its shape is deliberately
+/// different from <c>visualSource</c> (<see cref="Func{T,TResult}"/> taking
+/// the in-progress <see cref="WorldModelSnapshot"/> rather than
+/// <see cref="Func{TResult}"/> with no input): map reconstruction is
+/// meaningless without knowing which map the player is currently on, and that
+/// is only known from this cycle's own network-projected <c>Map.Id</c>. When
+/// supplied, each <see cref="RunOnce"/> call invokes it last -- after the
+/// <c>visualSource</c> branch above, against that same fused <c>result</c> --
+/// and replaces <c>result.Map</c> with its return value (in production, e.g.
+/// <c>NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource.Resolve</c>). A
+/// map source that throws is treated as a missed reconstruction cycle, never
+/// as a reason to fail the network cycle: the exception is logged and
+/// <c>result.Map</c> is left exactly as the network channel (and, if present,
+/// vitals fusion) already produced it.
+/// </para>
 /// </remarks>
 public sealed class WorldModelFusionLoop : IAsyncDisposable
 {
@@ -109,6 +128,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     private readonly TimeProvider _clock;
     private readonly EntityId _playerId;
     private readonly Func<VisualObservation>? _visualSource;
+    private readonly Func<WorldModelSnapshot, MapModel>? _mapSource;
 
     private WorldModelSnapshot _current = WorldModelSnapshot.Unknown("no_prior_fusion_cycle");
     private long _version;
@@ -131,6 +151,15 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     /// vitals fusion. See the class remarks, "AP-02/A4: optional vision-side
     /// vitals".
     /// </param>
+    /// <param name="mapSource">
+    /// Resolves this cycle's <see cref="MapModel"/> from the in-progress
+    /// <see cref="WorldModelSnapshot"/> (in production, e.g.
+    /// <c>NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource.Resolve</c>).
+    /// Optional and <c>null</c> by default: with no source, <see cref="RunOnce"/>
+    /// behaves exactly as it did before this parameter existed -- the network
+    /// channel's own projected <c>Map</c> is published unchanged. See the
+    /// class remarks, "AP-03/A4: optional map reconstruction".
+    /// </param>
     public WorldModelFusionLoop(
         Func<Gate1CanonicalSnapshot> source,
         IRuntimeLogger logger,
@@ -139,7 +168,8 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         TimeSpan? maxObservationGap = null,
         TimeProvider? clock = null,
         EntityId? playerId = null,
-        Func<VisualObservation>? visualSource = null)
+        Func<VisualObservation>? visualSource = null,
+        Func<WorldModelSnapshot, MapModel>? mapSource = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -155,6 +185,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         _clock = clock ?? TimeProvider.System;
         _playerId = playerId ?? new EntityId(UnknownPlayerSentinelId);
         _visualSource = visualSource;
+        _mapSource = mapSource;
     }
 
     /// <summary>The most recently fused snapshot. Starts at <see cref="WorldModelSnapshot.Unknown"/> before the first tick.</summary>
@@ -220,6 +251,19 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
             }
 
             result = VisualObservationFusion.FuseVitals(enriched, visual, nowUtc);
+        }
+
+        if (_mapSource is not null)
+        {
+            try
+            {
+                MapModel map = _mapSource(result);
+                result = result with { Map = map };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("World Model fusion loop's map source threw; keeping this cycle's map unchanged.", ex);
+            }
         }
 
         Volatile.Write(ref _current, result);

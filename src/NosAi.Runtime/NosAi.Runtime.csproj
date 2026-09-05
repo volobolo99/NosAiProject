@@ -35,6 +35,10 @@
          Keep the dependency explicit so Runtime and the Control Panel consume
          the same test definitions instead of duplicating them. -->
     <ProjectReference Include="..\NosAi.Core\NosAi.Core.csproj" />
+    <!-- AP-03/A4: MapReconstructionSource persists MapModel via MapModelStore
+         (SqliteJournalOptions/VolumeLocator's own WAL/FULL/busy_timeout
+         discipline, mirroring the Gate 1 event journal). -->
+    <ProjectReference Include="..\NosAi.Storage\NosAi.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>

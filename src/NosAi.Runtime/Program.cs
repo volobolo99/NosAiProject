@@ -657,12 +657,37 @@ public static class Program
             ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId)
             : null;
 
+        // AP-03/A4: when the same flag is on, the fusion loop also gets a real
+        // map reconstruction source (client grid lookup + projection + merge +
+        // SQLite persistence, all inside MapReconstructionSource). No separate
+        // flag, same reasoning as AP-02/A4's vitals: map reconstruction is an
+        // enrichment of the same cycle, not an independent feature.
+        // `mapReconstruction` is declared before `fusion` for the same
+        // reverse-unwind-order reason as `visualCapture` above: the pump must
+        // stop calling into it before its SQLite connection is disposed.
+        using NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource? mapReconstruction = options.FuseWorldModel
+            ? new NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource(logger: logger)
+            : null;
+
+        // mapSource is Func<WorldModelSnapshot, MapModel> (no separate instant
+        // parameter -- see WorldModelFusionLoop's own class remarks), while
+        // MapReconstructionSource.Resolve takes an explicit nowUtc so it never
+        // reads the wall clock itself. The snapshot's own ObservedAtUtc is
+        // already exactly this cycle's nowUtc (GameplayObservationProjector
+        // stamps it, and neither WorldModelTemporalEnricher.Enrich nor
+        // VisualObservationFusion.FuseVitals change it), so reading it off the
+        // snapshot supplies Resolve's instant without a second, independent
+        // clock read.
+        NosAi.Core.WorldModel.MapModel ResolveMap(NosAi.Core.WorldModel.WorldModelSnapshot snapshot) =>
+            mapReconstruction!.Resolve(snapshot, snapshot.ObservedAtUtc);
+
         await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
             ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
                 host.Capture,
                 logger,
                 TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs),
-                visualSource: visualCapture!.Capture)
+                visualSource: visualCapture!.Capture,
+                mapSource: ResolveMap)
             : null;
         fusion?.Start(cts.Token);
 
