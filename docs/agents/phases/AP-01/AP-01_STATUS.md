@@ -112,3 +112,45 @@ dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release
 ### Livello di verifica — A2
 
 **`Present`/`Integrated` a livello di codice** (build pulita, 17/17 test propri, nessuna regressione sulle 2131 test combinate di Core+Runtime). Dichiarato onestamente **`Unreferenced`** in `ModuleReachability` (nessun host lo chiama ancora) e **non `Verified`** (nessuna validazione su client NosTale reale). Handoff per A4: `GameplayObservationProjector.Project(...)` è pronto per essere chiamato dal loop di decisione reale non appena un host lo cablerà; `FactFusion.Resolve<T>(...)` è pronto per il giorno in cui un secondo canale (es. screen/OCR di AP-02) osserverà lo stesso fatto già coperto da `GameplayObservation`.
+
+## 8. A3 (Claude) — Temporal belief, derived state e prediction
+
+Il DoD di AP-01 (fusione, conflitti gestiti, UNKNOWN preservato, replay deterministico) era già chiuso da A1+A2. La voce A3 in `AGENT_COMMAND_REGISTRY.md` ("temporal belief, prediction and derived-state algorithms") è una categoria, non una specifica: prima di scrivere codice ho chiesto esplicitamente all'utente come restringerla (rischio concreto di requisiti ipotetici, vietato da CLAUDE.md). Scelta dell'utente: ambito pieno.
+
+### Cosa è stato costruito, e perché è delimitato così
+
+`src/NosAi.Core/WorldModel/Temporal/`:
+- **`TemporalBelief.cs`** — tre primitivi puri, senza stato:
+  - `DecayConfidence<T>`: fa scendere linearmente la confidence di un `WorldFact<T>` con l'età, azzerandosi esattamente al bordo di `maxAge`. Non tocca mai `Value`/`Source`/`ObservedAtUtc`, non sostituisce il taglio netto già fatto da `WorldFact<T>.IsFresh`/`FactFusion` — lo rende solo continuo *dentro* la finestra fresca, invece che binario.
+  - `EstimateVelocity`: deriva una `WorldVelocity` da due posizioni classificate consecutive della stessa entità; sempre `Derived`, confidence = minimo delle due entrate, `Unknown` se l'ordine non è crescente o il divario tra le due osservazioni supera il limite dato.
+  - `PredictPosition`: estrapolazione a breve termine, sempre `Simulated` (mai `Live`/`Derived`) — coerente con l'invariante "Prediction is advisory only". Non scrive mai nel campo `Position` reale: è un risultato a sé, che un futuro consumatore (combat/navigation) userà esplicitamente, testato apposta (`PredictPosition_NeverOverwritesTheRealPositionField...`) perché non deriva silenziosamente in quella direzione.
+- **`WorldModelTemporalEnricher.cs`** — orchestratore puro: dati uno snapshot precedente e uno corrente, decade la confidence delle posizioni e deriva la velocità di `Player` e di ogni `Mob` (accoppiamento per `EntityId` tra le due liste). Nessuno stato interno: stessi due snapshot in ingresso → stesso risultato (replay deterministico).
+
+**Distinzione esplicita dalla fase "Simulation/Prediction" della pipeline canonica** (`World Model → Simulation/Prediction → Ranking/Utility`, docs/NOSAI_ARCHITECTURE_BASELINE.md S:2): quella fase valuta esiti ipotetici di AZIONI candidate ed è territorio di AP-05/AP-08 (combattimento/pianificazione), che non esistono ancora. `PredictPosition` qui è molto più stretto: stima solo "dove si trova probabilmente ora un'entità già tracciata", mai "cosa succede se eseguo l'azione X". Documentato nel commento XML di `TemporalBelief` così la distinzione resta esplicita e non si sconfina per inerzia in AP-05/08.
+
+### Modifica ai contratti A1
+
+`Player` e `Mob` (in `EntityContracts.cs`) guadagnano una proprietà `Velocity` **init-only con default**, non un parametro posizionale — stesso trattamento già usato da `GameplayObservation` per i propri campi aggiuntivi, così nessun sito di costruzione esistente (inclusi tutti i test di A1/A2) si rompe. Difetto trovato e corretto durante l'implementazione: il valore di default iniziale usava `DateTime.UtcNow` implicito di `WorldFact<T>.Unknown(reason)`, rendendo due `Player`/`Mob` costruiti in istanti reali diversi non più uguali — stesso tipo di bug di non-determinismo già trovato e corretto in AP-00/A6. Corretto con un'istanza statica condivisa, calcolata una sola volta con un timestamp fisso (`DateTime.UnixEpoch`).
+
+### Build/test — evidenza
+
+```
+dotnet build src/NosAi.Core/NosAi.Core.csproj -c Release
+  → Build succeeded. 0 Warning(s), 0 Error(s)
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release --filter "FullyQualifiedName~Temporal"
+  → Passed! Failed: 0, Passed: 25, Skipped: 0, Total: 25
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 339, Skipped: 0, Total: 339
+
+dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release
+  → Build succeeded. 0 Warning(s), 0 Error(s)
+
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
+  → Passed! Failed: 0, Passed: 1784, Skipped: 58, Total: 1842
+```
+
+### Livello di verifica — A3
+
+**`Present`/`Integrated` a livello di codice**, non `Verified` (nessun ciclo di decisione reale lo invoca ancora — stessa nota di A2). Handoff per A4: `WorldModelTemporalEnricher.Enrich(previous, current, nowUtc, maxAge, maxObservationGap)` va chiamato dal loop runtime subito dopo `GameplayObservationProjector.Project(...)`, passando come `previous` l'ultimo snapshot arricchito conservato dal loop stesso (questo tipo non conserva stato proprio, per design).

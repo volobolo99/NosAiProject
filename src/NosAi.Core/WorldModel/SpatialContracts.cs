@@ -3,6 +3,14 @@ namespace NosAi.Core.WorldModel;
 /// <summary>A position in one map's own 2D coordinate space (docs/NOSAI_ARCHITECTURE_BASELINE.md S:3 "Spatial Model").</summary>
 public readonly record struct WorldPosition(float X, float Y);
 
+/// <summary>
+/// An entity's estimated rate of movement, in world units per second along
+/// each axis. Always a <see cref="DataSourceKind.Derived"/> fact -- nothing
+/// observes velocity directly, it is computed from two positions and the
+/// time between them (see <c>NosAi.Core.WorldModel.Temporal.TemporalBelief.EstimateVelocity</c>).
+/// </summary>
+public readonly record struct WorldVelocity(float DxPerSecond, float DyPerSecond);
+
 /// <summary>A discrete tile/grid coordinate within one map, distinct from the continuous <see cref="WorldPosition"/> entities move through.</summary>
 public readonly record struct TileCoordinate(int Column, int Row);
 
