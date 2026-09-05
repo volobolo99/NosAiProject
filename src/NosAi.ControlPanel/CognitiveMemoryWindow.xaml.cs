@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using NosAi.Core.Cognitive;
 
 namespace NosAi.ControlPanel;
@@ -11,18 +12,34 @@ public partial class CognitiveMemoryWindow : Window
     private readonly ICognitiveObservabilityReader _cognitive;
     private readonly string _repoRoot;
     private readonly List<MemoryItem> _memory = new();
+    private readonly DispatcherTimer _refreshTimer;
 
     public CognitiveMemoryWindow(ICognitiveObservabilityReader cognitive, string repoRoot)
     {
         InitializeComponent();
         _cognitive = cognitive ?? throw new ArgumentNullException(nameof(cognitive));
         _repoRoot = repoRoot ?? throw new ArgumentNullException(nameof(repoRoot));
+        _refreshTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _refreshTimer.Tick += OnRefreshTimer;
+        Closed += OnWindowClosed;
         RefreshAll();
+        _refreshTimer.Start();
     }
 
+    private void OnRefreshTimer(object? sender, EventArgs e) => RefreshCognitiveOnly();
     private void OnRefresh(object sender, RoutedEventArgs e) => RefreshAll();
     private void OnClose(object sender, RoutedEventArgs e) => Close();
     private void OnSearchChanged(object sender, TextChangedEventArgs e) => ApplyMemoryFilter();
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        _refreshTimer.Stop();
+        _refreshTimer.Tick -= OnRefreshTimer;
+        Closed -= OnWindowClosed;
+    }
 
     private void OnMemorySelected(object sender, SelectionChangedEventArgs e)
     {
@@ -32,13 +49,20 @@ public partial class CognitiveMemoryWindow : Window
 
     private void RefreshAll()
     {
+        RefreshCognitiveOnly();
+        BuildMemoryIndex();
+        BuildMemoryTree();
+        ApplyMemoryFilter();
+    }
+
+    private void RefreshCognitiveOnly()
+    {
         var traces = _cognitive.GetRecentTrace(250);
         TraceList.ItemsSource = traces.Reverse().Select(ToTraceRow).ToArray();
         var decision = _cognitive.GetLatestDecision();
         DecisionText.Text = decision?.Status == "Committed" ? decision.SelectedAction : decision is null ? "UNKNOWN" : $"{decision.Status}: {decision.SelectedAction}";
         DecisionMeta.Text = decision is null ? "Nessuna decisione osservata dal trace." : $"Obiettivo: {decision.Objective} · Confidence {decision.Confidence:P0} · Risk {decision.Risk:P0} · Cycle {decision.CycleId}";
         CandidateList.ItemsSource = decision?.Candidates.Select(c => new CandidateRow(c)).ToArray() ?? Array.Empty<CandidateRow>();
-        BuildMemoryIndex(); BuildMemoryTree(); ApplyMemoryFilter();
     }
 
     private void BuildMemoryTree()
