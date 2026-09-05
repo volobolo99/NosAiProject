@@ -89,3 +89,39 @@ Il codice del prodotto deve rimanere indipendente dalle sorgenti third-party. Qu
 - Utilizzo previsto: idee legacy su waypoint, target e loot state machines.
 - Vincolo: non riusare injection o tecniche di aggiramento delle protezioni; reimplementare solo concetti innocui nell'architettura NosAi.
 - Scheda locale: `third_party/sources/nostale-bot-research/UPSTREAM.md`.
+
+
+## Systematic AI/game-agent research set — 2026-09-05
+
+Full routing and license matrix:
+`third_party/manifests/SYSTEMATIC_RESEARCH_2026-09-05.md`
+
+New source groups:
+- `third_party/research/perception/UPSTREAMS.md`
+- `third_party/research/learning/UPSTREAMS.md`
+- `third_party/research/planning/UPSTREAMS.md`
+- `third_party/research/runtime/UPSTREAMS.md`
+- `third_party/research/optimization/UPSTREAMS.md`
+
+Verified license summary:
+- PaddleOCR: Apache-2.0
+- MMDetection: Apache-2.0
+- ByteTrack: MIT
+- SAM2: Apache-2.0
+- DreamerV3: MIT
+- HumanCompatibleAI/imitation: MIT
+- d3rlpy: MIT
+- Decision Transformer: MIT
+- ReGoap: Apache-2.0
+- FluidHTN: MIT
+- Win32CaptureSample: MIT
+- ONNX Runtime: MIT
+- llama.cpp: MIT
+- Semantic Kernel: MIT
+- OR-Tools: Apache-2.0
+- sqlite-vec: dual MIT/Apache-2.0
+- Stable-Baselines3: MIT
+- CleanRL: MIT
+
+Large upstreams are intentionally referenced/package-first rather than bulk-vendored.
+Small high-value source subsets are materialized under `third_party/sources/` with pinned upstream revisions.
