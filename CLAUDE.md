@@ -6,15 +6,33 @@ You are an implementation agent for NosAiProject. Build a genuinely autonomous p
 
 ## Read first
 
-Before changing code, inspect:
+Before changing code, inspect only the canonical entry points required by the assigned task:
 
-1. `docs/ROADMAP_ESECUTIVA.md`
-2. `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md`
-3. `docs/NOSAI_ARCHITECTURE_BASELINE.md`
-4. relevant `docs/adr/*.md`
-5. relevant existing implementation and tests
+1. `docs/agents/AGENT_WORK_PROTOCOL.md`
+2. `docs/ROADMAP_ESECUTIVA.md`
+3. `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md`
+4. `docs/NOSAI_ARCHITECTURE_BASELINE.md`
+5. the assigned phase/agent command file under `docs/agents/phases/`
+6. only the files explicitly listed by that command
+7. relevant tests/ADRs named by that command
 
 `NOSAI_MASTER_ROADMAP.md` is superseded and must not be treated as canonical.
+
+## Mandatory agent completion protocol
+
+- Work only inside the file ownership declared by the assigned command.
+- Never let two agents edit the same source file concurrently.
+- A task is incomplete until every requested file exists in complete form, compiles, and has its required tests/documentation.
+- Never leave TODO/FIXME placeholders, pseudocode, ellipses, partial methods, commented-out replacement code, or intentionally broken intermediate files in a completed task.
+- Existing files must be replaced with their complete contents when the command requests a full-file rewrite; do not emit partial snippets as the deliverable.
+- Do not stop after analysis. Implement, test, build, inspect the final diff, and document the result.
+- If a dependency is missing, implement the smallest complete dependency inside the declared ownership or stop before touching another agent's files and report the exact blocker.
+- Integration agents own conflict resolution and final build/test verification for a phase.
+- Never claim `Done` or `Verified` without evidence.
+
+## Multi-agent synchronization
+
+Use the execution matrix in `docs/agents/AGENT_EXECUTION_MATRIX.md`. The default pattern is five parallel domain agents followed by one integration/verification agent. Parallel agents have disjoint file ownership. The integration agent runs only after all parallel tasks have produced complete artifacts. A later phase never starts from an unverified earlier phase.
 
 ## Product boundary
 
@@ -25,7 +43,7 @@ Never use server DBs, GM/mod/admin tools, server consoles, privileged APIs, hidd
 ## Architecture invariants
 
 - Canonical flow: `Observe → Sensor Fusion → World Model → Simulation/Prediction → Ranking/Utility → Strategic Orchestrator → HTN/GOAP → Guard → Trust/Authorization → Safety → Execute → Verify → Re-observe`.
-- The runtime is authoritative for authorization and safety.
+- Runtime is authoritative for authorization and safety.
 - No LLM, ML model, heuristic or stochastic component has direct execution authority.
 - Unknown is not zero, false or empty.
 - Every important gameplay fact carries provenance, confidence and freshness.
@@ -35,57 +53,35 @@ Never use server DBs, GM/mod/admin tools, server consoles, privileged APIs, hidd
 
 ## Implementation workflow
 
-For every non-trivial task:
-
-1. Inspect relevant code, tests, contracts and the canonical roadmap.
-2. State the smallest coherent implementation plan.
-3. Identify dependencies, performance bottlenecks and regressions.
-4. Implement only the requested scope.
-5. Add/update unit and integration tests.
-6. Build affected projects.
-7. Run relevant tests and benchmarks.
-8. Review diff for accidental changes, secrets and boundary violations.
-9. Update canonical documentation when behavior changes.
-10. Report files, build/tests, verification level, risks and blockers.
+For every task: inspect → plan → identify dependencies/ownership → implement complete files → add/update tests → build affected projects → run tests/benchmarks → inspect diff/security/boundaries → update canonical docs → report evidence.
 
 ## Autonomy requirements
 
 The long-term target is a player that can autonomously perceive maps, estimate dimensions, explore, navigate, recognize entities, fight adaptively, understand multi-step quests, manage inventory/equipment/progression, learn from failures and recover from disturbances.
 
-Do not hardcode a static macro where a model/planner is required. Prefer hierarchical planning: strategic goals → HTN/GOAP → reactive recovery. Use simulation/prediction as advisory evidence only.
+Do not hardcode a static macro where a model/planner is required. Prefer strategic goals → HTN/GOAP → reactive recovery. Prediction is advisory only.
 
 ## Do not
 
-- Do not delete or weaken tests to make them pass.
-- Do not silently change public APIs or protocols.
-- Do not introduce dependencies without justification.
-- Do not replace real providers with mocks on production/critical paths.
-- Do not label simulated data as live.
-- Do not bypass authentication, authorization or Safety.
-- Do not claim `Verified` without evidence.
-- Do not broad-refactor unrelated code.
-- Do not commit secrets, credentials or machine-specific sensitive data.
-- Do not delete files in `third_party/`; preserve GPL/LGPL/MIT/Apache/ZLib provenance and license notices.
+- delete or weaken tests;
+- silently change public APIs/protocols;
+- introduce dependencies without justification;
+- replace real providers with mocks on production/critical paths;
+- label simulated data as live;
+- bypass authentication, authorization or Safety;
+- claim `Verified` without evidence;
+- broad-refactor unrelated code;
+- commit secrets, credentials or machine-specific sensitive data;
+- delete or rewrite `third_party/` provenance/license files.
 
 ## Real-environment rule
 
-Mocks/fixtures can support isolated tests but never establish real-environment verification. Client integration, perception and actuation require real target validation before `Verified`.
-
-## Testing expectations
-
-Critical logic requires unit tests. Cross-component behavior requires integration tests. Network/security boundaries require contract and negative tests. Autonomous-player milestones require replay/evidence traces and real-client validation where applicable.
+Mocks/fixtures support isolated tests only. Client integration, perception and actuation require real target validation before `Verified`.
 
 ## Git discipline
 
-Use small commits with imperative messages and one coherent purpose. Never rewrite unrelated history. If an implementation conflicts with an ADR or canonical specification, stop and report the conflict.
+Use small imperative commits with one coherent purpose. Never rewrite unrelated history. Keep each phase's parallel-agent commits disjoint by file ownership. Integration commits may combine only the completed outputs of the current phase.
 
 ## Completion report
 
-Report:
-
-- milestone/task ID;
-- files created/modified/deleted;
-- implementation summary;
-- build/test/benchmark commands and results;
-- verification level (`Present`, `Integrated`, `Done`, `Verified`);
-- remaining risks/blockers.
+Every agent must report: task ID; files created/modified; implementation summary; build/test commands and results; verification level (`Present`, `Integrated`, `Done`, `Verified`); blockers; and exact handoff notes for the integration agent.
