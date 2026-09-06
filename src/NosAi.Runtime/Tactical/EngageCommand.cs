@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Runtime.Versioning;
+using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
+using NosAi.Storage;
 
 namespace NosAi.Runtime.Tactical;
 
@@ -243,11 +245,20 @@ public static class EngageCommand
             // command never arms input itself.
             ActuationAuthority authority = ActuationAuthority.Commanded(Flag);
 
+            // Ledger persistence is opportunistic history, never a gate: a
+            // missing NOSAI-SSD volume warns and records nothing -- it must
+            // never become a reason this command refuses.
+            using ActionOutcomeLedgerStore? ledgerStore =
+                ActionOutcomeLedgerStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? ledgerFailure);
+            if (ledgerStore is null)
+                Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
+
             for (int round = 1; round <= rounds; round++)
             {
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                     $"=== engage round {round} of {rounds}: skill {skillId} on {targetEntityId} ==="));
 
+                DateTime nowUtc = TimeProvider.System.GetUtcNow().UtcDateTime;
                 CombatExecutionEvidence evidence = ExecuteOneRound(
                     candidate,
                     keybinds,
@@ -255,9 +266,19 @@ public static class EngageCommand
                     readVitals,
                     verificationDelay: () => Thread.Sleep(VerificationDelayMs),
                     in authority,
-                    nowUtc: TimeProvider.System.GetUtcNow().UtcDateTime);
+                    nowUtc);
 
                 PrintEvidence(evidence);
+
+                NosAi.Runtime.WorldModel.Fusion.ActionOutcomeRecorder.RecordCombat(
+                    ledgerStore,
+                    new ActionId(Guid.NewGuid().ToString("N")),
+                    candidate,
+                    issuedAtUtc: nowUtc,
+                    evidence,
+                    MemoryType.Combat,
+                    context: $"skill:{skillId}",
+                    recordedAtUtc: nowUtc);
 
                 // The purpose of the invocation is a confirmed resource cost. A
                 // round that aborted (unsupported kind, missing/unconfirmed

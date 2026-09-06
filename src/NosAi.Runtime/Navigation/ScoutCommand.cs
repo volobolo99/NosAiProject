@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.LiveIntegration;
@@ -10,6 +11,7 @@ using NosAi.Runtime.Perception;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
+using NosAi.Storage;
 
 namespace NosAi.Runtime.Navigation;
 
@@ -264,6 +266,14 @@ public static class ScoutCommand
             ExplorationFootprint footprint = ExplorationFootprint.Empty(
                 new MapId("unknown-map"), "scout_command_session_start");
 
+            // Ledger persistence is opportunistic history, never a gate: a
+            // missing NOSAI-SSD volume warns and records nothing -- it must
+            // never become a reason this command refuses.
+            using ActionOutcomeLedgerStore? ledgerStore =
+                ActionOutcomeLedgerStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? ledgerFailure);
+            if (ledgerStore is null)
+                Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
+
             for (int round = 1; round <= rounds; round++)
             {
                 Console.WriteLine(string.Create(System.Globalization.CultureInfo.InvariantCulture,
@@ -354,6 +364,16 @@ public static class ScoutCommand
                         string detail = evidence.Detail is { } named ? $" ({named})" : string.Empty;
                         Console.WriteLine(string.Create(System.Globalization.CultureInfo.InvariantCulture,
                             $"step-evidence: {evidence.Result} requested={evidence.Requested.Column},{evidence.Requested.Row}{detail}"));
+
+                        ActionOutcomeRecorder.RecordMovement(
+                            ledgerStore,
+                            new ActionId(Guid.NewGuid().ToString("N")),
+                            "scout-step",
+                            issuedAtUtc: now,
+                            evidence,
+                            MemoryType.Spatial,
+                            context: $"scout:{roundMap.Id.Value}",
+                            recordedAtUtc: now);
                     },
                     out ExplorationFootprint updatedFootprint,
                     out NavigationPlan plan,

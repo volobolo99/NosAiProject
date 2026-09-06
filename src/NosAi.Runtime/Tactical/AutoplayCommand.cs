@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.Core.WorldModel.Exploration;
@@ -12,6 +13,7 @@ using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Perception;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
+using NosAi.Storage;
 
 namespace NosAi.Runtime.Tactical;
 
@@ -352,6 +354,14 @@ public static class AutoplayCommand
             // were chosen by this command, not typed directly by an operator.
             ActuationAuthority authority = ActuationAuthority.Commanded(Flag);
 
+            // Ledger persistence is opportunistic history, never a gate: a
+            // missing NOSAI-SSD volume warns and records nothing -- it must
+            // never become a reason this command refuses.
+            using ActionOutcomeLedgerStore? ledgerStore =
+                ActionOutcomeLedgerStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? ledgerFailure);
+            if (ledgerStore is null)
+                Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
+
             for (int cycle = 1; cycle <= cycles; cycle++)
             {
                 Console.WriteLine(string.Create(System.Globalization.CultureInfo.InvariantCulture,
@@ -481,6 +491,16 @@ public static class AutoplayCommand
                         string detail = evidence.Detail is { } named ? $" ({named})" : string.Empty;
                         Console.WriteLine(string.Create(System.Globalization.CultureInfo.InvariantCulture,
                             $"step-evidence: {evidence.Result} requested={evidence.Requested.Column},{evidence.Requested.Row}{detail}"));
+
+                        ActionOutcomeRecorder.RecordMovement(
+                            ledgerStore,
+                            new ActionId(Guid.NewGuid().ToString("N")),
+                            "scout-step",
+                            issuedAtUtc: now,
+                            evidence,
+                            MemoryType.Spatial,
+                            context: $"scout:{map.Id.Value}",
+                            recordedAtUtc: now);
                     },
                     in authority,
                     now);
@@ -528,6 +548,21 @@ public static class AutoplayCommand
                     {
                         CombatExecutionEvidence evidence = result.RecoverEvidence!;
                         RecoverCommand.PrintEvidence(evidence);
+
+                        // evidence.Candidate is the exact CombatActionCandidate
+                        // ExecuteOneCycle's own Survival branch built from
+                        // recoverSlot -- reused here rather than rebuilt, so the
+                        // recorded action is provably the one that was actually
+                        // pressed, not a second, independently-constructed guess.
+                        ActionOutcomeRecorder.RecordCombat(
+                            ledgerStore,
+                            new ActionId(Guid.NewGuid().ToString("N")),
+                            evidence.Candidate,
+                            issuedAtUtc: now,
+                            evidence,
+                            MemoryType.Combat,
+                            context: $"consumable-slot:{recoverSlot!.Value}",
+                            recordedAtUtc: now);
 
                         // A confirmed recovery is the purpose of the invocation; a
                         // deterministic abort (missing keybind, refused press) is not
