@@ -234,3 +234,90 @@ specifica:
 Nessuna delle due è iniziata. Segnalato in `docs/agents/DEEPSEEK_TASKS.md`
 come candidato da investigare/decidere con l'utente, non come task
 DeepSeek pronto.
+
+## Decisione presa: percorso (a) — verifica solo-vitali-player
+
+Il percorso (b) resta bloccato su un gap di dati/modello ML (OCR/ONNX per
+la fusione HP-mob) che nessun compito di scrittura contratti può chiudere
+qui, e attenderlo bloccherebbe indefinitamente gli stadi execute/verify di
+AP-05 senza necessità: il percorso (a) offre un pezzo onesto e reale
+**oggi**, senza inventare alcun dato.
+
+Prima di scrivere la specifica DeepSeek è stata condotta l'indagine
+tecnica mancante (stessa disciplina "investigate before speccing" già
+usata due volte in questa sessione, per AP-04 e per l'indagine
+Gate3Runtime qui sopra), leggendo il codice riga per riga invece di
+assumere:
+
+1. **Lettura vitali del player, indipendente da Gate3Runtime**:
+   `NosAi.LiveIntegration.ClientMemorySession.TryReadPlayerVitals(out PlayerVitalsReading reading, out string? failureReason)`
+   (`src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs`) è la
+   stessa catena che `NosAi.LiveIntegration.PlayerVitalsProbe`
+   (`--player-vitals`) già riporta come `[LIVE]` — una catena di memoria
+   (`NosTaleClientLayout.PlayerVitalsModuleOffset` →
+   `MaxHpChainOffset`/`MaxMpChainOffset`) validata due volte contro il
+   wire in due sessioni separate, con un ancoraggio sopravvissuto a un
+   riavvio del client (`PlayerVitalsProbe.cs`, commento su
+   `PrintEstablished`: "earned that on 3 September 2026"). Stessa
+   famiglia di primitiva già usata da `ScoutCommand`
+   (`ClientMemorySession.TryReadPlayer` per la posizione) — nessun nuovo
+   meccanismo di attach da inventare.
+2. **Esecuzione "premi il tasto di una skill", indipendente da
+   Gate3Runtime**: `NosAi.Runtime.LowLevel.KeybindMap`/
+   `Keybind(VirtualKey, Confirmed)` (reale, file-backed,
+   `data/keybinds.json`) più
+   `NosAi.Runtime.LowLevel.IInputBackend.KeyPress(ushort virtualKey, int pressDurationMs, ReadOnlySpan<ushort> modifiers)`,
+   implementato da `GatedInputBackend` — la stessa famiglia di backend già
+   usata da `WalkCommand`/`SingleStepExecutor` per l'input di movimento.
+   `InputActionEffector.PressKey` (`Gate3/InputActionEffector.cs`, privato)
+   fa esattamente questo ma è privato e accoppiato a `Gate3Runtime`: non
+   riusabile direttamente, ma conferma che la primitiva sottostante
+   (`KeybindMap` + `IInputBackend.KeyPress`) non è esclusiva di
+   Gate3Runtime.
+
+Entrambe le metà (lettura vitali, esecuzione skill) sono quindi reali,
+testate/validate indipendentemente e riusabili senza toccare
+`Gate3Runtime.cs`, `ActionPlanner`, `SimulationEngine` o
+`GuardPolicyEngine` — stessa conclusione architetturale già raggiunta per
+il movimento in AP-04.
+
+**Consegnato in questo passaggio:**
+
+`src/NosAi.Core/WorldModel/Combat/CombatExecutionContracts.cs` —
+`CombatExecutionResult` (`ResourceCostConfirmed`/`NoResourceChangeObserved`/
+`Unobserved`/`Aborted`) e `CombatExecutionEvidence` (`Candidate`,
+`ResourceObserved: ResourceKind?`, `Before`/`After: WorldFact<double>`,
+`Result`, `Detail`, `ObservedAtUtc`, fabbrica `NotAttempted`) — mirroring
+diretto di `Exploration.MovementExecutionEvidence` (AP-04). Dichiara
+esplicitamente, su ogni membro, il limite di questo percorso: **non
+conferma mai che il bersaglio sia stato colpito**, solo che la risorsa
+attesa (mana per `UseSkill`) sia scesa sul player. `ResourceObserved` è
+`null` per ogni `CombatActionKind` diverso da `UseSkill`
+(`BasicAttack`/`Reposition`/`Flee` non hanno un costo risorsa noto,
+`UseConsumable` consuma una quantità di inventario, non un
+`ResourceKind`) — non si inventa un costo dove il dato non esiste.
+
+Test: `tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs`
+(9 test, tutti verdi). `dotnet build src/NosAi.Core/NosAi.Core.csproj -c Release`:
+0 warning/0 errori. `dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`:
+**573/573**, 0 falliti (564 precedenti + 9 nuovi, zero regressioni).
+
+**Specifica DeepSeek scritta**:
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md` — comando
+operatore `--engage <targetEntityId> <skillId>`: `CombatVerificationProjector`
+(A2, puro, proietta `PlayerVitalsReading` prima/dopo in
+`CombatExecutionEvidence`) + `EngageCommand` (A4, esecuzione via
+`KeybindMap`+`GatedInputBackend.KeyPress`, verifica via
+`ClientMemorySession.TryReadPlayerVitals` prima/dopo). Ambito
+esplicitamente ristretto (stessa disciplina "primo passo piccolo e
+onesto" di `--scout`): un solo atto `UseSkill` nominato direttamente
+dall'operatore per invocazione, nessuna generazione candidati da
+`CombatPlanner` (richiederebbe `Player`/`Mob` fusi in modo che questo
+comando in composizione live non assembla oggi), `BasicAttack` rifiutato
+per design (nessun costo risorsa osservabile, `CombatExecutionEvidence`
+lo dice da sé).
+
+**Livello di verifica per questo passaggio:** `Present` — decisione presa
+e motivata, contratto mancante scritto/testato, specifica DeepSeek
+completa e precisa. Non ancora `Integrated`: `EngageCommand` non è stato
+ancora scritto (compito DeepSeek, A2+A4).
