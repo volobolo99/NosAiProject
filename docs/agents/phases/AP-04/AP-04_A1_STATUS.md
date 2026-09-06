@@ -294,3 +294,34 @@ volte in questa sessione).
 **Livello di verifica**: `Present` — contratto e algoritmo puro scritti,
 testati, compilano puliti; non ancora `Integrated` (nessun chiamante
 runtime).
+
+## Audit A5 (Claude) — Q-071 consegnato, nessun difetto trovato
+
+Consegna DeepSeek `4f62c0d` (`feat(AP-04): persist observed portal crossings
+in --scout/--autoplay rounds`), diretta su `main`. Rilettura riga per riga
+del diff contro `AP-04_A2A4_DEEPSEEK_portal_crossing_wiring.md`: le tre
+modifiche (`RecordPortalCrossing` in `MapReconstructionSource.cs`, hook in
+`ScoutCommand.RunWindows`, hook identico in `AutoplayCommand.RunWindows`)
+riproducono il codice della specifica carattere per carattere, incluso il
+commento sull'invariante di cache (`_cachedMapId`/`_cachedResult` toccati
+solo se coincidono con `Portal.SourceMap`). Nessun file fuori ambito
+toccato; `PortalCrossingDetector.cs`/`MapObservationBatch.cs`/
+`MapReconstructionFusion.cs` invariati come richiesto.
+
+**Build/test indipendenti** (worktree isolato su `origin/main`, non sulla
+consegna stessa):
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~MapReconstructionSourceTests" → 11/11
+dotnet test .../NosAi.Runtime.Tests.csproj → 2028/2086, 0 falliti, 58 skip
+dotnet test .../NosAi.Core.Tests.csproj → 629/630 (1 fallito: TransportLoopTests, flake di timing già
+  documentato — riesecuzione isolata: 5/5 verde)
+```
+
+Quarta consegna DeepSeek consecutiva senza difetti in questa sessione
+(dopo `--recover`, il ledger AP-09, il wiring `TargetStateComposer`
+AP-02). **Livello**: `Present` invariato per il codice nuovo —
+`RunWindows` non ha test unitari per convenzione dichiarata (vale anche
+per `WalkCommand`); non `Integrated` finché un operatore non conferma che
+un attraversamento di portale reale durante `--scout`/`--autoplay`
+produce davvero una riga in `MapModel.Portals` persistita.
