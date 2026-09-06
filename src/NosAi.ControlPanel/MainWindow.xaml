@@ -72,6 +72,7 @@
           <Button x:Name="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
           <Button x:Name="NavAround" Style="{StaticResource NavButton}" Content="Attorno" Click="OnNav"/>
           <Button x:Name="NavTarget" Style="{StaticResource NavButton}" Content="Bersaglio" Click="OnNav"/>
+          <Button x:Name="NavEquip" Style="{StaticResource NavButton}" Content="Equipaggiamento" Click="OnNav"/>
           <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
           <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
           <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
@@ -248,6 +249,39 @@
               </StackPanel>
             </Border>
             <ItemsControl x:Name="TargetFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <!--
+          Equipaggiamento: test reali sul client vivo che l'operatore esegue premendo
+          bottoni, mai digitando comandi. Una card per test; il pattern (istruzioni ->
+          bottoni -> riepilogo -> righe risultato) è lo stesso da riusare per ogni nuovo
+          test che si aggiunge qui in futuro.
+        -->
+        <ScrollViewer x:Name="ViewEquip" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Test reali su AP-07 (equipaggiamento). Ogni card qui sotto si esegue solo con i bottoni: nessun comando da digitare.</TextBlock>
+
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="TEST — QUALE INVENTORYKIND PRODUCE UN EQUIP REALE (T-12)"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,10" TextWrapping="Wrap">
+                  1) Apri il client e l'inventario. 2) Premi "Rileva endpoint" se la casella sotto è vuota. 3) Premi "Registra equip (30s)": hai 30 secondi per equipaggiare e poi disequipaggiare un oggetto qualsiasi. 4) Premi "Analizza registrazione". Confronta il valore di "kind=" per lo stesso vnum prima e dopo: quello che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Endpoint osservato:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <TextBlock Text="{Binding Text, ElementName=SettingObserveGame, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" MinWidth="140"/>
+                  <Button Style="{StaticResource GhostButton}" Content="Rileva endpoint" Click="OnDetectObserveGame"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Button Style="{StaticResource PrimaryButton}" Content="Registra equip (30s)" Click="OnRecordEquipWire" Margin="0,0,8,0"/>
+                  <Button Style="{StaticResource GhostButton}" Content="Analizza registrazione" Click="OnAnalyzeEquipWire"/>
+                </StackPanel>
+                <TextBlock x:Name="EquipWireSummary" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,8" TextWrapping="Wrap"
+                           Text="Nessuna registrazione in questa sessione."/>
+                <ItemsControl x:Name="EquipWireFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 

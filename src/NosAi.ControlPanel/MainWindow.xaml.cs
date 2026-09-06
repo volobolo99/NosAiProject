@@ -389,6 +389,7 @@ public partial class MainWindow : Window
         NavMap.Style = (Style)FindResource("NavButton");
         NavAround.Style = (Style)FindResource("NavButton");
         NavTarget.Style = (Style)FindResource("NavButton");
+        NavEquip.Style = (Style)FindResource("NavButton");
         NavPhone.Style = (Style)FindResource("NavButton");
         NavPerception.Style = (Style)FindResource("NavButton");
         NavNetwork.Style = (Style)FindResource("NavButton");
@@ -404,6 +405,7 @@ public partial class MainWindow : Window
         ViewMap.Visibility = Visibility.Collapsed;
         ViewAround.Visibility = Visibility.Collapsed;
         ViewTarget.Visibility = Visibility.Collapsed;
+        ViewEquip.Visibility = Visibility.Collapsed;
         ViewPhone.Visibility = Visibility.Collapsed;
         ViewPerception.Visibility = Visibility.Collapsed;
         ViewNetwork.Visibility = Visibility.Collapsed;
@@ -424,6 +426,7 @@ public partial class MainWindow : Window
             ViewTarget.Visibility = Visibility.Visible;
             PageTitle.Text = "Bersaglio";
         }
+        else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception)) { ViewPerception.Visibility = Visibility.Visible; PageTitle.Text = "Percezione"; }
         else if (ReferenceEquals(button, NavNetwork))
@@ -638,6 +641,85 @@ public partial class MainWindow : Window
         Status(status);
     }
 
+    /// <summary>
+    /// T-12 (AP-07), seconda metà: registra il traffico reale mentre l'operatore
+    /// equipaggia/disequipaggia un oggetto, così <see cref="OnAnalyzeEquipWire"/> può
+    /// mostrare quale <c>InventoryKind</c> il client invia da equipaggiato. Sniff
+    /// only (stessa garanzia di <c>WireRecorder</c>): niente è alterato o iniettato.
+    /// </summary>
+    private async void OnRecordEquipWire(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        string endpoint = SettingObserveGame.Text?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            EquipWireSummary.Text = "Nessun endpoint rilevato. Premi \"Rileva endpoint\" qui sopra (serve il client NosTale aperto e collegato).";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        EquipWireSummary.Text = "Registrazione in corso (30s): equipaggia e poi disequipaggia un oggetto ORA.";
+        EquipWireFields.ItemsSource = null;
+        var result = await RunToolAsync(
+            "dotnet", $"\"{dll}\" --record-wire {endpoint} data/equip_test.noscap --watch 30",
+            "Registrazione equip", pairing: false);
+        EquipWireSummary.Text = result.ExitCode == 0
+            ? "Registrazione completata. Premi \"Analizza registrazione\"."
+            : $"Registrazione non riuscita (uscita {result.ExitCode}). Motivo nel Diario.";
+    }
+
+    /// <summary>Rilegge l'ultima registrazione e mostra solo le righe inventario (kind/slot/vnum/amount/rarity).</summary>
+    private async void OnAnalyzeEquipWire(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        string path = Path.Combine(_repoRoot, "data", "equip_test.noscap");
+        if (!File.Exists(path))
+        {
+            EquipWireSummary.Text = "Nessuna registrazione trovata. Premi prima \"Registra equip (30s)\".";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato.");
+            return;
+        }
+
+        var lines = new List<string>();
+        await RunToolAsync(
+            "dotnet", $"\"{dll}\" --world-replay data/equip_test.noscap",
+            "Analisi registrazione equip", pairing: false,
+            onLine: line =>
+            {
+                if (line.Contains("kind=", StringComparison.Ordinal))
+                    lines.Add(line.Trim());
+            });
+
+        EquipWireFields.ItemsSource = lines.Count > 0
+            ? lines.Select((l, i) => new DisplayField($"riga {i + 1}", l, "Wire")).ToArray()
+            : Array.Empty<DisplayField>();
+        EquipWireSummary.Text = lines.Count > 0
+            ? $"{lines.Count} righe inventario trovate. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
+            : "Nessuna riga inventario (ivn) nella registrazione: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
+    }
+
     private async void OnPairPhone(object sender, RoutedEventArgs e)
         => await RunPythonAsync("-m nosai.phone.deploy", "Abbinamento telefono");
 
@@ -660,12 +742,13 @@ public partial class MainWindow : Window
         RefreshSetup();
     }
 
-    private async Task RunToolAsync(string fileName, string arguments, string title, bool pairing)
+    private async Task<ToolResult> RunToolAsync(
+        string fileName, string arguments, string title, bool pairing, Action<string>? onLine = null)
     {
         if (_busy)
         {
             Status("Un'operazione è già in corso.");
-            return;
+            return new ToolResult(-1, "");
         }
 
         _busy = true;
@@ -674,7 +757,11 @@ public partial class MainWindow : Window
         try
         {
             var result = await ToolRunner.RunAsync(fileName, arguments, _repoRoot, line =>
-                Dispatcher.BeginInvoke(() => _log.Operator(line))).ConfigureAwait(true);
+                Dispatcher.BeginInvoke(() =>
+                {
+                    _log.Operator(line);
+                    onLine?.Invoke(line);
+                })).ConfigureAwait(true);
             if (result.ExitCode == 0)
             {
                 Status($"{title}: completato.");
@@ -689,6 +776,7 @@ public partial class MainWindow : Window
                     PairingStatus.Text = failed + " Nessuna coppia da considerare valida.";
                 _log.Warning(failed, new Dictionary<string, object?> { ["exit"] = result.ExitCode });
             }
+            return result;
         }
         catch (Exception ex)
         {
@@ -696,6 +784,7 @@ public partial class MainWindow : Window
             Status($"{title} fallito: {ex.Message}");
             if (pairing)
                 PairingStatus.Text = $"{title} fallito: {ex.Message}";
+            return new ToolResult(-1, ex.Message);
         }
         finally
         {
