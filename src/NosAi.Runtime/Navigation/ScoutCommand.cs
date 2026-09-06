@@ -2,6 +2,7 @@ using System.Runtime.Versioning;
 using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Exploration;
+using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate2;
@@ -266,6 +267,14 @@ public static class ScoutCommand
             ExplorationFootprint footprint = ExplorationFootprint.Empty(
                 new MapId("unknown-map"), "scout_command_session_start");
 
+            // Tracks the previous round's (map, position) reading so a map
+            // change between two consecutive rounds can be recognised as a
+            // portal crossing (PortalCrossingDetector) -- null before the
+            // first round runs. Independent of `footprint`: this is about
+            // recording a fact for the map just left, not the one just
+            // entered.
+            MapPositionReading? previousReading = null;
+
             // Ledger persistence is opportunistic history, never a gate: a
             // missing NOSAI-SSD volume warns and records nothing -- it must
             // never become a reason this command refuses.
@@ -293,6 +302,16 @@ public static class ScoutCommand
 
                 DateTime now = TimeProvider.System.GetUtcNow().UtcDateTime;
                 var currentMapId = new MapId(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"map-{mapId}"));
+
+                var currentReading = new MapPositionReading(currentMapId, new WorldPosition(player.X, player.Y), now);
+                if (previousReading is { } previous)
+                {
+                    Portal? crossing = PortalCrossingDetector.DetectCrossing(previous, currentReading);
+                    if (crossing is not null)
+                        mapReconstruction.RecordPortalCrossing(crossing, now);
+                }
+                previousReading = currentReading;
+
                 if (!footprint.MapId.Equals(currentMapId))
                 {
                     footprint = ExplorationFootprint.Empty(currentMapId, "scout_command_session_start", now);

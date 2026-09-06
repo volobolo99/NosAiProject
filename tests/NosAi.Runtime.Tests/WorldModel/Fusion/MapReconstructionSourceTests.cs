@@ -1,5 +1,6 @@
 using System.Globalization;
 using NosAi.Core.WorldModel;
+using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Observability;
 using NosAi.Runtime.WorldModel.Fusion;
@@ -304,5 +305,117 @@ public sealed class MapReconstructionSourceTests
         public void Warning(string message, IReadOnlyDictionary<string, object?>? properties = null) { }
         public void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null)
             => Errors.Add((message, exception));
+    }
+
+    // ----------------------------------------------- RecordPortalCrossing
+
+    private static Portal CrossingPortal(MapId sourceMap, MapId destinationMap, DateTime observedAtUtc, float x = 10f, float y = 20f)
+    {
+        // The id is derived the same way PortalCrossingDetector derives it --
+        // from the position rounded to PositionRoundingUnits -- so two portals
+        // built from nearby positions (as repeated crossings of one physical
+        // portal would produce) carry the same id and MergeByKey refines them.
+        double round(float value) =>
+            Math.Round(value / PortalCrossingDetector.PositionRoundingUnits, MidpointRounding.AwayFromZero)
+            * PortalCrossingDetector.PositionRoundingUnits;
+
+        return new Portal(
+            new PortalId($"observed:{sourceMap.Value}:{round(x).ToString("R", CultureInfo.InvariantCulture)}:{round(y).ToString("R", CultureInfo.InvariantCulture)}"),
+            sourceMap,
+            WorldFact<WorldPosition>.Live(new WorldPosition(x, y), 1d, observedAtUtc),
+            WorldFact<MapId>.Live(destinationMap, 1d, observedAtUtc),
+            WorldFact<bool>.Live(true, 1d, observedAtUtc));
+    }
+
+    [Fact]
+    public void RecordPortalCrossing_ForANeverResolvedMap_PersistsThePortal()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        var sourceMap = new MapId("map-5");
+        var destinationMap = new MapId("map-6");
+
+        // A fresh source with no prior Resolve call for either map: the portal
+        // for the map just left must still be recorded against the persisted
+        // baseline (Unknown -> merge -> persist), not lost.
+        using (var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger()))
+            source.RecordPortalCrossing(CrossingPortal(sourceMap, destinationMap, T0), T0);
+
+        // A second, independent source against the same volume sees the row.
+        using var reopened = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+        MapModel result = reopened.Resolve(SnapshotFor(sourceMap, T1), T1);
+
+        Portal portal = Assert.Single(result.Portals);
+        Assert.Equal(sourceMap, portal.SourceMap);
+        Assert.Equal(destinationMap, portal.DestinationMap.Value);
+    }
+
+    [Fact]
+    public void RecordPortalCrossing_ForTheCurrentlyCachedMap_UpdatesTheInMemoryCache()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        WriteGridFile(maps.Directory, mapId: 12, width: 2, height: 1, cells: new byte[] { 0x00, 0x00 });
+        var mapA = new MapId("map-12");
+        var destinationMap = new MapId("map-13");
+
+        using var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+        MapModel first = source.Resolve(SnapshotFor(mapA, T0), T0);
+        Assert.Empty(first.Portals);
+
+        source.RecordPortalCrossing(CrossingPortal(mapA, destinationMap, T1), T1);
+
+        // The grid file is gone: a cache hit (not a re-read of the grid or the
+        // store) is the only way the portal still shows up.
+        Directory.Delete(maps.Directory, recursive: true);
+        MapModel second = source.Resolve(SnapshotFor(mapA, T1.AddSeconds(1)), T1.AddSeconds(1));
+
+        Portal portal = Assert.Single(second.Portals);
+        Assert.Equal(destinationMap, portal.DestinationMap.Value);
+        Assert.True(second.Version > first.Version);
+    }
+
+    [Fact]
+    public void RecordPortalCrossing_ForANonCachedMap_LeavesTheCurrentCacheUntouched()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        WriteGridFile(maps.Directory, mapId: 21, width: 1, height: 1, cells: new byte[] { 0x00 });
+        var mapB = new MapId("map-21");     // the map currently cached
+        var mapA = new MapId("map-20");     // a different map, the crossing's source
+
+        using var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+        MapModel cached = source.Resolve(SnapshotFor(mapB, T0), T0);
+
+        source.RecordPortalCrossing(CrossingPortal(mapA, mapB, T1), T1);
+
+        // Resolve for B again must return the exact cached instance -- the
+        // recording for A must not have disturbed B's cache.
+        MapModel again = source.Resolve(SnapshotFor(mapB, T1.AddSeconds(1)), T1.AddSeconds(1));
+        Assert.Same(cached, again);
+    }
+
+    [Fact]
+    public void RecordPortalCrossing_TwoCrossingsOfTheSamePortal_MergeIntoOneRow()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        var sourceMap = new MapId("map-30");
+        var destinationMap = new MapId("map-31");
+
+        using var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+
+        // Two crossings of the same physical portal: same rounded position,
+        // hence the same derived Portal.Id (the detector rounds, so float
+        // jitter between polls does not split one portal into several ids).
+        source.RecordPortalCrossing(CrossingPortal(sourceMap, destinationMap, T0, x: 10.1f, y: 20.9f), T0);
+        source.RecordPortalCrossing(CrossingPortal(sourceMap, destinationMap, T1, x: 10.2f, y: 20.8f), T1);
+
+        // The in-memory cache for the source map now carries the merged portal.
+        MapModel result = source.Resolve(SnapshotFor(sourceMap, T1.AddSeconds(1)), T1.AddSeconds(1));
+
+        Portal portal = Assert.Single(result.Portals); // merged, not duplicated
+        Assert.Equal(destinationMap, portal.DestinationMap.Value);
+        Assert.Equal(T1, portal.DestinationMap.ObservedAtUtc); // second crossing refined it
     }
 }
