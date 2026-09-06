@@ -95,3 +95,26 @@ tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`: **544/544**,
 **Livello di verifica:** `Present` — contratti e algoritmo parziale
 scritti, testati, compilano puliti; non ancora `Integrated` in nessun
 ciclo runtime.
+
+## AP-08/A2+A4 — indagine mirata
+
+Trovato, confermato per ispezione: **una risposta reale a Survival
+esiste già come primitiva**, `CombatActionKind.UseConsumable`
+(AP-05, `CombatContracts.cs`) esegue via lo stesso meccanismo di
+`--engage` — `InputActionEffector.cs` riga 249-251 preme
+`consumable.{slot}` per numero di slot (non id oggetto, che resta
+sconosciuto — stessa scelta onesta di `--engage` per lo skill id).
+Verificarne l'effetto richiederebbe però un confronto **opposto** a
+`CombatVerificationProjector` (HP che *sale*, non MP che scende): non un
+nuovo meccanismo, ma un'estensione dei contratti AP-05 esistenti — un
+eventuale `--recover <slot>` è quindi lavoro di AP-05, non nuova
+infrastruttura AP-08.
+
+**Il vero gap di AP-08** è un altro: nessun orchestratore esiste che
+legga `StrategyPlanner.SelectStrategicPlan` e scelga/avvii di conseguenza
+`--scout`/`--walk`/`--collect`/un futuro `--recover`. È la prima
+componente di questo progetto che **sceglierebbe** un'azione invece di
+eseguire un atto che l'operatore nomina — una classe di rischio diversa
+da ogni comando consegnato finora (`--scout`/`--engage`/`--collect`
+eseguono solo ciò che l'operatore chiede). Non la specifico né la avvio
+senza una decisione esplicita dell'utente su ambito e cautele.

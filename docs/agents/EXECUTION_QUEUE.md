@@ -60,6 +60,7 @@
 | Q-046 | AP-05 | A6 — Integrazione finale AP-05 (1 correzione applicata: convalida argomenti di `Run` sostituita con `[REFUSED]` pulito, 3 test di regressione aggiunti, build/test combinati verdi) | **Claude** | Q-045 | `docs/agents/phases/AP-05/AP-05_STATUS.md` | **DONE** |
 | Q-047 | AP-06 | A5 — Audit indipendente `--collect` (1 difetto reale trovato, stesso pattern di AP-05: `Run` lanciava un'eccezione non gestita su `vnum` vuoto invece di `[REFUSED]`) | **Claude** | Q-040, Q-041 | `docs/agents/phases/AP-06/AP-06_A5_AUDIT.md` | **DONE** |
 | Q-048 | AP-06 | A6 — Integrazione finale AP-06 (1 correzione applicata: stesso schema `[REFUSED]` di AP-05, 2 test di regressione aggiunti, build/test combinati verdi) | **Claude** | Q-047 | `docs/agents/phases/AP-06/AP-06_STATUS.md` | **DONE** |
+| Q-049 | AP-08 | A2+A4 — Indagine mirata: risposta Survival reale trovata (`UseConsumable` via keybind slot, stesso meccanismo di `--engage` — lavoro AP-05, non nuova infrastruttura AP-08); gap vero è l'assenza di un orchestratore che scelga un'azione da `StrategyPlanner.SelectStrategicPlan` — prima componente che decide invece di eseguire un atto nominato dall'operatore. Non specificato senza decisione esplicita dell'utente su ambito e cautele. | **Claude** | Q-034 | `docs/agents/phases/AP-08/AP-08_A1_STATUS.md` §"AP-08/A2+A4" | **DONE** (indagine, decisione in sospeso) |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
