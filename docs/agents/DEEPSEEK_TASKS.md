@@ -159,12 +159,14 @@ In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`
 
 ## Pronto ora
 
-**AP-04/A2+A4 (`--scout`) e AP-05/A2+A4 (`--engage`) sono entrambi CONSEGNATI**
-(dal 2026-09-06, livello `Present`: build+test verdi, nessuna regressione,
-nessun client reale disponibile per `Verified`). Specifiche di riferimento:
-`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md` (progetto)
-e `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md`
-(combattimento). Non sono bridge verso `Gate3Runtime` (indagini concluse:
+**AP-04/A2+A4 (`--scout`), AP-05/A2+A4 (`--engage`) e AP-06/A4 (`--collect`)
+sono CONSEGNATI** (dal 2026-09-06, livello `Present`: build+test verdi,
+nessuna regressione, nessun client reale disponibile per `Verified`).
+Specifiche di riferimento:
+`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md` (progetto),
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md`
+(combattimento) e `docs/agents/phases/AP-06/AP-06_A2A4_DEEPSEEK_collect_command.md`
+(quest/collect). Non sono bridge verso `Gate3Runtime` (indagini concluse:
 quella pipeline è chiusa/hardcoded — lavoro futuro di AP-08). Nessuna
 sezione "pronto ora" attiva in questo momento: i prossimi task DeepSeek
 (A2/A4 di AP-06, AP-07, ...) restano bloccati sui gap dati reali segnalati
@@ -309,7 +311,7 @@ indipendente da AP-04, chiedilo esplicitamente.
   usata da `WalkCommand`/`SingleStepExecutor`, indipendente da
   `Gate3Runtime`), verifica via `ClientMemorySession.TryReadPlayerVitals`
   prima/dopo (stessa catena `[LIVE]` già validata da `--player-vitals`).
-- **AP-06/A4 — comando operatore `--collect`, pronto (Q-041).** Indagine
+- **AP-06/A4 — comando operatore `--collect`, CONSEGNATO (Q-041).** Indagine
   mirata su AP-06/A2 ("semantic extraction OCR/UI/network"): a
   differenza di ogni altro obiettivo quest, `Collect` ha un canale
   network già reale e già fuso, non bloccato dal gap OCR/ML —
@@ -318,12 +320,14 @@ indipendente da AP-04, chiedilo esplicitamente.
   già in `Player.Inventory`/`WorldModelSnapshot.Drops`.
   `QuestGraphPlanner.AssessCollectProgress` (Claude, Q-040, già scritto e
   testato) chiude la parte A2 direttamente in `NosAi.Core`, senza alcun
-  lavoro DeepSeek. Resta solo A4: specifica completa in
+  lavoro DeepSeek. **A4 eseguito da DeepSeek il 2026-09-06, livello
+  `Present`:** specifica in
   `docs/agents/phases/AP-06/AP-06_A2A4_DEEPSEEK_collect_command.md` —
-  comando `--collect <x> <y> <vnum> [<requiredCount>]`, cammina via
-  `WalkCommand.Execute` (riusato invariato), verifica via
+  `CollectCommand`, comando `--collect <x> <y> <vnum> [<requiredCount>]`,
+  cammina via `WalkCommand.Execute` (riusato invariato), verifica via
   `LiveObservationGateway.Capture()` + `GameplayObservationProjector` +
-  `AssessCollectProgress`, prima/dopo la camminata.
+  `AssessCollectProgress`, prima/dopo la camminata. 5 test verdi, nessuna
+  regressione; limite dichiarato: nessuna scoperta automatica di ground item.
 
 **Esplicitamente fuori portata per DeepSeek** (non richiederli, non sono un
 problema di codice mancante):

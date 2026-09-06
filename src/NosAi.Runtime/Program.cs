@@ -238,6 +238,40 @@ public static class Program
             return NosAi.Runtime.Tactical.EngageCommand.Run(targetEntityId, skillId, engageRounds);
         }
 
+        // One collect round (or --watch <n> rounds): walk to an operator-named
+        // position and verify one Collect objective by reading the player's own
+        // inventory count of the named vnum before and after the walk (wire ivn
+        // evidence, not OCR). Same commanded-authority family as --walk/--scout/
+        // --engage. It does not arm input.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.CollectCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int collectIndex = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Navigation.CollectCommand.Flag, StringComparison.OrdinalIgnoreCase));
+            if (collectIndex + 3 >= args.Length
+                || !int.TryParse(args[collectIndex + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int collectX)
+                || !int.TryParse(args[collectIndex + 2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int collectY))
+            {
+                Console.WriteLine("[REFUSED] --collect requires <x> <y> <vnum> [<requiredCount>]");
+                return 1;
+            }
+
+            string collectVnum = args[collectIndex + 3];
+            int? requiredCount = collectIndex + 4 < args.Length
+                && int.TryParse(args[collectIndex + 4], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedRequired)
+                ? parsedRequired
+                : null;
+
+            int collectWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int collectRounds = collectWatchFlag >= 0 && collectWatchFlag + 1 < args.Length
+                                && int.TryParse(args[collectWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedCollectRounds)
+                                && parsedCollectRounds > 0
+                ? parsedCollectRounds
+                : 1;
+
+            return NosAi.Runtime.Navigation.CollectCommand.Run(collectX, collectY, collectVnum, requiredCount, collectRounds);
+        }
+
         // Which intents the operator bound, and which the runtime can ask for
         // that are not bound. Non-zero when the file is missing or a required
         // prefix is uncovered. Does not write data/keybinds.json.
@@ -798,7 +832,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect"
         };
 
     private static int RunDxgiProbe()
