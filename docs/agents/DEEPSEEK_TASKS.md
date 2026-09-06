@@ -185,6 +185,21 @@ bottiglia rimasto) è specificabile con lo stesso schema già usato per
 Solo calibrazione — `--equip`/`--unequip` restano non specificabili
 finché questa non è confermata da un operatore su un client reale.
 
+**CONSEGNATO E INTEGRATO** (Q-086, 2026-09-06, livello `Present`):
+`--calibrate-inventory-panel` — `InventoryPanelCalibrationProbe`
+(`TryParseSlots` su un token per valore dichiarato di `EquipmentSlot`,
+conta derivata da `Enum.GetValues`; comando console che rispecchia
+`HudProbe`: attach client → frame DXGI → area client → preview
+`inventory_panel_latest.bmp` → `Confirmed`+`Save` solo su conferma
+operatore) + wiring `Program.cs`/`KnownProbeFlags` + preview additiva in
+`HudCropWriter`. In integrazione è stata applicata la nota Q-085: la
+prima stesura era contro la specifica v1 a 8 slot (pre-correzione
+dell'enum) ed è stata riallineata ai 18 valori reali NosTale — la guida
+operatore stampa i nomi dall'enum e i test sono scritti su
+`Enum.GetValues`, così nessuna assunzione sul numero di slot può
+rientrare. **Da fare dall'operatore**: T-12 in `docs/TEST_RIMANDATI.md`
+(conferma dei 18 ritagli su un client reale).
+
 **ATTENZIONE INTEGRAZIONE (Q-085, 2026-09-06)**: dopo l'avvio di questo
 task, `EquipmentSlot` è stato corretto (era un segnaposto sbagliato a 8
 valori, ora sono i 18 valori reali di NosTale — vedi Q-085 in

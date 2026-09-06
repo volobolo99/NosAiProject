@@ -113,28 +113,27 @@ public static class Program
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
         }
 
-        // AP-07/A2+A4: records where every equipment-panel slot sits on this
+        // AP-07/A2+A4: records where the equipment-panel slots sit on this
         // operator's client, the screen-space layout --calibrate-target
         // (ADR-0018) is to the target frame what this is to the equipment
-        // panel: all crops together or none, confirmed by the operator
-        // against inventory_panel_latest.bmp. The fractions are that
-        // confirmation; nothing infers them. Refuses, without attaching to
-        // any client, unless exactly one slot token per EquipmentSlot value
-        // is present -- that count comes from the enum itself, never a
-        // literal number, so this guard cannot go stale the way a hardcoded
-        // count would the next time EquipmentSlot changes.
+        // panel: one crop per declared EquipmentSlot value or none, confirmed
+        // by the operator against inventory_panel_latest.bmp. The fractions
+        // are that confirmation; nothing infers them. Refuses, without
+        // attaching to any client, unless exactly one token per declared slot
+        // is present.
         if (args.Any(a => string.Equals(a, "--calibrate-inventory-panel", StringComparison.OrdinalIgnoreCase)))
         {
             int panelFlag = Array.FindIndex(args, a =>
                 string.Equals(a, "--calibrate-inventory-panel", StringComparison.OrdinalIgnoreCase));
+            int panelSlotCount = Enum.GetValues(typeof(NosAi.Core.WorldModel.EquipmentSlot)).Length;
             int panelTokenCount = args.Length - (panelFlag + 1);
-            int requiredSlotCount = Enum.GetValues<NosAi.Core.WorldModel.EquipmentSlot>().Length;
-            if (panelTokenCount != 0 && panelTokenCount != requiredSlotCount)
+            if (panelTokenCount != 0 && panelTokenCount != panelSlotCount)
             {
                 Console.Error.WriteLine(
-                    $"[REFUSED] --calibrate-inventory-panel requires all {requiredSlotCount} slot tokens "
-                    + "(one <EquipmentSlot>:<x>,<y>,<w>,<h> per declared slot), or none at all to report "
-                    + "the current state.");
+                    $"[REFUSED] --calibrate-inventory-panel requires all {panelSlotCount} slot tokens "
+                    + "(one per declared EquipmentSlot value, in any order), or none at all to report "
+                    + "the current state. Example: --calibrate-inventory-panel "
+                    + "Weapon:<x>,<y>,<w>,<h> Armor:<x>,<y>,<w>,<h> Hat:<x>,<y>,<w>,<h> ...");
                 return 1;
             }
 
@@ -153,8 +152,8 @@ public static class Program
                         NosAi.Runtime.Perception.InventorySlotRoi>? panelRois, out string? panelReason))
             {
                 Console.Error.WriteLine($"[REFUSED] {panelReason}");
-                Console.Error.WriteLine($"  --calibrate-inventory-panel requires all {requiredSlotCount} slot "
-                    + "tokens <EquipmentSlot>:<x>,<y>,<w>,<h> ... as fractions of the client area, in any order.");
+                Console.Error.WriteLine("  --calibrate-inventory-panel requires one slot token per declared "
+                    + "EquipmentSlot value, each 'Slot:<x>,<y>,<w>,<h>' as fractions of the client area.");
                 return 1;
             }
 
