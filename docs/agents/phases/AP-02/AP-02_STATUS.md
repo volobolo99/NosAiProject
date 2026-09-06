@@ -250,9 +250,38 @@ campo non è ancora fuso nel `WorldModelSnapshot`, stessa situazione già
 accettata per `HasTarget`.
 
 **Livello**: `Present` — contratti e algoritmo puri, testati, compilano
-puliti. Non `Integrated`: nessun chiamante runtime ancora compone un
-valore reale (wiring in `ScreenVitalsCapture`/`Program.cs` specificato
-per DeepSeek in Q-074, stesso schema di Q-067). Non `Verified`: nessun
+puliti. Non `Verified`: nessun
 client reale per confermare `DefaultPresentThreshold` contro un vero
 pannello NosTale — obbligo
 esplicito prima di fidarsi del risultato in produzione.
+
+## 13. A2+A4 addendum — dialog-window cablato in `ScreenVitalsCapture` (Q-075)
+
+Consegnato da DeepSeek (commit `3d234f5`): `ScreenVitalsCapture` accetta
+ora `dialogCalibration` opzionale (stesso schema di `targetCalibration`);
+il placeholder `Unknown("dialog_window_composer_not_wired_in_this_pass")`
+è sostituito da una composizione reale via `ScreenDialogWindowSource`
+sullo stesso `SingleFrameSource` già usato da vitali e target frame (un
+frame, quattro lettori), poi `DialogWindowStateComposer.Compose` (senza
+argomento wire, come da contratto — nessun opcode dialogo/quest text).
+`Program.cs` carica `DialogRoiCalibration` con lo stesso schema di
+`TargetRoiCalibration`, guardato da `options.FuseWorldModel`.
+
+**Audit indipendente (Claude, A5)**: rilettura riga per riga del diff
+contro `AP-02_A2A4_DEEPSEEK_dialog_window_wiring.md` — corrisponde
+esattamente, nessuna riga fuori specifica. Build/test in worktree
+isolato su `origin/main`:
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~ScreenVitalsCaptureTests" → 13/13
+dotnet test .../NosAi.Runtime.Tests.csproj → 2068/2126, 0 falliti, 58 skip
+dotnet test .../NosAi.Core.Tests.csproj → 630/630, 0 falliti
+```
+**Nessun difetto trovato** — quinta consegna DeepSeek pulita consecutiva
+di questa sessione.
+
+**Livello**: `Present` → `Integrated` per il codice (albero unico,
+compila e testa pulito, incluso il percorso "frame acquisito" ora
+esercitato per tutti e quattro i lettori). Non `Verified`: nessun client
+reale per confermare che una calibrazione vera produca un
+`Derived(true/false)` corretto contro un vero pannello NosTale.
