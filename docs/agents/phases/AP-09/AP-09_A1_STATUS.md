@@ -257,3 +257,74 @@ Release`: **2018/2076**, 0 falliti, invariato (nessun consumatore in
 
 **Livello di verifica**: `Present` — contratto esteso, testato, compila
 pulito; non ancora `Integrated` (nessun chiamante runtime).
+
+## A2+A4 (Q-061, DeepSeek) — consegna + audit A5 indipendente
+
+Consegnato da DeepSeek (commit `fedda0c`), esattamente secondo la
+specifica (`AP-09_A2A4_DEEPSEEK_ledger_wiring.md`): `ActionOutcomeLedgerStore`
+(nuovo, `NosAi.Storage`, persistenza append-only stile `MapModelStore`,
+nessun layer DTO, `TryOpenFromVolume` sul modello di
+`CollectCommand.LiveScope.TryOpen`), `ActionOutcomeRecorder` (nuovo,
+`NosAi.Runtime.WorldModel.Fusion`, no-op documentato su store `null`),
+wiring chirurgico in `EngageCommand`/`RecoverCommand`/`ScoutCommand`/
+`AutoplayCommand` — solo nei rispettivi `RunWindows`, nessuna firma di
+`ExecuteOneRound`/`ExecuteOneCycle` toccata, `CollectCommand.cs` non
+sfiorato.
+
+**Audit indipendente (Claude, A5)**: rilettura riga per riga di tutti gli
+8 file diff-ati contro la specifica, poi build/test rieseguiti in un
+worktree isolato puntato su `origin/main` (mai fidandosi della consegna).
+**Nessun difetto reale trovato** — la prima consegna DeepSeek di questa
+sessione a passare un audit senza correzioni necessarie, oltre a
+`--recover`. Verificato esplicitamente:
+
+- `ActionOutcomeLedgerStore.Append`/`ReadEntry` leggono ogni colonna per
+  nome (`reader.GetOrdinal("...")`), mai per indice posizionale, come
+  richiesto — nessun rischio di disallineamento colonne silenzioso.
+- Round-trip di un `Outcome` sconosciuto (`WorldFact<ActionOutcome>.Unknown`)
+  testato esplicitamente e verificato: `HasObservedValue` torna `false`,
+  `Reason` preservato, nessun valore `ActionOutcome` fabbricato — il caso
+  esatto per cui la correzione di contratto Q-060 esiste.
+- Registrazione mai bloccante: `TryOpenFromVolume` cattura solo
+  `InvalidOperationException` (volume non montato) e stampa `[WARN]`,
+  mai un'eccezione non gestita; `ActionOutcomeRecorder.RecordCombat`/
+  `RecordMovement` con `store == null` è un no-op verificato da test
+  dedicato (nessun file creato).
+- `AutoplayCommand`: `evidence.Candidate` riusato direttamente (mai
+  ricostruito) per registrare l'atto Survival dispatchato — prova che
+  l'entry registrata è esattamente l'atto premuto, non una seconda
+  congettura indipendente. Nessun nuovo campo aggiunto a
+  `AutoplayCycleResult`.
+- Test: `ActionOutcomeLedgerStoreTests` (5, incluso il round-trip Unknown,
+  ordinamento/filtro per contesto case-sensitive, policy WAL verificata)
+  e `ActionOutcomeRecorderTests` (4, valore atteso calcolato via
+  `WorldActionProjector` stesso, mai ri-derivato indipendentemente) —
+  esattamente la disciplina richiesta dalla specifica.
+
+**Nota minore, non bloccante**: `RecordedAtUtc`/`issuedAtUtc` in tutti e
+quattro i siti di chiamata riusano il timestamp di inizio round/ciclo
+(`nowUtc`/`now`), non l'istante effettivo in cui `store.Append` gira —
+scelta della specifica stessa (non una deviazione DeepSeek), quindi
+`RecordedAtUtc` può essere indietro di quanto dura la finestra di
+verifica (~350ms per gli atti combattimento). `Outcome.ObservedAtUtc`
+(il timestamp che conta per la semantica dell'evidenza) resta invece
+accurato, perché viene dall'evidenza stessa via `WorldActionProjector`.
+Non corretto qui: bookkeeping, non correttezza.
+
+**Evidenza build/test (indipendente, worktree isolato su `origin/main`)**:
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato.
+dotnet test .../NosAi.Core.Tests.csproj --filter "~ActionOutcomeLedgerStoreTests" → 5/5
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~ActionOutcomeRecorderTests" → 4/4
+dotnet test .../NosAi.Core.Tests.csproj → 605/605 (un fallimento isolato in
+  TransportLoopTests alla prima esecuzione, non riprodotto alla riesecuzione —
+  stesso flake da carico macchina già documentato più volte in questa sessione,
+  non collegato a questa consegna)
+dotnet test .../NosAi.Runtime.Tests.csproj → 2022/2080, 0 falliti, 58 skip
+```
+
+**Livello di verifica — AP-09/A2+A4**: `Integrated` — compila pulito,
+tutti i test combinati passano, wiring reale nei quattro comandi già
+integrati. Non `Verified`: nessun percorso di lettura wired (per scelta
+dichiarata nella specifica), nessuna sessione reale ha ancora prodotto
+righe in `action_outcome_ledger` su un client NosTale vero.
