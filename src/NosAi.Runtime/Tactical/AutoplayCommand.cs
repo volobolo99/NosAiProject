@@ -45,10 +45,16 @@ namespace NosAi.Runtime.Tactical;
 /// <see langword="null"/> on every real cycle and
 /// <see cref="StrategyPlanner.SelectStrategicPlan"/> never selects it --
 /// dispatch code for a signal that cannot fire honestly today would be dead
-/// code. <see cref="StrategicGoalKind.Recovery"/>/<see cref="StrategicGoalKind.Progression"/>/
-/// <see cref="StrategicGoalKind.Farming"/>/<see cref="StrategicGoalKind.Optimization"/>
-/// have no assessor at all and are equally out of scope. A selected plan
-/// whose kind is not dispatchable is reported as
+/// code. <see cref="StrategicGoalKind.Recovery"/> now has a real assessor
+/// (<see cref="StrategyPlanner.AssessRecoveryUrgency"/>, gated on a real
+/// "currently in combat" fact) but this command does not yet call it --
+/// wiring it into this cycle (deriving that fact, adding the signal, and
+/// dispatching it) is a separate, not-yet-delivered increment
+/// (AP-08/A2A4, `AP-08_A2A4_DEEPSEEK_recovery_signal.md`).
+/// <see cref="StrategicGoalKind.Progression"/>/<see cref="StrategicGoalKind.Farming"/>/
+/// <see cref="StrategicGoalKind.Optimization"/> have no assessor at all and
+/// are out of scope for the same reason as ever. A selected plan whose kind
+/// is not dispatchable is reported as
 /// <see cref="AutoplayDispatch.NotDispatchable"/> by name, never silently
 /// ignored and never substituted with a different act.
 /// </para>

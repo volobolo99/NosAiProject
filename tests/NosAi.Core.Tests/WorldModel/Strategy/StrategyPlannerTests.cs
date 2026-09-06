@@ -78,6 +78,71 @@ public sealed class StrategyPlannerTests
         Assert.Null(signal);
     }
 
+    // ---- AssessRecoveryUrgency ----
+
+    [Fact]
+    public void AssessRecoveryUrgency_InCombatUnknown_ReturnsNull()
+    {
+        Player player = BuildPlayer(currentHp: 10, maxHp: 100);
+
+        StrategicSignal? signal = StrategyPlanner.AssessRecoveryUrgency(
+            player, WorldFact<bool>.Unknown("no_combat_signal_yet", Now));
+
+        Assert.Null(signal);
+    }
+
+    [Fact]
+    public void AssessRecoveryUrgency_CurrentlyInCombat_ReturnsNull()
+    {
+        // Survival owns this regime unconditionally; Recovery must not also
+        // fire on the same HP fraction while the fight is still on, or the
+        // same fact would be double-counted under two names.
+        Player player = BuildPlayer(currentHp: 10, maxHp: 100);
+
+        StrategicSignal? signal = StrategyPlanner.AssessRecoveryUrgency(
+            player, WorldFact<bool>.Derived(true, 1d, Now));
+
+        Assert.Null(signal);
+    }
+
+    [Fact]
+    public void AssessRecoveryUrgency_NoHealthResource_ReturnsNull()
+    {
+        Player player = BuildPlayer();
+
+        StrategicSignal? signal = StrategyPlanner.AssessRecoveryUrgency(
+            player, WorldFact<bool>.Derived(false, 1d, Now));
+
+        Assert.Null(signal);
+    }
+
+    [Fact]
+    public void AssessRecoveryUrgency_SafeAndDamaged_HasUrgency()
+    {
+        Player player = BuildPlayer(currentHp: 10, maxHp: 100);
+
+        StrategicSignal? signal = StrategyPlanner.AssessRecoveryUrgency(
+            player, WorldFact<bool>.Derived(false, 1d, Now));
+
+        Assert.NotNull(signal);
+        Assert.Equal(StrategicGoalKind.Recovery, signal!.Kind);
+        Assert.Equal(0.9d, signal.Urgency, precision: 6);
+        Assert.Equal("safe_to_recover", signal.Reason);
+    }
+
+    [Fact]
+    public void AssessRecoveryUrgency_SafeAndFullHealth_NoUrgency()
+    {
+        Player player = BuildPlayer(currentHp: 100, maxHp: 100);
+
+        StrategicSignal? signal = StrategyPlanner.AssessRecoveryUrgency(
+            player, WorldFact<bool>.Derived(false, 1d, Now));
+
+        Assert.NotNull(signal);
+        Assert.Equal(0d, signal!.Urgency, precision: 6);
+        Assert.Equal("health_full", signal.Reason);
+    }
+
     // ---- AssessQuestUrgency ----
 
     private static Quest BuildQuest(string id, QuestObjectiveStatus? status, EquatableArray<QuestObjective>? objectives = null) =>

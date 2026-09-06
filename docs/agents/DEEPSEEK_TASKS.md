@@ -214,8 +214,22 @@ non referenzi `EquipmentSlot.Shield`/`.Helmet`/`.Accessory1`/
 invece di 18 — se lo fa, va corretto in integrazione, non rispedito
 indietro.
 
-Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06/AP-08 sono
-tutte `Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati
+**PRONTO ORA** (Q-092, 2026-09-06): **AP-08 — segnale `Recovery` in
+`--autoplay`.** Indagine mirata su `AP-10_A1_STATUS.md` (stadio 12,
+"Recovery"): il gap è reale (nessun assessor esiste per
+`StrategicGoalKind.Recovery`) ma non più bloccato come sembrava — non serve
+un nuovo canale di rete/elevazione, basta un heuristic locale su due letture
+HP consecutive già lette ogni ciclo per Survival. Lato `NosAi.Core` (Claude,
+già consegnato e testato): `CombatRecencyTracker` (nuovo, puro) deriva un
+`WorldFact<bool>` "in combattimento adesso" da un calo di HP recente;
+`StrategyPlanner.AssessRecoveryUrgency` (nuovo, puro) usa quel fatto per
+evitare di duplicare il segnale di Survival. Resta solo il collegamento
+meccanico dentro `AutoplayCommand` (nessun nuovo flag CLI, nessun
+`Program.cs` da toccare). Specifica completa in
+`docs/agents/phases/AP-08/AP-08_A2A4_DEEPSEEK_recovery_signal.md`.
+
+Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06 sono
+`Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati
 item non decodificati semanticamente, non chiudibili scrivendo altro
 codice di fase. Vedi `docs/agents/EXECUTION_QUEUE.md` per lo storico
 completo dei Q-number.

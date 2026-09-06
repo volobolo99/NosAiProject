@@ -12,20 +12,17 @@ namespace NosAi.Core.WorldModel.Strategy;
 /// clock reads, safe to call once per decision cycle.
 /// </summary>
 /// <remarks>
-/// <b>Scope, honestly restricted.</b> Only three of the DoD's seven goal
-/// kinds are assessed here, because only three currently have a real,
+/// <b>Scope, honestly restricted.</b> Four of the DoD's seven goal kinds
+/// are assessed here, because only four currently have a real,
 /// already-known signal to assess from:
 /// <list type="bullet">
 /// <item><see cref="StrategicGoalKind.Survival"/> -- the player's fused HP fraction (AP-02).</item>
+/// <item><see cref="StrategicGoalKind.Recovery"/> -- the same HP fraction, gated on a real "currently in combat" fact the caller supplies (see <see cref="AssessRecoveryUrgency"/>).</item>
 /// <item><see cref="StrategicGoalKind.QuestUrgency"/> -- AP-06's Quest Graph (<see cref="QuestGraphPlanner"/>).</item>
 /// <item><see cref="StrategicGoalKind.Exploration"/> -- AP-04's <see cref="ExplorationFootprint"/>.</item>
 /// </list>
-/// <see cref="StrategicGoalKind.Recovery"/> needs a real "currently in
-/// combat" signal to mean anything different from Survival (not yet
-/// assessed -- a threshold-only guess would double-count Survival's own
-/// signal under a different name). <see cref="StrategicGoalKind.Progression"/>,
-/// <see cref="StrategicGoalKind.Farming"/> and
-/// <see cref="StrategicGoalKind.Optimization"/> need real economic/loot
+/// <see cref="StrategicGoalKind.Progression"/>, <see cref="StrategicGoalKind.Farming"/>
+/// and <see cref="StrategicGoalKind.Optimization"/> need real economic/loot
 /// value data that exists nowhere in this repository (same class of gap
 /// already found for combat/equipment stats in AP-05 and AP-07). Returning
 /// a fabricated urgency for any of these would be exactly the kind of
@@ -56,6 +53,48 @@ public static class StrategyPlanner
             StrategicGoalKind.Survival,
             urgency,
             fraction < CriticalHealthFraction ? "health_critical" : "health_fraction");
+    }
+
+    /// <summary>
+    /// Recovery urgency: the same HP-fraction need <see cref="AssessSurvivalUrgency"/>
+    /// reads, but only once <paramref name="inCombat"/> confirms the character
+    /// is <i>not</i> currently fighting. <see langword="null"/> when HP is
+    /// unknown, when <paramref name="inCombat"/> itself is
+    /// <see cref="WorldFact{T}.HasValue"/> <see langword="false"/> (nobody has
+    /// established whether the character is in combat yet -- treated as "not
+    /// yet assessed", never as "assume safe"), or while
+    /// <paramref name="inCombat"/> is true.
+    /// </summary>
+    /// <remarks>
+    /// This is the whole reason <see cref="StrategicGoalKind.Recovery"/> was
+    /// left unassessed in this class's own remarks until now: a
+    /// threshold-only reading of HP fraction is indistinguishable from
+    /// <see cref="AssessSurvivalUrgency"/>'s own signal under a different
+    /// name, which would double-count the same fact as two goals. Gating on a
+    /// real, caller-supplied "currently in combat" fact is what keeps the two
+    /// apart -- Survival stays unconditional (it must fire even mid-fight, the
+    /// regime it exists for), Recovery only ever competes for attention once
+    /// the fight is confirmed over. How "in combat" is derived is deliberately
+    /// not this method's concern: it takes whatever <see cref="WorldFact{T}"/>
+    /// the caller observed it with (network combat-recency, a memory-side
+    /// heuristic, or anything else this project later derives it from),
+    /// exactly as <see cref="AssessQuestUrgency"/> takes a <see cref="QuestGraph"/>
+    /// built by whichever projector fed it.
+    /// </remarks>
+    public static StrategicSignal? AssessRecoveryUrgency(Player player, WorldFact<bool> inCombat)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!inCombat.HasValue || inCombat.Value)
+            return null;
+        if (!TryGetFraction(player.Status, ResourceKind.Health, out double fraction))
+            return null;
+
+        double urgency = Math.Clamp(1.0 - fraction, 0.0, 1.0);
+        return new StrategicSignal(
+            StrategicGoalKind.Recovery,
+            urgency,
+            urgency > 0.0 ? "safe_to_recover" : "health_full");
     }
 
     /// <summary>
