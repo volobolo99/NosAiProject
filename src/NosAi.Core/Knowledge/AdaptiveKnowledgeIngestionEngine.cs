@@ -1,3 +1,4 @@
+using NosAi.Core.Memory;
 using CoreKnowledgeEntry = NosAi.Core.Memory.KnowledgeEntry;
 using CoreKnowledgeStatus = NosAi.Core.Memory.KnowledgeStatus;
 using CoreKnowledgeProvenance = NosAi.Core.Memory.KnowledgeProvenance;
@@ -69,7 +70,7 @@ public sealed class AdaptiveKnowledgeIngestionEngine : IKnowledgeIngestionEngine
         var entry = new CoreKnowledgeEntry(
             candidate.Id,
             candidate.Topic,
-            MapScope(candidate.Scope),
+            candidate.Scope,
             CoreKnowledgeStatus.Candidate,
             MapProvenance(candidate.Source.SourceType),
             candidate.RulesetVersion ?? "unknown",
@@ -108,9 +109,6 @@ public sealed class AdaptiveKnowledgeIngestionEngine : IKnowledgeIngestionEngine
     private static string BuildContent(KnowledgeCandidate candidate)
         => $"Community candidate: {candidate.Topic}. Source: {candidate.Source.Title ?? candidate.Source.Uri}. " +
            "Not independently validated; never use as live gameplay truth.";
-
-    private static NosAi.Core.Memory.KnowledgeScope MapScope(KnowledgeScope scope)
-        => Enum.Parse<NosAi.Core.Memory.KnowledgeScope>(scope.ToString(), ignoreCase: false);
 
     private static CoreKnowledgeProvenance MapProvenance(string sourceType)
         => sourceType.Contains("official", StringComparison.OrdinalIgnoreCase)
