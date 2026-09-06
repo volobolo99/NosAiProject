@@ -270,13 +270,13 @@ nuovo meccanismo di persistenza necessario: `MapObservationBatch.Portals`
 il punto di integrazione — questo contratto produce solo il `Portal` da
 mettere in quel campo.
 
-**Non affrontato qui, A2+A4 futuro non ancora specificato**: il ciclo di
-polling che chiama `TryReadMapId`/`TryReadPlayer`, tiene la lettura
-precedente, invoca `DetectCrossing` e inietta il risultato in un
-`MapObservationBatch` per la mappa sorgente — wiring runtime reale, non
-un algoritmo puro, quindi lavoro A2+A4 per DeepSeek quando ci sarà una
-decisione su dove agganciarlo (un nuovo comando dedicato, o un'estensione
-di `--scout`/`--walk` che già fanno lo stesso polling).
+**A2+A4 specificato (Q-071, DeepSeek)**: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_portal_crossing_wiring.md`
+— nuovo `MapReconstructionSource.RecordPortalCrossing` (merge indipendente
+dal `Resolve` del ciclo corrente) + hook nel polling mappa/posizione già
+esistente in `ScoutCommand`/`AutoplayCommand.RunWindows`, nessuna nuova
+infrastruttura. `--collect`/`--engage`/`--recover` esclusi (non pollano
+map id per round). `WorldMapPortalRouter` non toccato — questo task
+accumula solo dati, non li consuma per il routing.
 
 **Test**: `tests/NosAi.Core.Tests/WorldModel/Reconstruction/PortalCrossingDetectorTests.cs`,
 7 test (nessuna crossing, campi del `Portal` derivato, confidence
