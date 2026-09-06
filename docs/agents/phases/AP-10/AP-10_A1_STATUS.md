@@ -111,3 +111,104 @@ qui.
 stessi):** `Present` — scritti, testati, compilano puliti. **Il report
 compilato sopra non è una certificazione**: è la fotografia onesta,
 citata, di quanto lontano il progetto sia da poterne ricevere una.
+
+## Aggiornamento — verifica post AP-05/--recover e AP-08/--autoplay (2026-09-06)
+
+Verificato direttamente il codice sorgente (non per assunzione) dopo
+l'arrivo di `--recover` (AP-05 §8bis, commit `219225b`, nessun difetto
+trovato da `AP-05_A5_AUDIT.md` §7) e `--autoplay` (AP-08, commit
+`34a8b54`, un difetto — footprint non propagato — trovato e corretto da
+`507c476`/`f07158c`, livello finale `Integrated`).
+
+**Stadio 8 (Combat) — riga da rivedere.** `--recover` vive nello stesso
+namespace/contratto di `--engage`: `RecoverCommand.cs:14-16` lo dichiara
+esplicitamente "AP-05 'Combat Intelligence', execute → verify — the
+recovery counterpart of EngageCommand", e
+`CombatExecutionContracts.cs:38-49` aggiunge `ResourceGainConfirmed`
+come specchio di `ResourceCostConfirmed` nello stesso enum
+`CombatExecutionResult`. Ma il blocco che la riga cita — "nessun dato
+reale di danno/costo skill" nel senso di confermare un colpo sul
+bersaglio — resta intatto: `CombatExecutionContracts.cs:59-62` dichiara
+ancora oggi che `Mob.Status.Resources` non è popolato (stesso gap
+OCR/ONNX di AP-02); né `--engage` né `--recover` osservano mai il
+bersaglio, solo le risorse del player (`RecoverCommand.cs:161-166`
+rifiuta ogni `CombatActionKind` diverso da `UseConsumable`). Indipendente
+da `--recover`: la riga cita ancora `AP-05_A1_STATUS.md` ("A2+A4 non
+specificato, in attesa di una decisione") — citazione già superata da
+`--engage` stesso (commit `6e9b45d`, deciso in `fd9473b`), consegnato
+*prima* che questo aggiornamento venisse scritto ma mai riportato in
+questa tabella. `AP-05_STATUS.md` §8 dichiara il livello finale di AP-05
+`Integrated` (A1+A2+A3+A4, un difetto reale trovato e corretto da A5/A6).
+Per lo stesso criterio già usato alla riga 3 (Perception: `Integrated`
+sull'ambito vitali, bloccato sull'ambito visivo), lo stadio 8 va
+aggiornato a `Integrated, parziale`: l'ambito risorse-proprie
+(costo/guadagno via player vitals, due atti gemelli auditati) è
+`Integrated`; l'ambito bersaglio (danno confermato su un mob) resta
+bloccato, invariato.
+
+**Stadio 12 (Recovery) — riga da rivedere.** La frase esatta già in
+tabella, "nessun segnale strategico 'Recovery' valutato", resta vera
+oggi alla lettera: `StrategyPlanner.cs:23-26` porta lo stesso commento
+di AP-08 invariato ("`StrategicGoalKind.Recovery` needs a real
+'currently in combat' signal... not yet assessed"), e
+`AutoplayCommand.cs:45-47` conferma che `Recovery`/`Progression`/
+`Farming`/`Optimization` "have no assessor at all". `StrategyPlanner`
+non guadagna un `AssessRecoveryUrgency`: solo `Survival` (HP fraction),
+`QuestUrgency`, `Exploration` sono valutati, esattamente come ad AP-08.
+Ma sotto il nome `Survival` esiste ora un atto di recupero gameplay
+reale, automatico ed end-to-end (per quanto il termine "end-to-end" possa
+valere in questo ambiente): `AutoplayCommand.ExecuteOneCycle`
+(`AutoplayCommand.cs:219-241`, caso `StrategicGoalKind.Survival`)
+dispatcha `RecoverCommand.ExecuteOneRound` quando la Survival urgency è
+la più alta, senza che l'operatore nomini l'atto al momento
+dell'invocazione — lo stesso enum `AutoplayDispatch` chiama l'esito
+`Recovered` (`AutoplayCommand.cs:99-100`), non "SurvivalHandled". Questo
+è meccanicamente un comportamento di recovery reale, verificato
+(HP prima/dopo), integrato (`AP-08_STATUS.md`: livello finale
+`Integrated`) — ma resta guidato dalla sola soglia HP di `Survival`, mai
+da un segnale distinto "sono in combattimento adesso" che differenzi
+recovery da mera sopravvivenza generica. Stadio 12 va aggiornato a
+`Integrated, parziale`: il meccanismo di cura via consumabile innescato
+da soglia HP è `Integrated`; un segnale strategico `Recovery` distinto
+da `Survival` resta non valutato, invariato da `AP-08_A1_STATUS.md`.
+
+**Stadi 5-6 (Exploration/Navigation) — nessuna revisione di livello.**
+`AutoplayCommand.ExecuteOneCycle` dispatcha anche
+`ScoutCommand.ExecuteOneRound` (`AutoplayCommand.cs:192-217`) sotto
+`StrategicGoalKind.Exploration`, ma è lo stesso meccanismo già `Present`
+in tabella con un chiamante in più, non nuova evidenza di esecuzione
+contro un client reale — restano `Present`, invariati.
+
+**Stadi 1-4, 7, 9-11, 13-14.** Nessuna delle due consegne li tocca:
+`--recover`/`--autoplay` non scrivono su `ActionOutcomeLedgerEntry` né
+su `RuntimeEvent`/`SqliteEventJournal` (verificato: nessuna occorrenza
+in `RecoverCommand.cs`/`AutoplayCommand.cs`/`EngageCommand.cs`) — righe
+13 (Persistence) e 14 (Evidence) restano quelle già scritte. Le righe
+1-4, 7, 9-11 sono fuori dall'ambito di entrambe le consegne — invariate.
+
+**`OverallLevel`: invariato, resta `Present`.** Il livello più debole
+non cambia: gli stadi 5, 6, 7, 9, 10, 11 restano `Present` a prescindere
+dalla revisione di 8 e 12 — l'"anello debole" si sposta da otto stadi a
+sei, non sopra `Present`.
+
+**Prossimo passo A2+A4 per AP-10: verificato, resta assente — per un
+motivo più preciso di quello originale.** Il candidato ovvio che questo
+compito chiedeva di indagare — "uno script/comando che incateni
+davvero i comandi già consegnati in uno scenario end-to-end eseguibile
+in questo ambiente" — **esiste già**, non come lavoro AP-10 ma come
+`AutoplayCommand` stessa (AP-08): incatena `ScoutCommand`/`RecoverCommand`
+scelti da `StrategyPlanner` in un ciclo, esattamente la forma che un
+ipotetico A2+A4 di AP-10 costruirebbe. Scriverne un secondo dentro AP-10
+non produrrebbe certificazione aggiuntiva, solo un duplicato: il limite
+che impedisce la certificazione non è l'assenza di un orchestratore (che
+ora c'è), è che nessun ramo di `AutoplayCommand.RunWindows` gira senza
+`OperatingSystem.IsWindows()` vero, un processo client reale
+(`TryFindWindow`, `AutoplayCommand.cs:294`) e un `ClientMemorySession`
+attaccato (`AutoplayCommand.cs:300`) — tutti assenti in questo
+container Linux. Costruire un doppio con dipendenze finte violerebbe la
+Real-environment rule esattamente come l'esecuzione simulata che questa
+fase rifiuta dal §1. La conclusione originale di AP-10 tiene, confermata
+da un fatto nuovo (l'orchestratore esiste già altrove) invece che per
+sola assunzione: AP-10 resta senza un secondo passo di costruzione
+proprio, perché non è una fase di costruzione — e il primo candidato
+naturale a quel ruolo è già stato consegnato da AP-08.

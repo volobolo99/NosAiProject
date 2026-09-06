@@ -133,3 +133,87 @@ esplicitamente verdi prima di procedere).
 simulazione), stesso di ogni altra fase; il codice Knowledge/Memory
 preesistente resta al proprio livello già stabilito (testato, non
 cablato nel runtime).
+
+## AP-09/A2+A4 — indagine mirata
+
+**Persistenza**: pattern reale e riusabile in modo additivo.
+`src/NosAi.Storage/MapModelStore.cs` (AP-03) apre una connessione SQLite
+propria via `VolumeLocator`/`SqliteJournalOptions`, verifica
+`journal_mode`/`synchronous`/`busy_timeout` per lettura, non per
+assunzione (righe 173-189), crea una propria tabella dedicata
+(`map_models`, righe 165-171) e converte il dominio tramite DTO privati
+simmetrici in entrambe le direzioni (righe 218-324) — nessuna tabella
+condivisa, nessuna dipendenza dal journal Gate 1
+(`SqliteEventJournal`/`IEventJournal`, che serve solo le 11
+`PipelineStage` del percorso critico, `src/NosAi.Core/PipelineStage.cs:14-27`,
+non un ledger generico). Lo stesso schema si applica **additivamente** a
+`ActionOutcomeLedgerEntry`: una classe nuova nello stesso progetto, una
+tabella dedicata nuova (es. `action_outcome_ledger`, chiave `EntryId`),
+senza nemmeno lo strato DTO che `MapModelStore` ha dovuto costruire per
+`EquatableArray<T>`/`WorldFact<T>` — `ActionOutcomeLedgerEntry` non
+contiene né l'uno né l'altro (`Guid`/`ActionId`/`MemoryType`/
+`ActionOutcome`/`string`/`DateTime`, `ActionOutcomeLedger.cs:27-33`).
+Nessun meccanismo nuovo va inventato qui.
+
+**Registrazione automatica**: bloccata, per un fatto verificato per
+grep, non per assunzione. `new WorldAction(` non compare mai in `src/`
+— solo in `tests/NosAi.Core.Tests/WorldModel/PlanningContractsTests.cs:13,21`.
+Nessuno dei cinque comandi (`EngageCommand`, `RecoverCommand`,
+`AutoplayCommand`, `CollectCommand`, `ScoutCommand`) costruisce un
+`WorldAction`. Ciò che producono davvero, dopo ogni round, sono due tipi
+di evidenza propri e diversi da `WorldAction`: `CombatExecutionEvidence`
++ `CombatExecutionResult` (`EngageCommand`/`RecoverCommand`/
+`AutoplayCommand`-Survival, `CombatExecutionContracts.cs:86-93`) e
+`MovementExecutionEvidence` + `MovementExecutionResult`
+(`ScoutCommand`/`CollectCommand`/`AutoplayCommand`-Exploration,
+`MovementExecutionContracts.cs:13-28,51-57`). `ActionId` — "Identity of
+one recorded `WorldAction`" (`Identifiers.cs:107`) — non ha quindi mai un
+`WorldAction` reale a cui riferirsi in nessun ciclo runtime oggi.
+
+**La correlazione esiste, ma è parziale in modo strutturale, non solo
+assente per pigrizia.** `CombatVerificationProjector.Project`/
+`ProjectRecovery` (righe 61-98, 122-159) confermano
+`CombatExecutionResult.ResourceCostConfirmed`/`ResourceGainConfirmed`
+solo da una lettura vitali prima/dopo realmente cambiata — un mapping
+onesto verso `ActionOutcome.Succeeded` esiste. `NoResourceChangeObserved`
+(entrambe le letture arrivate, risorsa immobile, righe 93-95/154-156) è
+difendibile come `ActionOutcome.Failed`. Ma `CombatExecutionResult.Unobserved`
+(righe 70-77, 79-86, 130-137, 139-146: risorsa non osservabile per questo
+`Kind`, o lettura vitali mancante) e `.Aborted` (guard/keybind/gate hanno
+rifiutato l'atto prima ancora che partisse) non hanno **nessuna**
+destinazione onesta in `ActionOutcome`: un enum di sole tre voci
+(`InProgress`/`Succeeded`/`Failed`, `PlanningContracts.cs:13-18`)
+dichiaratamente privo di "Unknown" **per costruzione**, perché quella
+voce dovrebbe vivere nel wrapper — `WorldAction.Outcome` è infatti
+`WorldFact<ActionOutcome>` (`PlanningContracts.cs:31`), non
+`ActionOutcome` nudo. `ActionOutcomeLedgerEntry.Outcome`, invece, è
+`ActionOutcome` nudo (`ActionOutcomeLedger.cs:31`) — la stessa via di
+fuga che `WorldAction` si è data non è disponibile qui. E `Aborted`/
+`Unobserved` non sono casi rari da trascurare: sono esattamente ciò che
+`EngageCommand` documenta oggi come risultato sul gate di produzione
+armato (`EngageCommand.cs:55-58`, "a skill key press has no target
+pixel... refuses with the commit point's scope-required reason"), e
+`EngageCommand`/`RecoverCommand` già trattano `Aborted` come categoria
+propria con un codice di uscita diverso da successo/fallimento
+(`EngageCommand.cs:268-272`, `RecoverCommand.cs:278-282`) — coerente con
+l'idea che non sia nemmeno un'azione da registrare come "fallita". Lo
+stesso scollamento vale, identico, per
+`MovementExecutionResult.Unobserved`/`.Aborted`
+(`ScoutCommand`/`CollectCommand`).
+
+**Conclusione**: A2+A4 è genuinamente bloccato, non per assenza di
+wiring ma per un gap nel contratto stesso di AP-09/A1, su due punti
+distinti: (1) nessun produttore di `WorldAction` esiste in nessun ciclo
+runtime — un `ActionId` reale richiede un `WorldAction` reale, non un id
+sintetizzato ad hoc dentro un comando che nessun'altra parte del World
+Model legge o scrive mai; (2) anche accantonando (1),
+`ActionOutcomeLedgerEntry.Outcome` non ha spazio per rappresentare
+onestamente `Unobserved`/`Aborted`, che sono l'esito osservato oggi sulla
+maggioranza dei round reali (gate di produzione armato, nessuna arma
+input). Nessuna delle due è una decisione di wiring che un A2+A4 possa
+prendere da solo: sono estensioni del contratto fondante di
+`ActionOutcomeLedgerEntry`/`WorldAction` (bridging
+`CombatExecutionResult`/`MovementExecutionResult` verso `ActionOutcome`,
+ed eventualmente wrappare `Outcome` in `WorldFact<ActionOutcome>` come
+già fa `WorldAction`) — compito di Claude prima che un A2+A4 sia
+scrivibile, non avviato qui.
