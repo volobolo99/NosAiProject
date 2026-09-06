@@ -159,6 +159,39 @@ utile soprattutto per quest testuali in italiano e curve exp/drop%, ma
 richiede scraping HTML paginato dedicato (non un semplice download come
 Itempicker) e cross-check puntuale prima di qualunque uso non diagnostico.
 
+**Scraper reale eseguito (2026-09-06)**: `tools/scraping/nosapki_scraper.py`
+(nuovo, in questo repository) — client HTTP con User-Agent onesto e
+rate-limit cortese, gestione cookie CSRF Laravel per l'endpoint quest.
+Esportazione reale ottenuta (675 richieste HTTP totali, 68 fallite con
+`429 Too Many Requests` su 3 categorie item minori — onestamente riportate
+in `run_report.json`, non fabbricate come vuote):
+
+- Item in elenco: 5909 (32 categorie riuscite su 35; 3 rate-limitate).
+  Dettaglio scaricato per un campione di 80.
+- Mostri in elenco: 2236. Dettaglio scaricato per un campione di 77.
+  Compagni: 18. Pet: 283.
+- Mappe in elenco: 280, dettaglio scaricato per 275/280.
+- Skill in elenco: 1204.
+- **274 quest reali estratte** su 6 categorie (Atto 1-1, Atto 4, Principali,
+  SP 10, Cheongbi, Atto 8) via l'endpoint AJAX `POST /it/quests/get_category`.
+  Struttura ricca e in italiano: `quest_id`, `title`, `description`, `steps`,
+  `prizes` (con id/nome item reale), `references` (id/nome mostro o mappa
+  citati nel testo). Esempio verificato: quest 1500 "Dai la caccia ai Dander
+  piccoli" referenzia il mostro id 24 "Dander piccolo" e assegna il premio
+  item id 13 "Uniforme da allenamento".
+- Curve exp (`exp_level`/`exp_levelh`/`exp_job`/`exp_jobsp`) esportate per
+  intero.
+
+**Non ancora fatto**: nessun cross-check di questi ID quest/item/mostro
+contro i dati reali già importati dal client in questo progetto (serve un
+accesso a `GameReferenceDatabase` popolato da un client reale, non
+disponibile in questo sandbox) — trattare `quest_id`/i riferimenti come
+lead, non come chiave garantita per il grafo quest interno (`quest.dat`
+resta non decodificato, vedi voce sopra). L'export completo (JSON grezzi,
+~2.9 MB totali) non è vendorizzato nel repository per assenza di una
+licenza chiara sul sito sorgente — resta nella scratchpad di sessione;
+solo lo script scraper (riproducibile, riusabile) è stato committato.
+
 **Terza fonte registrata (stessa data), verificata a fondo il 2026-09-06**:
 **Itempicker** (`https://itempicker.atlagaming.eu/`, inglese) —
 database/lookup NosTale con sezioni Items/Skills/Monsters/Maps/VFX
