@@ -299,6 +299,32 @@ public static class Program
             return NosAi.Runtime.Tactical.RecoverCommand.Run(recoverSlot, recoverRounds);
         }
 
+        // The first operator command that chooses, cycle by cycle, which
+        // already-built act to attempt: reads the live vitals/position/map,
+        // asks StrategyPlanner which StrategicGoalKind is most urgent
+        // (Survival/Exploration only -- the other kinds have no honest signal
+        // today), and dispatches to RecoverCommand/ScoutCommand under its own
+        // commanded authority. It does not arm input and never emits an input
+        // event itself. --cycles is its own name (not --watch): --autoplay
+        // choosing what to do each cycle is different from --watch repeating
+        // the same operator-named act.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.AutoplayCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int cyclesFlag = Array.FindIndex(args, a => string.Equals(a, "--cycles", StringComparison.OrdinalIgnoreCase));
+            int cycles = cyclesFlag >= 0 && cyclesFlag + 1 < args.Length
+                         && int.TryParse(args[cyclesFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedCycles)
+                ? parsedCycles
+                : 1;
+
+            int slotFlag = Array.FindIndex(args, a => string.Equals(a, "--recover-slot", StringComparison.OrdinalIgnoreCase));
+            int? recoverSlot = slotFlag >= 0 && slotFlag + 1 < args.Length
+                               && int.TryParse(args[slotFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedSlot)
+                ? parsedSlot
+                : null;
+
+            return NosAi.Runtime.Tactical.AutoplayCommand.Run(cycles, recoverSlot);
+        }
+
         // Which intents the operator bound, and which the runtime can ask for
         // that are not bound. Non-zero when the file is missing or a required
         // prefix is uncovered. Does not write data/keybinds.json.
@@ -859,7 +885,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot"
         };
 
     private static int RunDxgiProbe()
