@@ -257,16 +257,15 @@ indipendente da AP-04, chiedilo esplicitamente.
   di candidati self-cast/buff. Possibile pista: tabella statistiche skill
   dal client (stesso genere di lavoro di `MapGridExtractor` per la
   geometria) — da verificare prima di specificarlo come task.
-- **Riconciliazione `KnowledgeScope`/lifecycle duplicati** —
-  `docs/agents/phases/AP-09/AP-09_A1_STATUS.md`: `KnowledgeScope` è
-  dichiarato identicamente sia in `NosAi.Core.Memory` che in
-  `NosAi.Core.Knowledge` (con una funzione di mappatura manuale tra i
-  due); il lifecycle è frammentato in due state machine diverse
-  (`Memory.KnowledgeStatus` a 7 stati vs `Knowledge.KnowledgeLifecycle`
-  a 7 stati diversi). Stesso genere del gap `DataSourceKind` già
-  segnalato da AP-01/A5. Non risolto: sistemare due enum già in uso da
-  codice e test reali richiede un comando dedicato con verifica di
-  regressione completa, non un tocco a margine di un'altra fase.
+- ~~**Riconciliazione `KnowledgeScope`/lifecycle duplicati**~~ —
+  **risolto** (Q-064/Q-065/Q-066, su richiesta esplicita dell'utente):
+  `KnowledgeScope` unificato su `Memory.KnowledgeScope`;
+  `KnowledgeStatus`/`KnowledgeLifecycle` confermati concetti distinti,
+  non fusi, ma la proiezione tra i due ora è totale ed esplicita
+  (`KnowledgeLifecycleProjection`, corregge un collasso silenzioso reale
+  su `Candidate`); `DataSourceKind` confermato duplicazione intenzionale
+  per bounded context, chiuso con `docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`
+  invece che con codice. Vedi `AP-09_A1_STATUS.md`.
 - **Categoria/slot di equipaggiamento e statistiche reali per item** —
   `docs/agents/phases/AP-07/AP-07_A1_STATUS.md`: `InventoryItem` (AP-01)
   non porta a quale `EquipmentSlot` un item corrisponde, né statistiche

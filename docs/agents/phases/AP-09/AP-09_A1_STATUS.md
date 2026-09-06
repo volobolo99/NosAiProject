@@ -44,26 +44,37 @@ resto del lavoro AP-00→AP-08: nessun ciclo runtime lo consuma ancora) e
 **completamente disconnesso** da `NosAi.Core.WorldModel.*` (nessun
 riferimento in nessuna delle due direzioni, prima di questo passaggio).
 
-## Un problema reale già presente, segnalato e non toccato
+## Un problema reale già presente — segnalato qui, risolto in un passaggio dedicato successivo
 
-`KnowledgeScope` è **duplicato**: dichiarato identicamente sia in
+`KnowledgeScope` era **duplicato**: dichiarato identicamente sia in
 `NosAi.Core.Memory` che in `NosAi.Core.Knowledge` (stessi 7 valori, due
 tipi distinti), con una funzione di mappatura manuale
 (`AdaptiveKnowledgeIngestionEngine.MapScope`,
 `KnowledgeCandidateStrategyProjector.MapScope`) per convertire tra le
-due. Il lifecycle è **frammentato in due state machine diverse**:
+due. Il lifecycle era **frammentato in due state machine diverse**:
 `Memory.KnowledgeStatus` (7 stati, quelli della DoD) vs
 `Knowledge.KnowledgeLifecycle` (7 stati ma **diversi**: Candidate/
 Tested/Validated/Verified/RevalidationRequired/Deprecated/Forbidden —
 manca "Discovered"/"Testing"/"Promising", aggiunge
 "RevalidationRequired"/"Forbidden"). Stessa natura del problema
 `DataSourceKind` già segnalato da AP-01/A5 (triplicazione tra
-`NosAi.Runtime.Contracts`, `NosAi.Core.Hardware`, `NosAi.Core.WorldModel`)
-— **non risolto qui**: sistemare due enum/lifecycle già in uso da codice
-e test reali senza un comando dedicato rischierebbe una rottura non
-richiesta ("non fare refactoring ampio di codice non correlato").
-Segnalato in `docs/agents/DEEPSEEK_TASKS.md` come candidato di
-riconciliazione futura.
+`NosAi.Runtime.Contracts`, `NosAi.Core.Hardware`, `NosAi.Core.WorldModel`).
+
+**Risolto** (indagine + riconciliazione dedicata, su richiesta esplicita
+dell'utente, sessione successiva a questa): vedi
+`docs/agents/EXECUTION_QUEUE.md` Q-064/Q-065/Q-066 e
+`docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`.
+In sintesi — `KnowledgeScope` unificato su `Memory.KnowledgeScope`
+(dichiarazione in `Knowledge` rimossa, entrambi i `MapScope` rimossi);
+`KnowledgeStatus`/`KnowledgeLifecycle` **non fusi** (indagine ha
+confermato: concetti distinti, insiemi di stati parzialmente esclusivi),
+ma la proiezione ad-hoc tra i due — che collassava silenziosamente
+`Deprecated`/`Forbidden`/`RevalidationRequired` su `Candidate`, un bug
+reale trovato dall'indagine — sostituita da
+`KnowledgeLifecycleProjection.ToKnowledgeStatus`, totale ed esplicita;
+`DataSourceKind` **non unificato**: confermato duplicazione intenzionale
+per bounded context (vincolo reale di `NosAi.Core.csproj` a zero
+dipendenze), chiuso con ADR-0026 invece che con codice.
 
 ## Consegnato in questo passaggio (estensione additiva, non duplicazione)
 

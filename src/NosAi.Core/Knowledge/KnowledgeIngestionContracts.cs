@@ -1,3 +1,5 @@
+using NosAi.Core.Memory;
+
 namespace NosAi.Core.Knowledge;
 
 public enum KnowledgeLifecycle
@@ -9,17 +11,6 @@ public enum KnowledgeLifecycle
     RevalidationRequired,
     Deprecated,
     Forbidden
-}
-
-public enum KnowledgeScope
-{
-    Universal,
-    Progression,
-    Class,
-    Specialist,
-    Context,
-    Character,
-    Environment
 }
 
 public readonly record struct KnowledgeSource(
@@ -36,6 +27,11 @@ public readonly record struct KnowledgeEvidence(
     double Confidence,
     bool IndependentlyObserved);
 
+/// <param name="Scope">
+/// <see cref="Memory.KnowledgeScope"/> (imported, not redeclared here): the
+/// two namespaces used to carry identical duplicate enums until this
+/// unification -- see docs/agents/phases/AP-09/AP-09_A1_STATUS.md.
+/// </param>
 public sealed record KnowledgeCandidate(
     string Id,
     string Topic,

@@ -96,18 +96,12 @@ public sealed class KnowledgeCandidateStrategyProjector
             ? 0d
             : candidate.Evidence.Average(x => Math.Clamp(x.Confidence, 0d, 1d));
 
-        var status = candidate.Lifecycle switch
-        {
-            KnowledgeLifecycle.Verified => KnowledgeStatus.Verified,
-            KnowledgeLifecycle.Validated => KnowledgeStatus.Validated,
-            KnowledgeLifecycle.Tested => KnowledgeStatus.Testing,
-            _ => KnowledgeStatus.Candidate
-        };
+        var status = KnowledgeLifecycleProjection.ToKnowledgeStatus(candidate.Lifecycle);
 
         return new KnowledgeEntry(
             candidate.Id,
             candidate.Topic,
-            MapScope(candidate.Scope),
+            candidate.Scope,
             status,
             candidate.Source.SourceType.Contains("community", StringComparison.OrdinalIgnoreCase)
                 ? KnowledgeProvenance.CommunityResearch
@@ -122,16 +116,4 @@ public sealed class KnowledgeCandidateStrategyProjector
                 : candidate.Evidence.Max(x => x.ObservedAtUtc),
             tags);
     }
-
-    private static Memory.KnowledgeScope MapScope(KnowledgeScope scope) => scope switch
-    {
-        KnowledgeScope.Universal => Memory.KnowledgeScope.Universal,
-        KnowledgeScope.Progression => Memory.KnowledgeScope.Progression,
-        KnowledgeScope.Class => Memory.KnowledgeScope.Class,
-        KnowledgeScope.Specialist => Memory.KnowledgeScope.Specialist,
-        KnowledgeScope.Context => Memory.KnowledgeScope.Context,
-        KnowledgeScope.Character => Memory.KnowledgeScope.Character,
-        KnowledgeScope.Environment => Memory.KnowledgeScope.Environment,
-        _ => Memory.KnowledgeScope.Context
-    };
 }
