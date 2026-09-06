@@ -880,6 +880,36 @@ public static class Program
             : null;
         fusion?.Start(cts.Token);
 
+        // Runs once on every real startup, not only when an operator remembers
+        // to run --client-updates by hand: notices whether the installed
+        // client changed since this machine last recorded it. Silent when
+        // nothing changed, so an ordinary startup is not buried under an
+        // always-identical report; a clear notice only when it actually
+        // finds something. Absence of the NOSAI-SSD volume or of the client
+        // itself is not fatal here -- ReferenceInfoCommand/--client-updates
+        // already treat both as a named, non-fatal state, and startup must
+        // not refuse to serve Gate 1 over a reference-catalogue concern.
+        if (GameReferenceLocator.TryFindDedicatedDataDirectory(out string referenceDataDirectory, out _))
+        {
+            try
+            {
+                GameReferenceLocation referenceLocation = GameReferenceLocator.LocateIn(referenceDataDirectory);
+                using GameReferenceDatabase referenceDatabase = GameReferenceDatabase.Open(referenceLocation.Path!);
+                ClientUpdateReport clientUpdate = ClientUpdateCommand.RunDetailed(
+                    referenceDatabase, ReferenceImporter.DefaultDataDirectory);
+                if (clientUpdate.AnyChange)
+                {
+                    Console.WriteLine("=== Aggiornamento client rilevato ===");
+                    Console.Write(clientUpdate.Text);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                           or Microsoft.Data.Sqlite.SqliteException)
+            {
+                logger.Error("Controllo aggiornamenti client fallito all'avvio; il resto dell'avvio prosegue.", ex);
+            }
+        }
+
         var snapshot = host.Capture();
         Console.WriteLine("NosAi Runtime 1.0 Beta — Gate 1");
         Console.WriteLine($"Health: {host.Health}");

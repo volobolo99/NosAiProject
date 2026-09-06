@@ -23,6 +23,14 @@ namespace NosAi.Runtime.Observability;
 /// after each client update" into an actual answer rather than a manual
 /// diff nobody performs.
 /// </remarks>
+/// <summary>
+/// One run's outcome: the same formatted text <see cref="ClientUpdateCommand.Run(GameReferenceDatabase, string)"/>
+/// returns, plus whether anything actually changed -- so a caller that
+/// only cares about the second question (the automatic startup check)
+/// never has to re-parse the first.
+/// </summary>
+public sealed record ClientUpdateReport(string Text, bool AnyChange);
+
 public static class ClientUpdateCommand
 {
     /// <summary>The operator flag.</summary>
@@ -48,7 +56,16 @@ public static class ClientUpdateCommand
     /// The testable core: given an already-open database and a client
     /// directory, refreshes both channels and formats what changed.
     /// </summary>
-    public static string Run(GameReferenceDatabase database, string clientDataDirectory)
+    public static string Run(GameReferenceDatabase database, string clientDataDirectory) =>
+        RunDetailed(database, clientDataDirectory).Text;
+
+    /// <summary>
+    /// Same refresh as <see cref="Run(GameReferenceDatabase, string)"/>, also
+    /// reporting whether anything changed -- what the automatic startup
+    /// check (<c>Program.Main</c>) needs to decide whether to say anything
+    /// at all.
+    /// </summary>
+    public static ClientUpdateReport RunDetailed(GameReferenceDatabase database, string clientDataDirectory)
     {
         ArgumentNullException.ThrowIfNull(database);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientDataDirectory);
@@ -59,10 +76,11 @@ public static class ClientUpdateCommand
         if (!importer.ClientAvailable)
         {
             text.AppendLine($"client: non trovato in {clientDataDirectory}");
-            return text.ToString();
+            return new ClientUpdateReport(text.ToString(), AnyChange: false);
         }
 
         text.AppendLine($"client: {clientDataDirectory}");
+        bool anyChange = false;
 
         ImportReport report = importer.ImportAll(database);
         foreach (ImportOutcome outcome in report.Outcomes)
@@ -74,18 +92,20 @@ public static class ClientUpdateCommand
             }
 
             ReferenceDiff diff = outcome.Diff;
+            anyChange |= diff.AnyChange;
             text.AppendLine(
                 $"  {outcome.Table.Kind}: +{diff.Added} ~{diff.Changed} -{diff.Removed} ={diff.Unchanged}");
         }
 
         IReadOnlyList<ClientInventoryEntry> files = ClientDirectoryScanner.Scan(clientDataDirectory);
         ReferenceDiff inventoryDiff = database.ImportClientInventory(files);
+        anyChange |= inventoryDiff.AnyChange;
         text.AppendLine(
             $"inventario file: {files.Count} file, "
             + $"+{inventoryDiff.Added} ~{inventoryDiff.Changed} -{inventoryDiff.Removed} ={inventoryDiff.Unchanged}");
         foreach (string sample in inventoryDiff.Samples)
             text.AppendLine($"    {sample}");
 
-        return text.ToString();
+        return new ClientUpdateReport(text.ToString(), anyChange);
     }
 }
