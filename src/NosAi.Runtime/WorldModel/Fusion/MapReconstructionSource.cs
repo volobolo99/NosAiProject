@@ -160,6 +160,51 @@ public sealed class MapReconstructionSource : IDisposable
         return reconstructed;
     }
 
+    /// <summary>
+    /// Merges one freshly-detected <see cref="Portal"/> into the map it was
+    /// observed on (<see cref="Portal.SourceMap"/>) -- independent of
+    /// whichever map <see cref="Resolve"/> is resolving this same cycle. A
+    /// crossing is detected on the cycle where the player has already
+    /// arrived on the destination map, so by the time a caller calls this
+    /// method, this same cycle's own <see cref="Resolve"/> call (if any)
+    /// carries the destination map's id, never the source map's -- this
+    /// method is the only way to record evidence for a map the caller has
+    /// already left.
+    /// </summary>
+    /// <param name="portal">
+    /// The portal to merge, exactly as
+    /// <see cref="NosAi.Core.WorldModel.Reconstruction.PortalCrossingDetector.DetectCrossing"/>
+    /// already derived it. This method never re-derives or second-guesses it.
+    /// </param>
+    /// <param name="nowUtc">The instant this call runs at.</param>
+    public void RecordPortalCrossing(Portal portal, DateTime nowUtc)
+    {
+        ArgumentNullException.ThrowIfNull(portal);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        MapId sourceMap = portal.SourceMap;
+        MapModel baseline = _cachedMapId is { } cachedId && cachedId.Equals(sourceMap) && _cachedResult is { } cached
+            ? cached
+            : LoadPersistedOrUnknown(sourceMap, nowUtc);
+
+        var batch = new MapObservationBatch(
+            sourceMap,
+            EquatableArray<Tile>.Empty,
+            EquatableArray<Portal>.From(new[] { portal }),
+            "portal_crossing_observed",
+            nowUtc);
+
+        MapModel merged = MapReconstructionFusion.Merge(baseline, batch, nowUtc);
+        PersistIfPossible(merged);
+
+        // Only refresh the in-memory cache when it still belongs to the same
+        // map this portal was observed on -- Resolve's own cache for
+        // whichever map the caller is CURRENTLY on (the destination) must
+        // never be overwritten by a fact about the map the caller just left.
+        if (_cachedMapId is { } cid && cid.Equals(sourceMap))
+            _cachedResult = merged;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

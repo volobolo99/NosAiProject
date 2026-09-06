@@ -3,6 +3,7 @@ using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.Core.WorldModel.Exploration;
+using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.Core.WorldModel.Strategy;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
@@ -342,6 +343,14 @@ public static class AutoplayCommand
             ExplorationFootprint footprint = ExplorationFootprint.Empty(
                 new MapId("unknown-map"), "autoplay_command_session_start");
 
+            // Tracks the previous cycle's (map, position) reading so a map
+            // change between two consecutive cycles can be recognised as a
+            // portal crossing (PortalCrossingDetector) -- null before the
+            // first cycle runs. Independent of `footprint`: this is about
+            // recording a fact for the map just left, not the one just
+            // entered.
+            MapPositionReading? previousReading = null;
+
             string keybindsPath = KeybindsCheck.ResolvePath();
             if (!KeybindMap.TryLoad(keybindsPath, out KeybindMap keybinds, out string? loadFailure))
             {
@@ -387,6 +396,16 @@ public static class AutoplayCommand
 
                 DateTime now = TimeProvider.System.GetUtcNow().UtcDateTime;
                 var currentMapId = new MapId(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"map-{mapId}"));
+
+                var currentReading = new MapPositionReading(currentMapId, new WorldPosition(player.X, player.Y), now);
+                if (previousReading is { } previous)
+                {
+                    Portal? crossing = PortalCrossingDetector.DetectCrossing(previous, currentReading);
+                    if (crossing is not null)
+                        mapReconstruction.RecordPortalCrossing(crossing, now);
+                }
+                previousReading = currentReading;
+
                 if (!footprint.MapId.Equals(currentMapId))
                 {
                     footprint = ExplorationFootprint.Empty(currentMapId, "autoplay_command_session_start", now);
