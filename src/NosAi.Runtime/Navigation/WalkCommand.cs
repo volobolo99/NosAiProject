@@ -157,6 +157,14 @@ public static class WalkCommand
     /// the executor does not expose it; live emission still goes only through
     /// <see cref="SingleStepExecutor.Step"/>.
     /// </param>
+    /// <param name="onStepVerified">
+    /// Called once per emitted step, immediately after the verifier's outcome is
+    /// noted, with the cell that was requested (the verifier's own record only
+    /// carries what was observed, not what was asked for). A step a guard
+    /// refused never reaches this callback -- nothing was emitted. Optional:
+    /// <see langword="null"/> leaves every existing caller's behaviour exactly
+    /// unchanged.
+    /// </param>
     public static WalkRun Execute(
         MapPoint destination,
         MapPoint origin,
@@ -169,7 +177,8 @@ public static class WalkCommand
         Func<PositionReading?> readPosition,
         bool dryRun,
         string sessionId = OperatorSessionId,
-        DateTime? timestampUtc = null)
+        DateTime? timestampUtc = null,
+        Action<MapPoint, MovementVerification>? onStepVerified = null)
     {
         ArgumentNullException.ThrowIfNull(controller);
         ArgumentNullException.ThrowIfNull(chain);
@@ -321,6 +330,7 @@ public static class WalkCommand
                         in request, report, in authority, sessionId, atUtc));
                     MovementVerification verification = report.Verification;
                     controller.NoteStepOutcome(in verification);
+                    onStepVerified?.Invoke(to, verification);
 
                     if (report.Emitted)
                     {
