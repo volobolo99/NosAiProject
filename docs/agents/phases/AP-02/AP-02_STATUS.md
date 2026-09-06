@@ -237,9 +237,22 @@ dotnet test .../NosAi.Runtime.Tests.csproj → 2062/2120, 0 falliti, 58 skip
 dotnet test .../NosAi.Core.Tests.csproj → 630/630, 0 falliti
 ```
 
+**Contratto `VisualObservation` esteso (A1, Claude)**: nuovo campo
+`HasDialogWindow: ClassifiedValue<bool>`, stesso schema di `HasTarget`.
+`ScreenVitalsCapture.Capture()` lo popola con
+`Unknown("dialog_window_composer_not_wired_in_this_pass")` — stesso
+placeholder onesto che `HasTarget` stesso portava prima di Q-067. Due
+call site di test (`WorldModelFusionLoopVisualWiringTests`,
+`WorldModelFusionLoopMapWiringTests`) e `VisualObservationTests`
+aggiornati per simmetria. `VisualObservationFusion.FuseVitals` resta
+scoped ai soli vitali (dichiarato esplicitamente in quel file) — questo
+campo non è ancora fuso nel `WorldModelSnapshot`, stessa situazione già
+accettata per `HasTarget`.
+
 **Livello**: `Present` — contratti e algoritmo puri, testati, compilano
-puliti. Non `Integrated`: nessun chiamante runtime ancora (wiring in
-`ScreenVitalsCapture`/`Program.cs` da specificare per DeepSeek, stesso
-schema di Q-067). Non `Verified`: nessun client reale per confermare
-`DefaultPresentThreshold` contro un vero pannello NosTale — obbligo
+puliti. Non `Integrated`: nessun chiamante runtime ancora compone un
+valore reale (wiring in `ScreenVitalsCapture`/`Program.cs` specificato
+per DeepSeek in Q-074, stesso schema di Q-067). Non `Verified`: nessun
+client reale per confermare `DefaultPresentThreshold` contro un vero
+pannello NosTale — obbligo
 esplicito prima di fidarsi del risultato in produzione.

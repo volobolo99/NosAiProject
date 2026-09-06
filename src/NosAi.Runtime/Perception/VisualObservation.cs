@@ -21,11 +21,18 @@ namespace NosAi.Runtime.Perception;
 /// <param name="Frame">The tracked-entity result of this cycle's vision pipeline run. <see cref="PerceptionResult.FrameAcquired"/> false means nothing below should be trusted as current.</param>
 /// <param name="Vitals">HUD-derived HP/MP (bar fill and, once a glyph atlas is trained, numeric current/maximum). Always DERIVED or UNKNOWN per <see cref="ScreenVitalReader"/>'s own contract -- never LIVE.</param>
 /// <param name="HasTarget">Screen-established target-frame presence (ADR-0018), already classified by <see cref="TargetStateComposer.Compose"/>.</param>
+/// <param name="HasDialogWindow">
+/// Screen-established dialog-window-panel presence, already classified by
+/// <see cref="DialogWindowStateComposer.Compose"/>. No wire-side channel
+/// exists to reconcile this against (see that composer's own remarks) --
+/// the screen is the only source there is for this fact.
+/// </param>
 /// <param name="ObservedAtUtc">The instant this cycle's frame was processed.</param>
 public sealed record VisualObservation(
     PerceptionResult Frame,
     ScreenVitalObservation Vitals,
     NosAi.Runtime.Contracts.ClassifiedValue<bool> HasTarget,
+    NosAi.Runtime.Contracts.ClassifiedValue<bool> HasDialogWindow,
     DateTime ObservedAtUtc)
 {
     /// <summary>Nothing was read this cycle (no frame, capture unavailable, ...). Every field says why -- never a fabricated reading.</summary>
@@ -55,6 +62,7 @@ public sealed record VisualObservation(
                 HpGlyphs: 0,
                 MpGlyphs: 0,
                 TrainedGlyphs: 0),
+            NosAi.Runtime.Contracts.ClassifiedValue<bool>.Unknown(reason),
             NosAi.Runtime.Contracts.ClassifiedValue<bool>.Unknown(reason),
             at);
     }
