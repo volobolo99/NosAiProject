@@ -786,8 +786,24 @@ public static class Program
             return processId.HasValue ? processId.Value : null;
         }
 
+        // The target-frame calibration (ADR-0018) is loaded once, when the same
+        // --fuse-world-model flag that builds the visual capture is on (so no
+        // file I/O runs when it is off). A missing/absent file loads as
+        // Uncalibrated -- the state before the operator has aimed the reader --
+        // which TargetStateComposer reports honestly as
+        // target_roi_not_calibrated until HudProbe's workflow writes one.
+        NosAi.Runtime.Perception.TargetRoiCalibration targetCalibration = NosAi.Runtime.Perception.TargetRoiCalibration.Uncalibrated;
+        if (options.FuseWorldModel)
+        {
+            string repo = NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot(Environment.CurrentDirectory)
+                          ?? NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot()
+                          ?? Directory.GetCurrentDirectory();
+            targetCalibration = NosAi.Runtime.Perception.TargetRoiCalibration.Load(
+                Path.Combine(repo, NosAi.Runtime.Perception.TargetRoiCalibration.RelativePath), out _);
+        }
+
         using NosAi.Runtime.Perception.ScreenVitalsCapture? visualCapture = options.FuseWorldModel
-            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId)
+            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId, targetCalibration: targetCalibration)
             : null;
 
         // AP-03/A4: when the same flag is on, the fusion loop also gets a real

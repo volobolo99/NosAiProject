@@ -20,15 +20,17 @@ namespace NosAi.Runtime.Perception;
 /// a placeholder: the day a trained decoder ships, only that one line changes.
 /// </para>
 /// <para>
-/// <b>One frame, two readers.</b> <see cref="PerceptionPipeline"/> owns
+/// <b>One frame, three readers.</b> <see cref="PerceptionPipeline"/> owns
 /// acquisition (freshness policy, ROI segmentation, detect/track) but does not
 /// expose the raw frame it consumed, and <see cref="ScreenVitalReader"/> needs
-/// that same frame to measure HUD bars. Re-acquiring a second frame from DXGI
-/// for the vitals reader would cost a second real capture per cycle and could
-/// legitimately read a different instant of the screen than the entities the
-/// pipeline just produced. <see cref="RecordingFrameSource"/> instead wraps the
+/// that same frame to measure HUD bars, as does the target-frame read wired
+/// into <see cref="Capture"/> through <see cref="ScreenTargetFrameSource"/>
+/// (AP-02/A2+A4). Re-acquiring another frame from DXGI for either reader would
+/// cost a second real capture per cycle and could legitimately read a different
+/// instant of the screen than the entities the pipeline just produced.
+/// <see cref="RecordingFrameSource"/> instead wraps the
 /// single DXGI source and remembers the last frame it actually handed out, so
-/// both readers see exactly the same pixels from exactly one acquisition.
+/// all readers see exactly the same pixels from exactly one acquisition.
 /// </para>
 /// <para>
 /// <b>Fail-closed at every step.</b> No process id, no located client window,
@@ -75,6 +77,8 @@ public sealed class ScreenVitalsCapture : IDisposable
 
     private readonly Func<int?> _processId;
     private readonly ScreenVitalReader _reader;
+    private readonly TargetRoiCalibration _targetCalibration;
+    private readonly IPlayerAttackObserver? _wire;
     private readonly uint _adapterIndex;
     private readonly uint _outputIndex;
     private readonly uint _acquireTimeoutMs;
@@ -105,6 +109,19 @@ public sealed class ScreenVitalsCapture : IDisposable
     /// this repository, so numeric HP/MP stay honestly UNKNOWN; bar-fill still
     /// works without one.
     /// </param>
+    /// <param name="targetCalibration">
+    /// Where the target frame sits on this operator's client (ADR-0018). Defaults to
+    /// <see cref="TargetRoiCalibration.Uncalibrated"/>, which
+    /// <see cref="TargetStateComposer.Compose"/> already reports honestly as
+    /// <c>target_roi_not_calibrated</c> rather than a confident wrong answer -- see
+    /// <c>HudProbe</c> for how an operator calibrates one.
+    /// </param>
+    /// <param name="wire">
+    /// The wire's side of ADR-0018, used only to contradict a screen reading that
+    /// says no target. Null (the default) means no contradiction check is available
+    /// at this composition site today -- the screen stands alone, the same accepted
+    /// shape <c>TargetAwareGameplayProvider</c> already uses for the same reason.
+    /// </param>
     /// <param name="adapterIndex">Forwarded to <see cref="DxgiDesktopDuplicationSource.TryCreate"/>.</param>
     /// <param name="outputIndex">Forwarded to <see cref="DxgiDesktopDuplicationSource.TryCreate"/>.</param>
     /// <param name="acquireTimeoutMs">Forwarded to <see cref="DxgiDesktopDuplicationSource.TryCreate"/>.</param>
@@ -112,6 +129,8 @@ public sealed class ScreenVitalsCapture : IDisposable
     public ScreenVitalsCapture(
         Func<int?> processId,
         ScreenVitalReader? reader = null,
+        TargetRoiCalibration? targetCalibration = null,
+        IPlayerAttackObserver? wire = null,
         uint adapterIndex = 0,
         uint outputIndex = 0,
         uint acquireTimeoutMs = 250,
@@ -119,6 +138,8 @@ public sealed class ScreenVitalsCapture : IDisposable
     {
         _processId = processId ?? throw new ArgumentNullException(nameof(processId));
         _reader = reader ?? new ScreenVitalReader();
+        _targetCalibration = targetCalibration ?? TargetRoiCalibration.Uncalibrated;
+        _wire = wire;
         _adapterIndex = adapterIndex;
         _outputIndex = outputIndex;
         _acquireTimeoutMs = acquireTimeoutMs;
@@ -174,13 +195,22 @@ public sealed class ScreenVitalsCapture : IDisposable
         _previousHp = vitals.Hp;
         _previousMp = vitals.Mp;
 
-        // TargetStateComposer.Compose needs a calibrated TargetRoiCalibration
-        // that nothing in this wiring pass establishes -- composing it here
-        // with an uncalibrated/default calibration would be exactly the
-        // "confident wrong answer" ADR-0018 was written to prevent. Honest
-        // UNKNOWN with a specific reason, same treatment as the rest of this
-        // method's failure modes.
-        var hasTarget = ClassifiedValue<bool>.Unknown("target_state_composer_not_wired_in_this_pass");
+        // ScreenTargetFrameSource reads the same already-acquired `frame` (via
+        // SingleFrameSource, never a second real DXGI acquisition -- see the
+        // class remarks, "One frame, two readers") at the operator-calibrated
+        // ROI, and TargetStateComposer composes the result against the wire
+        // side, when one is available. An uncalibrated TargetRoiCalibration
+        // (the default) still produces an honest
+        // Unknown(NotCalibratedReason) here -- this wiring does not require
+        // calibration to exist, only makes real calibration take effect once
+        // it does.
+        var targetFrames = new ScreenTargetFrameSource(
+            new SingleFrameSource(frame, _recordingSource!.Source),
+            _targetCalibration,
+            () => window.ClientArea);
+        TargetFrameObservation screenTarget = targetFrames.Read();
+        ClassifiedValue<bool> hasTarget = TargetStateComposer.Compose(
+            _targetCalibration, screenTarget, _wire?.LastPlayerAttackAtUtc);
 
         return new VisualObservation(result, vitals, hasTarget, frame.CapturedUtc);
     }
@@ -252,6 +282,36 @@ public sealed class ScreenVitalsCapture : IDisposable
             bool acquired = _inner.TryAcquire(out frame);
             if (acquired) LastFrame = frame;
             return acquired;
+        }
+    }
+
+    /// <summary>
+    /// Wraps one already-acquired frame as an <see cref="IFrameSource"/> that
+    /// returns exactly that frame on every <see cref="TryAcquire"/> call,
+    /// never a fresh real capture. Exists so <see cref="ScreenTargetFrameSource"/>
+    /// reads the exact same pixels <see cref="PerceptionPipeline"/> and
+    /// <see cref="ScreenVitalReader"/> already consumed this cycle -- see the
+    /// class remarks, "One frame, two readers" (now three): a second real
+    /// DXGI acquisition per cycle would cost double the capture and could
+    /// legitimately observe a different instant of the screen than the
+    /// entities/vitals this cycle already produced.
+    /// </summary>
+    private sealed class SingleFrameSource : IFrameSource
+    {
+        private readonly CaptureFrame _frame;
+
+        public SingleFrameSource(CaptureFrame frame, DataSourceKind source)
+        {
+            _frame = frame;
+            Source = source;
+        }
+
+        public DataSourceKind Source { get; }
+
+        public bool TryAcquire(out CaptureFrame frame)
+        {
+            frame = _frame;
+            return true;
         }
     }
 }

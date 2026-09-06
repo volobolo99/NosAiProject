@@ -145,4 +145,64 @@ public sealed class ScreenVitalsCaptureTests
         Assert.Null(exWith);
         Assert.Null(exWithout);
     }
+
+    // ------------------------------------------------------------- target wiring
+    //
+    // The new TargetRoiCalibration/IPlayerAttackObserver constructor parameters
+    // are optional and additive; these regression tests prove they are inert
+    // until the frame-acquired branch of Capture() is actually reached (which
+    // this sandbox cannot reach -- no process id and, on this host, no Windows
+    // -- the same declared limitation every other test in this file states).
+
+    private sealed class FixedAttackObserver : IPlayerAttackObserver
+    {
+        public DateTime? LastPlayerAttackAtUtc { get; }
+
+        public FixedAttackObserver(DateTime? lastAttackAtUtc) => LastPlayerAttackAtUtc = lastAttackAtUtc;
+    }
+
+    [Fact]
+    public void Capture_WithNoProcessId_ReturnsUnobserved_EvenWithATargetCalibrationSupplied()
+    {
+        TargetRoiCalibration confirmed = TargetRoiCalibration.Confirmed(
+            0.1, 0.1, 0.2, 0.2, 1920, 1080, DateTime.UtcNow);
+        using var capture = new ScreenVitalsCapture(
+            () => null,
+            targetCalibration: confirmed,
+            clock: () => T0);
+
+        VisualObservation observation = capture.Capture();
+
+        // The confirmed calibration changes nothing on the fail-closed path:
+        // no process id still wins, exactly like the no-calibration test.
+        Assert.False(observation.Frame.FrameAcquired);
+        Assert.Equal(ScreenVitalsCapture.NoProcessIdReason, observation.Frame.UnavailableReason);
+        Assert.False(observation.HasTarget.HasValue);
+        Assert.Equal(ScreenVitalsCapture.NoProcessIdReason, observation.HasTarget.FailureReason);
+        Assert.Equal(T0, observation.ObservedAtUtc);
+    }
+
+    [Fact]
+    public void Constructor_AcceptsATargetCalibrationAndAWireObserver_WithoutThrowing()
+    {
+        TargetRoiCalibration confirmed = TargetRoiCalibration.Confirmed(
+            0.1, 0.1, 0.2, 0.2, 1920, 1080, DateTime.UtcNow);
+        using var capture = new ScreenVitalsCapture(
+            () => 4242,
+            targetCalibration: confirmed,
+            wire: new FixedAttackObserver(T0.AddMinutes(-1)),
+            clock: () => T0);
+
+        // On every host this process-id path fails closed with an honest
+        // Unobserved (on this sandbox at the Windows-only window lookup, on a
+        // Windows host at the client-window location) -- the new parameters
+        // never throw and never change the ordinary fail-closed reasons. The
+        // specific reason is host-dependent; what is host-independent is that
+        // nothing escapes and no frame is fabricated.
+        VisualObservation observation = capture.Capture();
+
+        Assert.False(observation.Frame.FrameAcquired);
+        Assert.False(observation.HasTarget.HasValue);
+        Assert.Equal(T0, observation.ObservedAtUtc);
+    }
 }
