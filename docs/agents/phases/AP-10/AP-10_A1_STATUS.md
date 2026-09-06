@@ -146,31 +146,26 @@ aggiornato a `Integrated, parziale`: l'ambito risorse-proprie
 `Integrated`; l'ambito bersaglio (danno confermato su un mob) resta
 bloccato, invariato.
 
-**Stadio 12 (Recovery) — riga da rivedere.** La frase esatta già in
-tabella, "nessun segnale strategico 'Recovery' valutato", resta vera
-oggi alla lettera: `StrategyPlanner.cs:23-26` porta lo stesso commento
-di AP-08 invariato ("`StrategicGoalKind.Recovery` needs a real
-'currently in combat' signal... not yet assessed"), e
-`AutoplayCommand.cs:45-47` conferma che `Recovery`/`Progression`/
-`Farming`/`Optimization` "have no assessor at all". `StrategyPlanner`
-non guadagna un `AssessRecoveryUrgency`: solo `Survival` (HP fraction),
-`QuestUrgency`, `Exploration` sono valutati, esattamente come ad AP-08.
-Ma sotto il nome `Survival` esiste ora un atto di recupero gameplay
-reale, automatico ed end-to-end (per quanto il termine "end-to-end" possa
-valere in questo ambiente): `AutoplayCommand.ExecuteOneCycle`
-(`AutoplayCommand.cs:219-241`, caso `StrategicGoalKind.Survival`)
-dispatcha `RecoverCommand.ExecuteOneRound` quando la Survival urgency è
-la più alta, senza che l'operatore nomini l'atto al momento
-dell'invocazione — lo stesso enum `AutoplayDispatch` chiama l'esito
-`Recovered` (`AutoplayCommand.cs:99-100`), non "SurvivalHandled". Questo
-è meccanicamente un comportamento di recovery reale, verificato
-(HP prima/dopo), integrato (`AP-08_STATUS.md`: livello finale
-`Integrated`) — ma resta guidato dalla sola soglia HP di `Survival`, mai
-da un segnale distinto "sono in combattimento adesso" che differenzi
-recovery da mera sopravvivenza generica. Stadio 12 va aggiornato a
-`Integrated, parziale`: il meccanismo di cura via consumabile innescato
-da soglia HP è `Integrated`; un segnale strategico `Recovery` distinto
-da `Survival` resta non valutato, invariato da `AP-08_A1_STATUS.md`.
+**Stadio 12 (Recovery) — aggiornato (Q-092, 2026-09-06).** La frase
+originaria di questa riga ("nessun segnale strategico 'Recovery'
+valutato") non è più vera: `CombatRecencyTracker`
+(`src/NosAi.Core/WorldModel/Strategy/CombatRecencyTracker.cs`) deriva un
+`WorldFact<bool>` "in combattimento adesso" da un calo HP recente su due
+letture consecutive, e `StrategyPlanner.AssessRecoveryUrgency` usa quel
+fatto per produrre un segnale `Recovery` distinto da `Survival` (stessa
+formula di urgenza, ma `null` finché `inCombat.Value == true` — non
+duplica più il segnale di Survival sotto altro nome).
+`AutoplayCommand.RunWindows` traccia `CombatRecencyTracker.State` per
+ciclo e aggiunge `recovery` alla lista dei segnali prima di `survival`;
+`ExecuteOneCycle` dispatcha `StrategicGoalKind.Recovery` con lo stesso
+meccanismo di `Survival` (`DispatchRecovery` condiviso,
+`RecoverCommand.ExecuteOneRound`), riportando comunque `Recovered` come
+esito — le due strade restano la stessa azione fisica, ma ora sono
+selezionate da fatti distinti, non dalla sola soglia HP di Survival.
+Stadio 12 va aggiornato a `Integrated` (contratto+algoritmo+wiring
+completi, build/test verdi — vedi Q-092 in `EXECUTION_QUEUE.md`), non
+`Verified`: nessun operatore ha ancora osservato un dispatch Recovery
+distinto da Survival su un client reale.
 
 **Stadi 5-6 (Exploration/Navigation) — nessuna revisione di livello.**
 `AutoplayCommand.ExecuteOneCycle` dispatcha anche

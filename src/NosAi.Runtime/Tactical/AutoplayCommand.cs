@@ -502,13 +502,13 @@ public static class AutoplayCommand
                 // Recovery before Survival is deliberate, not arbitrary:
                 // SelectStrategicPlan breaks a tied Urgency by picking whichever
                 // signal appears first in the list, and the two compute the
-                // identical 1 - fraction urgency for the same HP reading. By
-                // construction they are never both non-null at once
-                // (AssessRecoveryUrgency returns null whenever inCombat.Value is
-                // true, the only regime where Survival's own signal matters) --
-                // but recovery first keeps the selection deterministic and
-                // explicit about intent (out of combat, the more specific signal
-                // wins) rather than relying on list-order being accidental.
+                // identical 1 - fraction urgency for the same HP reading.
+                // Whenever the character is out of combat with known HP below
+                // full, BOTH fire at once with the same Urgency -- this is the
+                // common case, not an edge case -- so the list order is what
+                // actually decides the outcome: recovery first makes Recovery
+                // win that tie, which is the intended behaviour (out of combat,
+                // the more specific signal wins over the general one).
                 var signals = new List<StrategicSignal>(3);
                 if (recovery is not null) signals.Add(recovery);
                 if (survival is not null) signals.Add(survival);

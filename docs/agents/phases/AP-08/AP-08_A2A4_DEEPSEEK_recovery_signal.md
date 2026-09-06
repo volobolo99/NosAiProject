@@ -177,12 +177,14 @@ each iteration) is the precedent to copy.
   (`StrategyPlanner.cs`, already tested,
   `SelectStrategicPlan_TiedUrgency_PicksTheFirstOne`). `Recovery` and
   `Survival` compute the identical `1 - fraction` urgency for the same HP
-  reading, and by construction they are never both non-null at once
-  (`AssessRecoveryUrgency` returns `null` whenever `inCombat.Value == true`,
-  which is the only regime where Survival's own signal matters) — but
-  putting `recovery` first keeps the selection deterministic and explicit
-  about intent (out of combat, the more specific signal wins) rather than
-  relying on list-order being merely accidental. Do not reorder this
+  reading. **Correction (post-delivery independent audit):** an earlier
+  draft of this rationale claimed the two are "by construction never both
+  non-null at once" — that is false: whenever the character is out of
+  combat with known HP below full, both fire at once with the same
+  `Urgency` (this is the common case, not an edge case). The list order is
+  exactly what decides the outcome in that case: putting `recovery` first
+  makes it win the tie, which is the intended behaviour (out of combat, the
+  more specific signal wins over the general one). Do not reorder this
   without updating this rationale.
 
 ## Tests

@@ -101,6 +101,73 @@ Il criterio unico: **se un token non sta scrivendo codice, compilando
 codice, testando codice, o riportando l'esito minimo richiesto, quel
 token è sprecato e quell'azione non va fatta.**
 
+**Contesto d'uso (2026-09-06): DeepSeek gira via API dentro una chat di
+Cursor, non come sessione persistente.** Ogni messaggio di quella chat ha
+un costo diretto e non condivide contesto con questo repository se non
+tramite i file che legge — quindi vale ancora di più, non di meno, la
+regola sopra: niente testo nella chat di Cursor oltre a (a) la conferma
+di aver letto il comando di fase citato, (b) il report minimo finale del
+punto 4. Concretamente, nella chat di Cursor sono **sempre vietati**:
+
+- Preamboli ("Certo, procedo a implementare...", "Ho capito il task,
+  ora...", "Fammi analizzare...") prima di agire.
+- Ripetere o riassumere il comando di fase appena letto — chi legge il
+  report ha già quel file, ripeterlo è puro spreco.
+- Chiedere conferma su qualcosa che il comando di fase ha già deciso
+  esplicitamente. Una domanda è ammessa **solo** quando il comando manca
+  di un'informazione necessaria per procedere (dipendenza non ancora
+  scritta, ambiguità reale tra due letture del testo) — e in quel caso va
+  posta una volta sola, in una riga, non come discussione.
+- Narrare i passaggi intermedi ("ora scrivo il file X", "ora eseguo la
+  build") invece di eseguirli e riportare solo l'esito.
+
+---
+
+## REGOLA ASSOLUTA #3 — Correttezza verificata, mai copiata per fiducia
+
+> **Ogni riga di codice, commento o test consegnato deve essere vero
+> perché DeepSeek lo ha verificato contro il codice reale — mai perché il
+> comando di fase lo affermava.** Un comando di fase è scritto da Claude
+> prima di vedere il codice che DeepSeek scriverà: può contenere un errore.
+> Copiarlo alla cieca in un commento o in un test lo trasforma da errore
+> di specifica a bug consegnato.
+
+Incidente reale che ha reso necessaria questa regola (AP-08/A2A4,
+2026-09-06 — non un'ipotesi): la specifica
+`AP-08_A2A4_DEEPSEEK_recovery_signal.md` affermava che due segnali
+(`recovery`/`survival`) "by construction they are never both non-null at
+once". È falso — verificabile leggendo `StrategyPlanner.cs` in meno di un
+minuto: fuori combattimento con HP nota sotto il massimo, **entrambi**
+tornano non-null con la stessa urgenza, ed è il caso comune, non un caso
+limite. DeepSeek ha copiato la frase falsa parola per parola come
+commento dentro `AutoplayCommand.cs`, consegnandola come fatto accertato
+nel codice di produzione. Un audit indipendente successivo l'ha trovata;
+Claude l'ha corretta. Il codice funzionava comunque correttamente — il
+danno è il commento falso lasciato per i prossimi che leggeranno quel
+file.
+
+Concretamente, prima di consegnare:
+
+1. Ogni affermazione di fatto che finisce in un commento di codice
+   (perché un ordine è scelto, perché due rami non si sovrappongono,
+   perché un valore non può essere nullo) va **riverificata leggendo il
+   codice reale che la rende vera**, non assunta dal testo del comando di
+   fase. Se non si riesce a verificarla, il commento non si scrive, o si
+   scrive come "vedi la spec di fase per il rationale" invece di
+   ripeterla come fatto.
+2. Ogni test pre-esistente nel file toccato o in file dello stesso
+   progetto va **eseguito per intero**, non solo i test nuovi — un test
+   che passava prima e fallisce dopo la modifica non è "un problema di
+   Claude da segnalare", è la prova che un'assunzione codificata in un
+   test vecchio è cambiata: va corretta l'assunzione stantia nel test
+   (mai cancellare il test, mai "aggiustare" il codice nuovo per farlo
+   quadrare con un'assunzione ormai falsa), e il fix va incluso nella
+   stessa consegna.
+3. Il numero di test riportato nel completamento (REGOLA ASSOLUTA #2,
+   punto 4) è sempre quello dell'**intera suite del progetto toccato**
+   dopo la modifica, non solo dei test nuovi — "16 nuovi test verdi" non
+   basta se non dice anche se gli altri 2210 lo sono rimasti.
+
 ---
 
 ## Come usare questo file
@@ -214,19 +281,18 @@ non referenzi `EquipmentSlot.Shield`/`.Helmet`/`.Accessory1`/
 invece di 18 — se lo fa, va corretto in integrazione, non rispedito
 indietro.
 
-**PRONTO ORA** (Q-092, 2026-09-06): **AP-08 — segnale `Recovery` in
-`--autoplay`.** Indagine mirata su `AP-10_A1_STATUS.md` (stadio 12,
-"Recovery"): il gap è reale (nessun assessor esiste per
-`StrategicGoalKind.Recovery`) ma non più bloccato come sembrava — non serve
-un nuovo canale di rete/elevazione, basta un heuristic locale su due letture
-HP consecutive già lette ogni ciclo per Survival. Lato `NosAi.Core` (Claude,
-già consegnato e testato): `CombatRecencyTracker` (nuovo, puro) deriva un
-`WorldFact<bool>` "in combattimento adesso" da un calo di HP recente;
-`StrategyPlanner.AssessRecoveryUrgency` (nuovo, puro) usa quel fatto per
-evitare di duplicare il segnale di Survival. Resta solo il collegamento
-meccanico dentro `AutoplayCommand` (nessun nuovo flag CLI, nessun
-`Program.cs` da toccare). Specifica completa in
-`docs/agents/phases/AP-08/AP-08_A2A4_DEEPSEEK_recovery_signal.md`.
+**CONSEGNATO E INTEGRATO** (Q-092, 2026-09-06, livello `Present`): **AP-08 —
+segnale `Recovery` in `--autoplay`.** `AutoplayCommand.ExecuteOneCycle`
+dispatcha `Recovery` esattamente come `Survival` (stesso slot consumabile,
+via `DispatchRecovery` condiviso); `RunWindows` traccia
+`CombatRecencyTracker.State` per ciclo per derivare il fatto "in
+combattimento adesso" da un calo HP recente. In integrazione sono stati
+corretti 2 difetti reali della consegna (vedi REGOLA ASSOLUTA #3 sopra,
+introdotta per questo stesso incidente): un test pre-esistente non
+aggiornato (`AutoplayCommandTests.cs` elencava ancora `Recovery` come
+kind non-dispatchabile) e un commento falso copiato dalla specifica
+(vedi Q-092 in `EXECUTION_QUEUE.md` per i dettagli esatti). Build 0
+errori/0 warning, Core 654/654, Runtime 2150/2150.
 
 Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06 sono
 `Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati

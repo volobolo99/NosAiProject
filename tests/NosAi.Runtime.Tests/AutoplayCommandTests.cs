@@ -339,7 +339,6 @@ public sealed class AutoplayCommandTests
     }
 
     [Theory]
-    [InlineData(StrategicGoalKind.Recovery)]
     [InlineData(StrategicGoalKind.Progression)]
     [InlineData(StrategicGoalKind.Farming)]
     [InlineData(StrategicGoalKind.Optimization)]
