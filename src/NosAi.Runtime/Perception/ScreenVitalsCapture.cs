@@ -78,6 +78,7 @@ public sealed class ScreenVitalsCapture : IDisposable
     private readonly Func<int?> _processId;
     private readonly ScreenVitalReader _reader;
     private readonly TargetRoiCalibration _targetCalibration;
+    private readonly DialogRoiCalibration _dialogCalibration;
     private readonly IPlayerAttackObserver? _wire;
     private readonly uint _adapterIndex;
     private readonly uint _outputIndex;
@@ -116,6 +117,14 @@ public sealed class ScreenVitalsCapture : IDisposable
     /// <c>target_roi_not_calibrated</c> rather than a confident wrong answer -- see
     /// <c>HudProbe</c> for how an operator calibrates one.
     /// </param>
+    /// <param name="dialogCalibration">
+    /// Where the dialog-window panel sits on this operator's client, plus its
+    /// confirmed-empty color baseline. Defaults to
+    /// <see cref="DialogRoiCalibration.Uncalibrated"/>, which
+    /// <see cref="DialogWindowStateComposer.Compose"/> already reports honestly as
+    /// <see cref="DialogRoiCalibration.NotCalibratedReason"/> rather than a confident
+    /// wrong answer.
+    /// </param>
     /// <param name="wire">
     /// The wire's side of ADR-0018, used only to contradict a screen reading that
     /// says no target. Null (the default) means no contradiction check is available
@@ -130,6 +139,7 @@ public sealed class ScreenVitalsCapture : IDisposable
         Func<int?> processId,
         ScreenVitalReader? reader = null,
         TargetRoiCalibration? targetCalibration = null,
+        DialogRoiCalibration? dialogCalibration = null,
         IPlayerAttackObserver? wire = null,
         uint adapterIndex = 0,
         uint outputIndex = 0,
@@ -139,6 +149,7 @@ public sealed class ScreenVitalsCapture : IDisposable
         _processId = processId ?? throw new ArgumentNullException(nameof(processId));
         _reader = reader ?? new ScreenVitalReader();
         _targetCalibration = targetCalibration ?? TargetRoiCalibration.Uncalibrated;
+        _dialogCalibration = dialogCalibration ?? DialogRoiCalibration.Uncalibrated;
         _wire = wire;
         _adapterIndex = adapterIndex;
         _outputIndex = outputIndex;
@@ -212,12 +223,22 @@ public sealed class ScreenVitalsCapture : IDisposable
         ClassifiedValue<bool> hasTarget = TargetStateComposer.Compose(
             _targetCalibration, screenTarget, _wire?.LastPlayerAttackAtUtc);
 
-        // Not wired in this pass -- DialogRoiCalibration/DialogWindowReader/
-        // DialogWindowStateComposer/ScreenDialogWindowSource exist (AP-02/A1+A3)
-        // but no caller here has composed them into a reading yet. Same honest
-        // shape HasTarget itself used before Q-067's wiring: an explicit,
-        // named reason, never a guessed true/false.
-        ClassifiedValue<bool> hasDialogWindow = ClassifiedValue<bool>.Unknown("dialog_window_composer_not_wired_in_this_pass");
+        // ScreenDialogWindowSource reads the same already-acquired `frame`
+        // (via SingleFrameSource, never a second real DXGI acquisition -- see
+        // the class remarks, "One frame, three readers" (now four)) at the
+        // operator-calibrated dialog ROI. Unlike hasTarget above, Compose
+        // takes no wire-side argument: no NosTale opcode for dialog/quest
+        // text exists in this repository, so the screen is the only source
+        // there is (see DialogWindowStateComposer's own remarks). An
+        // uncalibrated DialogRoiCalibration (the default) still produces an
+        // honest Unknown(NotCalibratedReason) here, same as hasTarget does
+        // for an uncalibrated TargetRoiCalibration.
+        var dialogFrames = new ScreenDialogWindowSource(
+            new SingleFrameSource(frame, _recordingSource!.Source),
+            _dialogCalibration,
+            () => window.ClientArea);
+        DialogWindowObservation screenDialog = dialogFrames.Read();
+        ClassifiedValue<bool> hasDialogWindow = DialogWindowStateComposer.Compose(_dialogCalibration, screenDialog);
 
         return new VisualObservation(result, vitals, hasTarget, hasDialogWindow, frame.CapturedUtc);
     }

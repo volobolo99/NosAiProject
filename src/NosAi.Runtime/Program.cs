@@ -802,8 +802,23 @@ public static class Program
                 Path.Combine(repo, NosAi.Runtime.Perception.TargetRoiCalibration.RelativePath), out _);
         }
 
+        // Same reasoning as targetCalibration immediately above: loaded once,
+        // only when --fuse-world-model is on, and a missing/absent file loads
+        // as Uncalibrated -- the state before an operator has confirmed a
+        // dialog-window crop -- which DialogWindowStateComposer reports
+        // honestly as dialog_roi_not_calibrated until an operator calibrates one.
+        NosAi.Runtime.Perception.DialogRoiCalibration dialogCalibration = NosAi.Runtime.Perception.DialogRoiCalibration.Uncalibrated;
+        if (options.FuseWorldModel)
+        {
+            string repo = NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot(Environment.CurrentDirectory)
+                          ?? NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot()
+                          ?? Directory.GetCurrentDirectory();
+            dialogCalibration = NosAi.Runtime.Perception.DialogRoiCalibration.Load(
+                Path.Combine(repo, NosAi.Runtime.Perception.DialogRoiCalibration.RelativePath), out _);
+        }
+
         using NosAi.Runtime.Perception.ScreenVitalsCapture? visualCapture = options.FuseWorldModel
-            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId, targetCalibration: targetCalibration)
+            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId, targetCalibration: targetCalibration, dialogCalibration: dialogCalibration)
             : null;
 
         // AP-03/A4: when the same flag is on, the fusion loop also gets a real

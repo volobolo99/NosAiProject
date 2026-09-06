@@ -205,4 +205,54 @@ public sealed class ScreenVitalsCaptureTests
         Assert.False(observation.HasTarget.HasValue);
         Assert.Equal(T0, observation.ObservedAtUtc);
     }
+
+    // ---------------------------------------------------------- dialog wiring
+    //
+    // Same regression shape as the target wiring above, one field over: the
+    // new DialogRoiCalibration constructor parameter is optional and additive,
+    // and inert until the frame-acquired branch of Capture() is reached.
+
+    [Fact]
+    public void Constructor_AcceptsADialogCalibration_WithoutThrowing()
+    {
+        DialogRoiCalibration confirmed = DialogRoiCalibration.Confirmed(
+            0.1, 0.2, 0.5, 0.3, 1920, 1080, DateTime.UtcNow,
+            baselineMeanB: 120, baselineMeanG: 130, baselineMeanR: 140);
+        using var capture = new ScreenVitalsCapture(
+            () => 4242,
+            dialogCalibration: confirmed,
+            wire: new FixedAttackObserver(T0.AddMinutes(-1)),
+            clock: () => T0);
+
+        // Host-independent fail-closed shape, same as the target-wiring test:
+        // nothing escapes, no frame is fabricated.
+        VisualObservation observation = capture.Capture();
+
+        Assert.False(observation.Frame.FrameAcquired);
+        Assert.False(observation.HasTarget.HasValue);
+        Assert.False(observation.HasDialogWindow.HasValue);
+        Assert.Equal(T0, observation.ObservedAtUtc);
+    }
+
+    [Fact]
+    public void Capture_WithNoProcessId_ReturnsUnobserved_EvenWithADialogCalibrationSupplied()
+    {
+        DialogRoiCalibration confirmed = DialogRoiCalibration.Confirmed(
+            0.1, 0.2, 0.5, 0.3, 1920, 1080, DateTime.UtcNow,
+            baselineMeanB: 120, baselineMeanG: 130, baselineMeanR: 140);
+        using var capture = new ScreenVitalsCapture(
+            () => null,
+            dialogCalibration: confirmed,
+            clock: () => T0);
+
+        VisualObservation observation = capture.Capture();
+
+        // The confirmed calibration changes nothing on the fail-closed path:
+        // no process id still wins, exactly like the no-calibration test.
+        Assert.False(observation.Frame.FrameAcquired);
+        Assert.Equal(ScreenVitalsCapture.NoProcessIdReason, observation.Frame.UnavailableReason);
+        Assert.False(observation.HasDialogWindow.HasValue);
+        Assert.Equal(ScreenVitalsCapture.NoProcessIdReason, observation.HasDialogWindow.FailureReason);
+        Assert.Equal(T0, observation.ObservedAtUtc);
+    }
 }
