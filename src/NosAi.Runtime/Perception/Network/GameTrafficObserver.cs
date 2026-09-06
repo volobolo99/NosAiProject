@@ -166,10 +166,30 @@ public sealed record SkillReady(int Slot, DateTime ObservedAtUtc, DataSourceKind
 
 /// <summary><c>ivn kind slot.vnum.amount.rarity</c>: what one inventory slot holds.</summary>
 /// <param name="InventoryKind">
-/// Field 1 of the packet, observed as <c>2</c>. The catalogue does not name it;
-/// it is carried because the slot number alone was never observed to be unique
-/// across it, and a reading keyed on the slot alone could overwrite one bag's
-/// slot with another's. No meaning is attached to the number.
+/// Field 1 of the packet, observed in this repository's own captures as
+/// <c>2</c>. Carried because the slot number alone was never observed to
+/// be unique across it, and a reading keyed on the slot alone could
+/// overwrite one bag's slot with another's.
+/// <para>
+/// An external, verifiable source now names candidate meanings for this
+/// field -- OpenNos (GPL, already vaulted at
+/// <c>third_party/sources/opennos</c>), <c>OpenNos.Domain/InventoryType.cs</c>:
+/// <c>Equipment=0, Main=1, Etc=2, Miniland=3, Specialist=6, Costume=7,
+/// Wear=8, Bazaar=9, Warehouse=10</c>. Per this project's rule for
+/// external reference data, that source is a lead, not a fact until
+/// cross-checked: <c>Etc=2</c> is confirmed, matching this file's own
+/// captured <c>ivn 2 34.2006.1.0</c> (a picked-up ground item) exactly.
+/// <c>Equipment=0</c> and <c>Wear=8</c> are documented but <b>not yet
+/// cross-checked</b> against a reading taken from this project's own
+/// client -- OpenNos's own server code reads currently-worn items via
+/// <c>Wear</c> specifically, which is why it is the better-supported
+/// candidate for "equipped" of the two, but neither may be trusted as
+/// equipped-vs-bag on any path that is not purely diagnostic until a
+/// dedicated capture of a real equip confirms which kind the slot moves
+/// to. Until then this field stays a raw <see langword="int"/>, not an
+/// enum: promoting an unconfirmed value to a named case would present a
+/// lead as a fact.
+/// </para>
 /// </param>
 /// <param name="Amount">
 /// How many of the item the slot holds. The observed shape is a slot with an

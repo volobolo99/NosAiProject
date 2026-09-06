@@ -167,3 +167,48 @@ segnalato per riferimento futuro, non avviato qui:
 
 Segnalato in `docs/agents/DEEPSEEK_TASKS.md` come gap di infrastruttura,
 non come task pronto.
+
+## AP-07/A2+A4 — seconda indagine (2026-09-06): un varco reale trovato, non tutto il blocco
+
+Stessa disciplina "investigate before speccing", ri-applicata su
+istruzione esplicita dell'utente di riprendere il lavoro a ritmo alto.
+Le tre ragioni di blocco sopra sono state ri-verificate per ispezione
+diretta, non assunte valide per sempre:
+
+1. **Primitiva di esecuzione**: confermato ancora assente, ma non è la
+   priorità — equipaggiare è comunque un click su un pannello UI (vedi
+   punto 2), non una hotkey, quindi "aggiungere un `ActionType`" non
+   sbloccherebbe nulla di eseguibile da solo. Non affrontato qui.
+2. **Calibrazione screen-space del pannello**: confermato ancora assente
+   **e resta il vero collo di bottiglia** — nessun codice può sapere dove
+   sono gli otto slot senza un operatore che conferma un ritaglio reale.
+   **Consegnato ora**: `src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs`
+   (Claude, A1) — stesso schema di `DialogRoiCalibration`/`TargetRoiCalibration`,
+   esteso a un ritaglio per ciascuno degli otto `EquipmentSlot`, tutti e
+   otto insieme o nessuno (il pannello è aperto per intero o non lo è,
+   non esiste uno stato di calibrazione parziale onesto). 12 test verdi.
+3. **Canale di verifica**: **parzialmente confutato**. `GameTrafficObserver.cs`'s
+   `InventorySlotReading.InventoryKind` ora documenta i valori candidati
+   da una fonte esterna reale — OpenNos (GPL, già vaulted in
+   `third_party/sources/opennos`), `OpenNos.Domain/InventoryType.cs`:
+   `Equipment=0, Main=1, Etc=2, Miniland=3, Specialist=6, Costume=7,
+   Wear=8, Bazaar=9, Warehouse=10`. Incrociato con successo un valore già
+   osservato in questo repository: `Etc=2` combacia esattamente con la
+   cattura reale `ivn 2 34.2006.1.0` (un drop raccolto). `Equipment=0` e
+   `Wear=8` — i candidati per "equipaggiato" — restano **non incrociati**:
+   il codice server di OpenNos legge gli oggetti indossati specificamente
+   via `Wear`, il che lo rende il candidato meglio supportato dei due, ma
+   nessuno dei due può essere usato per decidere alcunché su un percorso
+   non diagnostico finché una cattura reale di un equip non conferma quale
+   kind assume lo slot. Il campo resta un `int` grezzo, non un enum, per
+   lo stesso motivo.
+
+**Conclusione aggiornata**: AP-07/A2+A4 non è ancora specificabile per un
+comando `--equip`/`--unequip` reale — mancano ancora la calibrazione
+confermata da un operatore reale *e* la cattura che confermi `Wear=8`.
+**È però specificabile un passo intermedio reale e onesto**: la
+calibrazione stessa, esattamente come `TargetRoiCalibration`/
+`DialogRoiCalibration` sono nate `Present` prima di essere confermate.
+Specifica DeepSeek in
+`docs/agents/phases/AP-07/AP-07_A2A4_DEEPSEEK_inventory_panel_calibration.md`
+(`--calibrate-inventory-panel`, solo calibrazione, nessuna esecuzione).

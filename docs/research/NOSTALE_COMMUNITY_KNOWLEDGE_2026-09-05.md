@@ -120,6 +120,17 @@ usati per popolare nulla:
 Entrambi restano `CandidateHypothesis` di provenienza (categoria 3 e 18
 sopra) finché un'estrazione mirata non ne verifica il contenuto reale.
 
+**Terza fonte registrata (stessa data)**: **Itempicker**
+(`https://itempicker.atlagaming.eu/`, inglese) — database/lookup NosTale
+con sezioni Items/Skills/Monsters/Maps/VFX Gallery/Patch Notes, dichiara
+un'API oltre all'interfaccia web. **Potenzialmente rilevante per il gap
+"categoria/slot di equipaggiamento item" segnalato bloccato in
+`DEEPSEEK_TASKS.md`** — se l'API espone davvero categoria/tipo per item,
+sarebbe la prima fonte verificabile per quel gap. Non ancora verificato:
+il percorso `/api` tentato in questa sessione ha risposto 404 (percorso
+sbagliato, non necessariamente API assente) — serve un'indagine mirata
+sulla documentazione reale dell'API prima di usarla.
+
 ## Important distinction: secret knowledge vs exploit
 
 NosAi may exploit **knowledge asymmetry** (remembering community discoveries, correlating signals, predicting outcomes from observed data, choosing better routes). It must not exploit software vulnerabilities, manipulate the client, bypass cooldowns, inject packets, reveal server-only state or use bugs as gameplay advantages. The official game rules explicitly prohibit bug abuse and client manipulation.

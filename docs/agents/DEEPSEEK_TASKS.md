@@ -175,12 +175,21 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
-**Nessun task DeepSeek pronto in questo momento** — AP-04/AP-05/AP-06/
-AP-08 sono tutte `Integrated`; AP-07 (equip/unequip/upgrade) resta
-genuinamente bloccato (vedi "Candidati da investigare" sotto); i gap
-residui su AP-09/AP-10 restano OCR/ONNX o dati item non decodificati
-semanticamente, non chiudibili scrivendo altro codice di fase. Vedi
-`docs/agents/EXECUTION_QUEUE.md` per lo storico completo dei Q-number.
+**PRONTO ORA** (Q-084, 2026-09-06): `--calibrate-inventory-panel` —
+seconda indagine AP-07/A2+A4 ha trovato un varco reale (non tutto il
+blocco): `InventoryKind` ora documentato da fonte esterna citata, e la
+calibrazione screen-space del pannello equipaggiamento (il vero collo di
+bottiglia rimasto) è specificabile con lo stesso schema già usato per
+`TargetRoiCalibration`/`DialogRoiCalibration`. Specifica completa in
+`docs/agents/phases/AP-07/AP-07_A2A4_DEEPSEEK_inventory_panel_calibration.md`.
+Solo calibrazione — `--equip`/`--unequip` restano non specificabili
+finché questa non è confermata da un operatore su un client reale.
+
+Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06/AP-08 sono
+tutte `Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati
+item non decodificati semanticamente, non chiudibili scrivendo altro
+codice di fase. Vedi `docs/agents/EXECUTION_QUEUE.md` per lo storico
+completo dei Q-number.
 
 ---
 
@@ -239,9 +248,14 @@ indipendente da AP-04, chiedilo esplicitamente.
   **Rilevamento aggiornamenti client** (Q-082, Claude): nuovo comando
   `--client-updates`, `ClientDirectoryScanner` nativo (non `taletool`,
   valutato e scartato su istruzione esplicita dell'utente per evitare la
-  dipendenza AGPL come processo esterno). Il parsing semantico di
-  `quest.dat`/`qstprize.dat`/`npctalk.dat`/`tutorial.dat` per il gap
-  missioni segnalato in `AP-06_A1_STATUS.md` resta da fare, nativamente.
+  dipendenza AGPL come processo esterno). **`quest.dat`/`qstprize.dat`/
+  `npctalk.dat`/`tutorial.dat` verificati esistenti** (repository pubblici
+  indipendenti `NosWings/ON.NosWings.Parsing`, `BlowaXD/nostale-parsing`),
+  ma **nessuna fonte esterna trovata che ne documenti il formato interno**
+  (`nt-research.github.io`, unica fonte già verificata per Skill/Item/
+  BCard, non li copre). Non promosso a task: resta un'annotazione non
+  confermata finché non emerge un parser reale ispezionabile — nessun
+  formato inventato.
 - ~~**Riconciliazione `KnowledgeScope`/lifecycle duplicati**~~ —
   **risolto** (Q-064/Q-065/Q-066, su richiesta esplicita dell'utente):
   `KnowledgeScope` unificato su `Memory.KnowledgeScope`;
@@ -251,31 +265,37 @@ indipendente da AP-04, chiedilo esplicitamente.
   su `Candidate`); `DataSourceKind` confermato duplicazione intenzionale
   per bounded context, chiuso con `docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`
   invece che con codice. Vedi `AP-09_A1_STATUS.md`.
-- ~~**Categoria/slot di equipaggiamento e statistiche reali per item**~~ —
-  **verificato, genuinamente bloccato**, stessa ragione delle statistiche
-  skill: nessun campo tipo/sottotipo item decodificato semanticamente in
-  `GameReferenceDatabase`, nessuna mappa dichiarata verso
-  `EquipmentSlot`. Non specificabile oggi.
-- **AP-07/A2+A4 — esecuzione/verifica equip/unequip/upgrade, genuinamente
-  bloccato, indagine conclusa** (`AP-07_A1_STATUS.md` §"AP-07/A2+A4"): a
-  differenza di AP-05/AP-06, qui nessun percorso onesto parziale esiste.
-  Confermato per ispezione, non assunto: (1) nessuna primitiva di
-  esecuzione in nessuno dei due sistemi — `ActionType` (Gate 1-6) non ha
-  nemmeno una voce Equip/Unequip/Upgrade, a differenza di
-  `CollectGroundItem` che almeno esiste dichiarata-ma-non-implementata;
-  (2) equipaggiare è un'interazione UI (drag/doppio-click), non una
-  hotkey — nessuna calibrazione screen-space del pannello
-  inventario/equipaggiamento esiste (`ScreenProjectionCalibration`
-  proietta coordinate di mondo di gioco, non un pannello UI fisso, un
-  problema diverso mai affrontato); (3) nessun canale di verifica —
-  nessun opcode equip mai identificato in `docs/PROTOCOLLO_NOSTALE.md`,
-  e il canale già reale (`InventorySlotReading`, usato per `--collect`)
-  non distingue equipaggiato da zaino (`InventoryKind` dichiarato privo
-  di significato noto). **Non un task DeepSeek pronto**: serve prima una
-  calibrazione UI pannello (nuova infrastruttura, non un tocco a
-  margine) o l'identificazione di un opcode di rete equip mai cercato —
-  da investigare con una cattura dedicata prima di specificare
-  qualunque comando `--equip`/`--upgrade`.
+- **Categoria/slot di equipaggiamento e statistiche reali per item** —
+  **nuova pista reale trovata (2026-09-06), non ancora verificata
+  abbastanza per uno unlock**: il sito Itempicker
+  (`https://itempicker.atlagaming.eu/`, registrato in
+  `docs/research/NOSTALE_COMMUNITY_KNOWLEDGE_2026-09-05.md`) espone
+  un'API REST reale e senza autenticazione (`GET /api/items/data/{vnum}`)
+  che restituisce `itemType`/`itemSubType`/`equipmentSlot`/
+  `inventoryType`/`class` come interi grezzi per ogni item — esattamente
+  il campo mancante. Itempicker stesso non documenta il significato di
+  quegli interi. OpenNos (GPL, già vaulted) `OpenNos.Domain/ItemType.cs`
+  documenta un `ItemType` enum con `Weapon=0` — coerente con l'esempio
+  osservato (vnum 1 "Holzstock"/bastone di legno, `itemType:0`), ma è un
+  riscontro per nome, non un incrocio con un valore già noto di questo
+  repository come richiesto per fidarsene su un percorso non
+  diagnostico. **Non ancora specificabile**: serve prima verificare
+  anche l'`EquipmentType`/slot enum di OpenNos contro `equipmentSlot`, e
+  un incrocio più solido di almeno un valore. Prossimo passo naturale
+  per Claude (A1+A3), stesso schema di `SkillReferenceDecoder`.
+- **AP-07/A2+A4 — esecuzione/verifica equip/unequip/upgrade** —
+  **ri-verificato (2026-09-06), un varco reale trovato** (`AP-07_A1_STATUS.md`
+  §"seconda indagine"): il canale di verifica non è più genuinamente
+  bloccato quanto si credeva — `InventoryKind` ora documentato da fonte
+  esterna citata (OpenNos/GPL), un valore incrociato con una cattura
+  reale di questo repository. La calibrazione screen-space del pannello
+  resta il vero collo di bottiglia, ma è ora specificabile con lo stesso
+  schema già reale di `TargetRoiCalibration`/`DialogRoiCalibration` —
+  **task pronto**: vedi "Pronto ora" in cima a questo file (Q-084,
+  `--calibrate-inventory-panel`, solo calibrazione). `--equip`/`--unequip`
+  restano non specificabili finché quella calibrazione non è confermata
+  da un operatore reale e una cattura dedicata non conferma quale
+  `InventoryKind` corrisponde a "equipaggiato".
 - ~~**Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**~~
   **— deciso, specificato e CONSEGNATO (Q-037/Q-038/Q-039).** Decisione
   presa: percorso (a), verifica solo-vitali-player (onesta ma parziale —
