@@ -679,7 +679,7 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ReferenceInfoCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Observability.ReferenceInfoCommand.Run();
 
-        // Re-imports the reference catalogue and the broader taletool file
+        // Re-imports the reference catalogue and the broader native file
         // inventory from the installed client, reporting what a client update
         // changed since the last run.
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ClientUpdateCommand.Flag, StringComparison.OrdinalIgnoreCase)))

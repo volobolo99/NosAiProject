@@ -281,12 +281,12 @@ indipendente da AP-04, chiedilo esplicitamente.
   CastTime/Cooldown/MpCost), mappatura da https://nt-research.github.io/
   (istruzione esplicita dell'utente: citare questa volta). Ancora non
   `Verified`: nessun valore incrociato contro il client reale.
-  **Sbloccato per le missioni/quest** (Q-082, Claude): `taletool`
-  (github.com/imxeno/taletool, AGPL-3.0, vendorizzato in
-  `third_party/taletool/`) documenta il parsing di `quest.dat`/
-  `qstprize.dat`/`npctalk.dat`/`tutorial.dat` — non ancora wired, è il
-  passo successivo naturale per il gap missioni segnalato in
-  `AP-06_A1_STATUS.md`.
+  **Rilevamento aggiornamenti client** (Q-082, Claude): nuovo comando
+  `--client-updates`, `ClientDirectoryScanner` nativo (non `taletool`,
+  valutato e scartato su istruzione esplicita dell'utente per evitare la
+  dipendenza AGPL come processo esterno). Il parsing semantico di
+  `quest.dat`/`qstprize.dat`/`npctalk.dat`/`tutorial.dat` per il gap
+  missioni segnalato in `AP-06_A1_STATUS.md` resta da fare, nativamente.
 - ~~**Riconciliazione `KnowledgeScope`/lifecycle duplicati**~~ —
   **risolto** (Q-064/Q-065/Q-066, su richiesta esplicita dell'utente):
   `KnowledgeScope` unificato su `Memory.KnowledgeScope`;

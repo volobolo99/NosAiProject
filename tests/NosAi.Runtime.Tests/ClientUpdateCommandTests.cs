@@ -29,6 +29,7 @@ public sealed class ClientUpdateCommandTests
 
             foreach (ReferenceTable table in ReferenceImporter.Tables)
                 Assert.Contains($"{table.Kind}: fallito", report);
+            Assert.Contains("inventario file: 0 file", report);
         }
         finally
         {
@@ -37,22 +38,26 @@ public sealed class ClientUpdateCommandTests
     }
 
     [Fact]
-    public void WhenTaletoolCannotBeStarted_TheFailureIsNamed_AndNoInventoryIsWritten()
+    public void AnUnrecognizedLooseFile_IsCountedInTheInventory_WithoutBeingMistakenForAnArchive()
     {
         using GameReferenceDatabase database = GameReferenceDatabase.OpenInMemory();
-        string empty = Path.Combine(Path.GetTempPath(), $"nosai-empty-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(empty);
+        string directory = Path.Combine(Path.GetTempPath(), $"nosai-loose-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
         try
         {
-            string report = ClientUpdateCommand.Run(
-                database, empty, taletoolPath: Path.Combine(empty, "no-such-taletool.exe"));
+            File.WriteAllText(Path.Combine(directory, "readme.txt"), "not an archive");
 
-            Assert.Contains("inventario file (taletool): non disponibile (process_start_failed:", report);
-            Assert.Empty(database.ClientInventory());
+            string report = ClientUpdateCommand.Run(database, directory);
+
+            Assert.Contains("inventario file: 1 file, +1 ~0 -0 =0", report);
+            ClientInventoryEntry stored = Assert.Single(database.ClientInventory());
+            Assert.Equal("readme.txt", stored.File);
+            Assert.Null(stored.ArchiveType);
+            Assert.NotNull(stored.Error);
         }
         finally
         {
-            Directory.Delete(empty);
+            Directory.Delete(directory, recursive: true);
         }
     }
 }

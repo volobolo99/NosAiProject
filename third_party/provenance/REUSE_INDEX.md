@@ -15,6 +15,5 @@
 | `sources/microsoft/Memora/reference/README.md` | microsoft/Memora | `README.md` | `64fce15fa0101c6f8054f9683904be72b3233013` | MIT | Research synopsis; not source code |
 | `sources/joslat/agent-memory-dotnet/reference/README.md` | joslat/agent-memory-dotnet | `README.md` | `7821d97d7ce3b3c37c55537e557c932e7aa0dd71` | MIT | Research synopsis; not source code |
 | `sources/ikpil/DotRecast/reference/README.md` | ikpil/DotRecast | `README.md` | `8cc246e6ae4fa26ecc1e5df28e43c30d9c45259e` | ZLib ||
-| `taletool/taletool.exe` | imxeno/taletool | `crates/taletool-cli` (binario compilato, non un file copiato) | `5a7078e54472f0f1141955300a57b50ac8329cda` (commit upstream) | AGPL-3.0-or-later | Vendorizzato e integrato come funzionalità interna, eseguito come processo esterno da `TaletoolInvoker` (mai collegato al runtime); dettagli di build in `third_party/taletool/VERSION` |
 
 

@@ -50,14 +50,6 @@
           Condition="Exists('$(MSBuildThisFileDirectory)../../third_party/windivert/WinDivert64.sys')"
           CopyToOutputDirectory="PreserveNewest"
           Link="WinDivert64.sys" />
-    <!-- third_party/taletool/README.md: AGPL-3.0-or-later, run as a
-         separate process by TaletoolInvoker, never linked into this
-         assembly. Missing on a machine without it, same as WinDivert
-         above: TaletoolInvoker reports its own named failure at run time. -->
-    <None Include="$(MSBuildThisFileDirectory)../../third_party/taletool/taletool.exe"
-          Condition="Exists('$(MSBuildThisFileDirectory)../../third_party/taletool/taletool.exe')"
-          CopyToOutputDirectory="PreserveNewest"
-          Link="taletool.exe" />
   </ItemGroup>
 
   <ItemGroup>

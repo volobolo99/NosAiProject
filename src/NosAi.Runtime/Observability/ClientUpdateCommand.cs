@@ -9,24 +9,19 @@ namespace NosAi.Runtime.Observability;
 /// <c>--client-updates</c>).
 /// </summary>
 /// <remarks>
-/// <para>
 /// Two independent channels answer "what did the last client update
-/// change", each already able to say so on its own:
-/// <see cref="ReferenceImporter"/>'s five known tables (monster/item/skill/
-/// card/bcard), each carrying its own content hash in
-/// <see cref="GameReferenceDatabase.Import"/>'s diff; and the broader,
-/// undifferentiated file inventory <see cref="TaletoolInvoker"/> reads from
-/// every file under the data directory, decoded or not, via
-/// <see cref="GameReferenceDatabase.ImportClientInventory"/>. Running both
-/// on every invocation is what turns "run this after each client update"
-/// into an actual answer rather than a manual diff nobody performs.
-/// </para>
-/// <para>
-/// The taletool channel degrades on its own when the executable is absent:
-/// the known-table diff still runs and is still useful without it, the
-/// same "partial capability, not a hard failure" shape
-/// <see cref="ReferenceImporter"/> already applies per table.
-/// </para>
+/// change", each already able to say so on its own: <see cref="ReferenceImporter"/>'s
+/// five known tables (monster/item/skill/card/bcard), each carrying its
+/// own content hash in <see cref="GameReferenceDatabase.Import"/>'s diff;
+/// and the broader, undifferentiated file inventory
+/// <see cref="ClientDirectoryScanner"/> reads from every file under the
+/// data directory, decoded or not, via
+/// <see cref="GameReferenceDatabase.ImportClientInventory"/>. Both run
+/// entirely inside this process, on the same archive reader
+/// <see cref="ReferenceImporter"/> already trusts -- nothing external is
+/// started. Running both on every invocation is what turns "run this
+/// after each client update" into an actual answer rather than a manual
+/// diff nobody performs.
 /// </remarks>
 public static class ClientUpdateCommand
 {
@@ -53,7 +48,7 @@ public static class ClientUpdateCommand
     /// The testable core: given an already-open database and a client
     /// directory, refreshes both channels and formats what changed.
     /// </summary>
-    public static string Run(GameReferenceDatabase database, string clientDataDirectory, string? taletoolPath = null)
+    public static string Run(GameReferenceDatabase database, string clientDataDirectory)
     {
         ArgumentNullException.ThrowIfNull(database);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientDataDirectory);
@@ -83,16 +78,10 @@ public static class ClientUpdateCommand
                 $"  {outcome.Table.Kind}: +{diff.Added} ~{diff.Changed} -{diff.Removed} ={diff.Unchanged}");
         }
 
-        TaletoolScanResult scan = TaletoolInvoker.Scan(clientDataDirectory, taletoolPath);
-        if (!scan.Ok)
-        {
-            text.AppendLine($"inventario file (taletool): non disponibile ({scan.FailureReason})");
-            return text.ToString();
-        }
-
-        ReferenceDiff inventoryDiff = database.ImportClientInventory(scan.Files);
+        IReadOnlyList<ClientInventoryEntry> files = ClientDirectoryScanner.Scan(clientDataDirectory);
+        ReferenceDiff inventoryDiff = database.ImportClientInventory(files);
         text.AppendLine(
-            $"inventario file (taletool): {scan.Files.Count} file, "
+            $"inventario file: {files.Count} file, "
             + $"+{inventoryDiff.Added} ~{inventoryDiff.Changed} -{inventoryDiff.Removed} ={inventoryDiff.Unchanged}");
         foreach (string sample in inventoryDiff.Samples)
             text.AppendLine($"    {sample}");
