@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using NosAi.Core.WorldModel;
 using NosAi.Runtime.Contracts;
@@ -9,12 +10,12 @@ namespace NosAi.Runtime.Perception;
 /// Real-environment probe for <see cref="InventoryPanelRoiCalibration"/>:
 /// captures the desktop, resolves the client area the way
 /// <see cref="HudProbe"/> does, writes a whole-client-area preview bitmap
-/// the operator reads the eight slot fractions off, and records one crop
-/// per <see cref="EquipmentSlot"/> when the operator supplies all eight.
+/// the operator reads every <see cref="EquipmentSlot"/> fraction off, and
+/// records one crop per slot when the operator supplies all of them.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Answers one question and refuses to answer more: <b>where are the eight
+/// Answers one question and refuses to answer more: <b>where are the
 /// equipment slots on this operator's panel?</b> Equipping in NosTale is a
 /// drag/click on a fixed UI panel, not a hotkey, and no code in this
 /// repository can name where those slots are without an operator confirming
@@ -23,12 +24,15 @@ namespace NosAi.Runtime.Perception;
 /// </para>
 /// <para>
 /// Same recipe as <see cref="HudProbe"/>'s own target-frame calibration
-/// (<c>TargetRoiCalibration</c>, ADR-0018), extended from one region to the
-/// panel's eight slots; <see cref="InventoryPanelRoiCalibration"/> is all
-/// eight together or none, because the panel is either fully open or not.
-/// A crop of the wrong pixels is exactly what this calibration exists to
-/// rule out, and nothing inside any reader can tell a correct crop from a
-/// wrong one -- so the whole client area goes to disk as
+/// (<c>TargetRoiCalibration</c>, ADR-0018), extended from one region to
+/// every <see cref="EquipmentSlot"/>; <see cref="InventoryPanelRoiCalibration"/>
+/// is all of them together or none, because the panel is either fully open
+/// or not. The exact slot count and names come from <see cref="EquipmentSlot"/>
+/// itself everywhere below -- never a literal number or name list -- so this
+/// probe cannot go stale the way a hardcoded count would the next time that
+/// enum changes. A crop of the wrong pixels is exactly what this calibration
+/// exists to rule out, and nothing inside any reader can tell a correct crop
+/// from a wrong one -- so the whole client area goes to disk as
 /// <c>inventory_panel_latest.bmp</c> and a person looks at it.
 /// </para>
 /// <para>
@@ -47,8 +51,8 @@ public static class InventoryPanelCalibrationProbe
 
     /// <summary>
     /// The operator passes each slot as one token, <c>&lt;EquipmentSlot&gt;:&lt;x&gt;,&lt;y&gt;,&lt;w&gt;,&lt;h&gt;</c>
-    /// -- fractions of the client area, packed one slot per token because there
-    /// are eight of them.
+    /// -- fractions of the client area, packed one slot per token because
+    /// every <see cref="EquipmentSlot"/> value needs one.
     /// </summary>
     /// <remarks>
     /// Does not call <see cref="InventoryPanelRoiCalibration.Confirmed"/>:
@@ -108,13 +112,13 @@ public static class InventoryPanelCalibrationProbe
 
     /// <summary>
     /// Runs the console calibration. With <paramref name="slots"/> null it only
-    /// reports the current calibration state; with all eight tokens present it
+    /// reports the current calibration state; with every token present it
     /// attaches to the client, captures one frame, writes the preview bitmap,
     /// and records the calibration the operator just confirmed.
     /// </summary>
     /// <param name="repoRoot">Repository root, so <see cref="InventoryPanelRoiCalibration.RelativePath"/> and the crops land in the same gitignored <c>data/</c> tree.</param>
     /// <param name="processName">Client process to locate the client area from, same default as <see cref="HudProbe.FindClientWindow"/>.</param>
-    /// <param name="slots">All eight slot fractions, in any order, or null to only report.</param>
+    /// <param name="slots">Every slot's fraction, in any order, or null to only report.</param>
     public static int Run(
         string? repoRoot = null,
         string processName = "NostaleClientX",
@@ -178,14 +182,15 @@ public static class InventoryPanelCalibrationProbe
             Console.WriteLine(
                 $"  Preview: {Path.Combine(repoRoot, HudCropWriter.RelativeDirectory, HudCropWriter.PanelPreviewFileName)}");
             Console.WriteLine();
+            EquipmentSlot[] declaredSlots = (EquipmentSlot[])Enum.GetValues(typeof(EquipmentSlot));
             Console.WriteLine("Open inventory_panel_latest.bmp with the equipment panel open. Read off where");
-            Console.WriteLine("each of the eight slots (Weapon, Shield, Helmet, Armor, Gloves, Boots,");
-            Console.WriteLine("Accessory1, Accessory2) sits, and record all eight as fractions of the area:");
+            Console.WriteLine($"each of the {declaredSlots.Length} slots ({string.Join(", ", declaredSlots)}) sits,");
+            Console.WriteLine($"and record all {declaredSlots.Length} as fractions of the area:");
             Console.WriteLine();
-            Console.WriteLine($"    --calibrate-inventory-panel Weapon:<x>,<y>,<w>,<h> Shield:<x>,<y>,<w>,<h> Helmet:<x>,<y>,<w>,<h> Armor:<x>,<y>,<w>,<h> Gloves:<x>,<y>,<w>,<h> Boots:<x>,<y>,<w>,<h> Accessory1:<x>,<y>,<w>,<h> Accessory2:<x>,<y>,<w>,<h>");
+            Console.WriteLine($"    --calibrate-inventory-panel {ExampleCommandTokens(declaredSlots)}");
             Console.WriteLine();
-            Console.WriteLine("  All eight are required in one invocation, in any order. Nothing is recorded");
-            Console.WriteLine("  until every slot has a confirmed crop.");
+            Console.WriteLine($"  All {declaredSlots.Length} are required in one invocation, in any order. Nothing is");
+            Console.WriteLine("  recorded until every slot has a confirmed crop.");
             Console.WriteLine();
 
             ReportCalibrationState(path, slots, area);
@@ -195,7 +200,7 @@ public static class InventoryPanelCalibrationProbe
 
     /// <summary>
     /// Reports the current calibration state, and records a new one when the
-    /// operator supplied all eight slots.
+    /// operator supplied every slot.
     /// </summary>
     /// <remarks>
     /// The confirmation is the operator's act, not the probe's: the file is
@@ -226,7 +231,7 @@ public static class InventoryPanelCalibrationProbe
             catch (ArgumentException ex)
             {
                 Console.WriteLine($"[REFUSED] {ex.Message}");
-                Console.WriteLine("  Nothing was written. A calibration is all eight valid crops inside");
+                Console.WriteLine("  Nothing was written. A calibration is every slot's valid crop inside");
                 Console.WriteLine("  the client area, or it is not a calibration.");
                 return;
             }
@@ -243,6 +248,13 @@ public static class InventoryPanelCalibrationProbe
 
         Console.WriteLine($"Inventory-panel ROI: {reason}. No slot crop exists yet (AP-07).");
     }
+
+    /// <summary>
+    /// Builds the example invocation's slot tokens from the real enum, so the
+    /// printed guidance can never name a slot the type does not have.
+    /// </summary>
+    private static string ExampleCommandTokens(IReadOnlyList<EquipmentSlot> declaredSlots) =>
+        string.Join(' ', declaredSlots.Select(s => $"{s}:<x>,<y>,<w>,<h>"));
 
     private static bool TryParseOne(
         string token,

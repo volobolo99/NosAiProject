@@ -6,9 +6,10 @@ namespace NosAi.Runtime.Tests;
 
 /// <summary>
 /// The parsing half of <c>--calibrate-inventory-panel</c> (AP-07): turning
-/// the operator's eight <c>&lt;EquipmentSlot&gt;:&lt;x&gt;,&lt;y&gt;,&lt;w&gt;,&lt;h&gt;</c>
-/// tokens into the one-entry-per-slot dictionary
-/// <see cref="InventoryPanelRoiCalibration.Confirmed"/> requires.
+/// the operator's <c>&lt;EquipmentSlot&gt;:&lt;x&gt;,&lt;y&gt;,&lt;w&gt;,&lt;h&gt;</c>
+/// tokens -- one per declared <see cref="EquipmentSlot"/> value -- into the
+/// one-entry-per-slot dictionary <see cref="InventoryPanelRoiCalibration.Confirmed"/>
+/// requires.
 /// </summary>
 public sealed class InventoryPanelCalibrationProbeTests
 {
@@ -20,7 +21,7 @@ public sealed class InventoryPanelCalibrationProbeTests
         => Enum.GetValues<EquipmentSlot>().Select(Token).ToArray();
 
     [Fact]
-    public void All_eight_tokens_in_declared_order_parse_into_one_entry_per_slot()
+    public void All_declared_tokens_in_declared_order_parse_into_one_entry_per_slot()
     {
         string[] tokens = AllTokens();
 
@@ -51,28 +52,27 @@ public sealed class InventoryPanelCalibrationProbeTests
     [Fact]
     public void Parsed_fractions_are_the_ones_the_operator_wrote()
     {
-        string[] tokens =
+        // Each declared slot gets its own distinct fraction (derived from its
+        // position) so a mix-up between two slots' values cannot go unnoticed.
+        EquipmentSlot[] declared = Enum.GetValues<EquipmentSlot>();
+        string[] tokens = declared
+            .Select((slot, i) => string.Create(
+                System.Globalization.CultureInfo.InvariantCulture,
+                $"{slot}:0.0{i + 1:00},0.1{i + 1:00},0.2{i + 1:00},0.3{i + 1:00}"))
+            .ToArray();
+
+        Assert.True(InventoryPanelCalibrationProbe.TryParseSlots(tokens, out var rois, out string? reason));
+        Assert.Null(reason);
+
+        for (int i = 0; i < declared.Length; i++)
         {
-            "Weapon:0.05,0.30,0.10,0.04",
-            "Shield:0.10,0.40,0.05,0.03",
-            "Helmet:0.20,0.20,0.15,0.02",
-            "Armor:0.30,0.60,0.04,0.08",
-            "Gloves:0.40,0.25,0.20,0.05",
-            "Boots:0.50,0.70,0.06,0.02",
-            "Accessory1:0.60,0.35,0.09,0.09",
-            "Accessory2:0.80,0.15,0.12,0.03"
-        };
-
-        Assert.True(InventoryPanelCalibrationProbe.TryParseSlots(tokens, out var rois, out _));
-
-        Assert.Equal(new InventorySlotRoi(0.05, 0.30, 0.10, 0.04), rois[EquipmentSlot.Weapon]);
-        Assert.Equal(new InventorySlotRoi(0.10, 0.40, 0.05, 0.03), rois[EquipmentSlot.Shield]);
-        Assert.Equal(new InventorySlotRoi(0.20, 0.20, 0.15, 0.02), rois[EquipmentSlot.Helmet]);
-        Assert.Equal(new InventorySlotRoi(0.30, 0.60, 0.04, 0.08), rois[EquipmentSlot.Armor]);
-        Assert.Equal(new InventorySlotRoi(0.40, 0.25, 0.20, 0.05), rois[EquipmentSlot.Gloves]);
-        Assert.Equal(new InventorySlotRoi(0.50, 0.70, 0.06, 0.02), rois[EquipmentSlot.Boots]);
-        Assert.Equal(new InventorySlotRoi(0.60, 0.35, 0.09, 0.09), rois[EquipmentSlot.Accessory1]);
-        Assert.Equal(new InventorySlotRoi(0.80, 0.15, 0.12, 0.03), rois[EquipmentSlot.Accessory2]);
+            var expected = new InventorySlotRoi(
+                double.Parse($"0.0{i + 1:00}", System.Globalization.CultureInfo.InvariantCulture),
+                double.Parse($"0.1{i + 1:00}", System.Globalization.CultureInfo.InvariantCulture),
+                double.Parse($"0.2{i + 1:00}", System.Globalization.CultureInfo.InvariantCulture),
+                double.Parse($"0.3{i + 1:00}", System.Globalization.CultureInfo.InvariantCulture));
+            Assert.Equal(expected, rois[declared[i]]);
+        }
     }
 
     [Fact]
@@ -92,8 +92,8 @@ public sealed class InventoryPanelCalibrationProbeTests
     [Fact]
     public void A_missing_slot_is_refused_naming_the_reason()
     {
-        // Seven tokens: Armor never appears, so no dictionary can cover all
-        // eight declared slots.
+        // One slot short: Armor never appears, so no dictionary can cover
+        // every declared slot.
         string[] tokens = Enum.GetValues<EquipmentSlot>()
             .Where(s => s != EquipmentSlot.Armor)
             .Select(Token)
@@ -103,23 +103,16 @@ public sealed class InventoryPanelCalibrationProbeTests
 
         Assert.False(ok);
         Assert.NotNull(reason);
-        Assert.Contains("8", reason, StringComparison.Ordinal);
+        Assert.Contains(Enum.GetValues<EquipmentSlot>().Length.ToString(), reason, StringComparison.Ordinal);
     }
 
     [Fact]
     public void A_duplicate_slot_is_refused_naming_the_token()
     {
-        string[] tokens =
-        {
-            "Weapon:0.1,0.2,0.3,0.4",
-            "Weapon:0.5,0.5,0.1,0.1", // duplicate: Shield missing
-            "Helmet:0.1,0.2,0.3,0.4",
-            "Armor:0.1,0.2,0.3,0.4",
-            "Gloves:0.1,0.2,0.3,0.4",
-            "Boots:0.1,0.2,0.3,0.4",
-            "Accessory1:0.1,0.2,0.3,0.4",
-            "Accessory2:0.1,0.2,0.3,0.4"
-        };
+        // Still exactly one token per declared slot; the last declared
+        // slot's token is replaced by a second "Weapon" token.
+        string[] tokens = AllTokens();
+        tokens[^1] = "Weapon:0.5,0.5,0.1,0.1";
 
         bool ok = InventoryPanelCalibrationProbe.TryParseSlots(tokens, out _, out string? reason);
 
@@ -173,7 +166,7 @@ public sealed class InventoryPanelCalibrationProbeTests
     }
 
     [Fact]
-    public void Nine_tokens_are_refused()
+    public void One_token_more_than_declared_is_refused()
     {
         string[] tokens = AllTokens().Concat(new[] { "Weapon:0.9,0.9,0.01,0.01" }).ToArray();
 
@@ -181,18 +174,18 @@ public sealed class InventoryPanelCalibrationProbeTests
 
         Assert.False(ok);
         Assert.NotNull(reason);
-        Assert.Contains("8", reason, StringComparison.Ordinal);
+        Assert.Contains(Enum.GetValues<EquipmentSlot>().Length.ToString(), reason, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Seven_tokens_are_refused()
+    public void One_token_fewer_than_declared_is_refused()
     {
         bool ok = InventoryPanelCalibrationProbe.TryParseSlots(
             AllTokens().Skip(1).ToArray(), out _, out string? reason);
 
         Assert.False(ok);
         Assert.NotNull(reason);
-        Assert.Contains("8", reason, StringComparison.Ordinal);
+        Assert.Contains(Enum.GetValues<EquipmentSlot>().Length.ToString(), reason, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -208,19 +201,14 @@ public sealed class InventoryPanelCalibrationProbeTests
     [Fact]
     public void A_duplicate_slot_after_the_first_is_not_silently_overwritten()
     {
-        // Exactly eight tokens, Weapon twice and Shield absent: the second
-        // Weapon must be refused as a duplicate, never overwrite the first.
-        string[] tokens =
-        {
-            "Weapon:0.1,0.2,0.3,0.4",
-            "Weapon:0.9,0.9,0.05,0.05",
-            "Helmet:0.1,0.2,0.3,0.4",
-            "Armor:0.1,0.2,0.3,0.4",
-            "Gloves:0.1,0.2,0.3,0.4",
-            "Boots:0.1,0.2,0.3,0.4",
-            "Accessory1:0.1,0.2,0.3,0.4",
-            "Accessory2:0.1,0.2,0.3,0.4"
-        };
+        // Still exactly one token per declared slot, so the count check
+        // passes and the duplicate check is the one under test: the last
+        // declared slot's token is replaced by a second "Weapon" token, so
+        // Weapon appears twice and that last slot is consequently missing.
+        // The second Weapon must be refused as a duplicate, never overwrite
+        // the first.
+        string[] tokens = AllTokens();
+        tokens[^1] = "Weapon:0.9,0.9,0.05,0.05";
 
         bool ok = InventoryPanelCalibrationProbe.TryParseSlots(tokens, out _, out string? reason);
 
