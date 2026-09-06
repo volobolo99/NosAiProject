@@ -113,6 +113,51 @@ public static class Program
             return NosAi.Runtime.Perception.HudProbe.RunConsoleProbe(calibrateTarget: region);
         }
 
+        // AP-07/A2+A4: records where the eight equipment-panel slots sit on
+        // this operator's client, the screen-space layout --calibrate-target
+        // (ADR-0018) is to the target frame what this is to the equipment
+        // panel: all eight crops together or none, confirmed by the operator
+        // against inventory_panel_latest.bmp. The fractions are that
+        // confirmation; nothing infers them. Refuses, without attaching to
+        // any client, unless exactly eight slot tokens are present.
+        if (args.Any(a => string.Equals(a, "--calibrate-inventory-panel", StringComparison.OrdinalIgnoreCase)))
+        {
+            int panelFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--calibrate-inventory-panel", StringComparison.OrdinalIgnoreCase));
+            int panelTokenCount = args.Length - (panelFlag + 1);
+            if (panelTokenCount != 0 && panelTokenCount != 8)
+            {
+                Console.Error.WriteLine(
+                    "[REFUSED] --calibrate-inventory-panel requires all eight slot tokens "
+                    + "Weapon:<x>,<y>,<w>,<h> Shield:<x>,<y>,<w>,<h> Helmet:<x>,<y>,<w>,<h> Armor:<x>,<y>,<w>,<h> "
+                    + "Gloves:<x>,<y>,<w>,<h> Boots:<x>,<y>,<w>,<h> Accessory1:<x>,<y>,<w>,<h> Accessory2:<x>,<y>,<w>,<h>, "
+                    + "or none at all to report the current state.");
+                return 1;
+            }
+
+            var panelTokens = new string[panelTokenCount];
+            for (int i = 0; i < panelTokenCount; i++)
+                panelTokens[i] = args[panelFlag + 1 + i];
+
+            if (panelTokenCount == 0)
+            {
+                // Zero tokens: only report the current calibration state.
+                return NosAi.Runtime.Perception.InventoryPanelCalibrationProbe.Run(slots: null);
+            }
+
+            if (!NosAi.Runtime.Perception.InventoryPanelCalibrationProbe.TryParseSlots(
+                    panelTokens, out IReadOnlyDictionary<NosAi.Core.WorldModel.EquipmentSlot,
+                        NosAi.Runtime.Perception.InventorySlotRoi>? panelRois, out string? panelReason))
+            {
+                Console.Error.WriteLine($"[REFUSED] {panelReason}");
+                Console.Error.WriteLine("  --calibrate-inventory-panel requires all eight slot tokens "
+                    + "Weapon:<x>,<y>,<w>,<h> ... as fractions of the client area, in any order.");
+                return 1;
+            }
+
+            return NosAi.Runtime.Perception.InventoryPanelCalibrationProbe.Run(slots: panelRois);
+        }
+
         // Physical client rect, window DPI, monitor handle, epoch, the process's
         // actual awareness mode, and whether the stored calibration can be applied
         // under that regime. Non-zero when it cannot.
@@ -971,7 +1016,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel"
         };
 
     private static int RunDxgiProbe()
