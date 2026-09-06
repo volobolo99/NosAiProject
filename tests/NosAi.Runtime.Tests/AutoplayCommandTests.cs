@@ -219,6 +219,52 @@ public sealed class AutoplayCommandTests
         Assert.Empty(input.Presses); // a scout round emits clicks, not key presses
     }
 
+    [Fact]
+    public void AnExplorationPlan_CarriesTheUpdatedFootprintForward_NotTheOriginal()
+    {
+        // Without this, a caller reusing the returned footprint verbatim across
+        // cycles would never learn the player had already visited wherever this
+        // cycle walked to -- the exact gap AP-08's A5 audit found.
+        StrategicPlan plan = new(
+            StrategicGoalKind.Exploration,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+
+        var footprintMapId = new MapId("map-1");
+        ExplorationFootprint originalFootprint = ExplorationFootprint.Empty(footprintMapId, "test", Now);
+        MapModel map = new(
+            footprintMapId,
+            WorldFact<string>.Unknown("test", Now),
+            WorldFact<NosAi.Core.WorldModel.MapBounds>.Unknown("test", Now),
+            EquatableArray<Tile>.From(new[]
+            {
+                new Tile(
+                    new TileCoordinate(1, 1),
+                    WorldFact<TileTraversability>.Live(TileTraversability.Walkable, confidence: 1d, Now))
+            }),
+            EquatableArray<Portal>.Empty,
+            EquatableArray<Polygon>.Empty,
+            Version: 1,
+            Now);
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycleWithMap(plan, map, originalFootprint);
+
+        Assert.NotEqual(originalFootprint, result.UpdatedFootprint);
+        Assert.Equal(footprintMapId, result.UpdatedFootprint.MapId);
+    }
+
+    [Fact]
+    public void AnIdleCycle_PassesTheFootprintThroughUnchanged()
+    {
+        StrategicPlan unselected = StrategicPlan.Unselected("no_strategic_signal_available", Now);
+        ExplorationFootprint footprint = FullyExploredFootprint();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycleWithMap(
+            unselected, MapModel.Unknown(footprint.MapId, "test", Now), footprint);
+
+        Assert.Equal(footprint, result.UpdatedFootprint);
+    }
+
     // ------------------------------------------------------------- Recover branch
 
     [Fact]
