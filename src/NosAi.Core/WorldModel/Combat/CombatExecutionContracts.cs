@@ -33,7 +33,20 @@ public enum CombatExecutionResult
     Unobserved = 2,
 
     /// <summary>Nothing was emitted: a guard refused the act, or it was abandoned before execution.</summary>
-    Aborted = 3
+    Aborted = 3,
+
+    /// <summary>
+    /// The tracked resource rose by an amount consistent with the act having
+    /// actually executed -- the recovery counterpart to
+    /// <see cref="ResourceCostConfirmed"/> (AP-08's Survival response,
+    /// <see cref="CombatActionKind.UseConsumable"/> named by the operator as
+    /// a healing item). Which resource is tracked and in which direction is
+    /// the caller's assertion, not something this contract infers from
+    /// <see cref="CombatActionCandidate.Kind"/> alone -- a consumable can be
+    /// anything, and only the operator naming it as a recovery item makes
+    /// "rose" the expected direction.
+    /// </summary>
+    ResourceGainConfirmed = 4
 }
 
 /// <summary>
@@ -81,6 +94,9 @@ public sealed record CombatExecutionEvidence(
 {
     /// <summary>True only when the expected resource was observed to fall.</summary>
     public bool ResourceCostConfirmed => Result == CombatExecutionResult.ResourceCostConfirmed;
+
+    /// <summary>True only when the tracked resource was observed to rise.</summary>
+    public bool ResourceGainConfirmed => Result == CombatExecutionResult.ResourceGainConfirmed;
 
     /// <summary>The act was never attempted: a guard refused it, or it was abandoned before emission.</summary>
     public static CombatExecutionEvidence NotAttempted(

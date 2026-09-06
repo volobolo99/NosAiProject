@@ -88,6 +88,26 @@ public sealed class CombatExecutionEvidenceTests
     }
 
     [Fact]
+    public void ResourceGainConfirmed_TrueOnlyForThatResult()
+    {
+        DateTime now = DateTime.UnixEpoch;
+        var gained = new CombatExecutionEvidence(
+            SkillCandidate,
+            ResourceKind.Health,
+            WorldFact<double>.Live(20d, confidence: 1d, now),
+            WorldFact<double>.Live(45d, confidence: 1d, now),
+            CombatExecutionResult.ResourceGainConfirmed,
+            Detail: null,
+            now);
+
+        var noChange = gained with { Result = CombatExecutionResult.NoResourceChangeObserved };
+
+        Assert.True(gained.ResourceGainConfirmed);
+        Assert.False(noChange.ResourceGainConfirmed);
+        Assert.False(gained.ResourceCostConfirmed);
+    }
+
+    [Fact]
     public void BasicAttack_HasNoObservableResource_ResourceObservedIsNull()
     {
         DateTime now = DateTime.UnixEpoch;
