@@ -35,9 +35,14 @@ namespace NosAi.Runtime.Tactical;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Scope, stated as hard limits (AP-08/A2A4 spec).</b> Only
-/// <see cref="StrategicGoalKind.Survival"/> and
-/// <see cref="StrategicGoalKind.Exploration"/> are dispatched.
+/// <b>Scope, stated as hard limits (AP-08/A2A4 spec).</b> Three kinds are
+/// dispatched: <see cref="StrategicGoalKind.Survival"/> and
+/// <see cref="StrategicGoalKind.Recovery"/> (both run the configured
+/// consumable slot via <see cref="RecoverCommand.ExecuteOneRound"/>; they
+/// differ only in why they fired -- an unconditional HP-fraction read vs.
+/// the same read gated on a confirmed-safe "not in combat" fact,
+/// <see cref="StrategyPlanner.AssessRecoveryUrgency"/>) and
+/// <see cref="StrategicGoalKind.Exploration"/>.
 /// <see cref="StrategicGoalKind.QuestUrgency"/> is deliberately <b>not</b>:
 /// <c>WorldModelSnapshot.Quests</c> is empty in every live composition
 /// today (no network/OCR channel populates real quests yet), so
@@ -45,13 +50,7 @@ namespace NosAi.Runtime.Tactical;
 /// <see langword="null"/> on every real cycle and
 /// <see cref="StrategyPlanner.SelectStrategicPlan"/> never selects it --
 /// dispatch code for a signal that cannot fire honestly today would be dead
-/// code. <see cref="StrategicGoalKind.Recovery"/> now has a real assessor
-/// (<see cref="StrategyPlanner.AssessRecoveryUrgency"/>, gated on a real
-/// "currently in combat" fact) but this command does not yet call it --
-/// wiring it into this cycle (deriving that fact, adding the signal, and
-/// dispatching it) is a separate, not-yet-delivered increment
-/// (AP-08/A2A4, `AP-08_A2A4_DEEPSEEK_recovery_signal.md`).
-/// <see cref="StrategicGoalKind.Progression"/>/<see cref="StrategicGoalKind.Farming"/>/
+/// code. <see cref="StrategicGoalKind.Progression"/>/<see cref="StrategicGoalKind.Farming"/>/
 /// <see cref="StrategicGoalKind.Optimization"/> have no assessor at all and
 /// are out of scope for the same reason as ever. A selected plan whose kind
 /// is not dispatchable is reported as
@@ -112,7 +111,10 @@ public static class AutoplayCommand
         SurvivalSkippedNoSlot = 3,
 
         /// <summary>Any other selected kind (QuestUrgency etc.) -- named, not silently ignored.</summary>
-        NotDispatchable = 4
+        NotDispatchable = 4,
+
+        /// <summary>Recovery was selected, but no recovery slot was configured.</summary>
+        RecoverySkippedNoSlot = 5
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -139,8 +141,10 @@ public static class AutoplayCommand
 
     /// <summary>
     /// Dispatches one already-selected <see cref="StrategicPlan"/> to at most
-    /// one of the two supported commands. Pure and testable: every
-    /// I/O-shaped dependency is a parameter, no clock reads, no
+    /// one of the supported commands (Exploration via
+    /// <see cref="ScoutCommand.ExecuteOneRound"/>; Survival and Recovery both
+    /// via <see cref="RecoverCommand.ExecuteOneRound"/>). Pure and testable:
+    /// every I/O-shaped dependency is a parameter, no clock reads, no
     /// <c>Console.Write</c> -- the same discipline the two
     /// <c>ExecuteOneRound</c> methods this calls already follow.
     /// </summary>
@@ -226,35 +230,64 @@ public static class AutoplayCommand
             }
 
             case StrategicGoalKind.Survival:
-            {
-                if (recoverSlot is not { } slot)
-                    return new AutoplayCycleResult(AutoplayDispatch.SurvivalSkippedNoSlot, plan, null, null, footprint);
+                return DispatchRecovery(
+                    recoverSlot, keybinds, input, readVitals, verificationDelay,
+                    in authority, nowUtc, footprint, plan, AutoplayDispatch.SurvivalSkippedNoSlot);
 
-                // The candidate construction mirrors RecoverCommand.RunWindows:
-                // the constructor requires an Item and the slot number doubles as
-                // the id (no catalogue vnum is known or needed).
-                string slotAsId = slot.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                var candidate = new CombatActionCandidate(
-                    CombatActionKind.UseConsumable,
-                    item: new ItemId(slotAsId));
-
-                CombatExecutionEvidence evidence = RecoverCommand.ExecuteOneRound(
-                    candidate,
-                    slot,
-                    keybinds,
-                    input,
-                    readVitals,
-                    verificationDelay,
-                    in authority,
-                    nowUtc);
-                return new AutoplayCycleResult(AutoplayDispatch.Recovered, plan, null, evidence, footprint);
-            }
+            case StrategicGoalKind.Recovery:
+                return DispatchRecovery(
+                    recoverSlot, keybinds, input, readVitals, verificationDelay,
+                    in authority, nowUtc, footprint, plan, AutoplayDispatch.RecoverySkippedNoSlot);
 
             default:
-                // QuestUrgency/Recovery/Progression/Farming/Optimization: named,
-                // never silently ignored, never substituted.
+                // QuestUrgency/Progression/Farming/Optimization: named, never
+                // silently ignored, never substituted.
                 return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null, footprint);
         }
+    }
+
+    /// <summary>
+    /// The shared "use the configured consumable slot" dispatch behind both
+    /// <see cref="StrategicGoalKind.Survival"/> and <see cref="StrategicGoalKind.Recovery"/>:
+    /// they differ only in <i>why</i> they fired (an unconditional HP-fraction
+    /// read vs. the same read gated on being confirmed safe), never in what
+    /// they do. <paramref name="skippedNoSlotDispatch"/> names which of the
+    /// two outcomes to report when no slot is configured, so the audit stays
+    /// able to tell them apart.
+    /// </summary>
+    private static AutoplayCycleResult DispatchRecovery(
+        int? recoverSlot,
+        KeybindMap keybinds,
+        IInputBackend input,
+        Func<PlayerVitalsReading?> readVitals,
+        Action verificationDelay,
+        in ActuationAuthority authority,
+        DateTime nowUtc,
+        ExplorationFootprint footprint,
+        StrategicPlan plan,
+        AutoplayDispatch skippedNoSlotDispatch)
+    {
+        if (recoverSlot is not { } slot)
+            return new AutoplayCycleResult(skippedNoSlotDispatch, plan, null, null, footprint);
+
+        // The candidate construction mirrors RecoverCommand.RunWindows:
+        // the constructor requires an Item and the slot number doubles as
+        // the id (no catalogue vnum is known or needed).
+        string slotAsId = slot.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var candidate = new CombatActionCandidate(
+            CombatActionKind.UseConsumable,
+            item: new ItemId(slotAsId));
+
+        CombatExecutionEvidence evidence = RecoverCommand.ExecuteOneRound(
+            candidate,
+            slot,
+            keybinds,
+            input,
+            readVitals,
+            verificationDelay,
+            in authority,
+            nowUtc);
+        return new AutoplayCycleResult(AutoplayDispatch.Recovered, plan, null, evidence, footprint);
     }
 
     /// <summary>
@@ -357,6 +390,11 @@ public static class AutoplayCommand
             // entered.
             MapPositionReading? previousReading = null;
 
+            // Carries each cycle's HP reading into the next so a recent HP
+            // drop can be recognised as "in combat" (CombatRecencyTracker),
+            // gating the Recovery signal on a real, confirmed-safe state.
+            CombatRecencyTracker.State combatState = CombatRecencyTracker.State.Initial;
+
             string keybindsPath = KeybindsCheck.ResolvePath();
             if (!KeybindMap.TryLoad(keybindsPath, out KeybindMap keybinds, out string? loadFailure))
             {
@@ -402,6 +440,13 @@ public static class AutoplayCommand
 
                 DateTime now = TimeProvider.System.GetUtcNow().UtcDateTime;
                 var currentMapId = new MapId(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"map-{mapId}"));
+
+                // The combat-recency fact for this cycle, derived from the HP
+                // reading already taken above (vitals) against last cycle's
+                // (combatState) -- reusing this exact `now`, never reading the
+                // clock a second time. Unknown on the very first cycle
+                // ("insufficient_history"), never defaulted to "not in combat".
+                (WorldFact<bool> inCombat, combatState) = CombatRecencyTracker.Update(combatState, vitals.Hp, now);
 
                 var currentReading = new MapPositionReading(currentMapId, new WorldPosition(player.X, player.Y), now);
                 if (previousReading is { } previous)
@@ -451,9 +496,21 @@ public static class AutoplayCommand
                     EquatableArray<EquipmentItem>.Empty);
 
                 StrategicSignal? survival = StrategyPlanner.AssessSurvivalUrgency(playerFacts);
+                StrategicSignal? recovery = StrategyPlanner.AssessRecoveryUrgency(playerFacts, inCombat);
                 StrategicSignal? exploration = StrategyPlanner.AssessExplorationUrgency(footprint);
 
-                var signals = new List<StrategicSignal>(2);
+                // Recovery before Survival is deliberate, not arbitrary:
+                // SelectStrategicPlan breaks a tied Urgency by picking whichever
+                // signal appears first in the list, and the two compute the
+                // identical 1 - fraction urgency for the same HP reading. By
+                // construction they are never both non-null at once
+                // (AssessRecoveryUrgency returns null whenever inCombat.Value is
+                // true, the only regime where Survival's own signal matters) --
+                // but recovery first keeps the selection deterministic and
+                // explicit about intent (out of combat, the more specific signal
+                // wins) rather than relying on list-order being accidental.
+                var signals = new List<StrategicSignal>(3);
+                if (recovery is not null) signals.Add(recovery);
                 if (survival is not null) signals.Add(survival);
                 if (exploration is not null) signals.Add(exploration);
 
@@ -547,6 +604,10 @@ public static class AutoplayCommand
 
                     case AutoplayDispatch.SurvivalSkippedNoSlot:
                         Console.WriteLine($"[WARN] {SurvivalNoSlotWarning}");
+                        break;
+
+                    case AutoplayDispatch.RecoverySkippedNoSlot:
+                        Console.WriteLine($"[WARN] recovery urgent but no --recover-slot configured, skipping this cycle");
                         break;
 
                     case AutoplayDispatch.NotDispatchable:
