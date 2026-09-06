@@ -56,6 +56,18 @@ public sealed record BCardApplication(
 /// provisional until independently confirmed the same way.
 /// </para>
 /// <para>
+/// Five of those eight positions -- <see cref="UpgradeSkill"/>,
+/// <see cref="CastTimeRaw"/>, <see cref="CooldownRaw"/>,
+/// <see cref="MpCost"/>, <see cref="RequiredItemVnum"/> -- have a third,
+/// independent confirmation: OpenNos's own real, GPL server-emulator
+/// source (<c>OpenNos.Import.Console/ImportFactory.cs</c>, see
+/// <c>docs/research/NOSTALE_COMMUNITY_KNOWLEDGE_2026-09-05.md</c>'s
+/// "Terza fonte" section) parses <c>Skill.dat</c>'s own <c>DATA</c> tag at
+/// these exact same positions -- under a different name at one of them
+/// (its <c>UpgradeType</c> is this decoder's <see cref="PartnerSkillId"/>,
+/// same position, unresolved which label is the true meaning).
+/// </para>
+/// <para>
 /// Coded values with no verified in-game meaning -- <see cref="SkillType"/>,
 /// <see cref="JobClass"/>, <see cref="AttackType"/>, <see cref="SecondaryWeapon"/>,
 /// <see cref="Element"/>, <see cref="TargetType"/>, <see cref="HitType"/>,

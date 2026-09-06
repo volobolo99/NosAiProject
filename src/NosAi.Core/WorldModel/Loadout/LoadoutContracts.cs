@@ -117,16 +117,24 @@ public sealed record LoadoutConstraintCheck(
 /// per-item stats (attack/defense/element, upgrade material cost) exist
 /// nowhere in this repository today -- <see cref="InventoryItem"/>/
 /// <see cref="EquipmentItem"/> (AP-01) carry only identity/quantity/slot,
-/// no combat statistics, and the one real game-data catalogue
-/// (<c>GameReferenceDatabase</c>) explicitly declines to semantically
-/// decode the fields that would provide them (same finding already made
-/// for skill data in AP-05's Gate3Runtime investigation,
-/// docs/agents/phases/AP-05/AP-05_A1_STATUS.md). Fabricating those numbers
-/// here would be exactly the kind of simulated-data-as-real this project
-/// forbids. <see cref="QuestRelevance"/> is the one dimension this phase's
-/// A3 <i>does</i> compute honestly, by cross-referencing AP-06's Quest
-/// Graph (<c>LoadoutPlanner.CountActiveQuestNeedsFor</c>) rather than
-/// estimating it.
+/// no combat statistics. <c>NosAi.Runtime.GameData.ItemReferenceDecoder</c>
+/// (added after this remark was first written) does now decode
+/// <c>Item.dat</c>'s own <c>DATA</c> tag, but only as twenty raw,
+/// uninterpreted integers: that tag's own file-format source states its
+/// values mean something different per <c>ItemType</c> (weapon damage vs.
+/// armor defence vs. a potion's heal amount, at the same tag positions),
+/// and resolving that mapping needs the actual parser source code this
+/// project has found (OpenNos's real, GPL <c>ImportFactory.cs</c>) but not
+/// yet safely ported -- see
+/// <c>docs/research/NOSTALE_COMMUNITY_KNOWLEDGE_2026-09-05.md</c>'s
+/// "Terza fonte" section for exactly what is missing and why. Fabricating
+/// these numbers here, or guessing the per-type mapping without checking
+/// that second source file, would be exactly the kind of simulated-data-
+/// as-real this project forbids. <see cref="QuestRelevance"/> is the one
+/// dimension this phase's A3 <i>does</i> compute honestly, by
+/// cross-referencing AP-06's Quest Graph
+/// (<c>LoadoutPlanner.CountActiveQuestNeedsFor</c>) rather than estimating
+/// it.
 /// </remarks>
 public sealed record LoadoutEvaluation(
     LoadoutActionCandidate Candidate,

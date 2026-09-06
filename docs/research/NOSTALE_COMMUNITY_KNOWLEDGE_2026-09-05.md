@@ -281,6 +281,35 @@ conferma indipendente dello stesso schema. Per questo `ItemReference.Slot`
 resta int grezzo, stesso standard di cautela di Skill/Monster. Non
 ancora cross-checked contro una cattura client reale.
 
+**Terza fonte per il layout tag: codice sorgente reale di OpenNos**
+(`OpenNos/OpenNos`, GPL, `OpenNos.Import.Console/ImportFactory.cs`,
+scaricato da `raw.githubusercontent.com` il 2026-09-06 — non vendorizzato
+in questo repository, solo consultato). Questo è il parser reale e
+funzionante di un server NosTale, non solo documentazione: la sua
+`ImportSkills` **riconferma indipendentemente** (terza fonte, dopo
+nt-research e il cross-check itempicker) le posizioni tag `DATA` già
+usate da `SkillReferenceDecoder` — `UpgradeSkill`@0, `CastTimeRaw`@4,
+`CooldownRaw`@5, `MpCost`@8, `RequiredItemVnum`@10 combaciano
+esattamente (nome diverso per la posizione 1: OpenNos la chiama
+`UpgradeType`, non `PartnerSkillId` — stessa posizione, etichetta
+diversa, resta comunque un campo grezzo non semanticamente promosso).
+
+La sua `ImportItems` contiene anche il parsing reale, per-`ItemType`,
+del tag `DATA` di Item.dat (~22 casi `switch (item.ItemType)`, es.
+`Weapon`: `LevelMinimum`/`DamageMinimum`/`DamageMaximum`/`HitRate`/
+`CriticalRate`; `Armor`: `LevelMinimum`/`CloseDefence`/`DistanceDefence`/
+`MagicDefence`/`DefenceDodge`) — esattamente il dato mancante per
+popolare `LoadoutEvaluation.EstimatedDps`/`EstimatedSurvivability`
+(AP-07) con statistiche reali invece che vuote. **Non ancora portato
+nel decoder**: la risoluzione dell'enum `ItemType` in quel codice usa
+una concatenazione di stringhe (`$"{(short)item.Type}{currentLine[3]}"`)
+che dipende da `OpenNos.Domain/ItemType.cs`'s enum reale (non ancora
+recuperato/verificato) — interpretarla senza controllare quel secondo
+file rischierebbe di applicare le statistiche al tipo item sbagliato,
+esattamente l'errore che la regola anti-fabbricazione del progetto
+vuole evitare. Resta un lead concreto e ben delimitato per un task
+futuro dedicato (Claude o DeepSeek), non un blocco permanente.
+
 ## Important distinction: secret knowledge vs exploit
 
 NosAi may exploit **knowledge asymmetry** (remembering community discoveries, correlating signals, predicting outcomes from observed data, choosing better routes). It must not exploit software vulnerabilities, manipulate the client, bypass cooldowns, inject packets, reveal server-only state or use bugs as gameplay advantages. The official game rules explicitly prohibit bug abuse and client manipulation.
