@@ -192,6 +192,52 @@ public static class Program
             return NosAi.Runtime.Navigation.WalkCommand.Run(walkGx, walkGy, dryRun);
         }
 
+        // One scout round (or --watch <n> rounds): pick the best unvisited frontier on
+        // the current map from the real World Model (ExplorationPlanner, AP-04) and
+        // walk to it by calling the same WalkCommand.Execute --walk uses, under the
+        // same commanded-authority family. It does not arm input.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.ScoutCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int scoutWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int scoutRounds = scoutWatchFlag >= 0 && scoutWatchFlag + 1 < args.Length
+                              && int.TryParse(args[scoutWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedScoutRounds)
+                              && parsedScoutRounds > 0
+                ? parsedScoutRounds
+                : 1;
+
+            return NosAi.Runtime.Navigation.ScoutCommand.Run(scoutRounds);
+        }
+
+        // One engage round (or --watch <n> rounds): execute and verify one
+        // UseSkill act named directly by the operator (target entity id + skill
+        // id), resolving the key from the operator's own keybinds and reading the
+        // player's vitals before/after. Same commanded-authority family as
+        // --walk/--scout. It does not arm input.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.EngageCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int engageIndex = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Tactical.EngageCommand.Flag, StringComparison.OrdinalIgnoreCase));
+            if (engageIndex + 2 >= args.Length)
+            {
+                Console.WriteLine("[REFUSED] --engage requires <targetEntityId> <skillId>");
+                return 1;
+            }
+
+            string targetEntityId = args[engageIndex + 1];
+            string skillId = args[engageIndex + 2];
+
+            int engageWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int engageRounds = engageWatchFlag >= 0 && engageWatchFlag + 1 < args.Length
+                               && int.TryParse(args[engageWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedEngageRounds)
+                               && parsedEngageRounds > 0
+                ? parsedEngageRounds
+                : 1;
+
+            return NosAi.Runtime.Tactical.EngageCommand.Run(targetEntityId, skillId, engageRounds);
+        }
+
         // Which intents the operator bound, and which the runtime can ask for
         // that are not bound. Non-zero when the file is missing or a required
         // prefix is uncovered. Does not write data/keybinds.json.
@@ -752,7 +798,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage"
         };
 
     private static int RunDxgiProbe()
