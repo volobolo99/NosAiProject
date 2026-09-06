@@ -99,6 +99,17 @@ public static class EngageCommand
     /// <summary>Reported when the composed backend is not the gated one.</summary>
     public const string UngatedBackendReason = "engage_input_backend_not_gated";
 
+    /// <summary>
+    /// Reported when <c>targetEntityId</c>/<c>skillId</c> is present but blank,
+    /// or <c>rounds</c> is less than one. <see cref="Program"/>'s dispatch only
+    /// checks argument *count*, not content, so a caller that resolves an
+    /// entity id to an empty string (e.g. an automation harness driving this
+    /// command from a not-yet-fused id) must get a clean refusal here, not an
+    /// unhandled exception -- the same [REFUSED] boundary every other guard in
+    /// this command already gives.
+    /// </summary>
+    public const string InvalidArgumentsReason = "engage_requires_non_blank_target_skill_and_positive_rounds";
+
     /// <summary>How long the after-read waits for the skill's resource cost to land.</summary>
     /// <remarks>
     /// Deliberately not a hardcoded value inside <see cref="ExecuteOneRound"/>:
@@ -170,9 +181,11 @@ public static class EngageCommand
     /// </summary>
     public static int Run(string targetEntityId, string skillId, int rounds = 1)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetEntityId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(skillId);
-        ArgumentOutOfRangeException.ThrowIfLessThan(rounds, 1);
+        if (string.IsNullOrWhiteSpace(targetEntityId) || string.IsNullOrWhiteSpace(skillId) || rounds < 1)
+        {
+            Console.WriteLine($"[REFUSED] {InvalidArgumentsReason}");
+            return WalkCommand.ExitAbandoned;
+        }
 
         if (!OperatingSystem.IsWindows())
         {

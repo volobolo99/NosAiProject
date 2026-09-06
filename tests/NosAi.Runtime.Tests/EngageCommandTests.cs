@@ -2,6 +2,7 @@ using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.LowLevel;
+using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Tactical;
 using Xunit;
 
@@ -317,6 +318,40 @@ public sealed class EngageCommandTests
         Assert.Equal(ActuationAuthority.MissingReason, evidence.Detail);
         Assert.Equal(0, reads); // nothing was read or pressed
         Assert.Empty(input.Presses);
+    }
+
+    // ------------------------------------------------------- Run(...) argument validation
+
+    // Program.cs's dispatch only checks argument *count*, not content, so a
+    // caller that resolves an entity id to an empty string (e.g. an
+    // automation harness driving --engage from a not-yet-fused id) can reach
+    // Run with a present-but-blank argument. It must be refused cleanly, not
+    // crash the process with an unhandled exception -- the same [REFUSED]
+    // boundary every other guard in this command already gives, and the only
+    // part of Run/RunWindows testable without a desktop.
+
+    [Fact]
+    public void Run_BlankTargetEntityId_IsRefusedCleanly_NeverThrows()
+    {
+        int exitCode = EngageCommand.Run(targetEntityId: "   ", skillId: "201");
+
+        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
+    }
+
+    [Fact]
+    public void Run_BlankSkillId_IsRefusedCleanly_NeverThrows()
+    {
+        int exitCode = EngageCommand.Run(targetEntityId: "mob-1", skillId: "");
+
+        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
+    }
+
+    [Fact]
+    public void Run_ZeroRounds_IsRefusedCleanly_NeverThrows()
+    {
+        int exitCode = EngageCommand.Run(targetEntityId: "mob-1", skillId: "201", rounds: 0);
+
+        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
     }
 
     // ------------------------------------------------------------ wiring

@@ -330,7 +330,6 @@ public static class WalkCommand
                         in request, report, in authority, sessionId, atUtc));
                     MovementVerification verification = report.Verification;
                     controller.NoteStepOutcome(in verification);
-                    onStepVerified?.Invoke(to, verification);
 
                     if (report.Emitted)
                     {
@@ -339,6 +338,11 @@ public static class WalkCommand
                             stepsSucceeded++;
                         else if (verification.Outcome == MovementOutcome.Stalled)
                             stepsStalled++;
+
+                        // Only an emitted step reaches this callback -- the
+                        // parameter's own contract (see its XML doc above) says a
+                        // guard refusal never does, because nothing was attempted.
+                        onStepVerified?.Invoke(to, verification);
                     }
                     else
                     {

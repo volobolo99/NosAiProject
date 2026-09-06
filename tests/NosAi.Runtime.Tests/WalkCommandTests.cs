@@ -117,7 +117,8 @@ public sealed class WalkCommandTests : IDisposable
         bool dryRun = false,
         WalkRig? rig = null,
         ActuationAuthority? authority = null,
-        Func<PositionReading?>? readPosition = null)
+        Func<PositionReading?>? readPosition = null,
+        Action<MapPoint, MovementVerification>? onStepVerified = null)
     {
         rig ??= new WalkRig();
         MapPoint from = origin ?? new MapPoint(2, 2);
@@ -138,7 +139,8 @@ public sealed class WalkCommandTests : IDisposable
             in used,
             readPosition ?? (() => null),
             dryRun,
-            timestampUtc: Now);
+            timestampUtc: Now,
+            onStepVerified: onStepVerified);
     }
 
     private static string GuardLine(string text, StepGuard guard) =>
@@ -349,6 +351,40 @@ public sealed class WalkCommandTests : IDisposable
         Assert.Contains(run.Events, e => e.EventType == SingleStepCommand.VerificationEventType);
         Assert.All(run.Events, e =>
             Assert.Equal("operator:" + WalkCommand.Flag, Field(Payload(e), WalkCommand.AuthorityField)));
+    }
+
+    [Fact]
+    public void OnStepVerified_NeverFiresForAStepAGuardRefused_OnlyForEmittedSteps()
+    {
+        // The parameter's own contract (WalkCommand.Execute's XML doc on
+        // onStepVerified) says a guard refusal never reaches the callback,
+        // because nothing was emitted. This is the mid-walk case that
+        // exercises it: the first step succeeds and fires the callback, which
+        // disarms live input; the second step is then refused by the policy
+        // guard before anything is emitted, and must not fire the callback a
+        // second time.
+        var rig = new WalkRig();
+        PositionReading arrival = new(new MapPoint(3, 2), Now.AddYears(1), DataSourceKind.Live);
+        var invocations = new List<MovementOutcome>();
+
+        void OnStepVerified(MapPoint requested, MovementVerification verification)
+        {
+            invocations.Add(verification.Outcome);
+            rig.Chain.Armed = false;
+        }
+
+        WalkRun run = Run(
+            new MapPoint(4, 2),
+            dryRun: false,
+            rig: rig,
+            readPosition: () => arrival,
+            onStepVerified: OnStepVerified);
+
+        Assert.Equal(WalkCommand.ExitGuardRefused, run.ExitCode);
+        Assert.Equal(StepGuardChain.InputNotArmedReason, run.StoppedBecause);
+        Assert.Equal(1, run.StepsEmitted);
+        Assert.Single(invocations);
+        Assert.Equal(MovementOutcome.Succeeded, invocations[0]);
     }
 
     [Fact]
