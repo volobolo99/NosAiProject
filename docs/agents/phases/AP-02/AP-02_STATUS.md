@@ -115,8 +115,59 @@ Nessuna regressione: tutti i test pre-esistenti di A1/A2/A3/A4/A5 restano verdi.
 ## 10. Item aperti, esplicitamente rimandati
 
 - **OCR reale e decoder ONNX addestrato**: problema di dati/ML, non di architettura — nessun modello/training pipeline esiste in questo repository. Bloccante per qualunque classificazione Mob/NPC/oggetti da visione.
-- **`HasTarget` da `TargetStateComposer`**: non cablato in `ScreenVitalsCapture` — richiede una `TargetRoiCalibration` calibrata che nessun codice di questo pass costruisce.
+- ~~**`HasTarget` da `TargetStateComposer`**: non cablato in `ScreenVitalsCapture`~~ — **risolto** (Q-067, DeepSeek, commit `4249418`, audit A5 senza difetti). Vedi §11.
 - **Inventario/finestre di dialogo**: nessun codice di lettura esiste (nessuna ROI, nessun reader) — costruzione da zero, non affrontata.
 - **DirectX draw-call interception** (ADR-0022 "Reading the world from what the client draws"): **proposta ma non adottata**, esplicitamente gated su un esperimento che spetta all'operatore umano, non a un agente ("The experiment is the operator's, not an agent's"). Nessun lavoro di questa fase tenta hook/injection — la capture resta esclusivamente DXGI Desktop Duplication (cattura legittima dei pixel), mai intercettazione di chiamate di disegno.
 - **Gestione `DXGI_ERROR_ACCESS_LOST` a metà sessione** (lock/unlock desktop, reset GPU): `ScreenVitalsCapture` non la distingue da un frame semplicemente non disponibile — richiederebbe modificare `DxgiCapture.cs`, fuori ambito per questo pass (sola lettura).
-- Triplicazione di `DataSourceKind`/`ClassifiedValue<T>`/`WorldFact<T>` tra `NosAi.Runtime.Contracts`, `NosAi.Core.Hardware` e `NosAi.Core.WorldModel` — segnalata da A1/A5 in AP-01, ancora aperta, non ri-analizzata qui.
+- ~~Triplicazione di `DataSourceKind`~~ — **chiusa** con `docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`: confermata duplicazione intenzionale per bounded context, non un difetto.
+
+## 11. A2+A4 addendum — `TargetStateComposer` cablato in `ScreenVitalsCapture` (Q-067)
+
+Gap dichiarato al §10 chiuso: `HasTarget` non era più `Unknown` per una
+ragione di codice (`"target_state_composer_not_wired_in_this_pass"`), ma
+solo per la ragione di dati onesta già gestita da
+`TargetStateComposer.Compose` stesso
+(`target_roi_not_calibrated`, finché un operatore non calibra via
+`HudProbe`). Indagine preliminare (questa sessione) ha trovato il
+meccanismo già completamente reale e già in uso lato wire
+(`TargetAwareGameplayProvider`) — nessun nuovo tipo di dominio necessario,
+solo wiring.
+
+Consegnato da DeepSeek (commit `4249418`): `ScreenVitalsCapture` accetta
+ora `targetCalibration`/`wire` opzionali; nuovo `SingleFrameSource`
+(nested, privato) preserva l'invariante "un frame, più lettori" — nessuna
+seconda acquisizione DXGI reale per ciclo. `wire: null` esplicito e
+documentato (nessun `IPlayerAttackObserver` disponibile al punto di
+composizione in `Program.cs` oggi — stessa degradazione già accettata da
+`TargetAwareGameplayProvider`).
+
+**Audit indipendente (Claude, A5)**: rilettura riga per riga dei 3 file
+diff-ati contro la specifica
+(`AP-02_A2A4_DEEPSEEK_target_state_wiring.md`), poi build/test in un
+worktree isolato puntato su `origin/main`. **Nessun difetto trovato** —
+terza consegna DeepSeek pulita di questa sessione (dopo `--recover` e il
+ledger wiring AP-09). Verificato: nessuna seconda acquisizione frame
+(`SingleFrameSource` restituisce sempre lo stesso `CaptureFrame`), i due
+nuovi test di regressione provano che i parametri opzionali sono inerti
+sul percorso fail-closed esistente (nessuna regressione sulle ragioni di
+rifiuto già testate), il secondo test è scritto per essere
+host-indipendente (funziona sia su questo sandbox Linux sia su un
+eventuale host Windows reale) — un miglioramento non richiesto dalla
+specifica ma corretto.
+
+**Evidenza build/test (indipendente)**:
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato.
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~ScreenVitalsCaptureTests" → 11/11
+dotnet test .../NosAi.Runtime.Tests.csproj → 2024/2082, 0 falliti, 58 skip
+dotnet test .../NosAi.Core.Tests.csproj → 623/623, 0 falliti
+```
+
+**Limite dichiarato, invariato**: il valore composto reale di `HasTarget`
+(`Derived(true/false)` una volta calibrato) resta non esercitato da
+nessun test in questo ambiente — stesso limite già dichiarato per il
+resto del ramo "frame acquisito" di `Capture()` (la lettura vitali sulla
+stessa riga soffre della stessa cosa). Non peggiorato da questa consegna,
+non risolto da essa. Livello: `Present` per il codice nuovo, `Integrated`
+solo con conferma umana su un client Windows reale con una calibrazione
+reale.
