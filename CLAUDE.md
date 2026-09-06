@@ -77,6 +77,14 @@ Do not hardcode a static macro where a model/planner is required. Prefer strateg
 
 Mocks/fixtures support isolated tests only. Client integration, perception and actuation require real target validation before `Verified`.
 
+## External reference data
+
+Before declaring a data gap permanently blocked (a byte/field with no known meaning, a missing lookup table, an undocumented file format), check for a legitimate, verifiable external source — community-maintained documentation, official specs, or open-source reference implementations that had to solve the same problem. Fetch and cite it (source name/URL in the commit and in the code's own doc comment) rather than guessing or leaving the gap unexamined.
+
+An external source is a lead, not a ground truth: cross-check at least one decoded value against a real, observed one (a live client reading, a known in-game number) before trusting it on any path that is not purely diagnostic. A field the source itself does not document stays `Unknown` — never filled in by inference from an adjacent, documented field.
+
+Do not write a test whose only purpose is to measure or report an unresolved data gap (a "coverage" assertion that a field correctly stays `Unknown`) without first checking whether a real external source would close that gap instead. This does not relax "delete or weaken tests" above: when a gap closes, the test that asserted the old `Unknown` behavior is updated to assert the new, verified decoded value — never deleted to avoid updating it.
+
 ## Git discipline
 
 Use small imperative commits with one coherent purpose. Never rewrite unrelated history. Keep each phase's parallel-agent commits disjoint by file ownership. Integration commits may combine only the completed outputs of the current phase.
