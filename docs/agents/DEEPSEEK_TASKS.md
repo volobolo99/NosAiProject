@@ -109,27 +109,16 @@ In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`
 
 ## Pronto ora
 
-**Sì — AP-04/A2+A4, comando `--scout`.** Specifica completa e precisa:
-`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md`. Non è
-un bridge verso `Gate3Runtime` (un'indagine ha confermato che quella
-pipeline è chiusa/hardcoded e le manca comunque una predizione di
-movimento reale — lavoro futuro di AP-08, non di AP-04): è un nuovo
-comando operatore `--scout` che calcola il `NavigationPlan` (già reale,
-Claude/A3) e lo esegue chiamando **direttamente** `WalkCommand.Execute`
-(già reale, invariato) con `ActuationAuthority.Commanded("--scout")` —
-stessa famiglia legittima di `--walk`, zero bypass di Guard/Trust/Safety.
-File da creare: `MovementVerificationProjector.cs` (A2, piccolo,
-meccanico) + `ScoutCommand.cs` (A4, il lotto pesante) + i rispettivi
-test. Un solo file esistente da toccare, in modo additivo e minimo:
-`WalkCommand.cs` (un parametro opzionale in più su `Execute`, dettagliato
-nella specifica). Tutto il resto nella specifica stessa — seguila alla
-lettera, non improvvisare la forma dei parametri.
-
-**Nota sul nome:** il comando si chiama `--scout`, non `--explore` —
-scelto apposta per non confonderlo con il namespace/concetto di dominio
-`Exploration` (`ExplorationFootprint`, `ExplorationPlanner`, il nome
-della fase AP-04 stessa), che restano invariati. Non chiamare nulla
-`Explore*` in questo task.
+**AP-04/A2+A4 (`--scout`) e AP-05/A2+A4 (`--engage`) sono entrambi CONSEGNATI**
+(dal 2026-09-06, livello `Present`: build+test verdi, nessuna regressione,
+nessun client reale disponibile per `Verified`). Specifiche di riferimento:
+`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md` (progetto)
+e `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md`
+(combattimento). Non sono bridge verso `Gate3Runtime` (indagini concluse:
+quella pipeline è chiusa/hardcoded — lavoro futuro di AP-08). Nessuna
+sezione "pronto ora" attiva in questo momento: i prossimi task DeepSeek
+(A2/A4 di AP-06, AP-07, ...) restano bloccati sui gap dati reali segnalati
+sotto, nessuno chiudibile scrivendo altro codice di fase.
 
 ---
 
@@ -235,17 +224,17 @@ indipendente da AP-04, chiedilo esplicitamente.
   (`GameReferenceDatabase`/`Item.dat`) non ancora decodificata
   semanticamente — da verificare prima di specificarlo come task.
 - ~~**Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**~~
-  **— deciso e specificato (Q-037/Q-038/Q-039).** Decisione presa:
-  percorso (a), verifica solo-vitali-player (onesta ma parziale — conferma
-  il costo risorsa, non il colpo sul bersaglio; il percorso (b), chiudere
-  prima il gap di fusione HP-mob in AP-02, resta bloccato sul gap OCR/ONNX
-  indefinitamente). Contratto mancante `CombatExecutionEvidence`/
+  **— deciso, specificato e CONSEGNATO (Q-037/Q-038/Q-039).** Decisione
+  presa: percorso (a), verifica solo-vitali-player (onesta ma parziale —
+  conferma il costo risorsa, non il colpo sul bersaglio; il percorso (b),
+  chiudere prima il gap di fusione HP-mob in AP-02, resta bloccato sul gap
+  OCR/ONNX indefinitamente). Contratto mancante `CombatExecutionEvidence`/
   `CombatExecutionResult` scritto e testato
   (`src/NosAi.Core/WorldModel/Combat/CombatExecutionContracts.cs`).
-  Specifica DeepSeek pronta e precisa (task A2+A4, ora un task DeepSeek
-  pronto, non più "da investigare"):
+  **A2+A4 eseguiti da DeepSeek il 2026-09-06, livello `Present`:**
   `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md` —
-  comando operatore `--engage <targetEntityId> <skillId>`, esecuzione via
+  `CombatVerificationProjector` (A2) + comando operatore
+  `--engage <targetEntityId> <skillId>` (A4), esecuzione via
   `KeybindMap`+`GatedInputBackend.KeyPress` (stessa primitiva reale già
   usata da `WalkCommand`/`SingleStepExecutor`, indipendente da
   `Gate3Runtime`), verifica via `ClientMemorySession.TryReadPlayerVitals`
