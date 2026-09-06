@@ -32,6 +32,19 @@ public sealed record InventoryItem(
 /// about an item, not a slot an <see cref="EquipmentItem"/> could ever
 /// occupy, so it has no member here.
 /// </para>
+/// <para>
+/// Independently confirmed a second time: <c>nt-research.github.io</c>'s
+/// own <c>Item.dat</c> file-format page (cited by
+/// <c>NosAi.Runtime.GameData.ItemReference</c>) documents the client's
+/// <c>EquipmentSlot</c> field, citing <c>OpenNos.Domain/EquipmentType.cs</c>,
+/// as the same eighteen values in the same order -- <c>MainWeapon</c>,
+/// <c>Sp</c> and <c>Wings</c> there are this enum's <see cref="Weapon"/>,
+/// <see cref="SpecialistCard"/> and <see cref="CostumeWings"/>. Two
+/// independent sources agreeing on all eighteen positions, on top of the
+/// Italian-name check above, is why this enum is typed rather than a raw
+/// integer despite no field here having been cross-checked against an
+/// actual live client capture.
+/// </para>
 /// </remarks>
 public enum EquipmentSlot
 {

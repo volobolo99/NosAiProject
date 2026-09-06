@@ -238,7 +238,7 @@ Gallery/Patch Notes; JSON scaricabili direttamente via `/items.json`,
   Implementato `MonsterReferenceDecoder`
   (`src/NosAi.Runtime/GameData/MonsterReferenceDecoder.cs`, 10 test),
   che decodifica ogni tag tranne `PARTNER` (sempre 20 zeri, nessun
-  significato noto) e `MODE` (struttura ambiguא nella sola
+  significato noto) e `MODE` (struttura ambigua nella sola
   documentazione — 5 BCard + 7 valori di coda, non decidibile con
   certezza se su una riga combinata o ripetuta senza un file client
   reale da ispezionare — omesso di proposito piuttosto che indovinato).
@@ -261,6 +261,25 @@ Gallery/Patch Notes; JSON scaricabili direttamente via `/items.json`,
   richiesto da alcun contratto esistente.
 - Endpoint icona (`/api/items/icon/{vnum}`, `/api/monsters/icon/{id}`)
   restano non scaricati/collegati alle voci dati.
+
+**`Item.dat` decodificato (2026-09-06)**: stessa fonte (`nt-research.
+github.io/docs/NOS files/NSgtdData/Item_dat`), che cita a sua volta tre
+fonti reali (`NosCore.Parser/Parsers/ItemParser.cs`,
+`OpenNos.Import.Console/ImportFactory.cs`, `itempicker.atlagaming.eu`).
+Nuovo `ItemReferenceDecoder` (`src/NosAi.Runtime/GameData/
+ItemReferenceDecoder.cs`, 12 test): VNUM/Price, INDEX (InventoryType/
+ItemType/ItemSubType/Slot/IconId/VisualChangeId), TYPE, i 23 FLAG
+nominati, i 20 DATA grezzi (dichiarati dalla fonte stessa "dipendenti
+dal tipo item", mai interpretati), BUFF (5 BCard) e LINEDESC.
+
+**Scoperta di rilievo**: quella pagina documenta il proprio campo
+`EquipmentSlot` citando `OpenNos.Domain/EquipmentType.cs` con gli
+stessi 18 valori, stesso ordine, di `NosAi.Core.WorldModel.EquipmentSlot`
+(Q-085 sopra, derivato da nomi item italiani in `items.json`) — seconda
+conferma indipendente dello stesso schema. Per questo `ItemReference.Slot`
+è l'unico campo tipizzato sull'enum reale del progetto; tutto il resto
+resta int grezzo, stesso standard di cautela di Skill/Monster. Non
+ancora cross-checked contro una cattura client reale.
 
 ## Important distinction: secret knowledge vs exploit
 
