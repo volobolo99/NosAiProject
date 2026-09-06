@@ -188,7 +188,7 @@ public static class ScoutCommand
         if (!OperatingSystem.IsWindows())
         {
             Console.WriteLine($"[REFUSED] {NotWindowsReason}");
-            return ExitNothingToScout;
+            return WalkCommand.ExitAbandoned;
         }
 
         return RunWindows(rounds);
