@@ -170,71 +170,26 @@ Q-071/072), rilevamento presenza/assenza finestra di dialogo cablato in
 verso `Gate3Runtime` (indagini concluse: quella pipeline è chiusa/
 hardcoded — lavoro futuro di AP-08).
 
-**IN CORSO ORA**: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_route_command.md`
-(Q-078) — enumerazione mappe persistite (`MapModelStore.ListMapIds`,
-`MapReconstructionSource.LoadAllKnownMaps`) + nuovo comando diagnostico
-read-only `--route <mapId> <x> <y>` (`RouteProbe`, pianifica e stampa,
-non cammina), usando l'algoritmo `MultiMapRoutePlanner` (Q-077, Claude)
-sui `Portal` reali che `--scout`/`--autoplay` accumulano da Q-071.
+**CONSEGNATO E INTEGRATO** (2026-09-06): `--route <mapId> <x> <y>`
+(Q-078/Q-079) — enumerazione mappe persistite + comando diagnostico
+read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
+difetto trovato in audit.
 
-Oltre a questo, nessun altro task DeepSeek pronto in questo momento:
-AP-07 (equip/unequip/upgrade) resta genuinamente bloccato (nessuna
-primitiva di esecuzione, nessuna calibrazione UI pannello, nessun opcode
-di rete equip mai identificato — vedi "Candidati da investigare" sotto),
-e i gap residui su AP-09/AP-10 restano OCR/ONNX o dati skill/item non
-decodificati semanticamente, non chiudibili scrivendo altro codice di
-fase. Vedi `docs/agents/EXECUTION_QUEUE.md` per lo storico completo dei
-Q-number.
+**Nessun task DeepSeek pronto in questo momento** — AP-04/AP-05/AP-06/
+AP-08 sono tutte `Integrated`; AP-07 (equip/unequip/upgrade) resta
+genuinamente bloccato (vedi "Candidati da investigare" sotto); i gap
+residui su AP-09/AP-10 restano OCR/ONNX o dati item non decodificati
+semanticamente, non chiudibili scrivendo altro codice di fase. Vedi
+`docs/agents/EXECUTION_QUEUE.md` per lo storico completo dei Q-number.
 
 ---
 
-## Prossimo lotto: AP-04 — Exploration & Navigation
+## AP-04 — chiuso
 
-**A1 fatto** (2026-09-05, in parallelo all'audit A5 di AP-03 — vedi
-l'eccezione dichiarata in `docs/agents/EXECUTION_QUEUE.md`):
-`src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs` —
-`ExplorationFootprint`, `FrontierCandidate`, `NavigationWaypoint`,
-`NavigationPlan`. 12 test verdi, build pulita. Dettaglio completo in
-`docs/agents/phases/AP-04/AP-04_A1_STATUS.md`.
-
-**Indagine conclusa.** `NavigationPathfinding.cs`'s `WorldMapPortalRouter`
-fa routing multi-mappa reale come algoritmo (Dijkstra su portali,
-deterministico) ma su un grafo **hardcoded** (5 mappe/4 portali, fixture di
-test) raggiungibile solo dalla propria suite di test — nessuna fonte dati
-reale per i portali esiste da nessuna parte nel repository (`Portal` è
-sempre vuoto in ogni `MapModel` prodotto oggi, confermato per grep). Non
-c'è quindi nessun bridge/adapter possibile verso quel router: il dato reale
-a cui fare da ponte non esiste, stesso blocco di AP-02 con OCR/ONNX (manca
-il dato, non l'architettura).
-
-**Ambito ristretto di conseguenza, onestamente**: il prossimo lotto di
-AP-04 copre solo esplorazione/routing sulla stessa mappa (nessun portale).
-Il routing multi-mappa via portali resta un candidato in "Candidati da
-investigare" sotto, non uno spunto per DeepSeek adesso.
-
-**A3 fatto** (2026-09-05): `ExplorationPlanner` (footprint, ranking
-frontiera, `NavigationPlan` a singolo waypoint) + il contratto A1
-mancante (`MovementExecutionEvidence`/`MovementExecutionResult`). 27 test
-verdi. Dettaglio in `AP-04_A1_STATUS.md` §"A3 + contratto A1 mancante".
-
-**A2+A4 pronto ora**, vedi "Pronto ora" in cima a questo file — non un
-bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è
-chiusa/hardcoded, le manca una predizione di movimento reale, e il suo
-effettore per `MoveToPosition` è un click-teleport, non una camminata
-verificata — tre pezzi mancanti che sono lavoro futuro di AP-08
-"Strategic Autonomy + HTN", non di AP-04). Il ponte reale e costruibile
-oggi è un nuovo comando operatore `--scout` che chiama direttamente
-`WalkCommand.Execute` (già reale, Gate-1-verificato, invariato) con
-un'authority `Commanded` — stessa famiglia legittima di `--walk`, nessun
-bypass di Guard/Trust/Safety, nessuna authority "autonoma" inventata
-(ADR-0020 ne vieta una terza).
-
-Per studiare in anticipo il dominio (non per scrivere codice ancora):
-`third_party/sources/ikpil/DotRecast/` (navmesh/pathfinding di riferimento),
-`third_party/sources/ptrefall/FluidHTN/` (pianificazione gerarchica),
-`src/NosAi.Core/Navigation/` e `src/NosAi.Runtime/Navigation/` (contratti e
-codice di navigazione già esistenti, sistema Gate 1-6 pre-canonico, da non
-confondere con i nuovi contratti AP-04).
+`Integrated` (Q-029/043/044/077/078/079). Storico completo in
+`docs/agents/EXECUTION_QUEUE.md` e `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`.
+Il routing multi-mappa via portali resta un candidato futuro, non un
+task pronto (vedi "Candidati da investigare").
 
 ---
 
