@@ -16,12 +16,14 @@ namespace NosAi.Core.WorldModel.Exploration;
 /// <remarks>
 /// <b>Scope, honestly restricted (docs/agents/phases/AP-04/AP-04_A1_STATUS.md):</b>
 /// every <see cref="NavigationPlan"/> this class builds stays on one map --
-/// <see cref="NavigationWaypoint.UsePortal"/> is always <see langword="null"/>.
-/// No real portal-connectivity data source exists anywhere in this
-/// repository yet (confirmed by inspection: <c>Portal</c>/
-/// <c>EquatableArray&lt;Portal&gt;</c> are empty in every <see cref="MapModel"/>
-/// produced today), so multi-map routing is not fabricated here -- same
-/// principle as AP-02's missing OCR/ONNX assets.
+/// <see cref="BuildNavigationPlan"/>'s <see cref="NavigationWaypoint.UsePortal"/>
+/// is always <see langword="null"/>. This class deliberately never chains
+/// across a portal to a different map: frontier selection is a same-map
+/// concept (a candidate tile's <see cref="FrontierCandidate.MapId"/> is
+/// always the map already being explored). A route across more than one
+/// map, once real portal-connectivity data exists to route through
+/// (docs/agents/EXECUTION_QUEUE.md Q-070/Q-071), is a separate concern --
+/// see <see cref="MultiMapRoutePlanner"/>.
 /// </remarks>
 public static class ExplorationPlanner
 {
