@@ -96,3 +96,74 @@ tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`: **525/525**,
 **Livello di verifica:** `Present` — contratti e algoritmo parziale
 scritti, testati, compilano puliti; non ancora `Integrated` in nessun
 ciclo runtime.
+
+## AP-07/A2+A4 — indagine mirata: genuinamente bloccato, non solo rimandato
+
+Stessa disciplina "investigate before speccing" già applicata a AP-04
+(`--scout`), AP-05 (`--engage`) e AP-06 (`--collect`, dove l'indagine ha
+trovato un canale reale inatteso). Qui il risultato è diverso e va
+detto altrettanto chiaramente: **non esiste alcuna fetta onesta e
+costruibile oggi**, né per l'esecuzione né per la verifica, per nessuno
+dei tre `LoadoutActionKind` (`Equip`/`Unequip`/`Upgrade`). Non è un
+rinvio per pigrizia — è confermato per ispezione diretta, non assunto:
+
+1. **Nessuna primitiva di esecuzione esiste, in nessuno dei due
+   sistemi.** `NosAi.Runtime.Contracts.ActionType` (il sistema Gate 1-6
+   preesistente) non ha nemmeno una voce `Equip`/`Unequip`/`Upgrade` —
+   a differenza di `CollectGroundItem`/`RestAndRecover`, che almeno
+   esistono come voci dichiarate-ma-non-implementate
+   (`InputActionEffector.cs`: `"action_not_implemented"`), qui non c'è
+   proprio un concetto modellato. Grep su `Equip`/`Unequip`/`wear`/`put`
+   in tutto `src/NosAi.Runtime`: zero risultati.
+2. **Nessun tasto/hotkey esiste per equipaggiare.** A differenza di
+   skill/consumabili (`KeybindsCheck.RuntimeIntentPrefixes`,
+   `skill.`/`consumable.`), equipaggiare in NosTale è un'interazione UI
+   (drag-and-drop o doppio click su uno slot inventario/equipaggiamento),
+   non una hotkey. Un click su un punto schermo è tecnicamente possibile
+   (`IInputBackend.Click`/`MoveAbsolute` esistono, riusabili), ma
+   **manca il layout**: nessuna calibrazione screen-space per gli slot
+   del pannello inventario/equipaggiamento esiste in questo repository
+   (`ScreenProjectionCalibration`/`CalibratedScreenProjection` proiettano
+   coordinate di **mondo di gioco** su schermo per mirare a un bersaglio,
+   non coordinate fisse di un pannello UI — un problema diverso, non
+   ancora affrontato da nessun codice esistente).
+3. **Nessun canale di verifica esiste per lo stato equipaggiato.**
+   `docs/PROTOCOLLO_NOSTALE.md`: zero menzioni di equip/wear/gear —
+   nessun opcode di rete per un cambio di equipaggiamento è mai stato
+   identificato, tantomeno decodificato. Il canale già reale
+   (`InventorySlotReading` via `ivn`, usato per `--collect`/AP-06) non
+   basta: `GameplayObservationProjector`'s stesso commento dichiara
+   `InventorySlotReading.InventoryKind` privo di significato noto, quindi
+   "equipaggiato" vs "nello zaino" **non è distinguibile** dallo stesso
+   dato che ha risolto `Collect`. `Player.Equipment` resta vuoto per lo
+   stesso motivo (non un'omissione di questa fase).
+
+**Differenza dalla stessa indagine per AP-05/AP-06**: lì un percorso
+onesto e parziale esisteva (vitali player per AP-05, canale network reale
+per Collect in AP-06) — qui nessuno dei due lati (esecuzione, verifica)
+ha nemmeno un punto di appoggio parziale. Forzare comunque una specifica
+DeepSeek `--equip`/`--upgrade` oggi significherebbe o inventare un
+meccanismo di click su coordinate mai calibrate (dato fabbricato
+spacciato per un layout reale) o dichiarare verificato un cambio di
+equipaggiamento che il canale dati non può confermare — esattamente ciò
+che CLAUDE.md vieta.
+
+**Conclusione: AP-07/A2+A4 non è specificabile per DeepSeek in questo
+momento.** Non una decisione da prendere con l'utente (a differenza di
+AP-05, dove due strade erano entrambe percorribili): qui manca
+l'infrastruttura di base su entrambi i lati. Cosa servirebbe prima,
+segnalato per riferimento futuro, non avviato qui:
+
+- una calibrazione screen-space per il pannello inventario/equipaggiamento
+  (stesso genere di lavoro di `ScreenProjectionAutoCalibrator`, ma per
+  un pannello UI fisso invece che per la proiezione mondo→schermo);
+  oppure una mappatura nota slot-di-rete → slot-schermo, se il layout
+  del pannello è fisso e documentabile senza calibrazione dinamica;
+- un opcode di rete per il cambio di equipaggiamento, se esiste ed è
+  semplicemente non ancora identificato in `docs/PROTOCOLLO_NOSTALE.md`
+  (da verificare con una cattura dedicata, non assunto assente per
+  sempre — la stessa cautela già usata prima di dichiarare `Collect`
+  bloccato, che si è rivelata sbagliata).
+
+Segnalato in `docs/agents/DEEPSEEK_TASKS.md` come gap di infrastruttura,
+non come task pronto.

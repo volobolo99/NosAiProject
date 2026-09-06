@@ -18,6 +18,19 @@ namespace NosAi.Core.WorldModel.Quests;
 /// execute a chosen objective (walk there, talk to the NPC, fight the
 /// mob) -- that composes with AP-04's `--scout`/movement bridge and a
 /// future AP-05 combat bridge, not something this type owns.
+///
+/// <para>
+/// One exception, confirmed by direct investigation rather than assumed:
+/// <see cref="AssessCollectProgress"/> covers the one slice of "AP-06/A2's
+/// job" that does <b>not</b> need OCR. A <see cref="QuestObjectiveKind.Collect"/>
+/// objective's progress is just an item count, and item counts are already
+/// a real World Model fact -- <c>NosAi.Runtime.WorldModel.Fusion.GameplayObservationProjector</c>
+/// (AP-01/A2, already <c>Integrated</c>) fuses the wire's own <c>ivn</c>
+/// packets into <c>Player.Inventory</c> today. Every other objective kind
+/// still needs the blocked OCR/UI path (to learn a quest exists at all) or
+/// a still-missing execution primitive (Dialogue/Interact/Kill/Deliver) --
+/// this one exception does not reopen those.
+/// </para>
 /// </remarks>
 public static class QuestGraphPlanner
 {
@@ -110,6 +123,75 @@ public static class QuestGraphPlanner
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// The observed current count for a <see cref="QuestObjectiveKind.Collect"/>
+    /// objective, read from the player's own already-fused inventory --
+    /// real <c>ivn</c> wire evidence (see this type's own remarks), not a
+    /// guess and not OCR.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <paramref name="inventory"/> being empty is genuinely ambiguous in
+    /// this World Model: <c>Player.Inventory</c> is an
+    /// <see cref="EquatableArray{T}"/>, never a nullable list, so "nothing
+    /// has been read from the wire yet" and "the wire confirmed every slot
+    /// is empty" collapse to the same empty array -- a gap already present
+    /// one layer up, in <c>GameplayObservationProjector</c> itself, not
+    /// something this method can resolve. It does not guess: an empty
+    /// <paramref name="inventory"/> returns <c>Unknown</c>, naming both
+    /// possibilities in its reason, rather than assuming zero.
+    /// </para>
+    /// <para>
+    /// A non-empty <paramref name="inventory"/> that simply does not list
+    /// <paramref name="target"/>'s item is a different, unambiguous case:
+    /// the channel is confirmed live (other slots are known), so the
+    /// absence of this one item really does mean zero of it -- returned as
+    /// a known <c>Live</c> fact, not <c>Unknown</c>.
+    /// </para>
+    /// <para>
+    /// When the item appears in one or more slots, their
+    /// <see cref="InventoryItem.Quantity"/> is summed -- a stackable item
+    /// can occupy more than one slot. Any matching slot whose own quantity
+    /// is itself <c>Unknown</c> makes the total <c>Unknown</c>: a partial
+    /// sum would silently under-report.
+    /// </para>
+    /// </remarks>
+    public static WorldFact<int> AssessCollectProgress(
+        QuestObjectiveTarget target,
+        EquatableArray<InventoryItem> inventory,
+        DateTime observedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        if (target.Kind != QuestObjectiveKind.Collect)
+        {
+            throw new ArgumentException(
+                $"{nameof(AssessCollectProgress)} only applies to {QuestObjectiveKind.Collect} objectives.",
+                nameof(target));
+        }
+
+        if (inventory.Count == 0)
+            return WorldFact<int>.Unknown("inventory_not_observed_or_confirmed_empty", observedAtUtc);
+
+        ItemId item = target.Item!.Value;
+        var total = 0;
+        var found = false;
+        foreach (InventoryItem slot in inventory)
+        {
+            if (!slot.Id.Equals(item))
+                continue;
+
+            found = true;
+            if (!slot.Quantity.HasValue)
+                return WorldFact<int>.Unknown("matching_slot_quantity_unknown", observedAtUtc);
+
+            total += slot.Quantity.Value;
+        }
+
+        return WorldFact<int>.Live(
+            total, confidence: 1d, observedAtUtc,
+            reason: found ? null : "item_absent_from_observed_inventory");
     }
 
     private static Quest? TryFindQuest(QuestId id, EquatableArray<Quest> quests)

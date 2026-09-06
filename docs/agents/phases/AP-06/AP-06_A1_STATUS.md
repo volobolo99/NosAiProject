@@ -99,3 +99,93 @@ NosAi.sln -c Release`: 0 errori (1 warning preesistente non collegato).
 testati, compilano puliti; non ancora `Integrated` in nessun ciclo
 runtime, perché niente li produce/consuma ancora (né `Quest`/
 `QuestObjective` stessi lo sono, a monte).
+
+## AP-06/A2+A4 — indagine mirata, decisione, algoritmo e specifica DeepSeek
+
+Stessa disciplina "investigate before speccing" già usata per AP-04
+(`--scout`) e AP-05 (`--engage`): prima di dichiarare A2 bloccato per
+intero sul gap OCR/ML (come la sezione precedente assumeva), è stata
+condotta un'indagine mirata riga per riga invece di assumere.
+
+**Trovato, non assunto:** la DoD di AP-06 dice "OCR/UI/**network**
+evidence" — tre fonti, non una sola. Il canale rete per `Collect` esiste
+già, reale e decodificato, **indipendentemente da qualunque modello
+ML**:
+
+- `NosTaleWorldProtocolDecoder.cs` decodifica già i pacchetti `ivn`
+  (contenuto slot inventario), `get` (raccolta oggetto a terra) e `drop`
+  (oggetto a terra visibile) in `InventorySlotReading`/`ItemPickup`/
+  `GroundItem` (`src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs`).
+- `GameplayObservationProjector.Project` (AP-01/A2, **già `Integrated`**)
+  fonde già questi pacchetti in `Player.Inventory: EquatableArray<InventoryItem>`
+  e `WorldModelSnapshot.Drops: EquatableArray<Drop>`, con la stessa
+  convenzione `ItemId(vnum.ToString())` usata ovunque nel progetto.
+  Questo NON è un gap da chiudere per `Collect`: è già chiuso, da
+  un'altra fase, e questa sezione lo usa senza rifarlo.
+- `LiveObservationGateway.Capture()` (`src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs`)
+  dà una lettura live "un colpo solo" (nessun loop di polling nascosto),
+  esattamente lo stesso ruolo di `ClientMemorySession.TryReadPlayerVitals`
+  per AP-05/A2+A4 — componibile prima/dopo un'esecuzione.
+
+**Cosa resta bloccato, confermato non assunto:**
+
+- **Travel**: non serve nulla di nuovo. `WalkCommand.Execute`/`--walk`
+  (già reale, Gate-1-verificato) esegue già esattamente "vai a una
+  posizione" — un obiettivo `Travel` compone con l'esecuzione esistente
+  senza scrivere altro codice.
+- **Kill**: bloccato due volte, non una sola. Oltre al gap HP-mob già
+  noto (AP-05), `GameplayObservationProjector`'s stesso commento dice
+  che `WorldModelSnapshot.Mobs`/`Npcs` restano vuoti perché "un vnum di
+  rete non si può distinguere da solo tra mostro e NPC senza un
+  catalogo di riferimento" — quindi anche solo *identificare* il
+  bersaglio di un obiettivo Kill dal World Model canonico è bloccato,
+  non solo verificarne l'esito.
+- **Dialogue/Interact/Deliver**: nessuna primitiva di esecuzione esiste
+  (nessun intento tastiera "interact" in `KeybindsCheck.RuntimeIntentPrefixes`,
+  nessun pacchetto di dialogo decodificato in `ProtocolMap`/
+  `NosTaleWorldProtocolDecoder`) e nessun canale di verifica (serve
+  leggere il testo di una finestra di dialogo, OCR bloccato). Restano
+  `Present`/non specificati.
+
+**Consegnato ora (A2, Claude — nessun lavoro DeepSeek necessario per
+questo pezzo, i dati sono già fusi da un'altra fase):**
+
+`src/NosAi.Core/WorldModel/Quests/QuestGraphPlanner.cs`,
+`AssessCollectProgress(QuestObjectiveTarget, EquatableArray<InventoryItem>, DateTime) -> WorldFact<int>`
+— il conteggio osservato per un obiettivo `Collect`, dal `Player.Inventory`
+già fuso. Disciplina "unknown non è zero" applicata con un ragionamento
+esplicito e non ovvio (documentato nel proprio commento XML): un
+inventario vuoto è genuinamente ambiguo in questo World Model
+(`EquatableArray<InventoryItem>` non è nullable, quindi "mai osservato"
+e "confermato vuoto" collassano nella stessa rappresentazione un
+livello sopra, in `GameplayObservationProjector` stesso) e quindi
+restituisce `Unknown`, non zero; un inventario non vuoto che
+semplicemente non elenca l'item richiesto è invece un caso diverso e
+non ambiguo (il canale è confermato vivo) e restituisce zero **noto**.
+Somma tra slot multipli dello stesso item; qualunque slot corrispondente
+con quantità `Unknown` rende il totale `Unknown` (mai una somma
+parziale spacciata per completa).
+
+Test: `tests/NosAi.Core.Tests/WorldModel/Quests/QuestGraphPlannerTests.cs`
+(6 test nuovi, tutti verdi). `dotnet build NosAi.sln -c Release`: 0
+errori (1 warning preesistente non collegato). `dotnet test
+tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`: **579/579**,
+0 falliti (573 precedenti + 6 nuovi, zero regressioni).
+
+**Specifica DeepSeek scritta (A4)**:
+`docs/agents/phases/AP-06/AP-06_A2A4_DEEPSEEK_collect_command.md` —
+comando operatore `--collect <x> <y> <vnum> [<requiredCount>]`: cammina
+verso la posizione data (`WalkCommand.Execute`, riusato invariato,
+`ActuationAuthority.Commanded`), legge l'inventario reale prima/dopo
+con `LiveObservationGateway.Capture()` + `GameplayObservationProjector`
+(entrambi già reali e `Integrated`), confronta con
+`QuestGraphPlanner.AssessCollectProgress`. Ambito volutamente ristretto
+allo stesso modo di `--engage`: l'operatore nomina posizione e item
+direttamente, nessuna scoperta automatica del `GroundItem` più vicino
+(richiederebbe un algoritmo di selezione non ancora scritto — segnalato
+come estensione futura, non un blocco).
+
+**Livello di verifica per questo passaggio:** `Present` — indagine
+conclusa, decisione presa, algoritmo A2 scritto/testato, specifica
+DeepSeek A4 completa e precisa. Non ancora `Integrated`: `CollectCommand`
+non è stato ancora scritto (compito DeepSeek, A4).
