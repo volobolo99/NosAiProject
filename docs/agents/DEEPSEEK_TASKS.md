@@ -159,18 +159,32 @@ In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`
 
 ## Pronto ora
 
-**AP-04/A2+A4 (`--scout`), AP-05/A2+A4 (`--engage`) e AP-06/A4 (`--collect`)
-sono CONSEGNATI** (dal 2026-09-06, livello `Present`: build+test verdi,
-nessuna regressione, nessun client reale disponibile per `Verified`).
-Specifiche di riferimento:
-`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md` (progetto),
-`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md`
-(combattimento) e `docs/agents/phases/AP-06/AP-06_A2A4_DEEPSEEK_collect_command.md`
-(quest/collect). Non sono bridge verso `Gate3Runtime` (indagini concluse:
-quella pipeline è chiusa/hardcoded — lavoro futuro di AP-08). Nessuna
-sezione "pronto ora" attiva in questo momento: i prossimi task DeepSeek
-(A2/A4 di AP-06, AP-07, ...) restano bloccati sui gap dati reali segnalati
-sotto, nessuno chiudibile scrivendo altro codice di fase.
+**CONSEGNATI E INTEGRATI** (`--scout` AP-04 Q-029/043/044, `--engage`
+AP-05 Q-039/045, `--collect` AP-06 Q-041/047/048, ledger AP-09
+Q-061/063), più **consegnati livello `Present`** (build+test verdi,
+nessuna regressione, nessun client reale disponibile per `Verified`):
+`TargetStateComposer` in `ScreenVitalsCapture` (AP-02, Q-067/068),
+wiring `PortalCrossingDetector` in `--scout`/`--autoplay` (AP-04,
+Q-071/072), rilevamento presenza/assenza finestra di dialogo cablato in
+`ScreenVitalsCapture` (AP-02, Q-075/076). Nessuno di questi è un bridge
+verso `Gate3Runtime` (indagini concluse: quella pipeline è chiusa/
+hardcoded — lavoro futuro di AP-08).
+
+**IN CORSO ORA**: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_route_command.md`
+(Q-078) — enumerazione mappe persistite (`MapModelStore.ListMapIds`,
+`MapReconstructionSource.LoadAllKnownMaps`) + nuovo comando diagnostico
+read-only `--route <mapId> <x> <y>` (`RouteProbe`, pianifica e stampa,
+non cammina), usando l'algoritmo `MultiMapRoutePlanner` (Q-077, Claude)
+sui `Portal` reali che `--scout`/`--autoplay` accumulano da Q-071.
+
+Oltre a questo, nessun altro task DeepSeek pronto in questo momento:
+AP-07 (equip/unequip/upgrade) resta genuinamente bloccato (nessuna
+primitiva di esecuzione, nessuna calibrazione UI pannello, nessun opcode
+di rete equip mai identificato — vedi "Candidati da investigare" sotto),
+e i gap residui su AP-09/AP-10 restano OCR/ONNX o dati skill/item non
+decodificati semanticamente, non chiudibili scrivendo altro codice di
+fase. Vedi `docs/agents/EXECUTION_QUEUE.md` per lo storico completo dei
+Q-number.
 
 ---
 
