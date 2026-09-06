@@ -325,3 +325,49 @@ AP-02). **Livello**: `Present` invariato per il codice nuovo —
 per `WalkCommand`); non `Integrated` finché un operatore non conferma che
 un attraversamento di portale reale durante `--scout`/`--autoplay`
 produce davvero una riga in `MapModel.Portals` persistita.
+
+## Terza indagine (su richiesta esplicita dell'utente) — routing multi-mappa, algoritmo A3 consegnato
+
+Con Q-070/Q-071/Q-072 chiusi, `MapModel.Portals` accumula `Portal` reali
+per ogni mappa attraversata da un operatore. Indagine (background agent):
+`WorldMapPortalRouter` (`NavigationPathfinding.cs:411-431`, sistema Gate
+1-6 pre-canonico) fa già routing multi-mappa reale come algoritmo
+(Dijkstra su portali) ma solo sul grafo hardcoded di test (5 mappe/4
+portali fittizie) — nessun chiamante reale lo usa. Il contratto AP-04/A1
+(`NavigationWaypoint.UsePortal: PortalId?`, `NavigationPlan`) supporta
+già il multi-mappa; mancava solo l'algoritmo che lo popola da `Portal`
+osservati invece di restare vincolato a una sola mappa
+(`ExplorationPlanner`'s stesso commento di classe dichiarava questa
+restrizione esplicitamente, ora aggiornato).
+
+**Consegnato in questo passaggio** (A3, Claude, puro):
+`src/NosAi.Core/WorldModel/Exploration/MultiMapRoutePlanner.cs` —
+`MultiMapRoutePlanner.PlanRoute(knownMaps, startMap, startPosition,
+destinationMap, destinationPosition, nowUtc) -> NavigationPlan`. BFS
+sugli archi diretti (`Portal.SourceMap` → `Portal.DestinationMap`),
+nessun arco sintetizzato: un `Portal` è usabile solo se
+`SourcePosition`/`DestinationMap`/`IsActive` sono tutti confermati
+(`IsActive` `Unknown` non è mai trattato come "probabilmente ancora
+attivo" — stesso invariante "Unknown is not zero/false/empty"). Nessuna
+bidirezionalità assunta: l'andata e il ritorno sono due `Portal.Id`
+distinti (posizione arrotondata su mappe diverse), il ritorno serve la
+propria osservazione reale. Nessuna connessione mai osservata → sempre
+`NavigationPlan.Unreachable(NoRouteKnownReason)`, mai una stima.
+
+**Test**: `tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs`,
+10 test (stessa mappa senza portale, rotta diretta, rotta a due
+attraversamenti tramite mappa intermedia, nessuna rotta nota, portale con
+`IsActive`/`DestinationMap` non confermato escluso dal grafo, direzione
+mai assunta bidirezionale, nessun loop infinito su un ciclo di portali,
+la rotta più corta vince tra due candidate, determinismo a parità di
+input). `dotnet build NosAi.sln -c Release`: 0 errori, 1 warning
+preesistente non collegato. `dotnet test
+tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`: **640/640**,
+0 falliti (630 precedenti + 10 nuovi, zero regressioni).
+
+**Livello**: `Present` — algoritmo puro scritto, testato, compila pulito;
+non ancora `Integrated` (nessun chiamante runtime: serve prima
+un'enumerazione di tutte le mappe persistite in `MapModelStore`, oggi
+solo `Save`/`TryLoad` per singola mappa, e un consumatore reale — A2+A4
+specificato per DeepSeek, vedi
+`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_route_command.md`).
