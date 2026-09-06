@@ -8,7 +8,7 @@
 
 ---
 
-## Coda attiva (AP-00 → AP-05)
+## Coda attiva (AP-00 → AP-06)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |
 |---|---|---|---|---|---|---|
@@ -43,22 +43,24 @@
 | Q-029 | AP-04 | A4 — Comando operatore `--scout` (`ScoutCommand`, chiama `WalkCommand.Execute` con `ActuationAuthority.Commanded`) | DeepSeek | Q-026, Q-028 | `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md` | **PENDING** |
 | Q-030 | AP-05 | A1 — Contratti Combat Intelligence (`CombatActionCandidate`, `CombatConstraintCheck`, `CombatSimulationResult`, `ComboStep`/`ComboPlan`) | **Claude** | Q-018 (eccezione: dipende solo da AP-01) | `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` | **DONE** |
 | Q-031 | AP-05 | A3 (parziale) — `CombatPlanner.GenerateCandidates`/`CheckHardConstraints` da dati reali; simulazione/combo rimandati (nessun dato reale di danno/costo skill in AP-01) | **Claude** | Q-030 | `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` §"A3 (parziale)" | **DONE** |
+| Q-032 | AP-06 | A1 — Contratti Quest Graph (`QuestObjectiveKind`/`QuestObjectiveTarget`, `EnrichedQuestObjective`, `QuestReward`, `QuestNode`/`QuestGraph`) + A3 (`QuestGraphPlanner`: avviabilità quest, obiettivi soddisfatti) | **Claude** | Q-018 (eccezione: dipende solo da AP-01) | `docs/agents/phases/AP-06/AP-06_A1_STATUS.md` | **DONE** |
 
 ## Regola per Q-014/Q-015/Q-016/Q-017/Q-018 e per tutte le fasi successive
 
 I comandi dettagliati per i task oltre Q-008 **non sono ancora scritti di proposito**: scriverli ora, prima che i contratti di AP-01 esistano davvero, rischierebbe di fissare dettagli sbagliati che poi vanno disfatti (esattamente il tipo di "casino" da evitare). La regola è: **quando una voce `PENDING` diventa la prima della coda, Claude scrive il suo comando dettagliato (stile dei file già prodotti oggi, non gli stub telegrafici originali) prima di farla partire**, poi la esegue lui stesso o la assegna a DeepSeek a seconda della colonna Esecutore.
 
-## Fasi successive (AP-06 → AP-10) — solo sequenza, nessun dettaglio ancora
+## Fasi successive (AP-07 → AP-10) — solo sequenza, nessun dettaglio ancora
 
 Dalla roadmap canonica (`docs/ROADMAP_ESECUTIVA.md`). AP-03 è `Integrated` (Q-024); AP-04 ha A1+A3 `Present` (Q-025/Q-026/Q-027, eccezione dichiarata). Routing multi-mappa via portali resta rimandato (nessuna fonte dati reale, vedi `AP-04_A1_STATUS.md`). A2/A4 (Q-028/Q-029, DeepSeek) sono `PENDING`, specifica pubblicata: comando operatore `--scout` (`ActuationAuthority.Commanded`, chiama `WalkCommand.Execute` reale invariato) — non un bridge verso `Gate3Runtime` (indagine conclusa: quella pipeline è chiusa/hardcoded e le mancano tre pezzi reali, lavoro futuro di AP-08 "Strategic Autonomy + HTN", non di AP-04). A5/A6 seguono a valle di Q-028/Q-029.
 
 AP-05 ha A1 `Present` (Q-030) e A3 parziale `Present` (Q-031: generazione candidati + hard constraints reali; simulazione/combo rimandati, nessun dato reale di danno/costo skill). Indagine su `Gate3Runtime` per skill/attacco **conclusa**: stessa classe di problema del movimento (selezione skill hardcoded, predizione placeholder, Guard che decide su rischio fabbricato) — nessun bridge verso `Gate3Runtime`. A differenza del movimento, non esiste un `WalkCommand`-equivalente già reale per l'esecuzione combattimento, e la verifica reale che esiste (`PostConditions.cs`) è accoppiata a metodi privati di `Gate3Runtime` non riusabili; verificare un attacco riuscito richiederebbe anche l'HP del mob bersaglio, mai fuso nel World Model canonico (gap AP-02, OCR/ML). **AP-05/A2+A4 non specificato per DeepSeek**: serve prima una decisione con l'utente tra una verifica solo-vitali-player (parziale) o chiudere il gap di fusione HP-mob in AP-02 (vedi `AP-05_A1_STATUS.md` e `DEEPSEEK_TASKS.md`).
 
+AP-06 ha A1+A3 `Present` (Q-032, eccezione dichiarata: dipende solo da AP-01). Grafo quest (obiettivi tipizzati, prerequisiti, reward) e logica di avviabilità/soddisfazione obiettivi reali, senza dati inventati. `Quest`/`QuestObjective` (AP-01) lasciati invariati per lo stesso principio già seguito in AP-04/AP-05. "Semantic extraction" OCR/UI/network (A2) resta bloccata dallo stesso gap OCR/ML di AP-02; l'esecuzione di un obiettivo scelto comporrà con `--scout` (AP-04) e una futura esecuzione combattimento (AP-05) — non specificato per DeepSeek finché quei pezzi non sono più definiti. Vedi `AP-06_A1_STATUS.md`.
+
 Le fasi seguenti non hanno ancora task numerati in coda.
 
 | Fase | Obiettivo |
 |---|---|
-| AP-06 | Quest Intelligence — missioni non hardcoded → grafo verificabile |
 | AP-07 | Character/Inventory/Equipment — azioni di equip motivate e verificate |
 | AP-08 | Strategic Autonomy + HTN — ogni azione deriva da un piano verificabile |
 | AP-09 | Memory/Learning/Simulation — conoscenza persistente cross-sessione |
