@@ -38,6 +38,7 @@ public partial class MainWindow : Window
         _session = new RuntimeSession(_log);
         _settings = OperatorSettings.Load(_repoRoot);
         _elevated = ElevationInspect.IsElevated();
+        ElevationCard.Visibility = _elevated ? Visibility.Collapsed : Visibility.Visible;
         _log.Written += entry =>
         {
             OperatorLogFile.Append(_repoRoot, entry);
@@ -674,9 +675,13 @@ public partial class MainWindow : Window
         var result = await RunToolAsync(
             "dotnet", $"\"{dll}\" --record-wire {endpoint} data/equip_test.noscap --watch 30",
             "Registrazione equip", pairing: false);
-        EquipWireSummary.Text = result.ExitCode == 0
-            ? "Registrazione completata. Premi \"Analizza registrazione\"."
-            : $"Registrazione non riuscita (uscita {result.ExitCode}). Motivo nel Diario.";
+        EquipWireSummary.Text = result switch
+        {
+            { ExitCode: 0 } => "Registrazione completata. Premi \"Analizza registrazione\".",
+            _ when result.Output.Contains("access_denied_run_elevated", StringComparison.Ordinal)
+                => "Registrazione non riuscita: serve amministratore. Premi \"Riavvia come amministratore\" qui sopra, poi ripeti.",
+            _ => $"Registrazione non riuscita (uscita {result.ExitCode}). Motivo nel Diario."
+        };
     }
 
     /// <summary>Rilegge l'ultima registrazione e mostra solo le righe inventario (kind/slot/vnum/amount/rarity).</summary>
@@ -718,6 +723,39 @@ public partial class MainWindow : Window
         EquipWireSummary.Text = lines.Count > 0
             ? $"{lines.Count} righe inventario trovate. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
             : "Nessuna riga inventario (ivn) nella registrazione: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
+    }
+
+    /// <summary>
+    /// Chiude questa istanza e ne riapre una nuova con UAC, per i test (come
+    /// <see cref="OnRecordEquipWire"/>) che aprono il driver WinDivert e rifiutano
+    /// con <c>access_denied_run_elevated</c> a una console non amministratore. Un
+    /// solo bottone al posto di richiudere e riaprire a mano da "Esegui come
+    /// amministratore".
+    /// </summary>
+    private void OnRestartElevated(object sender, RoutedEventArgs e)
+    {
+        string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
+        if (string.IsNullOrWhiteSpace(exePath))
+        {
+            Status("Impossibile trovare l'eseguibile corrente: riavvia manualmente come amministratore.");
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exePath,
+                WorkingDirectory = _repoRoot,
+                UseShellExecute = true,
+                Verb = "runas"
+            });
+            Application.Current.Shutdown();
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            Status("Riavvio come amministratore annullato dal prompt UAC.");
+        }
     }
 
     private async void OnPairPhone(object sender, RoutedEventArgs e)

@@ -262,6 +262,14 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Test reali su AP-07 (equipaggiamento). Ogni card qui sotto si esegue solo con i bottoni: nessun comando da digitare.</TextBlock>
 
+            <Border x:Name="ElevationCard" Style="{StaticResource CardChrome}" Margin="0,0,0,14" Visibility="Collapsed">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="ElevationStatusText" VerticalAlignment="Center" Margin="0,0,12,0" TextWrapping="Wrap"
+                           Text="Alcuni test (registrazione rete) servono i privilegi di amministratore. Questa finestra non è avviata come amministratore."/>
+                <Button Style="{StaticResource PrimaryButton}" Content="Riavvia come amministratore" Click="OnRestartElevated"/>
+              </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
               <StackPanel>
                 <TextBlock Style="{StaticResource CardLabel}" Text="TEST — QUALE INVENTORYKIND PRODUCE UN EQUIP REALE (T-12)"/>
