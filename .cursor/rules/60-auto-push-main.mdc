@@ -1,0 +1,19 @@
+---
+description: Lingua italiana e auto-push su main a lavoro verde
+alwaysApply: true
+---
+
+# Regola operativa: lingua italiana e auto-push su main
+
+Repository di lavoro: `NosAiProject` (`origin` = https://github.com/volobolo99/NosAiProject.git).
+Branch di destinazione per il caricamento automatico: `main` su `origin`.
+
+- **Rispondi sempre in italiano.** Messaggi, riepiloghi e commenti di commit per l'operatore sono in italiano.
+- **Auto-push a lavoro concluso.** Alla fine di ogni lavoro che produce risultato **verde** e **sicuro**, caricalo in automatico su `main`.
+- **Green** significa: `dotnet build` senza errori sulla soluzione e `dotnet test` verde sulla suite pertinente (senza indebolire o eliminare test).
+- **Sicuro** significa: il diff è ispezionato — nessun segreto/credential, nessuna modifica estranea, nessun artefatto di build generato, nessuna violazione di ADR/architettura non dichiarata. In caso di dubbio sulla sicurezza, fermarsi e chiedere: niente push automatico.
+- **Push in fast-forward.** Prima del push: `git fetch origin main`; se `main` remoto è avanzato, integra prima (merge/rebase di `main` nel ramo di lavoro, build+test di nuovo) e poi pusha.
+- **Mai `--force`.** Nessuna riscrittura di storia condivisa, nessuna modifica di storia non correlata.
+- **Commit puliti.** Un commit per scopo coerente, messaggi imperativi.
+- **`main` locale con commit non pushati.** Il `main` locale può contenere commit non ancora su `origin/main`; non toccarli finché non serve integrarli in modo fast-forward, senza riscriverli.
+- **Lavoro ancora in corso o non verde: nessun push.** Un risultato rosso o una modifica a metà non vengono mai caricati; riportare il blocco all'operatore.
