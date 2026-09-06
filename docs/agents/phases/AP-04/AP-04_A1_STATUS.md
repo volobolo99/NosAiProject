@@ -371,3 +371,31 @@ un'enumerazione di tutte le mappe persistite in `MapModelStore`, oggi
 solo `Save`/`TryLoad` per singola mappa, e un consumatore reale — A2+A4
 specificato per DeepSeek, vedi
 `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_route_command.md`).
+
+## Audit A5 (Claude) — Q-078 consegnato, nessun difetto trovato
+
+Consegna DeepSeek `35fc3ef` (`feat(AP-04): map enumeration + read-only
+--route diagnostic command`), diretta su `main`. Rilettura riga per riga
+del diff contro `AP-04_A2A4_DEEPSEEK_route_command.md`: `MapModelStore.ListMapIds`,
+`MapReconstructionSource.LoadAllKnownMaps`, `RouteProbe` e il wiring in
+`Program.cs` (incluso `KnownProbeFlags`) riproducono la specifica
+carattere per carattere. Nessun file fuori ambito toccato;
+`MultiMapRoutePlanner.cs` invariato come richiesto.
+
+**Build/test indipendenti** (worktree isolato su `origin/main`):
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato
+dotnet test .../MapModelStoreTests.csproj --filter "~MapModelStoreTests" → 8/8
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~MapReconstructionSourceTests" → 14/14
+dotnet test .../NosAi.Runtime.Tests.csproj → 2071/2129, 0 falliti, 58 skip
+dotnet test .../NosAi.Core.Tests.csproj → 642/643 (1 fallito: TransportLoopTests, stesso
+  flake di macchina condivisa già documentato — riesecuzione isolata 5/5 verde,
+  poi 643/643 pulito anche sotto carico dell'intera suite)
+```
+
+Sesta consegna DeepSeek consecutiva senza difetti in questa sessione.
+**Livello**: `Present` per il codice nuovo — `RouteProbe.Run` non ha
+test unitari per convenzione dichiarata (stessa di `TargetChainProbe.Run`);
+non `Integrated` finché un operatore non conferma che `--route` contro
+un client reale con almeno un attraversamento di portale già osservato
+produce un piano corretto.
