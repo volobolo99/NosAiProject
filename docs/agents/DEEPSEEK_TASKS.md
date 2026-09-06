@@ -109,21 +109,27 @@ In pratica, dentro la topologia a 6 agenti (`docs/agents/AGENT_WORK_PROTOCOL.md`
 
 ## Pronto ora
 
-**Sì — AP-04/A2+A4, comando `--explore`.** Specifica completa e precisa:
-`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md`. Non è
+**Sì — AP-04/A2+A4, comando `--scout`.** Specifica completa e precisa:
+`docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md`. Non è
 un bridge verso `Gate3Runtime` (un'indagine ha confermato che quella
 pipeline è chiusa/hardcoded e le manca comunque una predizione di
 movimento reale — lavoro futuro di AP-08, non di AP-04): è un nuovo
-comando operatore `--explore` che calcola il `NavigationPlan` (già reale,
+comando operatore `--scout` che calcola il `NavigationPlan` (già reale,
 Claude/A3) e lo esegue chiamando **direttamente** `WalkCommand.Execute`
-(già reale, invariato) con `ActuationAuthority.Commanded("--explore")` —
+(già reale, invariato) con `ActuationAuthority.Commanded("--scout")` —
 stessa famiglia legittima di `--walk`, zero bypass di Guard/Trust/Safety.
 File da creare: `MovementVerificationProjector.cs` (A2, piccolo,
-meccanico) + `ExploreCommand.cs` (A4, il lotto pesante) + i rispettivi
+meccanico) + `ScoutCommand.cs` (A4, il lotto pesante) + i rispettivi
 test. Un solo file esistente da toccare, in modo additivo e minimo:
 `WalkCommand.cs` (un parametro opzionale in più su `Execute`, dettagliato
 nella specifica). Tutto il resto nella specifica stessa — seguila alla
 lettera, non improvvisare la forma dei parametri.
+
+**Nota sul nome:** il comando si chiama `--scout`, non `--explore` —
+scelto apposta per non confonderlo con il namespace/concetto di dominio
+`Exploration` (`ExplorationFootprint`, `ExplorationPlanner`, il nome
+della fase AP-04 stessa), che restano invariati. Non chiamare nulla
+`Explore*` in questo task.
 
 ---
 
@@ -162,7 +168,7 @@ chiusa/hardcoded, le manca una predizione di movimento reale, e il suo
 effettore per `MoveToPosition` è un click-teleport, non una camminata
 verificata — tre pezzi mancanti che sono lavoro futuro di AP-08
 "Strategic Autonomy + HTN", non di AP-04). Il ponte reale e costruibile
-oggi è un nuovo comando operatore `--explore` che chiama direttamente
+oggi è un nuovo comando operatore `--scout` che chiama direttamente
 `WalkCommand.Execute` (già reale, Gate-1-verificato, invariato) con
 un'authority `Commanded` — stessa famiglia legittima di `--walk`, nessun
 bypass di Guard/Trust/Safety, nessuna authority "autonoma" inventata

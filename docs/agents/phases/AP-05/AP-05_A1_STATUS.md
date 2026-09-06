@@ -155,7 +155,7 @@ Questi sono candidati per "Candidati da investigare" in
 `docs/agents/DEEPSEEK_TASKS.md`, non un blocco per il resto di AP-05: la
 generazione candidati + i vincoli reali restano utili così come sono
 (es. per un futuro comando operatore `--engage` nello stile di
-`--explore`, che userebbe `BasicAttack`/`UseSkill` verso mob senza
+`--scout`, che userebbe `BasicAttack`/`UseSkill` verso mob senza
 bisogno di una simulazione di danno per decidere *se* attaccare, solo
 *se è lecito* farlo).
 
@@ -219,7 +219,7 @@ dopo un attacco" **non lo è**, per lo stesso gap di percezione, non per un
 problema di questa fase.
 
 **Decisione: AP-05/A2+A4 non è ancora pronto per una specifica precisa
-come `--explore`.** Serve prima una decisione esplicita su una di due
+come `--scout`.** Serve prima una decisione esplicita su una di due
 strade, non un'altra indagine a sorpresa dopo aver già scritto la
 specifica:
 

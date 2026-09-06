@@ -1,4 +1,4 @@
-# AP-04 / A2+A4 — DeepSeek — The `--explore` operator command
+# AP-04 / A2+A4 — DeepSeek — The `--scout` operator command
 
 ## Why this shape, and not a Gate3Runtime bridge
 
@@ -23,11 +23,17 @@ design (`ActuationAuthority.cs`, ADR-0020): `Planned` (needs a
 reason above) or `Commanded` (a human typed a named command — legitimate,
 and exactly what `--walk`/`--screen-autocalibrate` already use for
 automated multi-step routines a person starts on purpose). So: a new
-operator command, `--explore`, that computes a `NavigationPlan` from the
+operator command, `--scout`, that computes a `NavigationPlan` from the
 real World Model and executes it by calling `WalkCommand.Execute`
-**unchanged** with `ActuationAuthority.Commanded("--explore")` — same
+**unchanged** with `ActuationAuthority.Commanded("--scout")` — same
 authority family as `--walk`, same guard chain, same verifier, zero
 bypass, zero duplication of the walk logic.
+
+**Naming note:** the command is `--scout`, not `--explore` — kept
+deliberately distinct from the `Exploration` namespace/domain concept
+(`ExplorationFootprint`, `ExplorationPlanner`, AP-04's own phase name)
+so the operator-facing verb never gets confused with the World Model
+contracts it is built on. Do not name anything you write `Explore*`.
 
 ## Already built (read, do not modify)
 
@@ -72,9 +78,9 @@ never a float round-trip through `WorldPosition`.
 ## OWN (new files only)
 
 - `src/NosAi.Runtime/WorldModel/Fusion/MovementVerificationProjector.cs` (A2)
-- `src/NosAi.Runtime/Navigation/ExploreCommand.cs` (A4)
+- `src/NosAi.Runtime/Navigation/ScoutCommand.cs` (A4)
 - `tests/NosAi.Runtime.Tests/WorldModel/Fusion/MovementVerificationProjectorTests.cs`
-- `tests/NosAi.Runtime.Tests/ExploreCommandTests.cs`
+- `tests/NosAi.Runtime.Tests/ScoutCommandTests.cs`
 
 ## MODIFY, additive only
 
@@ -151,24 +157,24 @@ its reason (fall back to `"movement_not_observed"` only when `Detail` is
 itself null), and that `Requested` always reflects the `requested`
 parameter, never `verification.Observed`.
 
-## 2. `ExploreCommand` (A4 — the heavy lot)
+## 2. `ScoutCommand` (A4 — the heavy lot)
 
 Two layers, same split `WalkCommand` already uses so your composition
 logic is testable without Windows/hardware and your live wiring stays a
 thin, untested-by-design shell (same precedent as `WalkCommand.RunWindows`,
 which also has no unit test — only `WalkCommand.Execute` does).
 
-### 2a. `ExploreCommand.ExecuteOneRound` — testable, no I/O
+### 2a. `ScoutCommand.ExecuteOneRound` — testable, no I/O
 
 ```csharp
-public static class ExploreCommand
+public static class ScoutCommand
 {
-    public const string Flag = "--explore";
+    public const string Flag = "--scout";
     public const string SourceModule = "Navigation";
-    public const string OperatorSessionId = "operator-explore";
+    public const string OperatorSessionId = "operator-scout";
 
-    /// <summary>Nothing left to explore this cycle: FullyExplored, or no walkable tile has ever been reconstructed.</summary>
-    public const int ExitNothingToExplore = 6;
+    /// <summary>Nothing left to scout this cycle: FullyExplored, or no walkable tile has ever been reconstructed.</summary>
+    public const int ExitNothingToScout = 6;
 
     /// <param name="onEvidence">Called once per emitted step, in order, via <see cref="MovementVerificationProjector"/>. Never called for a step that was never emitted (a guard refusal ends the round before any step).</param>
     /// <returns>
@@ -250,7 +256,7 @@ Notes:
   `WalkCommand.Execute`. This is what makes it unit-testable with the
   existing `WalkCommandTests.cs` rig.
 
-### 2b. `ExploreCommand.Run`/`RunWindows` — live composition
+### 2b. `ScoutCommand.Run`/`RunWindows` — live composition
 
 Console entry point, mirroring `WalkCommand.Run`/`RunWindows` structure
 exactly (same `RuntimeComposition.CreateSafe()`, window lookup,
@@ -269,7 +275,7 @@ construction -- copy that block, do not reinvent it). Differences from
   documented behavior; verify this by not disposing/recreating it between
   rounds).
 - Keep one `ExplorationFootprint` in memory across rounds, keyed to the
-  current map id: start it as `ExplorationFootprint.Empty(currentMapId, "explore_command_session_start", now)` before the loop; if a round observes a
+  current map id: start it as `ExplorationFootprint.Empty(currentMapId, "scout_command_session_start", now)` before the loop; if a round observes a
   different map id than the footprint's own, reset to a fresh `Empty` for
   the new map id rather than silently reusing stale visited-tile data
   from a different map (this session's memory does not need to survive a
@@ -279,7 +285,7 @@ construction -- copy that block, do not reinvent it). Differences from
 - Each round: read `player`/`mapId` the same way `WalkCommand.RunWindows`
   does; build the minimal `WorldModelSnapshot` needed to call
   `MapReconstructionSource.Resolve` --
-  `WorldModelSnapshot.Unknown("explore_command_local_read", now) with { Map = MapModel.Unknown(new MapId($"map-{mapId}"), "explore_command_local_read", now) }`
+  `WorldModelSnapshot.Unknown("scout_command_local_read", now) with { Map = MapModel.Unknown(new MapId($"map-{mapId}"), "scout_command_local_read", now) }`
   -- then `MapModel map = mapReconstruction.Resolve(snapshotForResolve, now);`.
   Pass `mobs: EquatableArray<Mob>.Empty` (no live mob feed is wired into
   this command's context; document this exact limitation in your
@@ -292,10 +298,10 @@ construction -- copy that block, do not reinvent it). Differences from
   for this round.
 - If `ExecuteOneRound` returns `null` (nothing reachable this round):
   print the plan's `IsReachable` reason and stop the loop early (return
-  `ExitNothingToExplore`) rather than looping `rounds` times uselessly.
+  `ExitNothingToScout`) rather than looping `rounds` times uselessly.
 - Otherwise print the `WalkRun.Text` (same as `--walk` already does) and,
   if its `ExitCode != WalkCommand.ExitArrived`, stop the loop early and
-  return that exit code unchanged -- do not keep exploring after an
+  return that exit code unchanged -- do not keep scouting after an
   abandoned/refused walk. Only on `ExitArrived` continue to the next
   round.
 - After all rounds finish (or the loop ends early with `ExitArrived` on
@@ -306,7 +312,7 @@ construction -- copy that block, do not reinvent it). Differences from
 Additive, alongside the existing `--walk`/`--step` block:
 
 ```csharp
-if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.ExploreCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.ScoutCommand.Flag, StringComparison.OrdinalIgnoreCase)))
 {
     int watchFlag = Array.FindIndex(args, a => string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
     int rounds = watchFlag >= 0 && watchFlag + 1 < args.Length
@@ -315,7 +321,7 @@ if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.ExploreCommand.Flag,
         ? parsedRounds
         : 1;
 
-    return NosAi.Runtime.Navigation.ExploreCommand.Run(rounds);
+    return NosAi.Runtime.Navigation.ScoutCommand.Run(rounds);
 }
 ```
 
@@ -328,14 +334,14 @@ other conditional.
 ```
 export PATH="$PATH:/root/.dotnet"
 dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release
-dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --filter "FullyQualifiedName~MovementVerificationProjectorTests|FullyQualifiedName~ExploreCommandTests|FullyQualifiedName~WalkCommandTests"
+dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release --filter "FullyQualifiedName~MovementVerificationProjectorTests|FullyQualifiedName~ScoutCommandTests|FullyQualifiedName~WalkCommandTests"
 dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c Release
 dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release
 ```
 
 `WalkCommandTests` must stay 100% green and unchanged in count/behavior
 -- your one added parameter on `Execute` is optional and defaults to
-`null`, so nothing in that file should need editing. `ExploreCommandTests`
+`null`, so nothing in that file should need editing. `ScoutCommandTests`
 must cover `ExecuteOneRound` using the `WalkCommandTests` rig style
 (`WalkRig`/`ChainRig`/`RecordingInputBackend`): a reachable frontier walks
 and reports evidence matching each emitted step in order; no walkable

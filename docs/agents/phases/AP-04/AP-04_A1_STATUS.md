@@ -212,21 +212,23 @@ inventata — entrambe le strade sono escluse.
 
 **Ambito reale e onesto per AP-04/A2+A4, costruibile oggi senza toccare
 Gate3Runtime e senza bypassare nulla:** un nuovo comando operatore
-`--explore`, esattamente della stessa famiglia legittima di `--walk`/
+`--scout`, esattamente della stessa famiglia legittima di `--walk`/
 `--screen-autocalibrate` (un umano digita il comando; l'automazione che
 segue è "comandata", non "autonoma inventata" — nessuna violazione di
-ADR-0020). `--explore` calcola il `NavigationPlan` dal World Model reale
-(via `ExplorationPlanner`, questa fase) e lo esegue chiamando
-**direttamente** `WalkCommand.Execute` (invariato) con
-`ActuationAuthority.Commanded("--explore")` — riusa il 100% della catena
-Guard→Trust→Safety→Execute→Verify già reale e verificata su Gate 1 per
-`--walk`, zero duplicazione, zero bypass. Questo è il lotto pesante reale
-per DeepSeek (A4) più il piccolo bridge A2 (`MovementVerification` reale
-→ `MovementExecutionEvidence`, contratto già scritto). X1/X2/X3 restano
-segnalati come lavoro futuro di AP-08, non di AP-04 — vedi
-`docs/agents/DEEPSEEK_TASKS.md`.
+ADR-0020). Chiamato `--scout` e non `--explore` per non confonderlo con
+il namespace/concetto di dominio `Exploration` (`ExplorationFootprint`,
+`ExplorationPlanner`), che restano invariati. `--scout` calcola il
+`NavigationPlan` dal World Model reale (via `ExplorationPlanner`, questa
+fase) e lo esegue chiamando **direttamente** `WalkCommand.Execute`
+(invariato) con `ActuationAuthority.Commanded("--scout")` — riusa il 100%
+della catena Guard→Trust→Safety→Execute→Verify già reale e verificata su
+Gate 1 per `--walk`, zero duplicazione, zero bypass. Questo è il lotto
+pesante reale per DeepSeek (A4) più il piccolo bridge A2
+(`MovementVerification` reale → `MovementExecutionEvidence`, contratto
+già scritto). X1/X2/X3 restano segnalati come lavoro futuro di AP-08, non
+di AP-04 — vedi `docs/agents/DEEPSEEK_TASKS.md`.
 
-Specifica dettagliata: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_explore_command.md`.
+Specifica dettagliata: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_command.md`.
 
 **Livello di verifica AP-04 complessivo:** `Present` (A1+A3, contratti e
 algoritmo puro) + A2/A4 `PENDING` (specifica pubblicata, in attesa che
