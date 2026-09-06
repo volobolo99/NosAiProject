@@ -234,22 +234,22 @@ indipendente da AP-04, chiedilo esplicitamente.
   sospetto di AP-05: probabilmente la stessa fonte dati client
   (`GameReferenceDatabase`/`Item.dat`) non ancora decodificata
   semanticamente — da verificare prima di specificarlo come task.
-- **Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**
-  (AP-05/A2+A4, indagine conclusa in `AP-05_A1_STATUS.md`
-  §"Indagine su Gate3Runtime per skill/attacco"): a differenza del
-  movimento, non esiste un `WalkCommand.Execute` equivalente già reale e
-  indipendente per le azioni di combattimento — andrebbe scritto da
-  zero. La verifica post-azione reale che esiste
-  (`UseBasicAttackPostCondition`/`UseSkillPostCondition` in
-  `PostConditions.cs`) è accoppiata a metodi privati di `Gate3Runtime`
-  (`ReadBackAsync`/`CollectSightings`), non riusabile da un comando
-  indipendente senza duplicarli. In più, verificare che un attacco abbia
-  colpito richiederebbe l'HP del mob bersaglio dal World Model canonico
-  (`Mob.Status.Resources`), che **non è mai popolato oggi** — la fusione
-  entità Mob/Npc resta rimandata da AP-02 per lo stesso blocco OCR/ML.
-  **Non un task DeepSeek pronto**: richiede prima una decisione con
-  l'utente tra (a) una verifica solo-vitali-player (onesta ma parziale)
-  o (b) chiudere prima il gap di fusione HP-mob in AP-02.
+- ~~**Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**~~
+  **— deciso e specificato (Q-037/Q-038/Q-039).** Decisione presa:
+  percorso (a), verifica solo-vitali-player (onesta ma parziale — conferma
+  il costo risorsa, non il colpo sul bersaglio; il percorso (b), chiudere
+  prima il gap di fusione HP-mob in AP-02, resta bloccato sul gap OCR/ONNX
+  indefinitamente). Contratto mancante `CombatExecutionEvidence`/
+  `CombatExecutionResult` scritto e testato
+  (`src/NosAi.Core/WorldModel/Combat/CombatExecutionContracts.cs`).
+  Specifica DeepSeek pronta e precisa (task A2+A4, ora un task DeepSeek
+  pronto, non più "da investigare"):
+  `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_engage_command.md` —
+  comando operatore `--engage <targetEntityId> <skillId>`, esecuzione via
+  `KeybindMap`+`GatedInputBackend.KeyPress` (stessa primitiva reale già
+  usata da `WalkCommand`/`SingleStepExecutor`, indipendente da
+  `Gate3Runtime`), verifica via `ClientMemorySession.TryReadPlayerVitals`
+  prima/dopo (stessa catena `[LIVE]` già validata da `--player-vitals`).
 
 **Esplicitamente fuori portata per DeepSeek** (non richiederli, non sono un
 problema di codice mancante):
