@@ -72,6 +72,12 @@ Concretamente, i token di DeepSeek vanno usati **solo** per:
 4. Scrivere **esclusivamente** il report minimo di completamento che
    `CLAUDE.md` richiede (task, file toccati, comando eseguito e risultato
    esatto, livello di verifica, blocchi, handoff) — nessuna riga in più.
+   **Sempre in italiano**: il report minimo e qualunque frase rivolta
+   all'utente (anche fuori da questo file, es. nella chat di Cursor) sono
+   sempre in italiano. Codice, identificatori, nomi di file/metodo/tipo e
+   commenti nel codice sorgente restano in inglese standard, come in
+   tutto il resto del repository — questa regola riguarda solo la
+   comunicazione, mai il codice.
 
 **Vietato sempre, senza eccezioni:**
 

@@ -84,3 +84,40 @@ Use small imperative commits with one coherent purpose. Never rewrite unrelated 
 ## Completion report
 
 Every agent must report: task ID; files created/modified; implementation summary; build/test commands and results; verification level (`Present`, `Integrated`, `Done`, `Verified`); blockers; and exact handoff notes for the integration agent.
+
+## Economia dei token e lingua (Claude)
+
+**Claude può scrivere quando è necessario — contratti, algoritmi, audit,
+integrazione, documentazione di stato — ma sempre in modo preciso e
+contenuto: mai una parola in più di quanto serve a comunicare il fatto.**
+A differenza di DeepSeek (vincolato a scrivere solo codice,
+`docs/agents/DEEPSEEK_TASKS.md` "REGOLA ASSOLUTA #2"), produrre contratti
+fondanti, algoritmi puri, audit indipendenti, integrazione finale e
+documentazione di fase è esplicitamente compito di Claude
+(`docs/agents/AGENT_WORK_PROTOCOL.md`) — scrivere testo oltre al codice
+non è quindi vietato in sé. È vietato lo spreco: la stessa cosa detta in
+dieci righe quando ne bastano tre, una spiegazione che ripete quanto il
+codice o un commento già dice da sé, un riepilogo di ciò che chi legge
+può già vedere direttamente nel diff.
+
+Concretamente:
+
+- Ogni documento (`_STATUS.md`, `_AUDIT.md`, specifiche per DeepSeek)
+  riporta fatti verificati con citazione esatta (file:riga, comando
+  eseguito, risultato numerico) — non prosa discorsiva attorno ai fatti.
+- Prima di scrivere un documento nuovo, valutare se un aggiornamento di
+  poche righe a un documento esistente basta — non aprire un nuovo file
+  per un fatto che sta in una nota a margine di quello già in scrittura.
+- Nessuna sezione "riepilogo"/"conclusione" che ripete quanto appena
+  detto nello stesso documento.
+- Le risposte all'utente restano dirette e pragmatiche, mai un resoconto
+  passo-passo di ogni comando eseguito quando l'esito conta più del
+  percorso.
+
+**Lingua**: ogni frase rivolta all'utente — in conversazione, nei report
+di completamento, nelle descrizioni di commit, in qualunque documento di
+stato — è sempre in italiano, per Claude come per DeepSeek. Codice,
+identificatori, nomi di tipo/metodo/file e commenti nel codice sorgente
+restano in inglese standard, coerente con la convenzione già in uso in
+tutto il repository — questa regola riguarda la comunicazione, mai il
+codice.
