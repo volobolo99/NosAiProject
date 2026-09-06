@@ -216,6 +216,14 @@ indipendente da AP-04, chiedilo esplicitamente.
   di candidati self-cast/buff. Possibile pista: tabella statistiche skill
   dal client (stesso genere di lavoro di `MapGridExtractor` per la
   geometria) — da verificare prima di specificarlo come task.
+- **Categoria/slot di equipaggiamento e statistiche reali per item** —
+  `docs/agents/phases/AP-07/AP-07_A1_STATUS.md`: `InventoryItem` (AP-01)
+  non porta a quale `EquipmentSlot` un item corrisponde, né statistiche
+  di combattimento/costo upgrade. Blocca la generazione automatica di
+  candidati Equip e il popolamento reale di `LoadoutEvaluation`. Stesso
+  sospetto di AP-05: probabilmente la stessa fonte dati client
+  (`GameReferenceDatabase`/`Item.dat`) non ancora decodificata
+  semanticamente — da verificare prima di specificarlo come task.
 - **Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**
   (AP-05/A2+A4, indagine conclusa in `AP-05_A1_STATUS.md`
   §"Indagine su Gate3Runtime per skill/attacco"): a differenza del
