@@ -250,6 +250,21 @@ indipendente da AP-04, chiedilo esplicitamente.
   usata da `WalkCommand`/`SingleStepExecutor`, indipendente da
   `Gate3Runtime`), verifica via `ClientMemorySession.TryReadPlayerVitals`
   prima/dopo (stessa catena `[LIVE]` già validata da `--player-vitals`).
+- **AP-06/A4 — comando operatore `--collect`, pronto (Q-041).** Indagine
+  mirata su AP-06/A2 ("semantic extraction OCR/UI/network"): a
+  differenza di ogni altro obiettivo quest, `Collect` ha un canale
+  network già reale e già fuso, non bloccato dal gap OCR/ML —
+  `ivn`/`get`/`drop` sono decodificati (`GameTrafficObserver.cs`) e
+  `GameplayObservationProjector` (AP-01/A2, già `Integrated`) li fonde
+  già in `Player.Inventory`/`WorldModelSnapshot.Drops`.
+  `QuestGraphPlanner.AssessCollectProgress` (Claude, Q-040, già scritto e
+  testato) chiude la parte A2 direttamente in `NosAi.Core`, senza alcun
+  lavoro DeepSeek. Resta solo A4: specifica completa in
+  `docs/agents/phases/AP-06/AP-06_A2A4_DEEPSEEK_collect_command.md` —
+  comando `--collect <x> <y> <vnum> [<requiredCount>]`, cammina via
+  `WalkCommand.Execute` (riusato invariato), verifica via
+  `LiveObservationGateway.Capture()` + `GameplayObservationProjector` +
+  `AssessCollectProgress`, prima/dopo la camminata.
 
 **Esplicitamente fuori portata per DeepSeek** (non richiederli, non sono un
 problema di codice mancante):

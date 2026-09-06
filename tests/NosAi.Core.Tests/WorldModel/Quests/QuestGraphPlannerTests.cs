@@ -194,4 +194,91 @@ public sealed class QuestGraphPlannerTests
 
         Assert.Null(next);
     }
+
+    // ---- AssessCollectProgress ----
+
+    private static readonly ItemId TargetItem = new("1234");
+    private static readonly QuestObjectiveTarget CollectTarget = new(QuestObjectiveKind.Collect, item: TargetItem);
+
+    private static InventoryItem BuildSlot(string itemId, int? quantity, int slot) =>
+        new(
+            new ItemId(itemId),
+            WorldFact<string>.Unknown("item_name_catalog_not_available", Now),
+            quantity is { } q ? WorldFact<int>.Live(q, 1d, Now) : WorldFact<int>.Unknown("r", Now),
+            WorldFact<int>.Live(slot, 1d, Now));
+
+    [Fact]
+    public void AssessCollectProgress_RejectsNonCollectTarget()
+    {
+        var travelTarget = new QuestObjectiveTarget(QuestObjectiveKind.Travel, position: new WorldPosition(1f, 1f));
+
+        Assert.Throws<ArgumentException>(() =>
+            QuestGraphPlanner.AssessCollectProgress(travelTarget, EquatableArray<InventoryItem>.Empty, Now));
+    }
+
+    [Fact]
+    public void AssessCollectProgress_EmptyInventory_IsUnknown_NotZero()
+    {
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, EquatableArray<InventoryItem>.Empty, Now);
+
+        Assert.False(result.HasValue);
+    }
+
+    [Fact]
+    public void AssessCollectProgress_NonEmptyInventory_ItemAbsent_IsKnownZero()
+    {
+        EquatableArray<InventoryItem> inventory = EquatableArray<InventoryItem>.From(new[]
+        {
+            BuildSlot("9999", quantity: 3, slot: 0),
+        });
+
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+
+        Assert.True(result.HasValue);
+        Assert.Equal(0, result.Value);
+    }
+
+    [Fact]
+    public void AssessCollectProgress_SingleMatchingSlot_ReturnsItsQuantity()
+    {
+        EquatableArray<InventoryItem> inventory = EquatableArray<InventoryItem>.From(new[]
+        {
+            BuildSlot(TargetItem.Value, quantity: 5, slot: 0),
+        });
+
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+
+        Assert.True(result.HasValue);
+        Assert.Equal(5, result.Value);
+    }
+
+    [Fact]
+    public void AssessCollectProgress_MultipleMatchingSlots_SumsQuantities()
+    {
+        EquatableArray<InventoryItem> inventory = EquatableArray<InventoryItem>.From(new[]
+        {
+            BuildSlot(TargetItem.Value, quantity: 5, slot: 0),
+            BuildSlot(TargetItem.Value, quantity: 2, slot: 4),
+            BuildSlot("9999", quantity: 1, slot: 7),
+        });
+
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+
+        Assert.True(result.HasValue);
+        Assert.Equal(7, result.Value);
+    }
+
+    [Fact]
+    public void AssessCollectProgress_MatchingSlotWithUnknownQuantity_IsUnknown()
+    {
+        EquatableArray<InventoryItem> inventory = EquatableArray<InventoryItem>.From(new[]
+        {
+            BuildSlot(TargetItem.Value, quantity: 5, slot: 0),
+            BuildSlot(TargetItem.Value, quantity: null, slot: 4),
+        });
+
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+
+        Assert.False(result.HasValue);
+    }
 }
