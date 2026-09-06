@@ -239,13 +239,11 @@ indipendente da AP-04, chiedilo esplicitamente.
   `third_party/sources/taletool/` (parsing offline di dati client) o
   lettura da memoria client in stile `MapIdFinder`/`TargetIdFinder` — da
   verificare prima di specificarlo come task.
-- **`TargetStateComposer` non cablato in `ScreenVitalsCapture`**
-  (`docs/agents/phases/AP-02/AP-02_STATUS.md` §10): serve una
-  `TargetRoiCalibration` calibrata. Esiste già un sistema di calibrazione
-  schermo (`ScreenProjectionAutoCalibrator`/`ScreenProjectionCalibration`/
-  `ScreenProjectionProbe`/`ScreenProjectionWatcher` in
-  `src/NosAi.Runtime/Perception/`) che potrebbe non essere bloccato da
-  asset ML mancanti — da verificare prima di specificarlo come task reale.
+- ~~**`TargetStateComposer` non cablato in `ScreenVitalsCapture`**~~ —
+  **verificato e specificato (Q-067)**: non bloccato da OCR/ONNX,
+  `TargetRoiCalibration`/`ScreenTargetFrameSource`/`TargetStateComposer`
+  già reali e già usati lato wire da `TargetAwareGameplayProvider`. Vedi
+  `docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_target_state_wiring.md`.
 - **Lettura inventario/finestre di dialogo** (stesso documento): nessun
   codice di lettura esiste. Potenzialmente bloccato da OCR reale (asset ML
   mancante, vedi sotto) o parzialmente affrontabile senza OCR per gli slot
