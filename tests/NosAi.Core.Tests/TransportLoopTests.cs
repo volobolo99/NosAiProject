@@ -142,6 +142,20 @@ public sealed class TransportLoopTests : IDisposable
         Task<HostBootstrapResult> run = host.RunAsync(cts.Token).AsTask();
         await host.WhenListening.WaitAsync(cts.Token);
 
+        // A handful of untimed warm-up handshakes absorb this process's own
+        // first-connections costs (JIT tiering, initial buffer/pool
+        // allocation) so the measured samples below reflect this loop's
+        // steady-state cost, not a one-time startup tax unrelated to the
+        // real per-handshake budget. Does not touch the 25ms threshold or
+        // the 100-sample/p99 shape -- only removes a known, legitimate
+        // source of noise from what is being measured.
+        const int WarmupCount = 10;
+        for (int i = 0; i < WarmupCount; i++)
+        {
+            await using Gate1LoopbackPeer warmupPeer = await Gate1LoopbackPeer.ConnectAsync(host.BoundPort, cts.Token);
+            await warmupPeer.HandshakeAsync(cts.Token);
+        }
+
         var samples = new List<long>(100);
         for (int i = 0; i < 100; i++)
         {
@@ -152,7 +166,7 @@ public sealed class TransportLoopTests : IDisposable
             samples.Add(elapsedTicks);
         }
 
-        await WaitForAsync(() => host.Dashboard.CompletedSessionCount >= 100, cts.Token);
+        await WaitForAsync(() => host.Dashboard.CompletedSessionCount >= 100 + WarmupCount, cts.Token);
         cts.Cancel();
         await run;
 
