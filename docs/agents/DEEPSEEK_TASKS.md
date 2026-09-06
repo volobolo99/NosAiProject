@@ -210,6 +210,22 @@ indipendente da AP-04, chiedilo esplicitamente.
   di candidati self-cast/buff. Possibile pista: tabella statistiche skill
   dal client (stesso genere di lavoro di `MapGridExtractor` per la
   geometria) — da verificare prima di specificarlo come task.
+- **Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**
+  (AP-05/A2+A4, indagine conclusa in `AP-05_A1_STATUS.md`
+  §"Indagine su Gate3Runtime per skill/attacco"): a differenza del
+  movimento, non esiste un `WalkCommand.Execute` equivalente già reale e
+  indipendente per le azioni di combattimento — andrebbe scritto da
+  zero. La verifica post-azione reale che esiste
+  (`UseBasicAttackPostCondition`/`UseSkillPostCondition` in
+  `PostConditions.cs`) è accoppiata a metodi privati di `Gate3Runtime`
+  (`ReadBackAsync`/`CollectSightings`), non riusabile da un comando
+  indipendente senza duplicarli. In più, verificare che un attacco abbia
+  colpito richiederebbe l'HP del mob bersaglio dal World Model canonico
+  (`Mob.Status.Resources`), che **non è mai popolato oggi** — la fusione
+  entità Mob/Npc resta rimandata da AP-02 per lo stesso blocco OCR/ML.
+  **Non un task DeepSeek pronto**: richiede prima una decisione con
+  l'utente tra (a) una verifica solo-vitali-player (onesta ma parziale)
+  o (b) chiudere prima il gap di fusione HP-mob in AP-02.
 
 **Esplicitamente fuori portata per DeepSeek** (non richiederli, non sono un
 problema di codice mancante):

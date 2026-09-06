@@ -160,3 +160,77 @@ bisogno di una simulazione di danno per decidere *se* attaccare, solo
 *se è lecito* farlo).
 
 **Livello di verifica A3 (parziale):** `Present`, stesso motivo di sopra.
+
+## Indagine su Gate3Runtime per skill/attacco — conclusa
+
+Stessa domanda già fatta per il movimento in AP-04, questa volta per
+`UseSkill`/`UseBasicAttack`/contrattacco. Un agente read-only ha
+verificato riga per riga `Gate3Runtime.cs`, `SimulationEngine.Simulate`,
+`GameReferenceDatabase`, `InputActionEffector.cs`, `PostConditions.cs`.
+**Stessa classe di problema del movimento, non un caso più maturo:**
+
+1. **Generazione candidati** (`ActionPlanner.Plan`, righe ~346-397):
+   reale come *meccanismo* ma con scelta della skill **letterale e
+   hardcoded** — `SkillOrItemId = 201` compare esattamente una volta in
+   tutto il file, nessuna logica di selezione ("quale skill è la
+   migliore ora"), nessuna lettura di `Cooldown`/risorsa reale (grep su
+   `Cooldown` in `Gate3Runtime.cs`: zero risultati).
+2. **`SimulationEngine.Simulate`** per `UseSkill`/`UseBasicAttack`: stessa
+   natura di placeholder fisso già trovata per `MoveToPosition`
+   (`hpDelta=-15`/`mpDelta=-35`/`timeMs` letterali, mai letto
+   `candidate.SkillOrItemId` — quindi la "predizione" è identica per
+   *qualunque* skill).
+3. **Nessun dato reale di danno/costo/cast-time/range per skill esiste
+   nel repository**: `GameReferenceDatabase` (importato da `Skill.dat`
+   del client) esiste ed è reale, ma **dichiara esplicitamente** di non
+   decodificare semanticamente quei campi ("quale slot di `ATTRIB` sia
+   l'elemento... indovinarlo qui metterebbe un numero che nessuno ha
+   verificato dentro un calcolo di danno"). Un vero tracker di cooldown
+   da rete esiste (`SkillCooldownTracker`, decodifica pacchetto `sr`) ma
+   **non è cablato da nessuna parte** fuori dal proprio file/test.
+4. **Verifica post-azione, l'unico punto realmente più maturo del
+   movimento**: `UseBasicAttackPostCondition`/`UseSkillPostCondition`
+   (`PostConditions.cs`) controllano davvero HP/MP osservati da rete
+   (direzione, non magnitudine) — non un placeholder. **Ma** sono
+   strettamente accoppiate all'infrastruttura privata di
+   `Gate3Runtime` stesso (`Gate3WorldState`, `ReadBackAsync` — privato,
+   istanza —, `CollectSightings` — privato, statico): non riusabili da
+   un comando indipendente senza duplicare quella lettura, a differenza
+   di `WalkCommand.Execute` che per il movimento era già un blocco
+   indipendente e completo.
+5. Il gate di autorizzazione tattica (`GuardPolicyEngine.Evaluate`,
+   soglia `RiskScore > 0.75f`) decide sì/no leggendo esattamente i numeri
+   fabbricati del punto 2 — usarlo per candidati AP-05 vorrebbe dire far
+   decidere Guard su dati finti travestiti da predizione reale.
+
+**Conclusione, coerente con AP-04:** nessun bridge verso
+`Gate3Runtime.ActionPlanner`/`SimulationEngine`/`GuardPolicyEngine` per
+le stesse ragioni già scritte per il movimento (X1/X2/X3 dei documenti
+precedenti, qui confermati identici per il combattimento). **A differenza
+del movimento**, non esiste un equivalente di `WalkCommand.Execute` già
+reale e indipendente da riusare per l'esecuzione — andrebbe scritto da
+zero, e la sua verifica onesta ha un vincolo in più: `Mob.Status.Resources`
+(HP del bersaglio nel World Model canonico) non è mai popolato oggi — la
+fusione entità Mob/Npc resta esplicitamente rimandata da AP-02
+(`AP-02_STATUS.md`, stesso blocco ML/OCR). Verificare "l'MP del player è
+sceso dopo una skill" sarebbe onestamente costruibile oggi (i vitali del
+player sono già fusi, AP-02); verificare "l'HP del mob bersaglio è sceso
+dopo un attacco" **non lo è**, per lo stesso gap di percezione, non per un
+problema di questa fase.
+
+**Decisione: AP-05/A2+A4 non è ancora pronto per una specifica precisa
+come `--explore`.** Serve prima una decisione esplicita su una di due
+strade, non un'altra indagine a sorpresa dopo aver già scritto la
+specifica:
+
+- (a) costruire una verifica combattimento indipendente da
+  `Gate3Runtime`, basata solo sui vitali del player già fusi (onesta ma
+  parziale: conferma "l'atto ha avuto un costo", non "ha colpito il
+  bersaglio"), oppure
+- (b) prima chiudere il gap di fusione HP-mob in AP-02 (dipendenza da
+  OCR/detection già segnalata come bloccata), poi tornare su AP-05/A2+A4
+  con una verifica completa.
+
+Nessuna delle due è iniziata. Segnalato in `docs/agents/DEEPSEEK_TASKS.md`
+come candidato da investigare/decidere con l'utente, non come task
+DeepSeek pronto.
