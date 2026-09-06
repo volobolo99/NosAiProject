@@ -183,4 +183,138 @@ public sealed class CombatVerificationProjectorTests
 
         Assert.Same(candidate, evidence.Candidate);
     }
+
+    // -- ProjectRecovery: the UseConsumable recovery verdict ------------------
+
+    [Fact]
+    public void ProjectRecovery_UseConsumableWithHpRising_ReturnsResourceGainConfirmed_WithLiveFactsCarryingExactHp()
+    {
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading before = Vitals(hp: 60, maxHp: 100, mp: 100, maxMp: 100);
+        PlayerVitalsReading after = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after, FixedInstant);
+
+        Assert.True(evidence.ResourceGainConfirmed);
+        Assert.Equal(CombatExecutionResult.ResourceGainConfirmed, evidence.Result);
+        Assert.Equal(ResourceKind.Health, evidence.ResourceObserved);
+        Assert.Null(evidence.Detail);
+
+        Assert.True(evidence.Before.HasValue);
+        Assert.True(evidence.After.HasValue);
+        Assert.Equal(NosAi.Core.WorldModel.DataSourceKind.Live, evidence.Before.Source);
+        Assert.Equal(NosAi.Core.WorldModel.DataSourceKind.Live, evidence.After.Source);
+        Assert.Equal(60d, evidence.Before.Value);
+        Assert.Equal(100d, evidence.After.Value);
+        Assert.Equal(FixedInstant, evidence.Before.ObservedAtUtc);
+        Assert.Equal(FixedInstant, evidence.After.ObservedAtUtc);
+    }
+
+    [Fact]
+    public void ProjectRecovery_UseConsumableWithHpUnchanged_ReturnsNoResourceChangeObserved()
+    {
+        // Equal Health is also "no gain observed" -- only a rise is evidence of a
+        // recovery, and equal fails toward under-claiming (same discipline
+        // Project's cost check uses: only a fall is evidence of a cost).
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading before = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+        PlayerVitalsReading after = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after, FixedInstant);
+
+        Assert.Equal(CombatExecutionResult.NoResourceChangeObserved, evidence.Result);
+        Assert.False(evidence.ResourceGainConfirmed);
+        Assert.Equal(ResourceKind.Health, evidence.ResourceObserved);
+        Assert.Equal(100d, evidence.Before.Value);
+        Assert.Equal(100d, evidence.After.Value);
+    }
+
+    [Fact]
+    public void ProjectRecovery_UseConsumableWithHpFalling_ReturnsNoResourceChangeObserved()
+    {
+        // Falling Health is never a confirmed gain: the slot did not heal (the
+        // player may have taken damage in the window). No fabricated gain.
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading before = Vitals(hp: 90, maxHp: 100, mp: 100, maxMp: 100);
+        PlayerVitalsReading after = Vitals(hp: 70, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after, FixedInstant);
+
+        Assert.Equal(CombatExecutionResult.NoResourceChangeObserved, evidence.Result);
+        Assert.False(evidence.ResourceGainConfirmed);
+    }
+
+    // -- ProjectRecovery: refusal sweeps --------------------------------------
+
+    [Theory]
+    [InlineData(CombatActionKind.BasicAttack)]
+    [InlineData(CombatActionKind.UseSkill)]
+    [InlineData(CombatActionKind.Reposition)]
+    [InlineData(CombatActionKind.Flee)]
+    public void ProjectRecovery_EveryNonUseConsumableKind_ReturnsUnobservedWithResourceNotObservable_RegardlessOfVitals(CombatActionKind kind)
+    {
+        CombatActionCandidate candidate = Candidate(kind);
+        PlayerVitalsReading before = Vitals(hp: 60, maxHp: 100, mp: 100, maxMp: 100);
+        PlayerVitalsReading after = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after, FixedInstant);
+
+        Assert.Equal(CombatExecutionResult.Unobserved, evidence.Result);
+        Assert.Equal(CombatVerificationProjector.ResourceNotObservableReason, evidence.Detail);
+        Assert.Null(evidence.ResourceObserved);
+        Assert.False(evidence.Before.HasValue);
+        Assert.False(evidence.After.HasValue);
+        Assert.Equal(CombatVerificationProjector.ResourceNotObservableReason, evidence.Before.Reason);
+        Assert.Equal(CombatVerificationProjector.ResourceNotObservableReason, evidence.After.Reason);
+    }
+
+    [Fact]
+    public void ProjectRecovery_UseConsumableWithNoBeforeRead_ReturnsUnobservedWithVitalsNotObserved()
+    {
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading after = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before: null, after, FixedInstant);
+
+        Assert.Equal(CombatExecutionResult.Unobserved, evidence.Result);
+        Assert.Equal(CombatVerificationProjector.VitalsNotObservedReason, evidence.Detail);
+        Assert.Equal(ResourceKind.Health, evidence.ResourceObserved);
+        Assert.False(evidence.Before.HasValue);
+        Assert.False(evidence.After.HasValue);
+        Assert.Equal(CombatVerificationProjector.VitalsNotObservedReason, evidence.Before.Reason);
+        Assert.Equal(CombatVerificationProjector.VitalsNotObservedReason, evidence.After.Reason);
+    }
+
+    [Fact]
+    public void ProjectRecovery_UseConsumableWithNoAfterRead_ReturnsUnobservedWithVitalsNotObserved()
+    {
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading before = Vitals(hp: 60, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after: null, FixedInstant);
+
+        Assert.Equal(CombatExecutionResult.Unobserved, evidence.Result);
+        Assert.Equal(CombatVerificationProjector.VitalsNotObservedReason, evidence.Detail);
+        Assert.False(evidence.Before.HasValue);
+        Assert.False(evidence.After.HasValue);
+    }
+
+    [Fact]
+    public void ProjectRecovery_CarriesTheCandidateOnTheEvidence()
+    {
+        CombatActionCandidate candidate = Candidate(CombatActionKind.UseConsumable);
+        PlayerVitalsReading before = Vitals(hp: 60, maxHp: 100, mp: 100, maxMp: 100);
+        PlayerVitalsReading after = Vitals(hp: 100, maxHp: 100, mp: 100, maxMp: 100);
+
+        CombatExecutionEvidence evidence =
+            CombatVerificationProjector.ProjectRecovery(candidate, before, after, FixedInstant);
+
+        Assert.Same(candidate, evidence.Candidate);
+    }
 }

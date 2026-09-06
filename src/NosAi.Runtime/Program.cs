@@ -272,6 +272,33 @@ public static class Program
             return NosAi.Runtime.Navigation.CollectCommand.Run(collectX, collectY, collectVnum, requiredCount, collectRounds);
         }
 
+        // One recover round (or --watch <n> rounds): execute and verify one
+        // UseConsumable press at one operator-named quickbar slot, resolving the
+        // key from the operator's own keybinds (the consumable.{slot} intent) and
+        // reading the player's vitals before/after. Same commanded-authority
+        // family as --walk/--scout/--engage/--collect. It does not arm input.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.RecoverCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int recoverIndex = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Tactical.RecoverCommand.Flag, StringComparison.OrdinalIgnoreCase));
+            if (recoverIndex + 1 >= args.Length
+                || !int.TryParse(args[recoverIndex + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int recoverSlot))
+            {
+                Console.WriteLine("[REFUSED] --recover requires <slot>");
+                return 1;
+            }
+
+            int recoverWatchFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            int recoverRounds = recoverWatchFlag >= 0 && recoverWatchFlag + 1 < args.Length
+                                && int.TryParse(args[recoverWatchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedRecoverRounds)
+                                && parsedRecoverRounds > 0
+                ? parsedRecoverRounds
+                : 1;
+
+            return NosAi.Runtime.Tactical.RecoverCommand.Run(recoverSlot, recoverRounds);
+        }
+
         // Which intents the operator bound, and which the runtime can ask for
         // that are not bound. Non-zero when the file is missing or a required
         // prefix is uncovered. Does not write data/keybinds.json.
@@ -832,7 +859,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover"
         };
 
     private static int RunDxgiProbe()
