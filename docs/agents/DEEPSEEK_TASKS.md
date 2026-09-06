@@ -231,14 +231,16 @@ a una specifica di file precisa. Vanno investigati prima di diventare un
 task DeepSeek — se vuoi che Claude apra uno di questi come prossimo lotto
 indipendente da AP-04, chiedilo esplicitamente.
 
-- **Fonte dati reale per i portali** (identità, mappa sorgente/destinazione,
-  posizione): non esiste nel repository. `NosAi.Navigation.Pathfinding.
-  WorldMapPortalRouter` ha un grafo di routing multi-mappa reale come
-  algoritmo ma su dati hardcoded/fixture. Blocca `NavigationPlan` con più
-  di un waypoint (AP-04) finché non esiste. Possibile pista:
-  `third_party/sources/taletool/` (parsing offline di dati client) o
-  lettura da memoria client in stile `MapIdFinder`/`TargetIdFinder` — da
-  verificare prima di specificarlo come task.
+- ~~**Fonte dati reale per i portali**~~ — **verificato**: la pista file
+  client (`taletool`, solo `UPSTREAM.md` di riferimento, non integrabile;
+  nessuna tabella client decodificata elenca portali) resta bloccata, ma
+  "osserva mentre attraversi" da memoria (`ClientMemorySession.TryReadMapId`,
+  offset già provato e wired) è reale e costruibile oggi. Algoritmo puro
+  già scritto (`PortalCrossingDetector`, Claude) — **manca ancora il
+  wiring A2+A4** (comando/loop che polla map id+posizione e inietta il
+  `Portal` risultante in un `MapObservationBatch`), non specificato in
+  questa sessione. Vedi `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`
+  §"Seconda indagine sui portali".
 - ~~**`TargetStateComposer` non cablato in `ScreenVitalsCapture`**~~ —
   **verificato e specificato (Q-067)**: non bloccato da OCR/ONNX,
   `TargetRoiCalibration`/`ScreenTargetFrameSource`/`TargetStateComposer`
@@ -248,13 +250,14 @@ indipendente da AP-04, chiedilo esplicitamente.
   codice di lettura esiste. Potenzialmente bloccato da OCR reale (asset ML
   mancante, vedi sotto) o parzialmente affrontabile senza OCR per gli slot
   con icone fisse — da verificare.
-- **Statistiche reali per skill** (danno, costo risorsa, se richiede un
-  target) — `docs/agents/phases/AP-05/AP-05_A1_STATUS.md` §"Gap dati
-  reali": `Skill` (AP-01) porta solo `Id`/`Name`/`Level`/`IsUsable`.
-  Blocca una simulazione di combattimento reale (AP-05) e la generazione
-  di candidati self-cast/buff. Possibile pista: tabella statistiche skill
-  dal client (stesso genere di lavoro di `MapGridExtractor` per la
-  geometria) — da verificare prima di specificarlo come task.
+- ~~**Statistiche reali per skill**~~ — **verificato, genuinamente
+  bloccato**: `GameReferenceDatabase` decodifica solo `VNUM`/`LEVEL`/`NAME`
+  come colonne tipizzate; ogni altro campo (`ATTRIB`/`BASIC`) resta
+  stringa grezza senza mappa slot→significato dichiarata da nessuna fonte
+  nel repository. Indovinare quale slot sia danno/costo/target sarebbe
+  la fabbricazione che `CLAUDE.md` vieta esplicitamente. Non specificabile
+  finché non esiste una decodifica semantica reale (verifica in-game o
+  fonte esterna attendibile).
 - ~~**Riconciliazione `KnowledgeScope`/lifecycle duplicati**~~ —
   **risolto** (Q-064/Q-065/Q-066, su richiesta esplicita dell'utente):
   `KnowledgeScope` unificato su `Memory.KnowledgeScope`;
@@ -264,14 +267,11 @@ indipendente da AP-04, chiedilo esplicitamente.
   su `Candidate`); `DataSourceKind` confermato duplicazione intenzionale
   per bounded context, chiuso con `docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`
   invece che con codice. Vedi `AP-09_A1_STATUS.md`.
-- **Categoria/slot di equipaggiamento e statistiche reali per item** —
-  `docs/agents/phases/AP-07/AP-07_A1_STATUS.md`: `InventoryItem` (AP-01)
-  non porta a quale `EquipmentSlot` un item corrisponde, né statistiche
-  di combattimento/costo upgrade. Blocca la generazione automatica di
-  candidati Equip e il popolamento reale di `LoadoutEvaluation`. Stesso
-  sospetto di AP-05: probabilmente la stessa fonte dati client
-  (`GameReferenceDatabase`/`Item.dat`) non ancora decodificata
-  semanticamente — da verificare prima di specificarlo come task.
+- ~~**Categoria/slot di equipaggiamento e statistiche reali per item**~~ —
+  **verificato, genuinamente bloccato**, stessa ragione delle statistiche
+  skill: nessun campo tipo/sottotipo item decodificato semanticamente in
+  `GameReferenceDatabase`, nessuna mappa dichiarata verso
+  `EquipmentSlot`. Non specificabile oggi.
 - **AP-07/A2+A4 — esecuzione/verifica equip/unequip/upgrade, genuinamente
   bloccato, indagine conclusa** (`AP-07_A1_STATUS.md` §"AP-07/A2+A4"): a
   differenza di AP-05/AP-06, qui nessun percorso onesto parziale esiste.

@@ -233,3 +233,64 @@ Specifica dettagliata: `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_scout_comma
 **Livello di verifica AP-04 complessivo:** `Present` (A1+A3, contratti e
 algoritmo puro) + A2/A4 `PENDING` (specifica pubblicata, in attesa che
 DeepSeek la esegua).
+
+## Seconda indagine sui portali (su richiesta esplicita dell'utente) — un percorso reale trovato, non ancora bloccato
+
+La decisione sopra ("bloccato, manca una fonte dati reale") resta corretta
+per la pista che era stata verificata allora: nessuna tabella client
+decodificata elenca destinazioni di portale (confermato di nuovo per grep
+su `GameReferenceDatabase.cs`/`STATO_IMPLEMENTAZIONE.md`: zero riscontri
+su "portal"/"warp"/"teleport"), e `third_party/sources/taletool/` contiene
+solo `UPSTREAM.md` (materiale di riferimento AGPL, non un parser
+integrabile). Una **seconda pista, non verificata allora**, risulta però
+reale e costruibile oggi: **osservare l'attraversamento**, non leggerlo da
+un file. `ClientMemorySession.TryReadMapId` (offset
+`NosTaleClientLayout.MapIdModuleOffset`, già provato e wired, non solo in
+fase di ricerca) e `TryReadPlayer` (posizione X/Y live) sono infrastruttura
+già reale e già polled ogni ciclo da `ScoutCommand`/`WalkCommand` — un
+cambio di map id tra due letture consecutive è un evento osservabile
+onestamente, senza inventare nulla: il giocatore era su una mappa, ora è
+su un'altra, e l'ultima posizione nota sulla mappa di partenza è la
+migliore stima onesta di dove si trovi l'uscita.
+
+**Consegnato in questo passaggio** (A1+A3, Claude, puro):
+`src/NosAi.Core/WorldModel/Reconstruction/PortalCrossingDetector.cs` —
+`MapPositionReading` (map id + posizione + istante) e
+`PortalCrossingDetector.DetectCrossing(previous, current)`: `null` se le
+due letture condividono la stessa mappa, altrimenti un `Portal` (AP-01,
+`SourceMap`/`SourcePosition` dalla lettura precedente,
+`DestinationMap`/`IsActive` dalla lettura corrente, tutti `Live`).
+`Portal.Id` deriva da mappa sorgente + posizione arrotondata
+(`PositionRoundingUnits`, dichiarata esplicitamente una scelta di giudizio
+non calibrata) — proprio perché `MapReconstructionFusion.MergeByKey` unisce
+per `Id`: senza arrotondare, ogni attraversamento dello stesso portale
+fisico produrrebbe una riga nuova invece di raffinare la stessa. Nessun
+nuovo meccanismo di persistenza necessario: `MapObservationBatch.Portals`
+(AP-03, già esistente) e la fusione via `MapReconstructionFusion` sono già
+il punto di integrazione — questo contratto produce solo il `Portal` da
+mettere in quel campo.
+
+**Non affrontato qui, A2+A4 futuro non ancora specificato**: il ciclo di
+polling che chiama `TryReadMapId`/`TryReadPlayer`, tiene la lettura
+precedente, invoca `DetectCrossing` e inietta il risultato in un
+`MapObservationBatch` per la mappa sorgente — wiring runtime reale, non
+un algoritmo puro, quindi lavoro A2+A4 per DeepSeek quando ci sarà una
+decisione su dove agganciarlo (un nuovo comando dedicato, o un'estensione
+di `--scout`/`--walk` che già fanno lo stesso polling).
+
+**Test**: `tests/NosAi.Core.Tests/WorldModel/Reconstruction/PortalCrossingDetectorTests.cs`,
+7 test (nessuna crossing, campi del `Portal` derivato, confidence
+di default/personalizzata, id stabile per attraversamenti dello stesso
+portale con jitter di posizione, id diverso per portali chiaramente
+distinti, id invariato per la stessa sorgente anche con destinazioni
+diverse osservate). `dotnet build NosAi.sln -c Release`: 0 errori, 1
+warning preesistente non collegato. `dotnet test
+tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`: **630/630**,
+0 falliti (623 precedenti + 7 nuovi, zero regressioni; un fallimento
+isolato di `TransportLoopTests` nella prima esecuzione, non riprodotto
+alla riesecuzione — stesso flake da carico macchina già documentato più
+volte in questa sessione).
+
+**Livello di verifica**: `Present` — contratto e algoritmo puro scritti,
+testati, compilano puliti; non ancora `Integrated` (nessun chiamante
+runtime).
