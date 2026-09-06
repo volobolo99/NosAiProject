@@ -1,0 +1,21 @@
+taletool.exe
+crate version: 0.2.0 (crates/taletool-cli/Cargo.toml)
+upstream commit: 5a7078e54472f0f1141955300a57b50ac8329cda
+upstream commit date: 2026-08-26T21:14:21+02:00
+license: AGPL-3.0-or-later (see LICENSE, NOTICE.md)
+
+Built locally from the upstream commit above, not downloaded as a
+pre-built release asset:
+  target:    x86_64-pc-windows-gnu
+  toolchain: rustc 1.98.1 (48a229cea 2026-09-01), stable channel
+  linker:    x86_64-w64-mingw32-gcc (gcc-mingw-w64-x86-64 13.2.0-6ubuntu1+26.1)
+  command:   cargo build --release --target x86_64-pc-windows-gnu -p taletool
+  sha256:    d70bc8c9038e37c471ffebeb42e61448edfcf54745904b8a4f39ce3d330425f9
+
+Verified: `file` identifies the output as a PE32+ console executable for
+x86-64 Windows. Not functionally run -- this environment has no Windows
+or Wine runtime. Functional verification needs the real target machine,
+same as every other real-client check in this repository.
+
+Upgrading: rebuild from a newer upstream commit with the command above,
+replace taletool.exe, and update every field in this file together.

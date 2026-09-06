@@ -679,6 +679,12 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ReferenceInfoCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Observability.ReferenceInfoCommand.Run();
 
+        // Re-imports the reference catalogue and the broader taletool file
+        // inventory from the installed client, reporting what a client update
+        // changed since the last run.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ClientUpdateCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Observability.ClientUpdateCommand.Run();
+
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides
         // about it, which is the half nothing exercised before.
@@ -933,7 +939,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route"
         };

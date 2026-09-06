@@ -64,11 +64,10 @@ Il codice del prodotto deve rimanere indipendente dalle sorgenti third-party. Qu
 
 - Repository: `imxeno/taletool`
 - URL: https://github.com/imxeno/taletool
-- Stato: `ISOLATED TOOL / REFERENCE`
-- Licenza verificata: AGPL-3.0
+- Stato: `INTEGRATED (subprocess esterno, binario vendorizzato)`
+- Licenza verificata: AGPL-3.0-or-later
 - Utilizzo previsto: parsing/conversione dei formati dati client NosTale, incluse quest, item, monster, skill e map/geometry.
-- Boundary consigliato: esecuzione offline esterna -> JSON/artifacts -> importer NosAi.
-- Vincolo: non incorporare implementazione AGPL nel core/runtime senza decisione esplicita di licensing.
+- Decisione di licensing: presa esplicitamente dal proprietario del repository. Binario Windows vendorizzato in `third_party/taletool/` (LICENSE+NOTICE.md+VERSION preservati), invocato come processo esterno da `src/NosAi.Runtime/GameData/TaletoolInvoker.cs` — nessun codice AGPL compilato/linkato nel runtime NosAi.
 - Scheda locale: `third_party/sources/taletool/UPSTREAM.md`.
 
 ## 8. Vanosilla/client-files

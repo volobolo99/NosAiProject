@@ -9,6 +9,15 @@ namespace NosAi.Runtime.GameData;
 /// inventing that interpretation here would put an unverified effect in
 /// front of any caller that reads it as fact.
 /// </summary>
+/// <remarks>
+/// <see cref="Target"/> is left as the record's raw code rather than an
+/// enum. A community reference (https://nt-research.github.io/, "BCard
+/// reference fields") documents 0=self pre-attack, 1=bonus pre-attack,
+/// 2=caster-targeted, 3=all targets post-attack, 4=enemy-related, but
+/// this decoder has not cross-checked any of those five against an
+/// observed in-game effect, so encoding them as a typed enum would sell
+/// a lead as a fact.
+/// </remarks>
 public sealed record BCardApplication(
     int BCardVnum,
     int BCardSub,
@@ -17,28 +26,47 @@ public sealed record BCardApplication(
     int Target);
 
 /// <summary>
-/// The static rules one skill's record declares: cost, per-class level
-/// requirement, targeting and the effects it applies. Distinct from
-/// <c>NosAi.Core.WorldModel.Skill</c>, which is a player's live, observed
-/// skill state -- this is catalog data, the same "real reference, not a
-/// live fact" category <see cref="GameReferenceDatabase"/> already
-/// documents for every table it imports.
+/// The static rules one skill's record declares: classification, cost,
+/// per-class level requirement, targeting, timing and the effects it
+/// applies. Distinct from <c>NosAi.Core.WorldModel.Skill</c>, which is a
+/// player's live, observed skill state -- this is catalog data, the same
+/// "real reference, not a live fact" category <see cref="GameReferenceDatabase"/>
+/// already documents for every table it imports.
 /// </summary>
 /// <remarks>
-/// Only the tuple positions this decoder resolved with confidence are
-/// promoted to a named property. Several coded values the record also
-/// carries (element, attack type, secondary weapon, hit type, target
-/// group, ...) are deliberately left undecoded: this decoder does not
-/// have a verified mapping from those integer codes to their in-game
-/// meaning, and <see cref="TargetType"/>/<see cref="HitType"/>/
-/// <see cref="TargetGroup"/> below are kept as raw codes for the same
-/// reason -- a caller that needs the actual meaning must not read a
-/// guess. Every property is null when its own tag is absent from the
+/// <para>
+/// The tag layout below -- which position inside <c>TYPE</c>/<c>COST</c>/
+/// <c>LEVEL</c>/<c>TARGET</c>/<c>DATA</c>/<c>BASIC</c> holds which value --
+/// comes from a community reference for the client's file formats
+/// (https://nt-research.github.io/, "NOS files / NSgtdData / Skill.dat"),
+/// per this project's rule to prefer a verifiable external source over
+/// guessing a tuple position. That source is a lead, not a ground truth:
+/// none of its claimed positions have yet been cross-checked against a
+/// real skill's cost, cast time or cooldown as shown by a live client.
+/// Treat every value this produces as provisional until at least one has
+/// been confirmed that way.
+/// </para>
+/// <para>
+/// Coded values with no verified in-game meaning -- <see cref="SkillType"/>,
+/// <see cref="JobClass"/>, <see cref="AttackType"/>, <see cref="SecondaryWeapon"/>,
+/// <see cref="Element"/>, <see cref="TargetType"/>, <see cref="HitType"/>,
+/// <see cref="TargetGroup"/> -- are kept as raw integers rather than enums
+/// for the same reason: the source names what each code is claimed to
+/// mean, but this decoder has not verified any of those claims against
+/// an observed skill, so promoting them to an enum would present a guess
+/// as a fact. Every property is null when its own tag is absent from the
 /// record, never a fabricated default.
+/// </para>
 /// </remarks>
 public sealed record SkillReference(
     int Vnum,
     string NameKey,
+    int? SkillType,
+    int? CastId,
+    int? JobClass,
+    int? AttackType,
+    int? SecondaryWeapon,
+    int? Element,
     int? CpCost,
     int? GoldCost,
     int? SpecialCost,
@@ -52,9 +80,15 @@ public sealed record SkillReference(
     int? Range,
     int? TargetRange,
     int? TargetGroup,
+    int? UpgradeSkill,
+    int? PartnerSkillId,
     int? CastTimeRaw,
     int? CooldownRaw,
     int? MpCost,
+    int? DashSpeed,
+    int? RequiredItemVnum,
+    int? DataRange,
+    int? DataTargetRange,
     IReadOnlyList<BCardApplication> Effects);
 
 /// <summary>
@@ -65,15 +99,9 @@ public sealed record SkillReference(
 /// guessed value.
 /// </summary>
 /// <remarks>
-/// <b>Not yet cross-checked against a live client value.</b> The tuple
-/// positions below come from this decoder's own analysis of the record
-/// shape, not from anything the client declares by name (only the tag
-/// names themselves -- <c>COST</c>, <c>LEVEL</c>, <c>TARGET</c>, ...--
-/// are self-describing; which slot inside each is which value is this
-/// decoder's own claim). Treat every value this produces as provisional
-/// until at least one has been checked against a real skill's cost/
-/// cooldown as shown by a live client, per this project's own rule that
-/// an unverified external/derived mapping is a lead, not a fact.
+/// <b>Not yet cross-checked against a live client value.</b> See
+/// <see cref="SkillReference"/>'s own remarks for the source of the tag
+/// layout and why it remains provisional.
 /// </remarks>
 public static class SkillReferenceDecoder
 {
@@ -88,6 +116,7 @@ public static class SkillReferenceDecoder
         if (record.Vnum is not int vnum)
             return null;
 
+        NosField? type = record.Field("TYPE");
         NosField? name = record.Field("NAME");
         NosField? cost = record.Field("COST");
         NosField? level = record.Field("LEVEL");
@@ -97,6 +126,12 @@ public static class SkillReferenceDecoder
         return new SkillReference(
             vnum,
             name?.Value(0) ?? string.Empty,
+            SkillType: type?.Int(0),
+            CastId: type?.Int(1),
+            JobClass: type?.Int(2),
+            AttackType: type?.Int(3),
+            SecondaryWeapon: type?.Int(4),
+            Element: type?.Int(5),
             CpCost: cost?.Int(0),
             GoldCost: cost?.Int(1),
             SpecialCost: cost?.Int(2),
@@ -110,9 +145,15 @@ public static class SkillReferenceDecoder
             Range: target?.Int(2),
             TargetRange: target?.Int(3),
             TargetGroup: target?.Int(4),
+            UpgradeSkill: data?.Int(0),
+            PartnerSkillId: data?.Int(1),
             CastTimeRaw: data?.Int(4),
             CooldownRaw: data?.Int(5),
             MpCost: data?.Int(8),
+            DashSpeed: data?.Int(9),
+            RequiredItemVnum: data?.Int(10),
+            DataRange: data?.Int(11),
+            DataTargetRange: data?.Int(12),
             Effects: DecodeEffects(record));
     }
 

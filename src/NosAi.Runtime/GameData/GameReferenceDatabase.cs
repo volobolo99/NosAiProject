@@ -203,6 +203,22 @@ public sealed class GameReferenceDatabase : IDisposable
 
         Execute("CREATE INDEX IF NOT EXISTS ix_field_lookup ON field(kind, name, value)");
         Execute("CREATE INDEX IF NOT EXISTS ix_entity_level ON entity(kind, level)");
+
+        // A broader file-level inventory than `entity` covers: every file a client
+        // data-directory scan found, whether or not this project has a decoder for
+        // it yet. Its own record_hash is what lets a later scan say which files are
+        // new, changed, or gone since the last one, the same question `entity`
+        // already answers for the five tables ReferenceImporter understands.
+        Execute("""
+            CREATE TABLE IF NOT EXISTS client_inventory (
+                file          TEXT    NOT NULL PRIMARY KEY,
+                archive_type  TEXT,
+                details       TEXT,
+                error         TEXT,
+                record_hash   TEXT    NOT NULL,
+                scanned_at_utc TEXT   NOT NULL
+            )
+            """);
     }
 
     // -------------------------------------------------------------- importing
@@ -388,6 +404,135 @@ public sealed class GameReferenceDatabase : IDisposable
                 command.ExecuteNonQuery();
             }
         }
+    }
+
+    /// <summary>
+    /// Replaces the stored client-directory inventory with a fresh scan,
+    /// reporting which files are new, changed, or gone since the last one.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="Import"/>, this is not restricted to a table this
+    /// project has a decoder for -- it is whatever a full directory scan
+    /// found, decoded or not, so a client update shows up here even for a
+    /// file type nothing in this project reads yet.
+    /// </remarks>
+    public ReferenceDiff ImportClientInventory(
+        IReadOnlyList<ClientInventoryEntry> entries, DateTime? scannedAtUtc = null)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        Dictionary<string, string> existing = ReadInventoryHashes();
+        var incoming = new Dictionary<string, (ClientInventoryEntry Entry, string Hash)>(StringComparer.Ordinal);
+        foreach (ClientInventoryEntry entry in entries)
+            incoming[entry.File] = (entry, HashInventoryEntry(entry));
+
+        ReferenceDiff diff = CompareInventory(existing, incoming);
+
+        using SqliteTransaction transaction = _connection.BeginTransaction();
+        Execute(transaction, "DELETE FROM client_inventory");
+
+        string scannedAt = (scannedAtUtc ?? DateTime.UtcNow).ToString("O");
+        using (SqliteCommand command = _connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = """
+                INSERT INTO client_inventory (file, archive_type, details, error, record_hash, scanned_at_utc)
+                VALUES ($file, $type, $details, $error, $hash, $at)
+                """;
+            SqliteParameter pFile = command.Parameters.Add("$file", SqliteType.Text);
+            SqliteParameter pType = command.Parameters.Add("$type", SqliteType.Text);
+            SqliteParameter pDetails = command.Parameters.Add("$details", SqliteType.Text);
+            SqliteParameter pError = command.Parameters.Add("$error", SqliteType.Text);
+            SqliteParameter pHash = command.Parameters.Add("$hash", SqliteType.Text);
+            SqliteParameter pAt = command.Parameters.Add("$at", SqliteType.Text);
+
+            foreach ((string file, (ClientInventoryEntry entry, string hash)) in incoming)
+            {
+                pFile.Value = file;
+                pType.Value = (object?)entry.ArchiveType ?? DBNull.Value;
+                pDetails.Value = (object?)entry.Details ?? DBNull.Value;
+                pError.Value = (object?)entry.Error ?? DBNull.Value;
+                pHash.Value = hash;
+                pAt.Value = scannedAt;
+                command.ExecuteNonQuery();
+            }
+        }
+
+        transaction.Commit();
+        return diff;
+    }
+
+    private static ReferenceDiff CompareInventory(
+        Dictionary<string, string> existing,
+        Dictionary<string, (ClientInventoryEntry Entry, string Hash)> incoming)
+    {
+        int added = 0, changed = 0, unchanged = 0;
+        var samples = new List<string>();
+
+        foreach ((string file, (_, string hash)) in incoming)
+        {
+            if (!existing.TryGetValue(file, out string? old))
+            {
+                added++;
+                if (samples.Count < 20)
+                    samples.Add($"+ {file}");
+            }
+            else if (old != hash)
+            {
+                changed++;
+                if (samples.Count < 20)
+                    samples.Add($"~ {file}");
+            }
+            else
+            {
+                unchanged++;
+            }
+        }
+
+        int removed = 0;
+        foreach (string file in existing.Keys)
+        {
+            if (incoming.ContainsKey(file))
+                continue;
+            removed++;
+            if (samples.Count < 20)
+                samples.Add($"- {file}");
+        }
+
+        return new ReferenceDiff("client_inventory", added, changed, removed, unchanged, samples);
+    }
+
+    private Dictionary<string, string> ReadInventoryHashes()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        using SqliteCommand command = _connection.CreateCommand();
+        command.CommandText = "SELECT file, record_hash FROM client_inventory";
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+            map[reader.GetString(0)] = reader.GetString(1);
+        return map;
+    }
+
+    private static string HashInventoryEntry(ClientInventoryEntry entry) =>
+        Sha256(Encoding.UTF8.GetBytes(
+            string.Join(UnitSeparator, entry.ArchiveType, entry.Details, entry.Error)));
+
+    /// <summary>The stored inventory from the last <see cref="ImportClientInventory"/>.</summary>
+    public IReadOnlyList<ClientInventoryEntry> ClientInventory()
+    {
+        var entries = new List<ClientInventoryEntry>();
+        using SqliteCommand command = _connection.CreateCommand();
+        command.CommandText = "SELECT file, archive_type, details, error FROM client_inventory ORDER BY file";
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            entries.Add(new ClientInventoryEntry(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3)));
+        }
+        return entries;
     }
 
     /// <summary>Stores one language table, replacing whatever was there.</summary>

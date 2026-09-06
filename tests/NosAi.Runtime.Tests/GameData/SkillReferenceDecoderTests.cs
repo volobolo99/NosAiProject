@@ -35,6 +35,13 @@ public sealed class SkillReferenceDecoderTests
         Assert.Equal(1177, skill!.Vnum);
         Assert.Equal("sk1177n", skill.NameKey);
 
+        Assert.Equal(0, skill.SkillType);
+        Assert.Equal(10, skill.CastId);
+        Assert.Equal(1, skill.JobClass);
+        Assert.Equal(0, skill.AttackType);
+        Assert.Equal(0, skill.SecondaryWeapon);
+        Assert.Equal(3, skill.Element);
+
         Assert.Equal(10, skill.CpCost);
         Assert.Equal(0, skill.GoldCost);
         Assert.Equal(0, skill.SpecialCost);
@@ -51,9 +58,15 @@ public sealed class SkillReferenceDecoderTests
         Assert.Equal(10, skill.TargetRange);
         Assert.Equal(2, skill.TargetGroup);
 
+        Assert.Equal(0, skill.UpgradeSkill);
+        Assert.Equal(0, skill.PartnerSkillId);
         Assert.Equal(8, skill.CastTimeRaw);
         Assert.Equal(180, skill.CooldownRaw);
         Assert.Equal(24, skill.MpCost);
+        Assert.Equal(0, skill.DashSpeed);
+        Assert.Equal(-1, skill.RequiredItemVnum);
+        Assert.Equal(5, skill.DataRange);
+        Assert.Equal(10, skill.DataTargetRange);
     }
 
     [Fact]
@@ -92,9 +105,11 @@ public sealed class SkillReferenceDecoderTests
 
         Assert.NotNull(skill);
         Assert.Equal(string.Empty, skill!.NameKey);
+        Assert.Null(skill.SkillType);
         Assert.Null(skill.CpCost);
         Assert.Null(skill.TargetType);
         Assert.Null(skill.CastTimeRaw);
+        Assert.Null(skill.DataRange);
         Assert.Empty(skill.Effects);
     }
 
