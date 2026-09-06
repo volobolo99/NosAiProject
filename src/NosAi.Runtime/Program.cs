@@ -369,6 +369,25 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--target-chain", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Navigation.TargetChainProbe.Run();
 
+        // Reports whether a chain of already-observed portal crossings
+        // (Q-070/Q-071) can get the operator from the current map to the
+        // named one, and what it is. Read-only: plans, never walks.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Navigation.RouteProbe.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int routeFlagIndex = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.Runtime.Navigation.RouteProbe.Flag, StringComparison.OrdinalIgnoreCase));
+            if (routeFlagIndex + 3 >= args.Length
+                || !int.TryParse(args[routeFlagIndex + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int routeDestinationMapId)
+                || !float.TryParse(args[routeFlagIndex + 2], NumberStyles.Float, CultureInfo.InvariantCulture, out float routeDestinationX)
+                || !float.TryParse(args[routeFlagIndex + 3], NumberStyles.Float, CultureInfo.InvariantCulture, out float routeDestinationY))
+            {
+                Console.WriteLine("[REFUSED] --route requires <destinationMapId> <x> <y>");
+                return 1;
+            }
+
+            return NosAi.Runtime.Navigation.RouteProbe.Run(routeDestinationMapId, routeDestinationX, routeDestinationY);
+        }
+
         if (args.Any(a => string.Equals(a, "--find-target", StringComparison.OrdinalIgnoreCase)))
         {
             // No flag says whether a target is selected any more: the hunt asks, round
@@ -916,7 +935,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route"
         };
 
     private static int RunDxgiProbe()

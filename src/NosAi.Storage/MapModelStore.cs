@@ -153,6 +153,23 @@ public sealed class MapModelStore : IDisposable
         }
     }
 
+    /// <summary>Every map id this store currently holds a persisted <see cref="MapModel"/> for.</summary>
+    public IReadOnlyCollection<MapId> ListMapIds()
+    {
+        lock (_lock)
+        {
+            using SqliteCommand command = _connection.CreateCommand();
+            command.CommandText = "SELECT map_id FROM map_models";
+
+            var ids = new List<MapId>();
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+                ids.Add(new MapId(reader.GetString(0)));
+
+            return ids;
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

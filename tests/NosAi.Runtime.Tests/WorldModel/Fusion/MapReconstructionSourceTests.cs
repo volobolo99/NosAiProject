@@ -418,4 +418,68 @@ public sealed class MapReconstructionSourceTests
         Assert.Equal(destinationMap, portal.DestinationMap.Value);
         Assert.Equal(T1, portal.DestinationMap.ObservedAtUtc); // second crossing refined it
     }
+
+    // ------------------------------------------------ LoadAllKnownMaps
+
+    [Fact]
+    public void LoadAllKnownMaps_WithNothingEverPersisted_ReturnsAnEmptyDictionary()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+
+        using var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+
+        Assert.Empty(source.LoadAllKnownMaps());
+    }
+
+    [Fact]
+    public void LoadAllKnownMaps_AfterPersistingTwoMaps_ReturnsBothWithTheirCorrectContent()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        var mapA = new MapId("map-40");
+        var mapB = new MapId("map-41");
+
+        using var source = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+        source.RecordPortalCrossing(CrossingPortal(mapA, mapB, T0), T0);
+        source.RecordPortalCrossing(CrossingPortal(mapB, mapA, T0.AddSeconds(2)), T0.AddSeconds(2));
+
+        IReadOnlyDictionary<MapId, MapModel> known = source.LoadAllKnownMaps();
+
+        Assert.Equal(2, known.Count);
+        Assert.True(known.ContainsKey(mapA));
+        Assert.True(known.ContainsKey(mapB));
+        // Assert on the portal content, not full-object equality, to stay
+        // resilient to unrelated MapModel field changes.
+        Assert.Single(known[mapA].Portals);
+        Assert.Equal(mapB, known[mapA].Portals[0].DestinationMap.Value);
+        Assert.Single(known[mapB].Portals);
+        Assert.Equal(mapA, known[mapB].Portals[0].DestinationMap.Value);
+    }
+
+    [Fact]
+    public void LoadAllKnownMaps_FromAnIndependentSource_SeesMapsPersistedByAnother()
+    {
+        using TestVolume volume = TestVolume.Create();
+        using TempMapsDir maps = TempMapsDir.Create();
+        var mapA = new MapId("map-50");
+        var mapB = new MapId("map-51");
+
+        using (var first = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger()))
+        {
+            first.RecordPortalCrossing(CrossingPortal(mapA, mapB, T0), T0);
+            first.RecordPortalCrossing(CrossingPortal(mapB, mapA, T0.AddSeconds(2)), T0.AddSeconds(2));
+        }
+
+        // A second, independent source against the same volume reads the
+        // shared store, not some per-instance in-memory cache.
+        using var second = new MapReconstructionSource(volume.Options, maps.Directory, new NullRuntimeLogger());
+        IReadOnlyDictionary<MapId, MapModel> known = second.LoadAllKnownMaps();
+
+        Assert.Equal(2, known.Count);
+        Assert.True(known.ContainsKey(mapA));
+        Assert.True(known.ContainsKey(mapB));
+        Assert.Single(known[mapA].Portals);
+        Assert.Single(known[mapB].Portals);
+    }
 }

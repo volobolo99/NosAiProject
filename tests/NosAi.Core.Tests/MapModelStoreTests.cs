@@ -203,4 +203,51 @@ public sealed class MapModelStoreTests : IDisposable
 
         Assert.Equal("wal", journalMode);
     }
+
+    // -------------------------------------------------------------- ListMapIds
+
+    [Fact]
+    public void ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection()
+    {
+        var options = new SqliteJournalOptions(FileName: "irrelevant.db");
+        using var store = new MapModelStore(_databasePath, options);
+
+        Assert.Empty(store.ListMapIds());
+    }
+
+    [Fact]
+    public void ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds()
+    {
+        var options = new SqliteJournalOptions(FileName: "irrelevant.db");
+        using var store = new MapModelStore(_databasePath, options);
+
+        var idA = new MapId("map-a");
+        var idB = new MapId("map-b");
+        store.Save(MapModel.Unknown(idA, "test", T0) with { Version = 1 });
+        store.Save(MapModel.Unknown(idB, "test", T0) with { Version = 1 });
+
+        IReadOnlyCollection<MapId> ids = store.ListMapIds();
+
+        Assert.Equal(2, ids.Count);
+        Assert.Contains(idA, ids);
+        Assert.Contains(idB, ids);
+    }
+
+    [Fact]
+    public void ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce()
+    {
+        var options = new SqliteJournalOptions(FileName: "irrelevant.db");
+        using var store = new MapModelStore(_databasePath, options);
+
+        var id = new MapId("map-c");
+        // The second Save hits the ON CONFLICT ... DO UPDATE path: the id must
+        // not accumulate a second row.
+        store.Save(MapModel.Unknown(id, "test", T0) with { Version = 1 });
+        store.Save(MapModel.Unknown(id, "test", T0) with { Version = 2 });
+
+        IReadOnlyCollection<MapId> ids = store.ListMapIds();
+
+        Assert.Single(ids);
+        Assert.Contains(id, ids);
+    }
 }

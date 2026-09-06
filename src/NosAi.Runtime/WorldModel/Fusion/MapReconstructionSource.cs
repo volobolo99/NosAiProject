@@ -205,6 +205,37 @@ public sealed class MapReconstructionSource : IDisposable
             _cachedResult = merged;
     }
 
+    /// <summary>
+    /// Every map this store currently holds a persisted <see cref="MapModel"/>
+    /// for, loaded fresh -- for a caller that needs a multi-map snapshot
+    /// (<see cref="NosAi.Core.WorldModel.Exploration.MultiMapRoutePlanner.PlanRoute"/>),
+    /// not the single-current-map read <see cref="Resolve"/> exists for.
+    /// Best-effort, like every other read/write in this class: a missing
+    /// volume or a read failure yields an empty (or partial) result, never
+    /// a thrown exception on a caller's ordinary path.
+    /// </summary>
+    public IReadOnlyDictionary<MapId, MapModel> LoadAllKnownMaps()
+    {
+        var maps = new Dictionary<MapId, MapModel>();
+        if (_store is null)
+            return maps;
+
+        try
+        {
+            foreach (MapId id in _store.ListMapIds())
+            {
+                if (_store.TryLoad(id, out MapModel map))
+                    maps[id] = map;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.Error("MapReconstructionSource failed to enumerate persisted maps; returning whatever loaded so far.", ex);
+        }
+
+        return maps;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
