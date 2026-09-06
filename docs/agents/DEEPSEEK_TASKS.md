@@ -216,6 +216,16 @@ indipendente da AP-04, chiedilo esplicitamente.
   di candidati self-cast/buff. Possibile pista: tabella statistiche skill
   dal client (stesso genere di lavoro di `MapGridExtractor` per la
   geometria) — da verificare prima di specificarlo come task.
+- **Riconciliazione `KnowledgeScope`/lifecycle duplicati** —
+  `docs/agents/phases/AP-09/AP-09_A1_STATUS.md`: `KnowledgeScope` è
+  dichiarato identicamente sia in `NosAi.Core.Memory` che in
+  `NosAi.Core.Knowledge` (con una funzione di mappatura manuale tra i
+  due); il lifecycle è frammentato in due state machine diverse
+  (`Memory.KnowledgeStatus` a 7 stati vs `Knowledge.KnowledgeLifecycle`
+  a 7 stati diversi). Stesso genere del gap `DataSourceKind` già
+  segnalato da AP-01/A5. Non risolto: sistemare due enum già in uso da
+  codice e test reali richiede un comando dedicato con verifica di
+  regressione completa, non un tocco a margine di un'altra fase.
 - **Categoria/slot di equipaggiamento e statistiche reali per item** —
   `docs/agents/phases/AP-07/AP-07_A1_STATUS.md`: `InventoryItem` (AP-01)
   non porta a quale `EquipmentSlot` un item corrisponde, né statistiche
