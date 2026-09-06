@@ -191,11 +191,43 @@ Gallery/Patch Notes; JSON scaricabili direttamente via `/items.json`,
   `ItemType.cs`): il campo `itemType` di `items.json` (0-8) è coerente
   con le prime ~6 categorie di OpenNos su base di esempi reali italiani.
 
-Non ancora sfruttato: `monsters.json` (drop table con `chance`/`amount`,
-resistenze, razza — dati ricchi anche in italiano) e `maps.json`
-(dimensioni reali mappa) restano da analizzare in profondità; gli
-endpoint icona (`/api/items/icon/{vnum}`, `/api/monsters/icon/{id}`)
-non sono ancora stati scaricati/collegati alle voci dati.
+**`monsters.json`/`maps.json` analizzati a fondo (2026-09-06)**:
+
+- **Trovata la documentazione reale del formato `monster.dat`** (fonte
+  citata sopra per Skill.dat, stesso sito: `nt-research.github.io/docs/
+  NOS files/NSgtdData/monster_dat`) — 23 tag documentati verbatim
+  (`VNUM`/`NAME`/`LEVEL`/`RACE`/`ATTRIB`/`HP/MP`/`EXP`/`PREATT`/
+  `SETTING`/`ETC`/`PETINFO`/`EFF`/`ZSKILL`/`WINFO`/`WEAPON`/`AINFO`/
+  `ARMOR`/`SKILL`×4/`PARTNER`/`BASIC`×10/`CARD`×4/`MODE`/`ITEM`×20).
+  Quella stessa pagina cita a sua volta sia Itempicker sia **NosApki**
+  come risorse community collegate — corrobora ulteriormente NosApki
+  come fonte legittima, non solo il fatto che risponda 200.
+  Implementato `MonsterReferenceDecoder`
+  (`src/NosAi.Runtime/GameData/MonsterReferenceDecoder.cs`, 10 test),
+  che decodifica ogni tag tranne `PARTNER` (sempre 20 zeri, nessun
+  significato noto) e `MODE` (struttura ambiguא nella sola
+  documentazione — 5 BCard + 7 valori di coda, non decidibile con
+  certezza se su una riga combinata o ripetuta senza un file client
+  reale da ispezionare — omesso di proposito piuttosto che indovinato).
+  **Drop table** (`ITEM`×20, `itemVnum`/`chance`/`amount`) corroborata
+  da un secondo cross-check indipendente: `monsters.json` espone gli
+  stessi 3 campi, nello stesso ordine, con `chance` già convertito in
+  percentuale (`9.0`/`0.8`) coerente con la scala grezza 0-100000
+  documentata da nt-research (1000 = 1%). **Non ancora verificato
+  contro una cattura client reale** (nessun client NosTale in questo
+  sandbox) — stesso standard di onestà già applicato a
+  `SkillReferenceDecoder` prima della sua verifica.
+- **`maps.json` (dimensioni mappa) non colma alcun gap reale**: il
+  progetto ricava già `MapGrid.Width`/`Height`
+  (`src/NosAi.Runtime/Navigation/MapGrid.cs`) direttamente dai file
+  binari `.NSTC` del client reale — fonte di prima mano, più autorevole
+  di un sito terzo. `MapModel` (World Model, AP-03) non porta comunque
+  un campo larghezza/altezza fisso: i confini sono osservati
+  incrementalmente (`ObservedBounds`), non un valore statico da
+  precompilare. Nessuna integrazione fatta: sarebbe dato ridondante non
+  richiesto da alcun contratto esistente.
+- Endpoint icona (`/api/items/icon/{vnum}`, `/api/monsters/icon/{id}`)
+  restano non scaricati/collegati alle voci dati.
 
 ## Important distinction: secret knowledge vs exploit
 
