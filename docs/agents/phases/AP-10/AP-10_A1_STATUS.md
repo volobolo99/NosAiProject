@@ -74,8 +74,8 @@ esiste per rappresentare.
 | 10 | Multi-step quest | `Present` | `AP-06_A1_STATUS.md`: A1+A3 `Present`. | Semantic extraction OCR/UI bloccata (stesso gap ML). |
 | 11 | Equipment/progression | `Present` | `AP-07_A1_STATUS.md` (equip) + `AP-09_A1_STATUS.md`/`NosAi.Core.Progression` (progressione, preesistente). | Statistiche reali per item mancanti. |
 | 12 | Recovery | `Present`, parziale | `AP-08_A1_STATUS.md`: nessun segnale strategico "Recovery" valutato (serve un fatto reale "sono in combattimento adesso"). Il recovery di **sicurezza/esecuzione** (`RecoveryController`, sistema Gate 1-6 preesistente) è invece reale e testato, ma è un concetto diverso (fault recovery, non "riposare per curarsi"). | Nessun segnale di recovery gameplay-level; non riverificato in questa sessione lato Gate 1-6. |
-| 13 | Persistence | `Integrated`, parziale | `MapModelStore` (AP-03) reale, SQLite WAL, `Integrated`. Il ledger di AP-09 (`ActionOutcomeLedgerEntry`) è invece solo `Present`: nessuno store lo persiste ancora. | Ledger AP-09 non cablato a una persistenza reale. |
-| 14 | Evidence | non riverificato in questa sessione | Il sistema di audit/eventi (`RuntimeEvent`, `SqliteEventJournal`, hash-chain) è preesistente, reale, parte del sistema Gate 1-6 — non riaudita da questa sessione con evidenza fresca. | Da confermare con una verifica dedicata, non assunto per memoria. |
+| 13 | Persistence | `Integrated`, parziale | `MapModelStore` (AP-03) reale, SQLite WAL, `Integrated`. Il ledger di AP-09 (`ActionOutcomeLedgerEntry`) è invece solo `Present`: A2+A4 specificato (`AP-09_A2A4_DEEPSEEK_ledger_wiring.md`, `ActionOutcomeLedgerStore` stile `MapModelStore`), non ancora consegnato da DeepSeek. | Ledger AP-09 non cablato a una persistenza reale finché Q-061 non è consegnato. |
+| 14 | Evidence | `Integrated` (verificato in questa sessione, vedi Aggiornamento 2 sotto) | `SqliteEventJournal`/`IEventJournal` (`src/NosAi.Storage/`): hash-chain SHA256 reale, cablata nel vero composition root Gate 1 (`NosAiHost`, `src/NosAi.Host/NosAiHost.cs:100,124-459`) — ogni attach/handshake/frame/capability/disconnect viene giornalato. Rilevazione manomissione, policy WAL/FULL/busy_timeout e ripresa sequenza dopo riapertura verificate con test rieseguiti freschi in questa sessione (`SqliteEventJournalTests` 6/6, `NosAiHostTests` 2/2, entrambi 0 falliti). | Non `Verified`: nessuna sessione hardware reale di questa sessione ha prodotto e ri-verificato un journal fisico — coerente con la classificazione già data a questo stesso sottosistema da `docs/STATO_IMPLEMENTAZIONE.md` ("🟢 Present o Integrated a livello di codice"), mai promossa a `Verified` nemmeno lì. |
 
 \* **Nota importante sugli stadi 1-2 e sul recovery di sicurezza**: la
 loro classificazione `Verified` viene da documentazione preesistente
@@ -212,3 +212,81 @@ da un fatto nuovo (l'orchestratore esiste già altrove) invece che per
 sola assunzione: AP-10 resta senza un secondo passo di costruzione
 proprio, perché non è una fase di costruzione — e il primo candidato
 naturale a quel ruolo è già stato consegnato da AP-08.
+
+## Aggiornamento 2 — verifica dedicata dello stadio 14 (Evidence)
+
+L'Aggiornamento precedente segnalava lo stadio 14 come "non riaudito con
+evidenza fresca... da confermare con una verifica dedicata, non assunto
+per memoria". Fatto ora, per lettura diretta del codice e riesecuzione
+dei test, non per memoria:
+
+**Meccanismo, verificato reale**: `src/NosAi.Storage/SqliteEventJournal.cs`
+implementa `IEventJournal` con una catena hash reale —
+`ComputeChainHash` (righe 170-182) calcola
+`SHA256(previousHash ‖ sequence ‖ unixMillis ‖ stage ‖ payload)`,
+`VerifyChain` (righe 105-137) la ricalcola da un punto di partenza già
+committato (mai un hash fornito dal chiamante, riga 107) e confronta con
+`CryptographicOperations.FixedTimeEquals`, non `==`. WAL/FULL/
+busy_timeout sono applicati e poi **riletti e verificati** (righe
+232-248), esattamente come `MapModelStore` (AP-03).
+
+**Cablaggio reale, non isolato**: `src/NosAi.Host/NosAiHost.cs` — il vero
+composition root Gate 1, lo stesso il cui circuito PC↔NosTale↔smartphone
+è dichiarato `Verified` in `STATO_IMPLEMENTAZIONE.md` — apre il journal
+da `SqliteEventJournal.OpenFromVolume` (riga 100) e chiama
+`_journal.Append` per ogni evento reale del ciclo di vita: esito attach
+(riga 124), stato handshake (righe 212-218), fault di decodifica frame
+(riga 250), pacchetto di replay respinto (riga 257), esito capability
+(riga 288), heartbeat (riga 309), disconnessione (riga 332). Non è una
+libreria scritta e mai collegata.
+
+**Test rieseguiti in questa sessione, non citati a memoria**:
+```
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release \
+  --filter "FullyQualifiedName~SqliteEventJournalTests"
+  → Passed: 6, Failed: 0, Total: 6
+    (include VerifyChainDetectsATamperedRecordAtTheCorrectSequence,
+    VerifyChainIsValidAcrossTenThousandRecords,
+    ReopeningTheSameDatabaseResumesTheSequenceAndPreservesTheChain,
+    JournalAppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy)
+
+dotnet test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release \
+  --filter "FullyQualifiedName~NosAiHostTests"
+  → Passed: 2, Failed: 0, Total: 2
+    (RunAsyncJournalsTheAttachOutcomeAndPublishesTelemetry,
+    SequentialRunsOnTheSameHostAppendSuccessiveJournalSequences —
+    NosAiHost reale con journal SQLite su file temporaneo reale, mai
+    :memory: né un journal finto)
+```
+
+**Un secondo meccanismo correlato, non ri-auditato in dettaglio qui**:
+`src/NosAi.Runtime/Gate2/Gate2Runtime.cs` definisce anche un proprio
+`RuntimeEvent`/`BoundedEventBus` (righe 63-64 e seguenti) — un bus
+eventi Gate 2 distinto dalla catena hash di Gate 1, non lo stesso
+meccanismo. È il "Registro eventi durevole e riproducibile (M075-M076)"
+che `docs/STATO_IMPLEMENTAZIONE.md` elenca **nella stessa sezione**
+("🟢 Present o Integrated a livello di codice") della catena hash —
+citato qui per completezza, non riaudito riga per riga: la fonte
+canonica già lo classifica allo stesso livello, e ririderivare
+manualmente la stessa conclusione non aggiungerebbe evidenza.
+
+**Perché `Integrated` e non `Verified`**: il meccanismo è reale, cablato
+nel vero Gate 1, e i suoi test (incluso il rilevamento di manomissione)
+sono passati freschi in questo ambiente — ma nessuna sessione hardware
+reale di *questa* fase ha prodotto un journal fisico e poi ri-verificato
+la sua catena con `VerifyChain` contro un file realmente scritto durante
+un run PC↔NosTale↔telefono. `docs/STATO_IMPLEMENTAZIONE.md` stesso non
+promuove mai questo sottosistema oltre "Present o Integrated a livello
+di codice", nemmeno descrivendo il circuito Gate 1 come complessivamente
+`Verified` — la stessa distinzione che questa fase applica ovunque tra
+un meccanismo provato corretto e una sessione reale che lo ha esercitato.
+
+**`OverallLevel`: invariato, resta `Present`.** Gli stadi 5, 6, 7, 9, 10,
+11 restano `Present`, sotto `Integrated` — promuovere lo stadio 14 non
+sposta l'anello debole.
+
+**Stadi 1-2 (Startup/Attach), nota\* del §"Nota importante"**: restano
+non riverificabili in questo ambiente (nessun client NosTale reale,
+nessun hardware target) — non un lavoro rimandato per scelta, un limite
+dichiarato dalla Real-environment rule che nessuna indagine da questa
+sessione può aggirare.
