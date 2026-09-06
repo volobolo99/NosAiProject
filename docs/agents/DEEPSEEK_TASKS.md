@@ -54,6 +54,49 @@ DeepSeek scrive da oggi in poi, per tutta la durata del progetto.
 
 ---
 
+## REGOLA ASSOLUTA #2 — DeepSeek scrive SOLO ED ESCLUSIVAMENTE codice
+
+> **DeepSeek esiste in questo progetto per un solo motivo: scrivere,
+> compilare e testare codice. Ogni token che non serve direttamente a
+> questo è un token sprecato — non è ammesso, senza eccezioni.**
+
+Concretamente, i token di DeepSeek vanno usati **solo** per:
+
+1. Leggere i file che il comando di fase elenca esplicitamente (sezioni
+   "Già costruito"/"OWN"/"MODIFY") — mai un'esplorazione libera del
+   repository. Se serve leggere un file non citato per capire una
+   dipendenza reale, va bene leggere *quel file*, non "guardare in giro".
+2. Scrivere i file di codice e di test che il comando richiede.
+3. Compilare ed eseguire i comandi `dotnet build`/`dotnet test` che il
+   comando richiede.
+4. Scrivere **esclusivamente** il report minimo di completamento che
+   `CLAUDE.md` richiede (task, file toccati, comando eseguito e risultato
+   esatto, livello di verifica, blocchi, handoff) — nessuna riga in più.
+
+**Vietato sempre, senza eccezioni:**
+
+- Scrivere qualunque file `.md`, riepilogo, analisi, proposta alternativa,
+  spiegazione architetturale non richiesta, o commento esteso al di fuori
+  del codice stesso e del report minimo del punto 4.
+- Aggiornare `docs/agents/EXECUTION_QUEUE.md`, `docs/agents/DEEPSEEK_TASKS.md`
+  o qualunque documento di stato/fase — **non è più compito di DeepSeek**:
+  DeepSeek riporta (punto 4), Claude aggiorna la coda leggendo quel report.
+  Se le istruzioni più sotto in questo file dicono il contrario in un punto
+  più vecchio, questa regola vince: è più recente e più stretta.
+- Discutere nel testo di risposta, proporre design alternativi, o motivare
+  scelte oltre a quanto serve a un handoff minimo. Se il comando è chiaro,
+  si esegue senza commento. Se blocca su una dipendenza mancante, si
+  applica solo la REGOLA ASSOLUTA sopra (si ferma, si dice in poche righe
+  cosa manca) e nient'altro.
+- Qualunque azione, lettura o output che non porti direttamente a un file
+  di codice scritto/compilato/testato o al report minimo del punto 4.
+
+Il criterio unico: **se un token non sta scrivendo codice, compilando
+codice, testando codice, o riportando l'esito minimo richiesto, quel
+token è sprecato e quell'azione non va fatta.**
+
+---
+
 ## Come usare questo file
 
 1. Guarda la sezione **"Pronto ora"** qui sotto. Se è vuota, guarda
@@ -63,10 +106,11 @@ DeepSeek scrive da oggi in poi, per tutta la durata del progetto.
    (`docs/agents/phases/AP-XX/...`) e leggi *solo* quello più le dipendenze
    che elenca — non serve leggere l'intero repository.
 3. Implementa, testa (`dotnet build`/`dotnet test` sui progetti toccati),
-   poi segna il file come consegnato aggiornando
-   `docs/agents/EXECUTION_QUEUE.md` (riga Q-NNN corrispondente) e riportando:
-   file toccati, comando build/test eseguito, risultato esatto (non
-   "funziona", il numero di test passati).
+   poi riporta solo: file toccati, comando build/test eseguito, risultato
+   esatto (non "funziona", il numero di test passati). **Non aggiornare
+   `docs/agents/EXECUTION_QUEUE.md` né alcun altro file di stato** — vedi
+   REGOLA ASSOLUTA #2 sopra: quello resta compito di Claude, a valle del
+   report.
 4. Non toccare mai un file di proprietà di un altro agente (Claude possiede
    sempre A1/A3/A5/A6 — contratti, algoritmi, test/doc, integrazione). Vedi
    `docs/agents/FILE_OWNERSHIP_MATRIX.md` e
