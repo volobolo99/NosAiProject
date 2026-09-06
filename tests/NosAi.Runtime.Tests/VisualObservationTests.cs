@@ -19,6 +19,7 @@ public sealed class VisualObservationTests
         Assert.False(observation.Vitals.Mp.Current.HasValue);
         Assert.False(observation.Vitals.HpBar.Ratio.HasValue);
         Assert.False(observation.HasTarget.HasValue);
+        Assert.False(observation.HasDialogWindow.HasValue);
         Assert.Equal(Now, observation.ObservedAtUtc);
     }
 
@@ -30,5 +31,6 @@ public sealed class VisualObservationTests
         Assert.Equal("capture_unavailable", observation.Frame.UnavailableReason);
         Assert.Equal("capture_unavailable", observation.Vitals.Hp.FailureReason);
         Assert.Equal("capture_unavailable", observation.HasTarget.FailureReason);
+        Assert.Equal("capture_unavailable", observation.HasDialogWindow.FailureReason);
     }
 }

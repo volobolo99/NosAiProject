@@ -97,6 +97,7 @@ public sealed class WorldModelFusionLoopVisualWiringTests
             MpGlyphs: 2,
             TrainedGlyphs: 10),
         HasTarget: ClassifiedValue<bool>.Unknown("target_state_composer_not_wired_in_this_pass"),
+        HasDialogWindow: ClassifiedValue<bool>.Unknown("dialog_window_composer_not_wired_in_this_pass"),
         ObservedAtUtc: atUtc);
 
     // -- no visualSource: identical to AP-01/A4's own network-only behavior --

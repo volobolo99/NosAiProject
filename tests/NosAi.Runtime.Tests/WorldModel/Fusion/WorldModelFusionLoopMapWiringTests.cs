@@ -103,6 +103,7 @@ public sealed class WorldModelFusionLoopMapWiringTests
             MpGlyphs: 2,
             TrainedGlyphs: 10),
         HasTarget: ClassifiedValue<bool>.Unknown("target_state_composer_not_wired_in_this_pass"),
+        HasDialogWindow: ClassifiedValue<bool>.Unknown("dialog_window_composer_not_wired_in_this_pass"),
         ObservedAtUtc: atUtc);
 
     // -- no mapSource: identical to AP-01/A4 and AP-02/A4's own behavior --

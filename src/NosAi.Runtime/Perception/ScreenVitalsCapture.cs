@@ -212,7 +212,14 @@ public sealed class ScreenVitalsCapture : IDisposable
         ClassifiedValue<bool> hasTarget = TargetStateComposer.Compose(
             _targetCalibration, screenTarget, _wire?.LastPlayerAttackAtUtc);
 
-        return new VisualObservation(result, vitals, hasTarget, frame.CapturedUtc);
+        // Not wired in this pass -- DialogRoiCalibration/DialogWindowReader/
+        // DialogWindowStateComposer/ScreenDialogWindowSource exist (AP-02/A1+A3)
+        // but no caller here has composed them into a reading yet. Same honest
+        // shape HasTarget itself used before Q-067's wiring: an explicit,
+        // named reason, never a guessed true/false.
+        ClassifiedValue<bool> hasDialogWindow = ClassifiedValue<bool>.Unknown("dialog_window_composer_not_wired_in_this_pass");
+
+        return new VisualObservation(result, vitals, hasTarget, hasDialogWindow, frame.CapturedUtc);
     }
 
     /// <summary>
