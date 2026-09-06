@@ -104,6 +104,7 @@ public static class ModuleReachability
         new("NosAi.Runtime.Tactical", ModuleReach.Integrated),
         new("NosAi.Runtime.Testing", ModuleReach.Integrated),
         new("NosAi.Runtime.WorldModel", ModuleReach.Integrated),
+        new("NosAi.Runtime.WorldModel.Fusion", ModuleReach.Integrated),
         new("NosAi.Runtime.GameData", ModuleReach.Integrated),
         new("NosAi.Runtime.Navigation", ModuleReach.Integrated),
         new("NosAi.Navigation.Pathfinding", ModuleReach.Integrated),

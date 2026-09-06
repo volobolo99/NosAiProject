@@ -134,6 +134,69 @@ public sealed class Gate1ObservationTests
             Gate1HostOptionsLoader.Load(EmptyEnv(), ["--observe-game"]));
     }
 
+    // -- AP-01/A4: --fuse-world-model / NOSAI_FUSE_WORLD_MODEL ----------------
+    // Same shape as RunDecisionLoop/DecisionIntervalMs above: off by default,
+    // a flag or env var turns it on, and a matching interval option controls
+    // the tick rate independently of --decide.
+
+    [Fact]
+    public void FuseWorldModel_is_off_by_default()
+    {
+        Gate1HostOptions options = Gate1HostOptionsLoader.Load(EmptyEnv(), ["--no-dashboard", "--guard-port", "0"]);
+        Assert.False(options.FuseWorldModel);
+        Assert.Equal(500, options.FuseWorldModelIntervalMs);
+    }
+
+    [Fact]
+    public void FuseWorldModel_flag_turns_it_on()
+    {
+        Gate1HostOptions options = Gate1HostOptionsLoader.Load(
+            EmptyEnv(), ["--fuse-world-model", "--no-dashboard", "--guard-port", "0"]);
+        Assert.True(options.FuseWorldModel);
+    }
+
+    [Fact]
+    public void FuseWorldModel_env_var_turns_it_on()
+    {
+        Gate1HostOptions options = Gate1HostOptionsLoader.Load(
+            new Dictionary<string, string?> { ["NOSAI_FUSE_WORLD_MODEL"] = "true" },
+            ["--no-dashboard", "--guard-port", "0"]);
+        Assert.True(options.FuseWorldModel);
+    }
+
+    [Fact]
+    public void FuseWorldModelIntervalMs_is_read_from_flag_and_env()
+    {
+        Gate1HostOptions fromFlag = Gate1HostOptionsLoader.Load(
+            EmptyEnv(), ["--fuse-world-model-interval-ms", "250", "--no-dashboard", "--guard-port", "0"]);
+        Assert.Equal(250, fromFlag.FuseWorldModelIntervalMs);
+
+        Gate1HostOptions fromEnv = Gate1HostOptionsLoader.Load(
+            new Dictionary<string, string?> { ["NOSAI_FUSE_WORLD_MODEL_INTERVAL_MS"] = "1000" },
+            ["--no-dashboard", "--guard-port", "0"]);
+        Assert.Equal(1000, fromEnv.FuseWorldModelIntervalMs);
+    }
+
+    [Theory]
+    [InlineData(49)]
+    [InlineData(60_001)]
+    public void FuseWorldModelIntervalMs_out_of_range_is_refused(int milliseconds)
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            Gate1HostOptionsLoader.Load(
+                EmptyEnv(),
+                ["--fuse-world-model-interval-ms", milliseconds.ToString(), "--no-dashboard", "--guard-port", "0"]));
+    }
+
+    [Fact]
+    public void FuseWorldModel_is_independent_of_RunDecisionLoop()
+    {
+        Gate1HostOptions options = Gate1HostOptionsLoader.Load(
+            EmptyEnv(), ["--fuse-world-model", "--no-dashboard", "--guard-port", "0"]);
+        Assert.True(options.FuseWorldModel);
+        Assert.False(options.RunDecisionLoop);
+    }
+
     [WindowsOnlyFact]
     public async Task Absent_option_keeps_gameplay_unknown_with_the_historical_reason()
     {

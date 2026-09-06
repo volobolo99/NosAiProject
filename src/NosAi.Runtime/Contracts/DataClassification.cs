@@ -56,8 +56,19 @@ public sealed record ClassifiedValue<T>(
     public static ClassifiedValue<T> Simulated(T value, DateTime? observedAtUtc = null, string? warning = null)
         => new(value, DataSourceKind.Simulated, observedAtUtc ?? DateTime.UtcNow, true, warning, null);
 
-    public static ClassifiedValue<T> Unknown(string reason, string? warning = null)
-        => new(default!, DataSourceKind.Unknown, DateTime.UtcNow, false, warning, reason);
+    /// <param name="observedAtUtc">
+    /// The instant this Unknown result is stamped with. Defaults to
+    /// <see cref="DateTime.UtcNow"/> when omitted -- correct for a live
+    /// provider reporting "nothing decoded this poll" -- but a caller
+    /// building a value deterministically from its own inputs (e.g.
+    /// projecting an already-timestamped observation) should pass that
+    /// instant explicitly, the same way <see cref="Live"/>/<see cref="Derived"/>/
+    /// <see cref="Simulated"/> already accept one. Omitting it here silently
+    /// broke exactly that determinism for <c>GameplayObservation.Unobserved</c>'s
+    /// own per-field Unknown values (AP-02/A5 audit finding).
+    /// </param>
+    public static ClassifiedValue<T> Unknown(string reason, string? warning = null, DateTime? observedAtUtc = null)
+        => new(default!, DataSourceKind.Unknown, observedAtUtc ?? DateTime.UtcNow, false, warning, reason);
 
     /// <summary>
     /// Wire form of the value. The timestamp is formatted explicitly rather than

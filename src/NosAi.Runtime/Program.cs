@@ -629,6 +629,68 @@ public static class Program
             return 3;
         }
 
+        // AP-01/A4: optional runtime wiring of the existing Gate 1 observation
+        // snapshot into the Unified World Model. Independent of the decision
+        // loop above -- it only reads the same snapshot and fuses it, it never
+        // acts -- so it is its own opt-in flag rather than folded into --decide.
+        // Owned here rather than by Gate1BootstrapHost (out of scope for this
+        // task); `await using` on a possibly-null value disposes it only when
+        // one was actually created, the same as every other optional component
+        // in this method.
+        //
+        // AP-02/A4: when the same flag is on, the fusion loop also gets a real
+        // screen-vitals source (host.Capture().Client.ProcessId feeds process
+        // discovery -> client window -> DXGI frame -> ScreenVitalReader, all
+        // inside ScreenVitalsCapture). No separate flag: the vitals fusion is
+        // an enrichment of the same cycle --fuse-world-model already runs, not
+        // an independent feature. `visualCapture` is declared before `fusion`
+        // so it disposes AFTER fusion on the way out (using declarations
+        // unwind in reverse order): the pump must stop calling into it before
+        // its DXGI resource is released.
+        int? AttachedProcessId()
+        {
+            NosAi.Runtime.Contracts.ClassifiedValue<int?> processId = host.Capture().Client.ProcessId;
+            return processId.HasValue ? processId.Value : null;
+        }
+
+        using NosAi.Runtime.Perception.ScreenVitalsCapture? visualCapture = options.FuseWorldModel
+            ? new NosAi.Runtime.Perception.ScreenVitalsCapture(AttachedProcessId)
+            : null;
+
+        // AP-03/A4: when the same flag is on, the fusion loop also gets a real
+        // map reconstruction source (client grid lookup + projection + merge +
+        // SQLite persistence, all inside MapReconstructionSource). No separate
+        // flag, same reasoning as AP-02/A4's vitals: map reconstruction is an
+        // enrichment of the same cycle, not an independent feature.
+        // `mapReconstruction` is declared before `fusion` for the same
+        // reverse-unwind-order reason as `visualCapture` above: the pump must
+        // stop calling into it before its SQLite connection is disposed.
+        using NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource? mapReconstruction = options.FuseWorldModel
+            ? new NosAi.Runtime.WorldModel.Fusion.MapReconstructionSource(logger: logger)
+            : null;
+
+        // mapSource is Func<WorldModelSnapshot, MapModel> (no separate instant
+        // parameter -- see WorldModelFusionLoop's own class remarks), while
+        // MapReconstructionSource.Resolve takes an explicit nowUtc so it never
+        // reads the wall clock itself. The snapshot's own ObservedAtUtc is
+        // already exactly this cycle's nowUtc (GameplayObservationProjector
+        // stamps it, and neither WorldModelTemporalEnricher.Enrich nor
+        // VisualObservationFusion.FuseVitals change it), so reading it off the
+        // snapshot supplies Resolve's instant without a second, independent
+        // clock read.
+        NosAi.Core.WorldModel.MapModel ResolveMap(NosAi.Core.WorldModel.WorldModelSnapshot snapshot) =>
+            mapReconstruction!.Resolve(snapshot, snapshot.ObservedAtUtc);
+
+        await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
+            ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
+                host.Capture,
+                logger,
+                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs),
+                visualSource: visualCapture!.Capture,
+                mapSource: ResolveMap)
+            : null;
+        fusion?.Start(cts.Token);
+
         var snapshot = host.Capture();
         Console.WriteLine("NosAi Runtime 1.0 Beta — Gate 1");
         Console.WriteLine($"Health: {host.Health}");

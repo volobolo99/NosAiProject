@@ -27,10 +27,24 @@ class PsutilNvmlProbe:
         except (ImportError, AttributeError, OSError): pass
         try:
             import pynvml
-            pynvml.nvmlInit()
-            values = [pynvml.nvmlDeviceGetTemperature(pynvml.nvmlDeviceGetHandleByIndex(i), pynvml.NVML_TEMPERATURE_GPU) for i in range(pynvml.nvmlDeviceGetCount())]
-            if values: gpu = max(values)
-        except (ImportError, AttributeError, OSError, RuntimeError): pass
+        except ImportError:
+            pynvml = None
+        if pynvml is not None:
+            # pynvml.NVMLError (e.g. driver not loaded, library not found) is
+            # not a subclass of OSError/RuntimeError, so it must be listed
+            # explicitly: without it, an installed-but-driverless pynvml
+            # raises unhandled out of this probe instead of degrading to None.
+            nvml_exceptions = (AttributeError, OSError, RuntimeError, pynvml.NVMLError)
+            try:
+                pynvml.nvmlInit()
+                try:
+                    values = [pynvml.nvmlDeviceGetTemperature(pynvml.nvmlDeviceGetHandleByIndex(i), pynvml.NVML_TEMPERATURE_GPU) for i in range(pynvml.nvmlDeviceGetCount())]
+                    if values: gpu = max(values)
+                finally:
+                    try:
+                        pynvml.nvmlShutdown()
+                    except nvml_exceptions: pass
+            except nvml_exceptions: pass
         return HardwareTelemetry(cpu, gpu, io_rate)
 
 @dataclass(frozen=True)
