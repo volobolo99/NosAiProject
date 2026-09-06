@@ -69,7 +69,7 @@ AP-09 ha A1+A3 `Present` (Q-035, eccezione dichiarata). Scoperta importante: `sr
 
 AP-10 ha A1 `Present` (Q-036): contratti di certificazione (`VerificationLevel`/`CertificationStage`/`CertificationStageResult`/`CertificationReport`) e il report onesto e citato dei 14 stadi della DoD — nessuno `Verified` per lavoro di questa sessione (i due marcati `Verified` ereditano quella classificazione dal sistema Gate 1-6 preesistente, dichiarato come non riverificato qui). `OverallLevel` complessivo = `Present`. Vedi `AP-10_A1_STATUS.md` per la tabella completa e le citazioni.
 
-**Con Q-036 la sequenza AP-00→AP-10 ha almeno un task A1 (contratti fondanti) completato per ogni fase.** Il lavoro reale che resta non è "quale fase manca" ma i gap dati/esecuzione già segnalati in ogni singolo status doc (OCR/ONNX, dati skill/item reali, fonte portali, decisione su AP-05/A2+A4, `ScoutCommand` di DeepSeek, riconciliazione `KnowledgeScope`/`DataSourceKind`) — nessuno di questi si chiude scrivendo altro codice di fase, servono dati reali, hardware reale o una decisione esplicita dell'utente.
+**Con Q-036 la sequenza AP-00→AP-10 ha almeno un task A1 (contratti fondanti) completato per ogni fase, e AP-04 ha anche A2+A4 consegnati (Q-028/Q-029, DeepSeek).** Il lavoro reale che resta non è "quale fase manca" ma i gap dati/esecuzione già segnalati in ogni singolo status doc (OCR/ONNX, dati skill/item reali, fonte portali, decisione su AP-05/A2+A4, riconciliazione `KnowledgeScope`/`DataSourceKind`, validazione contro un client reale per tutto ciò che è ancora `Present`/`Integrated`) — nessuno di questi si chiude scrivendo altro codice di fase, servono dati reali, hardware reale o una decisione esplicita dell'utente.
 
 ## Criterio di avanzamento fase
 
