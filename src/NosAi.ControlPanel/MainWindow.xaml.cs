@@ -726,6 +726,56 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Decodifica dal vivo: stessa catena di <c>--world-replay</c>
+    /// (<c>NosTaleWorldProtocolDecoder</c>) applicata al filo mentre il client
+    /// gioca, non a un file dopo il fatto. Ogni riga (RETE e CLIENT) esce dal
+    /// processo mentre il test è in corso e <see cref="RunToolAsync"/> la
+    /// scrive nel Diario riga per riga: qui si mostra solo il riepilogo finale,
+    /// per non riempire questa card di centinaia di righe.
+    /// </summary>
+    private async void OnStartLiveDecode(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        string endpoint = SettingObserveGame.Text?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            LiveDecodeSummary.Text = "Nessun endpoint rilevato. Premi \"Rileva endpoint\" qui sopra (serve il client NosTale aperto e collegato).";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        LiveDecodeSummary.Text = "Decodifica in corso (180s): gioca normalmente, ogni riga RETE/CLIENT appare nel Diario mano a mano che arriva.";
+        string? tail = null;
+        var result = await RunToolAsync(
+            "dotnet", $"\"{dll}\" --live-decode {endpoint} --watch 180",
+            "Decodifica dal vivo", pairing: false,
+            onLine: line =>
+            {
+                if (line.StartsWith("frame leggibili", StringComparison.Ordinal))
+                    tail = line.Trim();
+            });
+        LiveDecodeSummary.Text = result switch
+        {
+            { ExitCode: 0 } when tail is not null => $"Decodifica completata — {tail}. Ogni riga è nel Diario.",
+            { ExitCode: 0 } => "Decodifica completata, ma nessun frame leggibile: il client non ha inviato traffico durante la finestra.",
+            _ when result.Output.Contains("access_denied_run_elevated", StringComparison.Ordinal)
+                => "Decodifica non riuscita: serve amministratore. Premi \"Riavvia come amministratore\" qui sopra, poi ripeti.",
+            _ => $"Decodifica non riuscita (uscita {result.ExitCode}). Motivo nel Diario."
+        };
+    }
+
+    /// <summary>
     /// Chiude questa istanza e ne riapre una nuova con UAC, per i test (come
     /// <see cref="OnRecordEquipWire"/>) che aprono il driver WinDivert e rifiutano
     /// con <c>access_denied_run_elevated</c> a una console non amministratore. Un

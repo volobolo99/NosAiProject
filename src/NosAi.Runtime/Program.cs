@@ -558,6 +558,32 @@ public static class Program
             return NosAi.LiveIntegration.Capture.WireRecorder.Run(endpoint, file, watchSeconds);
         }
 
+        // Decodifica in tempo reale: stessa catena di decodifica di --world-replay
+        // (NosTaleWorldProtocolDecoder) applicata al filo live invece che a un file,
+        // cosi' ogni pacchetto in arrivo viene stampato subito, non dopo la fine
+        // della cattura. RETE mostra la riga grezza per qualunque opcode; CLIENT la
+        // lettura semantica solo per gli opcode che il decoder reale conosce.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.Capture.LiveWireMonitor.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.Capture.LiveWireMonitor.Flag, StringComparison.OrdinalIgnoreCase));
+            string? endpoint = flag + 1 < args.Length && !args[flag + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[flag + 1]
+                : null;
+
+            var watchSeconds = 0;
+            int watchAt = Array.FindIndex(args, a => string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            if (watchAt >= 0
+                && watchAt + 1 < args.Length
+                && int.TryParse(args[watchAt + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+                && seconds > 0)
+            {
+                watchSeconds = seconds;
+            }
+
+            return NosAi.LiveIntegration.Capture.LiveWireMonitor.Run(endpoint, watchSeconds);
+        }
+
         // Phase 2 the other way round. Instead of asking which memory looks like
         // health, this asks the wire what health is and looks for those two
         // numbers side by side, then requires them to move together. No operator
@@ -1016,7 +1042,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel"
         };

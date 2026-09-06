@@ -290,6 +290,25 @@
                 <ItemsControl x:Name="EquipWireFields" ItemTemplate="{StaticResource FieldTemplate}"/>
               </StackPanel>
             </Border>
+
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="DECODIFICA DAL VIVO — TUTTI I DATI DI RETE E CLIENT"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,10" TextWrapping="Wrap">
+                  Legge il filo del client in tempo reale, non una registrazione: ogni pacchetto in arrivo viene decodificato subito. Premi "Rileva endpoint" se la casella sotto è vuota, poi "Avvia decodifica (180s)" e gioca normalmente. Ogni riga appare nel Diario mano a mano che arriva: "RETE" è il dato grezzo per qualunque opcode, "CLIENT" è la lettura del decoder reale (HP, posizione, inventario, colpi...) solo per gli opcode che sa leggere.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Endpoint osservato:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <TextBlock Text="{Binding Text, ElementName=SettingObserveGame, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" MinWidth="140"/>
+                  <Button Style="{StaticResource GhostButton}" Content="Rileva endpoint" Click="OnDetectObserveGame"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Button Style="{StaticResource PrimaryButton}" Content="Avvia decodifica (180s)" Click="OnStartLiveDecode"/>
+                </StackPanel>
+                <TextBlock x:Name="LiveDecodeSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                           Text="Nessuna decodifica dal vivo in questa sessione."/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
