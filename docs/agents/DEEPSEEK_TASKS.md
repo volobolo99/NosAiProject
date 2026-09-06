@@ -234,6 +234,26 @@ indipendente da AP-04, chiedilo esplicitamente.
   sospetto di AP-05: probabilmente la stessa fonte dati client
   (`GameReferenceDatabase`/`Item.dat`) non ancora decodificata
   semanticamente — da verificare prima di specificarlo come task.
+- **AP-07/A2+A4 — esecuzione/verifica equip/unequip/upgrade, genuinamente
+  bloccato, indagine conclusa** (`AP-07_A1_STATUS.md` §"AP-07/A2+A4"): a
+  differenza di AP-05/AP-06, qui nessun percorso onesto parziale esiste.
+  Confermato per ispezione, non assunto: (1) nessuna primitiva di
+  esecuzione in nessuno dei due sistemi — `ActionType` (Gate 1-6) non ha
+  nemmeno una voce Equip/Unequip/Upgrade, a differenza di
+  `CollectGroundItem` che almeno esiste dichiarata-ma-non-implementata;
+  (2) equipaggiare è un'interazione UI (drag/doppio-click), non una
+  hotkey — nessuna calibrazione screen-space del pannello
+  inventario/equipaggiamento esiste (`ScreenProjectionCalibration`
+  proietta coordinate di mondo di gioco, non un pannello UI fisso, un
+  problema diverso mai affrontato); (3) nessun canale di verifica —
+  nessun opcode equip mai identificato in `docs/PROTOCOLLO_NOSTALE.md`,
+  e il canale già reale (`InventorySlotReading`, usato per `--collect`)
+  non distingue equipaggiato da zaino (`InventoryKind` dichiarato privo
+  di significato noto). **Non un task DeepSeek pronto**: serve prima una
+  calibrazione UI pannello (nuova infrastruttura, non un tocco a
+  margine) o l'identificazione di un opcode di rete equip mai cercato —
+  da investigare con una cattura dedicata prima di specificare
+  qualunque comando `--equip`/`--upgrade`.
 - ~~**Esecuzione/verifica combattimento indipendente da `Gate3Runtime`**~~
   **— deciso e specificato (Q-037/Q-038/Q-039).** Decisione presa:
   percorso (a), verifica solo-vitali-player (onesta ma parziale — conferma
