@@ -32,7 +32,7 @@ public sealed class CognitiveObservabilityBridgeTests
 
         board.Record("Planner", true);
 
-        var result = Assert.Single(board.Snapshot().Where(x => x.Stage == "Planner"));
+        var result = Assert.Single(board.Snapshot(), x => x.Stage == "Planner");
         Assert.True(result.Ok);
     }
 
