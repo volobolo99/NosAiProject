@@ -71,6 +71,16 @@ public static class CollectCommand
     public const string GameplayUnavailableReason = "collect_gameplay_provider_unavailable";
 
     /// <summary>
+    /// Reported when <c>vnum</c> is present but blank, or <c>rounds</c> is
+    /// less than one. <see cref="Program"/>'s dispatch only checks argument
+    /// *count*, not content, so a caller that resolves a vnum to an empty
+    /// string must get a clean refusal here, not an unhandled exception --
+    /// the same [REFUSED] boundary every other guard in this command already
+    /// gives (same fix as AP-05/A6's <c>EngageCommand.Run</c>).
+    /// </summary>
+    public const string InvalidArgumentsReason = "collect_requires_non_blank_vnum_and_positive_rounds";
+
+    /// <summary>
     /// Walks to <paramref name="destination"/> and reports whether the
     /// player's observed count of <paramref name="item"/> increased.
     /// </summary>
@@ -154,8 +164,11 @@ public static class CollectCommand
     /// </summary>
     public static int Run(int x, int y, string vnum, int? requiredCount, int rounds = 1)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(vnum);
-        ArgumentOutOfRangeException.ThrowIfLessThan(rounds, 1);
+        if (string.IsNullOrWhiteSpace(vnum) || rounds < 1)
+        {
+            Console.WriteLine($"[REFUSED] {InvalidArgumentsReason}");
+            return WalkCommand.ExitAbandoned;
+        }
 
         if (!OperatingSystem.IsWindows())
         {

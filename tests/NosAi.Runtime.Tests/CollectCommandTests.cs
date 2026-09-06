@@ -242,6 +242,30 @@ public sealed class CollectCommandTests
         Assert.Equal(6, afterCount.Value);
     }
 
+    // ---------------------------------------- Run(...) argument validation
+
+    // Program.cs's dispatch only checks argument *count*, not content, so a
+    // caller that resolves a vnum to an empty string can reach Run with a
+    // present-but-blank argument. It must be refused cleanly, not crash the
+    // process with an unhandled exception -- same fix and same reasoning as
+    // AP-05/A6's EngageCommand.Run.
+
+    [Fact]
+    public void Run_BlankVnum_IsRefusedCleanly_NeverThrows()
+    {
+        int exitCode = CollectCommand.Run(x: 10, y: 20, vnum: "   ", requiredCount: null);
+
+        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
+    }
+
+    [Fact]
+    public void Run_ZeroRounds_IsRefusedCleanly_NeverThrows()
+    {
+        int exitCode = CollectCommand.Run(x: 10, y: 20, vnum: "201", requiredCount: null, rounds: 0);
+
+        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
+    }
+
     // ------------------------------------------------- the wiring
 
     [Fact]
