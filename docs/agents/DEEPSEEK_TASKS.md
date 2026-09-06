@@ -265,14 +265,17 @@ indipendente da AP-04, chiedilo esplicitamente.
   repository); **presenza/assenza** di un pannello aperto costruita
   (Q-073, A1+A3 Claude). Vedi `docs/agents/phases/AP-02/AP-02_STATUS.md`
   §12.
-- ~~**Statistiche reali per skill**~~ — **verificato, genuinamente
-  bloccato**: `GameReferenceDatabase` decodifica solo `VNUM`/`LEVEL`/`NAME`
-  come colonne tipizzate; ogni altro campo (`ATTRIB`/`BASIC`) resta
-  stringa grezza senza mappa slot→significato dichiarata da nessuna fonte
-  nel repository. Indovinare quale slot sia danno/costo/target sarebbe
-  la fabbricazione che `CLAUDE.md` vieta esplicitamente. Non specificabile
-  finché non esiste una decodifica semantica reale (verifica in-game o
-  fonte esterna attendibile).
+- ~~**Statistiche reali per skill**~~ — **parzialmente sbloccato**
+  (Q-080, Claude, A1+A3): `SkillReferenceDecoder` promuove a colonne
+  tipizzate `COST`/`LEVEL`/`TARGET` per intero e i soli campi `DATA`
+  risolti con sicurezza (`CastTime`/`Cooldown`/`MpCost`), più i
+  riferimenti d'effetto `BASIC`→`BCardApplication` (struttura, non
+  interpretazione). Non ancora `Verified`: nessun valore incrociato
+  contro un client reale. Restano onestamente non decodificati i campi
+  codificati di cui non esiste una mappatura verificata (elemento, tipo
+  d'attacco, arma secondaria, ...) e l'interpretazione semantica di
+  `BCardApplication` (serve il catalogo `BCard.dat` e, per alcune
+  varianti, altre tabelle) — nessuno di questi è indovinato.
 - ~~**Riconciliazione `KnowledgeScope`/lifecycle duplicati**~~ —
   **risolto** (Q-064/Q-065/Q-066, su richiesta esplicita dell'utente):
   `KnowledgeScope` unificato su `Memory.KnowledgeScope`;
