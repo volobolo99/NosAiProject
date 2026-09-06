@@ -72,7 +72,7 @@ public static class HudCropWriter
     /// directory, or null when there was nothing to write.
     /// </summary>
     /// <remarks>
-    /// Same evidence discipline as the crops above: eight slot crops are only
+    /// Same evidence discipline as the crops above: slot crops are only
     /// as right as the picture they were measured off, and the whole panel is
     /// what shows the operator which way a mis-placed crop is wrong. The
     /// caller (the inventory-panel calibration probe) decides which area is
