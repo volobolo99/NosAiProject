@@ -231,16 +231,13 @@ a una specifica di file precisa. Vanno investigati prima di diventare un
 task DeepSeek — se vuoi che Claude apra uno di questi come prossimo lotto
 indipendente da AP-04, chiedilo esplicitamente.
 
-- ~~**Fonte dati reale per i portali**~~ — **verificato**: la pista file
-  client (`taletool`, solo `UPSTREAM.md` di riferimento, non integrabile;
-  nessuna tabella client decodificata elenca portali) resta bloccata, ma
-  "osserva mentre attraversi" da memoria (`ClientMemorySession.TryReadMapId`,
-  offset già provato e wired) è reale e costruibile oggi. Algoritmo puro
-  già scritto (`PortalCrossingDetector`, Claude) — **manca ancora il
-  wiring A2+A4** (comando/loop che polla map id+posizione e inietta il
-  `Portal` risultante in un `MapObservationBatch`), non specificato in
-  questa sessione. Vedi `docs/agents/phases/AP-04/AP-04_A1_STATUS.md`
-  §"Seconda indagine sui portali".
+- ~~**Fonte dati reale per i portali**~~ — **verificato e specificato
+  (Q-071)**: la pista file client (`taletool`, solo `UPSTREAM.md` di
+  riferimento, non integrabile) resta bloccata, ma "osserva mentre
+  attraversi" da memoria (`ClientMemorySession.TryReadMapId`, offset già
+  provato e wired) è reale. Algoritmo puro già scritto e integrato
+  (`PortalCrossingDetector`, Claude); wiring A2+A4 specificato per
+  DeepSeek in `docs/agents/phases/AP-04/AP-04_A2A4_DEEPSEEK_portal_crossing_wiring.md`.
 - ~~**`TargetStateComposer` non cablato in `ScreenVitalsCapture`**~~ —
   **verificato e specificato (Q-067)**: non bloccato da OCR/ONNX,
   `TargetRoiCalibration`/`ScreenTargetFrameSource`/`TargetStateComposer`
