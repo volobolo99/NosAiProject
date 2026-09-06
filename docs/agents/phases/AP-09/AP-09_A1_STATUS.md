@@ -217,3 +217,43 @@ prendere da solo: sono estensioni del contratto fondante di
 ed eventualmente wrappare `Outcome` in `WorldFact<ActionOutcome>` come
 già fa `WorldAction`) — compito di Claude prima che un A2+A4 sia
 scrivibile, non avviato qui.
+
+## Correzione di contratto (Claude, questo passaggio)
+
+Applicate entrambe le estensioni richieste dall'indagine sopra, in
+`NosAi.Core` (nessuna dipendenza nuova, nessun wiring runtime):
+
+- `Memory/ActionOutcomeLedger.cs` — `ActionOutcomeLedgerEntry.Outcome` è
+  ora `WorldFact<ActionOutcome>` (era `ActionOutcome` nudo): un esito mai
+  osservato si rappresenta con `WorldFact<ActionOutcome>.Unknown(reason)`,
+  mai forzato in `Failed`. `LocalOutcomePrediction` ha un nuovo campo
+  `UnknownCount`; `LocalOutcomeSimulator.Predict` conta un `Outcome` con
+  `HasValue == false` solo lì, mai nel totale assestato né in
+  `InProgressCount`.
+- `WorldModel/WorldActionProjector.cs` (nuovo) — il produttore reale di
+  `WorldAction` che mancava: `FromCombat`/`FromMovement` proiettano
+  `CombatExecutionEvidence`/`MovementExecutionEvidence` (già prodotte da
+  `--engage`/`--recover`/`--autoplay`/`--scout`/`--collect`) in un
+  `WorldAction` vero; `ToLedgerEntry` lo registra nel ledger senza
+  ri-derivare l'esito. Mappatura dichiarata esplicitamente nei commenti:
+  cambio risorsa confermato → `Succeeded`; nessun cambio osservato →
+  `Failed`; `Unobserved`/`Aborted` → `Unknown`, mai indovinato.
+
+Non affrontato qui, resta A2+A4 vero: nessun comando chiama ancora
+`WorldActionProjector`, nessuno store persiste `ActionOutcomeLedgerEntry`
+(pattern `MapModelStore` riusabile, vedi indagine sopra) — il contratto è
+ora scrivibile, la specifica DeepSeek non è stata scritta in questo
+passaggio.
+
+**Test**: `tests/NosAi.Core.Tests/WorldModel/WorldActionProjectorTests.cs`
+(19 test, nuovo) + 1 test aggiunto a `ActionOutcomeLedgerTests.cs`
+(`Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress`).
+`dotnet build NosAi.sln -c Release`: 0 errori, 0 warning nuovi. `dotnet
+test tests/NosAi.Core.Tests/NosAi.Core.Tests.csproj -c Release`:
+**600/600**, 0 falliti (580 precedenti + 20 nuovi, zero regressioni).
+`dotnet test tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj -c
+Release`: **2018/2076**, 0 falliti, invariato (nessun consumatore in
+`NosAi.Runtime` di questi due tipi ancora, come atteso).
+
+**Livello di verifica**: `Present` — contratto esteso, testato, compila
+pulito; non ancora `Integrated` (nessun chiamante runtime).
