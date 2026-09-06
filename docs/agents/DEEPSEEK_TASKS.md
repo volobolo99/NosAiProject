@@ -197,8 +197,11 @@ prima stesura era contro la specifica v1 a 8 slot (pre-correzione
 dell'enum) ed è stata riallineata ai 18 valori reali NosTale — la guida
 operatore stampa i nomi dall'enum e i test sono scritti su
 `Enum.GetValues`, così nessuna assunzione sul numero di slot può
-rientrare. **Da fare dall'operatore**: T-12 in `docs/TEST_RIMANDATI.md`
-(conferma dei 18 ritagli su un client reale).
+rientrare. **T-12 (calibrazione) confermato dall'operatore il 2026-09-06**
+su client reale — `InventoryPanelRoiCalibration` scritta con successo,
+vedi Q-089 in `EXECUTION_QUEUE.md`. Resta aperta solo la seconda metà di
+T-12 (conferma `InventoryKind` per un equip reale) prima di poter
+specificare `--equip`/`--unequip`.
 
 **ATTENZIONE INTEGRAZIONE (Q-085, 2026-09-06)**: dopo l'avvio di questo
 task, `EquipmentSlot` è stato corretto (era un segnaposto sbagliato a 8
