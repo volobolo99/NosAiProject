@@ -14,7 +14,19 @@ namespace NosAi.Core.Memory;
 /// <param name="EntryId">Identity of this ledger entry, distinct from <see cref="ActionId"/> -- the same action could in principle be recorded more than once (a correction, a re-derivation).</param>
 /// <param name="ActionId">Which <see cref="WorldAction"/> this entry is about.</param>
 /// <param name="Category">Which memory category this entry belongs to.</param>
-/// <param name="Outcome">What became of the action.</param>
+/// <param name="Outcome">
+/// What became of the action, wrapped exactly as <see cref="WorldAction.Outcome"/>
+/// itself is wrapped: <see cref="WorldFact{T}.Unknown"/> when the outcome was
+/// never actually observed (a guard refusal, no verification reading arrived
+/// before the window closed), distinct from a settled
+/// <see cref="ActionOutcome.Failed"/>. A naked <see cref="ActionOutcome"/> here
+/// would have no room for that distinction (<see cref="ActionOutcome"/> itself
+/// has no "Unknown" member by design) and would force every unobserved/aborted
+/// act into a fabricated settled outcome -- see
+/// docs/agents/phases/AP-09/AP-09_A1_STATUS.md "AP-09/A2+A4 -- indagine
+/// mirata" for the concrete case this was found against
+/// (<see cref="Combat.CombatExecutionResult.Unobserved"/>/<c>.Aborted</c>).
+/// </param>
 /// <param name="Context">
 /// A stable key identifying "this kind of situation" (e.g. a skill id, a
 /// quest objective kind, a mob species) -- deliberately a caller-chosen
@@ -28,7 +40,7 @@ public sealed record ActionOutcomeLedgerEntry(
     Guid EntryId,
     ActionId ActionId,
     MemoryType Category,
-    ActionOutcome Outcome,
+    WorldFact<ActionOutcome> Outcome,
     string Context,
     DateTime RecordedAtUtc);
 
@@ -46,6 +58,15 @@ public sealed record ActionOutcomeLedgerEntry(
 /// <param name="SucceededCount">How many recorded entries for this context resolved <see cref="ActionOutcome.Succeeded"/>.</param>
 /// <param name="FailedCount">How many resolved <see cref="ActionOutcome.Failed"/>.</param>
 /// <param name="InProgressCount">How many are still <see cref="ActionOutcome.InProgress"/> -- neither a success nor a failure yet, never counted as either.</param>
+/// <param name="UnknownCount">
+/// How many recorded entries for this context have an
+/// <see cref="ActionOutcomeLedgerEntry.Outcome"/> that was never actually
+/// observed (<see cref="WorldFact{T}.HasValue"/> false). Counted separately
+/// from <see cref="InProgressCount"/> and never folded into
+/// <see cref="SuccessRate"/>'s settled total -- a ledger full of
+/// guard-refused/unverified acts must never be mistaken for measured
+/// failures, successes, or history still running.
+/// </param>
 /// <param name="SuccessRate">
 /// <see cref="SucceededCount"/> divided by the settled total
 /// (<see cref="SucceededCount"/> + <see cref="FailedCount"/>), or
@@ -60,6 +81,7 @@ public sealed record LocalOutcomePrediction(
     int SucceededCount,
     int FailedCount,
     int InProgressCount,
+    int UnknownCount,
     double? SuccessRate);
 
 /// <summary>
@@ -79,19 +101,29 @@ public static class LocalOutcomeSimulator
     /// (ordinal comparison) by outcome and derives a settled-history success
     /// rate. An empty match set is a valid, honest result: every count is
     /// zero and <see cref="LocalOutcomePrediction.SuccessRate"/> is
-    /// <see langword="null"/>, not fabricated as 0% or 100%.
+    /// <see langword="null"/>, not fabricated as 0% or 100%. An entry whose
+    /// <see cref="ActionOutcomeLedgerEntry.Outcome"/> was never observed
+    /// counts only toward <see cref="LocalOutcomePrediction.UnknownCount"/> --
+    /// never guessed into <see cref="ActionOutcome.Failed"/> or
+    /// <see cref="ActionOutcome.InProgress"/>.
     /// </summary>
     public static LocalOutcomePrediction Predict(string context, EquatableArray<ActionOutcomeLedgerEntry> ledger)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(context);
 
-        int succeeded = 0, failed = 0, inProgress = 0;
+        int succeeded = 0, failed = 0, inProgress = 0, unknown = 0;
         foreach (ActionOutcomeLedgerEntry entry in ledger)
         {
             if (!string.Equals(entry.Context, context, StringComparison.Ordinal))
                 continue;
 
-            switch (entry.Outcome)
+            if (!entry.Outcome.HasValue)
+            {
+                unknown++;
+                continue;
+            }
+
+            switch (entry.Outcome.Value)
             {
                 case ActionOutcome.Succeeded: succeeded++; break;
                 case ActionOutcome.Failed: failed++; break;
@@ -102,6 +134,6 @@ public static class LocalOutcomeSimulator
         int settled = succeeded + failed;
         double? successRate = settled > 0 ? (double)succeeded / settled : null;
 
-        return new LocalOutcomePrediction(context, succeeded, failed, inProgress, successRate);
+        return new LocalOutcomePrediction(context, succeeded, failed, inProgress, unknown, successRate);
     }
 }

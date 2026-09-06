@@ -33,7 +33,10 @@ public sealed class LocalOutcomeSimulatorTests
     private static readonly DateTime Now = DateTime.UnixEpoch;
 
     private static ActionOutcomeLedgerEntry BuildEntry(string context, ActionOutcome outcome) =>
-        new(Guid.NewGuid(), new ActionId(Guid.NewGuid().ToString("N")), MemoryType.Combat, outcome, context, Now);
+        new(Guid.NewGuid(), new ActionId(Guid.NewGuid().ToString("N")), MemoryType.Combat, WorldFact<ActionOutcome>.Live(outcome, 1d, Now), context, Now);
+
+    private static ActionOutcomeLedgerEntry BuildUnknownEntry(string context, string reason) =>
+        new(Guid.NewGuid(), new ActionId(Guid.NewGuid().ToString("N")), MemoryType.Combat, WorldFact<ActionOutcome>.Unknown(reason, Now), context, Now);
 
     [Fact]
     public void Predict_EmptyLedger_ReturnsZeroCountsAndNullRate()
@@ -43,7 +46,27 @@ public sealed class LocalOutcomeSimulatorTests
         Assert.Equal(0, prediction.SucceededCount);
         Assert.Equal(0, prediction.FailedCount);
         Assert.Equal(0, prediction.InProgressCount);
+        Assert.Equal(0, prediction.UnknownCount);
         Assert.Null(prediction.SuccessRate);
+    }
+
+    [Fact]
+    public void Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress()
+    {
+        var ledger = EquatableArray<ActionOutcomeLedgerEntry>.From(new[]
+        {
+            BuildEntry("skill-201", ActionOutcome.Succeeded),
+            BuildUnknownEntry("skill-201", "guard_refused"),
+            BuildUnknownEntry("skill-201", "verification_window_closed"),
+        });
+
+        LocalOutcomePrediction prediction = LocalOutcomeSimulator.Predict("skill-201", ledger);
+
+        Assert.Equal(1, prediction.SucceededCount);
+        Assert.Equal(0, prediction.FailedCount);
+        Assert.Equal(0, prediction.InProgressCount);
+        Assert.Equal(2, prediction.UnknownCount);
+        Assert.Equal(1.0, prediction.SuccessRate);
     }
 
     [Fact]
