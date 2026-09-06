@@ -243,10 +243,14 @@ indipendente da AP-04, chiedilo esplicitamente.
   `TargetRoiCalibration`/`ScreenTargetFrameSource`/`TargetStateComposer`
   già reali e già usati lato wire da `TargetAwareGameplayProvider`. Vedi
   `docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_target_state_wiring.md`.
-- **Lettura inventario/finestre di dialogo** (stesso documento): nessun
-  codice di lettura esiste. Potenzialmente bloccato da OCR reale (asset ML
-  mancante, vedi sotto) o parzialmente affrontabile senza OCR per gli slot
-  con icone fisse — da verificare.
+- ~~**Lettura inventario/finestre di dialogo**~~ — **verificato e
+  diviso**: inventario da schermo **non vale la pena** (il canale di rete
+  `ivn`/`get`/`drop`, già usato da `--collect`, fornisce già conteggi
+  esatti); contenuto testuale dei pannelli di dialogo resta bloccato da
+  OCR/ML (nessun opcode NosTale per dialogo/quest text in questo
+  repository); **presenza/assenza** di un pannello aperto costruita
+  (Q-073, A1+A3 Claude). Vedi `docs/agents/phases/AP-02/AP-02_STATUS.md`
+  §12.
 - ~~**Statistiche reali per skill**~~ — **verificato, genuinamente
   bloccato**: `GameReferenceDatabase` decodifica solo `VNUM`/`LEVEL`/`NAME`
   come colonne tipizzate; ogni altro campo (`ATTRIB`/`BASIC`) resta

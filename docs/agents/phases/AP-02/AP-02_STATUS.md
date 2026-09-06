@@ -116,7 +116,8 @@ Nessuna regressione: tutti i test pre-esistenti di A1/A2/A3/A4/A5 restano verdi.
 
 - **OCR reale e decoder ONNX addestrato**: problema di dati/ML, non di architettura — nessun modello/training pipeline esiste in questo repository. Bloccante per qualunque classificazione Mob/NPC/oggetti da visione.
 - ~~**`HasTarget` da `TargetStateComposer`**: non cablato in `ScreenVitalsCapture`~~ — **risolto** (Q-067, DeepSeek, commit `4249418`, audit A5 senza difetti). Vedi §11.
-- **Inventario/finestre di dialogo**: nessun codice di lettura esiste (nessuna ROI, nessun reader) — costruzione da zero, non affrontata.
+- **Inventario da schermo**: **non vale la pena** (indagine, questa sessione) — il canale di rete (`ivn`/`get`/`drop`, già usato da `--collect`) fornisce già conteggi esatti; un reader da schermo darebbe solo un'icona presente/assente su un dato già migliore.
+- ~~**Finestre di dialogo**: nessun codice di lettura esiste~~ — **contenuto testuale** resta bloccato da OCR/ML (nessun canale di rete per dialogo/quest text). **Presenza/assenza** di un pannello aperto costruita in questo passaggio (A1+A3, Claude) — vedi §12.
 - **DirectX draw-call interception** (ADR-0022 "Reading the world from what the client draws"): **proposta ma non adottata**, esplicitamente gated su un esperimento che spetta all'operatore umano, non a un agente ("The experiment is the operator's, not an agent's"). Nessun lavoro di questa fase tenta hook/injection — la capture resta esclusivamente DXGI Desktop Duplication (cattura legittima dei pixel), mai intercettazione di chiamate di disegno.
 - **Gestione `DXGI_ERROR_ACCESS_LOST` a metà sessione** (lock/unlock desktop, reset GPU): `ScreenVitalsCapture` non la distingue da un frame semplicemente non disponibile — richiederebbe modificare `DxgiCapture.cs`, fuori ambito per questo pass (sola lettura).
 - ~~Triplicazione di `DataSourceKind`~~ — **chiusa** con `docs/adr/ADR-0026-datasourcekind-intentional-bounded-context-duplication.md`: confermata duplicazione intenzionale per bounded context, non un difetto.
@@ -171,3 +172,74 @@ stessa riga soffre della stessa cosa). Non peggiorato da questa consegna,
 non risolto da essa. Livello: `Present` per il codice nuovo, `Integrated`
 solo con conferma umana su un client Windows reale con una calibrazione
 reale.
+
+## 12. A1+A3 — Rilevamento presenza/assenza finestra di dialogo (nuova capacità)
+
+Su richiesta esplicita dell'utente (nessun client reale disponibile per
+verificare la tecnica: approvato comunque, calibrazione da operatore
+richiesta prima che funzioni davvero). Chiude la seconda metà del gap
+§10 "Finestre di dialogo": il contenuto testuale resta bloccato da
+OCR/ML, ma la sola presenza/assenza di un pannello aperto è leggibile da
+schermo senza OCR.
+
+**Perché una tecnica diversa da `TargetFrameReader`**: la barra HP/MP ha
+una famiglia di colori fissa e nota (rosso/verde, `HudBarFillReader`) —
+un pannello di dialogo no, e indovinare l'estetica UI reale di NosTale
+senza un client per verificarla avrebbe violato la disciplina
+anti-fabbricazione del progetto. Tecnica scelta: **delta da baseline** —
+la ROI calibrata registra una volta la propria media colore B/G/R su un
+crop confermato "vuoto" dall'operatore; ogni lettura successiva calcola
+la propria media B/G/R sull'intero crop e la confronta per distanza
+euclidea con la baseline; sopra una soglia (`DefaultPresentThreshold =
+24.0`, dichiarata esplicitamente scelta di giudizio non calibrata, non
+una costante misurata) è `Present`, altrimenti `Absent`. Agnostica
+rispetto all'estetica del gioco — funziona su qualunque pannello che
+cambi visibilmente i pixel della propria regione.
+
+**File consegnati** (`src/NosAi.Runtime/Perception/`):
+- `DialogRoiCalibration.cs` — stesso schema di `TargetRoiCalibration`
+  (fatta salva l'estensione con `BaselineMeanB/G/R`), stesso formato file
+  a righe con intestazione magica (`nosai-dialog-roi`, versione 1),
+  `RelativePath = data/perception/dialog-roi.calibration` (gitignored,
+  machine-specific), `Uncalibrated` singleton come default onesto,
+  `Confirmed(...)` valida sia i limiti della regione sia il range 0-255
+  di ogni media di canale.
+- `DialogWindowReader.cs` — puro, deterministico: `Read(bgra, width,
+  height, baselineMeanB, baselineMeanG, baselineMeanR, presentThreshold)`
+  calcola la media B/G/R sull'intero crop in aritmetica `long` (stessa
+  disciplina anti-overflow di `TargetFrameReader`), poi la distanza
+  euclidea dalla baseline. Confine incluso (`divergence == threshold` →
+  `Absent`, non `Present`).
+- `DialogWindowStateComposer.cs` — `Compose(calibration, observation) ->
+  ClassifiedValue<bool>`. **Nessuna riconciliazione lato wire** (a
+  differenza di `TargetStateComposer`): nessun opcode NosTale per
+  dialogo/quest text esiste in questo repository (verificato per grep su
+  `PROTOCOLLO_NOSTALE.md`/`NosTaleWorldProtocolDecoder.cs`) — lo schermo
+  è l'unica fonte, quindi il composer traduce soltanto lo stato del
+  reader, non lo contraddice né lo conferma.
+- `ScreenDialogWindowSource.cs` — stesso ordine di controlli di
+  `ScreenTargetFrameSource` (calibrazione → area client → frame →
+  risoluzione ROI → dentro il frame), stesso pattern `Refused(reason,
+  atUtc)`. Verificato per audit incrociato: il ramo "area client
+  degenere" riusa `DialogRoiCalibration.NotCalibratedReason` esattamente
+  come `ScreenTargetFrameSource` fa con `TargetRoiCalibration` — non un
+  difetto, fedeltà intenzionale al precedente.
+
+**Test**: `DialogRoiCalibrationTests.cs`, `DialogWindowReaderTests.cs`,
+`DialogWindowStateComposerTests.cs`, `ScreenDialogWindowSourceTests.cs` —
+38 test nuovi, tutti verdi.
+
+**Evidenza build/test**:
+```
+dotnet build NosAi.sln -c Release → 0 Errori, 1 Warning preesistente non collegato
+dotnet test .../NosAi.Runtime.Tests.csproj --filter "~Dialog" → 38/38
+dotnet test .../NosAi.Runtime.Tests.csproj → 2062/2120, 0 falliti, 58 skip
+dotnet test .../NosAi.Core.Tests.csproj → 630/630, 0 falliti
+```
+
+**Livello**: `Present` — contratti e algoritmo puri, testati, compilano
+puliti. Non `Integrated`: nessun chiamante runtime ancora (wiring in
+`ScreenVitalsCapture`/`Program.cs` da specificare per DeepSeek, stesso
+schema di Q-067). Non `Verified`: nessun client reale per confermare
+`DefaultPresentThreshold` contro un vero pannello NosTale — obbligo
+esplicito prima di fidarsi del risultato in produzione.
