@@ -74,7 +74,7 @@ public sealed class LoadoutPlannerTests
     public void CheckHardConstraints_Equip_ItemInInventoryAndSlotFree_IsAllowed()
     {
         Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("helmet", 1) }));
-        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Helmet);
+        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Hat);
 
         LoadoutConstraintCheck check = LoadoutPlanner.CheckHardConstraints(candidate, player);
 
@@ -85,7 +85,7 @@ public sealed class LoadoutPlannerTests
     public void CheckHardConstraints_Equip_ItemNotInInventory_Violates()
     {
         Player player = BuildPlayer();
-        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Helmet);
+        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Hat);
 
         LoadoutConstraintCheck check = LoadoutPlanner.CheckHardConstraints(candidate, player);
 
@@ -97,7 +97,7 @@ public sealed class LoadoutPlannerTests
     public void CheckHardConstraints_Equip_ZeroQuantity_Violates()
     {
         Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("helmet", 0) }));
-        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Helmet);
+        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("helmet"), slot: EquipmentSlot.Hat);
 
         LoadoutConstraintCheck check = LoadoutPlanner.CheckHardConstraints(candidate, player);
 
@@ -109,9 +109,9 @@ public sealed class LoadoutPlannerTests
     public void CheckHardConstraints_Equip_SlotAlreadyOccupied_Violates()
     {
         Player player = BuildPlayer(
-            equipment: EquatableArray<EquipmentItem>.From(new[] { BuildEquipped("old-helmet", EquipmentSlot.Helmet) }),
+            equipment: EquatableArray<EquipmentItem>.From(new[] { BuildEquipped("old-helmet", EquipmentSlot.Hat) }),
             inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("new-helmet", 1) }));
-        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("new-helmet"), slot: EquipmentSlot.Helmet);
+        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Equip, item: new ItemId("new-helmet"), slot: EquipmentSlot.Hat);
 
         LoadoutConstraintCheck check = LoadoutPlanner.CheckHardConstraints(candidate, player);
 

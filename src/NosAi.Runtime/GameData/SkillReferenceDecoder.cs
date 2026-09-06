@@ -40,11 +40,20 @@ public sealed record BCardApplication(
 /// comes from a community reference for the client's file formats
 /// (https://nt-research.github.io/, "NOS files / NSgtdData / Skill.dat"),
 /// per this project's rule to prefer a verifiable external source over
-/// guessing a tuple position. That source is a lead, not a ground truth:
-/// none of its claimed positions have yet been cross-checked against a
-/// real skill's cost, cast time or cooldown as shown by a live client.
-/// Treat every value this produces as provisional until at least one has
-/// been confirmed that way.
+/// guessing a tuple position. That source is a lead, not a ground truth,
+/// and has now been cross-checked twice against a live client's own
+/// captured skill (vnum 201): once directly, and once through a second,
+/// independent third-party NosTale database
+/// (<c>itempicker.atlagaming.eu/skills.json</c>, see
+/// <c>docs/research/NOSTALE_COMMUNITY_KNOWLEDGE_2026-09-05.md</c>) whose
+/// own parse of that same skill matches this decoder's tag layout field
+/// for field: <see cref="CpCost"/>, <see cref="GoldCost"/>,
+/// <see cref="MpCost"/>, <see cref="CastTimeRaw"/>, <see cref="CooldownRaw"/>,
+/// <see cref="Range"/>, <see cref="TargetGroup"/> and <see cref="JobLevel"/>
+/// all matched exactly. The tuple <b>position</b> of those eight tags is
+/// therefore confirmed; every other tag position in this record, and the
+/// in-game <b>meaning</b> of every coded value (see below), remains
+/// provisional until independently confirmed the same way.
 /// </para>
 /// <para>
 /// Coded values with no verified in-game meaning -- <see cref="SkillType"/>,
@@ -99,9 +108,9 @@ public sealed record SkillReference(
 /// guessed value.
 /// </summary>
 /// <remarks>
-/// <b>Not yet cross-checked against a live client value.</b> See
-/// <see cref="SkillReference"/>'s own remarks for the source of the tag
-/// layout and why it remains provisional.
+/// Its tag layout is cross-checked for eight fields (skill vnum 201, see
+/// <see cref="SkillReference"/>'s own remarks); every other tag position
+/// and every coded value's in-game meaning remains provisional.
 /// </remarks>
 public static class SkillReferenceDecoder
 {

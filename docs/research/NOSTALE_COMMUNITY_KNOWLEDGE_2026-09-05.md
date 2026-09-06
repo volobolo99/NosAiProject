@@ -120,16 +120,82 @@ usati per popolare nulla:
 Entrambi restano `CandidateHypothesis` di provenienza (categoria 3 e 18
 sopra) finché un'estrazione mirata non ne verifica il contenuto reale.
 
-**Terza fonte registrata (stessa data)**: **Itempicker**
-(`https://itempicker.atlagaming.eu/`, inglese) — database/lookup NosTale
-con sezioni Items/Skills/Monsters/Maps/VFX Gallery/Patch Notes, dichiara
-un'API oltre all'interfaccia web. **Potenzialmente rilevante per il gap
-"categoria/slot di equipaggiamento item" segnalato bloccato in
-`DEEPSEEK_TASKS.md`** — se l'API espone davvero categoria/tipo per item,
-sarebbe la prima fonte verificabile per quel gap. Non ancora verificato:
-il percorso `/api` tentato in questa sessione ha risposto 404 (percorso
-sbagliato, non necessariamente API assente) — serve un'indagine mirata
-sulla documentazione reale dell'API prima di usarla.
+**Quarta fonte registrata (stessa data), investigata a fondo il 2026-09-06**:
+**NosApki** (`https://nosapki.com/it`, italiano) — app Laravel (PHP 8.4)
+con rendering server-side + jQuery, non una SPA. `/api` risponde 302:
+**nessuna API pubblica**. Tutte le pagine testate rispondono 200 senza
+autenticazione (nessun blocco 403/402 riscontrato, a differenza di
+NosCodex/Fandom sopra).
+
+Sezioni reali: `/it/items?category=` (35 categorie, 32 pagine),
+`/it/npcs/monsters` (25 pagine, ordine di grandezza coerente coi 2705
+mostri noti), `/it/npcs/partners`, `/it/npcs/pets`, `/it/skills`,
+`/it/quests` (albero Atto 1→10 + Valhalla/specialisti/eventi/mestieri),
+`/it/ts`, `/it/raids`, `/it/skytower`, `/it/maps` (≥70 mappe),
+`/it/simulators/*` (upgrade equip/rune/profumi/stilizzazione/tatuaggi/
+specialisti/ruota), `/it/calculators/*` (HP/MP/rigenerazione/
+velocità/exp/gold/danno PvE).
+
+Modalità di accesso ai dati (niente JSON bulk come Itempicker):
+- HTML server-renderizzato paginato per liste ed entità (pagina
+  dettaglio per item/mostro con dati ricchi: per un mostro, livello,
+  categoria, HP/MP, velocità, attacco/difesa per tipo, resistenze
+  elementali, effetti speciali con probabilità, drop con %, mappe di
+  spawn con coordinate).
+- Endpoint AJAX reale verificato funzionante via curl:
+  `POST https://nosapki.com/it/quests/get_category` (richiede header
+  `X-XSRF-TOKEN` dal cookie CSRF Laravel), risposta
+  `{"status":"ok","html":"..."}` con quest multi-step reali e
+  riferimenti incrociati a mostri/mappe — HTML incapsulato in JSON, non
+  JSON pulito, ma parsabile.
+- Array JS incorporati inline nelle pagine simulatore (tabelle
+  probabilità upgrade, materiali) e nella pagina quest (curve
+  exp complete `exp_level`/`exp_levelh`/`exp_job`/`exp_jobsp` per
+  livello) — estraibili via regex, non via fetch.
+
+Lingua confermata italiana su tutti i testi controllati (nomi, descrizioni,
+missioni). **Raccomandazione**: `CandidateHypothesis`, non fonte primaria —
+utile soprattutto per quest testuali in italiano e curve exp/drop%, ma
+richiede scraping HTML paginato dedicato (non un semplice download come
+Itempicker) e cross-check puntuale prima di qualunque uso non diagnostico.
+
+**Terza fonte registrata (stessa data), verificata a fondo il 2026-09-06**:
+**Itempicker** (`https://itempicker.atlagaming.eu/`, inglese) —
+database/lookup NosTale con sezioni Items/Skills/Monsters/Maps/VFX
+Gallery/Patch Notes; JSON scaricabili direttamente via `/items.json`,
+`/skills.json`, `/monsters.json`, `/maps.json` (documentati in
+`/about-api#json-files`). Fonte promossa da `CandidateHypothesis` a
+**verificata** tramite doppio cross-check contro dati reali del progetto:
+
+- Conteggio esatto: `items.json` 7727 voci, `skills.json` 1958 voci,
+  `monsters.json` 2705 voci — combaciano esattamente con i conteggi reali
+  importati dal client dal progetto stesso.
+- Match campo-per-campo: la skill vnum 201 in `skills.json` combacia
+  esattamente con la cattura reale già in possesso del progetto su
+  `CpCost`, `GoldCost`, `MpCost`, `CastTimeRaw`, `CooldownRaw`, `Range`,
+  `TargetGroup`, `JobLevel` — conferma indipendente del layout tag di
+  `SkillReferenceDecoder` (vedi doc-comment in
+  `src/NosAi.Runtime/GameData/SkillReferenceDecoder.cs`).
+- Gap "categoria/slot di equipaggiamento item" **chiuso**: il campo
+  `equipmentSlot` di `items.json` (19 valori distinti, da -1 a 17) ha
+  permesso di correggere `EquipmentSlot`
+  (`src/NosAi.Core/WorldModel/InventoryContracts.cs`), che portava un
+  segnaposto errato a 8 valori. I 18 valori reali sono stati derivati
+  campionando nomi item italiani reali per ciascun valore numerico (es.
+  slot 10 confermato "Fairy" da voci con nome "Fata del fuoco"/"Fire
+  Fairy"; slot 17 confermato "MiniPet" da nomi contenenti letteralmente
+  "Mini pet"). Il valore `-1` ("non equipaggiabile") non ha membro
+  corrispondente perché non è uno slot ma un fatto di catalogo
+  sull'item.
+- Cross-check aggiuntivo con OpenNos (GPL, `third_party/sources/opennos`,
+  `ItemType.cs`): il campo `itemType` di `items.json` (0-8) è coerente
+  con le prime ~6 categorie di OpenNos su base di esempi reali italiani.
+
+Non ancora sfruttato: `monsters.json` (drop table con `chance`/`amount`,
+resistenze, razza — dati ricchi anche in italiano) e `maps.json`
+(dimensioni reali mappa) restano da analizzare in profondità; gli
+endpoint icona (`/api/items/icon/{vnum}`, `/api/monsters/icon/{id}`)
+non sono ancora stati scaricati/collegati alle voci dati.
 
 ## Important distinction: secret knowledge vs exploit
 

@@ -185,6 +185,17 @@ bottiglia rimasto) è specificabile con lo stesso schema già usato per
 Solo calibrazione — `--equip`/`--unequip` restano non specificabili
 finché questa non è confermata da un operatore su un client reale.
 
+**ATTENZIONE INTEGRAZIONE (Q-085, 2026-09-06)**: dopo l'avvio di questo
+task, `EquipmentSlot` è stato corretto (era un segnaposto sbagliato a 8
+valori, ora sono i 18 valori reali di NosTale — vedi Q-085 in
+`EXECUTION_QUEUE.md`) e la specifica sopra è stata aggiornata di
+conseguenza (18 slot/18 token, non più 8). Se questa consegna era già
+in corso sulla versione precedente dello spec, in A5/A6 verificare che
+non referenzi `EquipmentSlot.Shield`/`.Helmet`/`.Accessory1`/
+`.Accessory2` (rimossi) né assuma un conteggio fisso di 8 token/ritagli
+invece di 18 — se lo fa, va corretto in integrazione, non rispedito
+indietro.
+
 Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06/AP-08 sono
 tutte `Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati
 item non decodificati semanticamente, non chiudibili scrivendo altro

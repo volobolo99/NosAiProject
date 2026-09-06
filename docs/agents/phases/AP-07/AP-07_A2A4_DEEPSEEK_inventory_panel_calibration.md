@@ -5,7 +5,7 @@
 `AP-07_A1_STATUS.md` §"AP-07/A2+A4" found AP-07's Equip/Unequip execution
 genuinely blocked on two fronts, re-verified 2026-09-06 with one real
 crack found: no screen-space layout exists for the equipment panel's
-eight slots (equip is a drag/click on a fixed UI panel, not a hotkey),
+eighteen slots (equip is a drag/click on a fixed UI panel, not a hotkey),
 and the verification channel's `InventoryKind` field had no documented
 meaning at all. The second is now partially resolved (Claude, this
 session): `GameTrafficObserver.cs`'s `InventorySlotReading.InventoryKind`
@@ -32,15 +32,19 @@ capture confirming `InventoryKind` flips to `8` (`Wear`) on a real equip
 
 - `src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs` (new,
   this session, Claude/A1) — read it in full. `Confirmed(IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi> rois, int clientWidth, int clientHeight, DateTime calibratedAtUtc)`
-  requires **exactly one entry per `EquipmentSlot` value, all eight
+  requires **exactly one entry per `EquipmentSlot` value, all eighteen
   together** — there is no partial-calibration state, matching the panel
   being either fully open or not. `Load`/`Save`/`Resolve` mirror
   `DialogRoiCalibration`'s exact API shape (same `IsCalibrated`/
   `NotCalibratedReason`/gitignored `data/` path pattern) — do not
   redesign this contract, use it as given.
 - `src/NosAi.Core/WorldModel/InventoryContracts.cs`: `EquipmentSlot`
-  enum — exactly the eight values `Confirmed` requires
-  (`Weapon, Shield, Helmet, Armor, Gloves, Boots, Accessory1, Accessory2`).
+  enum — exactly the eighteen values `Confirmed` requires
+  (`Weapon, Armor, Hat, Gloves, Boots, SecondaryWeapon, Necklace, Ring,
+  Bracelet, Mask, Fairy, Amulet, SpecialistCard, CostumeSuit, CostumeHat,
+  WeaponSkin, CostumeWings, MiniPet` — cross-checked against a real
+  third-party NosTale item database, see the enum's own doc comment for
+  the source and evidence).
 - `src/NosAi.Runtime/Perception/HudProbe.cs` (read-only reference) — the
   exact calibration UX to mirror: capture a frame, write a preview bitmap
   the operator looks at, accept fractions on the command line as the
@@ -54,7 +58,7 @@ capture confirming `InventoryKind` flips to `8` (`Wear`) on a real equip
 - `src/NosAi.Runtime/Perception/TargetRoiCalibration.cs` /
   `DialogRoiCalibration.cs` (read-only reference) — same recipe,
   single-region version; `InventoryPanelRoiCalibration` already is this
-  recipe extended to eight, do not re-derive it from scratch.
+  recipe extended to eighteen, do not re-derive it from scratch.
 - `src/NosAi.Runtime/LiveIntegration` client-attach/frame-capture path
   already used by `--hud-probe` (read `HudProbe.cs`'s own composition,
   cite the exact lines you mirror) — this task needs the same "attach to
@@ -95,9 +99,9 @@ already exists.
 
 The operator passes each slot as one token, `<EquipmentSlot>:<x>,<y>,<w>,<h>`
 (fractions of the client area, same convention as `--calibrate-target`'s
-four separate numbers, packed one-slot-per-token because there are eight
-of them). All eight must be present in one invocation — there is no
-partial state to accumulate across runs.
+four separate numbers, packed one-slot-per-token because there are
+eighteen of them). All eighteen must be present in one invocation — there
+is no partial state to accumulate across runs.
 
 ```csharp
 public static bool TryParseSlots(
@@ -109,29 +113,29 @@ public static bool TryParseSlots(
 - Splits each token on `:` then the right-hand side on `,`; four
   `double`s required per token (`CultureInfo.InvariantCulture`).
 - An unparseable token, a token naming a slot outside `EquipmentSlot`, a
-  duplicate slot, or fewer/more than eight tokens: return `false` with a
+  duplicate slot, or fewer/more than eighteen tokens: return `false` with a
   specific `failureReason` (name which token and why) — never silently
   drop or default a slot.
 - Does not call `Confirmed` itself (that can throw for a
   region-outside-client-area/zero-extent reason `TryParseSlots` cannot
   know about before the client area is resolved) — the caller does, per
   §2.
-- Cover in tests: all eight valid tokens in `EquipmentSlot`'s declared
+- Cover in tests: all eighteen valid tokens in `EquipmentSlot`'s declared
   order and in a shuffled order (order must not matter — `Confirmed`
   takes a dictionary); a missing slot; a duplicate slot; a malformed
-  fraction; an unknown slot name; nine tokens.
+  fraction; an unknown slot name; nineteen tokens.
 
 ## 2. The console command — live composition
 
 Mirror `HudProbe`'s `--hud-probe --calibrate-target` handling shape
 exactly (read it before writing this):
 
-- `--calibrate-inventory-panel [<slot:x,y,w,h> ... x8]`: with **zero**
+- `--calibrate-inventory-panel [<slot:x,y,w,h> ... x18]`: with **zero**
   extra tokens, only report the current calibration state (loaded via
   `InventoryPanelRoiCalibration.Load`) and, if uncalibrated, print the
   same kind of guidance `HudProbe` prints for `--calibrate-target`
-  (what file to look at, the exact command to re-run with all eight
-  tokens). With tokens present, they must number exactly eight or the
+  (what file to look at, the exact command to re-run with all eighteen
+  tokens). With tokens present, they must number exactly eighteen or the
   command refuses with `[REFUSED]` and a non-zero exit code before
   attempting to attach to any client.
 - Attach to the client, capture one frame, resolve the client area —
@@ -142,7 +146,7 @@ exactly (read it before writing this):
   operator can open to read off each slot's fractions, named
   `inventory_panel_latest.bmp`, same directory `HudCropWriter` already
   uses for its other named crops.
-- With eight valid tokens: parse via §1, then call
+- With eighteen valid tokens: parse via §1, then call
   `InventoryPanelRoiCalibration.Confirmed(rois, area.Width, area.Height, DateTime.UtcNow)`
   inside a `try`/`catch (ArgumentException)` (covers both the "wrong slot
   set" and "region outside client area" refusal shapes `Confirmed`
@@ -183,7 +187,7 @@ or made a new file, and why; the exact frame-capture/client-attach lines
 you mirrored (file/lines); build/test evidence with exact pass counts;
 verification level (`Present` — this cannot become `Integrated`/`Verified`
 without an operator actually running it against a real client and
-confirming the eight crops, which is not something this task can do
+confirming the eighteen crops, which is not something this task can do
 itself, same as `TargetRoiCalibration`/`DialogRoiCalibration`'s own
 first delivery). Name explicitly, as a known follow-up and not something
 to attempt here: `--equip`/`--unequip` themselves remain blocked until

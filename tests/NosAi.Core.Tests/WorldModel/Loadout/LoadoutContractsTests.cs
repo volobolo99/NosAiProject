@@ -35,10 +35,10 @@ public sealed class LoadoutActionCandidateTests
     [Fact]
     public void Unequip_WithSlot_Constructs()
     {
-        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Unequip, slot: EquipmentSlot.Helmet);
+        var candidate = new LoadoutActionCandidate(LoadoutActionKind.Unequip, slot: EquipmentSlot.Hat);
 
         Assert.Null(candidate.Item);
-        Assert.Equal(EquipmentSlot.Helmet, candidate.Slot);
+        Assert.Equal(EquipmentSlot.Hat, candidate.Slot);
     }
 
     [Fact]
