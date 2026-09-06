@@ -63,6 +63,32 @@ public static class HudCropWriter
         return directory;
     }
 
+    /// <summary>The panel preview bitmap's name, alongside the other named crops.</summary>
+    public const string PanelPreviewFileName = "inventory_panel_latest.bmp";
+
+    /// <summary>
+    /// Writes the whole-client-area preview the inventory-panel calibration
+    /// is read off (<c>inventory_panel_latest.bmp</c>), and returns the
+    /// directory, or null when there was nothing to write.
+    /// </summary>
+    /// <remarks>
+    /// Same evidence discipline as the crops above: eight slot crops are only
+    /// as right as the picture they were measured off, and the whole panel is
+    /// what shows the operator which way a mis-placed crop is wrong. The
+    /// caller (the inventory-panel calibration probe) decides which area is
+    /// the panel's; this only writes the pixels.
+    /// </remarks>
+    public static string? TrySavePanelPreview(string? repoRoot, CaptureFrame frame, PixelRect panelArea)
+    {
+        if (string.IsNullOrWhiteSpace(repoRoot) || !frame.HasPixels)
+            return null;
+
+        string directory = Path.Combine(repoRoot, RelativeDirectory);
+        Directory.CreateDirectory(directory);
+        WriteBmp(Path.Combine(directory, PanelPreviewFileName), frame, panelArea);
+        return directory;
+    }
+
     /// <summary>
     /// Writes one crop as a 32-bit BMP.
     /// </summary>
