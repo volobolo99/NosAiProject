@@ -120,6 +120,17 @@ dall'audit indipendente A5 e corretto in questo passaggio. **Non
 produzione armato per costruzione (nessun ponte a un `ActuationScope` —
 vedi `AP-05_A5_AUDIT.md` §5), un limite dichiarato, non nascosto.
 
+## 8bis. `--recover` (Q-050/Q-051/Q-052) — risposta Survival, sibling di `--engage`
+
+`CombatExecutionResult.ResourceGainConfirmed` (Claude) +
+`CombatVerificationProjector.ProjectRecovery` +
+`RecoverCommand` (`--recover <slot> [--watch <n>]`, DeepSeek, commit
+`219225b`) — stesso schema di `--engage`, per `UseConsumable`: preme
+`consumable.{slot}` e verifica che Health sia salita. Audit A5: nessun
+difetto trovato (§7 di `AP-05_A5_AUDIT.md`). Stesso limite dichiarato di
+`--engage`: nessun ponte al gate di produzione armato per un atto senza
+pixel.
+
 ## 9. Item aperti, esplicitamente rimandati
 
 - **Bridge esecuzione skill → commit point del Safety Gate reale**:

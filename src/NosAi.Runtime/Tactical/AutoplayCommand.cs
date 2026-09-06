@@ -111,11 +111,22 @@ public static class AutoplayCommand
     /// <param name="Plan">The plan this cycle selected (already computed by the caller).</param>
     /// <param name="ScoutRun">The scout round's walk result, when <see cref="AutoplayDispatch.Explored"/>.</param>
     /// <param name="RecoverEvidence">The recover round's evidence, when <see cref="AutoplayDispatch.Recovered"/>.</param>
+    /// <param name="UpdatedFootprint">
+    /// The footprint to carry into the next cycle. Equal to the caller's own
+    /// <c>footprint</c> parameter unless <see cref="Dispatch"/> is
+    /// <see cref="AutoplayDispatch.Explored"/>, in which case it is
+    /// <see cref="ScoutCommand.ExecuteOneRound"/>'s own updated footprint
+    /// (folding this cycle's player position in) -- without carrying this
+    /// forward, a caller that reused the original footprint every cycle would
+    /// never learn the player had already visited wherever a previous cycle
+    /// walked to.
+    /// </param>
     public sealed record AutoplayCycleResult(
         AutoplayDispatch Dispatch,
         StrategicPlan Plan,
         WalkRun? ScoutRun,
-        CombatExecutionEvidence? RecoverEvidence);
+        CombatExecutionEvidence? RecoverEvidence,
+        ExplorationFootprint UpdatedFootprint);
 
     /// <summary>
     /// Dispatches one already-selected <see cref="StrategicPlan"/> to at most
@@ -174,7 +185,7 @@ public static class AutoplayCommand
         ArgumentNullException.ThrowIfNull(plan);
 
         if (plan.SelectedKind is not { } kind)
-            return new AutoplayCycleResult(AutoplayDispatch.Idle, plan, null, null);
+            return new AutoplayCycleResult(AutoplayDispatch.Idle, plan, null, null, footprint);
 
         switch (kind)
         {
@@ -194,16 +205,21 @@ public static class AutoplayCommand
                     in authority,
                     readPosition,
                     onEvidence,
-                    out _,
+                    out ExplorationFootprint updatedFootprint,
                     out _,
                     nowUtc);
-                return new AutoplayCycleResult(AutoplayDispatch.Explored, plan, run, null);
+                // ScoutCommand.ExecuteOneRound folds this cycle's player position
+                // into updatedFootprint before it ever checks reachability, so it
+                // is valid even when run is null (nothing reachable) -- carrying
+                // it forward is what lets the next cycle know this position was
+                // already visited, exactly like ScoutCommand's own --watch loop.
+                return new AutoplayCycleResult(AutoplayDispatch.Explored, plan, run, null, updatedFootprint);
             }
 
             case StrategicGoalKind.Survival:
             {
                 if (recoverSlot is not { } slot)
-                    return new AutoplayCycleResult(AutoplayDispatch.SurvivalSkippedNoSlot, plan, null, null);
+                    return new AutoplayCycleResult(AutoplayDispatch.SurvivalSkippedNoSlot, plan, null, null, footprint);
 
                 // The candidate construction mirrors RecoverCommand.RunWindows:
                 // the constructor requires an Item and the slot number doubles as
@@ -222,13 +238,13 @@ public static class AutoplayCommand
                     verificationDelay,
                     in authority,
                     nowUtc);
-                return new AutoplayCycleResult(AutoplayDispatch.Recovered, plan, null, evidence);
+                return new AutoplayCycleResult(AutoplayDispatch.Recovered, plan, null, evidence, footprint);
             }
 
             default:
                 // QuestUrgency/Recovery/Progression/Farming/Optimization: named,
                 // never silently ignored, never substituted.
-                return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null);
+                return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null, footprint);
         }
     }
 
@@ -468,6 +484,13 @@ public static class AutoplayCommand
                     },
                     in authority,
                     now);
+
+                // Carry this cycle's footprint forward regardless of what was
+                // dispatched -- only the Exploration branch actually changes it,
+                // but reassigning unconditionally keeps this the single place
+                // that advances footprint across cycles (ExecuteOneCycle is pure
+                // and never mutates the caller's local).
+                footprint = result.UpdatedFootprint;
 
                 switch (result.Dispatch)
                 {

@@ -173,3 +173,15 @@ difetto trovato dopo un passaggio avversariale su verifica risorse,
 ordine di esecuzione, ciclo di vita, parsing argomenti, e la
 dichiarazione sul gate di produzione (verificata vera, con una sola nota
 di precisione documentale non bloccante).
+
+## 7. Addendum — `--recover` (commit `219225b`)
+
+Stessa disciplina, ambito `RecoverCommand.cs`/
+`CombatVerificationProjector.ProjectRecovery` (Q-051/Q-052). **Nessun
+difetto trovato**: `Run` applica già `[REFUSED]`-non-lancia dalla
+consegna (il Difetto 1 sopra, imparato), `ProjectRecovery` non fabbrica
+mai un guadagno (equal conta come nessun guadagno, stessa disciplina di
+`Project`), ordine esecuzione identico a `EngageCommand` verificato
+corretto. Build/test indipendenti: `dotnet test ...RecoverCommandTests|CombatVerificationProjectorTests`
+→ 54/54; suite complete invariate rispetto al resto di questo audit.
+Livello dichiarato (`Present`) accurato.
