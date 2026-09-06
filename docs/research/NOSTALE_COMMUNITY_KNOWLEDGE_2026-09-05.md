@@ -100,6 +100,26 @@ Only validated evidence can promote a claim toward `Verified`.
 19. recovery patterns after failed mechanics;
 20. historical strategies that may have become obsolete.
 
+## Fonti candidate registrate (2026-09-06, su richiesta esplicita dell'utente)
+
+Due siti comunitari segnalati come riferimento futuro per dati di gioco
+(guide, missioni, equipaggiamento, eventi) — registrati qui, non ancora
+usati per popolare nulla:
+
+- **NosCodex** (`https://noscodex.com/`, principalmente francese, opzione
+  lingua via `?lang=`) — guide di equipaggiamento, liste minifamiliari,
+  missioni giornaliere per atto, tarocchi/rune, orari raid/eventi.
+  **Blocca il fetch automatico** (risposta 403 al tentativo diretto):
+  serve un accesso manuale o un fetch mirato pagina per pagina, non
+  un'estrazione in blocco.
+- **NosTale Wiki su Fandom** (`https://nostale.fandom.com/wiki/Main_Page`)
+  — struttura Fandom standard, presumibilmente item/mostri/missioni/mappe/
+  classi. Il tentativo di lettura ha risposto 402 in questa sessione;
+  stato di copertura/aggiornamento non ancora verificato.
+
+Entrambi restano `CandidateHypothesis` di provenienza (categoria 3 e 18
+sopra) finché un'estrazione mirata non ne verifica il contenuto reale.
+
 ## Important distinction: secret knowledge vs exploit
 
 NosAi may exploit **knowledge asymmetry** (remembering community discoveries, correlating signals, predicting outcomes from observed data, choosing better routes). It must not exploit software vulnerabilities, manipulate the client, bypass cooldowns, inject packets, reveal server-only state or use bugs as gameplay advantages. The official game rules explicitly prohibit bug abuse and client manipulation.
