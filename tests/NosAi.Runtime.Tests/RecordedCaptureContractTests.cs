@@ -77,6 +77,11 @@ public sealed class RecordedCaptureContractTests
 
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
+        // Senza queste due righe il ciclo qui sotto non asserirebbe niente su una
+        // raccolta vuota, e il test passerebbe anche se la rigiocata fallisse.
+        Assert.True(report.Ok, report.FailureReason);
+        Assert.NotEmpty(report.Entities);
+
         foreach (WorldReplayEntityRow row in report.Entities)
         {
             // Whatever the catalogue answered, the name is never blank: it is a
@@ -182,10 +187,21 @@ public sealed class RecordedCaptureContractTests
     /// A replayed recording is real bytes that are not current. Nothing read out
     /// of one may ever come back LIVE, however confidently it decodes.
     /// </summary>
+    /// <remarks>
+    /// <b>Perche' un secondo parametro.</b> Gli <c>Assert.All</c> qui sotto
+    /// passano tutti su raccolte vuote, e il 2026-09-08 si e' misurato che per
+    /// <c>nostale_01</c> lo sono tutte e sei: quel caso del test non asseriva
+    /// niente. Le letture con una provenienza esistono solo dove c'e' stato un
+    /// combattimento; la registrazione di riposo ha entita' e nient'altro, ed e'
+    /// il fatto che <see cref="The_idle_recording_finds_entities_and_reports_the_combat_contracts_as_empty_with_reasons"/>
+    /// gia' documenta. Il parametro dice quale delle due si sta guardando, cosi'
+    /// una registrazione che smettesse di decodificare i colpi non passerebbe
+    /// piu' in silenzio.
+    /// </remarks>
     [RecordedCaptureTheory(Combat, Idle)]
-    [InlineData(Combat)]
-    [InlineData(Idle)]
-    public void Nothing_read_from_a_recording_is_ever_live(string file)
+    [InlineData(Combat, true)]
+    [InlineData(Idle, false)]
+    public void Nothing_read_from_a_recording_is_ever_live(string file, bool expectsReadings)
     {
         string path = RecordedCaptureFactAttribute.Resolve(file)!;
 
@@ -200,6 +216,26 @@ public sealed class RecordedCaptureContractTests
         Assert.All(report.Pickups, p => Assert.Equal(Contracts.DataSourceKind.Cached, p.Source));
         Assert.All(report.GroundItems, g => Assert.Equal(Contracts.DataSourceKind.Cached, g.Source));
         Assert.All(report.Selections, s => Assert.Equal(Contracts.DataSourceKind.Cached, s.Source));
+
+        // Gli Assert.All qui sopra passano tutti su raccolte vuote. Quale sia
+        // piena dipende dalla registrazione -- quella di riposo non ha colpi --
+        // quindi la garanzia onesta e' che almeno una lettura sia stata davvero
+        // classificata, e il totale finisce nel messaggio quando non lo e'.
+        int classified = report.Hits.Count + report.SkillsReady.Count + report.Inventory.Count
+            + report.Pickups.Count + report.GroundItems.Count + report.Selections.Count;
+        string breakdown =
+            $"colpi {report.Hits.Count}, abilita' {report.SkillsReady.Count}, "
+            + $"zaino {report.Inventory.Count}, raccolte {report.Pickups.Count}, "
+            + $"oggetti a terra {report.GroundItems.Count}, selezioni {report.Selections.Count}";
+
+        if (expectsReadings)
+            Assert.True(classified > 0, $"{file}: nessuna lettura classificata -- {breakdown}");
+        else
+            Assert.True(classified == 0, $"{file}: attese zero letture, trovate {classified} -- {breakdown}");
+
+        // In entrambi i casi il file e' stato davvero svuotato: senza questa
+        // riga «zero letture» e «non ho letto niente» si direbbero uguali.
+        Assert.NotEmpty(report.Entities);
     }
 
     /// <summary>The recording's path, or null when this clone does not have it.</summary>

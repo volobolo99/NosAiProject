@@ -89,6 +89,9 @@ public sealed class Gate3CalibrationPersistenceTests : IDisposable
         Calibration actual = second.Learning.CalibrationOf(ActionType.UseSkill.ToString())!;
 
         Assert.NotNull(expected);
+        // Stessa ragione: due orchestratori che non hanno imparato niente danno
+        // zero uguale a zero, e il salvataggio sembrerebbe funzionare.
+        Assert.True(expected.Trials > 0, "il primo orchestratore non ha imparato niente");
         Assert.Equal(expected.ExpectedAccuracy, actual.ExpectedAccuracy);
         Assert.Equal(expected.Trials, actual.Trials);
         Assert.Equal(expected.Confirmed, actual.Confirmed);

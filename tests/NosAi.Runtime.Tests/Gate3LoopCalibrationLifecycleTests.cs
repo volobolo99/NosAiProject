@@ -115,7 +115,10 @@ public sealed class Gate3LoopCalibrationLifecycleTests : IDisposable
 
         Calibration? restored = second.Learning.CalibrationOf(ActionType.UseSkill.ToString());
         Assert.NotNull(restored);
-        Assert.Equal(learned!.Trials, restored!.Trials);
+        // Confrontare due calibrazioni entrambe a zero prove non dimostra niente:
+        // prima si stabilisce che c'era qualcosa da ripristinare.
+        Assert.True(learned!.Trials > 0, "il primo orchestratore non ha imparato niente");
+        Assert.Equal(learned.Trials, restored!.Trials);
         Assert.Equal(learned.ExpectedAccuracy, restored.ExpectedAccuracy);
     }
 
@@ -132,7 +135,10 @@ public sealed class Gate3LoopCalibrationLifecycleTests : IDisposable
 
         Gate3LoopCycle cycle = await loop.RunOnceAsync();
 
-        Assert.NotNull(cycle);
+        // `Assert.NotNull` su un record non annullabile non asseriva niente. Il
+        // giro ha davvero deciso: un'azione scelta e un istante suo.
+        Assert.NotEqual(default, cycle.AtUtc);
+        Assert.False(string.IsNullOrWhiteSpace(cycle.Summary));
         Assert.False(File.Exists(_databasePath));
     }
 }

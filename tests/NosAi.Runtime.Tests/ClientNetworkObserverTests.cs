@@ -110,6 +110,12 @@ public sealed class ClientNetworkObserverTests
 
         var observation = ClientNetworkObserver.Observe(SelfPid);
 
+        // Senza queste due righe l'Assert.All passerebbe su zero connessioni, e
+        // un osservatore che non legge niente sembrerebbe leggere bene: la
+        // coppia di loopback qui sopra ne garantisce almeno una.
+        Assert.True(observation.Observed);
+        Assert.NotEmpty(observation.Connections);
+
         Assert.All(observation.Connections, c =>
         {
             Assert.InRange(c.Local.Port, 0, 65535);

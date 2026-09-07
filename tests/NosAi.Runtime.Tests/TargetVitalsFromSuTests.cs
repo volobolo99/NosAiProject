@@ -177,6 +177,10 @@ public sealed class TargetVitalsFromSuTests
             else
                 byTarget[target] = maxHp;
         }
+
+        // Il ciclo sopra non asserisce niente se la registrazione non ha `su`:
+        // tutte e quattro ne hanno (13, 2, 117 e 80, misurati il 2026-09-07).
+        Assert.NotEmpty(byTarget);
     }
 
     [RecordedCaptureTheory("nostale_live.noscap", "equip_test.noscap", "nostale_combat.noscap", "certificazione.noscap")]
