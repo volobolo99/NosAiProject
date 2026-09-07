@@ -183,10 +183,17 @@ fallito" come "funzionato" ricadrebbe nel difetto appena corretto.
 
   Il mouse: `UseBasicAttack`, `TargetEntity`, `MoveToPosition` ed
   `EmergencyFlee` passano da `CalibratedScreenProjection` (F2-3). La
-  trasformazione esiste ed è **misurata**, non dedotta: l'operatore registra tre
-  coppie (coordinata di mappa, pixel del client) con `--screen-sample`, e
-  `--screen-calibrate` risolve la mappa affine e la scrive in
-  `data/perception/screen-projection.calibration`. Finché quel file non c'è, ogni
+  trasformazione esiste ed è **misurata**, non dedotta: l'operatore raccoglie i
+  campioni con `--screen-watch` — o dal pannello, Percezione → «Raccogli
+  campioni» — cliccando per camminare, ed è il client stesso a tradurre il pixel
+  in una casella; `--screen-calibrate` risolve la mappa e la scrive in
+  `data/perception/screen-projection.calibration`.
+
+  **La mappa è prospettica, non affine** (T-15, chiuso il 2026-09-07): la casella
+  vale più pixel in basso che in alto, come fa una telecamera inclinata, e la
+  versione affine lasciava un residuo di 2,43 caselle contro una soglia di 1,5.
+  I campioni chiesti sono venti perché i parametri sono otto: dodici li lasciavano
+  indeterminati al 6-8% contro il 5% richiesto. Finché quel file non c'è, ogni
   clic termina `Refused` con motivo `screen_projection_not_calibrated`, perché una
   trasformazione di ripiego cliccherebbe in un punto qualsiasi della finestra e il
   ciclo lo scoprirebbe solo alla verifica, dopo aver già agito. Rifiutano per nome

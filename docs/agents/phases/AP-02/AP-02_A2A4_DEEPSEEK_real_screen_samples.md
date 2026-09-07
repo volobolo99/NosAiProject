@@ -1,14 +1,18 @@
 # AP-02 / A2+A4 — DeepSeek — dodici misure reali che nessun test guarda
 
-> **BLOCCATO SULL'OPERATORE dal 2026-09-07 — non prendere questo task.**
-> DeepSeek l'ha rimandato indietro e aveva ragione: i dodici campioni sono due
-> sessioni con geometria diversa (residuo 73,6 px contro una soglia di 1,5
-> caselle ≈ 38 px), e nessun sottoinsieme scelto a posteriori è evidenza —
-> sarebbe scegliere i dati che confermano. Serve un ricampionamento a zoom
-> costante: la procedura è in `docs/TEST_RIMANDATI.md` **T-15**, insieme al
-> difetto che il ricampionamento da solo non risolve (il file non registra lo
-> zoom). Quando i campioni nuovi ci sono, questa specifica va riscritta sui
-> numeri veri, non riattivata così com'è.
+> **CHIUSO il 2026-09-07 — non prendere questo task.**
+> La diagnosi con cui era stato bloccato era sbagliata: i dodici campioni non
+> erano due sessioni con geometrie diverse, erano una sola geometria descritta
+> con il modello sbagliato. La mappa è **prospettica**: la casella vale più pixel
+> in basso che in alto, in tutte e due le sessioni, e con i due termini in più i
+> dodici campioni passano da 2,43 a 1,23 caselle di residuo. Vedi
+> `docs/TEST_RIMANDATI.md` **T-15**.
+>
+> Quello che questo task chiedeva — test che guardino i campioni reali — esiste
+> ora in `tests/NosAi.Runtime.Tests/ScreenSampleCoachTests.cs`, che usa i clic
+> veri di tre sessioni e separa quella che ha calibrato da quelle che sono state
+> rifiutate. E la calibrazione è scritta: passo 38,14 × 16,83 px per casella,
+> personaggio a (516, 445), 19 campioni su 20.
 
 **Indipendente da tutti.** Non tocca un solo file di `src/`. Prendibile subito,
 anche in parallelo — l'unica cautela è la contesa sulla build se un altro task
