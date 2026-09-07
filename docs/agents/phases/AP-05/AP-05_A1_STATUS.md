@@ -210,13 +210,23 @@ precedenti, qui confermati identici per il combattimento). **A differenza
 del movimento**, non esiste un equivalente di `WalkCommand.Execute` già
 reale e indipendente da riusare per l'esecuzione — andrebbe scritto da
 zero, e la sua verifica onesta ha un vincolo in più: `Mob.Status.Resources`
-(HP del bersaglio nel World Model canonico) non è mai popolato oggi — la
-fusione entità Mob/Npc resta esplicitamente rimandata da AP-02
-(`AP-02_STATUS.md`, stesso blocco ML/OCR). Verificare "l'MP del player è
-sceso dopo una skill" sarebbe onestamente costruibile oggi (i vitali del
-player sono già fusi, AP-02); verificare "l'HP del mob bersaglio è sceso
-dopo un attacco" **non lo è**, per lo stesso gap di percezione, non per un
-problema di questa fase.
+(HP del bersaglio nel World Model canonico) non è mai popolato oggi.
+**Aggiornamento (Q-097, commit `49937d4`): la causa qui scritta era
+sbagliata.** Non è il blocco ML/OCR rimandato da AP-02: la rete porta già
+la vita del bersaglio due volte — `in` porta `hp%`, e `st` porta la coppia
+**assoluta** current/maximum, che `NosTaleWorldProtocolDecoder.
+DecodeOtherVitals` già legge, valida e poi divide via perché
+`EntitySighting` non ha un campo dove tenerla (cattura reale nei test:
+`st 3 313816 8 0 66 100 198 52 310 52 0` = 198/310 per il mostro 313816).
+Anche il contratto è pronto: `Resource.Fraction` rappresenta una frazione
+i cui estremi sono ignoti. Quel che manca è idraulica dentro
+`NosAi.Runtime`, in due passi — allargare `EntitySighting`, poi proiettare
+i `Mob` — specificata in
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_mob_absolute_vitals.md`.
+Verificare "l'MP del player è sceso dopo una skill" è onestamente
+costruibile oggi (i vitali del player sono già fusi, AP-02); verificare
+"l'HP del mob bersaglio è sceso dopo un attacco" non lo è **ancora**, ma
+per quell'idraulica mancante, non per un gap di percezione.
 
 **Decisione: AP-05/A2+A4 non è ancora pronto per una specifica precisa
 come `--scout`.** Serve prima una decisione esplicita su una di due

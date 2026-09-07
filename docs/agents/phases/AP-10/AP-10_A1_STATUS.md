@@ -128,9 +128,14 @@ recovery counterpart of EngageCommand", e
 come specchio di `ResourceCostConfirmed` nello stesso enum
 `CombatExecutionResult`. Ma il blocco che la riga cita — "nessun dato
 reale di danno/costo skill" nel senso di confermare un colpo sul
-bersaglio — resta intatto: `CombatExecutionContracts.cs:59-62` dichiara
-ancora oggi che `Mob.Status.Resources` non è popolato (stesso gap
-OCR/ONNX di AP-02); né `--engage` né `--recover` osservano mai il
+bersaglio — resta intatto: `CombatExecutionContracts.cs` dichiara
+ancora oggi che `Mob.Status.Resources` non è popolato — ma **non più per
+il gap OCR/ONNX** che questa riga citava: Q-097 (commit `49937d4`) ha
+verificato che `st` porta già la coppia HP assoluta del bersaglio e che
+`Resource.Fraction` copre il caso in cui porti solo una percentuale;
+quel che manca è idraulica dentro `NosAi.Runtime`
+(`AP-05_A2A4_DEEPSEEK_mob_absolute_vitals.md`). Né `--engage` né
+`--recover` osservano mai il
 bersaglio, solo le risorse del player (`RecoverCommand.cs:161-166`
 rifiuta ogni `CombatActionKind` diverso da `UseConsumable`). Indipendente
 da `--recover`: la riga cita ancora `AP-05_A1_STATUS.md` ("A2+A4 non

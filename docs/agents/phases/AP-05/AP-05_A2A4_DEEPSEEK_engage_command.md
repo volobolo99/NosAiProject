@@ -11,6 +11,17 @@ problem no contract-writing task here can close; waiting on it would block
 AP-05's execute/verify stages indefinitely for no gain the honest scope
 below cannot already deliver.
 
+> **Correction, added by Q-097 (commit `49937d4`).** The sentence above is
+> wrong about *why* path (b) was blocked, and is kept only as the record of
+> what this task was told. Path (b) never needed OCR/ONNX: the network wire
+> already carries a target's health twice over (`in`'s `hp%`, and `st`'s
+> absolute current/maximum pair, which `NosTaleWorldProtocolDecoder.
+> DecodeOtherVitals` reads, validates and then divides away because
+> `EntitySighting` has nowhere to keep it). The decision to ship path (a)
+> first still stands on its own merits; the blocker attributed to path (b)
+> does not. See
+> `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_mob_absolute_vitals.md`.
+
 **What this buys, and what it deliberately does not:** it confirms *"this
 skill act had a resource cost"* (the player's own MP fell). It does
 **not** confirm the target was hit, damaged, or affected in any way —
