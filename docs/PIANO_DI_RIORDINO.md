@@ -247,7 +247,13 @@ invece di sopravvivere al debito che descriveva.
 >   `RetryBudgetController`: nomi che dicono a che livello stanno, così raggiungerli
 >   per sbaglio non è più silenzioso. **Resta aperto** se quegli strati vadano
 >   attaccati al runtime o tolti — ma è una decisione sull'architettura, non
->   sull'igiene dei nomi.
+>   sull'igiene dei nomi. **Presa il 2026-09-07: ADR-0028, opzione C.** Restano
+>   dove sono, e `ModuleReachability` dichiara l'irraggiungibilità deliberata e
+>   datata invece di lasciarla leggere come un debito. La ragione non è prudenza:
+>   attaccarli richiede di ridurre i fatti del World Model a `GoapFact(string,
+>   int)`, che non sa dire *sconosciuto*, e inventare quella riduzione senza un
+>   obiettivo reale da pianificare deciderebbe la domanda più difficile con
+>   l'evidenza minore.
 >
 >   La rinomina ha anche scoperto un guasto in `NosAi.Core.Safety`, che nessuno aveva
 >   letto perché nessuno lo chiamava: `_retries` è un `byte`, e il controllo guardava

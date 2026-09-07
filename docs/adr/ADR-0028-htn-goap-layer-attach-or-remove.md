@@ -1,6 +1,6 @@
 # ADR-0028 — Lo strato HTN/GOAP: attaccarlo o toglierlo
 
-**Status:** Proposed — la decisione è dell'utente, non di questo documento
+**Status:** Accepted — **opzione C**, scelta dall'utente il 2026-09-07
 **Date:** 2026-09-07
 
 ## Context
@@ -134,9 +134,17 @@ rassegna futura ci ricascherà.
 
 ## Consequences
 
-- Se l'utente sceglie **C**: aggiornare le due voci di `ModuleReachability` con
-  la data e il riferimento a questo ADR, e chiudere la voce Q-111 che le tiene
-  aperte. Nessun codice cambia.
+- **C, scelta e applicata il 2026-09-07.** Le tre voci di `ModuleReachability`
+  (`NosAi.Core.Planning`, `NosAi.Core.Planning.Goap`, `NosAi.Core.Safety`) dicono
+  ora che l'irraggiungibilità è deliberata, con la data e il rimando a questo
+  ADR; la voce Q-111 che le teneva aperte è chiusa. Nessun codice di produzione
+  è cambiato — è esattamente il punto dell'opzione C: ciò che cambia è che il
+  registro smette di leggersi come un debito.
+
+  **Ciò che riapre la questione** è un fatto, non un ripensamento: il primo
+  obiettivo che il ciclo di Gate 3 non sappia raggiungere in un passo. Quando
+  esisterà, si torna qui e si parte dall'opzione A — e il suo primo passo resta
+  quello scritto sopra, che non è codice.
 - Se sceglie **A**: il primo passo non è codice, è decidere come l'ignoto
   attraversa `GoapFact`. Prima di quello, qualunque produttore scritto sarebbe da
   riscrivere.

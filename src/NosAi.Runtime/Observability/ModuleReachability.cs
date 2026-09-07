@@ -285,15 +285,24 @@ public static class ModuleReachability
             "The HTN/GOAP layer named in CLAUDE.md's own canonical flow "
             + "(Ranking -> Strategic Orchestrator -> HTN/GOAP -> Guard). No "
             + "production file reaches it; planning that runs today is "
-            + "StrategyPlanner plus Gate3's own loop. LexicographicOrchestrator "
-            + "and DeadlinePlanner are not reached even by a test. Its goal stack, "
-            + "goal id and ranked action shadowed live types under the same names "
-            + "until 2026-09-07; they are PlannerGoalStack, PlannerGoalId and "
-            + "PlannerRankedAction now, so reaching this layer by accident is no "
-            + "longer silent. Unreached is still what it is."),
+            + "StrategyPlanner plus Gate3's own loop, and neither searches -- "
+            + "they evaluate. Its goal stack, goal id and ranked action shadowed "
+            + "live types under the same names until 2026-09-07; they are "
+            + "PlannerGoalStack, PlannerGoalId and PlannerRankedAction now, so "
+            + "reaching this layer by accident is no longer silent. "
+            + "UNREACHED ON PURPOSE, decided 2026-09-07 (ADR-0028, option C): "
+            + "attaching it is not an interface away, it needs two producers that "
+            + "do not exist -- and the second, reducing World Model facts to "
+            + "GoapFact(string, int), has no honest form yet, because GoapFact "
+            + "cannot say Unknown. Inventing that reduction without a real goal "
+            + "to plan for would decide the hardest question with the least "
+            + "evidence. Reopen when Gate 3 meets a goal it cannot reach in one "
+            + "step; today --autoplay has none."),
 
         new("NosAi.Core.Planning.Goap", ModuleReach.Unreferenced,
-            "The GOAP half of the layer above, unreached for the same reason."),
+            "The GOAP half of the layer above, unreached for the same reason and "
+            + "by the same decision (ADR-0028, option C). Its planner is real: "
+            + "bounded deterministic forward search, maxNodes, a FaultCode out."),
 
         new("NosAi.Core.Progression", ModuleReach.Unreferenced,
             "Character progression contracts. Gate 4 does progression in the "
@@ -305,7 +314,10 @@ public static class ModuleReachability
             + "authorization and safety'); this one is reached by tests only. Its "
             + "retry budget was called RecoveryController/RecoveryState until "
             + "2026-09-07, the same names as the authoritative circuit breaker; it "
-            + "is RetryBudgetController/RetryBudgetState now."),
+            + "is RetryBudgetController/RetryBudgetState now. UNREACHED ON PURPOSE, "
+            + "decided 2026-09-07 (ADR-0028, option C): it is the reactive-recovery "
+            + "end of the same sentence in CLAUDE.md that names HTN/GOAP, and it "
+            + "moves when that layer does."),
 
         new("NosAi.Core.Scheduling", ModuleReach.Unreferenced,
             "887 lines of tier queue and async execution, the largest unreached "

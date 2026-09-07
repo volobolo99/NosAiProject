@@ -86,7 +86,11 @@ public sealed class DuplicateTypeNameTests
             // NosAi.Core.Safety sono RetryBudgetState e RetryBudgetController --
             // nomi che dicono a che livello stanno, cosi' nessuno li raggiunge
             // per sbaglio credendo di avere in mano quelli autoritativi del
-            // runtime. Resta aperto se quegli strati vadano poi attaccati o tolti.
+            // runtime. Se quegli strati vadano attaccati o tolti e' **deciso**
+            // dal 2026-09-07: ADR-0028, opzione C -- restano dove sono, e
+            // ModuleReachability lo dichiara deliberato invece di lasciarlo
+            // leggere come un debito. Si riapre quando Gate 3 incontra un
+            // obiettivo che non sa raggiungere in un passo, non prima.
             ["Goal"] =
                 "vivo in entrambi: NosAi.Core.WorldModel (il contratto del World Model) e "
                 + "NosAi.Runtime.Autonomy (l'obiettivo dello stack di Gate 3). Non e' un gemello morto, "
