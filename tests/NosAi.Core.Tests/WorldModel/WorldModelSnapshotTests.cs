@@ -24,6 +24,53 @@ public sealed class WorldModelSnapshotTests
         Assert.Equal(0, snapshot.Version);
     }
 
+    /// <summary>
+    /// The snapshot that knows nothing asserts nothing about the character's
+    /// four collections either.
+    /// </summary>
+    /// <remarks>
+    /// It used to. Every <see cref="WorldFact{T}"/> on the player was
+    /// <c>Unknown(reason)</c> while <c>Skills</c>, <c>Cooldowns</c>,
+    /// <c>Inventory</c> and <c>Equipment</c> were empty arrays -- four positive
+    /// claims, in the one object whose name says it has no information: this
+    /// character has no abilities, nothing on cooldown, nothing carried and
+    /// nothing worn. <c>docs/adr/ADR-0027</c>.
+    /// </remarks>
+    [Fact]
+    public void Unknown_DoesNotClaimTheCharacterHasNoSkillsOrEquipment()
+    {
+        var snapshot = WorldModelSnapshot.Unknown("no_fusion_cycle_yet");
+
+        Assert.False(snapshot.Player.Skills.HasValue);
+        Assert.False(snapshot.Player.Cooldowns.HasValue);
+        Assert.False(snapshot.Player.Inventory.HasValue);
+        Assert.False(snapshot.Player.Equipment.HasValue);
+
+        Assert.Equal("no_fusion_cycle_yet", snapshot.Player.Skills.Reason);
+        Assert.Equal("no_fusion_cycle_yet", snapshot.Player.Equipment.Reason);
+    }
+
+    /// <summary>
+    /// An Unknown fact's value is <c>default(T)</c>, and for an
+    /// <see cref="EquatableArray{T}"/> that is a struct whose backing
+    /// <c>ImmutableArray</c> is itself default -- a state in which every one of
+    /// its members used to throw. Hashing or comparing a snapshot holding one
+    /// must not.
+    /// </summary>
+    [Fact]
+    public void ASnapshotHoldingUnknownCollections_CanBeHashedAndCompared()
+    {
+        // Lo stesso istante per entrambe: senza, Unknown si timbra con UtcNow e
+        // le due differirebbero legittimamente sul tempo, non sulle collezioni.
+        var a = WorldModelSnapshot.Unknown("no_fusion_cycle_yet", Now);
+        var b = WorldModelSnapshot.Unknown("no_fusion_cycle_yet", Now);
+
+        Assert.Equal(a.GetHashCode(), b.GetHashCode());
+        Assert.Equal(a, b);
+        Assert.Empty(a.Player.Skills.Value);
+        Assert.Empty(a.Player.Inventory.Value);
+    }
+
     private static WorldModelSnapshot BuildFusedSnapshot()
     {
         var player = new Player(
@@ -35,10 +82,10 @@ public sealed class WorldModelSnapshotTests
             new CombatantStatus(
                 EquatableArray<Resource>.From(new[] { new Resource(ResourceKind.Health, WorldFact<double>.Live(100, 1.0, Now), WorldFact<double>.Live(100, 1.0, Now)) }),
                 EquatableArray<StatusEffect>.Empty),
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, Now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
 
         var map = new MapModel(
             new MapId("map-1"),

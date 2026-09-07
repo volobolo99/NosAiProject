@@ -213,15 +213,50 @@ public sealed class QuestGraphPlannerTests
         var travelTarget = new QuestObjectiveTarget(QuestObjectiveKind.Travel, position: new WorldPosition(1f, 1f));
 
         Assert.Throws<ArgumentException>(() =>
-            QuestGraphPlanner.AssessCollectProgress(travelTarget, EquatableArray<InventoryItem>.Empty, Now));
+            QuestGraphPlanner.AssessCollectProgress(travelTarget, WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now), Now));
     }
 
+    /// <summary>
+    /// An inventory nobody has read is Unknown, and says so with the fact's own
+    /// reason rather than a reason naming two possibilities at once.
+    /// </summary>
     [Fact]
-    public void AssessCollectProgress_EmptyInventory_IsUnknown_NotZero()
+    public void AssessCollectProgress_UnobservedInventory_IsUnknown_NotZero()
     {
-        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, EquatableArray<InventoryItem>.Empty, Now);
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(
+            CollectTarget,
+            WorldFact<EquatableArray<InventoryItem>>.Unknown("inventory_never_read", Now),
+            Now);
 
         Assert.False(result.HasValue);
+        Assert.Equal("inventory_never_read", result.Reason);
+    }
+
+    /// <summary>
+    /// An inventory that <b>was</b> read and is empty is a known zero, not an
+    /// Unknown.
+    /// </summary>
+    /// <remarks>
+    /// This assertion used to be its opposite, and had to be: while
+    /// <c>Player.Inventory</c> was a bare array the two cases were the same
+    /// empty array, so the method refused both together with the reason
+    /// <c>inventory_not_observed_or_confirmed_empty</c> -- naming two
+    /// possibilities because it could not tell them apart, and reporting a
+    /// genuinely empty backpack as Unknown. <c>docs/adr/ADR-0027</c> made the
+    /// distinction observable; this is the case that changed answer, and it
+    /// changed to the true one.
+    /// </remarks>
+    [Fact]
+    public void AssessCollectProgress_ObservedEmptyInventory_IsAKnownZero()
+    {
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(
+            CollectTarget,
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+            Now);
+
+        Assert.True(result.HasValue);
+        Assert.Equal(0, result.Value);
+        Assert.Equal("item_absent_from_observed_inventory", result.Reason);
     }
 
     [Fact]
@@ -232,7 +267,7 @@ public sealed class QuestGraphPlannerTests
             BuildSlot("9999", quantity: 3, slot: 0),
         });
 
-        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, WorldFact<EquatableArray<InventoryItem>>.Live(inventory, 1d, Now), Now);
 
         Assert.True(result.HasValue);
         Assert.Equal(0, result.Value);
@@ -246,7 +281,7 @@ public sealed class QuestGraphPlannerTests
             BuildSlot(TargetItem.Value, quantity: 5, slot: 0),
         });
 
-        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, WorldFact<EquatableArray<InventoryItem>>.Live(inventory, 1d, Now), Now);
 
         Assert.True(result.HasValue);
         Assert.Equal(5, result.Value);
@@ -262,7 +297,7 @@ public sealed class QuestGraphPlannerTests
             BuildSlot("9999", quantity: 1, slot: 7),
         });
 
-        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, WorldFact<EquatableArray<InventoryItem>>.Live(inventory, 1d, Now), Now);
 
         Assert.True(result.HasValue);
         Assert.Equal(7, result.Value);
@@ -277,7 +312,7 @@ public sealed class QuestGraphPlannerTests
             BuildSlot(TargetItem.Value, quantity: null, slot: 4),
         });
 
-        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, inventory, Now);
+        WorldFact<int> result = QuestGraphPlanner.AssessCollectProgress(CollectTarget, WorldFact<EquatableArray<InventoryItem>>.Live(inventory, 1d, Now), Now);
 
         Assert.False(result.HasValue);
     }

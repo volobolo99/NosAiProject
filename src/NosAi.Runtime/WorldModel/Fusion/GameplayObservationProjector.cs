@@ -49,6 +49,12 @@ public static class GameplayObservationProjector
     /// <summary>Reason recorded on the bounds of an entity's health when the wire stated them in points.</summary>
     public const string AbsoluteVitalsReason = "st_states_current_and_maximum_hp";
 
+    /// <summary>Reason <see cref="Player.Skills"/> carries: no observation channel in this project reads the character's abilities.</summary>
+    public const string SkillListNeverReadReason = "skill_list_never_read:no_observation_channel";
+
+    /// <summary>Reason <see cref="Player.Equipment"/> carries: no observation channel in this project reads what the character wears into the World Model.</summary>
+    public const string EquipmentNeverReadReason = "equipment_never_read:no_observation_channel";
+
     /// <summary>
     /// Reason recorded on every health-derived fact of a projected entity:
     /// <see cref="SelectableEntity.ObservedAtUtc"/> is the instant its
@@ -98,19 +104,27 @@ public static class GameplayObservationProjector
             }),
             EquatableArray<StatusEffect>.Empty);
 
-        EquatableArray<Cooldown> cooldowns = observation.SkillsReady.HasValue
-            ? EquatableArray<Cooldown>.From(observation.SkillsReady.Value.Select(ready => new Cooldown(
-                new SkillId(ready.Slot.ToString(CultureInfo.InvariantCulture)),
-                ClassifiedValueBridge.WithSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc))))
-            : EquatableArray<Cooldown>.Empty;
+        WorldFact<EquatableArray<Cooldown>> cooldowns = observation.SkillsReady.HasValue
+            ? ClassifiedValueBridge.WithSource(
+                observation.SkillsReady.Source,
+                EquatableArray<Cooldown>.From(observation.SkillsReady.Value.Select(ready => new Cooldown(
+                    new SkillId(ready.Slot.ToString(CultureInfo.InvariantCulture)),
+                    ClassifiedValueBridge.WithSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc)))),
+                observation.SkillsReady.ObservedAtUtc)
+            : WorldFact<EquatableArray<Cooldown>>.Unknown(
+                observation.SkillsReady.FailureReason ?? "skills_ready_not_published", nowUtc);
 
-        EquatableArray<InventoryItem> inventory = observation.Inventory.HasValue
-            ? EquatableArray<InventoryItem>.From(observation.Inventory.Value.Select(slot => new InventoryItem(
-                new ItemId(slot.Vnum.ToString(CultureInfo.InvariantCulture)),
-                WorldFact<string>.Unknown("item_name_catalog_not_available", slot.ObservedAtUtc),
-                ClassifiedValueBridge.WithSource(slot.Source, slot.Amount, slot.ObservedAtUtc),
-                ClassifiedValueBridge.WithSource(slot.Source, slot.Slot, slot.ObservedAtUtc))))
-            : EquatableArray<InventoryItem>.Empty;
+        WorldFact<EquatableArray<InventoryItem>> inventory = observation.Inventory.HasValue
+            ? ClassifiedValueBridge.WithSource(
+                observation.Inventory.Source,
+                EquatableArray<InventoryItem>.From(observation.Inventory.Value.Select(slot => new InventoryItem(
+                    new ItemId(slot.Vnum.ToString(CultureInfo.InvariantCulture)),
+                    WorldFact<string>.Unknown("item_name_catalog_not_available", slot.ObservedAtUtc),
+                    ClassifiedValueBridge.WithSource(slot.Source, slot.Amount, slot.ObservedAtUtc),
+                    ClassifiedValueBridge.WithSource(slot.Source, slot.Slot, slot.ObservedAtUtc)))),
+                observation.Inventory.ObservedAtUtc)
+            : WorldFact<EquatableArray<InventoryItem>>.Unknown(
+                observation.Inventory.FailureReason ?? "inventory_not_published", nowUtc);
 
         EquatableArray<Drop> drops = observation.GroundItems.HasValue
             ? EquatableArray<Drop>.From(observation.GroundItems.Value.Select(item => new Drop(
@@ -127,10 +141,14 @@ public static class GameplayObservationProjector
             isAlive,
             currentMap,
             status,
-            EquatableArray<Skill>.Empty,
+            // No observation channel in this project reads either list. Stated
+            // as Unknown with the reason rather than as an empty array, so a
+            // reader is told nothing was looked for instead of being told the
+            // character has no abilities and wears nothing.
+            WorldFact<EquatableArray<Skill>>.Unknown(SkillListNeverReadReason, nowUtc),
             cooldowns,
             inventory,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<EquipmentItem>>.Unknown(EquipmentNeverReadReason, nowUtc));
 
         MapModel map = observation.MapId.HasValue
             ? new MapModel(

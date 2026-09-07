@@ -46,10 +46,16 @@ public sealed record WorldModelSnapshot(
             WorldFact<bool>.Unknown(reason, now),
             WorldFact<MapId>.Unknown(reason, now),
             CombatantStatus.Empty,
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+
+            // Four Unknowns, not four empty lists. A snapshot whose every other
+            // fact is Unknown(reason) used to assert, positively, that the
+            // character had no skills, no cooldowns, nothing carried and nothing
+            // worn -- four claims nobody had observed, in the one object whose
+            // name says it knows nothing.
+            WorldFact<EquatableArray<Skill>>.Unknown(reason, now),
+            WorldFact<EquatableArray<Cooldown>>.Unknown(reason, now),
+            WorldFact<EquatableArray<InventoryItem>>.Unknown(reason, now),
+            WorldFact<EquatableArray<EquipmentItem>>.Unknown(reason, now));
 
         return new WorldModelSnapshot(
             Version: 0,

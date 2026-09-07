@@ -438,10 +438,10 @@ public sealed class EngageCommandTests
             WorldFact<bool>.Unknown("alive_not_read", now),
             WorldFact<MapId>.Unknown("map_not_read", now),
             CombatantStatus.Empty,
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, now));
 
         var mob = new Mob(
             new EntityId("mob-1"),
@@ -476,10 +476,10 @@ public sealed class EngageCommandTests
             WorldFact<bool>.Unknown("alive_not_read", now),
             WorldFact<MapId>.Unknown("map_not_read", now),
             CombatantStatus.Empty,
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, now));
 
         CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(
             candidate, player, EquatableArray<Mob>.Empty);

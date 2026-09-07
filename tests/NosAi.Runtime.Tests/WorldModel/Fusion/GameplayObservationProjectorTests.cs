@@ -25,9 +25,9 @@ public sealed class GameplayObservationProjectorTests
         Assert.False(snapshot.Player.IsAlive.HasValue);
         Assert.False(snapshot.Map.Name.HasValue);
         Assert.Equal(GameplayObservationProjector.UnknownMapSentinelId, snapshot.Map.Id.Value);
-        Assert.Empty(snapshot.Player.Inventory);
+        Assert.Empty(snapshot.Player.Inventory.Value);
         Assert.Empty(snapshot.Drops);
-        Assert.Empty(snapshot.Player.Cooldowns);
+        Assert.Empty(snapshot.Player.Cooldowns.Value);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public sealed class GameplayObservationProjectorTests
 
         WorldModelSnapshot snapshot = GameplayObservationProjector.Project(observation, PlayerId, version: 1, Now);
 
-        InventoryItem item = Assert.Single(snapshot.Player.Inventory);
+        InventoryItem item = Assert.Single(snapshot.Player.Inventory.Value);
         Assert.Equal("1234", item.Id.Value);
         Assert.False(item.Name.HasValue);
         Assert.Equal(5, item.Quantity.Value);
@@ -129,7 +129,7 @@ public sealed class GameplayObservationProjectorTests
 
         WorldModelSnapshot snapshot = GameplayObservationProjector.Project(observation, PlayerId, version: 1, Now);
 
-        Cooldown cooldown = Assert.Single(snapshot.Player.Cooldowns);
+        Cooldown cooldown = Assert.Single(snapshot.Player.Cooldowns.Value);
         Assert.Equal("2", cooldown.SkillId.Value);
         Assert.False(cooldown.IsActive);
     }
@@ -150,8 +150,8 @@ public sealed class GameplayObservationProjectorTests
         Assert.Empty(snapshot.Mobs);
         Assert.Empty(snapshot.Npcs);
         Assert.Empty(snapshot.Quests);
-        Assert.Empty(snapshot.Player.Equipment);
-        Assert.Empty(snapshot.Player.Skills);
+        Assert.Empty(snapshot.Player.Equipment.Value);
+        Assert.Empty(snapshot.Player.Skills.Value);
     }
 
     [Fact]

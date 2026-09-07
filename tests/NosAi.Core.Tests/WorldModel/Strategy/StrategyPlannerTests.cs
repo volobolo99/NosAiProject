@@ -27,10 +27,10 @@ public sealed class StrategyPlannerTests
             WorldFact<bool>.Live(true, 1d, Now),
             WorldFact<MapId>.Live(TestMapId, 1d, Now),
             new CombatantStatus(resources, EquatableArray<StatusEffect>.Empty),
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, Now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
     }
 
     // ---- AssessSurvivalUrgency ----

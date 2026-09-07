@@ -16,6 +16,28 @@ public sealed record CombatantStatus(
 }
 
 /// <summary>The controlled character. Exactly one <see cref="Player"/> exists per World Model snapshot.</summary>
+/// <param name="Skills">
+/// The character's abilities, as a fact rather than a bare list.
+/// <para>
+/// These four collections are <see cref="WorldFact{T}"/> for the reason the
+/// whole namespace exists: an <see cref="EquatableArray{T}"/> alone cannot tell
+/// "nobody has read this yet" apart from "it was read, and it is empty", and the
+/// project's own invariant is that the unknown is not empty
+/// (<c>docs/adr/ADR-0027</c>). While they were bare arrays that conflation
+/// produced two real defects -- <c>CombatPlanner</c> blamed the character for a
+/// missing skill that no channel had ever looked for, and
+/// <c>--combat-report</c> could not predict <c>--engage</c> because an
+/// unobserved skill list made every candidate a basic attack.
+/// </para>
+/// <para>
+/// A reader that needs the list must ask for it (<c>HasValue</c>), and the
+/// answer to "not observed" is a refusal by name, never an empty loop that
+/// silently does nothing.
+/// </para>
+/// </param>
+/// <param name="Cooldowns">Which abilities are on cooldown. Unknown until an observation channel states it; an unknown cooldown list never reads as "nothing is on cooldown".</param>
+/// <param name="Inventory">What the character carries. Unknown and empty are different answers: see <paramref name="Skills"/>.</param>
+/// <param name="Equipment">What the character wears. Unknown and empty are different answers: see <paramref name="Skills"/>.</param>
 public sealed record Player(
     EntityId Id,
     WorldFact<WorldPosition> Position,
@@ -23,10 +45,10 @@ public sealed record Player(
     WorldFact<bool> IsAlive,
     WorldFact<MapId> CurrentMap,
     CombatantStatus Status,
-    EquatableArray<Skill> Skills,
-    EquatableArray<Cooldown> Cooldowns,
-    EquatableArray<InventoryItem> Inventory,
-    EquatableArray<EquipmentItem> Equipment)
+    WorldFact<EquatableArray<Skill>> Skills,
+    WorldFact<EquatableArray<Cooldown>> Cooldowns,
+    WorldFact<EquatableArray<InventoryItem>> Inventory,
+    WorldFact<EquatableArray<EquipmentItem>> Equipment)
 {
     /// <summary>
     /// A single shared Unknown instance for <see cref="Velocity"/>'s default.

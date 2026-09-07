@@ -33,8 +33,14 @@ public static class LoadoutPlanner
     {
         ArgumentNullException.ThrowIfNull(player);
 
+        // Nothing is proposed from a list nobody has read. Before this was a
+        // fact the same call returned an empty list, but by looping zero times
+        // over an empty array rather than by declining to guess.
         var candidates = new List<LoadoutActionCandidate>();
-        foreach (EquipmentItem item in player.Equipment)
+        if (!player.Equipment.HasValue)
+            return candidates;
+
+        foreach (EquipmentItem item in player.Equipment.Value)
         {
             if (item.IsEquipped is { HasValue: true, Value: true })
                 candidates.Add(new LoadoutActionCandidate(LoadoutActionKind.Unequip, slot: item.Slot));
@@ -60,7 +66,10 @@ public static class LoadoutPlanner
         ArgumentNullException.ThrowIfNull(resolveSlot);
 
         var candidates = new List<LoadoutActionCandidate>();
-        foreach (InventoryItem stack in player.Inventory)
+        if (!player.Inventory.HasValue)
+            return candidates;
+
+        foreach (InventoryItem stack in player.Inventory.Value)
         {
             if (stack.Quantity is not { HasValue: true, Value: > 0 })
                 continue;
@@ -78,7 +87,10 @@ public static class LoadoutPlanner
         ArgumentNullException.ThrowIfNull(player);
 
         var candidates = new List<LoadoutActionCandidate>();
-        foreach (EquipmentItem item in player.Equipment)
+        if (!player.Equipment.HasValue)
+            return candidates;
+
+        foreach (EquipmentItem item in player.Equipment.Value)
         {
             if (item.IsEquipped is { HasValue: true, Value: true })
                 candidates.Add(new LoadoutActionCandidate(LoadoutActionKind.Upgrade, item: item.Id));
@@ -101,19 +113,26 @@ public static class LoadoutPlanner
 
         var violations = new List<string>();
 
+        // A list nobody has read cannot clear a constraint. Reporting it by name
+        // keeps the refusal about the missing observation instead of blaming the
+        // character for an item they may well be carrying.
         switch (candidate.Kind)
         {
             case LoadoutActionKind.Equip:
-                CheckItemAvailable(candidate.Item!.Value, player.Inventory, violations);
-                CheckSlotOccupancy(candidate.Slot!.Value, player.Equipment, violations, requireOccupied: false);
+                if (RequireObserved(player.Inventory, "inventory_not_observed", violations))
+                    CheckItemAvailable(candidate.Item!.Value, player.Inventory.Value, violations);
+                if (RequireObserved(player.Equipment, "equipment_not_observed", violations))
+                    CheckSlotOccupancy(candidate.Slot!.Value, player.Equipment.Value, violations, requireOccupied: false);
                 break;
 
             case LoadoutActionKind.Unequip:
-                CheckSlotOccupancy(candidate.Slot!.Value, player.Equipment, violations, requireOccupied: true);
+                if (RequireObserved(player.Equipment, "equipment_not_observed", violations))
+                    CheckSlotOccupancy(candidate.Slot!.Value, player.Equipment.Value, violations, requireOccupied: true);
                 break;
 
             case LoadoutActionKind.Upgrade:
-                CheckItemEquipped(candidate.Item!.Value, player.Equipment, violations);
+                if (RequireObserved(player.Equipment, "equipment_not_observed", violations))
+                    CheckItemEquipped(candidate.Item!.Value, player.Equipment.Value, violations);
                 break;
         }
 
@@ -143,6 +162,25 @@ public static class LoadoutPlanner
         }
 
         return count;
+    }
+
+    /// <summary>
+    /// Whether a list was observed at all; records <paramref name="reason"/> as
+    /// a violation when it was not.
+    /// </summary>
+    /// <remarks>
+    /// Returns false rather than throwing so the caller keeps collecting the
+    /// other violations: an operator who sees both <c>inventory_not_observed</c>
+    /// and a real constraint failure learns more than one who sees whichever
+    /// came first.
+    /// </remarks>
+    private static bool RequireObserved<T>(WorldFact<EquatableArray<T>> fact, string reason, List<string> violations)
+    {
+        if (fact.HasValue)
+            return true;
+
+        violations.Add(reason);
+        return false;
     }
 
     private static void CheckItemAvailable(ItemId item, EquatableArray<InventoryItem> inventory, List<string> violations)

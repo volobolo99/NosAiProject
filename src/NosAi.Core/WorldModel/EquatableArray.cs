@@ -29,6 +29,22 @@ public readonly struct EquatableArray<T> : IReadOnlyList<T>, IEquatable<Equatabl
 
     public EquatableArray(ImmutableArray<T> items) => _items = items.IsDefault ? ImmutableArray<T>.Empty : items;
 
+    /// <summary>
+    /// The backing array, with the <c>default</c> struct normalised to empty.
+    /// </summary>
+    /// <remarks>
+    /// The constructor already refuses a default <see cref="ImmutableArray{T}"/>,
+    /// but <c>default(EquatableArray&lt;T&gt;)</c> does not run it: the field
+    /// stays a default <see cref="ImmutableArray{T}"/>, whose every member --
+    /// <c>Length</c> included -- throws. That state is reachable, and became
+    /// common when the World Model started holding these inside
+    /// <c>WorldFact&lt;EquatableArray&lt;T&gt;&gt;</c>: an Unknown fact's value
+    /// <i>is</i> <c>default(T)</c>, so hashing a snapshot containing one threw
+    /// <see cref="NullReferenceException"/> from <see cref="GetHashCode"/>.
+    /// Every member reads through here instead of the field.
+    /// </remarks>
+    private ImmutableArray<T> Items => _items.IsDefault ? ImmutableArray<T>.Empty : _items;
+
     /// <summary>Copies <paramref name="items"/> into a new immutable, equatable sequence.</summary>
     public static EquatableArray<T> From(IEnumerable<T> items)
     {
@@ -36,26 +52,28 @@ public readonly struct EquatableArray<T> : IReadOnlyList<T>, IEquatable<Equatabl
         return new EquatableArray<T>(ImmutableArray.CreateRange(items));
     }
 
-    public int Count => _items.Length;
+    public int Count => Items.Length;
 
-    public T this[int index] => _items[index];
+    public T this[int index] => Items[index];
 
-    public ImmutableArray<T>.Enumerator GetEnumerator() => _items.GetEnumerator();
+    public ImmutableArray<T>.Enumerator GetEnumerator() => Items.GetEnumerator();
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)_items).GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)Items).GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_items).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)Items).GetEnumerator();
 
     /// <summary>Structural equality: same length and every element equal in order, regardless of the two instances' underlying array identity.</summary>
     public bool Equals(EquatableArray<T> other)
     {
-        if (_items.Length != other._items.Length)
+        ImmutableArray<T> mine = Items;
+        ImmutableArray<T> theirs = other.Items;
+        if (mine.Length != theirs.Length)
             return false;
 
         EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-        for (int i = 0; i < _items.Length; i++)
+        for (int i = 0; i < mine.Length; i++)
         {
-            if (!comparer.Equals(_items[i], other._items[i]))
+            if (!comparer.Equals(mine[i], theirs[i]))
                 return false;
         }
 
@@ -67,7 +85,7 @@ public readonly struct EquatableArray<T> : IReadOnlyList<T>, IEquatable<Equatabl
     public override int GetHashCode()
     {
         HashCode hash = default;
-        foreach (T item in _items)
+        foreach (T item in Items)
             hash.Add(item);
         return hash.ToHashCode();
     }

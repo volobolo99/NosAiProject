@@ -19,10 +19,10 @@ public sealed class LoadoutPlannerTests
             WorldFact<bool>.Live(true, 1d, Now),
             WorldFact<MapId>.Live(new MapId("map-1"), 1d, Now),
             CombatantStatus.Empty,
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            inventory ?? EquatableArray<InventoryItem>.Empty,
-            equipment ?? EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, Now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(inventory ?? EquatableArray<InventoryItem>.Empty, 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(equipment ?? EquatableArray<EquipmentItem>.Empty, 1d, Now));
 
     private static EquipmentItem BuildEquipped(string id, EquipmentSlot slot, bool equipped = true) =>
         new(new ItemId(id), WorldFact<string>.Live(id, 1d, Now), slot, WorldFact<bool>.Live(equipped, 1d, Now));

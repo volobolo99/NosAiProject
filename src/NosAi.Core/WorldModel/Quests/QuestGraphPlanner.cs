@@ -133,22 +133,25 @@ public static class QuestGraphPlanner
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <paramref name="inventory"/> being empty is genuinely ambiguous in
-    /// this World Model: <c>Player.Inventory</c> is an
-    /// <see cref="EquatableArray{T}"/>, never a nullable list, so "nothing
-    /// has been read from the wire yet" and "the wire confirmed every slot
-    /// is empty" collapse to the same empty array -- a gap already present
-    /// one layer up, in <c>GameplayObservationProjector</c> itself, not
-    /// something this method can resolve. It does not guess: an empty
-    /// <paramref name="inventory"/> returns <c>Unknown</c>, naming both
-    /// possibilities in its reason, rather than assuming zero.
+    /// An <b>unobserved</b> inventory returns <c>Unknown</c>, carrying the
+    /// reason the fact itself gives. An <b>observed</b> one that happens to be
+    /// empty returns a known zero: the channel stated every slot, and none of
+    /// them holds this item.
+    /// </para>
+    /// <para>
+    /// Those used to be the same answer. While <c>Player.Inventory</c> was a
+    /// bare <see cref="EquatableArray{T}"/> the two collapsed into one empty
+    /// array, and this method could only refuse both together --
+    /// <c>inventory_not_observed_or_confirmed_empty</c>, a reason that named
+    /// two possibilities because it could not tell them apart. It reported a
+    /// genuinely empty backpack as Unknown, which is the mirror image of the
+    /// defect it was avoiding. <c>docs/adr/ADR-0027</c> made the distinction
+    /// observable and this paragraph is what it bought.
     /// </para>
     /// <para>
     /// A non-empty <paramref name="inventory"/> that simply does not list
-    /// <paramref name="target"/>'s item is a different, unambiguous case:
-    /// the channel is confirmed live (other slots are known), so the
-    /// absence of this one item really does mean zero of it -- returned as
-    /// a known <c>Live</c> fact, not <c>Unknown</c>.
+    /// <paramref name="target"/>'s item is the same known-zero case: the
+    /// absence of this one item really does mean zero of it.
     /// </para>
     /// <para>
     /// When the item appears in one or more slots, their
@@ -160,10 +163,11 @@ public static class QuestGraphPlanner
     /// </remarks>
     public static WorldFact<int> AssessCollectProgress(
         QuestObjectiveTarget target,
-        EquatableArray<InventoryItem> inventory,
+        WorldFact<EquatableArray<InventoryItem>> inventory,
         DateTime observedAtUtc)
     {
         ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(inventory);
         if (target.Kind != QuestObjectiveKind.Collect)
         {
             throw new ArgumentException(
@@ -171,13 +175,13 @@ public static class QuestGraphPlanner
                 nameof(target));
         }
 
-        if (inventory.Count == 0)
-            return WorldFact<int>.Unknown("inventory_not_observed_or_confirmed_empty", observedAtUtc);
+        if (!inventory.HasValue)
+            return WorldFact<int>.Unknown(inventory.Reason ?? "inventory_not_observed", observedAtUtc);
 
         ItemId item = target.Item!.Value;
         var total = 0;
         var found = false;
-        foreach (InventoryItem slot in inventory)
+        foreach (InventoryItem slot in inventory.Value)
         {
             if (!slot.Id.Equals(item))
                 continue;

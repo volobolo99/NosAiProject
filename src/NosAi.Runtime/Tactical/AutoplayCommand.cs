@@ -567,10 +567,12 @@ public static class AutoplayCommand
                     new CombatantStatus(
                         EquatableArray<Resource>.From(new[] { healthResource }),
                         EquatableArray<StatusEffect>.Empty),
-                    EquatableArray<Skill>.Empty,
-                    EquatableArray<Cooldown>.Empty,
-                    EquatableArray<InventoryItem>.Empty,
-                    EquatableArray<EquipmentItem>.Empty);
+                    // Only the two facts something below actually reads are
+                    // stated; these four are not read here and are not claimed.
+                    WorldFact<EquatableArray<Skill>>.Unknown("skill_list_not_read_by_autoplay", now),
+                    WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_not_read_by_autoplay", now),
+                    WorldFact<EquatableArray<InventoryItem>>.Unknown("inventory_not_read_by_autoplay", now),
+                    WorldFact<EquatableArray<EquipmentItem>>.Unknown("equipment_not_read_by_autoplay", now));
 
                 StrategicSignal? survival = StrategyPlanner.AssessSurvivalUrgency(playerFacts);
                 StrategicSignal? recovery = StrategyPlanner.AssessRecoveryUrgency(playerFacts, inCombat);

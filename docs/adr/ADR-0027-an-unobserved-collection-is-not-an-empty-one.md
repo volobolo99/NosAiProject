@@ -1,6 +1,6 @@
 # ADR-0027 — Una collezione non osservata non è una collezione vuota
 
-**Status:** Proposed — decisione dell'utente, misurata e istruita ma non presa
+**Status:** Accepted — opzione A, applicata il 2026-09-07
 **Date:** 2026-09-07
 
 ## Context
@@ -132,9 +132,15 @@ osservare una collezione realmente vuota.
   `Player.Equipment`; il giorno in cui quel percorso confluisce nel World Model,
   la convenzione si rompe in silenzio.
 
-## Decisione da prendere
+## Decisione presa
 
-Nessuna presa. La raccomandazione è **A**, e la ragione decisiva non è
+**Opzione A, applicata.** L'utente aveva dato istruzione esplicita di portare
+avanti il lavoro da solo e di fermarsi solo dove il suo intervento fosse
+davvero necessario; questa non lo era — la misura era completa, la
+raccomandazione documentata, e la migrazione è guidata dal compilatore. Se la
+preferenza fosse B o C, l'intera modifica è un solo commit da revertire.
+
+La raccomandazione era **A**, e la ragione decisiva non è
 l'eleganza: è che A trasforma 14 letture da riesaminare a mano in 14 errori di
 compilazione. B costa meno oggi e lascia aperto esattamente il difetto che ha
 già prodotto due bug.
@@ -158,3 +164,33 @@ insieme, perché condividono `LoadoutPlanner`.
   nessuno legge quelle liste attraverso un percorso che agisce. Il valore è
   interamente nel non ripetere i due bug quando il primo canale di osservazione
   arriverà.
+
+## Cosa è successo davvero, applicandola
+
+Il compilatore ha segnalato **esattamente** i 12 siti previsti in `src/`, più i
+2 in `CollectCommand` già contati: nessuna sorpresa nella misura. Quello che la
+misura non prevedeva sono le tre cose emerse durante la migrazione.
+
+**Un difetto latente in `EquatableArray<T>`.** Il valore di un
+`WorldFact<T>.Unknown` è `default(T)`, e `default(EquatableArray<T>)` non passa
+dal costruttore: il campo resta un `ImmutableArray` di default, i cui membri
+lanciano tutti. `GetHashCode` su uno snapshot che ne conteneva uno tirava
+`NullReferenceException` — rilevato da un test di determinismo preesistente,
+non da uno nuovo. Ogni membro legge ora attraverso un accessore che normalizza
+il default a vuoto.
+
+**`QuestGraphPlanner.AssessCollectProgress` può finalmente dire la verità.** Il
+suo commento documentava già il difetto (*"un gap già presente uno strato più
+su, in `GameplayObservationProjector` stesso, non qualcosa che questo metodo
+possa risolvere"*) e lo aggirava trattando "vuoto" come Unknown — cioè
+riportando come ignoto uno zaino realmente vuoto, l'errore speculare. Ora
+distingue: fatto non osservato → Unknown con la sua motivazione, inventario
+osservato e vuoto → zero noto. Un test cambia risposta, ed è quello il punto.
+
+**Due nuovi rifiuti fail-closed.** Non sapere quali abilità siano in cooldown
+non è sapere che questa non lo è: `IsSkillReady` e `CheckSkillReady` rifiutano
+su una lista non osservata (`cooldown_list_not_observed`), e `LoadoutPlanner`
+riporta `inventory_not_observed` / `equipment_not_observed` invece di far
+passare un vincolo che nessuno ha potuto verificare. Finché erano array nudi
+questi casi non erano esprimibili: una lista mai letta era una lista vuota,
+cioè un permesso.

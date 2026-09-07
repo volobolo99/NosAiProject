@@ -146,10 +146,13 @@ internal sealed class LiveCombatObserver : IDisposable
             new CombatantStatus(
                 EquatableArray<Resource>.From(new[] { health }),
                 EquatableArray<StatusEffect>.Empty),
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            // This observer reads client memory for position and vitals and the
+            // packet capture for entities; it reads none of these four, and says
+            // so rather than presenting four empty lists as observations.
+            WorldFact<EquatableArray<Skill>>.Unknown("skill_list_not_read_by_this_observer", nowUtc),
+            WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_not_read_by_this_observer", nowUtc),
+            WorldFact<EquatableArray<InventoryItem>>.Unknown("inventory_not_read_by_this_observer", nowUtc),
+            WorldFact<EquatableArray<EquipmentItem>>.Unknown("equipment_not_read_by_this_observer", nowUtc));
     }
 
     public void Dispose()

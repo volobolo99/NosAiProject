@@ -85,9 +85,12 @@ public static class CombatPlanner
             if (distance <= basicAttackRange)
                 candidates.Add(new CombatActionCandidate(CombatActionKind.BasicAttack, target: mob.Id));
 
-            if (distance <= skillRange)
+            // An unobserved skill list generates nothing, which is what it
+            // generated before this was a fact -- but now for a stated reason
+            // rather than because an empty array happened to loop zero times.
+            if (distance <= skillRange && player.Skills.HasValue)
             {
-                foreach (Skill skill in player.Skills)
+                foreach (Skill skill in player.Skills.Value)
                 {
                     if (IsSkillReady(skill, player.Cooldowns))
                         candidates.Add(new CombatActionCandidate(CombatActionKind.UseSkill, target: mob.Id, skill: skill.Id));
@@ -103,12 +106,24 @@ public static class CombatPlanner
         mob.IsHostile is { HasValue: true, Value: true } && mob.IsAlive is { HasValue: true, Value: true };
 
     /// <summary>Usable and not on cooldown. Unknown usability -- never assumed ready by omission.</summary>
-    public static bool IsSkillReady(Skill skill, EquatableArray<Cooldown> cooldowns)
+    /// <remarks>
+    /// An <b>unobserved</b> cooldown list is not an empty one: nobody having
+    /// read which abilities are on cooldown is not evidence that none of them
+    /// is. It answers false, so a skill is proposed only where both halves were
+    /// actually observed -- the fail-closed direction, and the one this method's
+    /// own "never assumed ready by omission" already applied to usability.
+    /// </remarks>
+    public static bool IsSkillReady(Skill skill, WorldFact<EquatableArray<Cooldown>> cooldowns)
     {
+        ArgumentNullException.ThrowIfNull(cooldowns);
+
         if (skill.IsUsable is not { HasValue: true, Value: true })
             return false;
 
-        foreach (Cooldown cooldown in cooldowns)
+        if (!cooldowns.HasValue)
+            return false;
+
+        foreach (Cooldown cooldown in cooldowns.Value)
         {
             if (cooldown.SkillId.Equals(skill.Id) && cooldown.IsActive)
                 return false;
@@ -263,8 +278,19 @@ public static class CombatPlanner
 
     private static void CheckSkillReady(SkillId skillId, Player player, List<string> violations)
     {
+        // A list nobody has read and a list that simply lacks this skill are
+        // different facts, and only the second says anything about the
+        // character. This used to be inferred from the list being empty, which
+        // was a heuristic that happened to be right only because no channel
+        // ever observed a genuinely empty one; it is now read off the fact.
+        if (!player.Skills.HasValue)
+        {
+            violations.Add("skill_list_not_observed");
+            return;
+        }
+
         Skill? found = null;
-        foreach (Skill skill in player.Skills)
+        foreach (Skill skill in player.Skills.Value)
         {
             if (skill.Id.Equals(skillId))
             {
@@ -275,20 +301,22 @@ public static class CombatPlanner
 
         if (found is not { } skillFound)
         {
-            // An empty skill list and a list that simply lacks this skill are
-            // different facts, and only the second is a statement about the
-            // character. Nothing in this project reads a character's skills
-            // yet, so on a live client the list is always empty -- reporting
-            // that as "skill_not_found" would blame the character for a gap in
-            // the observation channels. See CheckTargetConstraints' remarks.
-            violations.Add(player.Skills.Count == 0 ? "skill_list_not_observed" : "skill_not_found");
+            violations.Add("skill_not_found");
             return;
         }
 
         if (skillFound.IsUsable is not { HasValue: true, Value: true })
             violations.Add("skill_not_usable");
 
-        foreach (Cooldown cooldown in player.Cooldowns)
+        // Fail closed, for the reason IsSkillReady's remarks give: not knowing
+        // which abilities are on cooldown is not knowing that this one is off it.
+        if (!player.Cooldowns.HasValue)
+        {
+            violations.Add("cooldown_list_not_observed");
+            return;
+        }
+
+        foreach (Cooldown cooldown in player.Cooldowns.Value)
         {
             if (cooldown.SkillId.Equals(skillId) && cooldown.IsActive)
             {

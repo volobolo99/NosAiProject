@@ -44,7 +44,7 @@ public sealed class GameplayObservationProjectorBoundaryTests
 
         WorldModelSnapshot snapshot = GameplayObservationProjector.Project(observation, PlayerId, version: 1, Now);
 
-        InventoryItem item = Assert.Single(snapshot.Player.Inventory);
+        InventoryItem item = Assert.Single(snapshot.Player.Inventory.Value);
         // Not rejected, not clamped to zero, not marked Unknown -- "-5"
         // round-trips as a syntactically valid but semantically suspicious
         // ItemId. ItemId's own constructor only rejects null/empty/whitespace.
@@ -63,7 +63,7 @@ public sealed class GameplayObservationProjectorBoundaryTests
 
         WorldModelSnapshot snapshot = GameplayObservationProjector.Project(observation, PlayerId, version: 1, Now);
 
-        InventoryItem item = Assert.Single(snapshot.Player.Inventory);
+        InventoryItem item = Assert.Single(snapshot.Player.Inventory.Value);
         // A slot of -1 is a common sentinel elsewhere ("no slot"/"not
         // applicable"); the projector has no notion of that and reports it
         // as a confidently Live, HasValue == true fact rather than Unknown.
@@ -88,7 +88,7 @@ public sealed class GameplayObservationProjectorBoundaryTests
 
         WorldModelSnapshot snapshot = GameplayObservationProjector.Project(observation, PlayerId, version: 1, Now);
 
-        InventoryItem item = Assert.Single(snapshot.Player.Inventory);
+        InventoryItem item = Assert.Single(snapshot.Player.Inventory.Value);
         Assert.Equal(-3, item.Quantity.Value);
     }
 

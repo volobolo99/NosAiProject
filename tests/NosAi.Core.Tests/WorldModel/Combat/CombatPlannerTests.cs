@@ -19,10 +19,15 @@ public sealed class CombatPlannerTests
             WorldFact<bool>.Live(true, 1d, Now),
             WorldFact<MapId>.Live(new MapId("map-1"), 1d, Now),
             CombatantStatus.Empty,
-            skills ?? EquatableArray<Skill>.Empty,
-            cooldowns ?? EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            // Nessuna skill passata significa "nessuno ha letto le abilita'", non
+            // "il personaggio non ne ha": e' la distinzione che ADR-0027 ha reso
+            // esprimibile, ed e' quella che i test qui sotto verificano.
+            skills is { } observedSkills
+                ? WorldFact<EquatableArray<Skill>>.Live(observedSkills, 1d, Now)
+                : WorldFact<EquatableArray<Skill>>.Unknown("skill_list_never_read", Now),
+            WorldFact<EquatableArray<Cooldown>>.Live(cooldowns ?? EquatableArray<Cooldown>.Empty, 1d, Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
 
     private static Mob BuildMob(
         string id = "mob-1",
@@ -295,6 +300,59 @@ public sealed class CombatPlannerTests
         Assert.False(check.IsAllowed);
         Assert.Contains("skill_list_not_observed", check.ViolatedConstraints);
         Assert.DoesNotContain("skill_not_found", check.ViolatedConstraints);
+    }
+
+    /// <summary>
+    /// Non sapere quali abilita' siano in cooldown non e' sapere che questa non
+    /// lo e'. Con la lista non osservata il candidato viene rifiutato per nome.
+    /// </summary>
+    /// <remarks>
+    /// Fail-closed nella stessa direzione che <c>IsSkillReady</c> gia' applicava
+    /// all'usabilita' ignota. Finche' <c>Player.Cooldowns</c> era un array nudo
+    /// questo caso non era esprimibile: una lista mai letta era un array vuoto,
+    /// cioe' "nessun cooldown attivo", cioe' un permesso.
+    /// </remarks>
+    [Fact]
+    public void CheckHardConstraints_CooldownListNeverRead_RefusesByName()
+    {
+        var skill = BuildSkill();
+        Player player = BuildPlayer(
+            position: new WorldPosition(0f, 0f),
+            skills: EquatableArray<Skill>.From(new[] { skill }));
+        player = player with
+        {
+            Cooldowns = WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_never_read", Now)
+        };
+        var mob = BuildMob(position: new WorldPosition(1f, 0f));
+        var candidate = new CombatActionCandidate(CombatActionKind.UseSkill, target: mob.Id, skill: skill.Id);
+
+        CombatConstraintCheck check = CombatPlanner.CheckHardConstraints(
+            candidate, player, EquatableArray<Mob>.From(new[] { mob }));
+
+        Assert.False(check.IsAllowed);
+        Assert.Contains("cooldown_list_not_observed", check.ViolatedConstraints);
+    }
+
+    /// <summary>
+    /// Stessa regola sul percorso della generazione: nessun candidato skill
+    /// nasce da una lista di cooldown mai letta.
+    /// </summary>
+    [Fact]
+    public void GenerateCandidates_CooldownListNeverRead_ProposesNoSkill()
+    {
+        Player player = BuildPlayer(
+            position: new WorldPosition(0f, 0f),
+            skills: EquatableArray<Skill>.From(new[] { BuildSkill() }));
+        player = player with
+        {
+            Cooldowns = WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_never_read", Now)
+        };
+        var mob = BuildMob(position: new WorldPosition(1f, 0f));
+
+        IReadOnlyList<CombatActionCandidate> candidates =
+            CombatPlanner.GenerateCandidates(player, EquatableArray<Mob>.From(new[] { mob }));
+
+        Assert.DoesNotContain(candidates, c => c.Kind == CombatActionKind.UseSkill);
     }
 
     [Fact]

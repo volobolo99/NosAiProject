@@ -25,10 +25,15 @@ public sealed class CombatTargetConstraintTests
         WorldFact<bool>.Unknown("r", Now),
         WorldFact<MapId>.Unknown("r", Now),
         CombatantStatus.Empty,
-        EquatableArray<Skill>.From(skills),
-        EquatableArray<Cooldown>.Empty,
-        EquatableArray<InventoryItem>.Empty,
-        EquatableArray<EquipmentItem>.Empty);
+        // Nessuna skill passata = nessuno le ha lette. Il check ristretto non
+        // guarda le skill, quindi qui e' indifferente; il completo si', ed e'
+        // proprio la differenza che il test sulla proprieta' di sicurezza misura.
+        skills.Length > 0
+            ? WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.From(skills), 1d, Now)
+            : WorldFact<EquatableArray<Skill>>.Unknown("skill_list_never_read", Now),
+        WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, Now),
+        WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+        WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
 
     private static Mob MobAt(string id, double x, double y, bool? hostile = true, bool? alive = true) => new(
         new EntityId(id),

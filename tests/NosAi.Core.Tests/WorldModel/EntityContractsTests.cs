@@ -41,10 +41,10 @@ public sealed class EntityContractsTests
             new CombatantStatus(
                 EquatableArray<Resource>.From(new[] { new Resource(ResourceKind.Health, WorldFact<double>.Live(100, 1.0, Now), WorldFact<double>.Live(100, 1.0, Now)) }),
                 EquatableArray<StatusEffect>.Empty),
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
+            WorldFact<EquatableArray<Skill>>.Live(EquatableArray<Skill>.Empty, 1d, Now),
+            WorldFact<EquatableArray<Cooldown>>.Live(EquatableArray<Cooldown>.Empty, 1d, Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.Empty, 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
 
         Assert.Equal(Build(), Build());
     }
