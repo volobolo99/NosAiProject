@@ -194,6 +194,38 @@ proprio motivo, e la prova fallisce sia su un duplicato **nuovo** non dichiarato
 su una voce dichiarata che **non serve più** — così l'elenco si accorcia da solo
 invece di sopravvivere al debito che descriveva.
 
+> **Aggiornamento 2026-09-07 — la misura guardava un assembly solo.**
+> `RuntimeTypes()` interrogava `typeof(DataSourceKind).Assembly`, cioè il solo
+> `NosAi.Runtime`: non vedeva `NosAi.Core`, `NosAi.Security`, `NosAi.Protocol` né
+> `NosAi.ControlPanel` (che il progetto di test non referenzia nemmeno, essendo
+> un'applicazione WPF). È lo stesso difetto che `ModuleReachability` aveva, corretto
+> lo stesso giorno e allo stesso modo: ora legge il sorgente di tutto `src/`, lo
+> stesso insieme di file, così i due registri non possono discordare su cosa esiste.
+>
+> Allargata, la misura dice **diciotto**. Le nuove non sono rumore:
+>
+> - **`SequenceGuard`** — due politiche anti-replay diverse sotto un nome. Quella di
+>   `NosAi.Protocol` (`WireProtocol.cs:229`) è un contatore monotono stretto che
+>   accetta solo la sequenza esatta successiva; quella di `NosAi.Security`
+>   (`SequenceGuard.cs:11`) è una finestra scorrevole da 1024 bit che accetta il fuori
+>   ordine. È esattamente il danno che il paragrafo qui sopra descrive con i due
+>   `SafetyGate`, su una primitiva di sicurezza, e nessuno poteva vederlo.
+> - **Cinque gemelli morti** che ombreggiano un tipo vivo — `GoalStack`, `GoalId`,
+>   `RankedAction` (in `NosAi.Core.Planning`), `RecoveryController` e `RecoveryState`
+>   (in `NosAi.Core.Safety`). In ognuno il vivo è quello che `Gate3Runtime` compone e
+>   il morto sta in un namespace che `ModuleReachability` dichiara irraggiungibile:
+>   scrivere `using` su quello e usare il nome compila e prende la copia sbagliata.
+> - **`Goal`** — vivo in entrambi (`NosAi.Core.WorldModel` e
+>   `NosAi.Runtime.Autonomy`). Ha già prodotto un `CS0104` in
+>   `GameplayObservationProjector`, che lo aggira con tre alias `using`.
+> - `WorldState` e `MapBounds`, stesso concetto definito due volte; `Goal`,
+>   `NoiseHandshakeState` e le due metà del bridge del Control Panel, dichiarate per
+>   quello che sono.
+>
+> `ScreenPoint` è uscito dall'elenco: il suo gemello stava in
+> `NosAi.Raids.Orchestration`, rimosso lo stesso giorno insieme ad altri cinque moduli
+> che nulla — né produzione, né test, né suite di certificazione — referenziava.
+
 ---
 
 ### `R2` — Sciogliere `AutonomyPipeline.cs`

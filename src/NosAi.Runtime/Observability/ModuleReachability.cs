@@ -180,10 +180,12 @@ public static class ModuleReachability
             + "without keeping the SIMULATED label would be the worse outcome."),
 
         new("NosAi.Economy.Inventory", ModuleReach.SuiteOnly,
-            "Reached only from NosAiCapabilityKernel, which is itself in an "
-            + "unreferenced namespace — so the direct reference is not a path. It "
-            + "also has no real input: inventory and prices come from the game, and "
-            + "the gameplay provider reports UNKNOWN until a protocol map exists."),
+            "Reached by the certification suite registry and nothing else. It used "
+            + "to have one more referrer, NosAiCapabilityKernel, which was itself "
+            + "in a namespace nothing reached -- the composer nobody composed, "
+            + "removed as dead. It also has no real input: inventory and prices "
+            + "come from the game, and the gameplay provider reports UNKNOWN until "
+            + "a protocol map exists."),
 
         new("NosAi.Hardware.Autoscale", ModuleReach.SuiteOnly,
             "Duplicates in intent what NosAi.Runtime.Hardware does in fact: the "
@@ -251,11 +253,6 @@ public static class ModuleReachability
             "Adaptive knowledge contracts, reached only from a mission-strategy "
             + "adapter that is itself unreached."),
 
-        new("NosAi.Core.Perception", ModuleReach.Unreferenced,
-            "18 lines, one file, and the only namespace in this register that "
-            + "not even a test references. Perception in production is "
-            + "NosAi.Runtime.Perception."),
-
         new("NosAi.Core.Planning", ModuleReach.Unreferenced,
             "The HTN/GOAP layer named in CLAUDE.md's own canonical flow "
             + "(Ranking -> Strategic Orchestrator -> HTN/GOAP -> Guard). No "
@@ -291,9 +288,6 @@ public static class ModuleReachability
             + "own certification suites. Unreached by production, like Gate6 -- "
             + "but unlike Gate6 it is not even reached by the suite registry."),
 
-        new("NosAi.Events.InstantBattle", ModuleReach.Unreferenced,
-            "Instant Combat and timed events. No caller and no suite."),
-
         new("NosAi.LiveIntegration.Capture", ModuleReach.Integrated,
             "The traffic capture engine: WinDivert source, IPv4/TCP parser, "
             + "reassembly, .noscap record and replay, analyser. Reached from "
@@ -302,26 +296,11 @@ public static class ModuleReachability
             + "the operator's decision under ADR-0014: with no endpoint the "
             + "channel is not built and gameplay keeps reporting UNKNOWN."),
 
-        new("NosAi.Raids.Orchestration", ModuleReach.Unreferenced,
-            "A second raid module beside NosAi.Raids.Dodekatheon, and the one "
-            + "without even a suite."),
-
-        new("NosAi.Runtime.Capabilities", ModuleReach.Unreferenced,
-            "NosAiCapabilityKernel, which composes Economy and Navigation. It is "
-            + "the reason both of those look integrated from a direct reference "
-            + "count and are not: nothing composes the composer."),
-
         new("NosAi.Runtime.Learning", ModuleReach.Unreferenced,
             "PredictionLedger. It only learns from LIVE outcomes by design, and "
             + "there are no LIVE gameplay outcomes to learn from yet, so wiring it "
             + "now would give it nothing to do."),
 
-        new("NosAi.Runtime.PlayAi", ModuleReach.Unreferenced,
-            "Fifteen lines with no caller."),
-
-        new("NosAi.Runtime.Telemetry", ModuleReach.Unreferenced,
-            "Superseded in practice by the durable event log in Gate 2, which is "
-            + "what the runtime records through."),
     ];
 
     /// <summary>Modules at a given reach, in declaration order.</summary>

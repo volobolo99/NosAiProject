@@ -1,5 +1,4 @@
-using System.Reflection;
-using NosAi.Runtime.Contracts;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -66,8 +65,71 @@ public sealed class DuplicateTypeNameTests
             // TelegraphPoint.
             ["CaptureFrame"] =
                 "scoperto da R1: due definizioni di un fotogramma catturato (Capture, Perception); da decidere",
-            ["ScreenPoint"] =
-                "scoperto da R1: due definizioni di un punto sullo schermo (Raids, Humanizer); da decidere",
+            // --- visti solo da quando la scansione legge tutta la produzione ---
+            // Nessuno di questi era visibile finché il controllo interrogava il
+            // solo assembly NosAi.Runtime. Sono la categoria peggiore: in ognuno
+            // il gemello sta in un namespace che ModuleReachability dichiara
+            // irraggiungibile, quindi scrivere `using` su quello e usare il nome
+            // compila, gira e prende in silenzio la copia che nessuno chiama.
+            ["GoalStack"] =
+                "pericolo: il vivo è NosAi.Runtime.Autonomy (lo compone Gate3Runtime), il gemello morto "
+                + "è in NosAi.Core.Planning; rimozione da decidere, Q-111",
+            ["Goal"] =
+                "vivo in entrambi: NosAi.Core.WorldModel (il contratto del World Model) e "
+                + "NosAi.Runtime.Autonomy (l'obiettivo dello stack di Gate 3). Non e' un gemello morto, "
+                + "e' un vero scontro di nomi fra due tipi in uso -- ha gia' prodotto un CS0104 in "
+                + "GameplayObservationProjector, che lo aggira con tre alias using. Da decidere: "
+                + "rinominare uno dei due, o dichiarare che gli alias sono la risposta",
+            ["GoalId"] =
+                "pericolo: vivo in NosAi.Core.WorldModel, gemello morto in NosAi.Core.Planning; Q-111",
+            ["RankedAction"] =
+                "pericolo: vivo in NosAi.Runtime.Tactical, gemello morto in NosAi.Core.Planning; Q-111",
+            ["RecoveryController"] =
+                "pericolo: il vivo è NosAi.Runtime.Safety (lo tiene Gate3ExecutionOrchestrator), il "
+                + "gemello morto è in NosAi.Core.Safety; Q-111",
+            ["RecoveryState"] =
+                "pericolo: vivo in NosAi.Runtime.Safety, gemello morto in NosAi.Core.Safety; Q-111",
+
+            // --- due comportamenti sotto un nome, ed e' il caso che R1 teme ----
+            // Il commento in testa a questa classe descrive il danno con i due
+            // SafetyGate: stesso nome, due politiche, mesi senza che nessuno se ne
+            // accorgesse. Questo e' lo stesso, su una primitiva anti-replay, ed era
+            // invisibile finche' la scansione leggeva un assembly solo.
+            ["SequenceGuard"] =
+                "PERICOLO, due politiche anti-replay diverse: quella di NosAi.Protocol "
+                + "(WireProtocol.cs:229) e' un contatore monotono stretto che accetta solo la sequenza "
+                + "esatta successiva e rifiuta ogni salto come sequence_gap; quella di NosAi.Security "
+                + "(SequenceGuard.cs:11) e' una finestra scorrevole da 1024 bit che accetta il fuori "
+                + "ordine dentro la finestra. Chi legge un file solo non ha alcun indizio che l'altro "
+                + "esista. Da decidere quale politica vale, Q-111",
+
+            // --- stesso concetto definito due volte, senza divergenza nota ----
+            ["WorldState"] =
+                "stesso concetto due volte: il record di NosAi.Core e quello di NosAi.Runtime.WorldModel; "
+                + "da decidere quale e' canonico",
+            ["MapBounds"] =
+                "stesso concetto due volte: il record struct di NosAi.Core.WorldModel e quello di "
+                + "NosAi.LiveIntegration; da decidere",
+
+            // --- stesso sostantivo, concetti diversi ---------------------------
+            ["NoiseHandshakeState"] =
+                "atteso: in NosAi.Runtime.Security e' la macchina a stati dell'handshake (sealed class, "
+                + "IDisposable), in NosAi.Security e' l'etichetta dello stato (enum : byte). Due cose "
+                + "diverse che condividono un sostantivo, non una duplicazione",
+
+            // --- doppi per la stessa ragione documentata altrove ---------------
+            ["DataSourceKind"] =
+                "deciso da ADR-0026: una dichiarazione per bounded context, perché NosAi.Core non ha "
+                + "dipendenze e ospita più domini che non devono importarsi a vicenda",
+            ["ClassifiedValue"] =
+                "deciso da ADR-0026 insieme a DataSourceKind: ne è l'involucro e lo accompagna",
+            ["CognitiveObservabilityRegistry"] =
+                "atteso: il Control Panel è un'applicazione, e questa è la metà WPF di un bridge la cui "
+                + "metà runtime porta lo stesso nome di proposito",
+            ["CognitiveRuntimeTraceBridge"] = "atteso: l'altra metà dello stesso bridge",
+            ["InventorySlot"] =
+                "atteso: lo slot di NosAi.Economy.Inventory accanto all'ActionTarget.InventorySlot con "
+                + "cui il runtime indirizza un atto — concetti diversi che condividono un sostantivo",
 
             // Un punto d'ingresso per eseguibile è normale; ne resta attivo uno
             // solo, fissato da StartupObject nel .csproj. Dichiarato perché la
@@ -155,11 +217,10 @@ public sealed class DuplicateTypeNameTests
     {
         var byName = new Dictionary<string, SortedSet<string>>(StringComparer.Ordinal);
 
-        foreach (Type type in RuntimeTypes())
+        foreach ((string name, string ns) in RuntimeTypes())
         {
-            string ns = type.Namespace ?? "<globale>";
-            if (!byName.TryGetValue(type.Name, out SortedSet<string>? namespaces))
-                byName[type.Name] = namespaces = new SortedSet<string>(StringComparer.Ordinal);
+            if (!byName.TryGetValue(name, out SortedSet<string>? namespaces))
+                byName[name] = namespaces = new SortedSet<string>(StringComparer.Ordinal);
             namespaces.Add(ns);
         }
 
@@ -173,17 +234,77 @@ public sealed class DuplicateTypeNameTests
 
     private static string[] NamespacesDeclaring(string typeName) => RuntimeTypes()
         .Where(t => t.Name == typeName)
-        .Select(t => t.Namespace ?? "<globale>")
+        .Select(t => t.Namespace)
         .Distinct(StringComparer.Ordinal)
         .OrderBy(ns => ns, StringComparer.Ordinal)
         .ToArray();
 
-    private static IEnumerable<Type> RuntimeTypes() =>
-        typeof(DataSourceKind).Assembly
-            .GetTypes()
-            .Where(t => t.IsPublic && !t.IsNested && !IsCompilerGenerated(t));
+    /// <summary>
+    /// Ogni tipo pubblico dichiarato nella produzione, col proprio namespace.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Legge il sorgente, non gli assembly caricati. La versione precedente
+    /// interrogava <c>typeof(DataSourceKind).Assembly</c>, cioè il solo
+    /// <c>NosAi.Runtime</c>: non vedeva <c>NosAi.Core</c>, e quindi non poteva
+    /// vedere i due duplicati che contano di più —
+    /// <c>NosAi.Core.Planning.GoalStack</c> accanto al
+    /// <c>NosAi.Runtime.Autonomy.GoalStack</c> che <c>Gate3Runtime</c> compone, e
+    /// <c>NosAi.Core.Safety.RecoveryController</c> accanto a quello che la stessa
+    /// classe tiene. È lo stesso difetto che <c>ModuleReachabilityTests</c> aveva
+    /// e che è stato corretto allo stesso modo: un controllo ristretto a un
+    /// progetto è cieco su tutto ciò che gli sta fuori.
+    /// </para>
+    /// <para>
+    /// La reflection non poteva bastare nemmeno allargandola: <c>NosAi.ControlPanel</c>
+    /// è un'applicazione WPF che il progetto di test non referenzia, quindi il suo
+    /// assembly non è caricabile qui. Il sorgente sì.
+    /// </para>
+    /// <para>
+    /// Stesso insieme di file che legge <c>ModuleReachabilityTests</c> — tutto
+    /// <c>src/</c> tranne il progetto congelato da ADR-0025 — così i due registri
+    /// non possono discordare su cosa esiste.
+    /// </para>
+    /// </remarks>
+    private static IEnumerable<(string Name, string Namespace)> RuntimeTypes()
+    {
+        foreach (string file in ProductionSources())
+        {
+            string source = File.ReadAllText(file);
+            Match ns = Regex.Match(source, @"^\s*namespace\s+([\w.]+)", RegexOptions.Multiline);
+            if (!ns.Success) continue;
 
-    private static bool IsCompilerGenerated(Type type) =>
-        type.Name.Contains('<', StringComparison.Ordinal)
-        || type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() is not null;
+            foreach (Match type in PublicType.Matches(source))
+                yield return (type.Groups[1].Value, ns.Groups[1].Value);
+        }
+    }
+
+    /// <summary>Riconosce una dichiarazione di tipo pubblico e ne cattura il nome.</summary>
+    /// <remarks>
+    /// <c>record struct</c> e <c>readonly record struct</c> sono riconosciuti prima
+    /// di <c>record</c> nudo, altrimenti il nome catturato è la parola
+    /// <c>struct</c>: la prima stesura di questa scansione riportava un tipo
+    /// chiamato «struct» dichiarato in novanta file.
+    /// </remarks>
+    private static readonly Regex PublicType = new(
+        @"^\s*public\s+(?:(?:sealed|abstract|static|partial|readonly|unsafe)\s+)*"
+        + @"(?:record\s+struct|record\s+class|class|record|struct|interface|enum)\s+(\w+)",
+        RegexOptions.Multiline | RegexOptions.Compiled);
+
+    private static string[] ProductionSources()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "NosAi.sln")))
+            directory = directory.Parent;
+        Assert.True(directory is not null, "Radice del repository non trovata: nessun NosAi.sln sopra l'assembly di test.");
+
+        string src = Path.Combine(directory!.FullName, "src");
+        return Directory
+            .EnumerateDirectories(src)
+            .Where(d => Path.GetFileName(d) != "NosAi.GuardAi.App")
+            .SelectMany(d => Directory.EnumerateFiles(d, "*.cs", SearchOption.AllDirectories))
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                     && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .ToArray();
+    }
 }
