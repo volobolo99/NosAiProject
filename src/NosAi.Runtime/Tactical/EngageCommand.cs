@@ -41,8 +41,14 @@ namespace NosAi.Runtime.Tactical;
 /// mechanism would always produce an empty answer -- see
 /// <see cref="ExecuteOneRound"/>. Candidate generation from
 /// <c>CombatPlanner</c>, repositioning and multi-step combos are equally out
-/// of scope for this slice (a fully fused <c>Player</c>/<c>Mob</c> set is not
-/// assembled in this one-shot live context).
+/// of scope for this slice: this command takes the target entity id straight
+/// from the operator's own argument and verifies nothing about it -- not that
+/// it names a real entity, not that the entity is hostile, alive or in range.
+/// <see cref="CombatReportCommand"/> (<c>--combat-report</c>) is where those
+/// checks now run for real, read-only, against the mobs actually observed;
+/// running it first is how an operator finds an id worth passing here.
+/// Wiring its verdict into this command's own refusal path is a separate,
+/// still-open task.
 /// </para>
 /// <para>
 /// <b>Known gap, stated plainly.</b> <see cref="ExecuteOneRound"/> accepts an

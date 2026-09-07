@@ -322,8 +322,9 @@ operatore `--engage <targetEntityId> <skillId>`: `CombatVerificationProjector`
 esplicitamente ristretto (stessa disciplina "primo passo piccolo e
 onesto" di `--scout`): un solo atto `UseSkill` nominato direttamente
 dall'operatore per invocazione, nessuna generazione candidati da
-`CombatPlanner` (richiederebbe `Player`/`Mob` fusi in modo che questo
-comando in composizione live non assembla oggi), `BasicAttack` rifiutato
+`CombatPlanner` dentro `--engage` (aggiornamento Q-100: quei `Player`/`Mob`
+fusi ora esistono e `--combat-report` li usa davvero; resta aperto solo
+cablare il suo verdetto nel percorso di rifiuto di `--engage`), `BasicAttack` rifiutato
 per design (nessun costo risorsa osservabile, `CombatExecutionEvidence`
 lo dice da sé).
 

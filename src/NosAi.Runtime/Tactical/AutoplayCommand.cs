@@ -550,7 +550,15 @@ public static class AutoplayCommand
                     WorldFact<double>.Live(vitals.MaxHp, confidence: 1d, now));
                 Player playerFacts = new Player(
                     new EntityId("unknown-player"),
-                    WorldFact<WorldPosition>.Unknown("not_read_this_cycle", now),
+
+                    // Real, and read this very cycle: the same client-memory
+                    // reading `currentReading` above is built from. An earlier
+                    // version left this Unknown with the reason
+                    // "not_read_this_cycle", which was simply false -- the
+                    // position was read, it just was not carried onto the
+                    // record. No assessor below reads it today, so this states
+                    // a fact rather than changing a decision.
+                    WorldFact<WorldPosition>.Live(new WorldPosition(player.X, player.Y), confidence: 1d, now),
                     WorldFact<float>.Unknown("not_read_this_cycle", now),
                     WorldFact<bool>.Unknown("not_read_this_cycle", now),
                     WorldFact<MapId>.Unknown("not_read_this_cycle", now),

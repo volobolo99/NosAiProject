@@ -761,6 +761,15 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.LoadoutReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Tactical.LoadoutReportCommand.Run();
 
+        // What CombatPlanner would propose right now against the mobs actually
+        // observed, and whether each proposal passes its hard constraints.
+        // Read-only in the same sense as --loadout-report: no key, no mouse, no
+        // input arming -- executing a combat act is --engage's job. A report
+        // with zero candidates is a valid result and says which of the several
+        // possible reasons it had.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.CombatReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Tactical.CombatReportCommand.Run();
+
         // Re-imports the reference catalogue and the broader native file
         // inventory from the installed client, reporting what a client update
         // changed since the last run.
@@ -1082,7 +1091,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report"
         };
 
     private static int RunDxgiProbe()
