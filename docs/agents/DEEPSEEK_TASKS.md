@@ -273,6 +273,22 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE, PRENDIBILE ANCHE IN PARALLELO** (2026-09-07): **misurare un
+opcode invece di indovinarlo** — comando `--wire-inspect`. Per scrivere le due
+specifiche qui sotto e' servito sapere cosa contengono davvero i pacchetti
+`lev` e `eq`, e non esiste un modo di saperlo: `--world-replay` da' un
+censimento ma non una riga, `--live-decode` stampa le righe ma vuole il driver e
+una sessione viva. L'unico modo e' stato scrivere un test usa-e-getta e
+cancellarlo, tre volte in un giorno. Meta' del lavoro e' gia' fatto e la
+specifica lo dice: `LiveWireMonitor.Monitor` e' gia' puro e prende un
+`IPacketSource`, che `CaptureFile.Open` restituisce — va collegato, non
+riscritto. La meta' nuova e' il censimento delle forme: per ogni campo di ogni
+opcode, se e' sempre lo stesso valore o quanti distinti ne ha assunti. E' la
+regola di `CLAUDE.md` sulle fonti esterne resa meccanica: un campo mai cambiato
+non si distingue da una costante, quindi la cattura non puo' confermargli un
+significato. Non tocca nessuno dei quattro file dei due task qui sotto.
+Specifica: `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_wire_inspect.md`.
+
 **IN CODA, DOPO QUELLO SOPRA** (2026-09-07): **leggere dal filo cosa il
 personaggio indossa** — gli opcode `eq` e `equip`. ADR-0027 ha misurato che
 **nessun sito di produzione popola `Player.Equipment`**: ogni snapshot mai
