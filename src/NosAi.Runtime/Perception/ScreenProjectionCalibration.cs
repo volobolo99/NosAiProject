@@ -227,6 +227,7 @@ public sealed record ScreenProjectionCalibration
         int clientWidth, int clientHeight,
         double worstResidual,
         int verifiedAgainst,
+        int discardedSamples,
         DpiAwarenessRegime regime,
         uint clientDpi,
         DateTime? calibratedAtUtc,
@@ -241,6 +242,7 @@ public sealed record ScreenProjectionCalibration
         ClientHeight = clientHeight;
         WorstResidualPixels = worstResidual;
         VerifiedAgainstSamples = verifiedAgainst;
+        DiscardedSamples = discardedSamples;
         Regime = regime;
         ClientDpi = clientDpi;
         CalibratedAtUtc = calibratedAtUtc;
@@ -370,12 +372,24 @@ public sealed record ScreenProjectionCalibration
     /// </remarks>
     public int VerifiedAgainstSamples { get; }
 
+    /// <summary>
+    /// Quanti campioni il fit ha lasciato fuori come fuori bersaglio.
+    /// </summary>
+    /// <remarks>
+    /// Zero e' il caso normale. Un numero diverso da zero non invalida la
+    /// calibrazione -- il tetto di <see cref="MaxDiscardedFraction"/> l'ha gia'
+    /// giudicata -- ma dice a chi la legge che una parte dei campioni non
+    /// concordava, il che e' un'informazione sulla sessione e non un dettaglio
+    /// interno del solutore.
+    /// </remarks>
+    public int DiscardedSamples { get; }
+
     /// <summary>When the operator produced it, or null when uncalibrated.</summary>
     public DateTime? CalibratedAtUtc { get; }
 
     /// <summary>The state before the operator has calibrated anything.</summary>
     public static ScreenProjectionCalibration Uncalibrated { get; } =
-        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DpiAwarenessRegime.Unknown, 0, null);
+        new(false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DpiAwarenessRegime.Unknown, 0, null);
 
     /// <summary>
     /// Solves the transform from the operator's samples, or says why it cannot.
@@ -399,7 +413,8 @@ public sealed record ScreenProjectionCalibration
         out ScreenProjectionCalibration calibration,
         out string? failureReason,
         DpiAwarenessRegime? regime = null,
-        uint clientDpi = 0)
+        uint clientDpi = 0,
+        int discardedSamples = 0)
     {
         ArgumentNullException.ThrowIfNull(samples);
         calibration = Uncalibrated;
@@ -476,8 +491,8 @@ public sealed record ScreenProjectionCalibration
                    out double factorX, out double factorY)
             && WorstTiles(samples, projective![0], projective[1], projective[2],
                    projective[3], projective[4], projective[5], projective[6], projective[7],
-                   out double projectiveTiles, out _)
-            && WorstTiles(samples, a, b, c, d, e, f, 0, 0, out double affineTiles, out _)
+                   out double projectiveTiles, out _, out _)
+            && WorstTiles(samples, a, b, c, d, e, f, 0, 0, out double affineTiles, out _, out _)
             && projectiveTiles < affineTiles)
         {
             a = projective[0]; b = projective[1]; c = projective[2];
@@ -493,7 +508,7 @@ public sealed record ScreenProjectionCalibration
         // Inverting it requires it to be a transform at all -- e con la
         // prospettiva l'inversa cambia da punto a punto, quindi si usa la
         // derivata locale invece della matrice costante.
-        if (!WorstTiles(samples, a, b, c, d, e, f, g, h, out double worstTiles, out double worst))
+        if (!WorstTiles(samples, a, b, c, d, e, f, g, h, out double worstTiles, out double worst, out _))
         {
             failureReason = "fitted_transform_collapses_the_plane";
             return false;
@@ -576,6 +591,7 @@ public sealed record ScreenProjectionCalibration
             clientWidth, clientHeight,
             worst,
             samples.Count - MinimumSamples,
+            discardedSamples,
             regime ?? DpiAwareness.Current(),
             clientDpi,
             calibratedAtUtc,
@@ -668,16 +684,20 @@ public sealed record ScreenProjectionCalibration
         // e' esattamente cio' che quella versione affermava.
         int perspectiveFields = version == Version ? 2 : 0;
         double g = 0, h = 0;
+        int discardedRead = 0;
         string[] fields = lines[1].Split(' ');
         if (perspectiveFields == 2
-            && (fields.Length != 15 || !TryNumber(fields[6], out g) || !TryNumber(fields[7], out h)))
+            && (fields.Length != 16
+                || !TryNumber(fields[6], out g) || !TryNumber(fields[7], out h)
+                || !int.TryParse(fields[15], NumberStyles.Integer, CultureInfo.InvariantCulture,
+                       out discardedRead)))
         {
             failureReason = "screen_projection_entry_malformed";
             return Uncalibrated;
         }
 
         if (perspectiveFields == 2)
-            fields = fields.Take(6).Concat(fields.Skip(8)).ToArray();
+            fields = fields.Take(6).Concat(fields.Skip(8).Take(7)).ToArray();
 
         if (fields.Length != 13
             || !TryNumber(fields[0], out double a) || !TryNumber(fields[1], out double b)
@@ -713,8 +733,8 @@ public sealed record ScreenProjectionCalibration
         }
 
         return new ScreenProjectionCalibration(
-            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, clientDpi, at,
-            g, h);
+            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, discardedRead,
+            regime, clientDpi, at, g, h);
     }
 
     /// <summary>Writes the calibration, creating the directory if needed.</summary>
@@ -743,7 +763,8 @@ public sealed record ScreenProjectionCalibration
             .Append(VerifiedAgainstSamples.ToString(CultureInfo.InvariantCulture)).Append(' ')
             .Append(Regime.ToWire()).Append(' ')
             .Append(ClientDpi.ToString(CultureInfo.InvariantCulture)).Append(' ')
-            .Append(CalibratedAtUtc!.Value.ToString("O", CultureInfo.InvariantCulture)).Append('\n');
+            .Append(CalibratedAtUtc!.Value.ToString("O", CultureInfo.InvariantCulture)).Append(' ')
+            .Append(DiscardedSamples.ToString(CultureInfo.InvariantCulture)).Append('\n');
 
         File.WriteAllText(path, text.ToString());
     }
@@ -962,13 +983,15 @@ public sealed record ScreenProjectionCalibration
     private static bool WorstTiles(
         IReadOnlyList<ScreenProjectionSample> samples,
         double a, double b, double c, double d, double e, double f, double g, double h,
-        out double worstTiles, out double worstPixels)
+        out double worstTiles, out double worstPixels, out int worstIndex)
     {
         worstTiles = 0;
         worstPixels = 0;
+        worstIndex = -1;
 
-        foreach (ScreenProjectionSample sample in samples)
+        for (int index = 0; index < samples.Count; index++)
         {
+            ScreenProjectionSample sample = samples[index];
             double x = sample.MapDelta.X;
             double y = sample.MapDelta.Y;
 
@@ -998,7 +1021,12 @@ public sealed record ScreenProjectionCalibration
 
             double tileX = ((dvDy * errorX) - (duDy * errorY)) / jacobian;
             double tileY = ((duDx * errorY) - (dvDx * errorX)) / jacobian;
-            worstTiles = Math.Max(worstTiles, Math.Sqrt((tileX * tileX) + (tileY * tileY)));
+            double tiles = Math.Sqrt((tileX * tileX) + (tileY * tileY));
+            if (tiles > worstTiles)
+            {
+                worstTiles = tiles;
+                worstIndex = index;
+            }
         }
 
         return true;

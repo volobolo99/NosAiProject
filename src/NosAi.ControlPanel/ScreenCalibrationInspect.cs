@@ -70,6 +70,14 @@ internal static class ScreenCalibrationInspect
             $"{calibration.ClientWidth}x{calibration.ClientHeight} @ {calibration.ClientDpi} DPI · {calibration.Regime}"), "Screen"));
         fields.Add(new DisplayField("Verificata su", string.Create(CultureInfo.InvariantCulture,
             $"{calibration.VerifiedAgainstSamples} campioni · residuo peggiore {calibration.WorstResidualPixels:F1} px"), "Screen"));
+
+        // Una calibrazione che ha lasciato fuori dei campioni non e' la stessa
+        // cosa di una che li ha usati tutti, e chi la legge deve poterlo vedere
+        // senza aprire il file.
+        fields.Add(new DisplayField("Campioni scartati", calibration.DiscardedSamples == 0
+            ? "nessuno"
+            : string.Create(CultureInfo.InvariantCulture,
+                $"{calibration.DiscardedSamples} fuori bersaglio"), "Screen"));
     }
 
     private static void ReadSamples(string repoRoot, List<DisplayField> fields)

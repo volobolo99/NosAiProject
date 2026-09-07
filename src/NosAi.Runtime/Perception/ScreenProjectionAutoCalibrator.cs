@@ -83,6 +83,27 @@ public static class ScreenProjectionAutoCalibrator
     public const int MinimumFittedSamples = 6;
 
     /// <summary>
+    /// La quota massima di campioni che si possono lasciare fuori.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perche' un tetto oltre al minimo.</b> Il minimo bastava quando i
+    /// campioni erano dodici: scendere a sei significava buttarne meta', il che si
+    /// nota. Con venti -- il numero che serve da quando la mappa e' prospettica --
+    /// scendere a sei vorrebbe dire tenerne il trenta per cento e chiamarla
+    /// calibrazione. Il tetto e' relativo perche' la domanda lo e': tre clic
+    /// sbagliati su venti sono una mano imprecisa, quattordici sono una sessione
+    /// da rifare.
+    /// </para>
+    /// <para>
+    /// Vale anche come limite di lavoro. La ricerca prova ogni sottoinsieme di
+    /// ogni dimensione: con venti campioni fino a sei sarebbero oltre un milione
+    /// di fit, mentre fino al tetto sono circa milletrecento.
+    /// </para>
+    /// </remarks>
+    public const double MaxDroppedFraction = 0.15;
+
+    /// <summary>
     /// How far from the centre the probe pixels are placed, per axis, as a
     /// fraction of the client area.
     /// </summary>
@@ -379,7 +400,11 @@ public static class ScreenProjectionAutoCalibrator
         // Largest first, so a set is only narrowed when the wider one genuinely
         // disagrees. Among sets of the same size the one whose worst sample lands
         // closest to its prediction wins.
-        for (int size = samples.Count; size >= MinimumFittedSamples; size--)
+        int smallestAllowed = Math.Max(
+            MinimumFittedSamples,
+            (int)Math.Ceiling(samples.Count * (1 - MaxDroppedFraction)));
+
+        for (int size = samples.Count; size >= smallestAllowed; size--)
         {
             ScreenProjectionCalibration? best = null;
             string? firstFailure = null;
@@ -393,7 +418,7 @@ public static class ScreenProjectionAutoCalibrator
                 if (!ScreenProjectionCalibration.TrySolve(
                         candidateSamples, area.Width, area.Height, at,
                         out ScreenProjectionCalibration candidate, out string? why,
-                        clientDpi: clientDpi))
+                        clientDpi: clientDpi, discardedSamples: samples.Count - size))
                 {
                     firstFailure ??= why;
                     continue;

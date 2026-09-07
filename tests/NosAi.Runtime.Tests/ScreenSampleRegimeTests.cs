@@ -58,6 +58,12 @@ public sealed class ScreenSampleRegimeTests : IDisposable
         string.Create(CultureInfo.InvariantCulture, $"{mx} {my} {sx} {sy} {w} {h} {dpi}");
 
     /// <summary>Un anello coerente, tutto allo stesso regime.</summary>
+    /// <remarks>
+    /// Otto punti e non piu' cinque dal 2026-09-07: lo scarto dei campioni fuori
+    /// bersaglio passa ora da <see cref="ScreenProjectionAutoCalibrator"/>, che non
+    /// lavora sotto sei coppie. Questi test parlano di regimi, non del numero
+    /// minimo, e cinque punti li facevano fallire per un motivo che non e' il loro.
+    /// </remarks>
     private static string[] OneRegime(uint dpi, int scale) => new[]
     {
         Line(4, 0, 512 + 4 * scale, 384, 1024, 768, dpi),
@@ -65,6 +71,9 @@ public sealed class ScreenSampleRegimeTests : IDisposable
         Line(-4, 0, 512 - 4 * scale, 384, 1024, 768, dpi),
         Line(0, -4, 512, 384 - 4 * scale, 1024, 768, dpi),
         Line(3, 3, 512 + 3 * scale, 384 + 3 * scale, 1024, 768, dpi),
+        Line(-3, 3, 512 - 3 * scale, 384 + 3 * scale, 1024, 768, dpi),
+        Line(-3, -3, 512 - 3 * scale, 384 - 3 * scale, 1024, 768, dpi),
+        Line(3, -3, 512 + 3 * scale, 384 - 3 * scale, 1024, 768, dpi),
     };
 
     private string Solve()
@@ -103,10 +112,10 @@ public sealed class ScreenSampleRegimeTests : IDisposable
 
         string output = Solve();
 
-        // Il file ha sei campioni buoni piu' una riga vecchia: la riga vecchia
+        // Il file ha otto campioni buoni piu' una riga vecchia: la riga vecchia
         // non partecipa, e il solutore non la conta fra i campioni.
         Assert.DoesNotContain(ScreenProjectionProbe.SamplesVersionUnsupportedReason, output, StringComparison.Ordinal);
-        Assert.Contains("5 samples", output, StringComparison.Ordinal);
+        Assert.Contains("8 samples", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -155,6 +164,6 @@ public sealed class ScreenSampleRegimeTests : IDisposable
 
         string output = Solve();
 
-        Assert.Contains("5 samples", output, StringComparison.Ordinal);
+        Assert.Contains("8 samples", output, StringComparison.Ordinal);
     }
 }

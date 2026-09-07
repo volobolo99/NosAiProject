@@ -111,7 +111,8 @@ public static class ScreenProjectionProbe
         repoRoot ??= Directory.GetCurrentDirectory();
         string samplePath = Path.Combine(repoRoot, SamplesRelativePath);
 
-        List<ScreenProjectionSample> samples = ReadSamples(samplePath, out int clientWidth, out int clientHeight, report);
+        List<ScreenProjectionSample> samples = ReadSamples(
+            samplePath, out int clientWidth, out int clientHeight, out uint clientDpi, report);
         if (samples.Count == 0)
         {
             Say($"[REFUSED] no_samples_recorded ({samplePath})");
@@ -120,9 +121,15 @@ public static class ScreenProjectionProbe
             return 1;
         }
 
-        if (!ScreenProjectionCalibration.TrySolve(
-                samples, clientWidth, clientHeight, DateTime.UtcNow,
-                out ScreenProjectionCalibration calibration, out string? reason))
+        // Lo scarto dei campioni fuori bersaglio lo fa ScreenProjectionAutoCalibrator,
+        // che lo faceva gia' prima che questo comando ne avesse bisogno: preferisce
+        // sempre l'insieme piu' ampio, e scende solo quando quello piu' ampio
+        // davvero non si accorda. Riscriverlo qui avrebbe voluto dire due politiche
+        // di scarto che possono divergere.
+        if (!ScreenProjectionAutoCalibrator.Solve(
+                samples, new PixelRect(0, 0, clientWidth, clientHeight),
+                out ScreenProjectionCalibration calibration, out int discarded,
+                out string? reason, clientDpi))
         {
             Say($"[REFUSED] {reason}");
             Say("  Nothing was written. The old calibration, if any, is untouched.");
@@ -136,7 +143,17 @@ public static class ScreenProjectionProbe
         string path = Path.Combine(repoRoot, ScreenProjectionCalibration.RelativePath);
         calibration.Save(path);
 
-        Say($"Screen projection calibrated from {samples.Count} samples.");
+        if (discarded > 0)
+        {
+            // Detto per intero e per primo: una calibrazione che ha lasciato fuori
+            // dei campioni non e' la stessa cosa di una che li ha usati tutti, e
+            // chi la legge deve saperlo prima dei numeri, non dopo.
+            Say($"{discarded} campioni su {samples.Count} sono stati lasciati fuori come fuori bersaglio.");
+            Say("  Restano nel file: se ne raccogli altri, rientrano nel conto.");
+            Say("");
+        }
+
+        Say($"Screen projection calibrated from {samples.Count - discarded} of {samples.Count} samples.");
         Say(string.Create(CultureInfo.InvariantCulture,
             $"  screenX = {calibration.A:F4}*dx + {calibration.B:F4}*dy + {calibration.C:F1}"));
         Say(string.Create(CultureInfo.InvariantCulture,
@@ -145,7 +162,7 @@ public static class ScreenProjectionProbe
             $"  Character drawn at {calibration.Anchor.X:F0},{calibration.Anchor.Y:F0}"
             + $" of {clientWidth}x{clientHeight}."));
         Say(string.Create(CultureInfo.InvariantCulture,
-            $"  Worst residual: {calibration.WorstResidualPixels:F2} px over {samples.Count} samples"
+            $"  Worst residual: {calibration.WorstResidualPixels:F2} px over {samples.Count - discarded} samples"
             + $" ({calibration.VerifiedAgainstSamples} more than the fit needs)."));
         if (calibration.VerifiedAgainstSamples == 0)
         {
@@ -231,12 +248,14 @@ public static class ScreenProjectionProbe
     }
 
     private static List<ScreenProjectionSample> ReadSamples(
-        string path, out int clientWidth, out int clientHeight, Action<string>? report = null)
+        string path, out int clientWidth, out int clientHeight, out uint clientDpi,
+        Action<string>? report = null)
     {
         void Say(string line = "") => (report ?? Console.WriteLine)(line);
 
         clientWidth = 0;
         clientHeight = 0;
+        clientDpi = 0;
         var samples = new List<ScreenProjectionSample>();
         if (!File.Exists(path))
             return samples;
@@ -277,6 +296,11 @@ public static class ScreenProjectionProbe
         GeometryShape current = parsed[^1].Shape;
         clientWidth = current.Width;
         clientHeight = current.Height;
+
+        // Il DPI fa parte del regime tanto quanto la dimensione: scriverlo come 0
+        // nella calibrazione la rendeva di un regime che nessun campione aveva, e
+        // il confronto che il formato v1 esiste per fare non poteva riuscire.
+        clientDpi = current.Dpi;
 
         foreach ((ScreenProjectionSample sample, GeometryShape shape) in parsed)
         {
