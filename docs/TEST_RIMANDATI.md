@@ -28,3 +28,56 @@ Gli agenti ricordano le voci **aperte** a ogni resoconto di fine lavoro.
 - **T-01** — 1 set 2026. APK wire v4 reinstallato; sessione USB `c9d2f5f0c9d1` su socket loopback via `adb reverse`, poi tunnel rimossi e sessione Wi-Fi `a6bb4f040122` su `192.168.0.4:17471 <- 192.168.0.2:55514`. Un APK più vecchio era stato rifiutato con `invalid_header:unsupported_version` prima dell'aggiornamento, che è la clausola del rifiuto all'header.
 - **T-02** — 1 set 2026. L'app dichiara `Chiave del dispositivo: Android Keystore` e l'abbinamento ha retto su entrambe le sessioni. Ha richiesto una correzione: `store.GetKey(...) is IPrivateKey` rispondeva falso su una chiave AndroidKeyStore, perché la classe non ha binding gestito e .NET Android restituisce un proxy generico; la custodia era silenziosamente degradata a file.
 - **T-04** — 1 set 2026. 143 pacchetti dal gioco (41678 byte) in `data/nostale_01.noscap`, poi 1131 in `data/nostale_combat.noscap`. Ha richiesto una correzione: `FlagRecvOnly` valeva `0x0008`, che in WinDivert 2.x è `SEND_ONLY`; l'handle di cattura era aperto in sola scrittura e non poteva ricevere nulla. Confermato con una cattura di controllo su traffico generato apposta.
+
+---
+
+## T-15 — ricampionare la proiezione schermo: i dodici campioni sono due sessioni
+
+**Aperto il 2026-09-07.** DeepSeek ha rimandato indietro il task sui campioni
+reali dicendo che i dati non si riallineano, e aveva ragione. Misurato adattando
+un'affine ai campioni di `data/perception/screen-samples.txt`, senza toccare i
+file:
+
+| Sottoinsieme | residuo peggiore | scala px/casella |
+|---|---:|---|
+| tutti e 12 | **73,6 px ≈ 2,9 caselle** | 32,9 / 14,7 |
+| primi 5 | 16,1 px ≈ 0,63 caselle | 36,6 / 22,8 |
+| primi 8 | 26,3 px ≈ 1,0 casella | 37,9 / 15,5 |
+| ultimi 6 | 31,8 px ≈ 1,25 caselle | 30,3 / 12,7 |
+
+`ScreenProjectionCalibration.MaxVerificationResidualTiles` è **1,5 caselle**. I
+dodici insieme non passano; sottoinsiemi contigui sì, e con **trasformazioni
+diverse** — scala 36,6 contro 30,3, un rapporto di circa 0,83.
+
+**Non è un dato da ri-solvere: è una miscela.** Il file contiene campioni presi
+in due stati di geometria diversi. `screen-projection.calibration` dichiara `5`
+campioni: fu risolta sui primi cinque, e il file è cresciuto dopo.
+
+### Il difetto che questo scopre, e che nessun ricampionamento risolve
+
+Il file dei campioni registra larghezza, altezza e DPI, **non il livello di
+zoom**. Due regimi diversi sono quindi indistinguibili riga per riga, e si
+mescolano in silenzio: nulla, oggi, impedisce di sommare campioni di sessioni
+che il client disegnava a scale diverse. Il residuo che sfonda la soglia è
+l'unico sintomo, e arriva alla fine.
+
+**Serve una decisione prima del ricampionamento**: o il file porta il regime su
+ogni riga (e i campioni di regimi diversi non si mescolano), oppure `--screen-samples-clear`
+diventa obbligatorio a ogni cambio di zoom e il documento lo dice. La prima è
+robusta, la seconda è una procedura che qualcuno dimenticherà.
+
+### Cosa deve fare l'operatore
+
+1. `--screen-samples-clear` per svuotare il file misto.
+2. Con il client a **uno** zoom, non cambiato per tutta la raccolta,
+   `--screen-autocalibrate` (o `--screen-watch` mentre clicchi) fino ad avere un
+   anello di almeno otto campioni.
+3. `--screen-calibrate` per risolvere, e **annotare il residuo che stampa**.
+4. Se il residuo supera 1,5 caselle con campioni di un solo zoom, il problema non
+   è la miscela ed è un'altra indagine.
+
+**Da registrare:** quanti campioni, il residuo, e se lo zoom è stato toccato.
+Finché questo non è fatto, il task
+`AP-02_A2A4_DEEPSEEK_real_screen_samples.md` resta **bloccato sull'operatore**:
+non è re-specificabile a tavolino, perché i dati che dovrebbe verificare non
+descrivono una sola geometria.

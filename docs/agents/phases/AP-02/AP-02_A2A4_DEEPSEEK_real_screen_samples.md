@@ -1,5 +1,15 @@
 # AP-02 / A2+A4 — DeepSeek — dodici misure reali che nessun test guarda
 
+> **BLOCCATO SULL'OPERATORE dal 2026-09-07 — non prendere questo task.**
+> DeepSeek l'ha rimandato indietro e aveva ragione: i dodici campioni sono due
+> sessioni con geometria diversa (residuo 73,6 px contro una soglia di 1,5
+> caselle ≈ 38 px), e nessun sottoinsieme scelto a posteriori è evidenza —
+> sarebbe scegliere i dati che confermano. Serve un ricampionamento a zoom
+> costante: la procedura è in `docs/TEST_RIMANDATI.md` **T-15**, insieme al
+> difetto che il ricampionamento da solo non risolve (il file non registra lo
+> zoom). Quando i campioni nuovi ci sono, questa specifica va riscritta sui
+> numeri veri, non riattivata così com'è.
+
 **Indipendente da tutti.** Non tocca un solo file di `src/`. Prendibile subito,
 anche in parallelo — l'unica cautela è la contesa sulla build se un altro task
 gira nello stesso momento nella stessa cartella.

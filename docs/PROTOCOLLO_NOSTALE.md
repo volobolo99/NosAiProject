@@ -196,6 +196,30 @@ cond 1 3443217 0 0 11
 
 ---
 
+## La prova che `eq`, `equip` e `ivn` si confermano a vicenda
+
+`data/equip_test.noscap` e' una sessione registrata mentre si equipaggiava e
+disequipaggiava, e la sua evidenza non ha bisogno di nessuna fonte esterna: **tre
+vnum escono da uno slot di `equip` ed entrano in uno slot di `ivn`, dentro la
+stessa cattura**.
+
+| vnum | esce da | entra in |
+|---|---|---|
+| `309` | slot equip 6 (presente nel 1º pacchetto, assente dal 2º) | `ivn 0 15.309.…` |
+| `518` | compare in slot equip 8 (3º pacchetto) | `ivn 0 16.518.…` |
+| `284` | slot equip 11 (assente dal 5º pacchetto) | `ivn 0 18.284.…` |
+
+Un decoder che leggesse male uno dei due opcode romperebbe la corrispondenza, e
+un test la fissa. E' il tipo di riscontro che questo documento preferisce a
+qualunque tabella di terze parti: due letture indipendenti degli stessi byte che
+devono raccontare la stessa storia.
+
+`--world-replay data/equip_test.noscap` riporta l'unione degli slot visti nella
+sessione — `0 2 4 5 6 8 9 10 11 12` — accanto all'ultimo insieme noto, proprio
+perche' gli slot che sono andati e tornati sono l'informazione, non il rumore.
+
+---
+
 ## Misurato invece che letto — `--wire-inspect` (2026-09-07)
 
 Le confidenze di questo documento sono state assegnate leggendo i pacchetti a
@@ -233,6 +257,8 @@ abbastanza per provarci.
 | `drop` | 3 | `drop 2006 1092257 110 63 1 0 3443217` | vnum, drop id, x, y, amount, ?, owner id — **probable** |
 | `get` | 2 | `get 1 3443217 1092257 0` | Picked up: taker type/id, drop id — **probable**, ids match a preceding `drop` |
 | `ivn` | 3 | `ivn 2 34.2006.1.0` | Inventory slot: `slot.vnum.amount.rarity` — **probable**, vnum `2006` matches the `drop` |
+| `eq` | 6 | `eq 3443217 0 0 1 2 1 221.-1.262.157.224.279.-1.-1.-1.-1.-1 25 0 100` | Cio' che il personaggio indossa, in un gruppo puntato di **undici** posizioni, `-1` per lo slot non occupato — **probable**. Cinque occupate in questa cattura |
+| `equip` | 6 | `equip 25 0 0.262.5.2.0.0.0 2.221.0.0.0.0.0 …` | Lo stesso insieme, per slot, con dettaglio: `slot.vnum.<altri cinque>` — **probable**. Su sei pacchetti l'insieme **cambia**, ed e' cio' che rende questa cattura piu' di un documento |
 | `eff` | 6 | `eff 3 313909 5000` | Visual effect on an entity — **probable** |
 | `sr` | 17 | `sr 0`, `sr 2`, `sr 6` | Skill ready / cooldown ended, by skill slot — **probable** |
 | `ski` | 0 | — | Elenco delle abilita' del personaggio — **mai osservato**. Censito il 2026-09-07 su tutte e cinque le catture (27 726 messaggi inbound): zero occorrenze. Non e' assenza dal protocollo ma assenza dalle *nostre* registrazioni: e' inviato una volta al caricamento del personaggio, e ogni cattura di questo repository comincia a client gia' in gioco. OpenNos lo descrive come `ski {skibase}{elenco vnum}` — pista non riscontrata, nessun valore osservato con cui confrontarla |
@@ -262,8 +288,21 @@ Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
 - **Combat events** — every hit with attacker, target, skill and damage, from `su`.
 - **Entities in view** — spawn with vnum and position from `in`, tracked by `mv`
   only after an `in`/`st` has supplied HP, removed by `die`.
-- **Progression** — level and XP from `lev` (catalogued, not yet published).
+- **Progression** — level, XP, job level, job XP and the two maxima, from `lev`.
+  **Published dal 2026-09-07**: `NosTaleWorldProtocolDecoder` legge i primi sei
+  campi, `DecodedObservations.Progression` li porta, e `--world-replay` li
+  stampa. I campi dal settimo in poi (`35106 7 0 0 1 0`) restano **non
+  decodificati** e non per pigrizia: sono identici in tutti e 38 i pacchetti
+  delle tre registrazioni che ne portano, mentre XP e job XP si muovono in
+  ognuna — un valore che non e' mai cambiato non si distingue da una costante
+  che il server manda sempre. Il censimento della cattura di combattimento e'
+  salito da 8147/8211 a **8170/8211**.
 - **Drops and inventory** — `drop`, `get`, `ivn` (catalogued, not yet published).
+- **Equipaggiamento indossato** — `eq` ed `equip`. **Published dal 2026-09-07**:
+  `WornEquipment` porta slot e vnum come il filo li dichiara, senza mapparli su
+  `EquipmentSlot` (quella corrispondenza ha bisogno di `Item.dat` e di
+  un'evidenza propria). Su `equip_test.noscap` il censimento e' salito da
+  3541/3584 a **3553/3584**, con 12 letture.
 
 Not available from the server, and needing the confirming source:
 
