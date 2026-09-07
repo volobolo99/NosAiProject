@@ -3,6 +3,7 @@ using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Runtime.Observability;
 using NosAi.Storage;
+using System.IO;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -281,17 +282,22 @@ public sealed class OutcomeReportTests : IDisposable
     [Fact]
     public void AnAbsentLedgerIsReportedWithoutBeingCreated()
     {
-        string absent = Path.Combine(
-            Path.GetTempPath(), $"nosai_outcome_{Guid.NewGuid():N}", "nosai.db");
+        // La guardia vera, chiamata davvero. Fino al 2026-09-08 questo test
+        // guardava due volte lo stesso percorso inesistente senza mai invocare il
+        // comando: asseriva la propria premessa.
+        string directory = Path.Combine(Path.GetTempPath(), $"nosai_outcome_{Guid.NewGuid():N}");
+        string absent = Path.Combine(directory, "nosai.db");
+        var output = new StringWriter();
 
+        bool reported = OutcomeReportCommand.TryReportNeverCreated(absent, output);
+
+        Assert.True(reported);
+        Assert.Contains(
+            OutcomeReportCommand.LedgerNotCreatedReason, output.ToString(), StringComparison.Ordinal);
+
+        // E il registro continua a non esistere: guardare non apre.
         Assert.False(File.Exists(absent));
-
-        // La stessa forma che Run usa: il file si guarda, non si apre.
-        bool exists = File.Exists(absent);
-
-        Assert.False(exists);
-        Assert.False(File.Exists(absent));
-        Assert.False(Directory.Exists(Path.GetDirectoryName(absent)!));
+        Assert.False(Directory.Exists(directory));
     }
 
     /// <summary>

@@ -144,6 +144,45 @@ public static class LearningReportCommand
     }
 
     /// <summary>Console entry. Validates, opens the store from the labeled volume, and reports.</summary>
+    /// <summary>
+    /// Riferisce un archivio che non c'è, senza aprirlo, e dice se l'ha fatto.
+    /// </summary>
+    /// <returns>
+    /// Vero quando l'archivio non esiste e il rapporto è stato scritto; falso
+    /// quando esiste e va letto normalmente.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// <b>Estratto da <see cref="Run"/> il 2026-09-08 perché nessun test lo
+    /// raggiungeva.</b> Il test che diceva di coprirlo — «un archivio assente è
+    /// riferito senza essere creato» — costruiva un percorso con un GUID nuovo e
+    /// asseriva che non esistesse: vero per costruzione, e il comando non veniva
+    /// mai chiamato. Una guardia che nessuno esercita è una promessa.
+    /// </para>
+    /// <para>
+    /// Il file si guarda <b>prima</b> di aprirlo, e non è pedanteria: aprire uno
+    /// store SQLite lo crea. Senza questo controllo un comando di sola lettura
+    /// scriverebbe sul volume dell'operatore e, peggio, la sua prima esecuzione
+    /// trasformerebbe «la calibrazione non è mai stata scritta» in «lo store
+    /// esiste ed è vuoto» — cancellando la distinzione per cui questo rapporto
+    /// esiste.
+    /// </para>
+    /// </remarks>
+    public static bool TryReportNeverCreated(string databasePath, TextWriter output)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
+        ArgumentNullException.ThrowIfNull(output);
+
+        if (File.Exists(databasePath))
+            return false;
+
+        // Una risposta, non un rifiuto: il volume risponde, e quello che dice è
+        // che nessun ciclo ha mai salvato una calibrazione.
+        output.WriteLine("=== prediction calibration ===");
+        output.WriteLine($"{CalibrationNotCreatedReason}: {databasePath}");
+        return true;
+    }
+
     public static int Run(string[] args)
     {
         string? refusal = TryParse(args, out string? context);
@@ -167,14 +206,8 @@ public static class LearningReportCommand
             return ExitRefused;
         }
 
-        if (!File.Exists(databasePath))
-        {
-            // An answer, not a refusal: the volume responds, and what it says is
-            // that no cycle has ever saved a calibration.
-            Console.WriteLine("=== prediction calibration ===");
-            Console.WriteLine($"{CalibrationNotCreatedReason}: {databasePath}");
+        if (TryReportNeverCreated(databasePath, Console.Out))
             return 0;
-        }
 
         using PredictionCalibrationStore? store =
             PredictionCalibrationStore.TryOpenFromVolume(options, out string? failureReason);

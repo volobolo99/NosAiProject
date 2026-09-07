@@ -192,6 +192,30 @@ public static class OutcomeReportCommand
     }
 
     /// <summary>Console entry. Validates, opens the store from the labeled volume, and reports.</summary>
+    /// <summary>
+    /// Riferisce un registro che non c'è, senza aprirlo, e dice se l'ha fatto.
+    /// </summary>
+    /// <remarks>
+    /// <b>Estratto da <see cref="Run"/> il 2026-09-08 perché nessun test lo
+    /// raggiungeva.</b> Il test che diceva di coprirlo costruiva un percorso con
+    /// un GUID nuovo e asseriva che non esistesse — vero per costruzione, e il
+    /// comando non veniva mai chiamato. Il file si guarda prima di aprirlo perché
+    /// aprire uno store SQLite lo crea, e la prima esecuzione trasformerebbe «mai
+    /// scritto» in «esiste ed è vuoto».
+    /// </remarks>
+    public static bool TryReportNeverCreated(string databasePath, TextWriter output)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
+        ArgumentNullException.ThrowIfNull(output);
+
+        if (File.Exists(databasePath))
+            return false;
+
+        output.WriteLine("=== action-outcome ledger ===");
+        output.WriteLine($"{LedgerNotCreatedReason}: {databasePath}");
+        return true;
+    }
+
     public static int Run(string[] args)
     {
         string? refusal = TryParse(args, out string? context);
@@ -216,14 +240,8 @@ public static class OutcomeReportCommand
             return ExitRefused;
         }
 
-        if (!File.Exists(databasePath))
-        {
-            // Una risposta, non un rifiuto: il volume risponde, e cio' che dice
-            // e' che nessun atto ha ancora scritto una riga.
-            Console.WriteLine("=== action-outcome ledger ===");
-            Console.WriteLine($"{LedgerNotCreatedReason}: {databasePath}");
+        if (TryReportNeverCreated(databasePath, Console.Out))
             return 0;
-        }
 
         using ActionOutcomeLedgerStore? store =
             ActionOutcomeLedgerStore.TryOpenFromVolume(options, out string? failureReason);

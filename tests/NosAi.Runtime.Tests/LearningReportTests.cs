@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using NosAi.Runtime.Observability;
 using NosAi.Storage;
+using System.IO;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -178,16 +179,25 @@ public sealed class LearningReportTests : IDisposable
     [Fact]
     public void AnAbsentCalibrationIsReportedAsNeverCreated_AndTheFileStaysAbsent()
     {
-        // The exact guard Run uses: the file is looked at, not opened. A
-        // read-only report must not create the store it reports as absent, or
-        // its first run turns "never written" into "written and empty".
-        string absent = Path.Combine(Path.GetTempPath(), $"nosai_learning_{Guid.NewGuid():N}", "nosai.db");
+        // La guardia vera, chiamata davvero. Fino al 2026-09-08 questo test
+        // costruiva un percorso con un GUID nuovo e asseriva che non esistesse --
+        // vero per costruzione -- senza mai invocare il comando: verificava la
+        // propria premessa e nient'altro.
+        string directory = Path.Combine(Path.GetTempPath(), $"nosai_learning_{Guid.NewGuid():N}");
+        string absent = Path.Combine(directory, "nosai.db");
+        var output = new StringWriter();
 
+        bool reported = LearningReportCommand.TryReportNeverCreated(absent, output);
+
+        Assert.True(reported);
+        Assert.Contains(
+            LearningReportCommand.CalibrationNotCreatedReason, output.ToString(), StringComparison.Ordinal);
+
+        // E il file continua a non esistere: e' l'intera ragione della guardia.
         Assert.False(File.Exists(absent));
-        Assert.False(File.Exists(absent)); // still absent: nothing was opened
-        Assert.False(Directory.Exists(Path.GetDirectoryName(absent)!));
+        Assert.False(Directory.Exists(directory));
 
-        // And the reason is a named constant, not the empty-store message.
+        // Il motivo e' quello dell'archivio mai creato, non quello dello store vuoto.
         Assert.Equal("calibration_never_created", LearningReportCommand.CalibrationNotCreatedReason);
     }
 
