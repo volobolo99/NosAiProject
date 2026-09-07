@@ -273,6 +273,40 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE DA TUTTI** (2026-09-07): **dodici misure reali che nessun test
+guarda.** `data/perception/screen-samples.txt` contiene dodici campioni presi sul
+client vero a 1024x768 — offset dal personaggio e pixel a cui il client li ha
+risolti, un anello attorno al personaggio. `grep -rn "screen-samples" tests/` non
+trova nulla: la proiezione schermo è provata solo su dati sintetici, quindi se il
+solutore smettesse di adattarsi a una misura reale restando coerente con sé
+stesso, nessuna prova se ne accorgerebbe. Non tocca un solo file di `src/`.
+Specifica:
+`docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_real_screen_samples.md`.
+
+**INDIPENDENTE DA TUTTI** (2026-09-07): **gli stadi si certificano su dati
+inventati.** `--certification-report` dà 14 stadi su 14 a `Integrated`, ma
+l'evidenza sotto è sintetica: `ScenarioStageTestRunner` costruisce i propri dati
+a mano. Intanto in `data/` ci sono cinque registrazioni reali, 27 726 messaggi,
+167 entità distinte in una sola. Un `Integrated` ottenuto su byte reali non è lo
+stesso ottenuto su un fixture, e il rapporto non sa distinguerli. Il task
+affianca i controlli registrati ai sintetici (non li sostituisce) e fa dire al
+rapporto su cosa si regge ogni stadio. Il tetto resta `Integrated` e `Attach`
+resta scoperto: un test scritto per primo lo fissa. Non tocca `Program.cs`.
+Specifica:
+`docs/agents/phases/AP-10/AP-10_A2A4_DEEPSEEK_scenario_on_recorded_bytes.md`.
+
+**DOPO `progression_from_lev` E `worn_equipment_from_wire`** (2026-09-07):
+**481 pacchetti su 3584 non producono nulla, e nessuno sa perché.**
+`--world-replay` stampa da sempre `senza osservazione: M` e nessuno ha mai
+spiegato quel numero: 0 sulla cattura inattiva, 1,5 % su due, 2,1 % sul
+combattimento, e **13,4 % su `equip_test`** — uno su sette, sei volte la quota di
+ogni altra. Almeno tre cause diverse producono lo stesso numero (opcode non
+letto, riga rifiutata, vuoto per progetto), e sono un buco di copertura, un
+difetto di decodifica e il comportamento corretto. Il task le separa e le conta.
+Tocca `WorldChannelReplay.cs` e `WorldReplayCommand.cs`, quindi va dopo i due
+task che li possiedono. Specifica:
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_unobserved_breakdown.md`.
+
 **INDIPENDENTE DA TUTTI, ANCHE IN PARALLELO** (2026-09-07): **i rifiuti che
 nessuno ha mai provato.** src/NosAi.Runtime dichiara **190** costanti
 `public const string ...Reason`: sono il vocabolario con cui il runtime rifiuta
