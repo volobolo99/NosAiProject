@@ -66,6 +66,38 @@ public enum GameEventKind : byte
 /// carries a remembered health this is older than the position's instant, and
 /// that difference is the CACHED label made measurable.
 /// </param>
+/// <summary>
+/// An entity's health as the wire stated it in absolute points, both bounds or
+/// neither.
+/// </summary>
+/// <param name="Current">Current hit points, field 7 of <c>st</c>.</param>
+/// <param name="Maximum">Maximum hit points, field 9 of <c>st</c>. Validated positive by the decoder before this is built.</param>
+public readonly record struct AbsoluteVitals(int Current, int Maximum);
+
+/// <param name="Vitals">
+/// The same health in absolute points, when the packet stated it that way.
+/// <para>
+/// Null is the ordinary case, not an error. Only <c>st</c> carries the pair;
+/// <c>in</c> states a percentage and <c>mv</c> states no health at all, so an
+/// entity seen only entering view or moving has a real fraction and no
+/// absolutes, and that is the wire being what it is.
+/// </para>
+/// <para>
+/// It never contradicts <see cref="HpRatio"/>. Where this is non-null the
+/// ratio was computed from these two numbers, in the same packet, at the same
+/// instant -- so a consumer that reads only <see cref="HpRatio"/> stays
+/// correct and needs no change. There is no second instant for the same
+/// reason: both halves share <see cref="HpObservedAtUtc"/>, because there was
+/// only ever one observation.
+/// </para>
+/// <para>
+/// One record rather than two nullable <c>int</c>s on this type: the numbers
+/// are only ever observed together, and separate nullables would let a caller
+/// construct half a pair -- a current with no maximum is not a weaker reading,
+/// it is a meaningless one. Same "all together or none" rule
+/// <c>InventoryPanelRoiCalibration</c> applies to its ROI set.
+/// </para>
+/// </param>
 public sealed record EntitySighting(
     long EntityId,
     string Kind,
@@ -75,7 +107,8 @@ public sealed record EntitySighting(
     DataSourceKind Source,
     DateTime? PositionObservedAtUtc = null,
     DateTime? HpObservedAtUtc = null,
-    int? Vnum = null)
+    int? Vnum = null,
+    AbsoluteVitals? Vitals = null)
 {
     /// <summary>
     /// Projects into the perception Detection consumed by the world model, or

@@ -73,16 +73,44 @@ public sealed class CaptureHealthTests
         Assert.Equal("warming_up", snapshot.Reason);
     }
 
+    /// <summary>
+    /// The health snapshot reports the same numbers the capture's own counters
+    /// report.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This test used to fail intermittently in full runs and pass in isolation,
+    /// which reads like host contention but is not. <c>BurstFrameSource</c>
+    /// hands out 50 frames and then refuses forever, and
+    /// <c>TripleBufferedCapture</c>'s loop counts every refusal: after the burst
+    /// is exhausted <c>AcquireFailures</c> grows by one roughly every
+    /// millisecond, for as long as the object lives. The assertions compare a
+    /// snapshot taken at one instant with counters read a few instructions
+    /// later, so the last one held only when both reads landed in the same
+    /// millisecond -- likely on an idle machine, a coin flip under load.
+    /// </para>
+    /// <para>
+    /// Disposing first ends the loop and joins its thread, so the counters are
+    /// final before anything reads them. Nothing about what is asserted has
+    /// changed; the values are simply no longer moving while being compared.
+    /// </para>
+    /// </remarks>
     [Fact]
     public void Triple_buffered_capture_exposes_live_counters()
     {
-        using var capture = new TripleBufferedCapture(
+        var capture = new TripleBufferedCapture(
             new BurstFrameSource(frameCount: 50),
             startImmediately: true,
             healthPolicy: new CaptureHealthPolicy(minimumSamples: 5));
 
         for (var i = 0; i < 200 && capture.SuccessfulAcquisitions < 20; i++)
             Thread.Sleep(2);
+
+        // The counters must stop moving before two of them can be compared.
+        // Dispose cancels the loop and joins the thread, so every read below is
+        // of a value nothing can still change. See the remarks above for why
+        // this is not merely tidiness.
+        capture.Dispose();
 
         var snapshot = capture.GetHealthSnapshot();
 

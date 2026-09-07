@@ -189,7 +189,13 @@ public static class LiveWireMonitor
 
         foreach (EntitySighting s in o.Sightings)
         {
-            string hp = s.HpRatio is { } ratio ? ratio.ToString("0.00", CultureInfo.InvariantCulture) : "assente";
+            // Same rule as WorldReplayCommand.ToRow: the ratio first, unchanged,
+            // and the absolute pair appended only when the packet carried it.
+            string hp = s.HpRatio is { } ratio
+                ? s.Vitals is { } points
+                    ? string.Create(CultureInfo.InvariantCulture, $"{ratio:0.00} ({points.Current}/{points.Maximum})")
+                    : ratio.ToString("0.00", CultureInfo.InvariantCulture)
+                : "assente";
             parts.Add($"sighting id={s.EntityId} kind={s.Kind} pos={s.X},{s.Y} hp={hp}");
         }
 

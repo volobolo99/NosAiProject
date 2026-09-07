@@ -165,9 +165,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         if (maxHp <= 0 || hp < 0 || hp > maxHp)
             return DecodedObservations.Empty;
 
+        // The ratio is kept exactly as before, and the two numbers it was
+        // divided from are kept beside it: they are already validated above,
+        // and dividing them away was the only reason the World Model could not
+        // state a monster's health in points.
+        var vitals = new AbsoluteVitals(hp, maxHp);
         double hpRatio = (double)hp / maxHp;
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
-        _entities[entityId] = previous with { HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc };
+        _entities[entityId] = previous with
+        {
+            HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc, Vitals = vitals
+        };
 
         if (!previous.HasPosition)
             return DecodedObservations.Empty;
@@ -176,7 +184,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // stamped with that packet's instant, not this one's.
         return Sighting(
             entityId, previous.X, previous.Y, hpRatio, Stale(source),
-            positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc, vnum: previous.Vnum);
+            positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc, vnum: previous.Vnum,
+            vitals: vitals);
     }
 
     /// <summary>
@@ -200,12 +209,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
 
         double hpRatio = hpPercent / 100.0;
+        // No absolute pair, and none reconstructed: hp% is all this packet
+        // states, and a maximum inferred from a percentage would be a number
+        // the wire never said. Replacing the whole tracked entity also drops
+        // any pair an earlier `st` left, which is right -- this is a newer,
+        // coarser statement of the same fact, not a stale one to fall back on.
         _entities[entityId] = new TrackedEntity(
             x, y, hpRatio, HasHp: true, HasPosition: true,
             PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc, Vnum: vnum);
         // Position and health both come from this packet, so nothing stale is
         // mixed in and the sighting keeps the packet's own provenance and time.
-        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc, vnum);
+        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc, vnum, vitals: null);
     }
 
     /// <summary>
@@ -232,8 +246,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // instant. With no health at all there is nothing stale mixed in, and the
         // packet keeps its own provenance.
         return previous.HasHp
-            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum)
-            : Sighting(entityId, x, y, null, source, capturedUtc, null, previous.Vnum);
+            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum, previous.Vitals)
+            : Sighting(entityId, x, y, null, source, capturedUtc, null, previous.Vnum, vitals: null);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
@@ -530,10 +544,10 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
     private static DecodedObservations Sighting(
         long entityId, double x, double y, double? hpRatio, DataSourceKind source,
-        DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum)
+        DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum, AbsoluteVitals? vitals = null)
         => new(
             ImmutableArray.Create(new EntitySighting(
-                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum)),
+                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum, vitals)),
             ImmutableArray<GameEvent>.Empty);
 
     /// <summary>
@@ -641,6 +655,14 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// instant each half was last stated so a merged sighting can say how old
     /// its remembered half is.
     /// </summary>
+    /// <param name="Vitals">
+    /// The absolute pair behind <paramref name="HpRatio"/>, when the packet that
+    /// stated the health stated it that way. Remembered and aged exactly like
+    /// the ratio: a later <c>mv</c> that reuses the remembered health reuses
+    /// this too, stamped with the same older <paramref name="HpAtUtc"/>, and
+    /// keeps whatever source label the existing code already computes for that
+    /// case. Null wherever the ratio came from a percentage.
+    /// </param>
     private readonly record struct TrackedEntity(
         double X,
         double Y,
@@ -649,5 +671,6 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         bool HasPosition,
         DateTime PositionAtUtc,
         DateTime HpAtUtc,
-        int? Vnum = null);
+        int? Vnum = null,
+        AbsoluteVitals? Vitals = null);
 }

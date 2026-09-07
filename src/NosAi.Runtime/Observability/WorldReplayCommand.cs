@@ -377,8 +377,13 @@ public static class WorldReplayCommand
     {
         string vnumText = DescribeVnum(sighting, out int? vnum);
         string name = DescribeName(sighting.Kind, vnum, vnumText, catalog);
+        // The ratio stays the cell's first word, byte for byte as before, so
+        // every existing assertion on this text keeps holding; the absolute
+        // pair is added in brackets only where the wire actually stated it.
         string hp = sighting.HpRatio is { } ratio
-            ? string.Create(CultureInfo.InvariantCulture, $"{ratio:0.00}")
+            ? sighting.Vitals is { } points
+                ? string.Create(CultureInfo.InvariantCulture, $"{ratio:0.00} ({points.Current}/{points.Maximum})")
+                : string.Create(CultureInfo.InvariantCulture, $"{ratio:0.00}")
             : "UNKNOWN (hp_not_on_sighting)";
         string posAge = AgeText(asOf, sighting.PositionObservedAtUtc, "position_not_stamped");
         string hpAge = sighting.HpRatio is null
