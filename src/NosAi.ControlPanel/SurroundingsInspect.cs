@@ -80,19 +80,37 @@ internal static class SurroundingsInspect
     public const string HpNotStated = "hp_not_stated";
 
     /// <summary>
-    /// Il vnum c'è, il nome no: risolverlo vuole il catalogo di riferimento, che
-    /// questa vista non apre.
+    /// Il vnum c'è e nessuno ha offerto un modo di risolverlo in un nome.
     /// </summary>
-    public const string NameNeedsCatalogue = "name_needs_reference_catalogue";
+    /// <remarks>
+    /// Fino al 2026-09-08 questo motivo si chiamava <c>name_needs_reference_catalogue</c>
+    /// e usciva <b>sempre</b>, anche dove il catalogo era sul disco e pieno — un'altra
+    /// classe dello stesso pannello lo apriva già. Ora esce solo quando chi chiama
+    /// non ha passato un risolutore, che è l'unico caso in cui è vero.
+    /// </remarks>
+    public const string NameLookupNotOffered = "name_lookup_not_offered";
+
+    /// <summary>Il catalogo è stato interrogato e quel vnum non c'è.</summary>
+    /// <remarks>
+    /// Distinto da <see cref="NameLookupNotOffered"/>: «non ho guardato» e «ho
+    /// guardato e non c'era» sono due ignoranze diverse, e la seconda è un fatto.
+    /// </remarks>
+    public const string VnumNotInCatalogue = "vnum_not_in_catalogue";
 
     /// <summary>
     /// Formats the surroundings. <paramref name="nowUtc"/> is the instant ages
     /// are measured against; the panel passes the system clock, tests pass a
     /// frozen one. No age bound is applied: stale vs fresh is the number shown.
     /// </summary>
+    /// <param name="nameOf">
+    /// Risolve un vnum nel nome che il catalogo gli dà, o null quando non ce
+    /// l'ha. Omesso, i nomi restano <see cref="NameLookupNotOffered"/> — e la
+    /// vista non finge di aver guardato.
+    /// </param>
     public static SurroundingsView Inspect(
         ClassifiedValue<IReadOnlyList<SelectableEntity>>? entities,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        Func<int, string?>? nameOf = null)
     {
         if (entities is null || !entities.HasValue)
         {
@@ -125,7 +143,7 @@ internal static class SurroundingsInspect
         var fields = new DisplayField[list.Count];
         for (int i = 0; i < list.Count; i++)
         {
-            NearbyEntityRow row = Row(list[i], nowUtc, source);
+            NearbyEntityRow row = Row(list[i], nowUtc, source, nameOf);
             rows[i] = row;
             fields[i] = new DisplayField(
                 $"Entità {row.EntityId}",
@@ -150,20 +168,24 @@ internal static class SurroundingsInspect
     public static string AgeLabel(double ageSeconds)
         => string.Create(CultureInfo.InvariantCulture, $"{ageSeconds:0}s");
 
-    private static NearbyEntityRow Row(SelectableEntity entity, DateTime nowUtc, string source)
+    private static NearbyEntityRow Row(
+        SelectableEntity entity, DateTime nowUtc, string source, Func<int, string?>? nameOf)
     {
         double age = AgeSeconds(entity.ObservedAtUtc, nowUtc);
         string vnum = entity.Vnum is { } number
             ? number.ToString(CultureInfo.InvariantCulture)
             : $"UNKNOWN · {VnumNotOnObservation}";
 
-        // Il nome resta UNKNOWN anche con il vnum in mano: risolverlo vuole il
-        // catalogo, che questa vista non ha. Il motivo cambia con il caso --
-        // "nessuno ha detto cosa sia" e "so cosa e' ma non ho la tabella" sono
-        // due ignoranze diverse.
-        string name = entity.Vnum is null
-            ? $"UNKNOWN · {VnumNotOnObservation}"
-            : $"UNKNOWN · {NameNeedsCatalogue}";
+        // Tre esiti distinti, e tre motivi diversi: nessun vnum, nessun
+        // risolutore, oppure il catalogo interrogato che non ha quel vnum. Prima
+        // del 2026-09-08 erano due e uno dei due era falso.
+        string name;
+        if (entity.Vnum is not { } vnumValue)
+            name = $"UNKNOWN · {VnumNotOnObservation}";
+        else if (nameOf is null)
+            name = $"UNKNOWN · {NameLookupNotOffered}";
+        else
+            name = nameOf(vnumValue) ?? $"UNKNOWN · {VnumNotInCatalogue}";
 
         string species = string.IsNullOrEmpty(entity.Kind)
             ? $"UNKNOWN · {SpeciesNotOnObservation}"

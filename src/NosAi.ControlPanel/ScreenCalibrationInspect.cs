@@ -61,15 +61,27 @@ internal static class ScreenCalibrationInspect
         double pitchX = Math.Sqrt((calibration.A * calibration.A) + (calibration.D * calibration.D));
         double pitchY = Math.Sqrt((calibration.B * calibration.B) + (calibration.E * calibration.E));
 
-        fields.Add(new DisplayField("Calibrazione", "PRESENTE", "Screen"));
+        // «PRESENTE» senza data non distingue una calibrazione di ieri da una di
+        // sei mesi fa, e il file la porta.
+        fields.Add(new DisplayField("Calibrazione", calibration.CalibratedAtUtc is { } when
+            ? string.Create(CultureInfo.InvariantCulture, $"PRESENTE · calibrata il {when.ToLocalTime():yyyy-MM-dd HH:mm}")
+            : "PRESENTE · senza data (file di un formato precedente)", "Screen"));
         fields.Add(new DisplayField("Passo casella", string.Create(CultureInfo.InvariantCulture,
             $"{pitchX:F2} x {pitchY:F2} px"), "Screen"));
         fields.Add(new DisplayField("Ancora personaggio", string.Create(CultureInfo.InvariantCulture,
             $"({calibration.C:F0}, {calibration.F:F0}) px"), "Screen"));
         fields.Add(new DisplayField("Regime", string.Create(CultureInfo.InvariantCulture,
             $"{calibration.ClientWidth}x{calibration.ClientHeight} @ {calibration.ClientDpi} DPI · {calibration.Regime}"), "Screen"));
+        // `VerifiedAgainstSamples` NON e' il numero di campioni: e' quanti ce ne
+        // sono oltre a quelli che il fit consuma (tre per l'affine, quattro per la
+        // prospettica). Scriverlo come «verificata su N campioni» dava 16 dove i
+        // campioni usati erano 19 -- un numero piu' basso del vero, accanto a un
+        // «20 righe · 20 utilizzabili» che lo contraddiceva.
+        int consumed = calibration.G != 0 || calibration.H != 0
+            ? ScreenProjectionCalibration.PerspectiveMinimumPairs
+            : ScreenProjectionCalibration.MinimumSamples;
         fields.Add(new DisplayField("Verificata su", string.Create(CultureInfo.InvariantCulture,
-            $"{calibration.VerifiedAgainstSamples} campioni · residuo peggiore {calibration.WorstResidualPixels:F1} px"), "Screen"));
+            $"{calibration.VerifiedAgainstSamples + consumed} campioni usati ({calibration.VerifiedAgainstSamples} oltre i {consumed} che il fit consuma) · residuo peggiore {calibration.WorstResidualPixels:F1} px"), "Screen"));
 
         // Una calibrazione che ha lasciato fuori dei campioni non e' la stessa
         // cosa di una che li ha usati tutti, e chi la legge deve poterlo vedere

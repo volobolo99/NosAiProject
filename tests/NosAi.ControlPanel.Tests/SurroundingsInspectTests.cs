@@ -178,7 +178,7 @@ public sealed class SurroundingsSpeciesTests
         // Il nome resta ignoto, ma per un motivo diverso: il vnum c'e', manca il
         // catalogo. Due ignoranze diverse non si scrivono uguali.
         Assert.Contains(
-            SurroundingsInspect.NameNeedsCatalogue, view.Rows[0].Name,
+            SurroundingsInspect.NameLookupNotOffered, view.Rows[0].Name,
             StringComparison.Ordinal);
         Assert.DoesNotContain(
             SurroundingsInspect.VnumNotOnObservation, view.Rows[0].Name,

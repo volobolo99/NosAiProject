@@ -19,6 +19,9 @@ public partial class MainWindow : Window
 {
     private readonly string _repoRoot;
     private readonly UiLogger _log = new();
+
+    /// <summary>Il catalogo del client, aperto una volta e ricordato.</summary>
+    private readonly CatalogueNames _catalogueNames = new();
     private readonly RuntimeSession _session;
     private readonly bool _elevated;
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
@@ -275,7 +278,7 @@ public partial class MainWindow : Window
     private void ApplyAround(SnapshotView snapshot)
     {
         DateTime nowUtc = TimeProvider.System.GetUtcNow().UtcDateTime;
-        SurroundingsView around = SurroundingsInspect.Inspect(snapshot.Entities, nowUtc);
+        SurroundingsView around = SurroundingsInspect.Inspect(snapshot.Entities, nowUtc, _catalogueNames.Of);
         SurroundingsSummary.Text = around.Summary;
         SurroundingsFields.ItemsSource = around.Fields;
         CombatFields.ItemsSource = CombatInspect.Inspect(snapshot.HitBy, snapshot.HasTarget, nowUtc).Fields;
@@ -969,9 +972,15 @@ public partial class MainWindow : Window
             return;
         }
 
+        // `path` e' la registrazione piu' recente, ed e' quella che va analizzata.
+        // Fino al 2026-09-08 veniva calcolata e poi scartata: il comando riceveva
+        // il letterale `data/equip_test.noscap`, cioe' la cattura di riferimento
+        // del 2 settembre, mostrata all'operatore come se fosse quella appena
+        // registrata. La meta' che scrive era stata corretta, questa no.
+        string name = Path.GetFileName(path);
         var lines = new List<string>();
-        await RunToolAsync(
-            "dotnet", $"\"{dll}\" --world-replay data/equip_test.noscap",
+        ToolResult replay = await RunToolAsync(
+            "dotnet", $"\"{dll}\" --world-replay data/{name}",
             "Analisi registrazione equip", pairing: false,
             onLine: line =>
             {
@@ -979,12 +988,25 @@ public partial class MainWindow : Window
                     lines.Add(line.Trim());
             });
 
+        // Una rigiocata fallita non e' una registrazione senza inventario: dirlo
+        // con lo stesso messaggio manderebbe l'operatore a rifare una cattura
+        // che andava bene.
+        if (replay.ExitCode != 0)
+        {
+            EquipWireFields.ItemsSource = Array.Empty<DisplayField>();
+            EquipWireSummary.Text =
+                $"La rigiocata di data/{name} non e' riuscita (uscita {replay.ExitCode}). Motivo nel Diario: la registrazione potrebbe essere vuota o illeggibile.";
+            return;
+        }
+
+        // Righe rilette da un file: CACHED, non LIVE. «Wire» non e' nemmeno uno
+        // dei cinque valori del vocabolario di provenienza.
         EquipWireFields.ItemsSource = lines.Count > 0
-            ? lines.Select((l, i) => new DisplayField($"riga {i + 1}", l, "Wire")).ToArray()
+            ? lines.Select((l, i) => new DisplayField($"riga {i + 1}", l, "Cached")).ToArray()
             : Array.Empty<DisplayField>();
         EquipWireSummary.Text = lines.Count > 0
-            ? $"{lines.Count} righe inventario trovate. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
-            : "Nessuna riga inventario (ivn) nella registrazione: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
+            ? $"{lines.Count} righe inventario da data/{name}. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
+            : $"Nessuna riga inventario (ivn) in data/{name}: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
     }
 
     /// <summary>
