@@ -104,17 +104,19 @@ public static class ScreenProjectionProbe
     }
 
     /// <summary>Solves the recorded samples into a calibration, or says why not.</summary>
-    public static int RunSolve(string? repoRoot)
+    public static int RunSolve(string? repoRoot, Action<string>? report = null)
     {
+        void Say(string line = "") => (report ?? Console.WriteLine)(line);
+
         repoRoot ??= Directory.GetCurrentDirectory();
         string samplePath = Path.Combine(repoRoot, SamplesRelativePath);
 
-        List<ScreenProjectionSample> samples = ReadSamples(samplePath, out int clientWidth, out int clientHeight);
+        List<ScreenProjectionSample> samples = ReadSamples(samplePath, out int clientWidth, out int clientHeight, report);
         if (samples.Count == 0)
         {
-            Console.WriteLine($"[REFUSED] no_samples_recorded ({samplePath})");
-            Console.WriteLine("  Collect them with --screen-autocalibrate --arm-input, or with");
-            Console.WriteLine("  --screen-watch <seconds> to record your own clicks instead.");
+            Say($"[REFUSED] no_samples_recorded ({samplePath})");
+            Say("  Collect them with --screen-autocalibrate --arm-input, or with");
+            Say("  --screen-watch <seconds> to record your own clicks instead.");
             return 1;
         }
 
@@ -122,48 +124,50 @@ public static class ScreenProjectionProbe
                 samples, clientWidth, clientHeight, DateTime.UtcNow,
                 out ScreenProjectionCalibration calibration, out string? reason))
         {
-            Console.WriteLine($"[REFUSED] {reason}");
-            Console.WriteLine("  Nothing was written. The old calibration, if any, is untouched.");
+            Say($"[REFUSED] {reason}");
+            Say("  Nothing was written. The old calibration, if any, is untouched.");
             if (reason is not null && reason.StartsWith("samples_are_collinear", StringComparison.Ordinal))
-                Console.WriteLine("  The offsets lie on a line: one of them has to cross the others' direction.");
+                Say("  The offsets lie on a line: one of them has to cross the others' direction.");
             return 1;
         }
 
         string path = Path.Combine(repoRoot, ScreenProjectionCalibration.RelativePath);
         calibration.Save(path);
 
-        Console.WriteLine($"Screen projection calibrated from {samples.Count} samples.");
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        Say($"Screen projection calibrated from {samples.Count} samples.");
+        Say(string.Create(CultureInfo.InvariantCulture,
             $"  screenX = {calibration.A:F4}*dx + {calibration.B:F4}*dy + {calibration.C:F1}"));
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        Say(string.Create(CultureInfo.InvariantCulture,
             $"  screenY = {calibration.D:F4}*dx + {calibration.E:F4}*dy + {calibration.F:F1}"));
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        Say(string.Create(CultureInfo.InvariantCulture,
             $"  Character drawn at {calibration.Anchor.X:F0},{calibration.Anchor.Y:F0}"
             + $" of {clientWidth}x{clientHeight}."));
-        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        Say(string.Create(CultureInfo.InvariantCulture,
             $"  Worst residual: {calibration.WorstResidualPixels:F2} px over {samples.Count} samples"
             + $" ({calibration.VerifiedAgainstSamples} more than the fit needs)."));
         if (calibration.VerifiedAgainstSamples == 0)
         {
-            Console.WriteLine("  Solved from exactly three pairs, which three pairs always reproduce");
-            Console.WriteLine("  exactly, so the residual confirmed nothing. One more sample would.");
+            Say("  Solved from exactly three pairs, which three pairs always reproduce");
+            Say("  exactly, so the residual confirmed nothing. One more sample would.");
         }
 
-        Console.WriteLine($"  {path}");
-        Console.WriteLine("  Valid for this client at this size only. Resize the window and it is refused.");
+        Say($"  {path}");
+        Say("  Valid for this client at this size only. Resize the window and it is refused.");
         return 0;
     }
 
     /// <summary>Discards the pending samples.</summary>
-    public static int RunClear(string? repoRoot)
+    public static int RunClear(string? repoRoot, Action<string>? report = null)
     {
+        void Say(string line = "") => (report ?? Console.WriteLine)(line);
+
         repoRoot ??= Directory.GetCurrentDirectory();
         string path = Path.Combine(repoRoot, SamplesRelativePath);
         if (File.Exists(path))
             File.Delete(path);
 
-        Console.WriteLine($"Samples cleared: {path}");
-        Console.WriteLine("  The calibration itself, if one was written, is untouched.");
+        Say($"Samples cleared: {path}");
+        Say("  The calibration itself, if one was written, is untouched.");
         return 0;
     }
 
@@ -178,8 +182,10 @@ public static class ScreenProjectionProbe
     /// operator than a refusal they have to diagnose.
     /// </remarks>
     private static List<ScreenProjectionSample> ReadSamples(
-        string path, out int clientWidth, out int clientHeight)
+        string path, out int clientWidth, out int clientHeight, Action<string>? report = null)
     {
+        void Say(string line = "") => (report ?? Console.WriteLine)(line);
+
         clientWidth = 0;
         clientHeight = 0;
         var samples = new List<ScreenProjectionSample>();
@@ -189,10 +195,10 @@ public static class ScreenProjectionProbe
         string[] lines = File.ReadAllLines(path);
         if (lines.Length == 0 || !string.Equals(lines[0].Trim(), SamplesHeader, StringComparison.Ordinal))
         {
-            Console.WriteLine($"[REFUSED] {SamplesVersionUnsupportedReason}: {path}");
-            Console.WriteLine($"  Attesa la prima riga \"{SamplesHeader}\". Un file senza regime per riga");
-            Console.WriteLine("  non sa dire se i suoi campioni vengono da una sola geometria.");
-            Console.WriteLine("  Svuotarlo con --screen-samples-clear e ricampionare.");
+            Say($"[REFUSED] {SamplesVersionUnsupportedReason}: {path}");
+            Say($"  Attesa la prima riga \"{SamplesHeader}\". Un file senza regime per riga");
+            Say("  non sa dire se i suoi campioni vengono da una sola geometria.");
+            Say("  Svuotarlo con --screen-samples-clear e ricampionare.");
             return samples;
         }
 
@@ -240,9 +246,9 @@ public static class ScreenProjectionProbe
                 .Where(x => x != current)
                 .Distinct()
                 .Select(x => $"{x.Width}x{x.Height}@{x.Dpi}dpi"));
-            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            Say(string.Create(CultureInfo.InvariantCulture,
                 $"  {dropped} campione(i) di un altro regime ignorati: {others}"));
-            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            Say(string.Create(CultureInfo.InvariantCulture,
                 $"  Tenuti quelli di {current.Width}x{current.Height}@{current.Dpi}dpi."));
         }
 

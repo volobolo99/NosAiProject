@@ -334,6 +334,23 @@
             <TextBlock x:Name="PerceptionSummary" Foreground="{StaticResource MutedBrush}" Margin="0,10,0,8" TextWrapping="Wrap"
                        Text="Nessun probe in questa sessione. Il risultato non entra nello snapshot Gate 1."/>
             <ItemsControl x:Name="PerceptionFields" ItemTemplate="{StaticResource FieldTemplate}" Margin="0,0,0,16"/>
+
+            <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Calibrazione schermo &#8594; mappa</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,10" TextWrapping="Wrap">Quanti pixel vale una casella, misurato facendo tradurre al client i tuoi clic. Si raccoglie da qui: il file finisce in data/perception/screen-samples.txt del repository, mai nella cartella da cui e' partito un comando. Ogni clic va fatto DA FERMO e lontano dal personaggio; il pannello dice dove cliccare dopo ognuno, e alla fine se i campioni si risolvono.</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+              <Button x:Name="ScreenSampleButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Raccogli campioni (90 s)" Click="OnScreenSamples" Margin="0,0,8,0"/>
+              <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Calibra ora" Click="OnScreenCalibrate" Margin="0,0,8,0"/>
+              <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Aggiorna stato" Click="OnScreenCalibrationRefresh" Margin="0,0,8,0"/>
+              <Button Style="{StaticResource DangerButton}" HorizontalAlignment="Left" Content="Azzera campioni" Click="OnScreenSamplesClear"/>
+            </StackPanel>
+            <ItemsControl x:Name="ScreenCalibrationFields" ItemTemplate="{StaticResource FieldTemplate}" Margin="0,0,0,10"/>
+            <TextBox x:Name="ScreenCalibrationLog" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MaxHeight="240" MinHeight="90"
+                     FontFamily="Consolas" FontSize="12" Margin="0,0,0,16"
+                     Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                     BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
+                     Text="Nessuna raccolta in questa sessione."/>
+
             <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Hardware osservato</TextBlock>
             <ItemsControl x:Name="HardwareFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>

@@ -429,7 +429,12 @@ public partial class MainWindow : Window
         }
         else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
-        else if (ReferenceEquals(button, NavPerception)) { ViewPerception.Visibility = Visibility.Visible; PageTitle.Text = "Percezione"; }
+        else if (ReferenceEquals(button, NavPerception))
+        {
+            ViewPerception.Visibility = Visibility.Visible;
+            PageTitle.Text = "Percezione";
+            RefreshScreenCalibration();
+        }
         else if (ReferenceEquals(button, NavNetwork))
         {
             ViewNetwork.Visibility = Visibility.Visible;
@@ -560,6 +565,135 @@ public partial class MainWindow : Window
         }
 
         await RunToolAsync("dotnet", $"\"{dll}\" {suite.Flag}", suite.Title, pairing: false);
+    }
+
+    /// <summary>
+    /// Rilegge dai file veri che cosa il repository sa della proiezione
+    /// schermo -> mappa. Nessun valore viene tenuto in memoria fra una raccolta e
+    /// l'altra: quello che si vede e' quello che c'e' su disco adesso.
+    /// </summary>
+    private void RefreshScreenCalibration()
+    {
+        try
+        {
+            ScreenCalibrationFields.ItemsSource = ScreenCalibrationInspect.Inspect(_repoRoot);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ScreenCalibrationFields.ItemsSource = new[]
+            {
+                new DisplayField("Calibrazione", $"UNKNOWN · {ex.GetType().Name}", "UNKNOWN")
+            };
+        }
+    }
+
+    private void OnScreenCalibrationRefresh(object sender, RoutedEventArgs e) => RefreshScreenCalibration();
+
+    private void CalibrationSay(string line)
+    {
+        ScreenCalibrationLog.AppendText(line + Environment.NewLine);
+        ScreenCalibrationLog.ScrollToEnd();
+    }
+
+    /// <summary>
+    /// Raccoglie i campioni di calibrazione dalla finestra, non da un terminale.
+    /// </summary>
+    /// <remarks>
+    /// La radice del repository e' passata esplicitamente: il 2026-09-07 lo stesso
+    /// lavoro fatto da riga di comando ha scritto campioni e calibrazione in
+    /// <c>C:\WINDOWS\system32\data\</c>, perche' il comando era partito da li',
+    /// e i file non esistevano da nessun'altra parte. Un pulsante non puo'
+    /// sbagliare cartella.
+    /// </remarks>
+    private async void OnScreenSamples(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        _busy = true;
+        ScreenSampleButton.IsEnabled = false;
+        ScreenCalibrationLog.Text = string.Empty;
+        Status("Raccolta campioni: clicca per camminare nel client, da fermo e lontano.");
+        try
+        {
+            int code = await Task.Run(() => ScreenProjectionWatcher.Run(
+                seconds: 90,
+                wanted: ScreenSampleCoach.DefaultWantedSamples,
+                repoRoot: _repoRoot,
+                report: line => Dispatcher.Invoke(() => CalibrationSay(line)))).ConfigureAwait(true);
+
+            Status(code == 0
+                ? "Raccolta campioni conclusa."
+                : $"Raccolta campioni rifiutata (codice {code}).");
+            _log.Operator($"Raccolta campioni schermo, uscita {code}.");
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Raccolta campioni schermo fallita.", ex);
+            CalibrationSay($"[ERRORE] {ex.Message}");
+            Status($"Raccolta campioni fallita: {ex.Message}");
+        }
+        finally
+        {
+            _busy = false;
+            ScreenSampleButton.IsEnabled = true;
+            RefreshScreenCalibration();
+        }
+    }
+
+    private async void OnScreenCalibrate(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        _busy = true;
+        Status("Calibrazione schermo in corso…");
+        try
+        {
+            int code = await Task.Run(() => ScreenProjectionProbe.RunSolve(
+                _repoRoot, line => Dispatcher.Invoke(() => CalibrationSay(line)))).ConfigureAwait(true);
+
+            Status(code == 0 ? "Calibrazione scritta." : "Calibrazione rifiutata: niente è stato scritto.");
+            _log.Operator($"Calibrazione schermo, uscita {code}.");
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Calibrazione schermo fallita.", ex);
+            CalibrationSay($"[ERRORE] {ex.Message}");
+            Status($"Calibrazione fallita: {ex.Message}");
+        }
+        finally
+        {
+            _busy = false;
+            RefreshScreenCalibration();
+        }
+    }
+
+    private void OnScreenSamplesClear(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        // I campioni sono una misura del client reale che costa una sessione
+        // all'operatore: si buttano solo dicendolo.
+        if (MessageBox.Show(
+                "Cancello tutti i campioni raccolti? La calibrazione gia' scritta resta.",
+                "Azzera campioni", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        int code = ScreenProjectionProbe.RunClear(_repoRoot, CalibrationSay);
+        Status(code == 0 ? "Campioni azzerati." : $"Azzeramento rifiutato (codice {code}).");
+        _log.Operator($"Azzeramento campioni schermo, uscita {code}.");
+        RefreshScreenCalibration();
     }
 
     private async void OnDxgiProbe(object sender, RoutedEventArgs e)
