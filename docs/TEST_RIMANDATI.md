@@ -181,20 +181,29 @@ una coppia osservata (testo a schermo ↔ riga della cattura) per stabilire la
 regola, e il pannello ora la raccoglie: **Rete → «Registra il filo, e annota cosa
 hai visto»** scrive cattura e nota con lo stesso nome.
 
-### Cosa serve, ed è poco
+### Cosa serve, ed è un solo gesto
 
-Una cattura in cui **si sappia quale messaggio è comparso**:
+**Dal 2026-09-08 non c'è niente da digitare.** Pannello di controllo → **Rete** →
+«Registra il filo, e annota cosa hai visto»:
 
-1. `--record-wire <ip:porta> <file.noscap>` avviato.
-2. In gioco, provocare un messaggio inequivocabile e **annotarne il testo esatto**
-   — raccogliere un oggetto, accettare una missione, parlare con un NPC.
-   Meglio tre o quattro messaggi diversi, con l'ora di ciascuno.
-3. Fermare la cattura.
-4. `--wire-inspect <file> --opcode sayi` e `--opcode msgi` per vedere le righe.
+1. scrivi nella casella cosa comparirà a schermo, premi **Registra**;
+2. in gioco, provoca un messaggio inequivocabile — raccogliere un oggetto è il
+   più semplice — e **scrivi il testo esatto** mentre è ancora a schermo;
+3. la registrazione si ferma da sola.
 
-**Da registrare:** il testo esatto letto sullo schermo e le righe `sayi`/`msgi`
-della cattura. Con una sola coppia (testo osservato ↔ riga) la corrispondenza si
-stabilisce; con tre si conferma.
+Appena finisce, il pannello mostra sotto, nello stesso riquadro:
+
+- **gli id che il filo ha detto**, con l'argomento e il nome che il catalogo gli
+  dà (il nome solo quando il campo 5 dichiara che l'argomento è un oggetto: con
+  qualunque altro valore il numero non è un vnum, e cercarlo darebbe un nome
+  plausibile e falso);
+- **le righe del catalogo dei messaggi che contengono le parole della nota**, con
+  la loro chiave.
+
+Le due metà si vedono così una accanto all'altra nel momento in cui esistono
+entrambe, che è l'unico in cui la seconda esiste. **Il pannello non le collega**:
+mostra e basta. Con una coppia la regola si propone, con tre si conferma — e
+finché non è confermata nessuna riga di codice deve dedurla.
 
 Finché non è fatto, il testo resta nel catalogo e **nessuno può dire quale riga
 vale adesso** — ed è per questo che `DialogWindowStateComposer` continua a
