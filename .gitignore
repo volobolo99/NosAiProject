@@ -49,6 +49,20 @@ obj/
 data/*
 !data/keybinds.example.json
 
+# Le calibrazioni dello schermo e i campioni da cui nascono restano invece
+# versionati. Sono la misura del client reale -- sei numeri e le coppie
+# pixel/casella che li producono -- e senza di loro il repository non sa
+# riprodurre nessuna delle affermazioni che ci costruisce sopra. Il 2026-09-07
+# sono quasi andati persi: erano scritti in C:\WINDOWS\system32\data\ perche'
+# il comando era partito da li', e non esistevano da nessun'altra parte.
+# La forma e' `data/perception/*` e non `data/perception/`: git non puo'
+# re-includere nulla sotto una directory esclusa, quindi la directory va
+# ri-ammessa prima del suo contenuto.
+!data/perception/
+data/perception/*
+!data/perception/*.calibration
+!data/perception/screen-samples*.txt
+
 # WinDivert: resta fuori solo cio' che si scarica -- lo zip upstream e la cartella
 # WinDivert-2.2.2-A che ne esce. Il probe e lo script di installazione no: sono
 # codice di questo repository (il probe referenzia NosAi.Runtime.csproj, lo script
