@@ -47,7 +47,7 @@ silent about what only the client knows.
 
 | Concept | Observed |
 |---|---|
-| Entity type `2` | **NPC, pet e portali — layout stabilito il 2026-09-07, ancora non letto**: vedi sotto |
+| Entity type `2` | **NPC, pet e portali — letto dal 2026-09-08, come `Bystander`**: vedi sotto |
 | Entity type `1` | player — **confirmed** (the session's own character id `3443217` appears as type 1 in `su`, `cond`, `sayi`) |
 | Entity type `2` | not observed in these captures |
 | Entity type `3` | monster / NPC — **confirmed** (all `mv`, `in`, `die`) |
@@ -55,12 +55,12 @@ silent about what only the client knows.
 
 ---
 
-## Entity type `2` — stabilito, e deliberatamente non letto
+## Entity type `2` — letto, e mai un bersaglio
 
-Il decoder legge solo il tipo 3. Fino al 2026-09-07 il motivo era che il layout
-del tipo 2 non era stabilito. **Ora lo è**, misurato su `data/messaggi.noscap`
-(2718 `mv`, 14 `st`, 6 `in` di tipo 2, su 30 entità distinte), e il motivo del
-rifiuto è cambiato.
+Il decoder ha letto solo il tipo 3 fino al 2026-09-08. Il motivo dichiarato era
+che il layout del tipo 2 non fosse stabilito; **lo è stato**, misurato su
+`data/messaggi.noscap` (2718 `mv`, 14 `st`, 6 `in` di tipo 2, su 30 entità
+distinte), e il tipo 2 è entrato — con la specie accanto.
 
 ### Le tre misure
 
@@ -98,9 +98,27 @@ pubblica è etichettato `"Monster"`, e quell'etichetta arriva al World Model.
 Ammettere il tipo 2 così com'è metterebbe davanti al pianificatore un
 negoziante — o il pet del giocatore stesso — come bersaglio.
 
-Il tipo 2 entrerà quando l'avvistamento porterà **la specie osservata** invece di
-una costante. È un cambio di contratto, e finché non c'è, un buco dichiarato
-nella percezione vale più di un bersaglio sbagliato.
+### Come è entrato
+
+L'avvistamento porta ora **la specie letta sul filo** invece di una costante:
+`EntitySighting.MonsterKind` per il tipo 3, `BystanderKind` per il tipo 2. La
+specie arriva fino a `SelectableEntity`, e `TargetEstablishment.Assess` rifiuta
+gli astanti con `target_is_a_bystander`.
+
+Il controllo sta **dopo** le due prove per evidenza: se un astante ci ha colpito,
+o ci abbiamo agito sopra, quello che è successo pesa più di come è etichettato.
+La stessa gerarchia che `Assess` applica già al vnum mai osservato.
+
+Specie non dichiarata non è «astante» e non è «mostro»: la regola del vnum nullo
+vale anche qui, e chi costruisce entità da una sorgente che la specie non la
+porta non vede né tutto attaccabile né niente come astante.
+
+**Effetto misurato**: «tipo entità non letto» passa da **431 a 0** su
+`equip_test.noscap` e da **17 a 0** su `nostale_combat.noscap`. Su
+`messaggi.noscap` restano 133 movimenti, tutti di **tipo 1** — l'altro giocatore,
+l'unico tipo osservato di cui nessuna misura abbia mai mostrato dove stanno i
+campi. Il World Model di quella cattura vede ora **33 astanti accanto a 176
+mostri**, e `--world-replay` li distingue in elenco.
 
 ### E il catalogo non basta a distinguerle
 
