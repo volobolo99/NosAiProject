@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -782,6 +783,116 @@ public partial class MainWindow : Window
     /// mostrare quale <c>InventoryKind</c> il client invia da equipaggiato. Sniff
     /// only (stessa garanzia di <c>WireRecorder</c>): niente è alterato o iniettato.
     /// </summary>
+    /// <summary>
+    /// Registra il filo e mette accanto alla cattura il testo che l'operatore ha
+    /// letto sullo schermo mentre registrava.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perche' la nota sta nel pannello e non in un file scritto a mano.</b>
+    /// Il 2026-09-07 il catalogo ha acquisito 50 704 voci di testo del client --
+    /// missioni, battute di NPC, nomi di mappa -- e il filo porta degli id
+    /// (<c>sayi</c>, <c>msgi</c>). Il legame fra i due non si stabilisce dalle
+    /// catture che abbiamo, perche' nessuna dice cosa fosse a schermo in quel
+    /// momento (T-16). Una coppia -- testo osservato e riga della cattura -- lo
+    /// stabilisce; tre lo confermano. La nota va scritta mentre si registra, non
+    /// dopo: e' l'unico momento in cui esiste.
+    /// </para>
+    /// <para>
+    /// Nota e cattura prendono lo stesso nome per costruzione, cosi' non possono
+    /// separarsi. Il percorso e' quello del repository, passato esplicitamente.
+    /// </para>
+    /// </remarks>
+    private async void OnRecordWireWithNote(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        string endpoint = SettingObserveGame.Text?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            WireCaptureSummary.Text = "Nessun endpoint rilevato. Vai su Impostazioni e premi \"Rileva endpoint\" (serve il client NosTale aperto e collegato).";
+            return;
+        }
+
+        if (!int.TryParse(WireCaptureSeconds.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+            || seconds <= 0 || seconds > 3600)
+        {
+            WireCaptureSummary.Text = "Durata non valida: un intero di secondi fra 1 e 3600.";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        string stem = string.Create(CultureInfo.InvariantCulture, $"wire_{DateTime.Now:yyyyMMdd_HHmmss}");
+        WireCaptureButton.IsEnabled = false;
+        WireCaptureSummary.Text = $"Registrazione in corso ({seconds}s) su data/{stem}.noscap. Provoca i messaggi ORA e scrivi qui sotto cosa compare.";
+        try
+        {
+            var result = await RunToolAsync(
+                "dotnet", $"\"{dll}\" --record-wire {endpoint} data/{stem}.noscap --watch {seconds}",
+                "Registrazione filo", pairing: false);
+
+            if (result.ExitCode != 0)
+            {
+                WireCaptureSummary.Text = result.Output.Contains("access_denied_run_elevated", StringComparison.Ordinal)
+                    ? "Registrazione non riuscita: serve amministratore. Riavvia il pannello come amministratore e ripeti."
+                    : $"Registrazione non riuscita (uscita {result.ExitCode}). Motivo nel Diario.";
+                return;
+            }
+
+            string note = WireCaptureNote.Text ?? string.Empty;
+            string notePath = Path.Combine(_repoRoot, "data", $"{stem}.note.txt");
+            await File.WriteAllTextAsync(notePath, string.Create(CultureInfo.InvariantCulture,
+                $"cattura: {stem}.noscap{Environment.NewLine}"
+                + $"endpoint: {endpoint}{Environment.NewLine}"
+                + $"durata_s: {seconds}{Environment.NewLine}"
+                + $"scritta: {DateTime.Now:yyyy-MM-dd HH:mm:ss}{Environment.NewLine}"
+                + $"---{Environment.NewLine}{note}{Environment.NewLine}")).ConfigureAwait(true);
+
+            WireCaptureSummary.Text = string.IsNullOrWhiteSpace(note)
+                ? $"Cattura scritta in data/{stem}.noscap. La nota e' VUOTA: senza il testo visto a schermo la cattura non chiude T-16."
+                : $"Cattura e nota scritte: data/{stem}.noscap e data/{stem}.note.txt.";
+            _log.Operator($"Registrazione filo {stem}, nota {(string.IsNullOrWhiteSpace(note) ? "vuota" : "presente")}.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.Error("Registrazione filo fallita.", ex);
+            WireCaptureSummary.Text = $"Registrazione fallita: {ex.Message}";
+        }
+        finally
+        {
+            WireCaptureButton.IsEnabled = true;
+        }
+    }
+
+    /// <summary>
+    /// La registrazione piu' recente che corrisponde al modello, o nulla.
+    /// </summary>
+    /// <remarks>
+    /// Per data di scrittura e non per nome: il nome porta un timestamp, ma
+    /// ordinare delle stringhe per far finta di ordinare degli istanti e' il
+    /// genere di scorciatoia che regge finche' il formato non cambia.
+    /// </remarks>
+    private static string? NewestCapture(string directory, string pattern)
+    {
+        if (!Directory.Exists(directory))
+            return null;
+
+        return Directory.EnumerateFiles(directory, pattern)
+            .Select(static path => new FileInfo(path))
+            .OrderByDescending(static info => info.LastWriteTimeUtc)
+            .FirstOrDefault()?.FullName;
+    }
+
     private async void OnRecordEquipWire(object sender, RoutedEventArgs e)
     {
         if (_busy)
@@ -804,10 +915,17 @@ public partial class MainWindow : Window
             return;
         }
 
-        EquipWireSummary.Text = "Registrazione in corso (30s): equipaggia e poi disequipaggia un oggetto ORA.";
+        // Mai su data/equip_test.noscap. Quel file e' una delle cinque catture di
+        // riferimento su cui poggia docs/PROTOCOLLO_NOSTALE.md, non e' versionato
+        // (data/* e' escluso) e quindi ne esiste una copia sola: un pulsante che
+        // lo riscrive cancella la prova su cui il repository si basa. Ogni
+        // registrazione prende un nome proprio, e l'analisi legge la piu' recente.
+        string captureName = string.Create(CultureInfo.InvariantCulture,
+            $"equip_test_{DateTime.Now:yyyyMMdd_HHmmss}.noscap");
+        EquipWireSummary.Text = $"Registrazione in corso (30s) su {captureName}: equipaggia e poi disequipaggia un oggetto ORA.";
         EquipWireFields.ItemsSource = null;
         var result = await RunToolAsync(
-            "dotnet", $"\"{dll}\" --record-wire {endpoint} data/equip_test.noscap --watch 30",
+            "dotnet", $"\"{dll}\" --record-wire {endpoint} data/{captureName} --watch 30",
             "Registrazione equip", pairing: false);
         EquipWireSummary.Text = result switch
         {
@@ -827,8 +945,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        string path = Path.Combine(_repoRoot, "data", "equip_test.noscap");
-        if (!File.Exists(path))
+        string? path = NewestCapture(Path.Combine(_repoRoot, "data"), "equip_test*.noscap");
+        if (path is null)
         {
             EquipWireSummary.Text = "Nessuna registrazione trovata. Premi prima \"Registra equip (30s)\".";
             return;

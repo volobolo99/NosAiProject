@@ -363,6 +363,24 @@
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Osservazione gioco</TextBlock>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap">Canale world del client: attivo solo con endpoint impostato e driver aperto. UNKNOWN col motivo, mai 0 al posto di un dato non letto.</TextBlock>
             <ItemsControl x:Name="GameObservationFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+
+            <TextBlock Margin="0,20,0,8" FontWeight="SemiBold">Registra il filo, e annota cosa hai visto</TextBlock>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,10" TextWrapping="Wrap">Una registrazione senza il testo che era a schermo in quel momento non basta a collegare un id del filo a una riga del catalogo: gli id ci sono, il testo c'e', il legame no (T-16). Scrivi qui sotto cosa e' comparso -- una riga per messaggio, con l'ora se la ricordi -- e premi Registra: la cattura e la nota finiscono accanto, con lo stesso nome, in data/ del repository.</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+              <TextBlock Text="Durata (s)" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0"/>
+              <TextBox x:Name="WireCaptureSeconds" Width="70" Text="180" VerticalAlignment="Center" Margin="0,0,12,0"
+                       Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                       BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+              <Button x:Name="WireCaptureButton" Style="{StaticResource PrimaryButton}" Content="Registra il filo e annota" Click="OnRecordWireWithNote"/>
+            </StackPanel>
+            <TextBox x:Name="WireCaptureNote" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160"
+                     VerticalScrollBarVisibility="Auto" Margin="0,0,0,8"
+                     Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                     BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
+                     Text=""/>
+            <TextBlock x:Name="WireCaptureSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,16"
+                       Text="Nessuna registrazione in questa sessione."/>
+
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Registro eventi</TextBlock>
