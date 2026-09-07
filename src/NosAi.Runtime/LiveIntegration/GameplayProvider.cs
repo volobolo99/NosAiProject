@@ -293,6 +293,10 @@ public sealed record GameplayObservation(
             y = e.At.Y,
             hpRatio = e.HpRatio,
             vnum = e.Vnum,
+            // La specie letta sul filo. Senza, il pannello disegnerebbe un NPC e
+            // un mostro con la stessa riga, e l'operatore non avrebbe modo di
+            // sapere quale delle due sta guardando.
+            kind = e.Kind,
             observedAtUtc = Iso(e.ObservedAtUtc),
         }).ToArray()),
         playerPosition = Project(PlayerPosition, p => new { x = p.X, y = p.Y }),

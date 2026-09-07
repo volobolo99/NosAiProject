@@ -27,7 +27,8 @@ internal sealed record NearbyEntityRow(
     string Life,
     string Age,
     double AgeSeconds,
-    string Source);
+    string Source,
+    string Species = "");
 
 /// <summary>Operator-facing surroundings: observed entities, or why there are none to draw.</summary>
 internal sealed class SurroundingsView
@@ -53,13 +54,36 @@ internal static class SurroundingsInspect
     public const string NoEntitiesAroundLabel = "nessuna entità attorno";
 
     /// <summary>
-    /// <see cref="SelectableEntity"/> does not carry a vnum, so the catalogue
-    /// cannot be asked. Named here rather than left as a bare UNKNOWN.
+    /// L'osservazione non ha portato un vnum: nessun pacchetto di comparsa ha
+    /// detto cosa sia questa entità. Nominato, invece che lasciato come un
+    /// UNKNOWN nudo.
     /// </summary>
+    /// <remarks>
+    /// <b>Correzione del 2026-09-08.</b> Questo commento diceva che
+    /// <see cref="SelectableEntity"/> non porta un vnum. Lo porta, e lo snapshot
+    /// lo pubblica da sempre: era <c>GameplayWireReader.TryEntity</c> a
+    /// scartarlo, quindi il pannello scriveva questo motivo anche per entità il
+    /// cui numero era lì nel JSON. Ora il motivo compare solo quando il vnum
+    /// manca davvero — che è il caso ordinario, perché solo <c>in</c> lo porta.
+    /// </remarks>
     public const string VnumNotOnObservation = "vnum_not_on_observation";
+
+    /// <summary>La specie non è stata dichiarata dall'osservazione.</summary>
+    /// <remarks>
+    /// Non è «mostro» per omissione: la stessa regola del vnum. Un'entità che
+    /// arriva da una sorgente più vecchia dello snapshot con la specie compare
+    /// così, e l'operatore vede che non lo sa nessuno.
+    /// </remarks>
+    public const string SpeciesNotOnObservation = "species_not_on_observation";
 
     /// <summary>Health was never stated on this sighting. Not zero and not full.</summary>
     public const string HpNotStated = "hp_not_stated";
+
+    /// <summary>
+    /// Il vnum c'è, il nome no: risolverlo vuole il catalogo di riferimento, che
+    /// questa vista non apre.
+    /// </summary>
+    public const string NameNeedsCatalogue = "name_needs_reference_catalogue";
 
     /// <summary>
     /// Formats the surroundings. <paramref name="nowUtc"/> is the instant ages
@@ -105,7 +129,7 @@ internal static class SurroundingsInspect
             rows[i] = row;
             fields[i] = new DisplayField(
                 $"Entità {row.EntityId}",
-                $"vnum={row.Vnum} nome={row.Name} pos={row.Position} vita={row.Life} età={row.Age}",
+                $"specie={row.Species} vnum={row.Vnum} nome={row.Name} pos={row.Position} vita={row.Life} età={row.Age}",
                 source);
         }
 
@@ -129,8 +153,22 @@ internal static class SurroundingsInspect
     private static NearbyEntityRow Row(SelectableEntity entity, DateTime nowUtc, string source)
     {
         double age = AgeSeconds(entity.ObservedAtUtc, nowUtc);
-        string vnum = $"UNKNOWN · {VnumNotOnObservation}";
-        string name = $"UNKNOWN · {VnumNotOnObservation}";
+        string vnum = entity.Vnum is { } number
+            ? number.ToString(CultureInfo.InvariantCulture)
+            : $"UNKNOWN · {VnumNotOnObservation}";
+
+        // Il nome resta UNKNOWN anche con il vnum in mano: risolverlo vuole il
+        // catalogo, che questa vista non ha. Il motivo cambia con il caso --
+        // "nessuno ha detto cosa sia" e "so cosa e' ma non ho la tabella" sono
+        // due ignoranze diverse.
+        string name = entity.Vnum is null
+            ? $"UNKNOWN · {VnumNotOnObservation}"
+            : $"UNKNOWN · {NameNeedsCatalogue}";
+
+        string species = string.IsNullOrEmpty(entity.Kind)
+            ? $"UNKNOWN · {SpeciesNotOnObservation}"
+            : entity.Kind!;
+
         string life = entity.HpRatio is { } ratio
             ? string.Create(CultureInfo.InvariantCulture, $"{ratio * 100:0.#}%")
             : $"UNKNOWN · {HpNotStated}";
@@ -142,6 +180,7 @@ internal static class SurroundingsInspect
             life,
             AgeLabel(age),
             age,
-            source);
+            source,
+            species);
     }
 }

@@ -206,7 +206,21 @@ internal static class GameplayWireReader
             hp = ratio;
         }
 
-        entity = new SelectableEntity(id, new MapPoint(x, y), hp, at);
+        // Il vnum lo snapshot lo pubblica da sempre, e questo lettore lo buttava
+        // via: il pannello scriveva "vnum_not_on_observation" per entita' il cui
+        // numero era li' nel JSON. La specie e' arrivata dopo, il 2026-09-08.
+        int? vnum = item.TryGetProperty("vnum", out JsonElement vnumNode)
+            && vnumNode.ValueKind == JsonValueKind.Number
+            && vnumNode.TryGetInt32(out int parsedVnum)
+                ? parsedVnum
+                : null;
+
+        string? kind = item.TryGetProperty("kind", out JsonElement kindNode)
+            && kindNode.ValueKind == JsonValueKind.String
+                ? kindNode.GetString()
+                : null;
+
+        entity = new SelectableEntity(id, new MapPoint(x, y), hp, at, vnum, Vitals: null, Kind: kind);
         return true;
     }
 
