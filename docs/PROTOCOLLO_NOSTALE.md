@@ -196,6 +196,35 @@ cond 1 3443217 0 0 11
 
 ---
 
+## Misurato invece che letto — `--wire-inspect` (2026-09-07)
+
+Le confidenze di questo documento sono state assegnate leggendo i pacchetti a
+mano. Da oggi c'è un comando che le misura:
+`--wire-inspect <file.noscap>` stampa, per ogni opcode, quante volte compare,
+quanti campi porta e — per ogni posizione — se il valore è **sempre lo stesso**
+o quanti distinti ne ha assunti. È la regola di `CLAUDE.md` § *External reference
+data* resa meccanica: un campo che non è mai cambiato non si distingue da una
+costante che il server manda sempre, quindi la cattura non può confermargli
+alcun significato.
+
+Eseguito su `data/nostale_combat.noscap`, conferma tre affermazioni che questo
+documento faceva a mano, e ne aggiunge due che nessuno aveva notato:
+
+| Riga di questo documento | Cosa dice il censimento |
+|---|---|
+| `cond` campi 3 e 4 — «Both `0` throughout, so never observed asserted» | `3=0 4=0` su tutti e 72 i pacchetti: **confermato meccanicamente** |
+| `lev` — XP e job XP salgono, gli altri tengono | `2:23var 4:23var`, tutti gli altri costanti: **confermato** |
+| `guri`, `icon`, `delay`, `cancel`, `ms_c` — **unknown** | ogni campo costante su tutte le occorrenze: **inconfermabili per misura**, non per pigrizia |
+| — | `stat` campo 2 = `7305` e campo 4 = `1420` costanti in 62 letture: sono gli **estremi**, e restano fermi mentre i campi 1 e 3 variano |
+| — | `in` campo 16 è `-`, l'unico campo **non numerico** dei 31; `delay` campo 3 è `#guri^400^3324`, l'unico altro payload testuale della cattura |
+
+`sayi` è il solo opcode non letto con più campi variabili (`3:3var 4:2var 5:2var
+6:3var 7:2var`): è quindi il primo candidato ragionevole se qualcuno vorrà
+chiudere un altro buco di decodifica, e l'unico su cui una cattura sola dica
+abbastanza per provarci.
+
+---
+
 ## Events
 
 | Opcode | Seen | Shape | Reading |
