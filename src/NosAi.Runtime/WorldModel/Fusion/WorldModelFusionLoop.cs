@@ -129,6 +129,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     private readonly EntityId _playerId;
     private readonly Func<VisualObservation>? _visualSource;
     private readonly Func<WorldModelSnapshot, MapModel>? _mapSource;
+    private readonly Func<int, NosAi.Runtime.Autonomy.CatalogueClass>? _classifyVnum;
 
     private WorldModelSnapshot _current = WorldModelSnapshot.Unknown("no_prior_fusion_cycle");
     private long _version;
@@ -160,6 +161,21 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
     /// channel's own projected <c>Map</c> is published unchanged. See the
     /// class remarks, "AP-03/A4: optional map reconstruction".
     /// </param>
+    /// <param name="classifyVnum">
+    /// What the reference catalogue says a sighted entity's vnum is, passed
+    /// straight through to <see cref="GameplayObservationProjector.Project"/>
+    /// so the fused snapshot can hold real <see cref="Mob"/>/<see cref="Npc"/>
+    /// records. Optional and <c>null</c> by default, the same "no source, no
+    /// change" treatment as <paramref name="visualSource"/> and
+    /// <paramref name="mapSource"/>: without it both entity lists stay empty
+    /// exactly as they did before this parameter existed.
+    /// <para>
+    /// Must not close over a raw <c>GameReferenceDatabase</c>: that handle is
+    /// a single unsynchronised <c>SqliteConnection</c> and this loop runs on
+    /// its own pump. <c>NosAi.Runtime.Autonomy.CatalogueClassifier</c> is the
+    /// adapter that makes one safe to ask from here.
+    /// </para>
+    /// </param>
     public WorldModelFusionLoop(
         Func<Gate1CanonicalSnapshot> source,
         IRuntimeLogger logger,
@@ -169,7 +185,8 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         TimeProvider? clock = null,
         EntityId? playerId = null,
         Func<VisualObservation>? visualSource = null,
-        Func<WorldModelSnapshot, MapModel>? mapSource = null)
+        Func<WorldModelSnapshot, MapModel>? mapSource = null,
+        Func<int, NosAi.Runtime.Autonomy.CatalogueClass>? classifyVnum = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -186,6 +203,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
         _playerId = playerId ?? new EntityId(UnknownPlayerSentinelId);
         _visualSource = visualSource;
         _mapSource = mapSource;
+        _classifyVnum = classifyVnum;
     }
 
     /// <summary>The most recently fused snapshot. Starts at <see cref="WorldModelSnapshot.Unknown"/> before the first tick.</summary>
@@ -229,7 +247,7 @@ public sealed class WorldModelFusionLoop : IAsyncDisposable
 
         long version = Interlocked.Increment(ref _version);
         WorldModelSnapshot previous = Volatile.Read(ref _current);
-        WorldModelSnapshot projected = GameplayObservationProjector.Project(gameplay, _playerId, version, nowUtc);
+        WorldModelSnapshot projected = GameplayObservationProjector.Project(gameplay, _playerId, version, nowUtc, _classifyVnum);
         WorldModelSnapshot enriched = WorldModelTemporalEnricher.Enrich(previous, projected, nowUtc, _maxAge, _maxObservationGap);
 
         WorldModelSnapshot result = enriched;

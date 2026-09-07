@@ -185,9 +185,15 @@ adding cases — never by weakening an existing assertion.
 ## Explicitly out of scope
 
 - Projecting `Mob` records into `WorldModelSnapshot.Mobs`
-  (`GameplayObservationProjector`). That is the follow-up task and it needs
-  a monster/NPC lookup threaded into a signature that three call sites use;
-  it is not part of this one.
+  (`GameplayObservationProjector`). **Already done, after this spec was
+  written** (Q-098): that projection exists, is wired into
+  `WorldModelFusionLoop` and `Program.cs`, and carries each entity's health
+  as `Resource.FromObservedFraction` — a fraction over two Unknown bounds,
+  because the absolutes cannot reach it yet. Your task is what makes them
+  reach it. Do not touch `GameplayObservationProjector` here: once
+  `EntitySighting` carries the pair, a separate follow-up widens
+  `SelectableEntity` and lets the projection prefer the absolutes over the
+  fraction.
 - `SelectableEntity` (`src/NosAi.Runtime/Autonomy/TargetSelector.cs`) and
   anything that ranks targets. Unchanged here.
 - `NosAi.Core`. Unchanged here.

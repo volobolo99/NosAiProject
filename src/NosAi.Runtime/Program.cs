@@ -952,16 +952,6 @@ public static class Program
         NosAi.Core.WorldModel.MapModel ResolveMap(NosAi.Core.WorldModel.WorldModelSnapshot snapshot) =>
             mapReconstruction!.Resolve(snapshot, snapshot.ObservedAtUtc);
 
-        await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
-            ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
-                host.Capture,
-                logger,
-                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs),
-                visualSource: visualCapture!.Capture,
-                mapSource: ResolveMap)
-            : null;
-        fusion?.Start(cts.Token);
-
         // Runs once on every real startup, not only when an operator remembers
         // to run --client-updates by hand: notices whether the installed
         // client changed since this machine last recorded it. Silent when
@@ -991,6 +981,45 @@ public static class Program
                 logger.Error("Controllo aggiornamenti client fallito all'avvio; il resto dell'avvio prosegue.", ex);
             }
         }
+
+        // AP-05: with the same flag on, the fusion loop also gets the reference
+        // catalogue, so the entities the wire reports become real Mob/Npc
+        // records instead of an empty list.
+        //
+        // Opened *after* the client-update check above, deliberately: that
+        // check writes to this very file (ReferenceImporter.ImportAll), and
+        // holding a second connection open across it is how a reader and a
+        // writer on one SQLite file start refusing each other. Nothing between
+        // here and there needs the loop running.
+        //
+        // A missing or unreadable catalogue is not fatal and not a special
+        // case: TryOpen names the reason, the classifier answers
+        // CatalogueNotLoaded for every vnum, and both entity lists stay empty
+        // exactly as they were before this wiring existed -- the same
+        // non-fatal treatment the client-update check gives a missing
+        // NOSAI-SSD volume.
+        GameReferenceDatabase? fusionCatalogue = null;
+        if (options.FuseWorldModel && !GameReferenceLocator.TryOpen(out fusionCatalogue, out string? fusionCatalogueReason))
+            logger.Warning($"World Model: catalogo di riferimento non disponibile ({fusionCatalogueReason}); mob e NPC resteranno vuoti.");
+
+        // Held only to dispose the handle at the end of this scope: TryOpen's
+        // `out` parameter cannot itself be a `using` declaration, and the
+        // classifier deliberately does not own the connection. Declared before
+        // `fusion` so the pump stops asking before the connection is disposed
+        // -- `using` declarations unwind in reverse.
+        using GameReferenceDatabase? fusionCatalogueLifetime = fusionCatalogue;
+        var entityClassifier = new NosAi.Runtime.Autonomy.CatalogueClassifier(fusionCatalogue);
+
+        await using NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop? fusion = options.FuseWorldModel
+            ? new NosAi.Runtime.WorldModel.Fusion.WorldModelFusionLoop(
+                host.Capture,
+                logger,
+                TimeSpan.FromMilliseconds(options.FuseWorldModelIntervalMs),
+                visualSource: visualCapture!.Capture,
+                mapSource: ResolveMap,
+                classifyVnum: entityClassifier.Classify)
+            : null;
+        fusion?.Start(cts.Token);
 
         var snapshot = host.Capture();
         Console.WriteLine("NosAi Runtime 1.0 Beta — Gate 1");
