@@ -30,7 +30,7 @@ dotnet build tests\NosAi.Core.Tests\NosAi.Core.Tests.csproj -c Release
 
 Esito: `Compilazione completata. Avvisi: 0  Errori: 0` per tutte le sei librerie (compilate transitivamente come dipendenze del progetto di test).
 
-Nota: `dotnet build NosAi.sln -c Release` fallisce, ma per una causa estranea al Gate 1: la fase di AOT Android di `NosAi.GuardAi.App` (architettura precedente, non toccata da questo lavoro) restituisce `Invalid argument` sul toolchain Mono AOT in questo ambiente sandbox. Non è un warning né un errore introdotto da questo Gate; è tracciato come rischio ambientale nel report finale, non come voce di DoD del Gate 1.
+Nota (aggiornata il 2026-09-07): `dotnet build NosAi.sln -c Release` **riesce**, 0 errori e 0 avvisi — eseguito e verificato in questa data. La nota precedente diceva che falliva sulla fase di AOT Android di `NosAi.GuardAi.App`; quel progetto non ha più un `.csproj` dal commit `4648e3b` ed è fuori dalla soluzione (ADR-0025 §3), quindi quella fase non gira più e la causa del fallimento non esiste più.
 
 ## 2. Test del Gate verdi
 
