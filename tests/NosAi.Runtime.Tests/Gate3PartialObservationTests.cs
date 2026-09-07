@@ -166,7 +166,7 @@ public sealed class Gate3PartialObservationTests
             NosAi.Runtime.Contracts.ClassifiedValue<bool>.Live(false, Now),
             NosAi.Runtime.Contracts.ClassifiedValue<bool>.Unknown("combat_flag_not_mapped"));
         var planner = new ActionPlanner(
-            GoalStack.With(Goal.Hunt("test-hunt", new[] { 36 }, new MapPoint(130, 90))));
+            GoalStack.With(HuntGoal.Hunt("test-hunt", new[] { 36 }, new MapPoint(130, 90))));
 
         List<ActionCandidate> candidates = planner.PlanCandidates(state);
 

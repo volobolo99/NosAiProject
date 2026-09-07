@@ -91,15 +91,15 @@ public sealed class DuplicateTypeNameTests
             // ModuleReachability lo dichiara deliberato invece di lasciarlo
             // leggere come un debito. Si riapre quando Gate 3 incontra un
             // obiettivo che non sa raggiungere in un passo, non prima.
-            ["Goal"] =
-                "vivo in entrambi: NosAi.Core.WorldModel (il contratto del World Model) e "
-                + "NosAi.Runtime.Autonomy (l'obiettivo dello stack di Gate 3). Non e' un gemello morto, "
-                + "e' un vero scontro di nomi fra due tipi in uso. Costa gia': "
-                + "GameplayObservationProjector.cs:7 scrive che importare NosAi.Runtime.Autonomy "
-                + "farebbe collidere il suo Goal con quello di NosAi.Core.WorldModel, e importa "
-                + "tre tipi per alias invece del namespace. Da decidere: rinominare uno dei due "
-                + "(quello di Autonomy e' un ordine di caccia -- vnum, luogo, motivazione -- non "
-                + "un obiettivo strategico), o dichiarare che gli alias sono la risposta",
+            // Nota: Goal stava qui, ed e' uscito il 2026-09-07. Era l'ultimo
+            // "da decidere" dell'elenco, e la decisione e' stata rinominare:
+            // quello di NosAi.Runtime.Autonomy e' HuntGoal, perche' e' un ordine
+            // di caccia -- vnum da cercare, un luogo, una motivazione da mostrare
+            // all'operatore -- e non un obiettivo strategico come quello del
+            // World Model. I tre alias using che GameplayObservationProjector
+            // teneva per aggirare la collisione sono spariti con lei: erano il
+            // prezzo che il duplicato faceva pagare, ed erano l'unica prova che
+            // il duplicato costasse qualcosa.
 
             // Nota: SequenceGuard stava qui, ed e' uscito il 2026-09-07. Era il
             // caso peggiore che questa prova abbia trovato -- due politiche

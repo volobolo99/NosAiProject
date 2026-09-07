@@ -107,7 +107,7 @@ public sealed class Gate3Tests
     /// <see cref="GoalStackTests"/> — it is the reason the runtime is allowed to
     /// be in the fight they set up.
     /// </remarks>
-    private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("test-hunt", new[] { 36 }));
+    private static GoalStack Hunting() => GoalStack.With(HuntGoal.Hunt("test-hunt", new[] { 36 }));
 
     private sealed class CountingEffector : IActionEffector
     {

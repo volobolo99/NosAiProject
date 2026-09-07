@@ -44,7 +44,7 @@ public sealed class GoalAndReactionTests
     public void A_goal_that_names_nothing_to_look_for_cannot_be_built()
     {
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => Goal.Hunt("empty", Array.Empty<int>()));
+            () => HuntGoal.Hunt("empty", Array.Empty<int>()));
 
         Assert.Contains("at least one vnum", error.Message, StringComparison.Ordinal);
     }
@@ -60,15 +60,15 @@ public sealed class GoalAndReactionTests
         Assert.False(stack.Names(36));
         // A null vnum never matches: an entity nobody has read is not one a goal
         // named, it is one nothing is known about.
-        Assert.False(GoalStack.With(Goal.Hunt("h", new[] { 36 })).Names(null));
+        Assert.False(GoalStack.With(HuntGoal.Hunt("h", new[] { 36 })).Names(null));
     }
 
     [Fact]
     public void The_most_recent_goal_is_the_one_in_force_and_popping_restores_the_previous()
     {
         var stack = GoalStack.Empty();
-        stack.Push(Goal.Hunt("first", new[] { 9 }, new MapPoint(10, 10)));
-        stack.Push(Goal.Hunt("second", new[] { 36 }, new MapPoint(20, 20)));
+        stack.Push(HuntGoal.Hunt("first", new[] { 9 }, new MapPoint(10, 10)));
+        stack.Push(HuntGoal.Hunt("second", new[] { 36 }, new MapPoint(20, 20)));
 
         Assert.Equal("second", stack.Current!.Id);
         Assert.Equal(new MapPoint(20, 20), stack.SearchAt);
@@ -77,7 +77,7 @@ public sealed class GoalAndReactionTests
         Assert.True(stack.Names(9));
         Assert.True(stack.Names(36));
 
-        Assert.True(stack.TryPop(out Goal popped));
+        Assert.True(stack.TryPop(out HuntGoal popped));
         Assert.Equal("second", popped.Id);
         Assert.Equal("first", stack.Current!.Id);
         Assert.Equal(new MapPoint(10, 10), stack.SearchAt);
@@ -90,7 +90,7 @@ public sealed class GoalAndReactionTests
     [Fact]
     public void A_goal_with_no_place_names_no_place()
     {
-        GoalStack stack = GoalStack.With(Goal.Hunt("anywhere", new[] { 36 }));
+        GoalStack stack = GoalStack.With(HuntGoal.Hunt("anywhere", new[] { 36 }));
 
         Assert.True(stack.HasActiveGoal);
         Assert.Null(stack.SearchAt);
@@ -115,7 +115,7 @@ public sealed class GoalAndReactionTests
     [Fact]
     public void With_a_goal_the_attack_rules_plan_again()
     {
-        var planner = new ActionPlanner(GoalStack.With(Goal.Hunt("hunt", new[] { 36 })));
+        var planner = new ActionPlanner(GoalStack.With(HuntGoal.Hunt("hunt", new[] { 36 })));
 
         List<ActionCandidate> candidates = planner.PlanCandidates(Fighting());
 
@@ -468,7 +468,7 @@ public sealed class GoalAndReactionTests
     public void A_new_target_is_chosen_only_when_the_goal_names_it_and_it_is_established()
     {
         var planner = new ActionPlanner(
-            GoalStack.With(Goal.Hunt("hunt", new[] { 36 })), clock: new StubClock());
+            GoalStack.With(HuntGoal.Hunt("hunt", new[] { 36 })), clock: new StubClock());
 
         // Established by our own ct, and its vnum is the one the goal asked for.
         Gate3WorldState named = Idle() with
@@ -495,7 +495,7 @@ public sealed class GoalAndReactionTests
     public void A_goal_naming_a_vnum_does_not_by_itself_establish_an_entity()
     {
         var planner = new ActionPlanner(
-            GoalStack.With(Goal.Hunt("hunt", new[] { 36 })), clock: new StubClock());
+            GoalStack.With(HuntGoal.Hunt("hunt", new[] { 36 })), clock: new StubClock());
 
         Gate3WorldState state = Idle() with
         {

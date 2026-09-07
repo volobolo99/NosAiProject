@@ -3,11 +3,7 @@ using NosAi.Core.WorldModel;
 using NosAi.LiveIntegration;
 using RuntimeContracts = NosAi.Runtime.Contracts;
 
-// Aliased rather than imported wholesale: NosAi.Runtime.Autonomy also declares
-// a Goal, which would collide with NosAi.Core.WorldModel.Goal in this file.
-using CatalogueClass = NosAi.Runtime.Autonomy.CatalogueClass;
-using SelectableEntity = NosAi.Runtime.Autonomy.SelectableEntity;
-using TargetEstablishment = NosAi.Runtime.Autonomy.TargetEstablishment;
+using NosAi.Runtime.Autonomy;
 
 namespace NosAi.Runtime.WorldModel.Fusion;
 

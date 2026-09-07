@@ -1837,7 +1837,7 @@ namespace NosAi.Runtime.Gate3
         /// happen to agree.
         /// </para>
         /// </remarks>
-        private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("gate3-check-hunt", new[] { 36 }));
+        private static GoalStack Hunting() => GoalStack.With(HuntGoal.Hunt("gate3-check-hunt", new[] { 36 }));
 
         private static ActionTokenIssuer Gate(TrustTier tier) =>
             new(new TrustBoundary(tier), new GuardPolicyEngine());

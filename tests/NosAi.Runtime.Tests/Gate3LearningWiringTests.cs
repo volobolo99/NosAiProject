@@ -35,7 +35,7 @@ public sealed class Gate3LearningWiringTests
     private static readonly Func<int, SkillCost?> MeasuredSkillCost =
         _ => new SkillCost(MpCost: 35, CastTimeMs: 800);
 
-    private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("learning-test", new[] { 36 }));
+    private static GoalStack Hunting() => GoalStack.With(HuntGoal.Hunt("learning-test", new[] { 36 }));
 
     private static Gate3WorldState Fighting() => Gate3WorldState.Live(800, 1000, 100, true, false);
 

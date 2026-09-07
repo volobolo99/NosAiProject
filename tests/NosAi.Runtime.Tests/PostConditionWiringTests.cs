@@ -55,7 +55,7 @@ public sealed class PostConditionWiringTests
     /// <see cref="GoalStackTests"/> — it is the reason the runtime is allowed to
     /// be in the fight they set up.
     /// </remarks>
-    private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("test-hunt", new[] { 36 }));
+    private static GoalStack Hunting() => GoalStack.With(HuntGoal.Hunt("test-hunt", new[] { 36 }));
 
     /// <summary>A world the planner answers with an attack: healthy, with a target.</summary>
     private static Gate3WorldState Fighting() => Gate3WorldState.Live(800, 1000, 100, true, false);

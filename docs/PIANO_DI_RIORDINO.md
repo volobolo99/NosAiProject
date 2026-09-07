@@ -262,8 +262,18 @@ invece di sopravvivere al debito che descriveva.
 >   di sicurezza che cede proprio quando le cose vanno peggio. Corretto leggendo lo
 >   stato prima del contatore, con due prove che lo fissano.
 > - **`Goal`** — vivo in entrambi (`NosAi.Core.WorldModel` e
->   `NosAi.Runtime.Autonomy`). Ha già prodotto un `CS0104` in
->   `GameplayObservationProjector`, che lo aggira con tre alias `using`.
+>   `NosAi.Runtime.Autonomy`). Il costo si vedeva in
+>   `GameplayObservationProjector`, che importava tre tipi per alias invece del
+>   namespace perché importarlo avrebbe fatto collidere i due `Goal`.
+>
+>   **Risolto il 2026-09-07 rinominando**, come i due `SafetyGate` e i due
+>   `SequenceGuard` prima di lui: quello di `NosAi.Runtime.Autonomy` è
+>   `HuntGoal`. Il nome dice cosa porta — i vnum da cercare, un luogo, la
+>   motivazione che l'operatore legge — mentre quello del World Model è
+>   l'obiettivo strategico di `NOSAI_AUTONOMOUS_PLAYER_SPEC.md` § 4.8. Non erano
+>   lo stesso concetto sotto un nome: erano due concetti che se lo contendevano.
+>   I tre alias sono spariti con la collisione, ed erano l'unica prova che il
+>   duplicato costasse qualcosa.
 > - `WorldState` e `MapBounds`, stesso concetto definito due volte; `Goal`,
 >   `NoiseHandshakeState` e le due metà del bridge del Control Panel, dichiarate per
 >   quello che sono.

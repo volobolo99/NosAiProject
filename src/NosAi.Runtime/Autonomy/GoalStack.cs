@@ -40,7 +40,7 @@ namespace NosAi.Runtime.Autonomy;
 /// has nowhere to go and plans nothing.
 /// </param>
 /// <param name="Rationale">The sentence an operator reads to see why.</param>
-public sealed record Goal(
+public sealed record HuntGoal(
     string Id,
     IReadOnlyCollection<int> SeekVnums,
     MapPoint? SearchAt,
@@ -50,7 +50,7 @@ public sealed record Goal(
     /// A goal to hunt one kind of entity, optionally around a place.
     /// </summary>
     /// <exception cref="ArgumentException">The goal names nothing to look for.</exception>
-    public static Goal Hunt(string id, IReadOnlyCollection<int> vnums, MapPoint? searchAt = null, string? rationale = null)
+    public static HuntGoal Hunt(string id, IReadOnlyCollection<int> vnums, MapPoint? searchAt = null, string? rationale = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(vnums);
@@ -61,7 +61,7 @@ public sealed record Goal(
             throw new ArgumentException("A goal must name at least one vnum to look for.", nameof(vnums));
         }
 
-        return new Goal(
+        return new HuntGoal(
             id,
             vnums.Distinct().OrderBy(v => v).ToArray(),
             searchAt,
@@ -99,13 +99,13 @@ public sealed class GoalStack
     /// <summary>The refusal when a goal is active and does not name that entity.</summary>
     public const string NotNamedByGoalReason = "not_named_by_active_goal";
 
-    private readonly List<Goal> _goals = new();
+    private readonly List<HuntGoal> _goals = new();
 
     /// <summary>The goals in force, most recent first.</summary>
-    public IReadOnlyList<Goal> Active => _goals;
+    public IReadOnlyList<HuntGoal> Active => _goals;
 
     /// <summary>The goal in force now, or null when nothing has been asked.</summary>
-    public Goal? Current => _goals.Count > 0 ? _goals[0] : null;
+    public HuntGoal? Current => _goals.Count > 0 ? _goals[0] : null;
 
     /// <summary>Whether anything at all is being pursued.</summary>
     public bool HasActiveGoal => _goals.Count > 0;
@@ -114,7 +114,7 @@ public sealed class GoalStack
     public static GoalStack Empty() => new();
 
     /// <summary>A stack holding one goal, for a caller with a single purpose.</summary>
-    public static GoalStack With(Goal goal)
+    public static GoalStack With(HuntGoal goal)
     {
         var stack = new GoalStack();
         stack.Push(goal);
@@ -122,14 +122,14 @@ public sealed class GoalStack
     }
 
     /// <summary>Puts a goal in force, above any already there.</summary>
-    public void Push(Goal goal)
+    public void Push(HuntGoal goal)
     {
         ArgumentNullException.ThrowIfNull(goal);
         _goals.Insert(0, goal);
     }
 
     /// <summary>Takes the current goal out of force, or false when there is none.</summary>
-    public bool TryPop(out Goal goal)
+    public bool TryPop(out HuntGoal goal)
     {
         if (_goals.Count == 0)
         {
@@ -168,7 +168,7 @@ public sealed class GoalStack
     {
         get
         {
-            foreach (Goal goal in _goals)
+            foreach (HuntGoal goal in _goals)
                 if (goal.SearchAt is { } at) return at;
             return null;
         }
