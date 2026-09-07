@@ -323,12 +323,17 @@ esplicitamente ristretto (stessa disciplina "primo passo piccolo e
 onesto" di `--scout`): un solo atto `UseSkill` nominato direttamente
 dall'operatore per invocazione, nessuna generazione candidati da
 `CombatPlanner` dentro `--engage` (aggiornamento Q-100: quei `Player`/`Mob`
-fusi ora esistono e `--combat-report` li usa davvero; resta aperto solo
-cablare il suo verdetto nel percorso di rifiuto di `--engage`), `BasicAttack` rifiutato
+fusi ora esistono e `--combat-report` li usa davvero. Aggiornamento Q-101: il
+verdetto è cablato nel percorso di rifiuto di `--engage`, che lo ricalcola a ogni
+round. Aggiornamento Q-103: le due letture non coincidevano — il report guardava
+la portata dell'attacco base, `--engage` quella delle skill — e ora il report
+porta una riga `engage:` per ogni mob osservato, dalla stessa chiamata), `BasicAttack` rifiutato
 per design (nessun costo risorsa osservabile, `CombatExecutionEvidence`
 lo dice da sé).
 
-**Livello di verifica per questo passaggio:** `Present` — decisione presa
-e motivata, contratto mancante scritto/testato, specifica DeepSeek
-completa e precisa. Non ancora `Integrated`: `EngageCommand` non è stato
-ancora scritto (compito DeepSeek, A2+A4).
+**Livello di verifica per questo passaggio:** `Integrated` — decisione presa
+e motivata, contratto mancante scritto/testato, specifica DeepSeek completa e
+precisa, e `EngageCommand` scritto e cablato (Q-101, Q-103). Il paragrafo qui
+sopra diceva «non ancora `Integrated`: `EngageCommand` non è stato ancora
+scritto» ed è rimasto invariato per due commit dopo che lo era. Non `Verified`:
+nessun operatore ha ancora eseguito la catena su client vivo — `docs/TEST_RIMANDATI.md` T-13.
