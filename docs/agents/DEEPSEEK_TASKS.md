@@ -534,11 +534,18 @@ indipendente da AP-04, chiedilo esplicitamente.
 - ~~**Lettura inventario/finestre di dialogo**~~ — **verificato e
   diviso**: inventario da schermo **non vale la pena** (il canale di rete
   `ivn`/`get`/`drop`, già usato da `--collect`, fornisce già conteggi
-  esatti); contenuto testuale dei pannelli di dialogo resta bloccato da
-  OCR/ML (nessun opcode NosTale per dialogo/quest text in questo
-  repository); **presenza/assenza** di un pannello aperto costruita
+  esatti); **presenza/assenza** di un pannello aperto costruita
   (Q-073, A1+A3 Claude). Vedi `docs/agents/phases/AP-02/AP-02_STATUS.md`
   §12.
+
+  **Corretto il 2026-09-07.** Questa voce diceva che il contenuto testuale dei
+  pannelli «resta bloccato da OCR/ML». La metà vera è che nessun opcode porta il
+  testo; la metà falsa è la conseguenza. `NSlangData_<LANG>.NOS` ha dodici
+  tabelle e l'importatore ne leggeva cinque: fra le altre ci sono **3639 testi
+  di missione**, **22 358 battute di NPC** e **374 nomi di mappa**, ora tutti nel
+  catalogo. Il testo c'è, in italiano, indicizzato per numero. Quello che manca è
+  il **collegamento** fra un id sul filo (`sayi`, `msgi`) e la riga giusta —
+  un'indagine con evidenza disponibile, non un blocco su OCR.
 - ~~**Statistiche reali per skill**~~ — **parzialmente sbloccato**
   (Q-080, Claude, A1+A3): `SkillReferenceDecoder` promuove a colonne
   tipizzate `COST`/`LEVEL`/`TARGET` per intero e i soli campi `DATA`

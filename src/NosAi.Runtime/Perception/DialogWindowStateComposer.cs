@@ -18,6 +18,18 @@ public readonly record struct DialogWindowObservation(
 /// reading's own state, it never contradicts or confirms it against
 /// anything else.
 /// </summary>
+/// <remarks>
+/// <b>Precisazione del 2026-09-07.</b> «Nessun opcode per il testo» resta vero,
+/// e non vuol dire che il testo non ci sia: <c>NSlangData_&lt;LANG&gt;.NOS</c>
+/// contiene <c>_code_&lt;lang&gt;_quest.txt</c> e
+/// <c>_code_&lt;lang&gt;_npctalk.txt</c> — 3639 testi di missione e 22 358
+/// battute di NPC, ora importati nel catalogo. Quello che manca non è più il
+/// testo: è il <i>collegamento</i> fra un id sul filo e la riga giusta di quelle
+/// tabelle, che nessuno ha ancora stabilito. È una distanza più corta di quella
+/// che questa classe descriveva, e resta una distanza: finché il collegamento
+/// non è misurato, lo schermo è ancora la sola fonte sulla presenza di un
+/// pannello.
+/// </remarks>
 public static class DialogWindowStateComposer
 {
     /// <summary>The reader failed and said why, but the reason was lost on the way.</summary>
