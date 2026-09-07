@@ -208,3 +208,70 @@ finché non è confermata nessuna riga di codice deve dedurla.
 Finché non è fatto, il testo resta nel catalogo e **nessuno può dire quale riga
 vale adesso** — ed è per questo che `DialogWindowStateComposer` continua a
 trattare lo schermo come sola fonte sulla presenza di un pannello.
+
+---
+
+## T-17 — il costo MP di un'abilità: il catalogo lo dichiara, il filo deve confermarlo
+
+**Aperto il 2026-09-08.** Più documenti danno AP-05 bloccato per «nessun dato
+reale di danno/costo skill». **Il dato c'è**: `Skill.dat` è importato dal
+2026-09-07 (1958 abilità) e ogni riga porta un campo `COST`. Dal 2026-09-08 anche
+l'altro lato esiste — il campo 5 di `su` è il vnum dell'abilità — quindi i due si
+possono confrontare.
+
+### Cosa è già stabilito
+
+Le sette abilità che le registrazioni contengono, con il primo valore di `COST`:
+
+| vnum | nome | posizione nella classe | `COST[0]` |
+|---:|---|---:|---:|
+| 200 | Ritmo | 0 | **0** |
+| 220 | Colpo di base | 0 | **0** |
+| 222 | Colpo furioso | 2 | 5 |
+| 223 | Colpo preciso | 3 | 7 |
+| 224 | Energia della spada | 4 | 8 |
+| 226 | Terremoto | 6 | 15 |
+| 228 | Attacco Doppio | 8 | 7 |
+
+I valori si dividono esattamente come la posizione nella classe suggerisce: zero
+ai due attacchi base, un costo agli altri cinque. E il filo concorda sui due a
+zero — in `certificazione` (36 usi di 220) e `messaggi` (34 usi di 200) l'MP ha
+**un solo valore distinto** in tutta la registrazione, uguale al massimo.
+Settanta usi senza un punto speso.
+
+### Cosa manca, e perché le catture attuali non bastano
+
+Che `COST[0]` sia l'MP *in generale* resta non confermato. Dove l'MP si muove,
+`stat` arriva troppo di rado: le transizioni osservate valgono 43, 25, 22 e 30
+punti su finestre di 90-380 pacchetti, e nel mezzo la rigenerazione **risale a
+scatti di +24**. Ogni calo osservato è quindi costo *meno* rigenerazione, e
+nessuno dei due si legge da solo.
+
+C'è un accostamento: la raffica di 226 — un lancio e undici colpi, ed è l'unica
+delle sette con raggio d'area — cade fra due letture di MP che distano esattamente
+i **15** punti che il catalogo dichiara. Una coincidenza su una finestra sporca
+non è una misura.
+
+### La registrazione che chiude la domanda
+
+Serve **una condizione pulita**, non una sessione di gioco:
+
+1. Pannello → **Rete** → «Registra il filo, e annota cosa hai visto».
+2. In gioco, **fermo**, con l'MP al massimo. Aspetta qualche secondo senza fare
+   niente: serve a vedere qual è il valore di partenza e che non stia risalendo.
+3. Usa **una sola volta** un'abilità a costo dichiarato — la più cara è meglio,
+   perché il calo si distingue dalla rigenerazione. Nella nota scrivi **quale**.
+4. Resta fermo altri dieci secondi, poi ferma la registrazione.
+
+**Da leggere:** i pacchetti `stat` prima e dopo, e il `su`/`ct` in mezzo. Se il
+calo è esattamente il `COST[0]` di quell'abilità, il campo è confermato; ripetuto
+con una seconda abilità di costo diverso, è una regola.
+
+**Perché conta:** con il costo confermato, la simulazione di combattimento smette
+di essere rimandata «per assenza di dati» — `CombatPlanner` potrebbe finalmente
+sapere quanto costa ciò che sta valutando, invece di trattare ogni abilità come
+gratuita.
+
+**Quello che resta comunque aperto** anche dopo: il **danno**. `su` porta un
+numero di danno per colpo, ma il catalogo non è stato incrociato con quello, e il
+danno dipende da statistiche del personaggio che nessun file da solo determina.
