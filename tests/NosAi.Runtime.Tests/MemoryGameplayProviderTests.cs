@@ -176,7 +176,7 @@ public sealed class MemoryGameplayProviderTests
         public long? ExpectedId { get; set; } = CharacterId;
         public int ClientId { get; set; } = (int)CharacterId;
         public int? Speed { get; set; } = 11;
-        public MapBounds? Bounds { get; set; }
+        public MapDimensions? Bounds { get; set; }
         public FakeClock Clock { get; } = new(new DateTime(2026, 9, 1, 18, 0, 0, DateTimeKind.Utc));
 
         /// <summary>
@@ -288,7 +288,7 @@ public sealed class MemoryGameplayProviderTests
     [Fact]
     public void A_coordinate_outside_a_known_map_is_unknown()
     {
-        var harness = new Harness { Bounds = new MapBounds(80, 80) };
+        var harness = new Harness { Bounds = new MapDimensions(80, 80) };
 
         ClassifiedValue<MapPoint> position = harness.Read();
 
@@ -303,7 +303,7 @@ public sealed class MemoryGameplayProviderTests
 
     [Fact]
     public void A_coordinate_inside_a_known_map_passes()
-        => Assert.True(new Harness { Bounds = new MapBounds(200, 200) }.Read().HasValue);
+        => Assert.True(new Harness { Bounds = new MapDimensions(200, 200) }.Read().HasValue);
 
     // ------------------------------------------------------ what LIVE never is
 

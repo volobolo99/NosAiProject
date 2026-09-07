@@ -130,7 +130,7 @@ public sealed class ReassembledObservationSource : INetworkObservationSource, ID
         return direction => new ProtocolMapFramer(map, direction, streamSource);
     }
 
-    private void OnFrame(CaptureFrame frame)
+    private void OnFrame(CapturedGameFrame frame)
     {
         if (frame.Frame.Source == DataSourceKind.Unknown)
         {

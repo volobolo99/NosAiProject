@@ -11,7 +11,7 @@ public sealed class LexicographicOrchestrator : IOrchestrator
         _goals = goals ?? throw new ArgumentNullException(nameof(goals));
     }
 
-    public OrchestrationDecision Decide(in WorldState state, ReadOnlySpan<PlannerRankedAction> ranked, long nowUnixMs)
+    public OrchestrationDecision Decide(in PlannerWorldState state, ReadOnlySpan<PlannerRankedAction> ranked, long nowUnixMs)
     {
         if (ranked.IsEmpty || _goals.Active == PlannerGoalId.None)
             return new OrchestrationDecision(_goals.Active, _goals.ActiveClass, 0, 0f, OrchestrationReason.NoViableAction);

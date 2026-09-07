@@ -17,7 +17,7 @@ public enum OrchestrationReason : byte
 
 public interface IOrchestrator
 {
-    OrchestrationDecision Decide(in WorldState state, ReadOnlySpan<PlannerRankedAction> ranked, long nowUnixMs);
+    OrchestrationDecision Decide(in PlannerWorldState state, ReadOnlySpan<PlannerRankedAction> ranked, long nowUnixMs);
 }
 
 /// <summary>One action id the ranking layer scored, and where it placed.</summary>

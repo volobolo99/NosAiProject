@@ -13,7 +13,7 @@ public sealed class DeadlinePlanner : IPlanner
         _requiredScope = requiredScope;
     }
 
-    public int Plan(in OrchestrationDecision decision, in WorldState state, Span<PlanStep> steps, out FaultCode fault)
+    public int Plan(in OrchestrationDecision decision, in PlannerWorldState state, Span<PlanStep> steps, out FaultCode fault)
     {
         fault = FaultCode.None;
         if (decision.SelectedActionId == 0 || steps.IsEmpty)

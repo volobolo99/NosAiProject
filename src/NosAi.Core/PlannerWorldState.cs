@@ -3,7 +3,21 @@ using System.Runtime.InteropServices;
 namespace NosAi.Core;
 
 /// <summary>Immutable, client-observable snapshot consumed by planning stages.</summary>
-public sealed record WorldState(
+/// <remarks>
+/// <b>Not <c>NosAi.Runtime.WorldModel.WorldState</c></b>, which is the one the
+/// runtime actually keeps: Gate 1 updates it, <c>GameTrafficObserver</c> emits it,
+/// and it holds <c>EntityState</c> objects with a nullable health ratio. This one
+/// is the packed, allocation-conscious shape the pure planning layer takes -- a
+/// <c>ReadOnlyMemory</c> of blittable structs a planner can walk without touching
+/// the heap -- and its only consumers are <c>IOrchestrator</c> and
+/// <c>IPlanner</c> in <c>NosAi.Core.Planning</c>.
+/// <para>
+/// Both were called <c>WorldState</c> until 2026-09-07, and this one sat in the
+/// <b>root</b> namespace of <c>NosAi.Core</c>, which every namespace inside that
+/// assembly can see without a <c>using</c>. See <c>PIANO_DI_RIORDINO.md § R1</c>.
+/// </para>
+/// </remarks>
+public sealed record PlannerWorldState(
     long Version,
     long UnixMillis,
     ReadOnlyMemory<EntitySnapshot> Entities,
@@ -41,5 +55,5 @@ public readonly record struct MapSnapshot(uint MapId, ushort Width, ushort Heigh
 
 public interface IWorldStateBuilder
 {
-    WorldState Build(ReadOnlySpan<EntitySnapshot> fused, in SelfSnapshot self, in MapSnapshot map, long version);
+    PlannerWorldState Build(ReadOnlySpan<EntitySnapshot> fused, in SelfSnapshot self, in MapSnapshot map, long version);
 }

@@ -3,7 +3,14 @@ using NosAi.Runtime.Contracts;
 namespace NosAi.LiveIntegration.Capture;
 
 /// <summary>One frame the engine produced, with its direction and time.</summary>
-public sealed record CaptureFrame(DateTime TimestampUtc, StreamDirection Direction, GameFrame Frame);
+/// <remarks>
+/// A frame off the <b>wire</b>. Called <c>CaptureFrame</c> until 2026-09-07, the
+/// same name as <c>NosAi.Runtime.Perception.CaptureFrame</c>, which is a frame off
+/// the <b>screen</b> -- BGRA pixels, width, height, provenance. Two unrelated
+/// things under one noun in one assembly; the narrower half was renamed because
+/// the screen one is named by fifty-nine call sites and this one by five.
+/// </remarks>
+public sealed record CapturedGameFrame(DateTime TimestampUtc, StreamDirection Direction, GameFrame Frame);
 
 /// <summary>What a capture run added up to.</summary>
 /// <remarks>
@@ -68,7 +75,7 @@ public sealed class GameTrafficCaptureEngine
     }
 
     /// <summary>Frames as they are produced. Fires on the pumping thread.</summary>
-    public event Action<CaptureFrame>? FrameProduced;
+    public event Action<CapturedGameFrame>? FrameProduced;
 
     /// <summary>
     /// Pumps packets until the source is exhausted or the token is cancelled.
@@ -145,7 +152,7 @@ public sealed class GameTrafficCaptureEngine
             _framesProduced++;
             if (frame.Source == DataSourceKind.Unknown)
                 _unknownFrames++;
-            FrameProduced?.Invoke(new CaptureFrame(timestamp, framer.Direction, frame));
+            FrameProduced?.Invoke(new CapturedGameFrame(timestamp, framer.Direction, frame));
         }
     }
 

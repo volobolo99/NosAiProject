@@ -63,8 +63,12 @@ public sealed class DuplicateTypeNameTests
             // sarebbe una prova che nasconde ciò che ha trovato. Position2D è
             // chiuso da R2: tre definizioni intere sono MapPoint, la quarta è
             // TelegraphPoint.
-            ["CaptureFrame"] =
-                "scoperto da R1: due definizioni di un fotogramma catturato (Capture, Perception); da decidere",
+            // Nota: CaptureFrame stava qui, ed e' uscito il 2026-09-07. Erano due
+            // cose senza rapporto sotto un sostantivo, nello stesso assembly: un
+            // fotogramma preso dal filo (GameFrame piu' direzione) e uno preso
+            // dallo schermo (pixel BGRA, provenienza). Rinominato quello di rete
+            // in CapturedGameFrame -- il piu' stretto dei due, cinque siti di
+            // chiamata contro cinquantanove.
             // --- visti solo da quando la scansione legge tutta la produzione ---
             // Nessuno di questi era visibile finché il controllo interrogava il
             // solo assembly NosAi.Runtime. Erano la categoria peggiore: in ognuno
@@ -86,9 +90,12 @@ public sealed class DuplicateTypeNameTests
             ["Goal"] =
                 "vivo in entrambi: NosAi.Core.WorldModel (il contratto del World Model) e "
                 + "NosAi.Runtime.Autonomy (l'obiettivo dello stack di Gate 3). Non e' un gemello morto, "
-                + "e' un vero scontro di nomi fra due tipi in uso -- ha gia' prodotto un CS0104 in "
-                + "GameplayObservationProjector, che lo aggira con tre alias using. Da decidere: "
-                + "rinominare uno dei due, o dichiarare che gli alias sono la risposta",
+                + "e' un vero scontro di nomi fra due tipi in uso. Costa gia': "
+                + "GameplayObservationProjector.cs:7 scrive che importare NosAi.Runtime.Autonomy "
+                + "farebbe collidere il suo Goal con quello di NosAi.Core.WorldModel, e importa "
+                + "tre tipi per alias invece del namespace. Da decidere: rinominare uno dei due "
+                + "(quello di Autonomy e' un ordine di caccia -- vnum, luogo, motivazione -- non "
+                + "un obiettivo strategico), o dichiarare che gli alias sono la risposta",
 
             // Nota: SequenceGuard stava qui, ed e' uscito il 2026-09-07. Era il
             // caso peggiore che questa prova abbia trovato -- due politiche
@@ -99,13 +106,16 @@ public sealed class DuplicateTypeNameTests
             // imporre resta aperto, ed e' fissato da SequenceGuardPolicyTests
             // perche' cambiarla sia una decisione e non una sorpresa.
 
-            // --- stesso concetto definito due volte, senza divergenza nota ----
-            ["WorldState"] =
-                "stesso concetto due volte: il record di NosAi.Core e quello di NosAi.Runtime.WorldModel; "
-                + "da decidere quale e' canonico",
-            ["MapBounds"] =
-                "stesso concetto due volte: il record struct di NosAi.Core.WorldModel e quello di "
-                + "NosAi.LiveIntegration; da decidere",
+            // Nota: WorldState e MapBounds stavano qui, e sono usciti il 2026-09-07.
+            // Nessuno dei due era "lo stesso concetto due volte", come questa voce
+            // diceva senza averli letti: quello di NosAi.Core e' la forma compatta
+            // che lo strato di pianificazione puro attraversa senza allocare, e
+            // stava nel namespace radice, quello che ogni namespace dell'assembly
+            // vede senza using -- ora PlannerWorldState. Il MapBounds di
+            // NosAi.LiveIntegration non e' un rettangolo ma una misura (Width,
+            // Height) -- ora MapDimensions, e la collisione la si stava gia'
+            // pagando scrivendo l'altro per esteso in GameplayObservationProjector
+            // e in AutoplayCommandTests.
 
             // --- stesso sostantivo, concetti diversi ---------------------------
             ["NoiseHandshakeState"] =

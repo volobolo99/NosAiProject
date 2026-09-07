@@ -2,8 +2,18 @@ using NosAi.Runtime.Contracts;
 
 namespace NosAi.LiveIntegration;
 
-/// <summary>The limits of the map the character is on, when they are known.</summary>
-public readonly record struct MapBounds(int Width, int Height)
+/// <summary>How big the map the character is on is, when that is known.</summary>
+/// <remarks>
+/// A size measured from the origin, not a rectangle: <see cref="Contains"/> asks
+/// whether a point falls inside a map this wide and this tall. Called
+/// <c>MapBounds</c> until 2026-09-07, which collided with
+/// <c>NosAi.Core.WorldModel.MapBounds</c> -- a genuine rectangle of two
+/// <c>TileCoordinate</c>s, carried as a <c>WorldFact</c> and persisted by
+/// <c>MapModelStore</c>. The collision was already being worked around by writing
+/// that one out in full (<c>GameplayObservationProjector</c>,
+/// <c>AutoplayCommandTests</c>), which is the symptom this rename removes.
+/// </remarks>
+public readonly record struct MapDimensions(int Width, int Height)
 {
     public bool Contains(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Height;
 }
@@ -85,7 +95,7 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
     private readonly Func<(IntPtr Base, long Size)?> _module;
     private readonly Func<long?> _expectedCharacterId;
     private readonly Func<int?> _movementSpeed;
-    private readonly Func<MapBounds?> _mapBounds;
+    private readonly Func<MapDimensions?> _mapBounds;
     private readonly TimeProvider _clock;
 
     private NosTaleClientLayout? _layout;
@@ -118,7 +128,7 @@ public sealed class MemoryGameplayProvider : IPlayerPositionProvider
         Func<(IntPtr Base, long Size)?> module,
         Func<long?> expectedCharacterId,
         Func<int?>? movementSpeed = null,
-        Func<MapBounds?>? mapBounds = null,
+        Func<MapDimensions?>? mapBounds = null,
         TimeProvider? clock = null)
     {
         _reader = reader ?? throw new ArgumentNullException(nameof(reader));

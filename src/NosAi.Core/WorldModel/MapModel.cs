@@ -9,7 +9,7 @@ public readonly record struct MapBounds(TileCoordinate Min, TileCoordinate Max);
 /// contract AP-01 needs so a partially-explored map can already be carried
 /// in the World Model). <see cref="Version"/> increases monotonically each
 /// time this map is updated with new observations, mirroring the versioning
-/// convention already used by <c>NosAi.Core.WorldState.Version</c>.
+/// convention already used by <c>NosAi.Core.PlannerWorldState.Version</c>.
 /// </summary>
 public sealed record MapModel(
     MapId Id,

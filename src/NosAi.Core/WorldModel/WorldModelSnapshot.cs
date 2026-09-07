@@ -8,7 +8,7 @@ namespace NosAi.Core.WorldModel;
 /// this type only defines its shape.
 ///
 /// <see cref="Version"/> increases monotonically with every fused update,
-/// mirroring the existing convention on <c>NosAi.Core.WorldState.Version</c>.
+/// mirroring the existing convention on <c>NosAi.Core.PlannerWorldState.Version</c>.
 /// Because every field here is either a value type, an immutable record, or
 /// an <see cref="EquatableArray{T}"/> (never a bare array/list), two
 /// snapshots built from the same fused inputs at the same instant compare

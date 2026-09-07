@@ -86,7 +86,7 @@ public sealed class CaptureEngineTests : IDisposable
             Cap(true, 100, "hello"),
             Cap(false, 200, "req")));           // one outbound packet, its own stream
 
-        var frames = new List<CaptureFrame>();
+        var frames = new List<CapturedGameFrame>();
         engine.FrameProduced += frames.Add;
         var summary = engine.Run();
 
