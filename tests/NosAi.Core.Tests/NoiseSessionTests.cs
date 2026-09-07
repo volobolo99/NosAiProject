@@ -69,7 +69,19 @@ public sealed class NoiseSessionTests
         ciphertext[0] ^= 0xFF;
         byte[] tampered = ciphertext[..written];
 
-        Assert.ThrowsAny<Exception>(() => responder.ReadMessage(tampered, new byte[plaintext.Length + 64]));
+        Exception refusal = Assert.ThrowsAny<Exception>(
+            () => responder.ReadMessage(tampered, new byte[plaintext.Length + 64]));
+
+        // The type stays open on purpose -- it is Noise.NET's, not ours, and
+        // pinning it would couple this test to a third-party detail. What is not
+        // open is where the refusal came from: a NullReferenceException or an
+        // InvalidOperationException here would be *our* wrapper failing, and the
+        // bare ThrowsAny this replaces would have reported that as the
+        // authentication check working.
+        Assert.IsNotType<NullReferenceException>(refusal);
+        Assert.IsNotType<InvalidOperationException>(refusal);
+        Assert.IsNotType<ArgumentException>(refusal);
+
         Assert.Equal(NoiseHandshakeState.Failed, responder.State);
 
         // Failed is terminal: no further use of this session instance is attempted.

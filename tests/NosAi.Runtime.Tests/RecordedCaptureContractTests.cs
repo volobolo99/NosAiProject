@@ -19,13 +19,18 @@ namespace NosAi.Runtime.Tests;
 /// </para>
 /// <para>
 /// <b>Skipped when the recordings are absent</b>, as
-/// <see cref="Gate3DecisionLoopTests"/> already is: <c>data/</c> is gitignored
-/// because the captures are the operator's own session, and a fresh clone has
-/// none. They are not replaced by a synthetic stand-in — the whole point here is
-/// the real bytes — so on a clone these pass vacuously and the hand-built tests
-/// carry the load. The assertions are therefore written as properties that hold
-/// of any capture of a real session, not as the counts of these two files: a
-/// count would break the day the operator records a third.
+/// <see cref="Gate3DecisionLoopTests"/> is: <c>data/</c> is gitignored because the
+/// captures are the operator's own session, and a fresh clone has none. They are
+/// not replaced by a synthetic stand-in — the whole point here is the real bytes
+/// — so on a clone the hand-built tests carry the load.
+/// <b>Until 2026-09-07 this said "on a clone these pass vacuously", and it was
+/// describing a defect rather than a design:</b> the guard was
+/// <c>if (Recording(...) is null) return;</c>, which xUnit counts as passed. Six
+/// tests reported green on every clone. <see cref="RecordedCaptureFactAttribute"/>
+/// and <see cref="RecordedCaptureTheoryAttribute"/> now skip with the reason
+/// named. The assertions are still written as properties that hold of any capture
+/// of a real session, not as the counts of these two files: a count would break
+/// the day the operator records a third.
 /// </para>
 /// </remarks>
 public sealed class RecordedCaptureContractTests
@@ -41,8 +46,10 @@ public sealed class RecordedCaptureContractTests
     [RecordedCaptureFact(Combat)]
     public void The_combat_recording_yields_entities_and_at_least_one_carries_a_vnum()
     {
-        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -64,8 +71,10 @@ public sealed class RecordedCaptureContractTests
     [RecordedCaptureFact(Combat)]
     public void A_vnum_that_the_catalogue_does_not_know_is_still_carried_not_dropped()
     {
-        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         foreach (WorldReplayEntityRow row in report.Entities)
@@ -84,8 +93,10 @@ public sealed class RecordedCaptureContractTests
     [RecordedCaptureFact(Idle)]
     public void The_idle_recording_finds_entities_and_reports_the_combat_contracts_as_empty_with_reasons()
     {
-        string path = RecordedCaptureFactAttribute.Resolve(Idle)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Idle)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -107,8 +118,10 @@ public sealed class RecordedCaptureContractTests
     [InlineData(Idle)]
     public void Every_admitted_packet_is_accounted_for(string file)
     {
-        string path = RecordedCaptureFactAttribute.Resolve(file)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -126,8 +139,10 @@ public sealed class RecordedCaptureContractTests
     [InlineData(Idle)]
     public void Every_catalogued_reading_the_recordings_carry_is_within_its_own_bounds(string file)
     {
-        string path = RecordedCaptureFactAttribute.Resolve(file)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
         Assert.True(report.Ok, report.FailureReason);
 
@@ -172,8 +187,10 @@ public sealed class RecordedCaptureContractTests
     [InlineData(Idle)]
     public void Nothing_read_from_a_recording_is_ever_live(string file)
     {
-        string path = RecordedCaptureFactAttribute.Resolve(file)!;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
+
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
         Assert.True(report.Ok, report.FailureReason);
 
@@ -185,7 +202,8 @@ public sealed class RecordedCaptureContractTests
         Assert.All(report.Selections, s => Assert.Equal(Contracts.DataSourceKind.Cached, s.Source));
     }
 
-    /// <summary>The recording's path, or null when this clone does not have it.</summary>
+    /// <summary>The recording's path, or null when this clone does not have it.</summary>
+
 
     private static bool IsRead(string vnumText) =>
         vnumText != WorldReplayCommand.VnumNotRead && vnumText != WorldReplayCommand.VnumAbsent;
