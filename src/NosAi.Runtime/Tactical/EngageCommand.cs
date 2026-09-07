@@ -50,8 +50,12 @@ namespace NosAi.Runtime.Tactical;
 /// observes the world through <see cref="LiveCombatObserver"/> and judges the
 /// candidate with <see cref="CombatPlanner.CheckTargetConstraints"/>; a
 /// violated verdict refuses the round by name, before the key press, and the
-/// refusal reads identically to what <see cref="CombatReportCommand"/> prints
-/// for the same entity, because both compute it from the same observation.
+/// refusal carries the same violation names as the <c>engage:</c> line
+/// <see cref="CombatReportCommand"/> prints for that entity, because both
+/// come from that one call on a <see cref="CombatActionKind.UseSkill"/>
+/// candidate. The report's <c>candidate:</c> lines are a different question
+/// and a narrower radius -- see the remarks on
+/// <see cref="CombatReportCommand.Print"/>.
 /// The verdict is re-taken every round rather than once, and a target refusal
 /// therefore does not end the invocation the way a keybind refusal does: a mob
 /// walks back into range, and one that has not attacked yet becomes
@@ -142,12 +146,25 @@ public static class EngageCommand
 
     /// <summary>Reported when the target was judged and the hard constraints refused it.</summary>
     /// <remarks>
+    /// <para>
     /// The violated constraint names come straight from
     /// <see cref="CombatPlanner.CheckTargetConstraints"/> -- <c>target_not_found</c>,
     /// <c>target_not_hostile</c>, <c>target_not_alive</c>,
-    /// <c>target_position_unknown</c>, <c>target_out_of_range</c> -- so a
-    /// refusal here reads identically to the verdict <c>--combat-report</c>
-    /// prints for the same entity.
+    /// <c>target_position_unknown</c>, <c>target_out_of_range</c>, and
+    /// <c>player_position_unknown</c>, which that method reports on its own
+    /// behalf and returns before checking the target at all. The last is
+    /// unreachable from here today, because <c>LiveCombatObserver</c> only
+    /// builds a <see cref="Player"/> once it has read a position from client
+    /// memory and stamps it <c>Live</c>; it is listed because the day an
+    /// observation path stops guaranteeing that, this refusal is what the
+    /// operator will see.
+    /// </para>
+    /// <para>
+    /// The same six names appear on the <c>engage:</c> line
+    /// <c>--combat-report</c> prints for that entity: both are the same call
+    /// on a <see cref="CombatActionKind.UseSkill"/> candidate naming the same
+    /// target.
+    /// </para>
     /// </remarks>
     public const string TargetRefusedReason = "engage_target_refused";
 
@@ -285,14 +302,28 @@ public static class EngageCommand
         }
 
         CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(candidate, player, mobs);
-        if (verdict.IsAllowed)
-            return null;
-
-        return CombatExecutionEvidence.NotAttempted(
-            candidate,
-            $"{TargetRefusedReason}:{string.Join('|', verdict.ViolatedConstraints)}",
-            nowUtc);
+        return DescribeTargetRefusal(verdict) is { } refusal
+            ? CombatExecutionEvidence.NotAttempted(candidate, refusal, nowUtc)
+            : null;
     }
+
+    /// <summary>
+    /// The refusal string a verdict earns, or <see langword="null"/> when the
+    /// verdict permits the act.
+    /// </summary>
+    /// <remarks>
+    /// Separated from <see cref="JudgeTarget"/> because that method cannot be
+    /// reached without an attached client and a live capture, while this --
+    /// the part that decides whether a round is refused and what the operator
+    /// and the ledger are told -- is a pure function of a verdict. Composing
+    /// it with a real <see cref="CombatPlanner.CheckTargetConstraints"/> call
+    /// over a hand-built world is what makes the decision testable at all.
+    /// </remarks>
+    /// <param name="verdict">A verdict from <see cref="CombatPlanner.CheckTargetConstraints"/>.</param>
+    internal static string? DescribeTargetRefusal(CombatConstraintCheck verdict) =>
+        verdict.IsAllowed
+            ? null
+            : $"{TargetRefusedReason}:{string.Join('|', verdict.ViolatedConstraints)}";
 
     /// <summary>
     /// The live composition, mirroring <c>ScoutCommand</c>/<c>PlayerVitalsProbe</c>'s

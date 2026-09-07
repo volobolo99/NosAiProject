@@ -767,8 +767,22 @@ public static class Program
         // input arming -- executing a combat act is --engage's job. A report
         // with zero candidates is a valid result and says which of the several
         // possible reasons it had.
-        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.CombatReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
-            return NosAi.Runtime.Tactical.CombatReportCommand.Run();
+        int combatReportIndex = Array.FindIndex(args, a =>
+            string.Equals(a, NosAi.Runtime.Tactical.CombatReportCommand.Flag, StringComparison.OrdinalIgnoreCase));
+        if (combatReportIndex >= 0)
+        {
+            // The skill id is optional and, unlike --engage's, purely
+            // cosmetic: the engage: verdicts do not depend on it
+            // (CombatReportCommand.TargetVerdictSkill). It is accepted so an
+            // operator can type the same two words they are about to give
+            // --engage. A following token starting with '-' is another flag,
+            // not this argument.
+            string? reportSkill = combatReportIndex + 1 < args.Length
+                                  && !args[combatReportIndex + 1].StartsWith('-')
+                ? args[combatReportIndex + 1]
+                : null;
+            return NosAi.Runtime.Tactical.CombatReportCommand.Run(reportSkill);
+        }
 
         // Re-imports the reference catalogue and the broader native file
         // inventory from the installed client, reporting what a client update

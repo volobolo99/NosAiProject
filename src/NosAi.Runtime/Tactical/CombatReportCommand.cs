@@ -11,8 +11,8 @@ namespace NosAi.Runtime.Tactical;
 
 /// <summary>
 /// The operator command that reports what <see cref="CombatPlanner"/> would
-/// propose right now, and whether each proposal passes its hard constraints:
-/// <c>--combat-report</c>.
+/// propose right now, and -- separately -- what <c>--engage</c> would answer
+/// for each mob in sight: <c>--combat-report [skillId]</c>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -41,16 +41,25 @@ namespace NosAi.Runtime.Tactical;
 /// the one place an operator can watch all of them at once on a real client.
 /// </para>
 /// <para>
-/// <b>Two honest limits, reported rather than hidden.</b> No observation
-/// channel reads the character's skill list, so <see cref="Player.Skills"/> is
-/// empty here and only <see cref="CombatActionKind.BasicAttack"/> candidates
-/// can ever be generated -- a <see cref="CombatActionKind.UseSkill"/> candidate
-/// would need a skill catalogue this command does not have. And a candidate is
-/// only generated against a mob already known hostile, which today means one
-/// the wire recorded hitting this character: standing next to a monster that
-/// has not attacked yields no candidate, which is a refusal to guess, not a
-/// bug. <see cref="CombatMobCensus"/> exists so those two cases read
-/// differently from "no monster in sight".
+/// <b>Why the report has two halves.</b> No observation channel reads the
+/// character's skill list, so <see cref="Player.Skills"/> is empty here and
+/// <see cref="CombatPlanner.GenerateCandidates"/> can only ever produce
+/// <see cref="CombatActionKind.BasicAttack"/> candidates, judged at
+/// <see cref="CombatPlanner.DefaultBasicAttackRange"/>. <c>--engage</c>
+/// judges a <see cref="CombatActionKind.UseSkill"/> candidate, at
+/// <see cref="CombatPlanner.DefaultSkillRange"/>, which is three times
+/// wider. Printing only the planner's candidates would therefore say
+/// nothing at all about a mob between those two radii -- and say it in the
+/// dangerous direction, showing an empty report for a mob <c>--engage</c>
+/// would attack. So the report also carries one verdict per observed mob
+/// from the same call <see cref="EngageCommand"/> makes.
+/// </para>
+/// <para>
+/// <b>A refusal to guess is not a bug.</b> A candidate is only generated
+/// against a mob already known hostile, which today means one the wire
+/// recorded hitting this character: standing next to a monster that has
+/// not attacked yields no candidate. <see cref="CombatMobCensus"/> exists
+/// so that case reads differently from "no monster in sight".
 /// </para>
 /// </remarks>
 public static class CombatReportCommand
@@ -65,6 +74,26 @@ public static class CombatReportCommand
     public const string EntityFeedUnavailableReason = "combat_report_entity_feed_unavailable";
 
     /// <summary>
+    /// The skill id the <c>engage:</c> verdicts are computed with when the
+    /// operator names none.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="CombatPlanner.CheckTargetConstraints"/> reads
+    /// <see cref="CombatActionCandidate.Kind"/> (to pick the range) and
+    /// <see cref="CombatActionCandidate.Target"/>, and never reads
+    /// <see cref="CombatActionCandidate.Skill"/> -- the skill half of the hard
+    /// constraints lives in <see cref="CombatPlanner.CheckHardConstraints"/>,
+    /// which this command does not call for these lines. The verdict is
+    /// therefore identical for every skill id, which is why one can be
+    /// supplied at all rather than demanded from the operator; a test pins
+    /// that independence so the day it stops holding is a red test and not a
+    /// silently wrong report. Naming a real skill on the command line changes
+    /// nothing today and is accepted only so the invocation can mirror
+    /// <c>--engage</c>'s exactly.
+    /// </remarks>
+    public const string TargetVerdictSkill = "target-verdict-any-skill";
+
+    /// <summary>
     /// What the mob list looked like, so a report with no candidates says
     /// which of the several possible reasons it had.
     /// </summary>
@@ -75,13 +104,23 @@ public static class CombatReportCommand
     public readonly record struct CombatMobCensus(int Observed, int KnownHostile, int KnownAlive, int Positioned);
 
     /// <summary>
-    /// One report: every candidate <see cref="CombatPlanner"/> generated,
-    /// already judged by <see cref="CombatPlanner.CheckHardConstraints"/>
-    /// against the same <see cref="Player"/> and mobs it was generated from,
-    /// plus the census that explains an empty list.
+    /// One report, in two halves that answer two different questions.
     /// </summary>
+    /// <param name="Checks">
+    /// What the planner proposes: every candidate
+    /// <see cref="CombatPlanner.GenerateCandidates"/> produced, judged by
+    /// <see cref="CombatPlanner.CheckHardConstraints"/> against the same
+    /// inputs it was generated from.
+    /// </param>
+    /// <param name="EngageVerdicts">
+    /// What <c>--engage</c> would answer: one verdict per <b>observed</b> mob,
+    /// from the same <see cref="CombatPlanner.CheckTargetConstraints"/> call
+    /// <see cref="EngageCommand"/> makes before it presses anything.
+    /// </param>
+    /// <param name="Census">The mob population both halves were computed from; explains an empty <paramref name="Checks"/>.</param>
     public readonly record struct CombatReport(
         IReadOnlyList<CombatConstraintCheck> Checks,
+        IReadOnlyList<CombatConstraintCheck> EngageVerdicts,
         CombatMobCensus Census);
 
     /// <summary>
@@ -97,7 +136,8 @@ public static class CombatReportCommand
     /// </remarks>
     /// <param name="player">The player the candidates are generated for and judged against.</param>
     /// <param name="mobs">This moment's mobs, as the canonical World Model holds them.</param>
-    public static CombatReport Build(Player player, EquatableArray<Mob> mobs)
+    /// <param name="skill">The skill <c>--engage</c> would be given. Only the <see cref="CombatActionKind"/> it implies is used -- see <see cref="TargetVerdictSkill"/>.</param>
+    public static CombatReport Build(Player player, EquatableArray<Mob> mobs, SkillId? skill = null)
     {
         ArgumentNullException.ThrowIfNull(player);
 
@@ -107,7 +147,16 @@ public static class CombatReportCommand
         foreach (CombatActionCandidate candidate in candidates)
             checks.Add(CombatPlanner.CheckHardConstraints(candidate, player, mobs));
 
-        return new CombatReport(checks, Census(mobs));
+        SkillId judged = skill ?? new SkillId(TargetVerdictSkill);
+        var verdicts = new List<CombatConstraintCheck>(mobs.Count);
+        foreach (Mob mob in mobs)
+        {
+            var asEngageWould = new CombatActionCandidate(
+                CombatActionKind.UseSkill, target: mob.Id, skill: judged);
+            verdicts.Add(CombatPlanner.CheckTargetConstraints(asEngageWould, player, mobs));
+        }
+
+        return new CombatReport(checks, verdicts, Census(mobs));
     }
 
     private static CombatMobCensus Census(EquatableArray<Mob> mobs)
@@ -126,15 +175,34 @@ public static class CombatReportCommand
         return new CombatMobCensus(mobs.Count, hostile, alive, positioned);
     }
 
-    /// <summary>One line per candidate, preceded by the census that explains an empty list.</summary>
+    /// <summary>
+    /// The census, then one <c>engage:</c> line per observed mob, then one
+    /// <c>candidate:</c> line per planner proposal.
+    /// </summary>
+    /// <remarks>
+    /// The <c>engage:</c> lines come first because they are the ones an
+    /// operator acts on: each names a mob and says whether <c>--engage</c>
+    /// would refuse it and with which violations. The <c>candidate:</c> lines
+    /// below them are the planner's own proposals, which today are
+    /// <see cref="CombatActionKind.BasicAttack"/> only and so cover a strictly
+    /// narrower radius -- reading them as a prediction of <c>--engage</c> is
+    /// exactly the mistake the <c>engage:</c> lines exist to prevent.
+    /// </remarks>
     /// <param name="report">A report produced by <see cref="Build"/>.</param>
     public static void Print(CombatReport report)
     {
         ArgumentNullException.ThrowIfNull(report.Checks);
+        ArgumentNullException.ThrowIfNull(report.EngageVerdicts);
 
         CombatMobCensus census = report.Census;
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"mobs: {census.Observed} observed, {census.KnownHostile} known hostile, {census.KnownAlive} known alive, {census.Positioned} positioned"));
+
+        foreach (CombatConstraintCheck verdict in report.EngageVerdicts)
+        {
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"engage: target={verdict.Candidate.Target!.Value.Value} would_act={verdict.IsAllowed} violations={Violations(verdict)}"));
+        }
 
         foreach (CombatConstraintCheck check in report.Checks)
         {
@@ -184,7 +252,12 @@ public static class CombatReportCommand
         check.ViolatedConstraints.Count == 0 ? "none" : string.Join('|', check.ViolatedConstraints);
 
     /// <summary>Console entry for <c>--combat-report</c>. No arguments.</summary>
-    public static int Run()
+    /// <param name="skill">
+    /// The skill an <c>--engage</c> invocation would name, if the operator
+    /// gave one. Accepted so the two invocations can read the same; it does
+    /// not change a verdict (<see cref="TargetVerdictSkill"/>).
+    /// </param>
+    public static int Run(string? skill = null)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -192,22 +265,24 @@ public static class CombatReportCommand
             return WalkCommand.ExitAbandoned;
         }
 
-        return RunWindows();
+        return RunWindows(string.IsNullOrWhiteSpace(skill) ? null : new SkillId(skill));
     }
 
     /// <summary>
     /// The live composition: client window, memory session for the player's own
     /// position and vitals, packet capture for the entities around them, and
     /// the reference catalogue that decides which of those entities are
-    /// monsters -- all four held open by <see cref="LiveCombatObserver"/>,
-    /// shared with <see cref="EngageCommand"/> so the picture reported here is
-    /// the same picture a refusal there is computed from. A thin,
+    /// monsters. <see cref="LiveCombatObserver"/> owns the last two and is
+    /// shared with <see cref="EngageCommand"/>, so the picture reported here
+    /// is the same picture a refusal there is computed from; the window is
+    /// found by <see cref="TryFindWindow"/> and the memory session is opened
+    /// and owned by this method, then passed in. A thin,
     /// untested-by-design shell, exactly like
     /// <c>LoadoutReportCommand.RunWindows</c>; only <see cref="Build"/> and
     /// <see cref="ExplainEmpty"/> below it are tested.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    private static int RunWindows()
+    private static int RunWindows(SkillId? skill)
     {
         if (!TryFindWindow(out int processId, out string? windowFailure))
         {
@@ -248,7 +323,7 @@ public static class CombatReportCommand
                 return WalkCommand.ExitAbandoned;
             }
 
-            Print(Build(player, mobs));
+            Print(Build(player, mobs, skill));
         }
 
         return 0;

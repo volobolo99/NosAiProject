@@ -384,27 +384,87 @@ public sealed class EngageCommandTests
     }
 
     /// <summary>
-    /// A refused round is reported through the same evidence channel an
-    /// executed one is, so the printed line and the ledger entry look the same
-    /// shape whichever way the round ended.
+    /// The decision a refused round rests on, composed the way the runtime
+    /// composes it: a real world, a real
+    /// <see cref="CombatPlanner.CheckTargetConstraints"/> verdict, and the
+    /// refusal string the operator and the ledger are given.
+    /// </summary>
+    /// <remarks>
+    /// The predecessor of this test built a
+    /// <see cref="CombatExecutionEvidence"/> by hand and then asserted on the
+    /// three things <see cref="CombatExecutionEvidence.NotAttempted"/>
+    /// hardcodes, so it could not fail whatever
+    /// <see cref="EngageCommand"/> did.
+    /// </remarks>
+    [Theory]
+    [InlineData(1.0, true, true, null)]
+    [InlineData(50.0, true, true, "engage_target_refused:target_out_of_range")]
+    [InlineData(1.0, null, true, "engage_target_refused:target_not_hostile")]
+    [InlineData(1.0, true, null, "engage_target_refused:target_not_alive")]
+    [InlineData(1.0, null, null, "engage_target_refused:target_not_hostile|target_not_alive")]
+    public void TheRefusalStringNamesEveryViolationTheVerdictCarried(
+        double distance, bool? hostile, bool? alive, string? expected)
+    {
+        var now = new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc);
+        var candidate = new CombatActionCandidate(
+            CombatActionKind.UseSkill, target: new EntityId("mob-1"), skill: new SkillId("7"));
+
+        var player = new Player(
+            new EntityId("player-1"),
+            WorldFact<WorldPosition>.Live(new WorldPosition(0, 0), 1.0, now),
+            WorldFact<float>.Unknown("orientation_not_read", now),
+            WorldFact<bool>.Unknown("alive_not_read", now),
+            WorldFact<MapId>.Unknown("map_not_read", now),
+            CombatantStatus.Empty,
+            EquatableArray<Skill>.Empty,
+            EquatableArray<Cooldown>.Empty,
+            EquatableArray<InventoryItem>.Empty,
+            EquatableArray<EquipmentItem>.Empty);
+
+        var mob = new Mob(
+            new EntityId("mob-1"),
+            WorldFact<WorldPosition>.Live(new WorldPosition((float)distance, 0), 1.0, now),
+            WorldFact<string>.Unknown("species_name_catalog_not_available", now),
+            hostile is { } h ? WorldFact<bool>.Live(h, 1.0, now) : WorldFact<bool>.Unknown("hostility_never_established", now),
+            alive is { } a ? WorldFact<bool>.Derived(a, 1.0, now) : WorldFact<bool>.Unknown("hp_never_stated", now),
+            CombatantStatus.Empty);
+
+        CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(
+            candidate, player, EquatableArray<Mob>.From(new[] { mob }));
+
+        Assert.Equal(expected, EngageCommand.DescribeTargetRefusal(verdict));
+    }
+
+    /// <summary>
+    /// A target the world does not contain is refused by name rather than
+    /// taken on the operator's word -- the gap <c>--engage</c> was changed to
+    /// close.
     /// </summary>
     [Fact]
-    public void ATargetRefusal_IsCarriedAsNotAttemptedEvidence()
+    public void AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound()
     {
+        var now = new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc);
         var candidate = new CombatActionCandidate(
-            CombatActionKind.UseSkill,
-            target: new EntityId("mob-1"),
-            skill: new SkillId("7"));
+            CombatActionKind.UseSkill, target: new EntityId("mob-that-does-not-exist"), skill: new SkillId("7"));
 
-        CombatExecutionEvidence evidence = CombatExecutionEvidence.NotAttempted(
-            candidate,
-            $"{EngageCommand.TargetRefusedReason}:target_out_of_range",
-            new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc));
+        var player = new Player(
+            new EntityId("player-1"),
+            WorldFact<WorldPosition>.Live(new WorldPosition(0, 0), 1.0, now),
+            WorldFact<float>.Unknown("orientation_not_read", now),
+            WorldFact<bool>.Unknown("alive_not_read", now),
+            WorldFact<MapId>.Unknown("map_not_read", now),
+            CombatantStatus.Empty,
+            EquatableArray<Skill>.Empty,
+            EquatableArray<Cooldown>.Empty,
+            EquatableArray<InventoryItem>.Empty,
+            EquatableArray<EquipmentItem>.Empty);
 
-        Assert.Equal(CombatExecutionResult.Aborted, evidence.Result);
-        Assert.False(evidence.ResourceCostConfirmed);
-        Assert.StartsWith(EngageCommand.TargetRefusedReason, evidence.Detail!, StringComparison.Ordinal);
+        CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(
+            candidate, player, EquatableArray<Mob>.Empty);
+
+        Assert.Equal("engage_target_refused:target_not_found", EngageCommand.DescribeTargetRefusal(verdict));
     }
+
 
     private static string RepositoryRoot()
     {
