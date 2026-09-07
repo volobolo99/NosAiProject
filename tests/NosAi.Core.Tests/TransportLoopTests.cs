@@ -176,6 +176,50 @@ public sealed class TransportLoopTests : IDisposable
         Assert.True(p99Ms < 25.0, $"Loopback handshake p99 was {p99Ms:F3} ms (T-06 still requires a real phone).");
     }
 
+    /// <summary>
+    /// The load-independent half of the 100-handshake proof: every cycle
+    /// completes and the journal chain survives, with nothing asserted about
+    /// wall-clock time.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OneHundredLoopbackHandshakesStayUnderTheTwentyFiveMillisecondBudget"/>
+    /// above asserts two separate things at once -- that a hundred real Noise
+    /// handshakes all succeed over real TCP, and that their p99 fits a 25 ms
+    /// budget -- and only the second is a wall-clock measurement that a busy
+    /// machine can invalidate. Gating the whole test on
+    /// <see cref="QuiescedMachineFactAttribute.QuiescedVariable"/> would
+    /// therefore take the first claim out of the default suite as collateral,
+    /// leaving no run at all that exercises a hundred consecutive
+    /// connect/handshake/dispose cycles. This test keeps that claim where it
+    /// costs nothing to keep: same host, same peer, same count, no timing.
+    /// </remarks>
+    [Fact]
+    public async Task OneHundredLoopbackHandshakesAllCompleteAndLeaveTheChainIntact()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
+        await using NosAiHost host = StartHost();
+        Task<HostBootstrapResult> run = host.RunAsync(cts.Token).AsTask();
+        await host.WhenListening.WaitAsync(cts.Token);
+
+        const int HandshakeCount = 100;
+        for (int i = 0; i < HandshakeCount; i++)
+        {
+            await using Gate1LoopbackPeer peer = await Gate1LoopbackPeer.ConnectAsync(host.BoundPort, cts.Token);
+            await peer.HandshakeAsync(cts.Token);
+        }
+
+        await WaitForAsync(() => host.Dashboard.CompletedSessionCount >= HandshakeCount, cts.Token);
+        cts.Cancel();
+        await run;
+
+        Assert.True(
+            host.Dashboard.CompletedSessionCount >= HandshakeCount,
+            $"Only {host.Dashboard.CompletedSessionCount} of {HandshakeCount} sessions completed.");
+        Assert.True(
+            host.Journal.VerifyChain(0, out long broken),
+            $"Journal chain broken at sequence {broken} after {HandshakeCount} handshakes.");
+    }
+
     private NosAiHost StartHost()
     {
         var options = new HostOptions(
