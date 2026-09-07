@@ -68,6 +68,15 @@ public sealed record IntegrityReport(
 /// whole record is on that row. Searching by field value is a second, indexed path.
 /// </para>
 /// </remarks>
+/// <summary>One row of a text table: the key the client file used, and its text.</summary>
+/// <remarks>
+/// La chiave resta una stringa perché lo è nel file: per i nomi delle entità ha
+/// forma <c>zts&lt;N&gt;e</c> con un byte marcatore, per <c>conststring</c> è un
+/// numero. Convertirla qui sceglierebbe una delle due forme al posto di chi
+/// legge.
+/// </remarks>
+public readonly record struct GameTextRow(string Key, string Value);
+
 public sealed class GameReferenceDatabase : IDisposable
 {
     /// <summary>Bumped when the layout changes in a way that needs a rebuild.</summary>
@@ -675,6 +684,95 @@ public sealed class GameReferenceDatabase : IDisposable
 
     public int TextCount(string language) =>
         ScalarInt($"SELECT COUNT(*) FROM text WHERE language = '{language.Replace("'", "''")}'");
+
+    /// <summary>The text a key resolves to, or null when the table does not have it.</summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perché mancava.</b> Fino al 2026-09-08 la tabella <c>text</c> aveva
+    /// solo <see cref="ImportText"/> e <see cref="TextCount"/>: si poteva
+    /// scrivere e contare, non rileggere. I nomi delle entità la interrogano
+    /// attraverso <see cref="DisplayName"/>, che parte da un vnum e passa per
+    /// <c>entity.name_key</c> — una strada che le tabelle di solo testo non
+    /// hanno, perché non descrivono nessuna entità. Le 7 445 righe di
+    /// <c>conststring</c> importate lo stesso giorno erano quindi contate e
+    /// illeggibili.
+    /// </para>
+    /// <para>
+    /// Null e non stringa vuota: «questa tabella non ha quella chiave» e «quella
+    /// chiave è un testo vuoto» sono due risposte diverse, e solo la prima è
+    /// quella che il chiamante deve poter distinguere.
+    /// </para>
+    /// </remarks>
+    public string? TextValue(string language, string tableName, string key)
+    {
+        using SqliteCommand command = _connection.CreateCommand();
+        command.CommandText =
+            "SELECT value FROM text WHERE language = $lang AND table_name = $table AND key = $key";
+        command.Parameters.AddWithValue("$lang", language);
+        command.Parameters.AddWithValue("$table", tableName);
+        command.Parameters.AddWithValue("$key", key);
+        return command.ExecuteScalar() as string;
+    }
+
+    /// <summary>Rows of a text table whose value contains <paramref name="needle"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// Serve al problema che T-16 lascia aperto: il filo porta un id di
+    /// messaggio (<c>sayi</c> campo 4) e il catalogo porta il testo, e il legame
+    /// fra i due non è stato stabilito. L'unica prova che lo stabilirebbe è una
+    /// coppia osservata — cosa c'era a schermo, e quale riga della cattura —
+    /// e per confrontarle serve poter cercare il testo per quello che dice.
+    /// </para>
+    /// <para>
+    /// <b>Questo metodo non stabilisce nessun legame</b>: restituisce le righe
+    /// che contengono una parola, e chi legge decide. Un risultato solo non è una
+    /// conferma, ed è per questo che il limite è un parametro e non uno.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<GameTextRow> SearchText(string language, string tableName, string needle, int limit)
+    {
+        if (limit <= 0 || string.IsNullOrEmpty(needle))
+            return Array.Empty<GameTextRow>();
+
+        using SqliteCommand command = _connection.CreateCommand();
+        // ESCAPE perché una nota scritta a mano può contenere % o _ senza volerlo
+        // dire: cercare «100%» non deve diventare cercare qualunque cosa.
+        command.CommandText = """
+            SELECT key, value FROM text
+            WHERE language = $lang AND table_name = $table
+              AND value LIKE $needle ESCAPE '\'
+            ORDER BY LENGTH(value), key
+            LIMIT $limit
+            """;
+        command.Parameters.AddWithValue("$lang", language);
+        command.Parameters.AddWithValue("$table", tableName);
+        command.Parameters.AddWithValue(
+            "$needle",
+            "%" + needle.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%");
+        command.Parameters.AddWithValue("$limit", limit);
+
+        var rows = new List<GameTextRow>();
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+            rows.Add(new GameTextRow(reader.GetString(0), reader.GetString(1)));
+        return rows;
+    }
+
+    /// <summary>How many rows a text table holds for a language.</summary>
+    /// <remarks>
+    /// <see cref="TextCount"/> conta l'intera lingua. Questo conta una tabella
+    /// sola, che è ciò che serve per dire «conststring ha 7445 righe» senza
+    /// confonderlo con le 58 149 della lingua.
+    /// </remarks>
+    public int TextCount(string language, string tableName)
+    {
+        using SqliteCommand command = _connection.CreateCommand();
+        command.CommandText =
+            "SELECT COUNT(*) FROM text WHERE language = $lang AND table_name = $table";
+        command.Parameters.AddWithValue("$lang", language);
+        command.Parameters.AddWithValue("$table", tableName);
+        return Convert.ToInt32(command.ExecuteScalar() ?? 0);
+    }
 
     // --------------------------------------------------------------- reading
 
