@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Text;
+using NosAi.LiveIntegration;
 using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate1;
@@ -28,13 +30,28 @@ public readonly record struct DecideReplayCycleRow(
     string Verify);
 
 /// <summary>The offline decision dump.</summary>
+/// <param name="AsOfCapture">
+/// Whether freshness was judged against the recording's own timestamps
+/// (<c>--as-of-capture</c>) rather than the system clock.
+/// </param>
+/// <param name="LastVitalsAtUtc">
+/// The wire time of the last distinct vitals reading, or null when the recording
+/// carried none.
+/// </param>
+/// <param name="FreshnessJudgedAtUtc">
+/// The "now" the freshness rule used: the system clock by default, the recording's
+/// last timestamp under <c>--as-of-capture</c>.
+/// </param>
 public sealed record DecideReplayReport(
     string Path,
     IReadOnlyList<DecideReplayCycleRow> Cycles,
     IReadOnlyList<KeyValuePair<string, int>> CountsByReason,
     IReadOnlyList<KeyValuePair<CycleOutcome, int>> CountsByOutcome,
     bool ActingEnabled,
-    string? FailureReason)
+    string? FailureReason,
+    bool AsOfCapture,
+    DateTime? LastVitalsAtUtc,
+    DateTime FreshnessJudgedAtUtc)
 {
     public bool Ok => FailureReason is null;
 }
@@ -60,6 +77,9 @@ public static class DecideReplayCommand
     /// <summary>The operator flag.</summary>
     public const string Flag = "--decide-replay";
 
+    /// <summary>Sub-flag of <c>--decide-replay</c>: judge freshness on the recording's own timestamps.</summary>
+    public const string AsOfCaptureFlag = "--as-of-capture";
+
     /// <summary>Same value as <see cref="Gate3ReplayProbe"/>'s private idle bound.</summary>
     public const int IdleCyclesBeforeExhausted = 5;
 
@@ -76,12 +96,18 @@ public static class DecideReplayCommand
     /// <summary>Console entry.</summary>
     public static async Task<int> RunAsync(string path, int maxCycles = DefaultMaxCycles)
     {
-        DecideReplayReport report = await InspectFileAsync(path, maxCycles).ConfigureAwait(false);
+        // A sub-flag of an existing command, read here rather than in Program.cs:
+        // it is accepted only by the path that opens a .noscap, so no live path
+        // can ever receive it.
+        bool asOfCapture = Environment.GetCommandLineArgs().Any(a =>
+            string.Equals(a, AsOfCaptureFlag, StringComparison.OrdinalIgnoreCase));
+
+        DecideReplayReport report = await InspectFileAsync(path, maxCycles, asOfCapture).ConfigureAwait(false);
         Console.Write(Format(report));
         if (!report.Ok)
         {
             Console.Error.WriteLine($"Recording not readable: {path}");
-            Console.Error.WriteLine("Usage: --decide-replay <file.noscap> [--decide-cycles N]");
+            Console.Error.WriteLine($"Usage: {Flag} <file.noscap> [--decide-cycles N] [{AsOfCaptureFlag}]");
             return ExitUnreadable;
         }
 
@@ -89,16 +115,24 @@ public static class DecideReplayCommand
     }
 
     /// <summary>Reads a path. Zero cycles printed is a successful diagnosis, not a fault.</summary>
-    public static async Task<DecideReplayReport> InspectFileAsync(string path, int maxCycles = DefaultMaxCycles)
+    public static async Task<DecideReplayReport> InspectFileAsync(
+        string path, int maxCycles = DefaultMaxCycles, bool asOfCapture = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!File.Exists(path))
-            return Failed(path, "recording_not_found");
+        {
+            // --as-of-capture only means anything over a real recording; without one
+            // the flag has nothing to judge against, and saying so by name beats
+            // reusing the plain "recording_not_found" that already has its own case.
+            return Failed(path, asOfCapture
+                ? "as_of_capture_requires_a_recording_file"
+                : "recording_not_found");
+        }
 
         try
         {
             using IPacketSource packets = CaptureFile.Open(path);
-            return await InspectAsync(path, packets, maxCycles).ConfigureAwait(false);
+            return await InspectAsync(path, packets, maxCycles, asOfCapture).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException)
         {
@@ -108,16 +142,26 @@ public static class DecideReplayCommand
 
     /// <summary>Drives the existing loop over an already-open source.</summary>
     public static async Task<DecideReplayReport> InspectAsync(
-        string path, IPacketSource packets, int maxCycles = DefaultMaxCycles)
+        string path, IPacketSource packets, int maxCycles = DefaultMaxCycles, bool asOfCapture = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(packets);
         if (maxCycles < 1)
             maxCycles = 1;
 
+        CaptureClock? captureClock = null;
+        if (asOfCapture)
+        {
+            // The seed is the first packet's instant and every later packet advances
+            // the clock as it is read, so the provider's "now" follows the wire.
+            var wrapped = new CaptureClockPacketSource(packets);
+            captureClock = wrapped.Clock;
+            packets = wrapped;
+        }
+
         var endpoint = new GameEndpoint(packets.ServerAddress.ToString(), packets.ServerPort);
         using Gate1ObservationChannel channel =
-            Gate1ObservationChannel.FromPackets(packets, endpoint, DataSourceKind.Cached);
+            Gate1ObservationChannel.FromPackets(packets, endpoint, DataSourceKind.Cached, clock: captureClock);
         if (channel.Provider is null)
             return Failed(path, channel.FailureReason ?? "observation_chain_uncomposed");
 
@@ -155,13 +199,20 @@ public static class DecideReplayCommand
                 break;
         }
 
+        DateTime judgedAt = captureClock is not null
+            ? captureClock.GetUtcNow().UtcDateTime
+            : DateTime.UtcNow;
+
         return new DecideReplayReport(
             path,
             rows,
             byReason.OrderByDescending(e => e.Value).ThenBy(e => e.Key, StringComparer.Ordinal).ToList(),
             byOutcome.OrderByDescending(e => e.Value).ThenBy(e => e.Key).ToList(),
             loop.ActingEnabled,
-            FailureReason: null);
+            FailureReason: null,
+            AsOfCapture: asOfCapture,
+            LastVitalsAtUtc: lastReadingAt,
+            FreshnessJudgedAtUtc: judgedAt);
     }
 
     /// <summary>The operator-facing block. Stable enough to assert against.</summary>
@@ -180,6 +231,9 @@ public static class DecideReplayCommand
             text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"unreadable: {failure}"));
             return text.ToString();
         }
+
+        text.AppendLine(FreshnessLine(report));
+        text.AppendLine();
 
         foreach (DecideReplayCycleRow row in report.Cycles)
         {
@@ -212,6 +266,25 @@ public static class DecideReplayCommand
     }
 
     /// <summary>
+    /// The one line that says which staleness the reader is looking at. Under the
+    /// system clock a <c>player_vitals_stale</c> is structural — every recording is
+    /// old — and says nothing about this capture; under <c>--as-of-capture</c> the
+    /// same words mean a real gap in the wire.
+    /// </summary>
+    private static string FreshnessLine(DecideReplayReport report)
+    {
+        if (report.AsOfCapture)
+        {
+            return string.Create(CultureInfo.InvariantCulture,
+                $"Freshness: judged as-of-capture on the recording's own timestamps — a player_vitals_stale below is a real gap in the wire (two readings more than {NetworkGameplayProvider.DefaultMaxVitalsAge.TotalSeconds:F0} seconds apart), not the capture's age.");
+        }
+
+        TimeSpan age = report.FreshnessJudgedAtUtc - (report.LastVitalsAtUtc ?? report.FreshnessJudgedAtUtc);
+        return string.Create(CultureInfo.InvariantCulture,
+            $"Freshness: judged against the system clock — the capture is {age.TotalSeconds:F0} seconds old, so a player_vitals_stale below is structural (an old recording), not a gap in this capture.");
+    }
+
+    /// <summary>
     /// Which of the four named stages the existing <see cref="CycleOutcome"/>
     /// reached. The mapping restates <c>ExecuteCycleAsync</c>'s early returns;
     /// it does not add a refusal.
@@ -240,7 +313,10 @@ public static class DecideReplayCommand
         Array.Empty<KeyValuePair<string, int>>(),
         Array.Empty<KeyValuePair<CycleOutcome, int>>(),
         ActingEnabled: false,
-        FailureReason: reason);
+        FailureReason: reason,
+        AsOfCapture: false,
+        LastVitalsAtUtc: null,
+        FreshnessJudgedAtUtc: DateTime.UtcNow);
 
     /// <summary>The loop logs transitions; this command already prints every cycle.</summary>
     private sealed class DiscardingRuntimeLogger : IRuntimeLogger
@@ -248,5 +324,60 @@ public static class DecideReplayCommand
         public void Info(string message, IReadOnlyDictionary<string, object?>? properties = null) { }
         public void Warning(string message, IReadOnlyDictionary<string, object?>? properties = null) { }
         public void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null) { }
+    }
+
+    /// <summary>
+    /// Wraps a packet source so a <see cref="CaptureClock"/> advances with every
+    /// packet's timestamp. The first packet is read eagerly to seed the clock, then
+    /// handed back on the first <c>TryRead</c>, so the clock answers with the first
+    /// packet's instant before anything has been read — never with the system clock.
+    /// </summary>
+    private sealed class CaptureClockPacketSource : IPacketSource
+    {
+        private readonly IPacketSource _inner;
+        private CapturedPacket? _pending;
+
+        public CaptureClockPacketSource(IPacketSource inner)
+        {
+            _inner = inner;
+            if (_inner.TryRead(TimeSpan.Zero, out CapturedPacket first))
+            {
+                _pending = first;
+                Clock = new CaptureClock(AsUtc(first.TimestampUtc));
+            }
+            else
+            {
+                // An empty recording has no wire instant to seed from. Nothing can be
+                // stale before anything has been read, so any epoch works here.
+                Clock = new CaptureClock(DateTimeOffset.UnixEpoch);
+            }
+        }
+
+        public CaptureClock Clock { get; }
+        public IPAddress ServerAddress => _inner.ServerAddress;
+        public int ServerPort => _inner.ServerPort;
+
+        public bool TryRead(TimeSpan timeout, out CapturedPacket packet)
+        {
+            if (_pending is { } first)
+            {
+                _pending = null;
+                packet = first;
+                return true;
+            }
+
+            if (_inner.TryRead(timeout, out packet))
+            {
+                Clock.Advance(AsUtc(packet.TimestampUtc));
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Dispose() => _inner.Dispose();
+
+        private static DateTimeOffset AsUtc(DateTime wireTime) =>
+            new(wireTime.ToUniversalTime(), TimeSpan.Zero);
     }
 }

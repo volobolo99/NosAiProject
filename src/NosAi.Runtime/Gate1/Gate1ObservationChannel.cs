@@ -145,13 +145,19 @@ public sealed class Gate1ObservationChannel : IDisposable
     /// wire could never produce. It is composed <b>inside</b> the screen decorator, so
     /// when both are present memory answers and the screen stays the second source.
     /// </param>
+    /// <param name="clock">
+    /// The time source the provider judges freshness against. The system clock unless
+    /// the caller supplies one; <c>--decide-replay --as-of-capture</c> supplies a
+    /// <see cref="CaptureClock"/> that advances with the recording's own timestamps.
+    /// </param>
     public static Gate1ObservationChannel FromPackets(
         IPacketSource packets,
         GameEndpoint endpoint,
         DataSourceKind streamSource,
         ITargetFrameSource? targetFrames = null,
         TargetRoiCalibration? targetRoi = null,
-        Func<TargetPointerReading?>? targetMemory = null)
+        Func<TargetPointerReading?>? targetMemory = null,
+        TimeProvider? clock = null)
     {
         ArgumentNullException.ThrowIfNull(packets);
         ArgumentNullException.ThrowIfNull(endpoint);
@@ -162,7 +168,7 @@ public sealed class Gate1ObservationChannel : IDisposable
             new ScopedGameTrafficFilter(endpoint),
             new NosTaleWorldProtocolDecoder());
         var feed = new NetworkWorldFeed(observer);
-        IGameplayProvider provider = new NetworkGameplayProvider(feed);
+        IGameplayProvider provider = new NetworkGameplayProvider(feed, clock);
 
         if (targetMemory is not null)
             provider = new MemoryTargetGameplayProvider(provider, targetMemory);
