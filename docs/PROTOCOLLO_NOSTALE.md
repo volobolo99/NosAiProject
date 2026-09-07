@@ -147,6 +147,24 @@ bandiera a 1, e mai per il personaggio controllato: su quella vita `stat` è gi�
 la fonte, e due numeri diversi allo stesso istante sarebbero un conflitto
 inventato da noi.
 
+### Che cosa cambia davvero, misurato dopo
+
+**Non sono entità nuove: è vita più fresca.** Rigiocando le catture attraverso il
+World Model, gli id che `su` porta e `st` no sono **uno** in `nostale_combat` e
+**uno** in `certificazione` — `st` copriva già quasi tutti i bersagli. Quello che
+cambia è quante volte la vita di un bersaglio viene riletta:
+
+| cattura | letture da `st` | letture da `su` |
+|---|---:|---:|
+| `nostale_combat` | 49 | **94** |
+| `certificazione` | 66 | 69 |
+| `nostale_live` | 19 | 9 |
+
+Durante un combattimento `su` arriva a ogni colpo e `st` solo ogni tanto: nella
+cattura più combattuta la vita del bersaglio si aggiorna quasi il doppio delle
+volte. È un guadagno di **freschezza**, che è ciò che serve a decidere se
+continuare o disingaggiare, e non un guadagno di copertura.
+
 `su` is the per-hit event stream: who hit whom, with what, for how much, and the
 target's resulting HP. It is the highest-value packet for combat reasoning after
 `stat`.
