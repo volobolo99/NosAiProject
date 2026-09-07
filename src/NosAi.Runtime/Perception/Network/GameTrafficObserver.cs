@@ -310,6 +310,24 @@ public sealed record PlayerVitals(
     DateTime? ObservedAtUtc = null,
     int? MaxMp = null);
 
+/// <summary>What the wire says about the character's progression.</summary>
+/// <remarks>
+/// Six fields, and deliberately not the other six the packet carries. Fields 7
+/// through 12 of `lev` (`35106 7 0 0 1 0`) are identical in all 38 packets of
+/// the three recordings that carry any, while fields 2 and 4 move in every one
+/// of them. A value that has never once changed cannot be told apart from a
+/// constant the server always sends, so nothing here can confirm a meaning for
+/// it: it is not in this contract at all -- not zero, not a null "for now".
+/// See docs/PROTOCOLLO_NOSTALE.md § lev.
+/// </remarks>
+public readonly record struct PlayerProgression(
+    int Level,
+    long Experience,
+    long ExperienceForNextLevel,
+    int JobLevel,
+    long JobExperience,
+    long JobExperienceForNextJobLevel);
+
 /// <summary>The observations decoded from one packet.</summary>
 /// <param name="PlayerAttackedAtUtc">
 /// When this packet showed the player attacking, or null when it did not. The
@@ -360,7 +378,8 @@ public sealed record DecodedObservations(
     InventorySlotReading? InventorySlot = null,
     ItemPickup? Pickup = null,
     GroundItem? GroundItem = null,
-    PlayerTargetSelection? PlayerTarget = null)
+    PlayerTargetSelection? PlayerTarget = null,
+    PlayerProgression? Progression = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
@@ -369,7 +388,8 @@ public sealed record DecodedObservations(
         Sightings.IsEmpty && Events.IsEmpty && Vitals is null
         && PlayerMovementSpeed is null && PlayerEntityId is null
         && PlayerHit is null && SkillReady is null && InventorySlot is null
-        && Pickup is null && GroundItem is null && PlayerTarget is null;
+        && Pickup is null && GroundItem is null && PlayerTarget is null
+        && Progression is null;
 }
 
 /// <summary>
@@ -433,7 +453,10 @@ public sealed record NetworkObservationReport(
     int? PlayerMovementSpeed = null,
     // The controlled character's own entity id, once a packet has named it. Null
     // until then, never guessed.
-    long? PlayerEntityId = null)
+    long? PlayerEntityId = null,
+    // The most recent progression decoded in this batch, or null when the map
+    // does not describe it. Null is not "level zero".
+    PlayerProgression? Progression = null)
 {
     /// <summary>
     /// The most recent hit on the controlled character in this batch, or null
@@ -537,6 +560,7 @@ public sealed class GameTrafficObserver
         long? playerEntityId = null;
         PlayerHit? playerHit = null;
         PlayerTargetSelection? playerTarget = null;
+        PlayerProgression? progression = null;
         var skillsReady = ImmutableArray.CreateBuilder<SkillReady>();
         var inventorySlots = ImmutableArray.CreateBuilder<InventorySlotReading>();
         var pickups = ImmutableArray.CreateBuilder<ItemPickup>();
@@ -582,6 +606,10 @@ public sealed class GameTrafficObserver
             // Last one wins: within a batch the later message is the more recent
             // state, and keeping the first would report a stale HP as current.
             if (result.Vitals is not null) vitals = result.Vitals;
+            // Last one wins, exactly as vitals: within a batch the later packet
+            // is the more recent state, and keeping the first would report a
+            // stale level as current.
+            if (result.Progression is not null) progression = result.Progression;
             // Latest wins on its own merit rather than on batch order: the
             // composer compares this against the screen's timestamp, and an
             // out-of-order packet must not move the answer backwards.
@@ -628,7 +656,8 @@ public sealed class GameTrafficObserver
             _decoder.ReadsPlayerVitals,
             playerAttackedAt,
             playerSpeed,
-            playerEntityId)
+            playerEntityId,
+            progression)
         {
             LastPlayerHit = playerHit,
             LastPlayerTarget = playerTarget,

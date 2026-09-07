@@ -273,6 +273,22 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE** (2026-09-07): **`--decide-replay` non arriva mai al
+pianificatore, e non lo dice.** Misurato: su 8211 pacchetti reali produce sette
+cicli, cinque dei quali si fermano a `player_vitals_stale`. La causa non e' un
+difetto — `GameplayProvider.cs:555` sceglie di misurare la freschezza sull'ora
+del filo, e su una registrazione ogni lettura e' vecchia di mesi: alla domanda
+«questa lettura e' attuale?» la risposta giusta e' sempre no (ADR-0016). Il
+difetto e' che l'uscita non lo dice, quindi chi la legge conclude che la
+registrazione e' povera o che il pianificatore e' rotto. Il task **non allenta
+quella regola**: le mette accanto una seconda domanda dichiarata,
+`--as-of-capture`, con un orologio che avanza sui timestamp della cattura — e
+tre test fissano che provenienza resta `Cached`, `Acting enabled` resta
+`False`, e la modalita' vale solo su file. Il seme esiste gia':
+`NetworkGameplayProvider` prende gia' un `TimeProvider`. Non tocca
+`Program.cs` ne' i file degli altri task. Specifica:
+`docs/agents/phases/AP-09/AP-09_A2A4_DEEPSEEK_decide_replay_as_of_capture.md`.
+
 **INDIPENDENTE, PRENDIBILE ANCHE IN PARALLELO** (2026-09-07): **misurare un
 opcode invece di indovinarlo** — comando `--wire-inspect`. Per scrivere le due
 specifiche qui sotto e' servito sapere cosa contengono davvero i pacchetti

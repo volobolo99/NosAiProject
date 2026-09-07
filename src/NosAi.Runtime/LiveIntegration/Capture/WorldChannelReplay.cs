@@ -33,7 +33,19 @@ public sealed record WorldChannelReplaySummary(
     // until a packet named them, and neither is guessed: the own entity id comes
     // from cond's field 2, the speeds are every distinct cond speed observed.
     long? PlayerEntityId = null,
-    IReadOnlyList<int>? PlayerSpeeds = null)
+    IReadOnlyList<int>? PlayerSpeeds = null,
+    // Progression from `lev`: how many readings, and the shape the vitals block
+    // keeps. Level and job level are recorded as the set of values seen rather
+    // than a min/max pair, which would hide a second level appearing mid-capture.
+    long ProgressionReadings = 0,
+    IReadOnlyList<int>? LevelValues = null,
+    IReadOnlyList<int>? JobLevelValues = null,
+    long ExperienceMin = 0,
+    long ExperienceMax = 0,
+    long JobExperienceMin = 0,
+    long JobExperienceMax = 0,
+    IReadOnlyList<long>? ExperienceForNextLevelValues = null,
+    IReadOnlyList<long>? JobExperienceForNextJobLevelValues = null)
 {
     /// <summary>Packets carrying an opcode the decoder reads.</summary>
     public long ReadablePackets => Opcodes.Where(o => ReadOpcodes.Contains(o.Key)).Sum(o => o.Value);
@@ -69,6 +81,19 @@ public sealed record WorldChannelReplaySummary(
         else
         {
             sb.AppendLine("    Nessuna: nella finestra registrata non e' passato un 'stat'.");
+        }
+
+        sb.AppendLine($"  progressione (lev)     : {ProgressionReadings} letture");
+        if (ProgressionReadings > 0)
+        {
+            sb.AppendLine($"    livello              : [{string.Join(", ", LevelValues ?? [])}]");
+            sb.AppendLine($"    esperienza           : {ExperienceMin}..{ExperienceMax}  (su {string.Join(", ", ExperienceForNextLevelValues ?? [])})");
+            sb.AppendLine($"    livello di lavoro    : [{string.Join(", ", JobLevelValues ?? [])}]");
+            sb.AppendLine($"    esperienza lavoro    : {JobExperienceMin}..{JobExperienceMax}  (su {string.Join(", ", JobExperienceForNextJobLevelValues ?? [])})");
+        }
+        else
+        {
+            sb.AppendLine("    Nessuna: nella finestra registrata non e' passato un 'lev'.");
         }
 
         sb.AppendLine($"  avvistamenti           : {Sightings} su {DistinctEntities} entita' distinte");
@@ -116,7 +141,7 @@ public static class WorldChannelReplay
     // read as evidence of what the chain does and does not consume, so a stale
     // entry here understates the chain in exactly the direction nobody checks.
     private static readonly string[] ReadOpcodes =
-        { "stat", "st", "in", "mv", "die", "su", "cond", "sr", "ivn", "get", "drop", "ct" };
+        { "stat", "st", "in", "mv", "die", "su", "cond", "lev", "sr", "ivn", "get", "drop", "ct" };
 
     /// <summary>Reads a recording file and reports what the world channel said.</summary>
     public static WorldChannelReplaySummary ReplayFile(string path)
@@ -179,6 +204,13 @@ public static class WorldChannelReplay
         var entities = new HashSet<long>();
         var speeds = new SortedSet<int>();
         long? playerEntityId = null;
+        long progressionReadings = 0;
+        var levelValues = new SortedSet<int>();
+        var jobLevelValues = new SortedSet<int>();
+        long expMin = long.MaxValue, expMax = 0;
+        long jobExpMin = long.MaxValue, jobExpMax = 0;
+        var expForNextValues = new SortedSet<long>();
+        var jobExpForNextValues = new SortedSet<long>();
 
         while (true)
         {
@@ -216,6 +248,19 @@ public static class WorldChannelReplay
                 maxMp = Math.Max(maxMp, vitals.Mp);
                 maxHpValues.Add(vitals.MaxHp);
             }
+
+            if (report.Progression is { } progression)
+            {
+                progressionReadings++;
+                levelValues.Add(progression.Level);
+                jobLevelValues.Add(progression.JobLevel);
+                expMin = Math.Min(expMin, progression.Experience);
+                expMax = Math.Max(expMax, progression.Experience);
+                jobExpMin = Math.Min(jobExpMin, progression.JobExperience);
+                jobExpMax = Math.Max(jobExpMax, progression.JobExperience);
+                expForNextValues.Add(progression.ExperienceForNextLevel);
+                jobExpForNextValues.Add(progression.JobExperienceForNextJobLevel);
+            }
         }
 
         return new WorldChannelReplaySummary(
@@ -227,6 +272,15 @@ public static class WorldChannelReplay
             sightings, entities.Count, hits, deaths,
             source,
             playerEntityId,
-            speeds.Order().ToList());
+            speeds.Order().ToList(),
+            progressionReadings,
+            levelValues.ToList(),
+            jobLevelValues.ToList(),
+            progressionReadings == 0 ? 0 : expMin,
+            expMax,
+            progressionReadings == 0 ? 0 : jobExpMin,
+            jobExpMax,
+            expForNextValues.ToList(),
+            jobExpForNextValues.ToList());
     }
 }

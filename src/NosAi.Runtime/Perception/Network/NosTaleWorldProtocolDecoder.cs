@@ -117,6 +117,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "die" => DecodeDeath(fields, source, at),
             "su" => DecodeHit(fields, source, at),
             "cond" => DecodeCondition(fields),
+            "lev" => DecodeProgression(fields, source, at),
             "sr" => DecodeSkillReady(fields, source, at),
             "ivn" => DecodeInventorySlot(fields, source, at),
             "get" => DecodePickup(fields, source, at),
@@ -356,6 +357,48 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             ImmutableArray<GameEvent>.Empty,
             PlayerMovementSpeed: speed,
             PlayerEntityId: entityId);
+    }
+
+    /// <summary>
+    /// <c>lev level xp jobLevel jobXp xpMax jobXpMax …</c> — the player's own
+    /// progression. The six read fields are marked <i>probable</i> in the
+    /// catalogue; everything after the sixth is unknown and is not read.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Read whole or not at all. The failure mode that matters here is a
+    /// half-read progression: a level published with a garbage XP beside it is a
+    /// fact nobody observed, so any field that is not the number it should be —
+    /// or outside what that number can plausibly hold — refuses the packet whole,
+    /// on the same principle by which <c>stat</c> refuses an HP above its
+    /// maximum. Nothing is clamped into a value.
+    /// </para>
+    /// <para>
+    /// This is state, not an event: no <see cref="GameEvent"/> is emitted, and
+    /// <c>lev</c> describes the player, not an entity in view.
+    /// </para>
+    /// </remarks>
+    private static DecodedObservations DecodeProgression(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 7)
+            return DecodedObservations.Empty;
+        if (!TryInt(fields[1], out int level)
+            || !TryLong(fields[2], out long experience)
+            || !TryInt(fields[3], out int jobLevel)
+            || !TryLong(fields[4], out long jobExperience)
+            || !TryLong(fields[5], out long experienceForNextLevel)
+            || !TryLong(fields[6], out long jobExperienceForNextJobLevel))
+            return DecodedObservations.Empty;
+        if (level <= 0 || jobLevel <= 0 || experience < 0 || jobExperience < 0
+            || experienceForNextLevel <= 0 || jobExperienceForNextJobLevel <= 0)
+            return DecodedObservations.Empty;
+
+        return DecodedObservations.Empty with
+        {
+            Progression = new PlayerProgression(
+                level, experience, experienceForNextLevel,
+                jobLevel, jobExperience, jobExperienceForNextJobLevel)
+        };
     }
 
     // ------------------------------------------------------------------ C1-3
