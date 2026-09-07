@@ -30,5 +30,10 @@
     <!-- Both ends of the canonical channel, so the handshake is tested against the
          real server rather than against a description of it. -->
     <ProjectReference Include="..\..\src\NosAi.GuardClient\NosAi.GuardClient.csproj" />
+    <!-- The DirectEngine contracts live in NosAi.Adapter, which does not reference
+         NosAi.Runtime and must not: the adapter has to stay reusable on its own.
+         Their tests sit here beside the rest of the runtime suite, so this project
+         reaches down to the adapter rather than the other way round. -->
+    <ProjectReference Include="..\..\src\NosAi.Adapter\NosAi.Adapter.csproj" />
   </ItemGroup>
 </Project>
