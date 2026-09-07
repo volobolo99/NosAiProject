@@ -218,7 +218,7 @@ public static class GameplayObservationProjector
             switch (classifyVnum(vnum))
             {
                 case CatalogueClass.Monster:
-                    (mobs ??= new List<Mob>()).Add(ToMob(entity, vnum, source));
+                    (mobs ??= new List<Mob>()).Add(ToMob(entity, vnum, source, EstablishHostility(observation, entity)));
                     break;
                 case CatalogueClass.SpecialNonMonsterEntity:
                     (npcs ??= new List<Npc>()).Add(ToNpc(entity, vnum, source));
@@ -233,7 +233,11 @@ public static class GameplayObservationProjector
             npcs is null ? EquatableArray<Npc>.Empty : EquatableArray<Npc>.From(npcs));
     }
 
-    private static Mob ToMob(SelectableEntity entity, int vnum, RuntimeContracts.DataSourceKind source)
+    private static Mob ToMob(
+        SelectableEntity entity,
+        int vnum,
+        RuntimeContracts.DataSourceKind source,
+        WorldFact<bool> isHostile)
     {
         WorldFact<double> healthFraction = entity.HpRatio is { } ratio
             ? WorldFact<double>.Cached(ratio, 1.0, entity.ObservedAtUtc, HealthInstantNotCarriedReason)
@@ -260,16 +264,55 @@ public static class GameplayObservationProjector
                 string.Create(CultureInfo.InvariantCulture, $"species_name_catalog_not_available:vnum={vnum}"),
                 entity.ObservedAtUtc),
 
-            // Being a monster is not being hostile: Mob's own contract covers
-            // "hostile or neutral", monster.dat's PREATT block carries a
-            // hostility code this project has never cross-checked against a
-            // real client, and many NosTale monsters are passive until struck.
-            // Deriving true from "it is in the monster table" would be exactly
-            // the guess the catalogue is being consulted to avoid.
-            WorldFact<bool>.Unknown("hostility_not_decoded_from_reference_catalogue", entity.ObservedAtUtc),
+            isHostile,
 
             DeriveEntityIsAlive(healthFraction),
             status);
+    }
+
+    /// <summary>
+    /// Whether this entity is hostile, established only by the wire's own
+    /// record of it having hit the controlled character.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Being in <c>monster.dat</c> is not being hostile. <see cref="Mob"/>'s
+    /// own contract covers "hostile or neutral", many NosTale monsters are
+    /// passive until struck, and the hostility code in that file's
+    /// <c>PREATT</c> block (decoded as <c>MonsterReference.Hostility</c>) has
+    /// never been cross-checked against a real client in this repository --
+    /// promoting it to a fact here would be exactly the guess the catalogue is
+    /// consulted to avoid.
+    /// </para>
+    /// <para>
+    /// <see cref="GameplayObservation.HitBy"/> is different in kind: the
+    /// decoder publishes it only after establishing, from <c>cond</c>'s own
+    /// entity id, that the <c>su</c> it read was aimed at <i>this</i>
+    /// character. An entity that hit us is beyond doubt something that
+    /// fights -- the same reasoning that makes
+    /// <see cref="TargetEstablishment.Assess"/> rank
+    /// <c>TargetEvidence.AttackedUs</c> above a catalogue lookup.
+    /// </para>
+    /// <para>
+    /// <see cref="GameplayObservation.SelectedTarget"/> is deliberately
+    /// <b>not</b> consulted: the character having acted on an entity says the
+    /// client accepted it as a target, not that the entity is hostile -- an
+    /// NPC can be selected too.
+    /// </para>
+    /// <para>
+    /// The wire names one aggressor, the most recent, so at most one mob per
+    /// cycle is established this way. <c>WorldModelTemporalEnricher</c> carries
+    /// that answer forward across cycles as <see cref="DataSourceKind.Cached"/>
+    /// once established; this method only ever states what the current
+    /// observation says.
+    /// </para>
+    /// </remarks>
+    private static WorldFact<bool> EstablishHostility(GameplayObservation observation, SelectableEntity entity)
+    {
+        if (observation.HitBy is { HasValue: true } aggressor && aggressor.Value.EntityId == entity.EntityId)
+            return ClassifiedValueBridge.WithSource(observation.HitBy.Source, true, observation.HitBy.ObservedAtUtc);
+
+        return WorldFact<bool>.Unknown("hostility_never_established:no_observed_hit_from_this_entity", entity.ObservedAtUtc);
     }
 
     private static Npc ToNpc(SelectableEntity entity, int vnum, RuntimeContracts.DataSourceKind source) =>

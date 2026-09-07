@@ -2,6 +2,7 @@ using NosAi.Core.WorldModel;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.WorldModel.Fusion;
 using Xunit;
 using CoreDataSourceKind = NosAi.Core.WorldModel.DataSourceKind;
@@ -127,9 +128,73 @@ public sealed class GameplayObservationEntityProjectionTests
     /// <see cref="Mob"/>'s own contract covers "hostile or neutral".
     /// </summary>
     [Fact]
-    public void MobHostility_StaysUnknown_BecauseTheCatalogueWasNotAskedThat()
+    public void MobHostility_StaysUnknown_WhenNothingHasHitUs()
     {
         WorldModelSnapshot snapshot = Project(WithEntities(Monster313816()), _ => CatalogueClass.Monster);
+
+        Mob mob = Assert.Single(snapshot.Mobs);
+        Assert.False(mob.IsHostile.HasValue);
+        Assert.Equal("hostility_never_established:no_observed_hit_from_this_entity", mob.IsHostile.Reason);
+    }
+
+    /// <summary>
+    /// An entity that hit the controlled character is beyond doubt something
+    /// that fights -- the strongest evidence <see cref="TargetEstablishment"/>
+    /// recognises, and the only one this projection accepts for hostility.
+    /// </summary>
+    [Fact]
+    public void MobThatHitUs_IsEstablishedHostile_FromTheWiresOwnRecord()
+    {
+        GameplayObservation observation = WithEntities(Monster313816()) with
+        {
+            HitBy = ClassifiedValue<Aggressor>.Live(new Aggressor(313816, 3), Now)
+        };
+
+        WorldModelSnapshot snapshot = Project(observation, _ => CatalogueClass.Monster);
+
+        Mob mob = Assert.Single(snapshot.Mobs);
+        Assert.True(mob.IsHostile.HasValue);
+        Assert.True(mob.IsHostile.Value);
+        Assert.Equal(CoreDataSourceKind.Live, mob.IsHostile.Source);
+        Assert.Equal(Now, mob.IsHostile.ObservedAtUtc);
+    }
+
+    /// <summary>
+    /// The aggressor is one named entity, not a licence for everything in
+    /// view: a mob that did not hit us keeps an Unknown hostility even while
+    /// another one is established.
+    /// </summary>
+    [Fact]
+    public void OnlyTheEntityThatHitUs_IsEstablishedHostile()
+    {
+        var attacker = new SelectableEntity(1, new MapPoint(1, 1), 0.5, Earlier, Vnum: 36);
+        var bystander = new SelectableEntity(2, new MapPoint(2, 2), 0.5, Earlier, Vnum: 36);
+
+        GameplayObservation observation = WithEntities(attacker, bystander) with
+        {
+            HitBy = ClassifiedValue<Aggressor>.Live(new Aggressor(1, 3), Now)
+        };
+
+        WorldModelSnapshot snapshot = Project(observation, _ => CatalogueClass.Monster);
+
+        Assert.True(snapshot.Mobs.Single(m => m.Id.Value == "mob-1").IsHostile.Value);
+        Assert.False(snapshot.Mobs.Single(m => m.Id.Value == "mob-2").IsHostile.HasValue);
+    }
+
+    /// <summary>
+    /// Having acted on an entity says the client accepted it as a target, not
+    /// that the entity is hostile -- an NPC can be selected too. Only a hit
+    /// establishes hostility here.
+    /// </summary>
+    [Fact]
+    public void SelectingAnEntity_DoesNotEstablishHostility()
+    {
+        GameplayObservation observation = WithEntities(Monster313816()) with
+        {
+            SelectedTarget = ClassifiedValue<TargetedEntity>.Live(new TargetedEntity(313816, 3), Now)
+        };
+
+        WorldModelSnapshot snapshot = Project(observation, _ => CatalogueClass.Monster);
 
         Assert.False(Assert.Single(snapshot.Mobs).IsHostile.HasValue);
     }

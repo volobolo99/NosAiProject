@@ -72,9 +72,58 @@ public static class WorldModelTemporalEnricher
                 ? TemporalBelief.EstimateVelocity(matched.Position, mob.Position, maxObservationGap)
                 : WorldFact<WorldVelocity>.Unknown("no_prior_sighting_of_this_entity", mob.Position.ObservedAtUtc);
 
-            enriched[i] = mob with { Position = decayedPosition, Velocity = velocity };
+            enriched[i] = mob with
+            {
+                Position = decayedPosition,
+                Velocity = velocity,
+                IsHostile = CarryHostilityForward(mob.IsHostile, matched)
+            };
         }
 
         return EquatableArray<Mob>.From(enriched);
+    }
+
+    /// <summary>
+    /// Keeps an already-established hostility when the current cycle did not
+    /// re-establish it, as an explicitly <see cref="DataSourceKind.Cached"/>
+    /// fact rather than a fresh one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Sensor Fusion can only establish a mob's hostility from the wire's
+    /// record of it having hit the character, and the wire names one
+    /// aggressor: the most recent. Without this, a mob would be hostile for
+    /// exactly the one cycle in which it struck, and unknown again the next --
+    /// so every consumer would see the fact flicker rather than hold.
+    /// </para>
+    /// <para>
+    /// <b>Only ever carried forward, never invented and never reversed.</b>
+    /// A current cycle that states hostility wins outright, because it is the
+    /// fresher observation. A prior Unknown carries nothing: this widens no
+    /// claim, it only stops one already made from being dropped. And nothing
+    /// here ever turns a hostility into <see langword="false"/> -- an entity
+    /// that fought is one that fights, and a later cycle simply not seeing it
+    /// hit anyone is not evidence to the contrary.
+    /// </para>
+    /// <para>
+    /// The instant stays the <b>original</b> observation's, never
+    /// <paramref name="previous"/>'s own re-stamping and never now, so the
+    /// fact keeps ageing across cycles instead of looking freshly observed on
+    /// every one -- that age is what a freshness gate reads. The confidence is
+    /// kept as observed for the same reason: a mob does not become less
+    /// hostile with time, only harder to still find, which is the position's
+    /// decay to express.
+    /// </para>
+    /// </remarks>
+    private static WorldFact<bool> CarryHostilityForward(WorldFact<bool> current, Mob? previous)
+    {
+        if (current.HasValue || previous is null || !previous.IsHostile.HasValue)
+            return current;
+
+        return WorldFact<bool>.Cached(
+            previous.IsHostile.Value,
+            previous.IsHostile.Confidence,
+            previous.IsHostile.ObservedAtUtc,
+            previous.IsHostile.Reason ?? "hostility_established_in_an_earlier_cycle");
     }
 }
