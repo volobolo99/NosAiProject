@@ -38,7 +38,7 @@ Nota: `dotnet build NosAi.sln -c Release` fallisce, ma per una causa estranea al
 dotnet test tests\NosAi.Core.Tests\NosAi.Core.Tests.csproj --filter "Category=Gate1"
 ```
 
-Esito: **66/66 superati** (0 falliti), sia in configurazione Debug che Release. Copertura: `FrameCodec`, `SequenceGuard`, `CapabilityToken`/`HmacCapabilityValidator`, `NoiseXxSession`, `SqliteEventJournal`, `VolumeLocator`, `Win32ProcessAdapter`, `NosAiHost`, `NoMockOnCriticalPathAnalyzer`, `TransportLoopTests` (TCP loopback reale: handshake Noise, CapBAC, heartbeat, replay, disconnessione). Nessun mock: i test contro SQLite scrivono su file reali in `%TEMP%`, `Win32ProcessAdapter` usa le API Win32 reali (senza mai collegarsi a un processo di sistema in esecuzione), `NoiseXxSession` esegue l'handshake `Noise.NET` reale, `TransportLoopTests` apre un `TcpListener` e un `TcpClient` sullo stesso host.
+Esito: **694 superati, 0 falliti, 1 saltato**, sia in configurazione Debug che Release. Il saltato è il budget p99 dell'handshake: misura l'orologio da parete, quindi gira solo dove l'operatore dichiara la macchina scarica (§5), e altrove è registrato come `Skipped` con la motivazione, mai fra i superati. Copertura: `FrameCodec`, `SequenceGuard`, `CapabilityToken`/`HmacCapabilityValidator`, `NoiseXxSession`, `SqliteEventJournal`, `VolumeLocator`, `Win32ProcessAdapter`, `NosAiHost`, `NoMockOnCriticalPathAnalyzer`, `TransportLoopTests` (TCP loopback reale: handshake Noise, CapBAC, heartbeat, replay, disconnessione). Nessun mock: i test contro SQLite scrivono su file reali in `%TEMP%`, `Win32ProcessAdapter` usa le API Win32 reali (senza mai collegarsi a un processo di sistema in esecuzione), `NoiseXxSession` esegue l'handshake `Noise.NET` reale, `TransportLoopTests` apre un `TcpListener` e un `TcpClient` sullo stesso host.
 
 Esecuzione dell'intera suite della repository nello stesso passaggio, per rilevare regressioni fuori dal Gate 1:
 
@@ -72,11 +72,26 @@ Esito: **9/9 superati**.
 
 Esito: **0 byte allocati**, verificato dal test (superato in entrambi gli esiti di §2). Non esiste ancora un progetto `bench/NosAi.Bench` con BenchmarkDotNet: la roadmap lo richiede esplicitamente solo per i benchmark dei Gate successivi (`*Perception*`, `*Ranking*`); per il Gate 1 il criterio di accettazione in §2.5 è soddisfatto dal test in-process descritto sopra, con lo stesso metodo di misura.
 
-## 5. Latenza p99 dell'handshake — APERTO (loopback verde, telefono no)
+## 5. Latenza p99 dell'handshake — APERTO (loopback verde a macchina scarica, telefono no)
 
 Soglia dichiarata: handshake Noise completato su nodo mobile reale, p99 < 25 ms su 100 tentativi.
 
 - **Loopback TCP reale** (`TransportLoopTests.OneHundredLoopbackHandshakesStayUnderTheTwentyFiveMillisecondBudget`): 100 handshake `Noise_XX_25519_ChaChaPoly_SHA256` su `127.0.0.1`, p99 < 25 ms. Non chiude T-06.
+
+  La misura è a orologio da parete e dice qualcosa sul transport solo se nient'altro contende i core. Il riscaldamento non cronometrato aggiunto in `7529171` assorbe il JIT del processo, ma non la contesa fra processi: sul runner condiviso di GitHub Actions lo stesso test ha letto **p99 102,842 ms** contro il budget di 25 ms, e in una `dotnet test` completa in locale i tre assembly girano come processi concorrenti con lo stesso effetto. Nessuna impostazione di parallelismo di xUnit interviene: la contesa è fra processi, non dentro l'assembly.
+
+  Il budget non è la parte sbagliata e resta 25 ms. Cambia quando alla misura è permesso affermare qualcosa: il test è `[QuiescedMachineFact]` e gira solo dove l'operatore dichiara la macchina scarica con `NOSAI_QUIESCED_MACHINE=1`, altrove è **saltato con la motivazione allegata**. Un test saltato non è evidenza che il budget sia stato rispettato.
+
+  Passata isolata (PowerShell):
+
+  ```
+  $env:NOSAI_QUIESCED_MACHINE = "1"
+  dotnet test tests/NosAi.Core.Tests -c Release --filter "Category=PerfBudget"
+  ```
+
+  Esito su questa macchina, 2026-09-07, con l'assembly da solo: **1/1 superato**.
+
+  La parte della prova che non dipende dal carico resta nella suite di default come `TransportLoopTests.OneHundredLoopbackHandshakesAllCompleteAndLeaveTheChainIntact`: 100 cicli connect/handshake/dispose contro lo stesso host, 100 sessioni concluse e catena del journal integra, senza alcun vincolo temporale.
 - **Telefono reale:** ancora aperto. L'host ora ascolta (`NosAi.Host --gate 1 --attach <process> --module-sha256 <hex> --listen [--bind 0.0.0.0]`). L'app Guard attuale parla `WireHeader` (`NosAi.Protocol`), non `NosFrameHeader` + Noise XX: T-06 richiede un iniziatore sul telefono per il protocollo nuovo, non l'APK preesistente. Tracciato come `docs/TEST_RIMANDATI.md` T-06.
 
 ## 6. Integrità della catena hash del journal

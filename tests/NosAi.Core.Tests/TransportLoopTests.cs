@@ -132,7 +132,8 @@ public sealed class TransportLoopTests : IDisposable
         Assert.Contains(host.Dashboard.Snapshot(), f => f.Status == "capability-denied");
     }
 
-    [Fact]
+    [QuiescedMachineFact]
+    [Trait("Category", "PerfBudget")]
     public async Task OneHundredLoopbackHandshakesStayUnderTheTwentyFiveMillisecondBudget()
     {
         // Local TCP bound only. docs/TEST_RIMANDATI.md T-06 is the same
