@@ -23,8 +23,40 @@ namespace NosAi.Runtime.Tests;
 /// that slept and claimed completion, and a verifier handed a post-state derived
 /// from the very prediction it was checking.
 /// </remarks>
+[Collection(ConsoleCaptureCollection.Name)]
 public sealed class Gate3Tests
 {
+
+    /// <summary>
+    /// The Gate 3 certification suite, run where a red is seen.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>Gate3TestRunner</c> is registered in <c>CertificationSuites</c> and
+    /// reachable as <c>--gate3-test</c>, and nothing ran it. On 2026-09-07 it was
+    /// failing 7 of its 21 checks, and had been since <c>32dec33</c> made an
+    /// active goal the precondition of a proactive attack: that commit updated
+    /// the xUnit tests that drive a cycle and not the runner's own, so its
+    /// planner proposed nothing, its ranking returned an empty list, and one
+    /// check indexed <c>[0]</c> into it and threw. None of that reached anyone,
+    /// because the only thing that would have shown it was a command an operator
+    /// had to think to type.
+    /// </para>
+    /// <para>
+    /// <see cref="Gate1Tests.Gate1SuitePasses"/> does this for Gate 1 and is the
+    /// reason Gate 1's suite cannot rot the same way. This is that, for Gate 3.
+    /// </para>
+    /// <para>
+    /// It belongs to <see cref="ConsoleCaptureCollection"/> not because it
+    /// captures the console but because it writes to it heavily: the collection
+    /// keeps it from running while another class holds a redirect.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public async Task Gate3SuitePasses()
+    {
+        Assert.True(await Gate3TestRunner.RunAllTestsAsync());
+    }
 
     /// <summary>
     /// A measured ability cost, so a cycle that plans a <c>UseSkill</c> can be

@@ -1654,6 +1654,28 @@ namespace NosAi.Runtime.Gate3
         private static readonly Func<int, SkillCost?> MeasuredSkillCost =
             _ => new SkillCost(MpCost: 35, CastTimeMs: 800);
 
+        /// <summary>
+        /// A standing goal, so the cycles below can plan an attack at all.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>32dec33</c> made an active goal the precondition of every proactive
+        /// attack -- <c>ActionPlanner.Plan</c> returns an empty list when nothing
+        /// has been asked of the runtime. That commit updated the xUnit tests
+        /// that drive a cycle and did not update these, so seven checks here
+        /// planned nothing, ranked nothing, and one of them indexed
+        /// <c>[0]</c> into the empty result and threw.
+        /// </para>
+        /// <para>
+        /// The goal is not what these checks are about: it is the reason the
+        /// runtime is allowed to be in the fight they set up. Same helper, same
+        /// vnum and same rationale as <c>PostConditionWiringTests.Hunting</c>, so
+        /// the two suites set up the same world rather than two worlds that
+        /// happen to agree.
+        /// </para>
+        /// </remarks>
+        private static GoalStack Hunting() => GoalStack.With(Goal.Hunt("gate3-check-hunt", new[] { 36 }));
+
         private static ActionTokenIssuer Gate(TrustTier tier) =>
             new(new TrustBoundary(tier), new GuardPolicyEngine());
 
@@ -1669,6 +1691,43 @@ namespace NosAi.Runtime.Gate3
             {
                 Applications++;
                 return Task.FromResult(new ExecutionResult(candidate.CandidateId, ExecutionState.Completed, 1, null));
+            }
+        }
+
+        /// <summary>
+        /// Vitals stamped at the moment they are read, not at the moment the
+        /// double was built.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="FixedObserver"/> builds one <see cref="ObservedState"/> in
+        /// its constructor and hands it back for the life of the cycle, so its
+        /// reading carries an instant from <i>before</i> the action. A post
+        /// condition that asks whether the world changed cannot accept that, and
+        /// says so by name: <c>mp_not_observed_in_window</c>. That is the check
+        /// working -- a reading taken before an act cannot verify the act -- so
+        /// the two checks that want to reach a verdict use this instead of
+        /// widening the window. Same shape as
+        /// <c>PostConditionWiringTests.CachedVitalsObserver</c>, which is how the
+        /// xUnit side reaches a confirmed cycle.
+        /// </remarks>
+        private sealed class FreshVitalsObserver : IWorldStateObserver
+        {
+            private readonly int _hp;
+            private readonly int _mp;
+
+            public FreshVitalsObserver(int hp, int mp)
+            {
+                _hp = hp;
+                _mp = mp;
+            }
+
+            public bool CanObserve => true;
+
+            public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default)
+            {
+                DateTime now = DateTime.UtcNow;
+                return Task.FromResult(new ObservedState(
+                    ClassifiedValue<int>.Cached(_hp, now), ClassifiedValue<int>.Cached(_mp, now)));
             }
         }
 
@@ -1712,7 +1771,7 @@ namespace NosAi.Runtime.Gate3
 
         private static bool TestTacticalRankingPriorities()
         {
-            var planner = new ActionPlanner();
+            var planner = new ActionPlanner(Hunting());
             var sim = new SimulationEngine(MeasuredSkillCost);
             var ranking = new TacticalRankingEngine();
 
@@ -1885,7 +1944,7 @@ namespace NosAi.Runtime.Gate3
         {
             // The regression this pins: the pipeline used to sleep 50 ms and report a
             // completed action while nothing had touched the client.
-            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost, goals: Hunting());
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.ExecutionDisabled
@@ -1899,18 +1958,42 @@ namespace NosAi.Runtime.Gate3
             // Executed for real, but nothing can read the world back. The cycle must
             // say so rather than claim the prediction held.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Unverified && !result.IsConfirmed && !orchestrator.CanVerify;
         }
 
+        /// <summary>
+        /// A reading that contradicts the action's post-condition is a
+        /// discrepancy, and drives recovery rather than being reported as
+        /// success.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// What counts as a contradiction changed under this check without it
+        /// being updated. It used to read back hp 1 / mp 1 after acting from
+        /// 800 / 100 -- a mismatch against the <i>prediction's deltas</i>, which
+        /// is how verification once worked. It no longer does:
+        /// <c>Gate3Observation</c>'s own remarks record the move away from
+        /// comparing a prediction with itself, and verification now asks a
+        /// post-condition card. <c>UseSkillPostCondition</c> asserts that mana
+        /// <b>fell</b>, not by how much, so mana collapsing to 1 satisfies it and
+        /// the cycle was confirmed -- the check was asserting Failed on a world
+        /// the runtime is right to confirm.
+        /// </para>
+        /// <para>
+        /// The contradiction the card can actually see is mana that did not move
+        /// at all: the ability was authorised, the key was pressed, and the
+        /// world says nothing happened.
+        /// </para>
+        /// </remarks>
         private static async Task<bool> TestObservedMismatchIsDiscrepancyAsync()
         {
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
-            var observer = new FixedObserver(ObservedState.Live(1, 1));
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
+            var observer = new FreshVitalsObserver(hp: 800, mp: 100);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
@@ -1923,7 +2006,7 @@ namespace NosAi.Runtime.Gate3
             // action ranking will choose, so a confirmed cycle is reachable at all.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var sim = new SimulationEngine(MeasuredSkillCost);
-            var planner = new ActionPlanner();
+            var planner = new ActionPlanner(Hunting());
             var ranking = new TacticalRankingEngine();
 
             const int hp = 800, maxHp = 1000, mp = 100;
@@ -1933,11 +2016,11 @@ namespace NosAi.Runtime.Gate3
             (ActionCandidate best, _) = ranking.RankCandidates(candidates, predictions, hp, maxHp)[0];
             PredictedOutcome predicted = predictions[best.CandidateId];
 
-            var observer = new FixedObserver(ObservedState.Live(
+            var observer = new FreshVitalsObserver(
                 Math.Clamp(hp + predicted.ExpectedHpDelta, 0, maxHp),
-                Math.Max(0, mp + predicted.ExpectedMpDelta)));
+                Math.Max(0, mp + predicted.ExpectedMpDelta));
 
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost, goals: Hunting());
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(hp, maxHp, mp, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Confirmed && result.IsConfirmed;
@@ -1949,7 +2032,7 @@ namespace NosAi.Runtime.Gate3
             // pipeline and never look like a confirmation.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
@@ -1966,7 +2049,7 @@ namespace NosAi.Runtime.Gate3
         /// </remarks>
         private static async Task<bool> TestUnknownWorldStateIsRefusedAsync()
         {
-            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult result = await orchestrator
                 .ExecuteCycleAsync(Gate3WorldState.Unobserved("gameplay_provider_not_available"))
@@ -1982,14 +2065,14 @@ namespace NosAi.Runtime.Gate3
         {
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var effector = new RecordingEffector();
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, effector, skillCostOf: MeasuredSkillCost);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, effector, skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult refused = await orchestrator
                 .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
                 .ConfigureAwait(false);
 
             // A dry run with nothing able to act is still legitimate.
-            var dryRun = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
+            var dryRun = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost, goals: Hunting());
             Gate3CycleResult planned = await dryRun
                 .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
                 .ConfigureAwait(false);
@@ -2007,7 +2090,7 @@ namespace NosAi.Runtime.Gate3
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var effector = new RecordingEffector();
             var orchestrator = new Gate3ExecutionOrchestrator(
-                policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly, skillCostOf: MeasuredSkillCost);
+                policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly, skillCostOf: MeasuredSkillCost, goals: Hunting());
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
