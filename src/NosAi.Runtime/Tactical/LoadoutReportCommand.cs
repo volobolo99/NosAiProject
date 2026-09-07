@@ -173,9 +173,9 @@ public static class LoadoutReportCommand
 
     /// <summary>
     /// The live composition, mirroring <see cref="Navigation.CollectCommand"/>'s
-    /// own <c>RunWindows</c>/<c>LiveScope</c> shape (same window lookup,
+    /// own <c>RunWindows</c>/<c>LiveObservationScope</c> shape (same window lookup,
     /// <see cref="ClientMemorySession.TryAttach"/>, packet-based
-    /// <see cref="LiveScope.TryOpen"/>): a thin, untested-by-design shell --
+    /// <see cref="LiveObservationScope.TryOpen"/>): a thin, untested-by-design shell --
     /// exactly like <c>CollectCommand.RunWindows</c>, which has no unit test
     /// either; only the pure parts below are tested. A read-only report needs
     /// none of the gated input machinery the walking commands compose, so
@@ -198,7 +198,7 @@ public static class LoadoutReportCommand
 
         using (session)
         {
-            LiveScope? live = LiveScope.TryOpen(processId, out string? gatewayFailure);
+            LiveObservationScope? live = LiveObservationScope.TryOpen(processId, out string? gatewayFailure);
             if (live is null)
             {
                 Console.WriteLine($"[REFUSED] {GameplayUnavailableReason}:{gatewayFailure}");
@@ -330,7 +330,7 @@ public static class LoadoutReportCommand
     /// <summary>
     /// Everything the live capture needs, owned together and disposed
     /// together. The composition mirrors <see cref="Navigation.CollectCommand"/>'s
-    /// own <c>LiveScope</c> field-for-field: the client's single TCP game
+    /// own <c>LiveObservationScope</c> field-for-field: the client's single TCP game
     /// connection is read from the OS connection table by
     /// <see cref="ClientNetworkObserver"/>, opened by
     /// <see cref="WinDivertPacketSource.TryOpen"/>, reassembled and framed by
@@ -340,91 +340,6 @@ public static class LoadoutReportCommand
     /// this command needs nothing more from it than one
     /// <see cref="LiveObservationGateway.Capture"/> call.
     /// </summary>
-    private sealed class LiveScope : IDisposable
-    {
-        private readonly SessionAuth _auth;
-        private readonly RealClientConnector _client;
-        private readonly ReassembledObservationSource _observationSource;
-
-        public LiveObservationGateway Gateway { get; }
-
-        private LiveScope(
-            SessionAuth auth,
-            RealClientConnector client,
-            ReassembledObservationSource observationSource,
-            IGameplayProvider provider)
-        {
-            _auth = auth;
-            _client = client;
-            _observationSource = observationSource;
-            Gateway = new LiveObservationGateway(client, provider);
-        }
-
-        public static LiveScope? TryOpen(int processId, out string? failureReason)
-        {
-            failureReason = null;
-
-            // The client's own game connection, read from the OS connection table
-            // (the same discipline ClientNetworkObserver documents: a hard-coded
-            // server address would keep capturing a host the client had already
-            // stopped talking to).
-            ClientNetworkObservation observation = ClientNetworkObserver.Observe(processId);
-            if (!observation.Observed)
-            {
-                failureReason = $"connection_table:{observation.FailureReason}";
-                return null;
-            }
-
-            if (observation.Primary is not ClientTcpConnection primary)
-            {
-                failureReason = $"no_single_game_connection:{observation.Connections.Count}_candidates";
-                return null;
-            }
-
-            WinDivertPacketSource? packets = WinDivertPacketSource.TryOpen(
-                primary.Remote.Address, primary.Remote.Port, out string? openFailure);
-            if (packets is null)
-            {
-                failureReason = openFailure ?? "capture_backend_unavailable";
-                return null;
-            }
-
-            var endpoint = new GameEndpoint(primary.Remote.Address.ToString(), primary.Remote.Port);
-            ReassembledObservationSource observationSource =
-                ReassembledObservationSource.ForNosTaleWorld(packets, Contracts.DataSourceKind.Live);
-            var observer = new GameTrafficObserver(
-                observationSource,
-                new ScopedGameTrafficFilter(endpoint),
-                new NosTaleWorldProtocolDecoder());
-            var feed = new NetworkWorldFeed(observer);
-            IGameplayProvider provider = new NetworkGameplayProvider(feed);
-
-            var auth = new SessionAuth(NewPublicKeyPem());
-            var channel = new GuardAiNetworkChannel(0, auth);
-            var client = new RealClientConnector(channel);
-
-            return new LiveScope(auth, client, observationSource, provider);
-        }
-
-        private static string NewPublicKeyPem()
-        {
-            using var rsa = System.Security.Cryptography.RSA.Create(2048);
-            return rsa.ExportRSAPublicKeyPem();
-        }
-
-        public void Dispose()
-        {
-            // The observation source's Dispose disposes the inner capture
-            // (ScopedLiveCaptureBackend -> WinDivertPacketSource): releasing the
-            // capture first stops the wire reads.
-            _observationSource.Dispose();
-            // RealClientConnector.DisposeAsync disposes its GuardAiNetworkChannel
-            // and the held process handle; the channel is never started here.
-            _client.DisposeAsync().AsTask().GetAwaiter().GetResult();
-            _auth.Dispose();
-        }
-    }
-
     [SupportedOSPlatform("windows")]
     private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)
     {

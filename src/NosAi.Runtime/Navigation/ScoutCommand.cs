@@ -5,6 +5,7 @@ using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Gate2;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Orchestration;
@@ -13,6 +14,11 @@ using NosAi.Runtime.Safety;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
 using NosAi.Storage;
+
+// Aliased rather than importing NosAi.Runtime.Autonomy wholesale: that
+// namespace also declares a Goal, which would collide with
+// NosAi.Core.WorldModel.Goal in this file.
+using CatalogueClassifier = NosAi.Runtime.Autonomy.CatalogueClassifier;
 
 namespace NosAi.Runtime.Navigation;
 
@@ -46,13 +52,19 @@ namespace NosAi.Runtime.Navigation;
 /// not a new domain concept of its own.
 /// </para>
 /// <para>
-/// <b>Known limitation, stated plainly.</b> No live mob feed is wired into this
-/// command's context, so every round passes
-/// <see cref="EquatableArray{T}.Empty"/> mobs to
-/// <see cref="ExplorationPlanner.BuildFrontierCandidates"/> and every
-/// <see cref="FrontierCandidate.Risk"/> is exactly <c>0</c>. This is an honest
-/// documented gap (the frontier ranker is risk-blind until a live mob source
-/// exists), never a fabricated mob position.
+/// <b>What the risk term can and cannot see.</b> A live mob feed <i>is</i>
+/// wired in now (AP-05, Q-099): each round captures the client's own game
+/// connection and projects the entities it reports into real
+/// <see cref="Mob"/> records for
+/// <see cref="ExplorationPlanner.BuildFrontierCandidates"/>. Three honest
+/// limits remain, and each leaves <see cref="FrontierCandidate.Risk"/> at
+/// exactly <c>0</c> rather than inventing a number. The capture backend needs
+/// Administrator: without it the round runs risk-blind and says so. Only a
+/// vnum the reference catalogue establishes as a monster becomes a
+/// <see cref="Mob"/> at all. And risk counts only mobs known hostile, which
+/// today means only one the wire recorded hitting this character -- a mob
+/// merely standing there contributes nothing, because nothing has established
+/// that it would fight.
 /// </para>
 /// </remarks>
 public static class ScoutCommand
@@ -198,6 +210,37 @@ public static class ScoutCommand
     }
 
     /// <summary>
+    /// This round's mobs as the canonical World Model sees them, or an empty
+    /// list when there is no entity feed to see them with.
+    /// </summary>
+    /// <remarks>
+    /// Empty here means "nothing was observed", never "nothing is there" --
+    /// the same distinction <see cref="ExplorationPlanner.BuildFrontierCandidates"/>
+    /// draws for a mob whose hostility is Unknown. A round that cannot observe
+    /// runs risk-blind, exactly as every round did before this feed existed.
+    /// The projection is per round and is deliberately not run through
+    /// <c>WorldModelTemporalEnricher</c>: this command keeps no previous
+    /// snapshot, so a mob's velocity stays Unknown here and its hostility rests
+    /// on <c>GameplayObservation.HitBy</c> being sticky across polls.
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static EquatableArray<Mob> ObserveMobs(
+        LiveObservationScope? feed,
+        CatalogueClassifier classifier,
+        EntityId playerId,
+        long round,
+        DateTime nowUtc)
+    {
+        if (feed is null)
+            return EquatableArray<Mob>.Empty;
+
+        GameplayObservation observation = feed.Gateway.Capture().Gameplay;
+        return GameplayObservationProjector
+            .Project(observation, playerId, round, nowUtc, classifier.Classify)
+            .Mobs;
+    }
+
+    /// <summary>
     /// The live composition. Mirror of <see cref="WalkCommand"/>'s own
     /// <c>RunWindows</c> (same <see cref="RuntimeComposition.CreateSafe"/>,
     /// window lookup, <see cref="ClientMemorySession.TryAttach"/>,
@@ -283,6 +326,29 @@ public static class ScoutCommand
             if (ledgerStore is null)
                 Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
 
+            // AP-05: the entity feed the frontier ranker's risk term reads.
+            // Opportunistic in exactly the sense the ledger above is: the
+            // capture backend needs Administrator, and when it will not open
+            // this warns and leaves the mob list empty -- which is precisely
+            // how this command behaved before the feed existed. It must never
+            // become a reason to refuse.
+            using LiveObservationScope? entityFeed =
+                LiveObservationScope.TryOpen(processId, out string? entityFeedFailure);
+            if (entityFeed is null)
+                Console.WriteLine($"[WARN] entity_feed_unavailable:{entityFeedFailure} -- il ranker delle frontiere resta cieco al rischio");
+
+            // Without the catalogue nothing is established as a monster and the
+            // projection yields no mobs, so opening it is only worth attempting
+            // when the feed itself opened.
+            GameReferenceDatabase? entityCatalogue = null;
+            if (entityFeed is not null && !GameReferenceLocator.TryOpen(out entityCatalogue, out string? entityCatalogueFailure))
+                Console.WriteLine($"[WARN] entity_catalogue_unavailable:{entityCatalogueFailure} -- nessun vnum verra' stabilito come mostro");
+
+            using GameReferenceDatabase? entityCatalogueLifetime = entityCatalogue;
+            var entityClassifier = new CatalogueClassifier(entityCatalogue);
+            var entityPlayerId = new EntityId(string.Create(
+                System.Globalization.CultureInfo.InvariantCulture, $"player-{processId}"));
+
             for (int round = 1; round <= rounds; round++)
             {
                 Console.WriteLine(string.Create(System.Globalization.CultureInfo.InvariantCulture,
@@ -352,8 +418,11 @@ public static class ScoutCommand
                 ActuationAuthority authority = ActuationAuthority.Commanded(Flag);
                 var controller = new PathWalkController();
 
-                // No live mob feed is wired into this command's context (documented
-                // gap in the class remarks): the frontier ranker runs risk-blind.
+                // The frontier ranker's risk term reads this round's mobs. It is
+                // empty when no feed opened, which is not a claim that nothing
+                // is there -- see ObserveMobs.
+                EquatableArray<Mob> roundMobs =
+                    ObserveMobs(entityFeed, entityClassifier, entityPlayerId, round, now);
                 var worldPlayerPosition = new WorldPosition(player.X, player.Y);
                 // The evidence line is printed by a lambda, and a lambda cannot capture
                 // the ref-typed `map` parameter of the call below, so the round's map
@@ -364,7 +433,7 @@ public static class ScoutCommand
                     map,
                     footprint,
                     worldPlayerPosition,
-                    EquatableArray<Mob>.Empty,
+                    roundMobs,
                     origin,
                     in grid,
                     view,

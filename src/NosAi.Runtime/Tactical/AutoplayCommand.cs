@@ -7,6 +7,7 @@ using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.Core.WorldModel.Strategy;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.Contracts;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Gate2;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
@@ -15,6 +16,11 @@ using NosAi.Runtime.Perception;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
 using NosAi.Storage;
+
+// Aliased rather than importing NosAi.Runtime.Autonomy wholesale: that
+// namespace also declares a Goal, which would collide with
+// NosAi.Core.WorldModel.Goal in this file.
+using CatalogueClassifier = NosAi.Runtime.Autonomy.CatalogueClassifier;
 
 namespace NosAi.Runtime.Tactical;
 
@@ -317,6 +323,44 @@ public static class AutoplayCommand
     }
 
     /// <summary>
+    /// This cycle's mobs as the canonical World Model sees them, or an empty
+    /// list when there is no entity feed to see them with.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Empty here means "nothing was observed", never "nothing is there" --
+    /// the same distinction <c>ExplorationPlanner.BuildFrontierCandidates</c>
+    /// draws for a mob whose hostility is Unknown. A cycle that cannot observe
+    /// runs risk-blind, exactly as every cycle did before this feed existed.
+    /// </para>
+    /// <para>
+    /// The projection is per cycle and is deliberately <b>not</b> run through
+    /// <c>WorldModelTemporalEnricher</c>: this command keeps no previous
+    /// snapshot, so a mob's velocity stays Unknown here, and its hostility
+    /// rests on <c>GameplayObservation.HitBy</c> being sticky across polls
+    /// (that member's own remarks: "kept across polls without expiring")
+    /// rather than on the enricher's cross-cycle carry-forward, which only the
+    /// fusion loop runs.
+    /// </para>
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static EquatableArray<Mob> ObserveMobs(
+        LiveObservationScope? feed,
+        CatalogueClassifier classifier,
+        EntityId playerId,
+        long cycle,
+        DateTime nowUtc)
+    {
+        if (feed is null)
+            return EquatableArray<Mob>.Empty;
+
+        GameplayObservation observation = feed.Gateway.Capture().Gameplay;
+        return GameplayObservationProjector
+            .Project(observation, playerId, cycle, nowUtc, classifier.Classify)
+            .Mobs;
+    }
+
+    /// <summary>
     /// The live composition, mirroring <see cref="ScoutCommand"/>'s and
     /// <see cref="RecoverCommand"/>'s own <c>RunWindows</c>: one shared
     /// composition for the whole invocation -- attach the client once, build
@@ -414,6 +458,29 @@ public static class AutoplayCommand
                 ActionOutcomeLedgerStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? ledgerFailure);
             if (ledgerStore is null)
                 Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
+
+            // AP-05: the entity feed the frontier ranker's risk term reads.
+            // Opportunistic in exactly the sense the ledger above is: the
+            // capture backend needs Administrator, and when it will not open
+            // this warns and leaves the mob list empty -- which is precisely
+            // how this command behaved before the feed existed. It must never
+            // become a reason to refuse.
+            using LiveObservationScope? entityFeed =
+                LiveObservationScope.TryOpen(processId, out string? entityFeedFailure);
+            if (entityFeed is null)
+                Console.WriteLine($"[WARN] entity_feed_unavailable:{entityFeedFailure} -- il ranker delle frontiere resta cieco al rischio");
+
+            // Without the catalogue nothing is established as a monster and the
+            // projection yields no mobs, so opening it is only worth attempting
+            // when the feed itself opened.
+            GameReferenceDatabase? entityCatalogue = null;
+            if (entityFeed is not null && !GameReferenceLocator.TryOpen(out entityCatalogue, out string? entityCatalogueFailure))
+                Console.WriteLine($"[WARN] entity_catalogue_unavailable:{entityCatalogueFailure} -- nessun vnum verra' stabilito come mostro");
+
+            using GameReferenceDatabase? entityCatalogueLifetime = entityCatalogue;
+            var entityClassifier = new CatalogueClassifier(entityCatalogue);
+            var entityPlayerId = new EntityId(string.Create(
+                System.Globalization.CultureInfo.InvariantCulture, $"player-{processId}"));
 
             for (int cycle = 1; cycle <= cycles; cycle++)
             {
@@ -555,7 +622,7 @@ public static class AutoplayCommand
                     map,
                     footprint,
                     new WorldPosition(player.X, player.Y),
-                    EquatableArray<Mob>.Empty,
+                    ObserveMobs(entityFeed, entityClassifier, entityPlayerId, cycle, now),
                     origin,
                     in grid,
                     view,
