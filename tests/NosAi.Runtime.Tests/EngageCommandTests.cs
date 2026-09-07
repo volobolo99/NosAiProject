@@ -367,6 +367,45 @@ public sealed class EngageCommandTests
         Assert.Contains("\"" + EngageCommand.Flag + "\"", program, StringComparison.Ordinal);
     }
 
+    // ------------------------------------------- target verification contract
+
+    /// <summary>
+    /// The two refusal reasons the target check adds are operator-visible and
+    /// must read differently: one says "the check ran and said no", the other
+    /// says "the check could not run". Collapsing them would hide the second
+    /// case, which is the one that means the command is blind.
+    /// </summary>
+    [Fact]
+    public void TheTwoTargetRefusalReasons_AreDistinctNamedIdentifiers()
+    {
+        Assert.Equal("engage_target_refused", EngageCommand.TargetRefusedReason);
+        Assert.Equal("engage_target_not_verifiable", EngageCommand.TargetNotVerifiableReason);
+        Assert.NotEqual(EngageCommand.TargetRefusedReason, EngageCommand.TargetNotVerifiableReason);
+    }
+
+    /// <summary>
+    /// A refused round is reported through the same evidence channel an
+    /// executed one is, so the printed line and the ledger entry look the same
+    /// shape whichever way the round ended.
+    /// </summary>
+    [Fact]
+    public void ATargetRefusal_IsCarriedAsNotAttemptedEvidence()
+    {
+        var candidate = new CombatActionCandidate(
+            CombatActionKind.UseSkill,
+            target: new EntityId("mob-1"),
+            skill: new SkillId("7"));
+
+        CombatExecutionEvidence evidence = CombatExecutionEvidence.NotAttempted(
+            candidate,
+            $"{EngageCommand.TargetRefusedReason}:target_out_of_range",
+            new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc));
+
+        Assert.Equal(CombatExecutionResult.Aborted, evidence.Result);
+        Assert.False(evidence.ResourceCostConfirmed);
+        Assert.StartsWith(EngageCommand.TargetRefusedReason, evidence.Detail!, StringComparison.Ordinal);
+    }
+
     private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

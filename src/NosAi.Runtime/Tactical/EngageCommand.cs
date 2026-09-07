@@ -39,16 +39,30 @@ namespace NosAi.Runtime.Tactical;
 /// non-<c>UseSkill</c> kind) is refused by design: those acts have no
 /// observable player-side resource pool, so verifying them through this
 /// mechanism would always produce an empty answer -- see
-/// <see cref="ExecuteOneRound"/>. Candidate generation from
-/// <c>CombatPlanner</c>, repositioning and multi-step combos are equally out
-/// of scope for this slice: this command takes the target entity id straight
-/// from the operator's own argument and verifies nothing about it -- not that
-/// it names a real entity, not that the entity is hostile, alive or in range.
-/// <see cref="CombatReportCommand"/> (<c>--combat-report</c>) is where those
-/// checks now run for real, read-only, against the mobs actually observed;
-/// running it first is how an operator finds an id worth passing here.
-/// Wiring its verdict into this command's own refusal path is a separate,
-/// still-open task.
+/// <see cref="ExecuteOneRound"/>. Candidate *generation* from
+/// <c>CombatPlanner</c>, repositioning and multi-step combos stay out of
+/// scope: the operator still names the target and the skill.
+/// </para>
+/// <para>
+/// <b>The target is verified before anything is pressed.</b> The operator's
+/// entity id used to be taken on trust -- nothing checked that it named a real
+/// entity, or one that is hostile, alive and in range. Every round now
+/// observes the world through <see cref="LiveCombatObserver"/> and judges the
+/// candidate with <see cref="CombatPlanner.CheckTargetConstraints"/>; a
+/// violated verdict refuses the round by name, before the key press, and the
+/// refusal reads identically to what <see cref="CombatReportCommand"/> prints
+/// for the same entity, because both compute it from the same observation.
+/// The verdict is re-taken every round rather than once, and a target refusal
+/// therefore does not end the invocation the way a keybind refusal does: a mob
+/// walks back into range, and one that has not attacked yet becomes
+/// established the moment it does.
+/// </para>
+/// <para>
+/// Two consequences worth stating plainly. The check needs the packet
+/// capture, so this command now needs Administrator; and when the capture or
+/// the client read fails it <b>refuses</b> rather than proceeding unverified
+/// -- see <see cref="TargetNotVerifiableReason"/> for why that direction and
+/// not the other.
 /// </para>
 /// <para>
 /// <b>Known gap, stated plainly.</b> <see cref="ExecuteOneRound"/> accepts an
@@ -109,6 +123,33 @@ public static class EngageCommand
 
     /// <summary>Reported when the composed backend is not the gated one.</summary>
     public const string UngatedBackendReason = "engage_input_backend_not_gated";
+
+    /// <summary>
+    /// Reported when the target could not be judged at all: no packet capture,
+    /// or the client's own position could not be read.
+    /// </summary>
+    /// <remarks>
+    /// This is a refusal, not a warning, and the direction is deliberate. An
+    /// entity nothing has established stays unknown, and the unknown does not
+    /// authorise an act (ADR-0016) -- the same rule
+    /// <see cref="NosAi.Runtime.Autonomy.TargetEstablishment"/> is built on.
+    /// Acting on an unverified id is exactly what this command used to do, and
+    /// carrying on when the check cannot run would keep doing it while looking
+    /// like it did not. The practical consequence: the packet capture needs
+    /// Administrator, so this command does too.
+    /// </remarks>
+    public const string TargetNotVerifiableReason = "engage_target_not_verifiable";
+
+    /// <summary>Reported when the target was judged and the hard constraints refused it.</summary>
+    /// <remarks>
+    /// The violated constraint names come straight from
+    /// <see cref="CombatPlanner.CheckTargetConstraints"/> -- <c>target_not_found</c>,
+    /// <c>target_not_hostile</c>, <c>target_not_alive</c>,
+    /// <c>target_position_unknown</c>, <c>target_out_of_range</c> -- so a
+    /// refusal here reads identically to the verdict <c>--combat-report</c>
+    /// prints for the same entity.
+    /// </remarks>
+    public const string TargetRefusedReason = "engage_target_refused";
 
     /// <summary>
     /// Reported when <c>targetEntityId</c>/<c>skillId</c> is present but blank,
@@ -208,6 +249,52 @@ public static class EngageCommand
     }
 
     /// <summary>
+    /// The hard-constraint verdict on this round's target, as evidence of a
+    /// refusal, or <see langword="null"/> when the act may proceed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Judged with <see cref="CombatPlanner.CheckTargetConstraints"/> rather
+    /// than the full <see cref="CombatPlanner.CheckHardConstraints"/>, and that
+    /// choice is not a shortcut: no observation channel in this project reads
+    /// the character's skill list, so the full check's skill half would report
+    /// <c>skill_not_found</c> on every real client and refuse every act for a
+    /// reason that is about the gap, not about the character. That method's own
+    /// remarks carry the argument; what matters here is the direction --
+    /// checking the target half narrows what is permitted, never widens it.
+    /// </para>
+    /// <para>
+    /// A refusal is reported through
+    /// <see cref="CombatExecutionEvidence.NotAttempted"/>, the same channel a
+    /// guard refusal already uses, so the round's evidence line reads the same
+    /// whether the act was refused before or during execution -- and the ledger
+    /// records both.
+    /// </para>
+    /// </remarks>
+    [SupportedOSPlatform("windows")]
+    private static CombatExecutionEvidence? JudgeTarget(
+        LiveCombatObserver observer,
+        ClientMemorySession attached,
+        CombatActionCandidate candidate,
+        DateTime nowUtc)
+    {
+        if (!observer.TryObserve(attached, nowUtc, out Player player, out EquatableArray<Mob> mobs, out string? observeFailure))
+        {
+            return CombatExecutionEvidence.NotAttempted(
+                candidate, $"{TargetNotVerifiableReason}:{observeFailure}", nowUtc);
+        }
+
+        CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(candidate, player, mobs);
+        if (verdict.IsAllowed)
+            return null;
+
+        return CombatExecutionEvidence.NotAttempted(
+            candidate,
+            $"{TargetRefusedReason}:{string.Join('|', verdict.ViolatedConstraints)}",
+            nowUtc);
+    }
+
+    /// <summary>
     /// The live composition, mirroring <c>ScoutCommand</c>/<c>PlayerVitalsProbe</c>'s
     /// shape: attach to the running client, load the operator's keybinds, take the
     /// gated input backend from <see cref="RuntimeComposition.CreateSafe"/>, then
@@ -262,13 +349,47 @@ public static class EngageCommand
             if (ledgerStore is null)
                 Console.WriteLine($"[WARN] action_outcome_ledger_unavailable:{ledgerFailure}");
 
+            // The target check, opened once for the whole invocation. Unlike
+            // the ledger above this one IS a gate: see TargetNotVerifiableReason
+            // for why an unopenable feed refuses instead of warning.
+            using LiveCombatObserver? observer =
+                LiveCombatObserver.TryOpen(attached.ProcessId, out string? observerFailure, out string? catalogueWarning);
+            if (observer is null)
+            {
+                Console.WriteLine($"[REFUSED] {TargetNotVerifiableReason}:{observerFailure}");
+                return WalkCommand.ExitAbandoned;
+            }
+
+            // A missing catalogue establishes no vnum as a monster, so every
+            // target would be refused as target_not_found. Saying so once, up
+            // front, beats letting the operator read the same puzzling refusal
+            // once per round.
+            if (catalogueWarning is not null)
+                Console.WriteLine($"[WARN] entity_catalogue_unavailable:{catalogueWarning} -- ogni bersaglio verra' rifiutato come target_not_found");
+
             for (int round = 1; round <= rounds; round++)
             {
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                     $"=== engage round {round} of {rounds}: skill {skillId} on {targetEntityId} ==="));
 
                 DateTime nowUtc = TimeProvider.System.GetUtcNow().UtcDateTime;
-                CombatExecutionEvidence evidence = ExecuteOneRound(
+
+                // The verdict, re-taken every round: between two rounds a
+                // target can die, walk out of range, or stop being the thing
+                // the wire had established. A check taken once at the start
+                // would authorise the later rounds on a picture that no longer
+                // holds.
+                CombatExecutionEvidence? refusal = JudgeTarget(observer, attached, candidate, nowUtc);
+                if (refusal is { } refused)
+                    Console.WriteLine($"[REFUSED] {refused.Detail}");
+
+                // A refused round is still a round that happened, and its
+                // evidence goes through the same printing and the same ledger
+                // as an executed one: a target that was refused for being out
+                // of range is exactly the history AP-09's learning stage needs,
+                // and dropping it would leave the ledger claiming the operator
+                // never tried.
+                CombatExecutionEvidence evidence = refusal ?? ExecuteOneRound(
                     candidate,
                     keybinds,
                     gated,
@@ -298,7 +419,14 @@ public static class EngageCommand
                 if (evidence.Result == CombatExecutionResult.ResourceCostConfirmed)
                     return 0;
 
-                if (evidence.Result == CombatExecutionResult.Aborted)
+                // A target refusal shares the Aborted result but not that
+                // reasoning, and this is the one place the difference matters:
+                // it is a statement about *this instant*, and the next round
+                // re-takes it. A mob out of range walks back into it; a mob
+                // whose hostility nothing had established becomes established
+                // the moment it hits the character. Stopping here would make
+                // --watch useless for exactly the cases it exists for.
+                if (refusal is null && evidence.Result == CombatExecutionResult.Aborted)
                     return WalkCommand.ExitAbandoned;
 
                 if (round < rounds)

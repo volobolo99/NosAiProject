@@ -122,11 +122,74 @@ public static class CombatPlanner
         ArgumentNullException.ThrowIfNull(player);
 
         var violations = new List<string>();
+        if (CollectTargetViolations(candidate, player, mobs, basicAttackRange, skillRange, violations))
+        {
+            if (candidate.Kind == CombatActionKind.UseSkill && candidate.Skill is { } skillId)
+                CheckSkillReady(skillId, player, violations);
+        }
 
+        return Verdict(candidate, violations);
+    }
+
+    /// <summary>
+    /// The <b>target half</b> of the hard-constraint stage on its own: the
+    /// player's own position, and the target's presence, hostility, aliveness,
+    /// position and range. Skill readiness is deliberately not checked.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Exists for one honest reason. <see cref="Player.Skills"/> is an
+    /// <see cref="EquatableArray{T}"/> with no way to say "not observed", so an
+    /// empty list reads identically as "this character has no skills" and as
+    /// "nothing has read the skill list". No observation channel in this
+    /// project reads it today, which means
+    /// <see cref="CheckHardConstraints"/> run against a live-observed player
+    /// always reports <c>skill_not_found</c> -- a false statement about the
+    /// character rather than a real constraint violation.
+    /// </para>
+    /// <para>
+    /// A caller that cannot observe skills has three choices: check nothing,
+    /// check everything and be refused by a violation it invented, or check
+    /// exactly what it can observe and say so. This method is the third. It
+    /// narrows what is verified, never what is allowed: every violation it can
+    /// report, <see cref="CheckHardConstraints"/> reports too, so a candidate
+    /// this method refuses is refused by the full check as well. Do not read a
+    /// verdict from here as "all hard constraints passed".
+    /// </para>
+    /// </remarks>
+    public static CombatConstraintCheck CheckTargetConstraints(
+        CombatActionCandidate candidate,
+        Player player,
+        EquatableArray<Mob> mobs,
+        double basicAttackRange = DefaultBasicAttackRange,
+        double skillRange = DefaultSkillRange)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(player);
+
+        var violations = new List<string>();
+        CollectTargetViolations(candidate, player, mobs, basicAttackRange, skillRange, violations);
+        return Verdict(candidate, violations);
+    }
+
+    /// <summary>
+    /// Adds the target-side violations, and reports whether the player's own
+    /// position was known -- an unknown position makes every further check
+    /// meaningless, so the caller stops there rather than piling on
+    /// consequential violations.
+    /// </summary>
+    private static bool CollectTargetViolations(
+        CombatActionCandidate candidate,
+        Player player,
+        EquatableArray<Mob> mobs,
+        double basicAttackRange,
+        double skillRange,
+        List<string> violations)
+    {
         if (!player.Position.HasValue)
         {
             violations.Add("player_position_unknown");
-            return CombatConstraintCheck.Violated(candidate, EquatableArray<string>.From(violations));
+            return false;
         }
 
         if (candidate.Target is { } target)
@@ -135,13 +198,13 @@ public static class CombatPlanner
             CheckTarget(target, mobs, player.Position.Value, range, violations);
         }
 
-        if (candidate.Kind == CombatActionKind.UseSkill && candidate.Skill is { } skillId)
-            CheckSkillReady(skillId, player, violations);
+        return true;
+    }
 
-        return violations.Count == 0
+    private static CombatConstraintCheck Verdict(CombatActionCandidate candidate, List<string> violations) =>
+        violations.Count == 0
             ? CombatConstraintCheck.Allowed(candidate)
             : CombatConstraintCheck.Violated(candidate, EquatableArray<string>.From(violations));
-    }
 
     private static void CheckTarget(
         EntityId target,

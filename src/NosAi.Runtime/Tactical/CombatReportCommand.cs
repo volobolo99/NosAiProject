@@ -3,13 +3,9 @@ using System.Runtime.Versioning;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.LiveIntegration;
-using NosAi.Runtime.Contracts;
-using NosAi.Runtime.GameData;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Perception;
-using NosAi.Runtime.WorldModel.Fusion;
-using CatalogueClassifier = NosAi.Runtime.Autonomy.CatalogueClassifier;
 
 namespace NosAi.Runtime.Tactical;
 
@@ -203,7 +199,10 @@ public static class CombatReportCommand
     /// The live composition: client window, memory session for the player's own
     /// position and vitals, packet capture for the entities around them, and
     /// the reference catalogue that decides which of those entities are
-    /// monsters. A thin, untested-by-design shell, exactly like
+    /// monsters -- all four held open by <see cref="LiveCombatObserver"/>,
+    /// shared with <see cref="EngageCommand"/> so the picture reported here is
+    /// the same picture a refusal there is computed from. A thin,
+    /// untested-by-design shell, exactly like
     /// <c>LoadoutReportCommand.RunWindows</c>; only <see cref="Build"/> and
     /// <see cref="ExplainEmpty"/> below it are tested.
     /// </summary>
@@ -222,92 +221,37 @@ public static class CombatReportCommand
             return WalkCommand.ExitAbandoned;
         }
 
-        using (session)
+        ClientMemorySession attached = session!;
+        using (attached)
         {
-            ClientMemorySession attached = session!;
-            if (!attached.TryReadPlayer(out PlayerObjectReading reading, out string? readFailure))
-            {
-                Console.WriteLine($"[REFUSED] {readFailure}");
-                return WalkCommand.ExitAbandoned;
-            }
-
             // The entity feed is the one resource this command cannot report
             // without: with no entities there are no mobs, and with no mobs the
             // report would be an empty page that says nothing about the client.
             // Unlike --scout/--autoplay, which carry on risk-blind, refusing
             // here is the honest answer to "what would the combat planner
-            // propose right now": nothing, because nothing was observed.
-            using LiveObservationScope? feed = LiveObservationScope.TryOpen(processId, out string? feedFailure);
-            if (feed is null)
+            // propose right now": nothing was observed, so nothing is reported.
+            using LiveCombatObserver? observer =
+                LiveCombatObserver.TryOpen(processId, out string? feedFailure, out string? catalogueWarning);
+            if (observer is null)
             {
                 Console.WriteLine($"[REFUSED] {EntityFeedUnavailableReason}:{feedFailure}");
                 return WalkCommand.ExitAbandoned;
             }
 
-            GameReferenceDatabase? catalogue = null;
-            if (!GameReferenceLocator.TryOpen(out catalogue, out string? catalogueFailure))
-                Console.WriteLine($"[WARN] entity_catalogue_unavailable:{catalogueFailure} -- nessun vnum verra' stabilito come mostro");
+            if (catalogueWarning is not null)
+                Console.WriteLine($"[WARN] entity_catalogue_unavailable:{catalogueWarning} -- nessun vnum verra' stabilito come mostro");
 
-            using (catalogue)
+            DateTime now = DateTime.UtcNow;
+            if (!observer.TryObserve(attached, now, out Player player, out EquatableArray<Mob> mobs, out string? observeFailure))
             {
-                DateTime now = DateTime.UtcNow;
-                var playerId = new EntityId(string.Create(CultureInfo.InvariantCulture, $"player-{processId}"));
-                GameplayObservation observation = feed.Gateway.Capture().Gameplay;
-
-                EquatableArray<Mob> mobs = GameplayObservationProjector
-                    .Project(observation, playerId, version: 0, now, new CatalogueClassifier(catalogue).Classify)
-                    .Mobs;
-
-                Print(Build(LivePlayer(playerId, attached, reading, now), mobs));
+                Console.WriteLine($"[REFUSED] {observeFailure}");
+                return WalkCommand.ExitAbandoned;
             }
+
+            Print(Build(player, mobs));
         }
 
         return 0;
-    }
-
-    /// <summary>
-    /// The player as this command can actually read them: a real position from
-    /// the client's own memory, real HP bounds when the vitals read succeeds,
-    /// and everything else explicitly Unknown or empty.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Player.Skills"/> stays empty because nothing here reads the
-    /// character's skill list, which is why only
-    /// <see cref="CombatActionKind.BasicAttack"/> candidates can be generated
-    /// -- see this class's own remarks. Filling it with a guess to make the
-    /// report look richer would be exactly the fabrication
-    /// <see cref="CombatPlanner"/> refuses at the other end.
-    /// </remarks>
-    [SupportedOSPlatform("windows")]
-    private static Player LivePlayer(
-        EntityId playerId,
-        ClientMemorySession attached,
-        PlayerObjectReading reading,
-        DateTime nowUtc)
-    {
-        Resource health = attached.TryReadPlayerVitals(out PlayerVitalsReading vitals, out string? vitalsFailure)
-            ? new Resource(
-                ResourceKind.Health,
-                WorldFact<double>.Live(vitals.Hp, confidence: 1d, nowUtc),
-                WorldFact<double>.Live(vitals.MaxHp, confidence: 1d, nowUtc))
-            : new Resource(
-                ResourceKind.Health,
-                WorldFact<double>.Unknown(vitalsFailure ?? "vitals_unreadable", nowUtc),
-                WorldFact<double>.Unknown(vitalsFailure ?? "vitals_unreadable", nowUtc));
-
-        return new Player(
-            playerId,
-            WorldFact<WorldPosition>.Live(new WorldPosition(reading.X, reading.Y), confidence: 1d, nowUtc),
-            WorldFact<float>.Unknown("orientation_not_read", nowUtc),
-            WorldFact<bool>.Unknown("alive_not_read", nowUtc),
-            WorldFact<MapId>.Unknown("map_not_read", nowUtc),
-            new CombatantStatus(
-                EquatableArray<Resource>.From(new[] { health }),
-                EquatableArray<StatusEffect>.Empty),
-            EquatableArray<Skill>.Empty,
-            EquatableArray<Cooldown>.Empty,
-            EquatableArray<InventoryItem>.Empty,
-            EquatableArray<EquipmentItem>.Empty);
     }
 
     [SupportedOSPlatform("windows")]
