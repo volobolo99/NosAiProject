@@ -795,7 +795,7 @@ public static class Program
         // inventory from the installed client, reporting what a client update
         // changed since the last run.
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ClientUpdateCommand.Flag, StringComparison.OrdinalIgnoreCase)))
-            return NosAi.Runtime.Observability.ClientUpdateCommand.Run();
+            return NosAi.Runtime.Observability.ClientUpdateCommand.Run(args);
 
         // The decision path over real game bytes, offline. WinDivertProbe --world
         // reports what a recording says; this reports what the runtime decides

@@ -68,6 +68,42 @@ public static class ReferenceInfoCommand
                 $"{table.Kind}: {database.Count(table.Kind)}"));
         }
 
+        // I nomi sono una riga a parte perche' la loro assenza era invisibile.
+        // Il catalogo importa cinque tabelle di dati e nessuna di testo: ogni
+        // entita' porta una name_key come "zts37e", che il client risolve
+        // attraverso NSlangData_<LANG>.NOS. ReferenceImporter.ImportLanguage
+        // esiste, e' completo, e fino al 2026-09-07 non aveva alcun chiamante:
+        // la tabella `text` era vuota e nulla lo diceva. Un catalogo che sa il
+        // livello di ogni mostro e non il suo nome e' un fatto che chi legge
+        // questo rapporto deve poter vedere.
+        int italian = database.TextCount("IT");
+        if (italian > 0)
+        {
+            // Due conteggi, non uno: le righe di testo importate, e quante
+            // entita' arrivano davvero a un nome. Il primo puo' essere grande
+            // mentre il secondo e' zero -- basta che le chiavi non combacino --
+            // e sarebbe il modo piu' rapido per credere che i nomi ci siano.
+            int named = database.NamedCount("monster", "IT");
+            text.AppendLine(string.Create(CultureInfo.InvariantCulture,
+                $"nomi (IT): {italian} righe, {named}/{database.Count("monster")} mostri risolti"));
+
+            // Due vnum osservati davvero sul filo (data/nostale_combat.noscap e
+            // data/certificazione.noscap), stampati come prova che il join
+            // regge: un conteggio dice che le righe ci sono, non che siano
+            // raggiungibili dall'entita' giusta.
+            foreach (int vnum in new[] { 9, 2 })
+            {
+                string? name = database.DisplayName("monster", vnum, "IT");
+                if (name is not null)
+                    text.AppendLine(string.Create(CultureInfo.InvariantCulture, $"  monster {vnum}: {name}"));
+            }
+        }
+        else
+        {
+            text.AppendLine("nomi (IT): nessuno -- le name_key non sono risolvibili. "
+                + "Importarli: --client-updates --with-language IT");
+        }
+
         IReadOnlyList<ReferenceSource> sources = database.Sources();
         if (sources.Count == 0)
         {

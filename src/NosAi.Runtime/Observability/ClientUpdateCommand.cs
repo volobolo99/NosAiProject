@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using NosAi.Runtime.GameData;
 
@@ -36,8 +37,33 @@ public static class ClientUpdateCommand
     /// <summary>The operator flag.</summary>
     public const string Flag = "--client-updates";
 
+    /// <summary>
+    /// Chiede anche i nomi, nella lingua indicata: <c>--with-language IT</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Opzionale di proposito, e non parte del giro normale.</b> Questo
+    /// comando gira anche da solo all'avvio (<c>Program.Main</c>), e le tabelle
+    /// di lingua stanno in un archivio diverso da quello dei dati: farle leggere
+    /// a ogni avvio aggiungerebbe un costo a un controllo che deve restare
+    /// leggero. I nomi cambiano quando cambia il client, non fra un'esecuzione e
+    /// l'altra.
+    /// </para>
+    /// <para>
+    /// <see cref="ReferenceImporter.ImportLanguage"/> esiste da prima e non
+    /// aveva alcun chiamante di produzione: la tabella <c>text</c> del catalogo
+    /// era vuota, ogni <c>name_key</c> irrisolvibile, e <c>--reference-info</c>
+    /// non lo diceva. Una lingua non installata viene riferita, mai sostituita
+    /// con un'altra — il commento di quel metodo spiega perche'.
+    /// </para>
+    /// </remarks>
+    public const string WithLanguageOption = "--with-language";
+
     /// <summary>Console entry: resolves the dedicated volume and the installed client.</summary>
-    public static int Run()
+    public static int Run() => Run(Array.Empty<string>());
+
+    /// <summary>Console entry with the argument vector, for <c>--with-language</c>.</summary>
+    public static int Run(string[] args)
     {
         if (!GameReferenceLocator.TryFindDedicatedDataDirectory(out string dataDirectory, out string? volumeReason))
         {
@@ -46,10 +72,40 @@ public static class ClientUpdateCommand
             return 1;
         }
 
+        string? language = ParseLanguage(args, out string? refusal);
+        if (refusal is not null)
+        {
+            Console.WriteLine($"[REFUSED] {refusal}");
+            return 1;
+        }
+
         GameReferenceLocation location = GameReferenceLocator.LocateIn(dataDirectory);
         using GameReferenceDatabase database = GameReferenceDatabase.Open(location.Path!);
-        Console.Write(Run(database, ReferenceImporter.DefaultDataDirectory));
+        Console.Write(RunDetailed(database, ReferenceImporter.DefaultDataDirectory, language).Text);
         return 0;
+    }
+
+    /// <summary>
+    /// Legge <c>--with-language &lt;LANG&gt;</c>. Null quando non c'e'; il
+    /// rifiuto quando c'e' senza valore.
+    /// </summary>
+    internal static string? ParseLanguage(string[] args, out string? refusal)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        refusal = null;
+
+        int i = Array.FindIndex(args, a =>
+            string.Equals(a, WithLanguageOption, StringComparison.OrdinalIgnoreCase));
+        if (i < 0)
+            return null;
+
+        if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal))
+        {
+            refusal = "with_language_without_value";
+            return null;
+        }
+
+        return args[i + 1];
     }
 
     /// <summary>
@@ -65,7 +121,8 @@ public static class ClientUpdateCommand
     /// check (<c>Program.Main</c>) needs to decide whether to say anything
     /// at all.
     /// </summary>
-    public static ClientUpdateReport RunDetailed(GameReferenceDatabase database, string clientDataDirectory)
+    public static ClientUpdateReport RunDetailed(
+        GameReferenceDatabase database, string clientDataDirectory, string? language = null)
     {
         ArgumentNullException.ThrowIfNull(database);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientDataDirectory);
@@ -105,6 +162,26 @@ public static class ClientUpdateCommand
             + $"+{inventoryDiff.Added} ~{inventoryDiff.Changed} -{inventoryDiff.Removed} ={inventoryDiff.Unchanged}");
         foreach (string sample in inventoryDiff.Samples)
             text.AppendLine($"    {sample}");
+
+        if (language is not null)
+        {
+            // Un fallimento qui non e' un fallimento del comando: i dati sono
+            // gia' stati importati, e una lingua non installata e' una risposta.
+            // ImportLanguage rifiuta di sostituirne un'altra, ed e' il motivo per
+            // cui il rapporto stampa la ragione invece di un conteggio a zero.
+            LanguageImportReport names = importer.ImportLanguage(database, language);
+            if (names.Ok)
+            {
+                anyChange |= names.Total > 0;
+                text.AppendLine(
+                    $"nomi ({names.Language}): {names.Total} voci "
+                    + string.Join(", ", names.EntriesByKind.Select(e => $"{e.Key}={e.Value}")));
+            }
+            else
+            {
+                text.AppendLine($"nomi ({names.Language}): non importati ({names.FailureReason})");
+            }
+        }
 
         return new ClientUpdateReport(text.ToString(), anyChange);
     }
