@@ -103,6 +103,7 @@ public sealed class CorrelationScopeTests
 }
 
 /// <summary>What <see cref="ConsoleRuntimeLogger"/> actually prints, with and without a scope.</summary>
+[Collection(ConsoleCaptureCollection.Name)]
 public sealed class ConsoleRuntimeLoggerCorrelationTests
 {
     [Fact]

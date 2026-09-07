@@ -8,6 +8,7 @@ namespace NosAi.Runtime.Tests;
 /// <summary>
 /// The standing-cell printout: bytes, not an interpretation of them.
 /// </summary>
+[Collection(ConsoleCaptureCollection.Name)]
 public sealed class MapGridCheckTests
 {
     [Fact]

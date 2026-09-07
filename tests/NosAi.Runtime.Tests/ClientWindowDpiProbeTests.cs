@@ -10,6 +10,7 @@ namespace NosAi.Runtime.Tests;
 /// The runtime process has to declare per-monitor v2, otherwise
 /// <c>GetClientRect</c> virtualises the client area on any display not at 100%.
 /// </summary>
+[Collection(ConsoleCaptureCollection.Name)]
 public sealed class ClientWindowDpiProbeTests
 {
     private static readonly DateTime At = new(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc);
