@@ -1,4 +1,4 @@
-using NosAi.Runtime.Contracts;
+﻿using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception;
 using Xunit;
 
@@ -49,7 +49,7 @@ public sealed class ScreenVitalsCaptureTests
         Assert.Equal(T0, observation.ObservedAtUtc);
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void Capture_WithAProcessId_OnANonWindowsHost_FailsClosed_BeforeTouchingClientWindowLocator()
     {
         // This test only means what it says on a non-Windows CI/sandbox host,
@@ -93,7 +93,7 @@ public sealed class ScreenVitalsCaptureTests
         Assert.Equal(injected, observation.ObservedAtUtc);
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void TryEnsurePipeline_OnANonWindowsHost_FailsClosed_WithDxgisOwnReason()
     {
         // Exercises the DXGI-creation step directly (internal, see the type's
