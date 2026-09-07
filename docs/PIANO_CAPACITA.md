@@ -75,10 +75,13 @@ stessa sezione `P4` a pochi minuti di distanza, e la seconda ha sovrascritto la 
 
 ## 3. Dove siamo davvero
 
-Misurato il 2 settembre 2026 su `69c200e` (`C2-7`, `R3`, l'oracolo del bersaglio e
-`HasTarget` dalla memoria compresi): `dotnet build -c Release` → **0 errori**, 1 warning
-preesistente (Android). `dotnet test` → **1721 test, 0 falliti** (1556 runtime, 66 core,
-99 control panel). I conteggi precedenti erano 1713, 1695, 1682, 1651, 1591 e prima 1322; le
+Misurato il 2026-09-08 con le tre suite eseguite di seguito: `dotnet test` → **3389
+passati, 0 falliti, 10 saltati** — Runtime 2561 (+9 saltati), Core 714 (+1),
+ControlPanel 114. I saltati sono quelli che dichiarano il proprio motivo
+(`NonWindowsFact`, `NosTaleClientFact` e simili), non silenzi. Il 2 settembre 2026 su `69c200e` (`C2-7`, `R3`, l'oracolo del bersaglio
+e `HasTarget` dalla memoria compresi) erano **1721** (1556 runtime, 66 core, 99 control
+panel), con `dotnet build -c Release` → **0 errori**, 1 warning preesistente (Android); i
+conteggi ancora precedenti erano 1713, 1695, 1682, 1651, 1591 e prima 1322. Le
 catture reali in `data/` sono ignorate da git, quindi i test che le rigiocano passano a
 vuoto su un clone e portano il loro peso solo qui.
 

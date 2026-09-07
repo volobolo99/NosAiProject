@@ -165,9 +165,9 @@ esistono. Il § 6 elenca che cosa chiude ogni riga incompleta.
 | `MoveToPosition` | la cella occupata si è avvicinata alla destinazione di almeno una cella | posizione propria (memoria) + griglia del client | 350 ms ± 20 ms **per cella** (`P4`) | **parziale** — serve il lettore di posizione stabile |
 | `TargetEntity` | compare il riquadro bersaglio, e `HasTarget` passa a vero | schermo (`TargetFrameReader`), `ADR-0018` | 250 ms *(dichiarata)* | **cieca** — ROI bersaglio non calibrata |
 | `UseBasicAttack` | la vita **del bersaglio** è strettamente diminuita, oppure il bersaglio è morto | `st` / `HpRatio` dell'avvistamento; `die` | 1200 ms *(dichiarata, da misurare sui `.noscap`)* | **osservabile** |
-| `UseSkill` | gli `MP` sono strettamente diminuiti **e** la skill è entrata in cooldown | `stat` per gli MP; `sr` per il cooldown | 250 ms per gli MP (`P7`) | **parziale** — `sr` non è decodificato |
+| `UseSkill` | gli `MP` sono strettamente diminuiti **e** la skill è entrata in cooldown | `stat` per gli MP; `sr` per il cooldown | 250 ms per gli MP (`P7`) | **parziale** — `sr` è decodificato dal 2026-09-02 (`SkillReady`), ma dichiara la *fine* del cooldown, non il suo inizio |
 | `UseConsumable` | il massimo di `HP` (o `MP`) nella finestra supera il valore all'emissione | `stat` | 600 ms *(dichiarata)* | **osservabile** |
-| `CollectGroundItem` | lo slot d'inventario del vnum raccolto è aumentato | `get` + `ivn` | — | **cieca** — nessuno dei due è decodificato |
+| `CollectGroundItem` | lo slot d'inventario del vnum raccolto è aumentato | `get` + `ivn` | — | **osservabile** — entrambi decodificati e pubblicati (`ItemPickup`, `InventorySlotReading`) |
 | `RestAndRecover` | `HP` e `MP` crescono monotoni per l'intera finestra | `stat` | — | **cieca** — nessun gesto |
 | `EmergencyFlee` | la distanza dall'ostile più vicino osservato è aumentata | posizione propria + avvistamenti | 500 ms + finestra per cella | **parziale** — come il movimento |
 
@@ -245,10 +245,13 @@ misurata, la finestra è dichiarata tale.
 
 1. `min_finestra(MP) < MP all'emissione` → la skill è partita. **Osservabile** da
    `stat`, entro i 250 ms che `P7` dichiara.
-2. La skill è entrata in cooldown. **Non osservabile**: `sr`, che il catalogo del
-   protocollo registra come « skill ready / cooldown ended, by skill slot », **non è
-   fra gli opcode letti dal decodificatore** — `NosTaleWorldProtocolDecoder` ne legge
-   sette: `stat`, `st`, `in`, `mv`, `die`, `su`, `cond`.
+2. La skill è entrata in cooldown. **Non osservabile**, ma non più per mancanza di
+   decodifica: `sr` è letto dal 2026-09-02 e pubblicato come `SkillReady(slot)`. Il
+   catalogo del protocollo lo registra come « skill ready / cooldown ended, by skill
+   slot » (`PROTOCOLLO_NOSTALE.md:490`, *probable*) e il decoder ne ripete la lettura
+   (`NosTaleWorldProtocolDecoder.DecodeSkillReady`): dichiara la **fine** del cooldown,
+   non il suo inizio, quindi entro la finestra dell'azione non c'è nulla da
+   confermare.
 
 Sotto `VER-08` l'azione resta eseguibile perché la prima metà basta a distinguere una
 skill partita da un tasto premuto a vuoto. Sotto `VER-05` la seconda metà **non si dà
@@ -342,15 +345,16 @@ client.
 
 | Ciò che manca | Perché manca | Che cosa lo chiude | Chi ne beneficia |
 |---|---|---|---|
-| Cooldown delle skill | `sr` non è fra i sette opcode decodificati | aggiungere `sr` a `NosTaleWorldProtocolDecoder`, con la stessa disciplina di confidenza del catalogo | `UseSkill` (seconda metà) |
-| Inventario | `ivn`, `get`, `drop` catalogati e non pubblicati | pubblicarli sull'osservazione, come è stato fatto per `maxMp` | `CollectGroundItem`, `UseConsumable` (disambiguazione) |
+| Cooldown delle skill | ~~`sr` non decodificato~~ — **decodificato dal 2026-09-02**; resta che `sr` dichiara la fine del cooldown, non l'inizio | osservare l'assenza di un `sr` atteso, oppure una sorgente che ne dichiari l'inizio | `UseSkill` (seconda metà) |
+| Inventario | ~~`ivn`, `get`, `drop` catalogati e non pubblicati~~ — **chiuso**: tutti e tre decodificati e pubblicati (`InventorySlotReading`, `ItemPickup`, `GroundItem`) | — | `CollectGroundItem`, `UseConsumable` (disambiguazione) |
 | Riquadro bersaglio | ROI `TargetHpBar` mai calibrata su client reale | la calibrazione che `ADR-0018` già impone come precondizione | `TargetEntity`, e con essa ogni regola d'attacco |
 | Posizione propria | il server non la manda mai: è autoritativa del client | il lettore di memoria, già provato per l'id mappa il 2 settembre | `MoveToPosition`, `EmergencyFlee` |
 | Cadenza d'attacco | mai misurata | contare gli `su` con il giocatore attaccante in `data/nostale_combat.noscap` | `UseBasicAttack` (finestra) |
 
-Le prime due righe sono le più economiche del progetto in rapporto a ciò che
-sbloccano: sono due opcode già catalogati, con la loro forma già scritta in
-`PROTOCOLLO_NOSTALE.md`, su un decodificatore che ne legge già sette.
+Le prime due righe erano le più economiche del progetto in rapporto a ciò che
+sbloccano, ed è stato fatto: il decodificatore legge oggi **quindici** opcode —
+`stat`, `st`, `in`, `mv`, `die`, `su`, `cond`, `lev`, `eq`, `equip`, `sr`, `ivn`,
+`get`, `drop`, `ct` (`NosTaleWorldProtocolDecoder.cs:114-131`).
 
 ---
 

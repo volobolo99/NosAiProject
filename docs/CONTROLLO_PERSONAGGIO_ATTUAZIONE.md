@@ -18,7 +18,7 @@ Perché questo documento non riproponga lavoro fatto, l'inventario prima delle p
 | `GatedInputBackend` | presente | Barriera al confine: la decisione è presa a ogni chiamata dalla policy viva, mai passata dal chiamante. Rifiuti contati e diagnosticabili |
 | `InputEnvironmentProbe` | presente | Verifica che `SendInput` raggiunga davvero la coda di input di questo desktop |
 | `ClientWindowLocator` | presente | `GetClientRect` + `ClientToScreen` |
-| `ScreenProjectionCalibration` | presente | Trasformazione affine misurata `screen = A·Δmap + anchor`, tre campioni non collineari, rifiuto del fit quando l'ancora cade fuori finestra |
+| `ScreenProjectionCalibration` | presente | Trasformazione **prospettica** misurata `screen = (A·Δx + B·Δy + C) / (G·Δx + H·Δy + 1)`, otto parametri (`ScreenProjectionCalibration.cs:104` `PerspectiveMinimumSamples = 5`, file `nosai-screen-projection 5`). L'affine a tre campioni (`MinimumSamples = 3`) resta il modello di partenza e viene battuto solo se il residuo peggiore in caselle scende davvero; una v4 affine resta leggibile. Rifiuto del fit quando l'ancora cade fuori finestra (`character_anchor_outside_client`) |
 | `ScreenProjectionAutoCalibrator` | presente | Campiona da solo cliccando e rileggendo il quadrato che il client ha risolto |
 | `ScreenProjectionWatcher` | presente | Campiona osservando i click dell'operatore |
 | `NavigationPathfinding` | presente | A\* 2D, mappe di collisione, heatmap, portali, rilevazione di stallo. `TileType.Unobserved` non calpestabile |

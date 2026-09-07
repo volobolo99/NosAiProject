@@ -511,10 +511,16 @@ Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
   and 6 are unknown); `HasTarget` is established from the screen instead
   (ADR-0018, below), and `InCombat` stays `UNKNOWN`.
 - **Target vitals** — absolute HP and max HP of any entity in view, from `st`
-  (fields 7 and 9; field 5 is ignored).
+  (fields 7 and 9; field 5 is ignored) e, **dal 2026-09-07, anche da `su`** (campi 16
+  e 17, letti solo con la bandiera del campo 11 a 1 — sezione `su` sopra). In
+  combattimento `su` è la fonte più fresca: in `nostale_combat` 94 letture contro le
+  49 di `st`.
 - **Combat events** — every hit with attacker, target, skill and damage, from `su`.
-- **Entities in view** — spawn with vnum and position from `in`, tracked by `mv`
-  only after an `in`/`st` has supplied HP, removed by `die`.
+- **Entities in view** — spawn with vnum and position from `in`, tracked by `mv`,
+  removed by `die`. `mv` pubblica la posizione **anche senza vita nota**: in quel caso
+  l'avvistamento non porta HP (mai uno zero); quando la vita è già nota da
+  `in`/`st`/`su` la porta con l'istante in cui fu letta, marcata stale
+  (`NosTaleWorldProtocolDecoder.DecodeMove`).
 - **Progression** — level, XP, job level, job XP and the two maxima, from `lev`.
   **Published dal 2026-09-07**: `NosTaleWorldProtocolDecoder` legge i primi sei
   campi, `DecodedObservations.Progression` li porta, e `--world-replay` li
@@ -524,7 +530,7 @@ Directly available, per ADR-0014's `LIVE` bar, through `NosTaleWorldFramer` +
   ognuna — un valore che non e' mai cambiato non si distingue da una costante
   che il server manda sempre. Il censimento della cattura di combattimento e'
   salito da 8147/8211 a **8170/8211**.
-- **Drops and inventory** — `drop`, `get`, `ivn` (catalogued, not yet published).
+- **Drops and inventory** — `drop`, `get`, `ivn`, **pubblicati** come `GroundItem`, `ItemPickup` e `InventorySlotReading`.
 - **Equipaggiamento indossato** — `eq` ed `equip`. **Published dal 2026-09-07**:
   `WornEquipment` porta slot e vnum come il filo li dichiara, senza mapparli su
   `EquipmentSlot` (quella corrispondenza ha bisogno di `Item.dat` e di

@@ -3,6 +3,20 @@
 > **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
 > al momento in cui fu scritto e alcune sue affermazioni sono state
 > superate dal codice. Verificato oggi nel sorgente: `CollectCommand` esiste da `src/NosAi.Runtime/Navigation/CollectCommand.cs:53`, con il flag registrato in `Program.cs`.
+>
+> **Aggiunta 2026-09-08.** Le due righe che dichiarano la *semantic
+> extraction* bloccata dal gap OCR/ML (§ Ambito e § Deliberatamente non
+> affrontato qui) sono superate per la metà che riguarda il **testo**: la
+> premessa è giusta — nessun opcode del filo porta il testo di missione o
+> di dialogo — ma il testo sta nei file del client, in italiano, ed è
+> importato dal 2026-09-07 (Q-129): `quest` e `npctalk` sono fra le
+> `ReferenceImporter.TextOnlyTables` (`ReferenceImporter.cs:134-135`), con
+> 3 639 testi di missione e 22 358 battute di NPC misurati. Resta bloccato
+> dal gap OCR/ML solo ciò che dipende da un modello addestrato — nessun
+> `.onnx` e nessun `data/perception/glyphs.atlas` esistono nel repository
+> (`git ls-files`) — e resta aperto il collegamento id sul filo → chiave
+> di tabella, che non è un problema di OCR.
+>
 > Le righe qui sotto restano com'erano: sono un registro, non una
 > descrizione del presente.
 

@@ -200,7 +200,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 
 - `Perception/Network/ProtocolMap.cs` (493) — **mappa dichiarativa dei messaggi**. Tipi: `FieldSpec`, `MessageSpec`, `ProtocolMap`, `PlayerVitalsSpec`, `ConfigurableProtocolDecoder`
 - `Perception/Network/GameTrafficObserver.cs` (650) — osservazione traffico e contratti decodificati. Tipi: `GameEventKind`, `EntitySighting`, `GameEvent`, `Aggressor`, `PlayerHit`, `TargetedEntity`, `PlayerTargetSelection`, `SkillReady`, `InventorySlotReading`, `ItemPickup`, `GroundItem`, `PlayerVitals`, `DecodedObservations`, `IGamePacketDecoder`, `NetworkObservationReport`, `GameTrafficObserver`
-- `Perception/Network/NosTaleWorldProtocolDecoder.cs` (650) — dodici opcode; i cinque nuovi (`sr`, `ivn`, `get`, `drop`, `ct`) alimentano le post-condizioni. Tipi: `NosTaleWorldProtocolDecoder`
+- `Perception/Network/NosTaleWorldProtocolDecoder.cs` (1029) — quindici opcode: `stat`, `st`, `in`, `mv`, `die`, `su`, `cond`, `lev`, `eq`, `equip`, `sr`, `ivn`, `get`, `drop`, `ct`; i cinque per le post-condizioni sono `sr`, `ivn`, `get`, `drop`, `ct`. Tipi: `NosTaleWorldProtocolDecoder`
 - `Perception/Network/NosTaleWorldDecoder.cs` (173)
 - `Perception/Network/NetworkWorldFeed.cs` (283) — feed verso il world model. Tipi: `NetworkWorldFeed`, `TrafficRecorder`
 - `Perception/Network/MessageFramer.cs` (143), `NetworkObservationContracts.cs` (71), `NetworkObservationSources.cs` (129), `ScopedGameTrafficFilter.cs` (62), `SyntheticProtocolDecoder.cs` (94)

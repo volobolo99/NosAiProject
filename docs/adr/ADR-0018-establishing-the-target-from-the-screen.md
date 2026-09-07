@@ -87,13 +87,20 @@ An uncalibrated read produces a self-assured `false`, which is the worst of the
 three possible outcomes — worse than `Unreadable`, which at least reports itself.
 Refusing costs nothing while the fact is unusable anyway.
 
-The calibration lives in `data/perception/target-roi.calibration`, beside the
-glyph atlas and the T-03 crops, and **is not committed**. ADR-0017 argued this for
-the atlas and the argument is identical: the fractions are of one client at one
-resolution on one display. A calibration built anywhere else is a calibration of
-somebody else's screen, and it would fail by reading the wrong pixels confidently.
-A fresh clone reads `target_roi_not_calibrated`, which is a different state from
-broken and reports as one.
+The calibration lives in `data/perception/target-roi.calibration` e **dal 2026-09-07
+è versionata** (commit `431ff1a`): `.gitignore` esclude ancora `data/perception/*` ma
+fa eccezione per `*.calibration` e `screen-samples*.txt`, mentre l'atlante dei glifi
+(`data/perception/glyphs.atlas`) e i ritagli di T-03 restano fuori. L'argomento di
+ADR-0017 non è cambiato — le frazioni sono di un client a una risoluzione su un
+display, e una calibrazione costruita altrove è la calibrazione dello schermo di
+qualcun altro, che fallirebbe leggendo con sicurezza i pixel sbagliati — ma la
+conclusione « non committarla » è stata rovesciata: senza questi numeri nessuna
+affermazione del repository sulla proiezione si riproduce, e il giorno in cui sono
+quasi andati persi lo ha reso evidente. Chi lavora su un'altra macchina o a un'altra
+risoluzione **deve rifarla**: il file registra `ClientWidth`/`ClientHeight`, che sono
+mostrati (`OperatorMenu.cs:498`, `TargetInspect.cs:253`) ma non imposti da alcun
+controllo. Senza alcun file il composer legge `target_roi_not_calibrated`, che è uno
+stato diverso da rotto e si riporta come tale.
 
 The operator produces it with the path T-03 already used — `--hud-probe` and
 `HudCropWriter` — with a target selected, so the crop is the evidence that the
