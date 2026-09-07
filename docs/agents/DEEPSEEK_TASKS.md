@@ -273,6 +273,21 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE** (2026-09-07): **il registro degli esiti si scrive e non si
+legge.** `ActionOutcomeLedgerStore` e' un registro durevole append-only su
+SQLite, e quattro comandi ci scrivono davvero — `--scout`, `--autoplay`,
+`--engage`, `--recover`: ogni atto reale lascia una riga. Espone una sola
+lettura, `LoadByContext`, e **nessun chiamante di produzione**: il runtime
+scrive la propria storia e non ha modo di rileggerla. E' la capacita' che
+CLAUDE.md chiama «learn from failures» con la meta' di scrittura completa e
+quella di lettura assente. Il rapporto nuovo deve anche saper distinguere per
+nome quattro situazioni che da fuori si somigliano — volume assente, file
+assente, store vuoto, store con righe — perche' su questa macchina il volume
+`NOSAI-SSD` non esiste e il registro e' vuoto per costruzione. Non tocca i
+quattro comandi che scrivono. **Non in parallelo con `wire_inspect`**: entrambi
+toccano `Program.cs`. Specifica:
+`docs/agents/phases/AP-09/AP-09_A2A4_DEEPSEEK_outcome_report.md`.
+
 **INDIPENDENTE** (2026-09-07): **`--decide-replay` non arriva mai al
 pianificatore, e non lo dice.** Misurato: su 8211 pacchetti reali produce sette
 cicli, cinque dei quali si fermano a `player_vitals_stale`. La causa non e' un
