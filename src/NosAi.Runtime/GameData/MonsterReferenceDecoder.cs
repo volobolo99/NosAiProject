@@ -78,7 +78,10 @@ public sealed record MonsterDrop(int ItemVnum, int? Chance, int? Amount);
 /// mean, but promoting a claim to an enum before it is cross-checked would
 /// present a guess as a fact. Every property is null when its own tag (or
 /// that tag's position) is absent from the record, never a fabricated
-/// default.
+/// default. One exception: <see cref="IsSpecialNonMonsterEntity"/> derives
+/// a single boolean from <see cref="RaceType"/> despite the same lack of
+/// cross-check, because it is used only to narrow a decision that already
+/// tolerates being wrong in the safe direction -- see its own remarks.
 /// </para>
 /// </remarks>
 public sealed record MonsterReference(
@@ -146,7 +149,38 @@ public sealed record MonsterReference(
     IReadOnlyList<MonsterSkillReference> Skills,
     IReadOnlyList<BCardApplication> BasicEffects,
     IReadOnlyList<BCardApplication> CardEffects,
-    IReadOnlyList<MonsterDrop> Drops);
+    IReadOnlyList<MonsterDrop> Drops)
+{
+    /// <summary>
+    /// True when <see cref="RaceType"/> is <c>8</c> -- the same source cited
+    /// above (nt-research.github.io, "monster.dat", the <c>RACE</c> tag)
+    /// names this exact value "Special NPCs" and documents its
+    /// <see cref="RaceSubType"/> values by name: fixed traps (0), energy
+    /// balls (1), cannon balls (2), talkable NPCs (3), generics (4),
+    /// teleporters (5), quest spawners (6), collectibles (7) -- nine
+    /// distinct kinds, none of them a monster to fight, and this source's
+    /// own text is the reason none of them gets a dedicated
+    /// <see cref="RaceSubType"/> property here: knowing "not a monster" is
+    /// the one fact this project currently needs from RaceType 8, not which
+    /// of the nine it is. Null, never false, when <see cref="RaceType"/>
+    /// itself is unknown -- a record this decoder could not read a RACE tag
+    /// from is never asserted to be a fightable monster by omission.
+    /// </summary>
+    /// <remarks>
+    /// Not yet cross-checked against a real client capture, the same
+    /// standing caveat as every other field here. Used by
+    /// <see cref="NosAi.Runtime.Autonomy.TargetEstablishment"/> to narrow its
+    /// <c>catalogue.Exists("monster", vnum)</c> check: that check alone would
+    /// treat a talkable NPC or a teleporter as an attackable monster merely
+    /// because both live in the same <c>monster.dat</c> table. Safe to trust
+    /// there even while unverified, because of that method's own asymmetry
+    /// (docs/TASTI_E_BERSAGLIO.md § 6.2): this property can only ever narrow
+    /// which vnums count as an established monster, never widen it, so a
+    /// wrong guess here costs a refused attack on a real monster, never an
+    /// attack on something it should not have targeted.
+    /// </remarks>
+    public bool? IsSpecialNonMonsterEntity => RaceType is int race ? race == 8 : null;
+}
 
 /// <summary>
 /// Decodes a monster-table <see cref="NosRecord"/> into a

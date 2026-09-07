@@ -1,6 +1,7 @@
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate3;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Perception.Network;
 using Xunit;
 using TrustTier = NosAi.Runtime.Contracts.TrustTier;
@@ -333,6 +334,52 @@ public sealed class GoalAndReactionTests
             ClassifiedValue<Aggressor>.Live(new Aggressor(999999, 3), Now),
             ClassifiedValue<TargetedEntity>.Live(new TargetedEntity(888888, 3), Now),
             catalogue: null);
+
+        Assert.False(verdict.IsEstablished);
+    }
+
+    // ---- catalogue evidence: a real monster.dat row, RaceType 8 excluded ----
+
+    private static NosField Field(string name, params string[] values) => new(name, values);
+
+    [Fact]
+    public void ARealMonsterInTheCatalogue_IsEstablished()
+    {
+        using GameReferenceDatabase catalogue = GameReferenceDatabase.OpenInMemory();
+        var record = new NosRecord(36, new[] { Field("VNUM", "36", "0"), Field("RACE", "0", "1", "0") });
+        catalogue.Import("monster", "test.NOS", "monster.dat", "C:/test", new[] { record },
+            System.Text.Encoding.UTF8.GetBytes("payload"));
+
+        TargetVerdict verdict = TargetEstablishment.Assess(
+            Entity(313816, 0.9, new MapPoint(105, 100), vnum: 36),
+            hitBy: null,
+            selected: null,
+            catalogue);
+
+        Assert.True(verdict.IsEstablished);
+        Assert.Equal(TargetEvidence.CataloguedMonster, verdict.Evidence);
+    }
+
+    /// <summary>
+    /// A talkable NPC/trap/teleporter/collectible shares <c>monster.dat</c>
+    /// with real monsters (RaceType 8, docs/TASTI_E_BERSAGLIO.md § 5.1's
+    /// 2026-09-07 correction) -- catalogue presence alone must not establish
+    /// it as attackable, or this rule would authorise attacking a merchant
+    /// the moment its vnum happened to have a catalogue row.
+    /// </summary>
+    [Fact]
+    public void ARaceType8CatalogueEntry_IsNotEstablished_EvenThoughItExistsInTheMonsterTable()
+    {
+        using GameReferenceDatabase catalogue = GameReferenceDatabase.OpenInMemory();
+        var record = new NosRecord(500, new[] { Field("VNUM", "500", "0"), Field("RACE", "8", "3", "0") });
+        catalogue.Import("monster", "test.NOS", "monster.dat", "C:/test", new[] { record },
+            System.Text.Encoding.UTF8.GetBytes("payload"));
+
+        TargetVerdict verdict = TargetEstablishment.Assess(
+            Entity(313816, 0.9, new MapPoint(105, 100), vnum: 500),
+            hitBy: null,
+            selected: null,
+            catalogue);
 
         Assert.False(verdict.IsEstablished);
     }

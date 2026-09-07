@@ -79,9 +79,11 @@ public static class TargetEstablishment
     /// <summary>The catalogue table the monsters live in.</summary>
     /// <remarks>
     /// <c>ReferenceImporter</c> writes this kind, and 2 705 monsters are already
-    /// imported under it. A vnum present there is a monster by the game's own
-    /// definition, which is a stronger statement than anything derived from the
-    /// wire's shared type 3.
+    /// imported under it. A vnum present there is stronger evidence than anything
+    /// derived from the wire's shared type 3 -- but presence alone is not quite
+    /// "is a monster": the same table also carries RaceType 8's nine kinds of
+    /// non-monster special entity (traps, teleporters, talkable NPCs, ...), which
+    /// <see cref="IsSpecialNonMonsterEntity"/> excludes.
     /// </remarks>
     public const string MonsterKind = "monster";
 
@@ -136,7 +138,7 @@ public static class TargetEstablishment
 
         try
         {
-            if (catalogue.Exists(MonsterKind, vnum))
+            if (catalogue.Exists(MonsterKind, vnum) && !IsSpecialNonMonsterEntity(catalogue, vnum))
                 return TargetVerdict.Established(TargetEvidence.CataloguedMonster);
         }
         catch (Exception ex)
@@ -148,5 +150,25 @@ public static class TargetEstablishment
 
         return TargetVerdict.NotEstablished(
             string.Create(CultureInfo.InvariantCulture, $"{NeverEstablishedReason}:vnum={vnum}"));
+    }
+
+    /// <summary>
+    /// True only when the catalogue confirms <paramref name="vnum"/> is one
+    /// of <c>monster.dat</c>'s own RaceType-8 entries -- traps, teleporters,
+    /// talkable NPCs and the rest of that bucket (see
+    /// <see cref="MonsterReference.IsSpecialNonMonsterEntity"/>), which share
+    /// a table with real monsters but are never one. False whenever the row
+    /// cannot be read or decoded, never true by omission: an unreadable
+    /// record narrows nothing, it just leaves <see cref="MonsterKind"/>'s
+    /// existence check as the only word on the matter, exactly as before
+    /// this method existed.
+    /// </summary>
+    private static bool IsSpecialNonMonsterEntity(GameReferenceDatabase catalogue, int vnum)
+    {
+        IReadOnlyList<NosField>? fields = catalogue.Lookup(MonsterKind, vnum);
+        if (fields is null)
+            return false;
+
+        return MonsterReferenceDecoder.Decode(new NosRecord(vnum, fields))?.IsSpecialNonMonsterEntity == true;
     }
 }

@@ -209,4 +209,34 @@ public sealed class MonsterReferenceDecoderTests
     {
         Assert.Throws<ArgumentNullException>(() => MonsterReferenceDecoder.Decode(null!));
     }
+
+    // ---- IsSpecialNonMonsterEntity ----
+
+    [Fact]
+    public void RaceType8_IsReportedAsASpecialNonMonsterEntity()
+    {
+        var record = new NosRecord(1, new[] { Field("VNUM", "1", "0"), Field("RACE", "8", "3", "0") });
+
+        MonsterReference? monster = MonsterReferenceDecoder.Decode(record);
+
+        Assert.True(monster!.IsSpecialNonMonsterEntity);
+    }
+
+    [Fact]
+    public void ARealMonsterRaceType_IsNotReportedAsSpecial()
+    {
+        MonsterReference? monster = MonsterReferenceDecoder.Decode(FullRecord());
+
+        Assert.False(monster!.IsSpecialNonMonsterEntity);
+    }
+
+    [Fact]
+    public void MissingRaceTag_ReportsUnknown_NeverAssumedToBeAMonster()
+    {
+        var record = new NosRecord(2, new[] { Field("VNUM", "2", "0") });
+
+        MonsterReference? monster = MonsterReferenceDecoder.Decode(record);
+
+        Assert.Null(monster!.IsSpecialNonMonsterEntity);
+    }
 }
