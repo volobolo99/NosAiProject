@@ -68,6 +68,62 @@ public sealed class LoadoutPlannerTests
         Assert.Equal(new ItemId("sword"), candidate.Item);
     }
 
+    // ---- GenerateEquipCandidates ----
+
+    [Fact]
+    public void GenerateEquipCandidates_ResolvableStack_ProducesOneCandidate()
+    {
+        Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("helmet", 1) }));
+
+        IReadOnlyList<LoadoutActionCandidate> candidates = LoadoutPlanner.GenerateEquipCandidates(
+            player, resolveSlot: id => id == new ItemId("helmet") ? EquipmentSlot.Hat : null);
+
+        LoadoutActionCandidate candidate = Assert.Single(candidates);
+        Assert.Equal(LoadoutActionKind.Equip, candidate.Kind);
+        Assert.Equal(new ItemId("helmet"), candidate.Item);
+        Assert.Equal(EquipmentSlot.Hat, candidate.Slot);
+    }
+
+    [Fact]
+    public void GenerateEquipCandidates_UnresolvableStack_ProducesNoCandidate()
+    {
+        // A vnum resolveSlot legitimately has no answer for (an unrecognized
+        // item, a catalog miss) must never be guessed into a fabricated slot.
+        Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("mystery-item", 1) }));
+
+        IReadOnlyList<LoadoutActionCandidate> candidates = LoadoutPlanner.GenerateEquipCandidates(
+            player, resolveSlot: _ => null);
+
+        Assert.Empty(candidates);
+    }
+
+    [Fact]
+    public void GenerateEquipCandidates_ZeroQuantityStack_ProducesNoCandidate()
+    {
+        Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("helmet", 0) }));
+
+        IReadOnlyList<LoadoutActionCandidate> candidates = LoadoutPlanner.GenerateEquipCandidates(
+            player, resolveSlot: _ => EquipmentSlot.Hat);
+
+        Assert.Empty(candidates);
+    }
+
+    [Fact]
+    public void GenerateEquipCandidates_UnknownQuantity_ProducesNoCandidate()
+    {
+        var unknownQuantityStack = new InventoryItem(
+            new ItemId("helmet"),
+            WorldFact<string>.Live("helmet", 1d, Now),
+            WorldFact<int>.Unknown("r", Now),
+            WorldFact<int>.Live(0, 1d, Now));
+        Player player = BuildPlayer(inventory: EquatableArray<InventoryItem>.From(new[] { unknownQuantityStack }));
+
+        IReadOnlyList<LoadoutActionCandidate> candidates = LoadoutPlanner.GenerateEquipCandidates(
+            player, resolveSlot: _ => EquipmentSlot.Hat);
+
+        Assert.Empty(candidates);
+    }
+
     // ---- CheckHardConstraints: Equip ----
 
     [Fact]

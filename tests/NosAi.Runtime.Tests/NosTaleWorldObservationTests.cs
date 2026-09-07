@@ -340,6 +340,10 @@ public sealed class NosTaleWorldObservationTests
             decoder.Decode(Ascii("die 3 313820 3 313820")).Events);
         Assert.Equal(GameEventKind.EntityDeath, death.Kind);
         Assert.Equal(313820, death.EntityId);
+        // The vnum was confirmed by the earlier "in" packet -- the death event
+        // must carry it forward, or "killed a mob of vnum X" can never be
+        // confirmed from this event alone.
+        Assert.Equal(36, death.Vnum);
 
         // The death forgets the health the spawn carried. A later move under the
         // same id is a position with no health, not the dead entity's last HP
@@ -347,6 +351,19 @@ public sealed class NosTaleWorldObservationTests
         EntitySighting afterDeath = Assert.Single(
             decoder.Decode(Ascii("mv 3 313820 111 64 5")).Sightings);
         Assert.Null(afterDeath.HpRatio);
+    }
+
+    [Fact]
+    public void Die_of_an_entity_never_seen_entering_carries_no_vnum()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        GameEvent death = Assert.Single(
+            decoder.Decode(Ascii("die 3 313820 3 313820")).Events);
+
+        // Nothing establishes a species for an id this decoder never tracked --
+        // Unknown, never guessed as zero or any other placeholder value.
+        Assert.Null(death.Vnum);
     }
 
     [Fact]

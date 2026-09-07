@@ -98,12 +98,19 @@ public sealed record EntitySighting(
 /// event is an instant; without it a consumer can only say that something
 /// happened, never how long ago.
 /// </param>
+/// <param name="Vnum">
+/// The entity's species/template id, when the decoder still remembered it
+/// from an earlier sighting -- null when nothing tracked this entity before
+/// the event (e.g. a synthetic/test source, or an entity that died without
+/// ever being seen entering). Never guessed from an adjacent field.
+/// </param>
 public sealed record GameEvent(
     GameEventKind Kind,
     long EntityId,
     string Descriptor,
     DataSourceKind Source,
-    DateTime? ObservedAtUtc = null);
+    DateTime? ObservedAtUtc = null,
+    int? Vnum = null);
 
 /// <summary>Who hit the controlled character: an entity id and its type.</summary>
 /// <remarks>

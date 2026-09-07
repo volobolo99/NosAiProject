@@ -294,6 +294,20 @@ kind non-dispatchabile) e un commento falso copiato dalla specifica
 (vedi Q-092 in `EXECUTION_QUEUE.md` per i dettagli esatti). Build 0
 errori/0 warning, Core 654/654, Runtime 2150/2150.
 
+**PRONTO ORA** (Q-094, 2026-09-07): **AP-07 — `--loadout-report`.** Audit
+indipendente trova che `LoadoutPlanner`'s "nothing decodes an item's
+equipment category yet" è falso da quando `ItemReferenceDecoder` (Q-088)
+esiste. Lato `NosAi.Core` (Claude, già consegnato e testato):
+`LoadoutPlanner.GenerateEquipCandidates(Player, Func<ItemId, EquipmentSlot?>)`
+(nuovo, puro) produce un candidato Equip solo quando il lookup risolve
+davvero uno slot — mai indovinato. Resta il collegamento meccanico: un
+comando **read-only** nuovo che legge inventario/equipaggiamento reali e
+risolve gli slot dal catalogo reale su disco. Nessuna esecuzione
+equip/unequip (resta fuori scope). Specifica completa in
+`docs/agents/phases/AP-07/AP-07_A2A4_DEEPSEEK_loadout_report.md` —
+leggila per intero prima di scrivere codice, cita ogni API reale con
+file/riga esatti.
+
 Oltre a questo, nessun altro task pronto: AP-04/AP-05/AP-06 sono
 `Integrated`; i gap residui su AP-09/AP-10 restano OCR/ONNX o dati
 item non decodificati semanticamente, non chiudibili scrivendo altro

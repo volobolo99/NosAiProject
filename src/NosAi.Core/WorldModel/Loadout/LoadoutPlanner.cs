@@ -11,19 +11,20 @@ namespace NosAi.Core.WorldModel.Loadout;
 /// </summary>
 /// <remarks>
 /// <b>Scope, honestly restricted.</b> <see cref="GenerateUnequipCandidates"/>
-/// and <see cref="GenerateUpgradeCandidates"/> are real: both only need
-/// facts <see cref="Player.Equipment"/> already carries. Generating
-/// <see cref="LoadoutActionKind.Equip"/> candidates automatically is
-/// <b>not</b> attempted here: <see cref="InventoryItem"/> (AP-01) names an
-/// item's identity/quantity/bag position, never which
-/// <see cref="EquipmentSlot"/> it would occupy if equipped -- nothing in
-/// this repository decodes an item's equipment category yet. Guessing a
-/// slot from an item's name would be exactly the kind of fabricated
-/// inference this project refuses. <see cref="CheckHardConstraints"/>
-/// still judges an <see cref="LoadoutActionKind.Equip"/> candidate
-/// correctly when one is supplied from elsewhere (an operator, or a
-/// future item-category source) -- only the automatic generation of one
-/// is out of scope today.
+/// and <see cref="GenerateUpgradeCandidates"/> need only facts
+/// <see cref="Player.Equipment"/> already carries.
+/// <see cref="GenerateEquipCandidates"/> needs one more: which
+/// <see cref="EquipmentSlot"/> an <see cref="InventoryItem"/> would occupy
+/// if equipped, a fact <see cref="InventoryItem"/> (AP-01) itself never
+/// carries. This method does not fabricate that mapping -- it takes it as
+/// a caller-supplied lookup, the same pattern
+/// <see cref="Strategy.StrategyPlanner.AssessRecoveryUrgency"/> uses for
+/// its "currently in combat" fact: pure here, real data sourced by
+/// whoever calls in. <c>NosAi.Runtime.GameData.ItemReferenceDecoder</c>
+/// decodes a real item-catalog slot from <c>Item.dat</c> today (see its
+/// own remarks for provenance) and is the obvious real lookup to wire in,
+/// but this method takes any delegate -- it is not this method's job to
+/// know where the answer came from, only to use it correctly once given.
 /// </remarks>
 public static class LoadoutPlanner
 {
@@ -37,6 +38,35 @@ public static class LoadoutPlanner
         {
             if (item.IsEquipped is { HasValue: true, Value: true })
                 candidates.Add(new LoadoutActionCandidate(LoadoutActionKind.Unequip, slot: item.Slot));
+        }
+
+        return candidates;
+    }
+
+    /// <summary>
+    /// One <see cref="LoadoutActionKind.Equip"/> candidate per inventory
+    /// stack <paramref name="resolveSlot"/> can place: an item this project
+    /// has no real catalog answer for (an unrecognized vnum, a lookup that
+    /// legitimately returns <see langword="null"/>) produces no candidate at
+    /// all, never a guessed one. Whether the target slot is actually free is
+    /// <see cref="CheckHardConstraints"/>'s job, not this method's -- the
+    /// same division of labour <see cref="GenerateUnequipCandidates"/> and
+    /// <see cref="GenerateUpgradeCandidates"/> already use.
+    /// </summary>
+    public static IReadOnlyList<LoadoutActionCandidate> GenerateEquipCandidates(
+        Player player, Func<ItemId, EquipmentSlot?> resolveSlot)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(resolveSlot);
+
+        var candidates = new List<LoadoutActionCandidate>();
+        foreach (InventoryItem stack in player.Inventory)
+        {
+            if (stack.Quantity is not { HasValue: true, Value: > 0 })
+                continue;
+
+            if (resolveSlot(stack.Id) is { } slot)
+                candidates.Add(new LoadoutActionCandidate(LoadoutActionKind.Equip, item: stack.Id, slot: slot));
         }
 
         return candidates;

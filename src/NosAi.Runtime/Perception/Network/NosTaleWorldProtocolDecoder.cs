@@ -242,10 +242,14 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         if (fields.Length < 3 || !TryLong(fields[2], out long entityId))
             return DecodedObservations.Empty;
 
+        // Read the vnum before removing the entry: this is the last chance to
+        // know which species died, and the caller needs it to ever confirm
+        // "killed a mob of vnum X" from this event.
+        int? vnum = _entities.GetValueOrDefault(entityId).Vnum;
         _entities.Remove(entityId);
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
-            ImmutableArray.Create(new GameEvent(GameEventKind.EntityDeath, entityId, "die", source, capturedUtc)));
+            ImmutableArray.Create(new GameEvent(GameEventKind.EntityDeath, entityId, "die", source, capturedUtc, vnum)));
     }
 
     /// <summary>
