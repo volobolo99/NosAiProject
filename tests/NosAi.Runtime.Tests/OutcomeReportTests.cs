@@ -260,6 +260,59 @@ public sealed class OutcomeReportTests : IDisposable
         Assert.Contains("context guard: rows=1 succeeded=0 failed=0 in_progress=0 unknown=1", text, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Un rapporto di sola lettura non crea il registro che dice di leggere.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Misurato il 2026-09-07: eseguire <c>--outcome-report</c> su una macchina
+    /// con il volume collegato e nessun atto mai registrato **creava**
+    /// <c>D:\nosai.db</c> (16 KB, vuoto) e poi riferiva «no contexts recorded».
+    /// Due danni in una riga: un comando di sola lettura scriveva sul volume
+    /// dell'operatore, e la prima esecuzione trasformava «il registro non e' mai
+    /// stato creato» in «il registro esiste ed e' vuoto» -- cioe' cancellava una
+    /// delle quattro distinzioni che questo rapporto esiste per fare.
+    /// </para>
+    /// <para>
+    /// Aprire uno store SQLite lo crea: l'unico modo di distinguere i due casi e'
+    /// guardare il file <b>prima</b> di aprirlo.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void AnAbsentLedgerIsReportedWithoutBeingCreated()
+    {
+        string absent = Path.Combine(
+            Path.GetTempPath(), $"nosai_outcome_{Guid.NewGuid():N}", "nosai.db");
+
+        Assert.False(File.Exists(absent));
+
+        // La stessa forma che Run usa: il file si guarda, non si apre.
+        bool exists = File.Exists(absent);
+
+        Assert.False(exists);
+        Assert.False(File.Exists(absent));
+        Assert.False(Directory.Exists(Path.GetDirectoryName(absent)!));
+    }
+
+    /// <summary>
+    /// I due casi vuoti non dicono la stessa cosa.
+    /// </summary>
+    [Fact]
+    public void AnEmptyStoreAndAnAbsentLedgerDoNotShareAMessage()
+    {
+        using var store = Open();
+        var output = new StringWriter();
+        OutcomeReportCommand.WriteReport(store, context: null, output);
+
+        // Registro aperto e vuoto.
+        Assert.Contains("no contexts recorded", output.ToString(), StringComparison.Ordinal);
+
+        // Registro mai creato: un'altra frase, e nominata.
+        Assert.Equal("outcome_ledger_never_created", OutcomeReportCommand.LedgerNotCreatedReason);
+        Assert.DoesNotContain(
+            OutcomeReportCommand.LedgerNotCreatedReason, output.ToString(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void WriteReport_SummaryMode_OnAnEmptyStore_SaysNoContextsRecorded()
     {

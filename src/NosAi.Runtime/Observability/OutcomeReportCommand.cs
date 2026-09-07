@@ -75,6 +75,13 @@ public static class OutcomeReportCommand
     /// <summary>Refused when <c>--context</c> names a context with no rows.</summary>
     public const string ContextNotFoundReason = "context_not_found";
 
+    /// <summary>
+    /// Il volume c'e' e il registro non e' mai stato creato. Non e' un rifiuto:
+    /// e' una risposta, e la piu' probabile su una macchina dove nessuno ha
+    /// ancora eseguito un atto.
+    /// </summary>
+    public const string LedgerNotCreatedReason = "outcome_ledger_never_created";
+
     /// <summary>Exit code for a named refusal. Matches the other diagnostics.</summary>
     public const int ExitRefused = 2;
 
@@ -195,11 +202,32 @@ public static class OutcomeReportCommand
             return ExitRefused;
         }
 
-        // The same open the four writer commands use: a missing NOSAI-SSD
-        // volume returns null with a reason. Here it is a refusal, not a WARN,
-        // because the whole point of this command is to read that ledger.
+        // Il file va guardato PRIMA di aprirlo, e non e' pignoleria: aprire uno
+        // store SQLite lo crea. Senza questo controllo un comando di sola
+        // lettura scriveva sul volume dell'operatore, e -- peggio -- la prima
+        // esecuzione trasformava "il registro non e' mai stato creato" in
+        // "il registro esiste ed e' vuoto", cancellando la distinzione che
+        // questo rapporto esiste per fare. Misurato il 2026-09-07: eseguire
+        // --outcome-report creo' D:\nosai.db, 16 KB, vuoto.
+        var options = new SqliteJournalOptions();
+        if (!VolumeLocator.TryResolve(options.VolumeLabel, out string volumeRoot))
+        {
+            Console.WriteLine($"[REFUSED] {LedgerUnavailableReason}:volume_not_attached:{options.VolumeLabel}");
+            return ExitRefused;
+        }
+
+        string databasePath = Path.Combine(volumeRoot, options.FileName);
+        if (!File.Exists(databasePath))
+        {
+            // Una risposta, non un rifiuto: il volume risponde, e cio' che dice
+            // e' che nessun atto ha ancora scritto una riga.
+            Console.WriteLine("=== action-outcome ledger ===");
+            Console.WriteLine($"{LedgerNotCreatedReason}: {databasePath}");
+            return 0;
+        }
+
         using ActionOutcomeLedgerStore? store =
-            ActionOutcomeLedgerStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? failureReason);
+            ActionOutcomeLedgerStore.TryOpenFromVolume(options, out string? failureReason);
         if (store is null)
         {
             Console.WriteLine($"[REFUSED] {LedgerUnavailableReason}:{failureReason}");
