@@ -258,8 +258,8 @@ public static class EngageCommand
     /// than the full <see cref="CombatPlanner.CheckHardConstraints"/>, and that
     /// choice is not a shortcut: no observation channel in this project reads
     /// the character's skill list, so the full check's skill half would report
-    /// <c>skill_not_found</c> on every real client and refuse every act for a
-    /// reason that is about the gap, not about the character. That method's own
+    /// <c>skill_list_not_observed</c> on every real client and refuse every act
+    /// for a reason that is about that gap, not about the target. That method's own
     /// remarks carry the argument; what matters here is the direction --
     /// checking the target half narrows what is permitted, never widens it.
     /// </para>

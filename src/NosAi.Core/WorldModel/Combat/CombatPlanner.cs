@@ -144,8 +144,11 @@ public static class CombatPlanner
     /// "nothing has read the skill list". No observation channel in this
     /// project reads it today, which means
     /// <see cref="CheckHardConstraints"/> run against a live-observed player
-    /// always reports <c>skill_not_found</c> -- a false statement about the
-    /// character rather than a real constraint violation.
+    /// always refuses the act. The refusal now names the real cause --
+    /// <c>skill_list_not_observed</c> rather than <c>skill_not_found</c>, so
+    /// it no longer blames the character for a gap in the observation
+    /// channels -- but it is still a refusal, and still one this method's
+    /// caller cannot do anything about.
     /// </para>
     /// <para>
     /// A caller that cannot observe skills has three choices: check nothing,
@@ -259,7 +262,13 @@ public static class CombatPlanner
 
         if (found is not { } skillFound)
         {
-            violations.Add("skill_not_found");
+            // An empty skill list and a list that simply lacks this skill are
+            // different facts, and only the second is a statement about the
+            // character. Nothing in this project reads a character's skills
+            // yet, so on a live client the list is always empty -- reporting
+            // that as "skill_not_found" would blame the character for a gap in
+            // the observation channels. See CheckTargetConstraints' remarks.
+            violations.Add(player.Skills.Count == 0 ? "skill_list_not_observed" : "skill_not_found");
             return;
         }
 

@@ -261,7 +261,13 @@ public sealed class CombatPlannerTests
     [Fact]
     public void CheckHardConstraints_SkillNotFound_Violates()
     {
-        Player player = BuildPlayer(position: new WorldPosition(0f, 0f));
+        // A skill list that was read and does not contain this skill: only
+        // then is "not found" a statement about the character. The fixture
+        // seeds a different skill on purpose -- an empty list would exercise
+        // the case below instead.
+        Player player = BuildPlayer(
+            position: new WorldPosition(0f, 0f),
+            skills: EquatableArray<Skill>.From(new[] { BuildSkill("skill-1") }));
         var mob = BuildMob(position: new WorldPosition(1f, 0f));
         var candidate = new CombatActionCandidate(CombatActionKind.UseSkill, target: mob.Id, skill: new SkillId("missing"));
 
@@ -269,6 +275,26 @@ public sealed class CombatPlannerTests
 
         Assert.False(check.IsAllowed);
         Assert.Contains("skill_not_found", check.ViolatedConstraints);
+    }
+
+    /// <summary>
+    /// An empty skill list is not "this character has no such skill": it is
+    /// "nobody read the skills". Both refuse the act, but only one of them
+    /// says something about the character, and an operator reading the
+    /// refusal must be able to tell which.
+    /// </summary>
+    [Fact]
+    public void CheckHardConstraints_SkillListNeverRead_SaysSo_NotSkillNotFound()
+    {
+        Player player = BuildPlayer(position: new WorldPosition(0f, 0f));
+        var mob = BuildMob(position: new WorldPosition(1f, 0f));
+        var candidate = new CombatActionCandidate(CombatActionKind.UseSkill, target: mob.Id, skill: new SkillId("missing"));
+
+        CombatConstraintCheck check = CombatPlanner.CheckHardConstraints(candidate, player, EquatableArray<Mob>.From(new[] { mob }));
+
+        Assert.False(check.IsAllowed);
+        Assert.Contains("skill_list_not_observed", check.ViolatedConstraints);
+        Assert.DoesNotContain("skill_not_found", check.ViolatedConstraints);
     }
 
     [Fact]

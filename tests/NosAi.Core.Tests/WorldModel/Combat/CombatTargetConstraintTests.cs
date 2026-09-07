@@ -54,9 +54,10 @@ public sealed class CombatTargetConstraintTests
     }
 
     /// <summary>
-    /// The reason this method exists: the same candidate through the full check
-    /// is refused for a missing skill, which on a live client is a statement
-    /// about the unread skill list, not about the target.
+    /// The reason this method exists: the same candidate through the full
+    /// check is refused, and the refusal is about the unread skill list rather
+    /// than about the target -- which is exactly what a caller judging a
+    /// target cannot act on.
     /// </summary>
     [Fact]
     public void TheSameCandidate_IsRefusedByTheFullCheck_ForTheSkillHalfAlone()
@@ -69,7 +70,7 @@ public sealed class CombatTargetConstraintTests
 
         CombatConstraintCheck full = CombatPlanner.CheckHardConstraints(candidate, player, mobs);
         Assert.False(full.IsAllowed);
-        Assert.Equal(new[] { "skill_not_found" }, full.ViolatedConstraints);
+        Assert.Equal(new[] { "skill_list_not_observed" }, full.ViolatedConstraints);
     }
 
     [Theory]
