@@ -125,6 +125,15 @@ public static class ModuleReachability
         new("NosAi.Runtime.Guard", ModuleReach.Integrated),
         new("NosAi.Runtime.Hardware", ModuleReach.Integrated),
         new("NosAi.Runtime.Humanizer", ModuleReach.Integrated),
+        new("NosAi.Runtime.Learning", ModuleReach.Integrated,
+            "PredictionLedger, held by Gate3ExecutionOrchestrator: the cycle states "
+            + "before each act that its post-condition will hold and settles that "
+            + "against the readback. This note used to say wiring it would give it "
+            + "nothing to do because there are no LIVE outcomes yet -- which is "
+            + "backwards. The ledger's own rule is that only a LIVE observation "
+            + "moves a belief; with cached readbacks it counts them and learns "
+            + "nothing, which is the behaviour worth having in place before the "
+            + "live ones arrive rather than after."),
         new("NosAi.Runtime.LowLevel", ModuleReach.Integrated),
         new("NosAi.Runtime.Operator", ModuleReach.Integrated),
         new("NosAi.Runtime.Observability", ModuleReach.Integrated),
@@ -171,7 +180,21 @@ public static class ModuleReachability
             + "because the correction is the interesting part."),
         new("NosAi.Core.Memory", ModuleReach.Integrated),
         new("NosAi.Core.Navigation", ModuleReach.Integrated),
+        new("NosAi.Core.Statistics", ModuleReach.Integrated,
+            "Its MeanStatisticEstimator backs ObservedActionDurations, which "
+            + "feeds SimulationEngine the duration the runtime measured instead "
+            + "of the per-action-type literal it used to answer with. Wired "
+            + "2026-09-07; before that it was unreached, and this note claimed "
+            + "Gate 4's BetaBinomialEvidence superseded it -- which was false, "
+            + "that being a posterior over binary outcomes with no time axis. "
+            + "LinearStatePredictor is still unused: nothing needs an "
+            + "extrapolation yet."),
         new("NosAi.Core.Testing", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Certification", ModuleReach.Integrated,
+            "Its VerificationLevel/CertificationStageResult vocabulary backs "
+            + "CertificationReportBuilder and the --certification-report command, "
+            + "which report per stage what the suites answered as one bool. Wired "
+            + "2026-09-07."),
         new("NosAi.Core.WorldModel", ModuleReach.Integrated),
         new("NosAi.Core.WorldModel.Combat", ModuleReach.Integrated),
         new("NosAi.Core.WorldModel.Exploration", ModuleReach.Integrated),
@@ -284,21 +307,6 @@ public static class ModuleReachability
             + "module in NosAi.Core. It is what would carry NosAi.Core.Hardware "
             + "into use, and nothing carries it."),
 
-        new("NosAi.Core.Statistics", ModuleReach.Unreferenced,
-            "An online mean and a two-point linear extrapolation. This note used "
-            + "to name Gate 4's BetaBinomialEvidence as the competitor that "
-            + "supersedes it; that is wrong. BetaBinomialEvidence is a posterior "
-            + "over binary outcomes with no time axis, and computes neither of "
-            + "these. Nothing in production computes either, and there is a place "
-            + "that wants one: SimulationEngine predicts every action's duration "
-            + "as a constant while the runtime measures the real one and discards "
-            + "it."),
-
-        new("NosAi.Core.WorldModel.Certification", ModuleReach.Unreferenced,
-            "Certification contracts for the World Model, beside the runtime's "
-            + "own certification suites. Unreached by production, like Gate6 -- "
-            + "but unlike Gate6 it is not even reached by the suite registry."),
-
         new("NosAi.LiveIntegration.Capture", ModuleReach.Integrated,
             "The traffic capture engine: WinDivert source, IPv4/TCP parser, "
             + "reassembly, .noscap record and replay, analyser. Reached from "
@@ -306,11 +314,6 @@ public static class ModuleReachability
             + "operator names an endpoint with --observe-game. Attaching it stays "
             + "the operator's decision under ADR-0014: with no endpoint the "
             + "channel is not built and gameplay keeps reporting UNKNOWN."),
-
-        new("NosAi.Runtime.Learning", ModuleReach.Unreferenced,
-            "PredictionLedger. It only learns from LIVE outcomes by design, and "
-            + "there are no LIVE gameplay outcomes to learn from yet, so wiring it "
-            + "now would give it nothing to do."),
 
     ];
 

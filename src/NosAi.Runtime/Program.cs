@@ -28,6 +28,13 @@ public static class Program
                 return await suite().ConfigureAwait(false) ? 0 : 1;
         }
 
+        // Runs every suite and reports AP-10's per-stage scorecard instead of one
+        // bool. The suites already answered pass/fail per gate; what nothing did
+        // was say which of the fourteen stages that evidences, what backs the
+        // claim, and what is missing.
+        if (args.Any(a => string.Equals(a, CertificationReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return await CertificationReportCommand.RunAsync().ConfigureAwait(false);
+
         // A mistyped suite flag used to fall through to the normal bootstrap and
         // start the whole runtime: "--1-test" instead of "--gate1-test" left a
         // host running for as long as nobody noticed, holding the build's output
@@ -1105,7 +1112,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report"
         };
 
     private static int RunDxgiProbe()

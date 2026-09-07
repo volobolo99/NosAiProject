@@ -1,6 +1,12 @@
 using ActionTokenIssuer = NosAi.Runtime.Safety.ActionTokenIssuer;
 using TrustTier = NosAi.Runtime.Contracts.TrustTier;
 using NosAi.Runtime.Autonomy;
+// Il ciclo dichiara una previsione prima di agire e la salda dopo la verifica.
+// Gli alias evitano che Prediction e Observation collidano con nomi omonimi di
+// Gate 3, che non sono la stessa cosa.
+using PredictionLedger = NosAi.Runtime.Learning.PredictionLedger;
+using Prediction = NosAi.Runtime.Learning.Prediction;
+using Observation = NosAi.Runtime.Learning.Observation;
 // ============================================================================
 // Project: NosAi — Controlled Automation Runtime
 // Version: 1.0 Beta
@@ -106,6 +112,7 @@ namespace NosAi.Runtime.Gate3
         public const int UnmeasuredSkillMpAssumption = 35;
 
         private readonly Func<int, SkillCost?>? _costOf;
+        private readonly ObservedActionDurations? _durations;
 
         /// <param name="costOf">
         /// What an ability costs, by its own game id -- a pure function, supplied
@@ -122,7 +129,19 @@ namespace NosAi.Runtime.Gate3
         /// one feeds the safety gate.
         /// </para>
         /// </param>
-        public SimulationEngine(Func<int, SkillCost?>? costOf = null) => _costOf = costOf;
+        /// <param name="durations">
+        /// Real durations measured on executed rounds. With none -- or with none
+        /// yet recorded for an action type -- the per-type constant below stands
+        /// and the prediction says the duration is not measured, so nothing reads
+        /// it as evidence.
+        /// </param>
+        public SimulationEngine(
+            Func<int, SkillCost?>? costOf = null,
+            ObservedActionDurations? durations = null)
+        {
+            _costOf = costOf;
+            _durations = durations;
+        }
 
         public PredictedOutcome Simulate(ActionCandidate candidate, int currentHp, int currentMp, int maxHp)
         {
@@ -200,6 +219,17 @@ namespace NosAi.Runtime.Gate3
                     break;
             }
 
+            // The measured mean replaces the constant where one exists. The
+            // constants are not estimates -- they are one literal per action type,
+            // identical for every skill and every target -- and the runtime has
+            // been timing the real thing on every executed round and discarding it.
+            bool timeIsMeasured = false;
+            if (_durations?.MeanMs(candidate.Type) is { } measuredMs)
+            {
+                timeMs = measuredMs;
+                timeIsMeasured = true;
+            }
+
             string signature = $"POST_HP_{Math.Clamp(currentHp + hpDelta, 0, maxHp)}_MP_{Math.Max(0, currentMp + mpDelta)}";
 
             return new PredictedOutcome(
@@ -210,12 +240,31 @@ namespace NosAi.Runtime.Gate3
                 successProb,
                 risk,
                 signature,
-                unmeasured);
+                unmeasured,
+                timeIsMeasured);
         }
     }
 
     public sealed class TacticalRankingEngine
     {
+        /// <summary>The most a measured duration may subtract from an action's utility.</summary>
+        /// <remarks>
+        /// Deliberately small beside the survival terms above (0.85) and the
+        /// action-type preferences (0.40-0.70): being slow is a reason to prefer
+        /// the other candidate, never a reason to prefer dying. Capped so a single
+        /// very slow measurement cannot push an action below one the runtime has
+        /// no reason to take.
+        /// </remarks>
+        public const float SlowestPenalty = 0.15f;
+
+        /// <summary>Milliseconds at which the duration term reaches <see cref="SlowestPenalty"/>.</summary>
+        /// <remarks>
+        /// Two seconds. Not measured against a distribution -- there is not one
+        /// yet -- so it is named rather than buried, and the cap above means
+        /// getting it wrong changes an ordering by at most 0.15.
+        /// </remarks>
+        public const float MillisecondsPerFullPenalty = 2000f / SlowestPenalty;
+
         public IReadOnlyList<(ActionCandidate Candidate, float UtilityScore)> RankCandidates(
             IReadOnlyList<ActionCandidate> candidates,
             IReadOnlyDictionary<Guid, PredictedOutcome> predictions,
@@ -258,6 +307,18 @@ namespace NosAi.Runtime.Gate3
                 }
 
                 utility += outcome.SuccessProbability * 0.30f - outcome.RiskScore * 0.40f;
+
+                // A slower act is worth slightly less than a faster one that is
+                // otherwise equal -- but only when the duration was measured.
+                // Before ObservedActionDurations existed, ExpectedTimeMs was a
+                // constant per action type and nothing read it; ranking on it
+                // would have been ranking on the constant, which is a preference
+                // between action types dressed up as a measurement. With no
+                // sample yet the term is zero and the ordering is exactly what it
+                // was.
+                if (outcome.ExpectedTimeIsMeasured)
+                    utility -= MathF.Min(SlowestPenalty, outcome.ExpectedTimeMs / MillisecondsPerFullPenalty);
+
                 ranked.Add((candidate, MathF.Max(0.0f, utility)));
             }
 
@@ -1018,6 +1079,30 @@ namespace NosAi.Runtime.Gate3
     {
         private readonly ActionPlanner _planner;
         private readonly SimulationEngine _simulation;
+        private readonly ObservedActionDurations _durations = new();
+        private readonly PredictionLedger _learning = new();
+
+        /// <summary>
+        /// How well this runtime's predictions have held up, by action type.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The loop states, before every act, that the act's post-condition will
+        /// hold, and settles that statement against what the readback showed.
+        /// Both halves already existed and neither was kept: the prediction was
+        /// consumed once for the cycle's own verdict and dropped, so the runtime
+        /// could not answer "how often is this kind of act actually confirmed"
+        /// even though it had computed the answer on every round.
+        /// </para>
+        /// <para>
+        /// Only a <c>Live</c> readback moves a belief, and
+        /// <see cref="PredictionLedger"/> enforces that itself: a cached or
+        /// simulated observation is counted as ignored and teaches nothing. A
+        /// system that learned from its own replays would converge, quickly and
+        /// confidently, on its own fiction.
+        /// </para>
+        /// </remarks>
+        public PredictionLedger Learning => _learning;
         private readonly TacticalRankingEngine _ranking;
         private readonly GuardPolicyEngine _guard;
         private readonly TrustBoundary _trust;
@@ -1138,7 +1223,7 @@ namespace NosAi.Runtime.Gate3
             // fail-closed direction and it is deliberate -- the alternative was
             // the previous behaviour, which assumed 35 MP for every ability in
             // the game and let the gate authorise on it.
-            _simulation = new SimulationEngine(skillCostOf);
+            _simulation = new SimulationEngine(skillCostOf, _durations);
             _ranking = new TacticalRankingEngine();
             _guard = new GuardPolicyEngine();
             _trust = new TrustBoundary(initialTrust);
@@ -1319,15 +1404,45 @@ namespace NosAi.Runtime.Gate3
             // flight, which describes a world the action had not finished touching.
             DateTime dispatchedAt = _clock.GetUtcNow().UtcDateTime;
 
+            // Stated before the act, because a prediction written once the outcome
+            // is known is not a prediction. The quantity is binary -- the post
+            // condition will hold -- so the tolerance is half a unit: 1 against 1
+            // holds, 1 against 0 refutes, and nothing in between exists. Predicting
+            // a continuous quantity here would have meant inventing a tolerance for
+            // it, which is the same fabrication this cycle just stopped making
+            // about skill costs.
+            Prediction prediction = _learning.Predict(
+                contextKey: best.Type.ToString(),
+                quantity: PostConditionHoldsQuantity,
+                expected: 1d,
+                tolerance: 0.5d,
+                atUtc: dispatchedAt);
+
             ExecutionResult execution = await _executor
                 .ExecuteAuthorizedAsync(best, safetyToken!, token)
                 .ConfigureAwait(false);
+
+            // The measured duration goes back to the simulation, which until now
+            // predicted this same quantity as a per-action-type constant while the
+            // runtime timed the real one and dropped it. Recorded before the
+            // suppressed-policy branch below returns, so an act that really ran
+            // teaches the mean even on a cycle that ends early; Record itself
+            // refuses a non-positive duration, which is what a suppressed act
+            // reports.
+            _durations.Record(best.Type, execution.ActualDurationMs, _clock.GetUtcNow());
 
             // Nothing was attempted, so there is nothing to recover from and nothing
             // to verify. Reporting it as failure would drive the recovery controller
             // to degrade trust over a configuration that is working as intended.
             if (execution.SuppressedByPolicy)
             {
+                // Stated and then not attempted: there is nothing to observe, so
+                // the prediction is abandoned rather than settled. Leaving it open
+                // would leak one per blocked cycle in a loop built to run forever,
+                // and settling it either way would score the runtime on a round it
+                // did not take.
+                _learning.Abandon(prediction.Id);
+
                 return Result(
                     CycleOutcome.ExecutionDisabled,
                     $"Azione autorizzata ma non eseguita: {execution.Reason}. Ciclo completo fino al gate, esecuzione inibita.",
@@ -1351,6 +1466,17 @@ namespace NosAi.Runtime.Gate3
                     CollectSightings(series),
                     Deaths: null),
                 _postConditions);
+
+            // Settled against what the readback actually showed, with the
+            // provenance the readback actually carried. The ledger refuses to learn
+            // from anything but Live, so a cycle verified against a cached reading
+            // is counted and ignored rather than quietly believed.
+            _learning.Record(new Observation(
+                prediction.Id,
+                verification.IsConfirmed ? 1d : 0d,
+                ReadBackProvenance(series),
+                _clock.GetUtcNow().UtcDateTime,
+                verification.AnalysisReport));
 
             if (verification.IsConfirmed)
             {
@@ -1442,6 +1568,43 @@ namespace NosAi.Runtime.Gate3
                 _ => 0,
             };
             return Rank(a) >= Rank(b) ? a : b;
+        }
+
+        /// <summary>The quantity the loop predicts about every act it takes.</summary>
+        public const string PostConditionHoldsQuantity = "post_condition_holds";
+
+        /// <summary>
+        /// How well the world was known <b>after</b> the act, which is the only
+        /// part that is evidence about it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The first element of the series is the baseline the act was planned on
+        /// -- <see cref="ReadBackAsync"/> says so -- and it is a reading from
+        /// before the act. Scanning the whole series let a Live baseline make a
+        /// cached readback look Live, which is exactly the laundering the ledger's
+        /// Live rule exists to prevent, and the first draft of this method did it.
+        /// </para>
+        /// <para>
+        /// Beyond the baseline the strongest post-act reading decides, because a
+        /// series is several samples of one window and one live sample is a live
+        /// look at the world the act left behind. With nothing after the baseline
+        /// there is no evidence about the act at all, and Unknown says so rather
+        /// than settling for the baseline.
+        /// </para>
+        /// </remarks>
+        private static DataSourceKind ReadBackProvenance(IReadOnlyList<Gate3WorldState> series)
+        {
+            if (series.Count < 2)
+                return DataSourceKind.Unknown;
+
+            for (int i = 1; i < series.Count; i++)
+            {
+                if (series[i].Hp.Source == DataSourceKind.Live && series[i].Mp.Source == DataSourceKind.Live)
+                    return DataSourceKind.Live;
+            }
+
+            return DataSourceKind.Cached;
         }
 
         /// <summary>

@@ -219,6 +219,24 @@ public sealed class PredictionLedger
     }
 
     /// <summary>
+    /// Drops one prediction the runtime knows will never be settled.
+    /// </summary>
+    /// <returns>Whether it was still open.</returns>
+    /// <remarks>
+    /// <see cref="Expire"/> abandons by age, for predictions nobody came back to.
+    /// This abandons by identity, for the case the caller already knows about: the
+    /// act was stated and then not attempted, so there is nothing to observe.
+    /// Recording it as an unlearnable observation instead would be false in a
+    /// small way that adds up -- <c>Ignored</c> means "seen and not trustworthy",
+    /// and a round that never ran was not seen at all.
+    /// </remarks>
+    public bool Abandon(Guid predictionId)
+    {
+        lock (_lock)
+            return _open.Remove(predictionId);
+    }
+
+    /// <summary>
     /// Drops predictions never settled, so they cannot sit open forever.
     /// </summary>
     /// <returns>How many were abandoned; they are not counted as either outcome.</returns>
