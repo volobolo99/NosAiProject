@@ -73,6 +73,7 @@ public sealed record WorldChannelReplaySummary(
         sb.AppendLine($"  messaggi inbound       : {InboundMessages}");
         sb.AppendLine($"  senza osservazione     : {UndecodedMessages}");
         sb.AppendLine($"    opcode non letto     : {Unobserved.NotReadTotal}  {FormatCounts(Unobserved.NotRead)}");
+        sb.AppendLine($"    tipo entita' non letto: {Unobserved.EntityTypeNotReadTotal}  {FormatCounts(Unobserved.EntityTypeNotRead)}");
         sb.AppendLine($"    riga rifiutata       : {Unobserved.RejectedTotal}  {FormatCounts(Unobserved.Rejected)}");
         sb.AppendLine($"    vuoto per progetto   : {Unobserved.EmptyByDesignTotal}  {FormatByDesign(Unobserved.EmptyByDesign)}");
         sb.AppendLine($"    non spiegato         : {Unobserved.UnexplainedTotal}  {FormatCounts(Unobserved.Unexplained)}");
@@ -176,9 +177,18 @@ public sealed record WorldChannelReplaySummary(
 /// apart instead of collapsed into the single "senza osservazione" number.
 /// </summary>
 /// <param name="NotRead">Packets whose opcode the decoder does not read, per opcode.</param>
+/// <param name="EntityTypeNotRead">
+/// Packets whose line is well formed and whose opcode is read, refused only
+/// because their entity type is not one this decoder reads. Separato da
+/// <paramref name="Rejected"/> il 2026-09-07, e non e' una sfumatura: su
+/// <c>equip_test.noscap</c> sono 430 dei 466 pacchetti senza osservazione, il
+/// 92%, e stavano tutti sotto «riga rifiutata» accanto a tre righe davvero
+/// malformate. Leggerli come righe rotte avrebbe fatto cercare un difetto di
+/// decodifica dove c'e' un comportamento voluto.
+/// </param>
 /// <param name="Rejected">
-/// Packets whose opcode is read but whose line was refused — wrong shape, a field
-/// outside its bounds, or an entity type the decoder does not read — per opcode.
+/// Packets whose opcode is read but whose line was refused — wrong shape or a
+/// field outside its bounds — per opcode.
 /// </param>
 /// <param name="EmptyByDesign">
 /// Packets whose opcode is read and line valid but whose result is legitimately
@@ -190,12 +200,14 @@ public sealed record WorldChannelReplaySummary(
 /// </param>
 public sealed record UnobservedBreakdown(
     IReadOnlyList<KeyValuePair<string, long>> NotRead,
+    IReadOnlyList<KeyValuePair<string, long>> EntityTypeNotRead,
     IReadOnlyList<KeyValuePair<string, long>> Rejected,
     IReadOnlyList<KeyValuePair<string, long>> EmptyByDesign,
     IReadOnlyList<KeyValuePair<string, long>> Unexplained)
 {
     /// <summary>An empty breakdown, for a summary built before classification ran.</summary>
     public static readonly UnobservedBreakdown Empty = new(
+        Array.Empty<KeyValuePair<string, long>>(),
         Array.Empty<KeyValuePair<string, long>>(),
         Array.Empty<KeyValuePair<string, long>>(),
         Array.Empty<KeyValuePair<string, long>>(),
@@ -207,7 +219,10 @@ public sealed record UnobservedBreakdown(
     public long UnexplainedTotal => Unexplained.Sum(c => c.Value);
 
     /// <summary>The whole "senza osservazione" this breakdown accounts for.</summary>
-    public long Total => NotReadTotal + RejectedTotal + EmptyByDesignTotal + UnexplainedTotal;
+    public long EntityTypeNotReadTotal => EntityTypeNotRead.Sum(c => c.Value);
+
+    public long Total => NotReadTotal + EntityTypeNotReadTotal + RejectedTotal
+        + EmptyByDesignTotal + UnexplainedTotal;
 }
 
 /// <summary>
@@ -436,6 +451,7 @@ public static class WorldChannelReplay
 
         var notRead = new Dictionary<string, long>(StringComparer.Ordinal);
         var rejected = new Dictionary<string, long>(StringComparer.Ordinal);
+        var entityTypeNotRead = new Dictionary<string, long>(StringComparer.Ordinal);
         var emptyByDesign = new Dictionary<string, long>(StringComparer.Ordinal);
         var unexplained = new Dictionary<string, long>(StringComparer.Ordinal);
 
@@ -486,11 +502,25 @@ public static class WorldChannelReplay
                 continue;
             }
 
+            // Una riga ben formata di un tipo di entita' che questo decoder non
+            // legge non e' una riga rifiutata: e' una riga saltata di proposito.
+            // Su equip_test.noscap sono 430 dei 466 pacchetti senza osservazione,
+            // e sotto "riga rifiutata" facevano cercare un difetto di decodifica
+            // dove c'e' una scelta. Il predicato lo chiede al decoder invece di
+            // ripeterlo qui: chi decide quali tipi leggere e' lui.
+            if (fields.Length > 1
+                && CarriesEntityTypeFirst(opcode)
+                && !NosTaleWorldProtocolDecoder.IsReadableEntity(fields[1]))
+            {
+                Add(entityTypeNotRead, opcode);
+                continue;
+            }
+
             ClassifyEmpty(opcode, fields, positioned, ownId, rejected, emptyByDesign, unexplained);
         }
 
         return new UnobservedBreakdown(
-            Sort(notRead), Sort(rejected), Sort(emptyByDesign), Sort(unexplained));
+            Sort(notRead), Sort(entityTypeNotRead), Sort(rejected), Sort(emptyByDesign), Sort(unexplained));
     }
 
     /// <summary>
@@ -527,6 +557,18 @@ public static class WorldChannelReplay
     /// <c>equip</c> and <c>ct</c> have a stateful empty result; every other read
     /// opcode that comes back empty was refused by its shape check.
     /// </summary>
+    /// <summary>
+    /// Gli opcode il cui primo campo e' un tipo di entita'.
+    /// </summary>
+    /// <remarks>
+    /// Elencati invece di dedotti: <c>stat</c> comincia con i punti vita e
+    /// <c>sr</c> con uno slot, quindi «il campo 1 e' un numero piccolo» non
+    /// distingue niente. Questi cinque sono quelli i cui decoder chiamano
+    /// <c>IsReadableEntity(fields[1])</c>.
+    /// </remarks>
+    private static bool CarriesEntityTypeFirst(string opcode) =>
+        opcode is "in" or "mv" or "st" or "su" or "die";
+
     private static void ClassifyEmpty(
         string opcode, string[] fields, HashSet<long> positioned, long? ownId,
         Dictionary<string, long> rejected, Dictionary<string, long> emptyByDesign,

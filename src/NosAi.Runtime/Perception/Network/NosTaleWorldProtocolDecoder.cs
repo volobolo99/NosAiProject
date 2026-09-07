@@ -730,10 +730,20 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// type's. Type 1 (the player) is confirmed only in <c>su</c>, <c>cond</c> and
     /// <c>sayi</c>, and another player entering view carries a name where a monster
     /// carries a vnum — so the same field positions would read a coordinate out of
-    /// something else. Type 2 was never observed at all. Both are refused rather
-    /// than read at positions nobody has established.
+    /// something else. Both are refused rather than read at positions nobody has
+    /// established.
     /// </remarks>
-    private static bool IsReadableEntity(string typeField) => typeField == "3";
+    /// <remarks>
+    /// <b>Correzione del 2026-09-07.</b> Questo commento diceva «Type 2 was never
+    /// observed at all». È falso, e lo dice una registrazione di questo
+    /// repository: <c>data/equip_test.noscap</c> porta <b>430 pacchetti
+    /// <c>mv</c> di tipo 2</b> contro 3039 di tipo 3, cioè il 12% dei suoi
+    /// movimenti. Il tipo 2 si osserva; quello che non si è stabilito è il suo
+    /// layout di campi, ed è per questo che resta rifiutato. La ragione del
+    /// rifiuto non cambia — cambia che non si fonda più su un'assenza che non
+    /// c'è.
+    /// </remarks>
+    internal static bool IsReadableEntity(string typeField) => typeField == "3";
 
     /// <summary>
     /// The entity type a player carries, confirmed in <c>su</c>, <c>cond</c> and

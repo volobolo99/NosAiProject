@@ -64,20 +64,61 @@ public sealed class UnobservedBreakdownTests
     }
 
     /// <summary>
-    /// An entity type the decoder does not read — type 2, never observed in the
-    /// captures the decoder was derived from — is refused whole. This is the
-    /// reason <c>equip_test.noscap</c> has so many unobserved <c>mv</c>.
+    /// Un tipo di entità che il decoder non legge ha una categoria propria: la
+    /// riga è ben formata, ed è saltata di proposito.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Questo test asseriva <c>Rejected</c> fino al 2026-09-07, ed era la
+    /// classificazione che la specifica del task chiedeva. La misura l'ha
+    /// smentita: su <c>equip_test.noscap</c> quei pacchetti sono <b>430 dei 466
+    /// senza osservazione</b>, cioè il 92%, e sotto «riga rifiutata» stavano
+    /// accanto a tre righe davvero malformate. Chi leggeva quel rapporto
+    /// cercava un difetto di decodifica dove c'è una scelta.
+    /// </para>
+    /// <para>
+    /// Separandoli, «riga rifiutata» su quella cattura passa da 435 a
+    /// <b>4</b>, e sulla cattura di combattimento a <b>zero</b> — cioè il
+    /// decoder non sbaglia una sola riga in 8211 pacchetti, un fatto che prima
+    /// nessun numero diceva.
+    /// </para>
+    /// <para>
+    /// Il tipo 2 non è nemmeno «mai osservato», come il commento del decoder
+    /// affermava: <c>equip_test.noscap</c> ne porta 430. È osservato, e resta
+    /// rifiutato perché il suo layout di campi non è stabilito — che è una
+    /// ragione diversa e vera.
+    /// </para>
+    /// </remarks>
     [Fact]
-    public void An_entity_type_the_decoder_does_not_read_is_rejected()
+    public void An_entity_type_the_decoder_does_not_read_is_its_own_category()
     {
         WorldChannelReplaySummary summary = WorldChannelReplay.Replay(Recording(
             Encoded("mv 2 3062 153 23 5")));
         UnobservedBreakdown b = summary.Unobserved;
 
         Assert.Equal(1, summary.UndecodedMessages);
+        Assert.Equal(1, b.EntityTypeNotReadTotal);
+        Assert.Contains(b.EntityTypeNotRead, o => o.Key == "mv" && o.Value == 1);
+
+        // E non e' una riga rotta: la distinzione e' il punto.
+        Assert.Equal(0, b.RejectedTotal);
+        Assert.Equal(0, b.UnexplainedTotal);
+    }
+
+    /// <summary>
+    /// Una riga malformata resta una riga rifiutata: la categoria nuova non se
+    /// le prende tutte.
+    /// </summary>
+    [Fact]
+    public void A_malformed_line_of_a_readable_entity_type_is_still_rejected()
+    {
+        WorldChannelReplaySummary summary = WorldChannelReplay.Replay(Recording(
+            Encoded("mv 3 non-un-numero 153 23 5")));
+        UnobservedBreakdown b = summary.Unobserved;
+
+        Assert.Equal(1, summary.UndecodedMessages);
         Assert.Equal(1, b.RejectedTotal);
-        Assert.Contains(b.Rejected, o => o.Key == "mv" && o.Value == 1);
+        Assert.Equal(0, b.EntityTypeNotReadTotal);
     }
 
     /// <summary>
