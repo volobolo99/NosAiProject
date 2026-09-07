@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Perception.Network;
@@ -55,6 +56,9 @@ public sealed record WorldChannelReplaySummary(
     IReadOnlyList<WornEquipmentSlot>? LastEquipSlots = null,
     IReadOnlyList<int>? EquipSlotsSeen = null)
 {
+    /// <summary>Why the packets that produced no observation produced none.</summary>
+    public UnobservedBreakdown Unobserved { get; init; } = UnobservedBreakdown.Empty;
+
     /// <summary>Packets carrying an opcode the decoder reads.</summary>
     public long ReadablePackets => Opcodes.Where(o => ReadOpcodes.Contains(o.Key)).Sum(o => o.Value);
 
@@ -66,7 +70,12 @@ public sealed record WorldChannelReplaySummary(
     {
         var sb = new StringBuilder();
         sb.AppendLine($"Canale world letto da una registrazione (provenienza {Source.ToWire()}):");
-        sb.AppendLine($"  messaggi inbound       : {InboundMessages} (senza osservazione: {UndecodedMessages})");
+        sb.AppendLine($"  messaggi inbound       : {InboundMessages}");
+        sb.AppendLine($"  senza osservazione     : {UndecodedMessages}");
+        sb.AppendLine($"    opcode non letto     : {Unobserved.NotReadTotal}  {FormatCounts(Unobserved.NotRead)}");
+        sb.AppendLine($"    riga rifiutata       : {Unobserved.RejectedTotal}  {FormatCounts(Unobserved.Rejected)}");
+        sb.AppendLine($"    vuoto per progetto   : {Unobserved.EmptyByDesignTotal}  {FormatByDesign(Unobserved.EmptyByDesign)}");
+        sb.AppendLine($"    non spiegato         : {Unobserved.UnexplainedTotal}  {FormatCounts(Unobserved.Unexplained)}");
         sb.AppendLine($"  frame non leggibili    : {UnreadableFrames} (direzione client->server, cifrata)");
         sb.AppendLine("  opcode sul filo:");
         foreach (KeyValuePair<string, long> opcode in Opcodes)
@@ -139,6 +148,66 @@ public sealed record WorldChannelReplaySummary(
             return "-";
         return string.Join(" ", slots.OrderBy(s => s.Slot).Select(s => $"{s.Slot}={s.Vnum}"));
     }
+
+    /// <summary>An opcode-count list, or a dash when empty. States counts, claims no meaning.</summary>
+    private static string FormatCounts(IReadOnlyList<KeyValuePair<string, long>> counts)
+        => counts.Count == 0
+            ? "-"
+            : string.Join(", ", counts.Select(c => $"{c.Key} {c.Value}"));
+
+    /// <summary>An opcode-count list with the reason each is legitimately empty.</summary>
+    private static string FormatByDesign(IReadOnlyList<KeyValuePair<string, long>> counts)
+        => counts.Count == 0
+            ? "-"
+            : string.Join(", ", counts.Select(c => $"{c.Key} {c.Value} ({EmptyByDesignReason(c.Key)})"));
+
+    /// <summary>The one reason the decoder names for a legitimately empty result, by opcode.</summary>
+    private static string EmptyByDesignReason(string opcode) => opcode switch
+    {
+        "st" => "entita' senza posizione",
+        "equip" => "id proprio non ancora noto",
+        "ct" => "cast non del personaggio",
+        _ => opcode,
+    };
+}
+
+/// <summary>
+/// Why the packets that produced no observation produced none, each reason kept
+/// apart instead of collapsed into the single "senza osservazione" number.
+/// </summary>
+/// <param name="NotRead">Packets whose opcode the decoder does not read, per opcode.</param>
+/// <param name="Rejected">
+/// Packets whose opcode is read but whose line was refused — wrong shape, a field
+/// outside its bounds, or an entity type the decoder does not read — per opcode.
+/// </param>
+/// <param name="EmptyByDesign">
+/// Packets whose opcode is read and line valid but whose result is legitimately
+/// empty for a stateful reason, per opcode.
+/// </param>
+/// <param name="Unexplained">
+/// Packets this classifier could not attribute to any of the three. Counted, not
+/// absorbed: a measured "I cannot explain this" beats a convenient category.
+/// </param>
+public sealed record UnobservedBreakdown(
+    IReadOnlyList<KeyValuePair<string, long>> NotRead,
+    IReadOnlyList<KeyValuePair<string, long>> Rejected,
+    IReadOnlyList<KeyValuePair<string, long>> EmptyByDesign,
+    IReadOnlyList<KeyValuePair<string, long>> Unexplained)
+{
+    /// <summary>An empty breakdown, for a summary built before classification ran.</summary>
+    public static readonly UnobservedBreakdown Empty = new(
+        Array.Empty<KeyValuePair<string, long>>(),
+        Array.Empty<KeyValuePair<string, long>>(),
+        Array.Empty<KeyValuePair<string, long>>(),
+        Array.Empty<KeyValuePair<string, long>>());
+
+    public long NotReadTotal => NotRead.Sum(c => c.Value);
+    public long RejectedTotal => Rejected.Sum(c => c.Value);
+    public long EmptyByDesignTotal => EmptyByDesign.Sum(c => c.Value);
+    public long UnexplainedTotal => Unexplained.Sum(c => c.Value);
+
+    /// <summary>The whole "senza osservazione" this breakdown accounts for.</summary>
+    public long Total => NotReadTotal + RejectedTotal + EmptyByDesignTotal + UnexplainedTotal;
 }
 
 /// <summary>
@@ -158,10 +227,11 @@ public sealed record WorldChannelReplaySummary(
 /// needs the driver on a running session.
 /// </para>
 /// <para>
-/// The source is opened twice on purpose. Counting what is on the wire and
-/// counting what became an observation are different questions, and the gap
-/// between them is the useful part: an opcode nobody has established shows up
-/// here as traffic that arrives and is not read, rather than as silence.
+/// The source is opened three times on purpose. Counting what is on the wire,
+/// classifying what was not read from it, and counting what became an
+/// observation are different questions, and the gap between them is the useful
+/// part: an opcode nobody has established shows up here as traffic that arrives
+/// and is not read, rather than as silence.
 /// </para>
 /// </remarks>
 public static class WorldChannelReplay
@@ -184,14 +254,16 @@ public static class WorldChannelReplay
     }
 
     /// <param name="openSource">
-    /// Opens the packets. Called twice — once to census the wire, once to decode
-    /// it — so it must yield a fresh source each time.
+    /// Opens the packets. Called three times — to census the wire, to classify
+    /// the unobserved packets, and to decode it — so it must yield a fresh
+    /// source each time.
     /// </param>
     public static WorldChannelReplaySummary Replay(Func<IPacketSource> openSource)
     {
         ArgumentNullException.ThrowIfNull(openSource);
         IReadOnlyList<KeyValuePair<string, long>> opcodes = Census(openSource);
-        return Decode(openSource, opcodes);
+        UnobservedBreakdown unobserved = Classify(openSource);
+        return Decode(openSource, opcodes, unobserved);
     }
 
     /// <summary>What opcodes arrived, whether or not anything reads them.</summary>
@@ -220,7 +292,8 @@ public static class WorldChannelReplay
 
     /// <summary>What the whole chain made of those packets.</summary>
     private static WorldChannelReplaySummary Decode(
-        Func<IPacketSource> openSource, IReadOnlyList<KeyValuePair<string, long>> opcodes)
+        Func<IPacketSource> openSource, IReadOnlyList<KeyValuePair<string, long>> opcodes,
+        UnobservedBreakdown unobserved)
     {
         const DataSourceKind source = DataSourceKind.Cached;
         IPacketSource packets = openSource();
@@ -339,6 +412,275 @@ public static class WorldChannelReplay
             equipReadings,
             lastEqSlots,
             lastEquipSlots,
-            equipSlotsSeen.ToList());
+            equipSlotsSeen.ToList())
+        {
+            Unobserved = unobserved,
+        };
     }
+
+    /// <summary>
+    /// Why each packet that produced no observation produced none. Drives the
+    /// same framing/decoding chain as <see cref="Decode"/>, then splits the
+    /// single "senza osservazione" total into the reasons the decoder cannot
+    /// name on its own: not read, refused, empty by design, or unexplained.
+    /// </summary>
+    /// <remarks>
+    /// The scope filter is deliberately absent: on a replay every frame already
+    /// belongs to the source's own endpoint, so it can never drop anything here.
+    /// </remarks>
+    private static UnobservedBreakdown Classify(Func<IPacketSource> openSource)
+    {
+        IPacketSource packets = openSource();
+        using var source = ReassembledObservationSource.ForNosTaleWorld(packets, DataSourceKind.Cached);
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        var notRead = new Dictionary<string, long>(StringComparer.Ordinal);
+        var rejected = new Dictionary<string, long>(StringComparer.Ordinal);
+        var emptyByDesign = new Dictionary<string, long>(StringComparer.Ordinal);
+        var unexplained = new Dictionary<string, long>(StringComparer.Ordinal);
+
+        // The state the decoder keeps across packets, mirrored here only to tell
+        // an empty-by-design result from a refusal. Set only when the decoder
+        // itself accepted the packet (its result was non-empty), so the two can
+        // never drift.
+        var positioned = new HashSet<long>();
+        long? ownId = null;
+
+        while (true)
+        {
+            if (!source.TryObserve(out ObservedPacket packet))
+                break;
+
+            if (packet.Direction != NetworkDirection.Inbound)
+            {
+                // Only inbound frames are enqueued; guard so a wrong direction
+                // cannot be mislabelled as any of the three known reasons.
+                Add(unexplained, "outbound");
+                continue;
+            }
+
+            if (!TryReadLine(packet.Payload.Span, out string line))
+            {
+                Add(unexplained, "(vuoto)");
+                continue;
+            }
+
+            string[] fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (fields.Length == 0)
+            {
+                Add(unexplained, "(vuoto)");
+                continue;
+            }
+
+            string opcode = fields[0];
+            if (!ReadOpcodes.Contains(opcode))
+            {
+                Add(notRead, opcode);
+                continue;
+            }
+
+            DecodedObservations result = decoder.Decode(packet);
+            if (!result.IsEmpty)
+            {
+                TrackState(opcode, fields, positioned, ref ownId);
+                continue;
+            }
+
+            ClassifyEmpty(opcode, fields, positioned, ownId, rejected, emptyByDesign, unexplained);
+        }
+
+        return new UnobservedBreakdown(
+            Sort(notRead), Sort(rejected), Sort(emptyByDesign), Sort(unexplained));
+    }
+
+    /// <summary>
+    /// Advances the mirrored decoder state for a packet the decoder accepted.
+    /// <c>in</c> and <c>mv</c> position an entity, <c>die</c> removes it, and
+    /// <c>cond</c> names the controlled character.
+    /// </summary>
+    private static void TrackState(
+        string opcode, string[] fields, HashSet<long> positioned, ref long? ownId)
+    {
+        switch (opcode)
+        {
+            case "in":
+                if (TryLong(fields, 3, out long entered))
+                    positioned.Add(entered);
+                break;
+            case "mv":
+                if (TryLong(fields, 2, out long moved))
+                    positioned.Add(moved);
+                break;
+            case "die":
+                if (TryLong(fields, 2, out long died))
+                    positioned.Remove(died);
+                break;
+            case "cond":
+                if (TryLong(fields, 2, out long own))
+                    ownId = own;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Names the reason a read opcode produced nothing. Only <c>st</c>,
+    /// <c>equip</c> and <c>ct</c> have a stateful empty result; every other read
+    /// opcode that comes back empty was refused by its shape check.
+    /// </summary>
+    private static void ClassifyEmpty(
+        string opcode, string[] fields, HashSet<long> positioned, long? ownId,
+        Dictionary<string, long> rejected, Dictionary<string, long> emptyByDesign,
+        Dictionary<string, long> unexplained)
+    {
+        switch (opcode)
+        {
+            case "st":
+                // st states health; the sighting needs a position, which only a
+                // previous in/mv supplied. Shape valid + no position = empty by
+                // design. Shape valid + position = the decoder would have been
+                // non-empty, so that is not a reason this classifier knows.
+                if (StShapeValid(fields, out long entityId))
+                {
+                    if (positioned.Contains(entityId))
+                        Add(unexplained, opcode);
+                    else
+                        Add(emptyByDesign, opcode);
+                }
+                else
+                {
+                    Add(rejected, opcode);
+                }
+                break;
+
+            case "equip":
+                // equip carries no entity id; before cond named the character it
+                // is refused rather than attributed to nobody. With the id known,
+                // the only remaining empty path is a malformed slot group.
+                if (ownId is null)
+                    Add(emptyByDesign, opcode);
+                else
+                    Add(rejected, opcode);
+                break;
+
+            case "ct":
+                // ct is read as the character's own selection. A cast by anybody
+                // else, or at itself, is a valid line with a legitimately empty
+                // result.
+                if (CtShapeValid(fields, out int sourceType, out long sourceId, out int targetType, out long targetId))
+                {
+                    if (ownId is null || sourceType != PlayerEntityType || sourceId != ownId || targetId == ownId)
+                        Add(emptyByDesign, opcode);
+                    else
+                        Add(unexplained, opcode);
+                }
+                else
+                {
+                    Add(rejected, opcode);
+                }
+                break;
+
+            default:
+                Add(rejected, opcode);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// The shape <see cref="NosTaleWorldProtocolDecoder"/> accepts for <c>st</c>,
+    /// restated here only to tell a refused line from a line refused for lacking
+    /// a position. Mirrors its <c>DecodeOtherVitals</c>: type 3, ten fields,
+    /// hp/maxHp within bounds. Returns the entity id on success.
+    /// </summary>
+    private static bool StShapeValid(string[] fields, out long entityId)
+    {
+        entityId = 0;
+        if (fields.Length < 10 || fields[1] != "3")
+            return false;
+        if (!TryLong(fields, 2, out entityId)
+            || !TryInt(fields, 7, out int hp)
+            || !TryInt(fields, 9, out int maxHp))
+            return false;
+        return maxHp > 0 && hp >= 0 && hp <= maxHp;
+    }
+
+    /// <summary>
+    /// The shape <see cref="NosTaleWorldProtocolDecoder"/> accepts for <c>ct</c>,
+    /// restated here only to tell a refused line from a cast that is simply not
+    /// the character's. Mirrors its <c>DecodeCast</c>.
+    /// </summary>
+    private static bool CtShapeValid(
+        string[] fields, out int sourceType, out long sourceId, out int targetType, out long targetId)
+    {
+        sourceType = 0;
+        sourceId = 0;
+        targetType = 0;
+        targetId = 0;
+        if (fields.Length < 5)
+            return false;
+        if (!TryInt(fields, 1, out sourceType)
+            || !TryLong(fields, 2, out sourceId)
+            || !TryInt(fields, 3, out targetType)
+            || !TryLong(fields, 4, out targetId))
+            return false;
+        return sourceType >= 0 && sourceId > 0 && targetType >= 0 && targetId > 0;
+    }
+
+    /// <summary>
+    /// The same text recovery the decoder uses: printable ASCII verbatim, else
+    /// the framed bytes decoded through <see cref="NosTaleWorldDecoder"/>. False
+    /// when the payload yields no single non-empty line (an empty packet).
+    /// </summary>
+    private static bool TryReadLine(ReadOnlySpan<byte> payload, out string line)
+    {
+        line = "";
+        if (TryReadAscii(payload, out line))
+            return true;
+        IReadOnlyList<string> decoded = NosTaleWorldDecoder.Decode(payload);
+        if (decoded.Count != 1 || decoded[0].Length == 0)
+        {
+            line = "";
+            return false;
+        }
+        line = decoded[0];
+        return true;
+    }
+
+    private static bool TryReadAscii(ReadOnlySpan<byte> payload, out string text)
+    {
+        text = "";
+        if (payload.Length == 0)
+            return false;
+        foreach (byte b in payload)
+        {
+            if (b is < 0x20 or > 0x7E)
+                return false;
+        }
+        text = Encoding.ASCII.GetString(payload);
+        return true;
+    }
+
+    private static bool TryInt(string[] fields, int index, out int value)
+    {
+        value = 0;
+        if (index >= fields.Length)
+            return false;
+        return int.TryParse(fields[index], NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryLong(string[] fields, int index, out long value)
+    {
+        value = 0;
+        if (index >= fields.Length)
+            return false;
+        return long.TryParse(fields[index], NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static void Add(Dictionary<string, long> counts, string key)
+        => counts[key] = counts.GetValueOrDefault(key) + 1;
+
+    private static IReadOnlyList<KeyValuePair<string, long>> Sort(Dictionary<string, long> counts)
+        => counts.OrderByDescending(c => c.Value).ThenBy(c => c.Key, StringComparer.Ordinal).ToList();
+
+    /// <summary>The entity type a player carries, as the decoder reads it.</summary>
+    private const int PlayerEntityType = 1;
 }
