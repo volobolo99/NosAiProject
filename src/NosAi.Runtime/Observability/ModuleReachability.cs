@@ -53,7 +53,8 @@ public enum ModuleReach : byte
 public sealed record ModuleRecord(string Namespace, ModuleReach Reach, string Note = "");
 
 /// <summary>
-/// The declared reachability of every module in the runtime assembly.
+/// The declared reachability of every module in this repository's production
+/// source.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -71,6 +72,37 @@ public sealed record ModuleRecord(string Namespace, ModuleReach Reach, string No
 /// <para>
 /// <b>Tests do not count either.</b> A module exercised only by its tests is not
 /// wired into the runtime, which is the whole question being asked.
+/// </para>
+/// <para>
+/// <b>All of <c>src/</c> is scanned, not one project.</b> Until 2026-09-07 the
+/// analysis read only <c>src/NosAi.Runtime</c>, which made every referrer
+/// outside it invisible -- and an invisible referrer is indistinguishable from
+/// no referrer. That is the pessimistic error, and it had already produced one:
+/// <c>NosAi.Host</c> was declared SuiteOnly while its own executable's
+/// <c>Program.cs</c> reaches it. <c>NosAi.GuardAi.App</c> is the one project
+/// left out, because ADR-0025 §3 freezes it as historical reference: it is
+/// unreached by decision, and mixing that in would drown the entries that are
+/// debt.
+/// </para>
+/// <para>
+/// <b>One verdict here is an artifact, and saying so is cheaper than chasing
+/// it.</b> <c>NosAi.Runtime</c> is declared Integrated and contains exactly one
+/// file, <c>Program.cs</c> -- the entry point, which by definition nothing can
+/// reference. Its apparent referrers were checked one by one and every one is a
+/// string: assembly and project file names (<c>NosAi.Runtime.dll</c>,
+/// <c>.csproj</c>, <c>.exe</c>), the test assembly's name, and
+/// <c>NosAi.Runtime.AI</c> -- a segment of <c>NosAi.Runtime.AI.Decision</c> that
+/// is not itself a namespace. Distinguishing those from a real type reference
+/// needs a rule about C# identifiers rather than about namespaces, and it would
+/// buy one correct verdict on a namespace whose status nobody can act on.
+/// </para>
+/// <para>
+/// The <i>other</i> half of that imprecision was real and is fixed: a plain
+/// substring match let a parent namespace inherit its children's referrers,
+/// which reported <c>NosAi.Core.Planning</c> as reached the moment this register
+/// declared <c>NosAi.Core.Planning.Goap</c> -- the register making its own
+/// subject look alive. <c>ModuleReachabilityTests.NamesATypeIn</c> now requires
+/// the text after the dot to not complete a declared namespace.
 /// </para>
 /// </remarks>
 public static class ModuleReachability
@@ -109,6 +141,29 @@ public static class ModuleReachability
         new("NosAi.Runtime.Navigation", ModuleReach.Integrated),
         new("NosAi.Navigation.Pathfinding", ModuleReach.Integrated),
 
+        // -- NosAi.Core, NosAi.Adapter and the other production assemblies ---
+        // Visible here only since the scan covers all of src/. The Core World
+        // Model namespaces are reached from the runtime's own commands, which is
+        // what makes the AP-01..AP-05 contracts something the runtime uses
+        // rather than something it merely compiles against.
+        new("NosAi.Adapter", ModuleReach.Integrated),
+        new("NosAi.Core", ModuleReach.Integrated),
+        new("NosAi.Core.Cognitive", ModuleReach.Integrated),
+        new("NosAi.Core.Memory", ModuleReach.Integrated),
+        new("NosAi.Core.Navigation", ModuleReach.Integrated),
+        new("NosAi.Core.Testing", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Combat", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Exploration", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Loadout", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Quests", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Reconstruction", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Strategy", ModuleReach.Integrated),
+        new("NosAi.Core.WorldModel.Temporal", ModuleReach.Integrated),
+        new("NosAi.Host", ModuleReach.Integrated),
+        new("NosAi.Security", ModuleReach.Integrated),
+        new("NosAi.Storage", ModuleReach.Integrated),
+
         // -- reachable only through the certification suite registry ---------
         new("NosAi.AI.LocalInference", ModuleReach.SuiteOnly,
             "Declared SIMULATED inference. Nothing routes to it: Gate 5's provider "
@@ -126,11 +181,6 @@ public static class ModuleReachability
             "Duplicates in intent what NosAi.Runtime.Hardware does in fact: the "
             + "Gate 1 snapshot takes its hardware baseline from the latter. Which "
             + "of the two survives is a decision, not a wiring job."),
-
-        new("NosAi.Host", ModuleReach.SuiteOnly,
-            "An alternative runtime host on port 8767. Program.cs boots "
-            + "Gate1BootstrapHost instead, so this one runs only under --host-test. "
-            + "Two hosts is one more than the project needs."),
 
         new("NosAi.Miniland.Production", ModuleReach.SuiteOnly,
             "Miniland automation over an adapter that has no live game behind it."),
@@ -156,6 +206,92 @@ public static class ModuleReachability
             + "is still open and belongs to two authors."),
 
         // -- nothing reaches them at all -------------------------------------
+
+        // Two of these are unreached and not debt: an executable's own top
+        // namespace has nothing above it to be reached from, and a library whose
+        // consumers are all outside this scan is not the same as a library
+        // nobody uses. They are declared here rather than exempted so the fact
+        // stays checked.
+        new("NosAi.ControlPanel", ModuleReach.Unreferenced,
+            "Not debt: it is an application. The WPF Control Panel is a process "
+            + "of its own -- it reaches into the runtime, and nothing reaches "
+            + "into it, which is what being a top-level entry point means."),
+
+        new("NosAi.GuardClient", ModuleReach.Unreferenced,
+            "Not debt either, but worth watching: the PC-side library of the "
+            + "phone channel. ADR-0025 S:2 restored it deliberately because six "
+            + "test files exercise the real Gate 1 handshake against it, and its "
+            + "other consumer -- the Android app -- is frozen out of the solution "
+            + "by S:3 of the same ADR. If the mobile channel never returns, this "
+            + "is a library kept alive by its own tests."),
+
+        new("NosAi.Adapter.DirectEngine", ModuleReach.Unreferenced,
+            "1 973 lines, 15 files, 27 types, and the two methods at the centre "
+            + "of it refuse: DirectEngineAdapter.ReadState and .Execute both "
+            + "return EngineRefusalCode.NotImplemented. Its own doc comment calls "
+            + "it a declared seam rather than a hidden placeholder, which is "
+            + "honest -- but a seam nothing has ever attached to."),
+
+        new("NosAi.Core.CharacterControl", ModuleReach.Unreferenced,
+            "Includes FailClosedCharacterActionGuard: a safety guard on no path. "
+            + "A guard nothing calls guards nothing, and its being fail-closed by "
+            + "construction is exactly why nobody would notice."),
+
+        new("NosAi.Core.Game", ModuleReach.Unreferenced,
+            "GameFunctionCatalog, reached only from NosAi.Core.CharacterControl "
+            + "-- itself unreached, so the reference is not a path."),
+
+        new("NosAi.Core.Hardware", ModuleReach.Unreferenced,
+            "The tier/capability contracts of AP-00. Reached only from "
+            + "NosAi.Core.Scheduling, which nothing reaches; the runtime takes "
+            + "its hardware baseline from NosAi.Runtime.Hardware instead. Which "
+            + "of the two survives is the same open decision "
+            + "NosAi.Hardware.Autoscale carries."),
+
+        new("NosAi.Core.Knowledge", ModuleReach.Unreferenced,
+            "Adaptive knowledge contracts, reached only from a mission-strategy "
+            + "adapter that is itself unreached."),
+
+        new("NosAi.Core.Perception", ModuleReach.Unreferenced,
+            "18 lines, one file, and the only namespace in this register that "
+            + "not even a test references. Perception in production is "
+            + "NosAi.Runtime.Perception."),
+
+        new("NosAi.Core.Planning", ModuleReach.Unreferenced,
+            "The HTN/GOAP layer named in CLAUDE.md's own canonical flow "
+            + "(Ranking -> Strategic Orchestrator -> HTN/GOAP -> Guard). No "
+            + "production file reaches it; planning that runs today is "
+            + "StrategyPlanner plus Gate3's own loop. LexicographicOrchestrator "
+            + "and DeadlinePlanner are not reached even by a test. There is also "
+            + "a second GoalStack here beside the one Gate3Runtime actually uses "
+            + "(NosAi.Runtime.Autonomy) -- two types, one name, one of them dead."),
+
+        new("NosAi.Core.Planning.Goap", ModuleReach.Unreferenced,
+            "The GOAP half of the layer above, unreached for the same reason."),
+
+        new("NosAi.Core.Progression", ModuleReach.Unreferenced,
+            "Character progression contracts. Gate 4 does progression in the "
+            + "runtime and does not consult these."),
+
+        new("NosAi.Core.Safety", ModuleReach.Unreferenced,
+            "41 lines. Safety that is authoritative lives in NosAi.Runtime.Safety, "
+            + "which the architecture requires ('Runtime is authoritative for "
+            + "authorization and safety'); this one is reached by tests only."),
+
+        new("NosAi.Core.Scheduling", ModuleReach.Unreferenced,
+            "887 lines of tier queue and async execution, the largest unreached "
+            + "module in NosAi.Core. It is what would carry NosAi.Core.Hardware "
+            + "into use, and nothing carries it."),
+
+        new("NosAi.Core.Statistics", ModuleReach.Unreferenced,
+            "Statistical helpers. Gate 4's BetaBinomialEvidence is the one the "
+            + "runtime uses."),
+
+        new("NosAi.Core.WorldModel.Certification", ModuleReach.Unreferenced,
+            "Certification contracts for the World Model, beside the runtime's "
+            + "own certification suites. Unreached by production, like Gate6 -- "
+            + "but unlike Gate6 it is not even reached by the suite registry."),
+
         new("NosAi.Events.InstantBattle", ModuleReach.Unreferenced,
             "Instant Combat and timed events. No caller and no suite."),
 

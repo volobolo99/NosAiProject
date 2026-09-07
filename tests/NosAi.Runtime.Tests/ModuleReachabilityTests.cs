@@ -65,18 +65,91 @@ public sealed class ModuleReachabilityTests
             .Where(line => !line.TrimStart().StartsWith("//", StringComparison.Ordinal)));
     }
 
+
+    /// <summary>
+    /// Whether <paramref name="source"/> spells a type in <paramref name="ns"/>,
+    /// as opposed to merely spelling a namespace that begins with it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A plain <c>Contains(ns + ".")</c> counts <c>NosAi.Core.Planning.Goap</c> as
+    /// a use of <c>NosAi.Core.Planning</c>, so every parent inherits its
+    /// children's referrers. That was invisible while the register held only
+    /// namespaces whose parents were reached anyway; extending it to
+    /// <c>NosAi.Core</c> made it produce a wrong verdict immediately, and a
+    /// self-inflicted one -- <c>ModuleReachability.cs</c> declaring the child
+    /// made the parent look referenced from the register that was supposed to
+    /// report it unreached.
+    /// </para>
+    /// <para>
+    /// The distinction is exact and needs no heuristic: in <c>ns.Foo</c>, if
+    /// <c>ns.Foo</c> is itself a declared namespace then the text names the
+    /// child, and if it is not then <c>Foo</c> is a type in <c>ns</c>.
+    /// </para>
+    /// </remarks>
+    private static bool NamesATypeIn(string source, string ns, IReadOnlyCollection<string> namespaces)
+    {
+        foreach (Match m in Regex.Matches(source, $@"{Regex.Escape(ns)}\.(\w+)"))
+        {
+            if (!namespaces.Contains($"{ns}.{m.Groups[1].Value}"))
+                return true;
+        }
+
+        return false;
+    }
+
     private sealed record Analysis(
         IReadOnlyDictionary<string, ModuleReach> Reach,
         IReadOnlyDictionary<string, IReadOnlyCollection<string>> Referrers);
 
-    private static Analysis AnalyseSource()
+    /// <summary>
+    /// The project whose source is deliberately not scanned.
+    /// </summary>
+    /// <remarks>
+    /// <c>NosAi.GuardAi.App</c> has no <c>.csproj</c> and is not in the solution:
+    /// ADR-0025 §3 keeps its source as historical reference for the phone-side
+    /// Gate 1 client and states it is not scheduled for further work. Scanning it
+    /// would report every one of its namespaces as unreached, which is true and
+    /// says nothing — it is unreached by decision, not by neglect, and mixing
+    /// that into a debt register would drown the entries that are debt.
+    /// </remarks>
+    private const string FrozenProject = "NosAi.GuardAi.App";
+
+    /// <summary>
+    /// Every production source file the analysis reads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// All of <c>src/</c>, not one project. Scanning only
+    /// <c>src/NosAi.Runtime</c> — as this analysis did until 2026-09-07 — makes
+    /// every referrer outside it invisible, and an invisible referrer is
+    /// reported as no referrer at all. That is the pessimistic error this file's
+    /// own remarks warn about: it invites someone to delete working code.
+    /// <c>NosAi.Adapter</c> is the plain example — used by
+    /// <c>src/NosAi.Host/NosAiHost.cs</c> and by nothing inside the runtime — and
+    /// <c>NosAi.Host</c> is the case it actually got wrong, declared SuiteOnly
+    /// while its own executable's <c>Program.cs</c> reaches it.
+    /// </para>
+    /// <para>
+    /// Tests are still not scanned, and that is the whole question: a module
+    /// exercised only by its tests is not wired into anything.
+    /// </para>
+    /// </remarks>
+    private static string[] ProductionSources()
     {
-        string runtime = Path.Combine(RepositoryRoot().FullName, "src", "NosAi.Runtime");
-        var files = Directory
-            .EnumerateFiles(runtime, "*.cs", SearchOption.AllDirectories)
+        string src = Path.Combine(RepositoryRoot().FullName, "src");
+        return Directory
+            .EnumerateDirectories(src)
+            .Where(d => Path.GetFileName(d) != FrozenProject)
+            .SelectMany(d => Directory.EnumerateFiles(d, "*.cs", SearchOption.AllDirectories))
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
                      && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
             .ToArray();
+    }
+
+    private static Analysis AnalyseSource()
+    {
+        string[] files = ProductionSources();
 
         var code = files.ToDictionary(f => f, f => WithoutComments(File.ReadAllText(f)));
         var namespaceOf = new Dictionary<string, string>();
@@ -97,7 +170,7 @@ public sealed class ModuleReachabilityTests
                 if (namespaceOf.GetValueOrDefault(file) == ns) continue;
                 // A using directive, or the namespace spelled out at a use site.
                 if (Regex.IsMatch(code[file], $@"^\s*using\s+(static\s+)?{Regex.Escape(ns)}\s*;", RegexOptions.Multiline)
-                    || code[file].Contains(ns + ".", StringComparison.Ordinal))
+                    || NamesATypeIn(code[file], ns, namespaces))
                 {
                     found.Add(file);
                 }
@@ -143,7 +216,7 @@ public sealed class ModuleReachabilityTests
     // -- the checks ----------------------------------------------------------
 
     [Fact]
-    public void Every_namespace_in_the_runtime_is_declared()
+    public void Every_namespace_in_production_is_declared()
     {
         Analysis analysis = AnalyseSource();
 
@@ -153,7 +226,7 @@ public sealed class ModuleReachabilityTests
             .ToArray();
 
         Assert.True(undeclared.Length == 0,
-            "Namespaces present in the runtime and absent from ModuleReachability. A new "
+            "Namespaces present in production and absent from ModuleReachability. A new "
             + "module has to state whether anything reaches it:\n  " + string.Join("\n  ", undeclared));
     }
 
@@ -230,18 +303,14 @@ public sealed class ModuleReachabilityTests
     }
 
     /// <summary>
-    /// Reports the share of the runtime no production path reaches. Not an
+    /// Reports the share of production code no production path reaches. Not an
     /// assertion — the number is meant to be read and to move, and pinning it
     /// would only mean editing the pin.
     /// </summary>
     [Fact]
-    public void The_unreached_share_of_the_runtime_is_reported()
+    public void The_unreached_share_of_production_is_reported()
     {
-        string runtime = Path.Combine(RepositoryRoot().FullName, "src", "NosAi.Runtime");
-        var files = Directory.EnumerateFiles(runtime, "*.cs", SearchOption.AllDirectories)
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-                     && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .ToArray();
+        string[] files = ProductionSources();
 
         var lines = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (string file in files)
