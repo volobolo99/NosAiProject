@@ -143,9 +143,31 @@ scollegate. Il testo dei messaggi di sistema non è in quell'archivio. Il
 candidato non ancora aperto è **`NScliData_IT.NOS`**, che `ReferenceImporter`
 non legge.
 
-Serve ancora una coppia osservata (testo a schermo ↔ riga della cattura) per
-confermare quale tabella sia, e il pannello ora la raccoglie: **Rete → «Registra
-il filo, e annota cosa hai visto»** scrive cattura e nota con lo stesso nome.
+### L'archivio è stato aperto, e la risposta è no
+
+Il 2026-09-08 `NScliData_IT.NOS` è stato aperto (Q-138). Contiene **una sola
+voce**, `conststring.dat`, che decodifica in **7869 righe** di testo italiano —
+ed è il posto giusto: contiene `«è raccolto.»` e `«Hai raccolto [%s]:»`.
+
+**Ma l'id `sayi` non lo indicizza.** Verificato due volte:
+
+- **chiave diretta**: 975, 654 e 2110 non esistono nella tabella; 697 dà
+  «Lacrima», che non c'entra;
+- **scarto costante**: fissando lo scarto sulla coppia che torna (975 → 10666,
+  «Hai raccolto [%s]»), gli altri tre id cadono su «Sono passate %d ore»,
+  «Stessa età» e «Questo giocatore è già sposato».
+
+La colonna chiave, che il lettore non decodificava, ora si legge: **7565 chiavi
+numeriche distinte**. Il difetto era in `NosDataTable.Parse`, che salta sempre il
+byte dopo il terminatore trattandolo come lunghezza, mentre per le chiavi da 100
+in su quel byte è il marcatore di numero impacchettato.
+
+### Quello che resta
+
+Il testo c'è, indicizzabile, e l'id del filo non è il suo indice. Serve ancora
+una coppia osservata (testo a schermo ↔ riga della cattura) per stabilire la
+regola, e il pannello ora la raccoglie: **Rete → «Registra il filo, e annota cosa
+hai visto»** scrive cattura e nota con lo stesso nome.
 
 ### Cosa serve, ed è poco
 
