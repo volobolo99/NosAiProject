@@ -49,16 +49,18 @@ obj/
 data/*
 !data/keybinds.example.json
 
-# WinDivert scaricato: la distribuzione upstream (zip, x64/, x86/) e lo script di
-# installazione restano locali. Il sorgente del probe no -- e' codice di questo
-# repository, referenzia NosAi.Runtime.csproj, ed e' lo strumento che
-# docs/TEST_RIMANDATI.md T-04 dice all'operatore di lanciare. La regola larga di
-# prima lo escludeva insieme al driver, quindi fino al 2026-09-07 quelle 141 righe
-# sono esistite su un disco solo e sono quasi state perse con la copia che le
-# conteneva. La forma e' `tools/windivert/*` e non `tools/windivert/`: git non
-# puo' re-includere nulla sotto una directory esclusa.
+# WinDivert: resta fuori solo cio' che si scarica -- lo zip upstream e la cartella
+# WinDivert-2.2.2-A che ne esce. Il probe e lo script di installazione no: sono
+# codice di questo repository (il probe referenzia NosAi.Runtime.csproj, lo script
+# e' scritto qui e cita ADR-0014), e sono i due strumenti che
+# docs/TEST_RIMANDATI.md T-04 dice all'operatore di usare. La regola larga di prima
+# li escludeva insieme al driver, quindi fino al 2026-09-07 sono esistiti su un
+# disco solo e sono quasi andati via con la copia duplicata che li conteneva.
+# La forma e' `tools/windivert/*` e non `tools/windivert/`: git non puo'
+# re-includere nulla sotto una directory esclusa.
 tools/windivert/*
 !tools/windivert/probe/
+!tools/windivert/install-and-capture.ps1
 tools/windivert/probe/bin/
 tools/windivert/probe/obj/
 

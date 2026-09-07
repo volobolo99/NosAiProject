@@ -187,21 +187,31 @@ public sealed class Gate3DecisionLoopTests
         }
     }
 
+    /// <summary>The session those assertions were measured on.</summary>
+    private const string CombatRecording = "nostale_combat.noscap";
+
     /// <summary>
     /// The whole chain over the real capture: recorded bytes, framed, decoded,
     /// published by the gameplay provider, planned on by Gate 3.
     /// </summary>
     /// <remarks>
-    /// Skipped when the recording is absent, because <c>data/</c> is gitignored
-    /// and a clone will not have it. It is not replaced by a synthetic stand-in:
-    /// the point of this test is the real bytes.
+    /// <para>
+    /// Skipped, visibly, when the recording is absent: <c>data/</c> is gitignored
+    /// and a clone will not have it. Not replaced by a synthetic stand-in — the
+    /// point of this test is the real bytes.
+    /// </para>
+    /// <para>
+    /// Until 2026-09-07 the check was <c>if (!File.Exists(...)) return;</c>, which
+    /// is not a skip: xUnit counted the test as passed and the .trx said it had
+    /// executed. On every machine without the recording the suite reported green
+    /// for a test that read nothing. <see cref="RecordedCaptureFactAttribute"/>
+    /// now names the reason instead.
+    /// </para>
     /// </remarks>
-    [Fact]
+    [RecordedCaptureFact(CombatRecording)]
     public async Task The_recorded_world_channel_produces_a_real_decision()
     {
-        string recording = Path.Combine(RepositoryRoot(), "data", "nostale_combat.noscap");
-        if (!File.Exists(recording))
-            return;
+        string recording = RecordedCaptureFactAttribute.Resolve(CombatRecording)!;
 
         using LiveIntegration.Capture.IPacketSource packets =
             LiveIntegration.Capture.CaptureFile.Open(recording);
@@ -232,14 +242,6 @@ public sealed class Gate3DecisionLoopTests
         // Recorded, so real and not current -- and therefore never actionable.
         Assert.Equal(DataSourceKind.Cached, planned.Hp.Source);
         Assert.False(planned.WouldHaveActed);
-    }
-
-    private static string RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "NosAi.sln")))
-            directory = directory.Parent;
-        return directory?.FullName ?? AppContext.BaseDirectory;
     }
 
     private static async Task<Gate3LoopCycle> RunOne(Gate3WorldState state)
