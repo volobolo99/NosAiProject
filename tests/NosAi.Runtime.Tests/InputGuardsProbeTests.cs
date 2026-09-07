@@ -156,12 +156,9 @@ public sealed class InputGuardsProbeTests
         Assert.Contains("recent", reading.Human, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void ProbeRefusesOffWindows()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(2, InputGuardsProbe.Run());
     }
 

@@ -206,12 +206,9 @@ public sealed class LoadoutReportCommandTests
     /// attach, the same shape <c>InputGuardsProbeTests.ProbeRefusesOffWindows</c>
     /// pins for its own probe.
     /// </summary>
-    [Fact]
+    [NonWindowsFact]
     public void Run_OffWindows_RefusesWithoutTouchingTheClient()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(NosAi.Runtime.Navigation.WalkCommand.ExitAbandoned, LoadoutReportCommand.Run());
     }
 

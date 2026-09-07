@@ -19,12 +19,9 @@ public sealed class InputBoundaryTests
     /// bite today, which is exactly why it had to be fixed — a last line of defence
     /// that silently corrects removes the evidence that the earlier guards were wrong.
     /// </remarks>
-    [Fact]
+    [WindowsOnlyFact]
     public void APointOffTheVirtualDesktopIsRefusedAndNotClampedToTheEdge()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         var backend = new Win32InputBackend();
 
         // Far outside any desktop. Nothing is sent, so the operator's cursor does not
@@ -46,12 +43,9 @@ public sealed class InputBoundaryTests
     /// The refusal names the point and the desktop it was measured against, because
     /// "false" alone leaves nobody able to tell a bad coordinate from a dead API.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void TheRefusalCarriesThePointAndTheDesktopItWasJudgedAgainst()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         var backend = new Win32InputBackend();
         backend.MoveAbsolute(-999_999, -999_999);
 
@@ -94,12 +88,9 @@ public sealed class InputBoundaryTests
     /// monitor reports null rather than a long idle: it has been watching for a moment
     /// and seen nobody, which is not the same as nobody being there.
     /// </summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void TheHooksInstallAndReportUnknownBeforeTheFirstHumanEvent()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         using var monitor = new HumanInputMonitor();
 
         Assert.True(monitor.TryStart(out string? failure), failure);
@@ -112,12 +103,9 @@ public sealed class InputBoundaryTests
             Assert.Null(monitor.SinceLastHumanInput);
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public void DisposingTheMonitorStopsItWatching()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         var monitor = new HumanInputMonitor();
         Assert.True(monitor.TryStart(out string? failure), failure);
 

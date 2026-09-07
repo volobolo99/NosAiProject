@@ -70,6 +70,9 @@ public sealed class MapGridObservationProjectorTests
 
         MapObservationBatch batch = MapGridObservationProjector.Project(in grid, TestMapId, FixedInstant);
 
+        // One cell in, one tile out: without this, a projector that produced no
+        // tiles would pass a test whose name promises something about every tile.
+        Assert.Single(batch.Tiles);
         Assert.All(batch.Tiles, tile => Assert.Equal(DataSourceKind.Cached, tile.Traversability.Source));
     }
 

@@ -61,8 +61,18 @@ public sealed class NosTaleWorldDecoderTests
     {
         // The signal that the decoder is right at all. Bytes read the wrong way
         // produce control characters and mojibake; these produce a grammar.
-        foreach (string packet in NosTaleWorldDecoder.Decode(Golden()))
+        IReadOnlyList<string> packets = NosTaleWorldDecoder.Decode(Golden());
+
+        // Counted first, and not as ceremony: a decoder that returned nothing at
+        // all would satisfy every assertion below it and this test would report
+        // that every decoded character was printable. Zero characters were.
+        Assert.Equal(2, packets.Count);
+
+        foreach (string packet in packets)
+        {
+            Assert.NotEmpty(packet);
             Assert.All(packet, c => Assert.InRange(c, ' ', '~'));
+        }
     }
 
     [Fact]

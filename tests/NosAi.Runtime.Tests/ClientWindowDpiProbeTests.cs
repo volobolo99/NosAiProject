@@ -77,12 +77,9 @@ public sealed class ClientWindowDpiProbeTests
         Assert.Equal(regime, DpiAwareness.FromWire(regime.ToWire()));
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void ProbeRefusesOffWindows()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(2, ClientWindowDpiProbe.Run());
     }
 
@@ -191,12 +188,9 @@ public sealed class ClientWindowDpiProbeTests
     /// distinct. PowerShell starts a new process with its own activation
     /// context, which is how the operator launches it too.
     /// </remarks>
-    [Fact]
+    [WindowsOnlyFact]
     public void TheApphostAndDotnetExecReportDifferentRegimes()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-
         string assembly = typeof(ClientWindowDpiProbe).Assembly.Location;
         string exe = Path.ChangeExtension(assembly, ".exe");
         Assert.True(File.Exists(exe), $"apphost not copied next to {assembly}");

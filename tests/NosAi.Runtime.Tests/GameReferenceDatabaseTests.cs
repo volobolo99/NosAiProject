@@ -312,6 +312,10 @@ public sealed class GameReferenceDatabaseTests
                 $"={outcome.Diff.Unchanged}");
         }
 
+        // An importer that reported no outcomes at all would satisfy the check
+        // below and read as "nothing moved", which is the answer this test is
+        // looking for -- arrived at by having imported nothing.
+        Assert.Equal(ReferenceImporter.Tables.Count, second.Outcomes.Count);
         Assert.All(second.Outcomes, o => Assert.False(o.Diff.AnyChange,
             $"{o.Table.Kind}: +{o.Diff.Added} ~{o.Diff.Changed} -{o.Diff.Removed}"));
     }

@@ -202,12 +202,9 @@ public sealed class InputAuthoritySurfaceTests
         Assert.Equal(Gate1SnapshotContract.Version, document.RootElement.GetProperty("contractVersion").GetString());
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void ProbeRefusesOffWindows()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(2, InputAuthorityProbe.Run());
     }
 

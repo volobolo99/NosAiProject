@@ -342,12 +342,9 @@ public sealed class MapIdFinderTests
         Assert.False(new MemoryRegion(new IntPtr(0x401000), 0x1000, Protect: 0x20, Type: 0x1000000).IsWritable);
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void RunRefusesOffWindows()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(2, MapIdFinder.Run());
     }
 

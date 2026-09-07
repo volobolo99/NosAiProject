@@ -1,3 +1,4 @@
+using System.Linq;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -71,5 +72,34 @@ public sealed class RecordedCaptureFactAttribute : FactAttribute
             directory = directory.Parent;
 
         return directory?.FullName;
+    }
+}
+
+/// <summary>
+/// A theory that runs only where every recording it names is present.
+/// </summary>
+/// <remarks>
+/// The theory sibling of <see cref="RecordedCaptureFactAttribute"/>. A theory
+/// takes its recording from <c>InlineData</c>, which the attribute cannot see, so
+/// the recordings are named here instead and the whole theory is skipped unless
+/// all of them are there. Coarser than the fact, and still the right trade: a
+/// theory that silently ran zero of its cases would report the same green as one
+/// that ran them all.
+/// </remarks>
+public sealed class RecordedCaptureTheoryAttribute : TheoryAttribute
+{
+    /// <param name="recordings">File names of the recordings the cases need.</param>
+    public RecordedCaptureTheoryAttribute(params string[] recordings)
+    {
+        ArgumentNullException.ThrowIfNull(recordings);
+
+        string[] missing = recordings
+            .Where(r => RecordedCaptureFactAttribute.Resolve(r) is null)
+            .ToArray();
+
+        if (missing.Length > 0)
+            Skip = $"Registrazioni assenti: {string.Join(", ", missing)} non trovate sotto data/ " +
+                   $"(data/ e' gitignored; indicare un'altra cartella con " +
+                   $"{RecordedCaptureFactAttribute.DirectoryVariable}).";
     }
 }

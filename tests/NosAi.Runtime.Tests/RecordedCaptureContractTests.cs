@@ -38,12 +38,11 @@ public sealed class RecordedCaptureContractTests
     /// entities that carry a vnum. Before C1 the field was skipped, so every
     /// entity was an id with a position and nothing that said what it was.
     /// </summary>
-    [Fact]
+    [RecordedCaptureFact(Combat)]
     public void The_combat_recording_yields_entities_and_at_least_one_carries_a_vnum()
     {
-        if (Recording(Combat) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -62,12 +61,11 @@ public sealed class RecordedCaptureContractTests
     /// catalogue is what says whether a vnum is something to fight — never this
     /// chain. What is asserted here is only that the vnum survives to the row.
     /// </summary>
-    [Fact]
+    [RecordedCaptureFact(Combat)]
     public void A_vnum_that_the_catalogue_does_not_know_is_still_carried_not_dropped()
     {
-        if (Recording(Combat) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Combat)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         foreach (WorldReplayEntityRow row in report.Entities)
@@ -83,12 +81,11 @@ public sealed class RecordedCaptureContractTests
     /// found there too, and the contracts that need combat come back empty with
     /// a reason rather than with an invented reading.
     /// </summary>
-    [Fact]
+    [RecordedCaptureFact(Idle)]
     public void The_idle_recording_finds_entities_and_reports_the_combat_contracts_as_empty_with_reasons()
     {
-        if (Recording(Idle) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(Idle)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -105,14 +102,13 @@ public sealed class RecordedCaptureContractTests
     /// counted as undecodable. Nothing is silently lost, which is what makes the
     /// census usable as evidence at all.
     /// </summary>
-    [Theory]
+    [RecordedCaptureTheory(Combat, Idle)]
     [InlineData(Combat)]
     [InlineData(Idle)]
     public void Every_admitted_packet_is_accounted_for(string file)
     {
-        if (Recording(file) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
 
         Assert.True(report.Ok, report.FailureReason);
@@ -125,14 +121,13 @@ public sealed class RecordedCaptureContractTests
     /// that does arrive is well formed. This is the check the hand-built packets
     /// cannot make: it holds against bytes nobody wrote for it.
     /// </summary>
-    [Theory]
+    [RecordedCaptureTheory(Combat, Idle)]
     [InlineData(Combat)]
     [InlineData(Idle)]
     public void Every_catalogued_reading_the_recordings_carry_is_within_its_own_bounds(string file)
     {
-        if (Recording(file) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
         Assert.True(report.Ok, report.FailureReason);
 
@@ -172,14 +167,13 @@ public sealed class RecordedCaptureContractTests
     /// A replayed recording is real bytes that are not current. Nothing read out
     /// of one may ever come back LIVE, however confidently it decodes.
     /// </summary>
-    [Theory]
+    [RecordedCaptureTheory(Combat, Idle)]
     [InlineData(Combat)]
     [InlineData(Idle)]
     public void Nothing_read_from_a_recording_is_ever_live(string file)
     {
-        if (Recording(file) is not { } path)
-            return;
-
+        string path = RecordedCaptureFactAttribute.Resolve(file)!;
+
         WorldReplayReport report = WorldReplayCommand.InspectFile(path);
         Assert.True(report.Ok, report.FailureReason);
 
@@ -191,20 +185,7 @@ public sealed class RecordedCaptureContractTests
         Assert.All(report.Selections, s => Assert.Equal(Contracts.DataSourceKind.Cached, s.Source));
     }
 
-    /// <summary>The recording's path, or null when this clone does not have it.</summary>
-    private static string? Recording(string file)
-    {
-        string path = Path.Combine(RepositoryRoot(), "data", file);
-        return File.Exists(path) ? path : null;
-    }
-
-    private static string RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "NosAi.sln")))
-            directory = directory.Parent;
-        return directory?.FullName ?? AppContext.BaseDirectory;
-    }
+    /// <summary>The recording's path, or null when this clone does not have it.</summary>
 
     private static bool IsRead(string vnumText) =>
         vnumText != WorldReplayCommand.VnumNotRead && vnumText != WorldReplayCommand.VnumAbsent;

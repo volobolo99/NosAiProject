@@ -136,12 +136,9 @@ public sealed class MapGridCheckTests
         Assert.Contains("grid_file_not_found:3", writer.ToString(), StringComparison.Ordinal);
     }
 
-    [Fact]
+    [NonWindowsFact]
     public void RunRefusesOffWindows()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         Assert.Equal(2, MapGridCheck.Run());
     }
 
