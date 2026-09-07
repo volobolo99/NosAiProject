@@ -49,8 +49,18 @@ obj/
 data/*
 !data/keybinds.example.json
 
-# WinDivert driver e binari di cattura (scaricati localmente, mai committati)
-tools/windivert/
+# WinDivert scaricato: la distribuzione upstream (zip, x64/, x86/) e lo script di
+# installazione restano locali. Il sorgente del probe no -- e' codice di questo
+# repository, referenzia NosAi.Runtime.csproj, ed e' lo strumento che
+# docs/TEST_RIMANDATI.md T-04 dice all'operatore di lanciare. La regola larga di
+# prima lo escludeva insieme al driver, quindi fino al 2026-09-07 quelle 141 righe
+# sono esistite su un disco solo e sono quasi state perse con la copia che le
+# conteneva. La forma e' `tools/windivert/*` e non `tools/windivert/`: git non
+# puo' re-includere nulla sotto una directory esclusa.
+tools/windivert/*
+!tools/windivert/probe/
+tools/windivert/probe/bin/
+tools/windivert/probe/obj/
 
 # Worktree e stato degli agenti (contiene copie complete del repository)
 .claude/

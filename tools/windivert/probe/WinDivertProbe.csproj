@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>WinDivertProbe</AssemblyName>
+    <RootNamespace>NosAi.WinDivertProbe</RootNamespace>
+    <!-- x64 to match WinDivert64.sys; the driver is 64-bit. -->
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Uses the runtime's real capture components rather than a second copy of
+         the P/Invoke, so running the probe exercises the code that ships. -->
+    <ProjectReference Include="..\..\..\src\NosAi.Runtime\NosAi.Runtime.csproj" />
+  </ItemGroup>
+</Project>
