@@ -1,5 +1,11 @@
 # AP-08 / A1+A3 — Stato
 
+> **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
+> al momento in cui fu scritto e alcune sue affermazioni sono state
+> superate dal codice. Verificato oggi nel sorgente: `SelectStrategicPlan` ha un lettore di produzione: `AutoplayCommand.cs:594`.
+> Le righe qui sotto restano com'erano: sono un registro, non una
+> descrizione del presente.
+
 **Avviato per la stessa eccezione dichiarata già usata per AP-04/05/06/07**
 (`docs/agents/EXECUTION_QUEUE.md` "Criterio di avanzamento fase"): questi
 contratti dipendono da `Goal`/`Player`/`CombatantStatus`/`Resource`

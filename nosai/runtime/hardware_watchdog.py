@@ -62,8 +62,28 @@ class NOSAIHardwareWatchdog:
         self.cooling = False
 
     def check(self) -> WatchdogDecision:
+        """Whether hardware conditions permit work to proceed.
+
+        Fails closed on absent thermal telemetry. A watchdog that cannot read a
+        temperature has not observed a safe temperature, and
+        ``any(...)`` over an empty list is ``False`` -- so before this guard the
+        total absence of thermal data was treated exactly like "confirmed
+        nominal", which is the one reading it must never be. That is the
+        opposite policy from the C# side's own hardware gate
+        (``HardwareInferenceCapabilityGate``), which refuses every tier above
+        Tier 0 when the throttle state is Unknown, and it contradicts
+        ``CLAUDE.md``'s "Fail closed where safety requires it".
+
+        The refusal is named (``thermal_telemetry_unavailable``) rather than
+        silent, and carries no cooling delay: waiting does not make an absent
+        sensor appear, so a caller that installs a working probe is not
+        punished for the previous call.
+        """
         t = self.probe.read()
         temps = [x for x in (t.cpu_temperature_c, t.gpu_temperature_c) if x is not None]
+        if not temps:
+            self.cooling = False
+            return WatchdogDecision(False, "thermal_telemetry_unavailable")
         if any(x > self.max_temp for x in temps):
             self.cooling = True
             return WatchdogDecision(False, "thermal_limit", self.cooling_seconds)

@@ -1,5 +1,11 @@
 # AP-00 — Hardware & Runtime Capability: Status (A5 audit)
 
+> **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
+> al momento in cui fu scritto e alcune sue affermazioni sono state
+> superate dal codice. Verificato oggi nel sorgente: i sette test Python dichiarati rotti girano: `python -m pytest tests/` riporta 185 superati, zero errori di import.
+> Le righe qui sotto restano com'erano: sono un registro, non una
+> descrizione del presente.
+
 **Author:** A5 (Claude), test/benchmark/documentation audit only.
 **Date:** 2026-09-05.
 **Scope:** records what exists for AP-00 after A1-A4 completed their parallel

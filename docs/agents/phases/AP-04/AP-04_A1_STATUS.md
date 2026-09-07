@@ -1,5 +1,11 @@
 # AP-04 / A1 — Stato
 
+> **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
+> al momento in cui fu scritto e alcune sue affermazioni sono state
+> superate dal codice. Verificato oggi nel sorgente: `new Portal(` ha un sito: `PortalCrossingDetector.cs:89`; e la consegna A2/A4 non e' piu' PENDING.
+> Le righe qui sotto restano com'erano: sono un registro, non una
+> descrizione del presente.
+
 **Avviato in anticipo rispetto al gate di fase standard**, in parallelo
 all'audit indipendente di AP-03/A5, per la ragione dichiarata in
 `docs/agents/EXECUTION_QUEUE.md` ("Eccezione dichiarata"): questi contratti

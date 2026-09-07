@@ -1,5 +1,11 @@
 # AP-10 / A1 — Contratti di certificazione + report onesto
 
+> **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
+> al momento in cui fu scritto e alcune sue affermazioni sono state
+> superate dal codice. Verificato oggi nel sorgente: il ledger AP-09 e' consegnato: `src/NosAi.Storage/ActionOutcomeLedgerStore.cs` + `ActionOutcomeRecorder.cs`, con quattro chiamanti di produzione.
+> Le righe qui sotto restano com'erano: sono un registro, non una
+> descrizione del presente.
+
 ## Perché questa fase è diversa da AP-00→AP-09
 
 `docs/ROADMAP_ESECUTIVA.md` S:AP-10: "Scenario completo: startup →

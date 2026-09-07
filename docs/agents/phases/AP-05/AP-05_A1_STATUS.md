@@ -1,5 +1,11 @@
 # AP-05 / A1 — Stato
 
+> **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
+> al momento in cui fu scritto e alcune sue affermazioni sono state
+> superate dal codice. Verificato oggi nel sorgente: `SkillOrItemId` non compare in `Gate3Runtime.cs` (0 occorrenze).
+> Le righe qui sotto restano com'erano: sono un registro, non una
+> descrizione del presente.
+
 **Avviato per la stessa eccezione dichiarata già usata per AP-04/A1**
 (`docs/agents/EXECUTION_QUEUE.md` "Criterio di avanzamento fase"): questi
 contratti dipendono solo da tipi AP-01 già `Integrated`

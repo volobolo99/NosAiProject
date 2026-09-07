@@ -83,8 +83,8 @@ def test_high_tier_requires_both_vram_and_ram_thresholds_simultaneously():
 # NOSAIHardwareWatchdog.check() -- fully-absent thermal telemetry
 # ---------------------------------------------------------------------------
 
-def test_watchdog_allows_by_default_when_no_thermal_telemetry_is_available_at_all():
-    """Documents a real design gap found during this AP-00/A5 audit.
+def test_watchdog_refuses_when_no_thermal_telemetry_is_available_at_all():
+    """The gap this test was written to document, now closed.
 
     With the default ``NullHardwareProbe`` (or any probe reporting
     ``HardwareTelemetry()`` with every field ``None``), ``check()`` builds an
@@ -99,25 +99,23 @@ def test_watchdog_allows_by_default_when_no_thermal_telemetry_is_available_at_al
     ``HardwareInferenceCapabilityGate``), which explicitly refuses every tier
     above Tier 0 when ``Thermal.ThrottleState`` is Unknown.
 
-    Severity note (why this is a documented gap, not a hard test failure):
-    ``NOSAIHardwareWatchdog`` is not currently wired into any execution/Safety
-    path anywhere in ``nosai/`` (grep confirms no call site besides its own
-    tests) -- it is a "Present", not yet "Integrated", mechanism. This test
-    pins down its CURRENT behaviour precisely so that whichever later AP
-    phase (most likely AP-08, Strategic Autonomy + Safety) wires this
-    watchdog into an authoritative execution gate does so with eyes open,
-    rather than inheriting a silent fail-open default under missing/UNKNOWN
-    thermal telemetry.
+    The paragraphs above describe what ``check()`` did until 2026-09-07, and
+    this test asserted it -- pinning the fail-open default so that a later
+    phase wiring the watchdog into an execution gate would inherit it "with
+    eyes open". That reasoning held only while nothing called it. Leaving a
+    safety component fail-open until someone remembers the caveat is the
+    weaker half of "eyes open", so the behaviour was corrected instead: the
+    refusal is now named, and this test asserts the refusal.
     """
     watchdog = NOSAIHardwareWatchdog(max_temp=80.0, probe=NullHardwareProbe())
 
     decision = watchdog.check()
 
-    assert decision.allowed is True
-    assert decision.reason == "ok"
+    assert decision.allowed is False
+    assert decision.reason == "thermal_telemetry_unavailable"
 
 
-def test_watchdog_allows_when_probe_reports_telemetry_object_with_all_fields_none():
+def test_watchdog_refuses_when_probe_reports_telemetry_object_with_all_fields_none():
     # Same scenario as above, made explicit for a probe that is not the
     # built-in NullHardwareProbe (e.g. a real probe whose sensors are simply
     # unsupported on this machine) but returns an equivalently-empty reading.
@@ -129,7 +127,8 @@ def test_watchdog_allows_when_probe_reports_telemetry_object_with_all_fields_non
 
     decision = watchdog.check()
 
-    assert decision.allowed is True
+    assert decision.allowed is False
+    assert decision.reason == "thermal_telemetry_unavailable"
 
 
 def test_watchdog_still_trips_when_only_one_of_two_temperature_readings_is_known():

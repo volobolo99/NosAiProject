@@ -1,5 +1,23 @@
 # NosAi Guard AI — applicazione Android
 
+> **Progetto congelato, non compilabile da questo repository.**
+> `NosAi.GuardAi.App.csproj` è stato rimosso il 2026-09-05 (`4648e3b`) e
+> [ADR-0025](../../docs/adr/ADR-0025-stabilize-build-remove-master-roadmap-freeze-mobile.md)
+> §3 stabilisce che questa sorgente resta come **materiale storico e di
+> riferimento**: non fa parte della soluzione, non ha copertura CI, e non è
+> pianificata per ulteriore lavoro. Il canale mobile è stato reale e verificato
+> una volta su hardware fisico (`docs/GATE1_CHECKLIST.md`), sotto l'architettura
+> superata; non fa parte del prodotto per la roadmap `AP-00`…`AP-10`.
+>
+> I comandi `dotnet build` più sotto **non funzionano**: descrivono come il
+> progetto veniva compilato quando il `.csproj` esisteva, e sono conservati
+> perché documentano la forma di un client Gate 1 lato telefono. Riportarlo in
+> vita richiede un ADR proprio e un `.csproj` proprio, non una rianimazione
+> silenziosa (ADR-0025, "Conseguenze").
+>
+> La libreria PC del canale, `NosAi.GuardClient`, è invece **viva, compilata e
+> testata**: è quella che i test del Gate 1 esercitano.
+
 Client smartphone del canale canonico definito da
 [ADR-0006](../../docs/adr/ADR-0006-canonical-phone-channel.md).
 
