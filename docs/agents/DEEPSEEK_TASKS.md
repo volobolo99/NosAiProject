@@ -175,13 +175,47 @@ Concretamente, prima di consegnare:
 `C:\Users\volob\Desktop\nos\NosAiProject` è l'unica copia di lavoro del
 progetto. Apri sempre questa in Cursor.
 
-Ogni altra cartella `NosAiProject*` sul Desktop è materiale morto, tenuto solo
-come archivio: non ha commit propri, non va aperta, non va modificata. Lavorare
-in una di quelle significa partire da una base vecchia e perdere il lavoro.
+Per DeepSeek questo resta vero senza eccezioni: non aprire nessun'altra
+cartella, non lavorarci, `git pull` prima di ogni task. Ogni commit fatto qui
+viene pushato su `origin/main` automaticamente (hook `post-commit`), quindi
+GitHub non resta mai indietro rispetto al disco.
 
-Prima di iniziare un task: `git pull`. Ogni commit fatto qui viene pushato su
-`origin/main` automaticamente (hook `post-commit`), quindi GitHub non resta mai
-indietro rispetto al disco.
+**Correzione verificata (2026-09-07).** La versione precedente di questa
+sezione diceva che ogni altra cartella `NosAiProject*` sul Desktop è
+«materiale morto … non ha commit propri». La seconda metà è falsa, ed è la
+metà pericolosa: `C:\Users\volob\Desktop\NosAiProject` contiene **46 commit
+che non esistono su nessun ref remoto**, distribuiti su 12 branch locali.
+Comando che lo mostra, da quella cartella:
+
+```
+for b in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+  n=$(git rev-list --count "$b" --not --remotes=origin); [ "$n" -gt 0 ] && echo "$b: $n";
+done
+```
+
+I quattro maggiori, misurati contro il loro merge-base con `origin/main`:
+
+| Branch | Commit solo-locali | Dimensione |
+|---|---|---|
+| `codex/cursor-perception-contract` | 11 | 65 file, +9218 righe |
+| `worktree-piano-controllo-gioco` | 5 | +1837 righe (incl. `scripts/verifica-obiettivo.ps1`) |
+| `feature/tactical-simulator-v1` | 9 | +839 righe |
+| `main-merge-tactical` | 10 | +822 righe (contiene il precedente piu' un merge) |
+
+Il commit `0fe2a5a` ha recuperato da `feature/tactical-simulator-v1` soltanto
+la *documentazione*: il codice di quel branch resta solo su disco.
+
+Quella cartella e' anche l'unica delle due ad avere worktree attivi (9 contro
+1) e 30 branch locali contro 2. Non e' quindi un archivio: e' dove vive tutto
+il lavoro non ancora portato su GitHub.
+
+**Prima che quella cartella venga cancellata o considerata sacrificabile, quei
+branch vanno pushati su `origin`.** E' un'operazione additiva e reversibile;
+cancellare la cartella non lo e'. Finche' non e' fatto, la frase «materiale
+morto» non va riscritta in questa forma da nessun agente.
+
+Nulla di questo cambia per DeepSeek: la cartella di lavoro resta una sola,
+quella nominata in cima a questa sezione.
 
 ---
 
