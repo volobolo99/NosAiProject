@@ -16,6 +16,8 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.WorldModel;
 
+using NosAi.Storage;
+
 namespace NosAi.Runtime.Gate1;
 
 public sealed class Gate1BootstrapHost : IAsyncDisposable
@@ -200,7 +202,8 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
                     policySource: () => runtime.Safety.Policy,
                     ensureSessionVerified: () => runtime.SessionAuthority?.EnsureVerified()),
                 _logger,
-                TimeSpan.FromMilliseconds(_options.DecisionIntervalMs))
+                TimeSpan.FromMilliseconds(_options.DecisionIntervalMs),
+                calibrationStore: OpenCalibrationStore())
             : null;
         _haltDump = new HaltDiagnosticsDumper(HaltDiagnosticsDumper.DefaultDirectory, HaltDumpContext());
         if (_decisions is not null)
@@ -236,6 +239,26 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     /// only say that something is wrong.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// L'archivio dove la calibrazione appresa sopravvive alla chiusura, se il
+    /// volume dedicato c'e'.
+    /// </summary>
+    /// <remarks>
+    /// Assente non e' un errore: senza NOSAI-SSD collegato il ciclo funziona come
+    /// prima, impara e dimentica. Il motivo finisce nel diario, perche' "il
+    /// runtime non ricorda" e "il disco non c'era" sono due cose diverse e chi
+    /// legge <c>--learning-report</c> deve poterle distinguere.
+    /// </remarks>
+    private PredictionCalibrationStore? OpenCalibrationStore()
+    {
+        PredictionCalibrationStore? store =
+            PredictionCalibrationStore.TryOpenFromVolume(new SqliteJournalOptions(), out string? failure);
+        if (store is null && failure is not null)
+            _logger.Info("La calibrazione appresa non sara' conservata.",
+                new Dictionary<string, object?> { ["reason"] = failure });
+        return store;
+    }
+
     private Gate3.IActionEffector? BuildLiveEffector(RuntimeComponents runtime)
     {
         if (runtime.InputBackend is not GatedInputBackend gated)

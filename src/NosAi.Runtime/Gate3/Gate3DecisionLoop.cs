@@ -3,6 +3,8 @@ using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Observability;
 using NosAi.Core.Cognitive;
 
+using NosAi.Storage;
+
 namespace NosAi.Runtime.Gate3;
 
 public sealed record Gate3LoopCycle(DateTime AtUtc, CycleOutcome Outcome, string Summary, ActionType SelectedAction, ClassifiedValue<int> Hp, ClassifiedValue<int> MaxHp, ClassifiedValue<int> Mp, ClassifiedValue<bool> HasTarget, TimeSpan? ObservationAge, bool WouldHaveActed);
@@ -30,8 +32,36 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
     private long _cycles;
     private bool _disposed;
 
-    public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null)
+    /// <summary>
+    /// Dove la calibrazione delle previsioni sopravvive alla chiusura, quando c'e'.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perche' qui.</b> Il registro delle previsioni vive dentro
+    /// <see cref="Gate3ExecutionOrchestrator"/>, e l'orchestratore vive dentro
+    /// questo ciclo: e' il ciclo a sapere quando comincia e quando finisce. Fino
+    /// al 2026-09-07 nessuno lo sapeva, quindi il runtime imparava a ogni giro e
+    /// dimenticava a ogni chiusura, e <c>--learning-report</c> non aveva mai nulla
+    /// da leggere.
+    /// </para>
+    /// <para>
+    /// Nessuna scrittura dentro il ciclo di decisione: si legge all'avvio e si
+    /// scrive alla chiusura. Una <c>SELECT</c> di SQLite dentro
+    /// <i>Observe → … → Execute</i> metterebbe il disco sul percorso critico
+    /// della sicurezza.
+    /// </para>
+    /// </remarks>
+    private readonly PredictionCalibrationStore? _calibrationStore;
+
+    /// <param name="calibrationStore">
+    /// Dove la calibrazione appresa viene riletta all'avvio e riscritta alla
+    /// chiusura. Assente e' un caso normale -- il volume dedicato puo' non essere
+    /// collegato -- e allora il ciclo funziona come prima, imparando e
+    /// dimenticando, senza fingere di ricordare.
+    /// </param>
+    public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null, PredictionCalibrationStore? calibrationStore = null)
     {
+        _calibrationStore = calibrationStore;
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -53,6 +83,7 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_pump is not null) return;
         _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        RestoreCalibration();
         _logger.Info("Gate 3 decision loop started.", new Dictionary<string, object?> { ["intervalMs"] = (long)_interval.TotalMilliseconds, ["acting"] = _orchestrator.CanExecute, ["maxObservationAgeMs"] = (long)_orchestrator.MaxObservationAge.TotalMilliseconds });
         _pump = PumpAsync(_cancellation.Token);
     }
@@ -126,5 +157,38 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
         if (_cancellation is not null) await _cancellation.CancelAsync().ConfigureAwait(false);
         if (_pump is not null) { try { await _pump.ConfigureAwait(false); } catch (OperationCanceledException) { } }
         _cancellation?.Dispose();
+        SaveCalibration();
+    }
+
+    /// <summary>
+    /// Rilegge la calibrazione appresa, o prosegue senza. Un archivio che non si
+    /// apre non ferma il ciclo: fermarlo perche' non ricorda il giorno prima
+    /// sarebbe una perdita piu' grande di quella che evita.
+    /// </summary>
+    private void RestoreCalibration()
+    {
+        if (_calibrationStore is null) return;
+        try
+        {
+            _orchestrator.RestoreCalibration(_calibrationStore);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            _logger.Error("La calibrazione appresa non e' stata riletta.", ex);
+        }
+    }
+
+    /// <summary>Scrive la calibrazione appresa, una volta, alla chiusura.</summary>
+    private void SaveCalibration()
+    {
+        if (_calibrationStore is null) return;
+        try
+        {
+            _orchestrator.SaveCalibration(_calibrationStore);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            _logger.Error("La calibrazione appresa non e' stata scritta.", ex);
+        }
     }
 }
