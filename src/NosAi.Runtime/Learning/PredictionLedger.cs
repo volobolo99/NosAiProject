@@ -314,8 +314,21 @@ public sealed class PredictionLedger
     /// </summary>
     /// <returns>How many were abandoned; they are not counted as either outcome.</returns>
     /// <remarks>
+    /// <para>
     /// An unsettled prediction is neither right nor wrong, and quietly scoring it
     /// either way would bend the calibration toward whichever was chosen.
+    /// </para>
+    /// <para>
+    /// <b>Nessun chiamante, verificato il 2026-09-07, e il motivo.</b> Nel ciclo
+    /// ogni <see cref="Predict"/> raggiunge <see cref="Record"/> o
+    /// <see cref="Abandon"/>: l'unica uscita anticipata fra i due e' il ramo della
+    /// politica che sopprime l'atto, e quel ramo abbandona esplicitamente. Resta
+    /// aperta solo una previsione interrotta da un'eccezione non gestita, che
+    /// ferma il ciclo -- quindi non c'e' un "per sempre" da cui proteggersi.
+    /// Questo metodo esiste per il giorno in cui il ciclo avra' un percorso di
+    /// errore da cui si riprende: allora vorra' un chiamante, e questa nota dice
+    /// a chi lo scrivera' che cosa cercare.
+    /// </para>
     /// </remarks>
     public int Expire(TimeSpan olderThan, DateTime? nowUtc = null)
     {

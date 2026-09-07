@@ -133,7 +133,14 @@ public static class ModuleReachability
             + "backwards. The ledger's own rule is that only a LIVE observation "
             + "moves a belief; with cached readbacks it counts them and learns "
             + "nothing, which is the behaviour worth having in place before the "
-            + "live ones arrive rather than after."),
+            + "live ones arrive rather than after. "
+            + "Since 2026-09-07 the loop that owns the orchestrator also owns the "
+            + "ledger's lifetime: Gate3DecisionLoop restores the calibration when it "
+            + "starts and writes it back when it closes, through "
+            + "PredictionCalibrationStore on the dedicated volume, and "
+            + "--learning-report reads it. Until then the ledger was written every "
+            + "cycle and read by nobody, so the runtime relearned each morning what "
+            + "it had learned the day before."),
         new("NosAi.Runtime.LowLevel", ModuleReach.Integrated),
         new("NosAi.Runtime.Operator", ModuleReach.Integrated),
         new("NosAi.Runtime.Observability", ModuleReach.Integrated),
