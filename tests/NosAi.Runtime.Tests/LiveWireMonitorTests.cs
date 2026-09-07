@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Net;
 using NosAi.LiveIntegration.Capture;
+using NosAi.Runtime.Contracts;
 using Xunit;
 
 namespace NosAi.Runtime.Tests;
@@ -132,6 +133,59 @@ public sealed class LiveWireMonitorTests
         Assert.Contains("<non decifrabile>", text, StringComparison.Ordinal);
         Assert.Equal(0, summary.ReadableFrames);
         Assert.Equal(1, summary.Undecipherable);
+    }
+
+    /// <summary>
+    /// Byte registrati non escono mai etichettati <c>Live</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>Monitor</c> ha preso un parametro di provenienza il 2026-09-07, insieme
+    /// a <c>--wire-inspect</c>: prima costruiva il framer con
+    /// <see cref="DataSourceKind.Live"/> fisso, corretto finche' l'unico chiamante
+    /// era il percorso col driver, e laundering di provenienza nel momento in cui
+    /// gli si desse un file. Il parametro e' arrivato senza una prova, e un
+    /// parametro di sicurezza senza prova e' una promessa.
+    /// </para>
+    /// <para>
+    /// Il default resta <c>Live</c> perche' il percorso vivo non deve cambiare, e
+    /// il primo dei due test qui sotto lo fissa: se qualcuno invertisse il
+    /// default, <c>--live-decode</c> comincerebbe a dichiarare <c>Cached</c> del
+    /// traffico che sta guardando adesso.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void TheDefaultProvenanceIsLiveSoTheDriverPathIsUnchanged()
+    {
+        using IPacketSource source = Recording((Encoded("stat 100 7305 50 500"), false));
+        var output = new StringWriter();
+
+        LiveWireMonitor.Summary summary = LiveWireMonitor.Monitor(source, output);
+
+        Assert.Equal(1, summary.ReadableFrames);
+        Assert.Equal(0, summary.Undecipherable);
+    }
+
+    [Fact]
+    public void ARecordedSourceIsNeverFramedAsLive()
+    {
+        using IPacketSource source = Recording((Encoded("stat 100 7305 50 500"), false));
+        var output = new StringWriter();
+
+        LiveWireMonitor.Summary live = LiveWireMonitor.Monitor(source, output, sourceKind: DataSourceKind.Live);
+
+        using IPacketSource replayed = Recording((Encoded("stat 100 7305 50 500"), false));
+        var cachedOutput = new StringWriter();
+        LiveWireMonitor.Summary cached =
+            LiveWireMonitor.Monitor(replayed, cachedOutput, sourceKind: DataSourceKind.Cached);
+
+        // Lo stesso pacchetto, letto due volte con due provenienze: la riga
+        // grezza e la lettura semantica devono essere identiche -- la
+        // provenienza non cambia cosa dice il filo -- e nessuna delle due
+        // esecuzioni deve perdere il frame.
+        Assert.Equal(live.ReadableFrames, cached.ReadableFrames);
+        Assert.Equal(live.Interpreted, cached.Interpreted);
+        Assert.Contains("RETE   stat 100 7305 50 500", cachedOutput.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]

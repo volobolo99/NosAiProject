@@ -12,6 +12,51 @@ Questa scelta rende NosAi portabile tra PC compatibili, separa il progetto dai d
 
 Il dispositivo non deve essere considerato disco di sistema o di avvio. La velocità dichiarata di 800 MB/s è un riferimento del produttore e non una garanzia del rendimento applicativo.
 
+## 1-bis. Cosa smette di funzionare senza il volume — misurato il 2026-09-07
+
+Questo documento descrive il volume come una scelta di distribuzione. È anche una
+**dipendenza di funzionamento**, e la macchina di sviluppo attuale non la
+soddisfa: `Get-Volume` riporta il solo `C:` etichettato `Acer`, nessun volume
+`NOSAI-SSD` collegato.
+
+`VolumeLocator.TryResolve` cerca per **etichetta** e non ha ripiego. La sua stessa
+doc-comment spiega perché, ed è una decisione giusta: «un journal atterrato in
+silenzio su un disco diverso da quello che l'operatore gli ha dedicato è un
+journal che l'operatore non sa più trovare, salvare, né su cui ragionare in
+termini di durabilità».
+
+Quattro cose ne dipendono, e senza il volume nessuna delle quattro conserva nulla:
+
+| Cosa | Chi la apre | Conseguenza senza volume |
+|---|---|---|
+| Journal degli eventi con catena di hash | `SqliteEventJournal`, da `NosAiHost` | Gate 1 non ha storia verificabile |
+| Mappe persistite | `MapModelStore`, da `MapReconstructionSource` | ogni mappa scoperta si riscopre da capo |
+| Registro degli esiti d'azione | `ActionOutcomeLedgerStore`, da `--scout`, `--engage`, `--autoplay`, `--recover` | **ogni atto mai eseguito ha registrato zero righe** |
+| Catalogo di riferimento del gioco | `GameReferenceLocator` | il catalogo non stabilisce alcun vnum come mostro |
+
+L'ultima riga è quella che si vede a occhio: `--world-replay` stampa
+`reference catalog: nosai_ssd_not_found` in testa a ogni esecuzione.
+
+**Non è un difetto del codice.** I comandi avvisano e proseguono
+(`[WARN] action_outcome_ledger_unavailable:…`), con il commento accanto che dice
+esplicitamente perché la mancanza del registro non deve mai diventare un motivo
+di rifiuto. È il comportamento voluto. Ma la conseguenza va detta: **finché
+nessun volume `NOSAI-SSD` è collegato, questo progetto non ricorda niente fra
+un'esecuzione e l'altra**, e la capacità che `CLAUDE.md` chiama *learn from
+failures* non ha dove scrivere.
+
+**Cosa serve, in concreto.** Non un SSD da 2 TB: serve un volume la cui etichetta
+sia esattamente `NOSAI-SSD`. Una chiavetta, una partizione, un disco esterno
+qualsiasi — il codice cerca l'etichetta, non il modello. Il resto della struttura
+in § 3 lo creano gli strumenti.
+
+Ai bersagli questo toglie meno di quanto sembri: `TargetEstablishment` stabilisce
+l'ostilità anche dal fatto osservato di un colpo subito, che non passa dal
+catalogo. Senza catalogo resta però l'unica via, quindi un mostro che non ha
+ancora attaccato non è autorizzabile.
+
+---
+
 ## 2. File system e volume
 
 Per Windows viene raccomandato **NTFS** come file system primario. Il volume deve essere inizializzato una sola volta e non deve essere riformattato automaticamente dagli script di avvio.
