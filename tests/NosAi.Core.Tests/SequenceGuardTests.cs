@@ -9,7 +9,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void FirstSequenceIsAlwaysAccepted()
     {
-        var guard = new SequenceGuard();
+        var guard = new SlidingWindowSequenceGuard();
 
         Assert.True(guard.TryAccept(42));
         Assert.Equal(42u, guard.HighWaterMark);
@@ -18,7 +18,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void IncreasingSequencesAreAccepted()
     {
-        var guard = new SequenceGuard();
+        var guard = new SlidingWindowSequenceGuard();
 
         for (uint sequence = 0; sequence < 50; sequence++)
             Assert.True(guard.TryAccept(sequence));
@@ -29,7 +29,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void ExactReplayOfTheCurrentHighWaterMarkIsRejected()
     {
-        var guard = new SequenceGuard();
+        var guard = new SlidingWindowSequenceGuard();
         Assert.True(guard.TryAccept(10));
 
         Assert.False(guard.TryAccept(10));
@@ -38,7 +38,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void ReplayOfAnOlderAlreadyAcceptedSequenceIsRejected()
     {
-        var guard = new SequenceGuard();
+        var guard = new SlidingWindowSequenceGuard();
         Assert.True(guard.TryAccept(100));
         Assert.True(guard.TryAccept(95));
 
@@ -48,7 +48,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void OutOfOrderSequenceWithinTheWindowIsAcceptedOnce()
     {
-        var guard = new SequenceGuard();
+        var guard = new SlidingWindowSequenceGuard();
         Assert.True(guard.TryAccept(100));
 
         Assert.True(guard.TryAccept(80));
@@ -58,7 +58,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void SequenceOlderThanTheWindowIsRejected()
     {
-        var guard = new SequenceGuard(windowBits: 1024);
+        var guard = new SlidingWindowSequenceGuard(windowBits: 1024);
         Assert.True(guard.TryAccept(2000));
 
         // 2000 - 1024 = 976: exactly at the boundary, must be rejected as too old.
@@ -70,7 +70,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void LargeForwardJumpAgesOutEverySequenceItPasses()
     {
-        var guard = new SequenceGuard(windowBits: 1024);
+        var guard = new SlidingWindowSequenceGuard(windowBits: 1024);
         Assert.True(guard.TryAccept(10));
         Assert.True(guard.TryAccept(20));
 
@@ -85,7 +85,7 @@ public sealed class SequenceGuardTests
     [Fact]
     public void EveryPositionInTheWindowIsIndividuallyTrackedAcrossWordBoundaries()
     {
-        var guard = new SequenceGuard(windowBits: 128);
+        var guard = new SlidingWindowSequenceGuard(windowBits: 128);
         Assert.True(guard.TryAccept(1000));
 
         // Word boundary sits at offset 64 for a 128-bit window; probe both sides of it.
@@ -110,6 +110,6 @@ public sealed class SequenceGuardTests
     [InlineData(-64)]
     public void ConstructorRejectsWindowSizesThatAreNotAPositiveMultipleOf64(int windowBits)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new SequenceGuard(windowBits));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SlidingWindowSequenceGuard(windowBits));
     }
 }

@@ -90,18 +90,14 @@ public sealed class DuplicateTypeNameTests
             ["RecoveryState"] =
                 "pericolo: vivo in NosAi.Runtime.Safety, gemello morto in NosAi.Core.Safety; Q-111",
 
-            // --- due comportamenti sotto un nome, ed e' il caso che R1 teme ----
-            // Il commento in testa a questa classe descrive il danno con i due
-            // SafetyGate: stesso nome, due politiche, mesi senza che nessuno se ne
-            // accorgesse. Questo e' lo stesso, su una primitiva anti-replay, ed era
-            // invisibile finche' la scansione leggeva un assembly solo.
-            ["SequenceGuard"] =
-                "PERICOLO, due politiche anti-replay diverse: quella di NosAi.Protocol "
-                + "(WireProtocol.cs:229) e' un contatore monotono stretto che accetta solo la sequenza "
-                + "esatta successiva e rifiuta ogni salto come sequence_gap; quella di NosAi.Security "
-                + "(SequenceGuard.cs:11) e' una finestra scorrevole da 1024 bit che accetta il fuori "
-                + "ordine dentro la finestra. Chi legge un file solo non ha alcun indizio che l'altro "
-                + "esista. Da decidere quale politica vale, Q-111",
+            // Nota: SequenceGuard stava qui, ed e' uscito il 2026-09-07. Era il
+            // caso peggiore che questa prova abbia trovato -- due politiche
+            // anti-replay diverse sotto un nome, sui due capi dello stesso canale
+            // Gate 1 -- e non e' stato risolto unificandole ma nominandole:
+            // MonotonicSequenceGuard e SlidingWindowSequenceGuard, come R1 aveva
+            // gia' fatto con i due SafetyGate. Quale politica il canale debba
+            // imporre resta aperto, ed e' fissato da SequenceGuardPolicyTests
+            // perche' cambiarla sia una decisione e non una sorpresa.
 
             // --- stesso concetto definito due volte, senza divergenza nota ----
             ["WorldState"] =

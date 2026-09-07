@@ -116,7 +116,7 @@ public static class Gate1TestRunner
 
     private static bool TestSequenceGuard()
     {
-        var guard = new SequenceGuard();
+        var guard = new MonotonicSequenceGuard();
         return guard.ValidateAndAdvance(1, out _) &&
                guard.ValidateAndAdvance(2, out _) &&
                !guard.ValidateAndAdvance(2, out _) &&

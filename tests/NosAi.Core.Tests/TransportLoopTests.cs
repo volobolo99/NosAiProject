@@ -267,7 +267,7 @@ internal sealed class Gate1LoopbackPeer : IAsyncDisposable
     private readonly byte[] _noise = new byte[LengthPrefixedRecord.MaxLength];
     private readonly byte[] _plain = new byte[LengthPrefixedRecord.MaxLength];
     private FrameTagCalculator? _tags;
-    private SequenceGuard _incoming = new();
+    private SlidingWindowSequenceGuard _incoming = new();
     private uint _outbound;
     private bool _aborted;
 

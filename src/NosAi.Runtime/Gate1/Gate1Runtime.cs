@@ -887,8 +887,8 @@ public sealed class GuardAiNetworkChannel : IAsyncDisposable
 
         public TcpClient Client { get; }
         public NetworkStream Stream { get; }
-        public SequenceGuard Ingress { get; } = new();
-        public SequenceGuard Egress { get; } = new();
+        public MonotonicSequenceGuard Ingress { get; } = new();
+        public MonotonicSequenceGuard Egress { get; } = new();
         public SemaphoreSlim SendLock { get; } = new(1, 1);
         public DateTime AcceptedAtUtc { get; }
         public string SessionId { get; }

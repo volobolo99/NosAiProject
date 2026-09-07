@@ -72,8 +72,8 @@ public sealed class GuardAiClient : IAsyncDisposable
     private readonly int _port;
     private readonly IDeviceSigner _signer;
     private readonly string _runtimePublicKeyPem;
-    private readonly SequenceGuard _egress = new();
-    private readonly SequenceGuard _ingress = new();
+    private readonly MonotonicSequenceGuard _egress = new();
+    private readonly MonotonicSequenceGuard _ingress = new();
     private TcpClient? _client;
     private NetworkStream? _stream;
     private SessionCipher? _cipher;

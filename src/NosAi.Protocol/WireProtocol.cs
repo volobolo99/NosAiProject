@@ -226,12 +226,39 @@ public sealed class PooledWireBuffer : IDisposable
     }
 }
 
-public sealed class SequenceGuard
+/// <summary>
+/// Replay protection that accepts only the exact next sequence.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The strict half of a pair. This one advances by one and refuses everything
+/// else, naming which: <c>replay_or_duplicate</c> below the expected sequence,
+/// <c>sequence_gap</c> above it. <c>GuardAiClient</c> numbers its own frames with
+/// it, so a client that speaks this protocol emits 1, 2, 3 and nothing else.
+/// </para>
+/// <para>
+/// <b>The other end does not enforce the same rule.</b> <c>NosAiHost</c> validates
+/// incoming frames with <c>NosAi.Security.SlidingWindowSequenceGuard</c>, a
+/// 1024-bit window that accepts out-of-order and gapped sequences. The host is
+/// therefore more permissive than anything this client can produce: it would
+/// accept a jump the protocol says cannot happen.
+/// </para>
+/// <para>
+/// Both were called <c>SequenceGuard</c> until 2026-09-07, in two namespaces, and
+/// the duplicate-name register could not see it because it read one assembly.
+/// Renaming rather than unifying follows what <c>docs/PIANO_DI_RIORDINO.md</c>
+/// S:R1 did with the two <c>SafetyGate</c>s, and for the same reason: which
+/// policy the channel should enforce is a protocol decision, and the channel was
+/// verified once against a real phone that is not available to re-test. The
+/// divergence is now named, pinned by <c>SequenceGuardPolicyTests</c>, and open.
+/// </para>
+/// </remarks>
+public sealed class MonotonicSequenceGuard
 {
     private readonly object _sync = new();
     private uint _expected;
 
-    public SequenceGuard(uint expected = 1) => _expected = expected;
+    public MonotonicSequenceGuard(uint expected = 1) => _expected = expected;
 
     public bool ValidateAndAdvance(uint received, out string? reason)
     {

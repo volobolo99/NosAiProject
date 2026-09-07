@@ -8,13 +8,35 @@ namespace NosAi.Security;
 /// replay and is rejected. No allocation after construction, no lock: one
 /// writer per session, matching the frame codec it protects.
 /// </summary>
-public sealed class SequenceGuard
+/// <summary>
+/// Replay protection over a sliding window: a sequence is accepted once, and
+/// out-of-order arrivals are tolerated while they stay inside the window.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The permissive half of a pair. <c>NosAiHost</c> validates incoming frames
+/// with this, while the client at the other end
+/// (<c>GuardAiClient</c>) numbers its own with
+/// <c>NosAi.Runtime.Gate1.MonotonicSequenceGuard</c>, which emits a strictly
+/// consecutive sequence and refuses any gap. The host therefore accepts more
+/// than the protocol can produce.
+/// </para>
+/// <para>
+/// Which of the two the channel should enforce is open, and deliberately not
+/// decided by a rename: the Gate 1 channel was verified once against real
+/// hardware, and tightening the host's validation without being able to re-test
+/// against that phone would trade a named asymmetry for an unmeasured risk. See
+/// <c>SequenceGuardPolicyTests</c>, which pins which end uses which so a change
+/// is a decision and not a surprise.
+/// </para>
+/// </remarks>
+public sealed class SlidingWindowSequenceGuard
 {
     private readonly ulong[] _window;
     private readonly int _windowBits;
     private long _highWaterMark = -1;
 
-    public SequenceGuard(int windowBits = 1024)
+    public SlidingWindowSequenceGuard(int windowBits = 1024)
     {
         if (windowBits <= 0 || windowBits % 64 != 0)
             throw new ArgumentOutOfRangeException(nameof(windowBits), windowBits, "windowBits must be a positive multiple of 64.");

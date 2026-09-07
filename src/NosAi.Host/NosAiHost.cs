@@ -78,13 +78,13 @@ public sealed class NosAiHost : IAsyncDisposable
             ? new HmacCapabilityValidator(_capabilityRootKey)
             : new HmacCapabilityValidator(RandomNumberGenerator.GetBytes(32));
 
-        SequenceGuard = new SequenceGuard();
+        SlidingWindowSequenceGuard = new SlidingWindowSequenceGuard();
     }
 
     public DashboardHub Dashboard => _dashboard;
     public IEventJournal Journal => _journal;
     public IGameProcessAdapter Adapter => _adapter;
-    public SequenceGuard SequenceGuard { get; private set; }
+    public SlidingWindowSequenceGuard SlidingWindowSequenceGuard { get; private set; }
     public byte[] CapabilityRootKey => _capabilityRootKey;
     public int BoundPort { get; private set; }
     public Task WhenListening => _listening.Task;
@@ -196,8 +196,8 @@ public sealed class NosAiHost : IAsyncDisposable
         await using (NetworkStream stream = client.GetStream())
         using (NoiseXxSession session = new(initiator: false, _staticPrivateKey))
         {
-            SequenceGuard incoming = new();
-            SequenceGuard = incoming;
+            SlidingWindowSequenceGuard incoming = new();
+            SlidingWindowSequenceGuard = incoming;
             uint outboundSequence = 0;
             FrameTagCalculator? tags = null;
             bool capabilityGranted = false;

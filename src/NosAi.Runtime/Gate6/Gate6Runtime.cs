@@ -386,7 +386,7 @@ namespace NosAi.Runtime.Gate6
 
         private static bool TestCanonicalSequenceGuard()
         {
-            var guard = new NosAi.Runtime.Gate1.SequenceGuard();
+            var guard = new NosAi.Runtime.Gate1.MonotonicSequenceGuard();
             return guard.ValidateAndAdvance(1, out _)
                 && guard.ValidateAndAdvance(2, out _)
                 && !guard.ValidateAndAdvance(2, out _)
