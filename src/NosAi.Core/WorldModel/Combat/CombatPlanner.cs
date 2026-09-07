@@ -28,6 +28,19 @@ public static class CombatPlanner
     public const double DefaultBasicAttackRange = 2.0;
 
     /// <summary>Default skill range. Real per-skill range is not modelled by AP-01's <see cref="Skill"/> contract; this is a single conservative default until it is.</summary>
+    /// <remarks>
+    /// <b>This constant now gates an actuation.</b> While
+    /// <see cref="GenerateCandidates"/> had no production caller it only shaped
+    /// a proposal nothing consumed. Since <c>--engage</c> judges its
+    /// operator-named target with <see cref="CheckTargetConstraints"/>, this
+    /// number decides whether the runtime presses a key: a target beyond it is
+    /// refused as <c>target_out_of_range</c>. The direction is fail-closed --
+    /// a default that is too small refuses acts that would have been legal,
+    /// never the reverse -- so promoting it cost nothing in safety, but it is
+    /// no longer a placeholder whose value only affects a report. Replacing it
+    /// with a real per-skill range is <c>docs/agents/EXECUTION_QUEUE.md</c>
+    /// Q-103.
+    /// </remarks>
     public const double DefaultSkillRange = 6.0;
 
     /// <summary>

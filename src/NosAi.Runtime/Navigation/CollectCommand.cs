@@ -370,7 +370,8 @@ public static class CollectCommand
     }
 
     /// <summary>
-    /// Everything the live capture needs, owned together and disposed together.
+    /// Finds the running client's window and process id, or names why it could
+    /// not.
     /// </summary>
     [SupportedOSPlatform("windows")]
     private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)

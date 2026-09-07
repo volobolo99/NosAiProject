@@ -328,18 +328,18 @@ public static class LoadoutReportCommand
             : string.Join(", ", check.ViolatedConstraints);
 
     /// <summary>
-    /// Everything the live capture needs, owned together and disposed
-    /// together. The composition mirrors <see cref="Navigation.CollectCommand"/>'s
-    /// own <c>LiveObservationScope</c> field-for-field: the client's single TCP game
-    /// connection is read from the OS connection table by
-    /// <see cref="ClientNetworkObserver"/>, opened by
-    /// <see cref="WinDivertPacketSource.TryOpen"/>, reassembled and framed by
-    /// <see cref="ReassembledObservationSource.ForNosTaleWorld"/>, decoded by
-    /// <see cref="NosTaleWorldProtocolDecoder"/> and published by
-    /// <see cref="NetworkGameplayProvider"/> -- nothing new is invented here,
-    /// this command needs nothing more from it than one
-    /// <see cref="LiveObservationGateway.Capture"/> call.
+    /// Finds the running client's window and process id, or names why it could
+    /// not.
     /// </summary>
+    /// <remarks>
+    /// The live capture this command then opens is
+    /// <see cref="LiveObservationScope"/>, a shared type in
+    /// <c>NosAi.LiveIntegration</c> -- not, as an earlier version of this
+    /// comment said, a private copy mirroring
+    /// <see cref="Navigation.CollectCommand"/>'s own. Neither command has one
+    /// any more; both call the shared type, which is what the extraction was
+    /// for.
+    /// </remarks>
     [SupportedOSPlatform("windows")]
     private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)
     {

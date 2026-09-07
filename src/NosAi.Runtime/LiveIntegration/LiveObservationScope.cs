@@ -32,17 +32,26 @@ namespace NosAi.LiveIntegration;
 /// </para>
 /// <para>
 /// Extracted from <c>CollectCommand</c> and <c>LoadoutReportCommand</c>, which
-/// had grown byte-identical private copies of it; a third command needing the
-/// same live entity feed (<c>AutoplayCommand</c>) made one shared type the
-/// only sane answer. Behaviour is unchanged from those copies -- same
-/// failure-reason strings, same composition, same disposal order -- so the
-/// tests that pin either command's refusals keep passing untouched.
+/// had grown private copies of it: identical in composition, disposal order
+/// and failure-reason strings, though not line for line -- one carried 26
+/// lines of doc comment the other did not. Two further commands needing the
+/// same live entity feed (<c>ScoutCommand</c> and <c>AutoplayCommand</c>, both
+/// added by the same commit) made one shared type the only sane answer.
+/// Behaviour is unchanged from those copies, so the tests that pin either
+/// command's refusals keep passing untouched.
 /// </para>
 /// <para>
 /// Opening one needs the capture backend, and therefore Administrator rights
-/// on Windows. Every caller treats a failed open as a named, non-fatal
-/// condition rather than a refusal: a command that could run without an entity
-/// feed before this type existed must still run without one.
+/// on Windows. What a caller does with a failed open is the caller's choice,
+/// and the two answers are both deliberate: <c>CollectCommand</c>,
+/// <c>LoadoutReportCommand</c>, <c>ScoutCommand</c> and <c>AutoplayCommand</c>
+/// treat it as a named, non-fatal condition and carry on -- a command that
+/// could run without an entity feed before this type existed must still run
+/// without one -- while <c>CombatReportCommand</c> and <c>EngageCommand</c>
+/// refuse, because a combat report with no entities would say nothing and an
+/// engagement with no entities could not verify its target. What this type
+/// guarantees to all six is narrower: a failed open <b>names</b> why, and
+/// never throws.
 /// </para>
 /// </remarks>
 public sealed class LiveObservationScope : IDisposable

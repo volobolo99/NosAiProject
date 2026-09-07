@@ -539,11 +539,13 @@ public static class AutoplayCommand
                     };
                 MapModel map = mapReconstruction.Resolve(snapshotForResolve, now);
 
-                // A minimal Player carrying only what AssessSurvivalUrgency reads:
-                // Status.Resources with one Health resource from the live vitals
-                // reading. Every other field stays Unknown/empty -- the same
-                // "minimal object with only the one real fact" pattern
-                // ScoutCommand.RunWindows applies to the map/snapshot.
+                // A minimal Player carrying only the facts something below
+                // actually reads: Status.Resources with one Health resource from
+                // the live vitals reading, for AssessSurvivalUrgency, and a Live
+                // Position for the entity feed. Every other field stays
+                // Unknown/empty -- the same "minimal object with only the real
+                // facts" pattern ScoutCommand.RunWindows applies to the
+                // map/snapshot.
                 var healthResource = new Resource(
                     ResourceKind.Health,
                     WorldFact<double>.Live(vitals.Hp, confidence: 1d, now),
