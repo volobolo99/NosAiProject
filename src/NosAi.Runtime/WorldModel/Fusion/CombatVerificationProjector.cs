@@ -20,8 +20,16 @@ namespace NosAi.Runtime.WorldModel.Fusion;
 /// This projector can only answer whether the expected resource (mana for
 /// <see cref="CombatActionKind.UseSkill"/>) fell on the player between a
 /// before- and after-read. It never confirms the target was hit, damaged or
-/// affected: <c>Mob.Status.Resources</c> is not populated anywhere today
-/// (AP-02's entity fusion is blocked on the same OCR/ONNX gap). A kind with
+/// affected: <c>Mob.Status.Resources</c> is not populated anywhere today.
+/// That is no longer an OCR/ONNX gap, as an earlier version of this remark
+/// said -- the wire itself carries a target's health twice over
+/// (<c>in</c>'s <c>hp%</c>, and <c>st</c>'s absolute current/maximum pair,
+/// which <see cref="Perception.Network.NosTaleWorldProtocolDecoder"/>
+/// already reads and then divides away). What is missing is Runtime
+/// plumbing: <c>EntitySighting</c> keeps only the ratio, and no
+/// <c>Mob</c> is projected from sightings at all. See
+/// <see cref="NosAi.Core.WorldModel.Resource.Fraction"/>, which is the
+/// contract-side half of that work and is already done. A kind with
 /// no observable player-side resource pool
 /// (<see cref="CombatActionKind.BasicAttack"/>/<see cref="CombatActionKind.Reposition"/>/
 /// <see cref="CombatActionKind.Flee"/>, and inventory-spending

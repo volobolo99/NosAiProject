@@ -57,13 +57,21 @@ public enum CombatExecutionResult
 /// Deliberately partial, and deliberately says so on every member: this does
 /// <b>not</b> confirm the target was hit, damaged, or affected in any way.
 /// <c>Mob.Status.Resources</c> (the target's HP in the canonical World
-/// Model) is not populated today -- not purely the OCR/ONNX gap an earlier
-/// version of this remark named: <c>NosAi.Runtime.Autonomy.SelectableEntity.HpRatio</c>
-/// already carries a real, network-observed HP fraction for a sighted
-/// target, but it is a 0..1 fraction with no known maximum, not the raw
-/// current/maximum pair this contract's own <see cref="Resource"/> shape
-/// expects -- <c>GameplayObservationProjector</c> (Runtime) does not yet
-/// reshape it into one, a real, still-open task, not attempted here. What
+/// Model) is not populated today, and what stands in the way is narrower
+/// than either earlier version of this remark said. It is not the OCR/ONNX
+/// gap the first version named, and no longer the <see cref="Resource"/>
+/// shape mismatch the second one named: <see cref="Resource.Fraction"/>
+/// now represents a fill fraction whose bounds are unknown, which is exactly
+/// what <c>NosAi.Runtime.Autonomy.SelectableEntity.HpRatio</c> carries. Nor
+/// is the maximum always unknown --
+/// <c>NosTaleWorldProtocolDecoder.DecodeOtherVitals</c> already reads a
+/// non-player entity's <i>absolute</i> current and maximum HP off the
+/// <c>st</c> packet and immediately divides them into a ratio, because
+/// <c>EntitySighting</c> has no field to carry the pair. What is left is
+/// Runtime-side plumbing in two steps -- widen the sighting to keep the
+/// absolutes it already decodes, then project sightings into
+/// <see cref="Mob"/> records -- a real, still-open task, not attempted
+/// here. What
 /// can be observed honestly today is only whether <c>docs/ROADMAP_ESECUTIVA.md</c> S:AP-05's
 /// own "execute -> verify" stage had a real resource-cost side effect on the
 /// player -- the same "unknown is not zero" boundary

@@ -31,8 +31,11 @@ namespace NosAi.Runtime.Tactical;
 /// what the player's own resources can show: that the act had a real resource
 /// cost (the player's <c>Mp</c> fell). It does <b>not</b> confirm the target
 /// was hit, damaged or affected in any way -- <c>Mob.Status.Resources</c> is
-/// not populated anywhere today (AP-02's entity fusion is blocked on the same
-/// OCR/ONNX gap). <see cref="CombatActionKind.BasicAttack"/> (and every other
+/// not populated anywhere today. The reason is Runtime plumbing, not the
+/// OCR/ONNX gap an earlier version of this remark named: see
+/// <see cref="NosAi.Runtime.WorldModel.Fusion.CombatVerificationProjector"/>'s
+/// own remarks for what the wire already carries and what is still missing.
+/// <see cref="CombatActionKind.BasicAttack"/> (and every other
 /// non-<c>UseSkill</c> kind) is refused by design: those acts have no
 /// observable player-side resource pool, so verifying them through this
 /// mechanism would always produce an empty answer -- see
