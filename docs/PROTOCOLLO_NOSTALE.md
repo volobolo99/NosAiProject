@@ -48,10 +48,58 @@ silent about what only the client knows.
 | Concept | Observed |
 |---|---|
 | Entity type `2` | **NPC, pet e portali — letto dal 2026-09-08, come `Bystander`**: vedi sotto |
-| Entity type `1` | player — **confirmed** (the session's own character id `3443217` appears as type 1 in `su`, `cond`, `sayi`) |
+| Entity type `1` | **altro giocatore — `mv` letto dal 2026-09-08, `in` e `st` no**: vedi sotto. Player — **confirmed** (the session's own character id `3443217` appears as type 1 in `su`, `cond`, `sayi`) |
 | Entity type `2` | not observed in these captures |
 | Entity type `3` | monster / NPC — **confirmed** (all `mv`, `in`, `die`) |
 | Entity id | stable per entity for its lifetime — **confirmed** (traced `313816` across `in`, `st`, `su`, `mv`, `die`) |
+
+---
+
+## Entity type `1` — si vede muovere, non si sa chi è
+
+Il `mv` di un altro giocatore ha esattamente la forma degli altri:
+
+```
+mv 1 8309202 74 108 12      altro giocatore, velocità 12
+mv 3 3023    51 162  5      mostro,          velocità 5
+```
+
+Sei token in entrambi, e gli id sono gli stessi che il pacchetto di comparsa
+dichiara. Il passo mediano è **3,6 caselle** contro le 2,0 dei tipi 2 e 3 — e non
+è un layout sbagliato, è la velocità che quegli stessi pacchetti riferiscono. Il
+salto più grande misurato su 125 passi è **9,0 caselle**, su una mappa larga
+oltre 160: campi letti nel posto sbagliato darebbero salti da un capo all'altro.
+
+### Il suo `in` invece no
+
+```
+in 1 GaM1 - 8309204 76 121 2 0 0 1 7 3 -1.271.152.88…
+     nome ^ id      x  y   dir
+in 3 36   313826 109  63 2 …
+     vnum id     x    y  dir
+```
+
+Il tipo 1 porta un **nome** dove gli altri portano il vnum, e un campo `-` in
+più: id, x e y stanno una posizione più in là. Resta rifiutato, ed è per questo
+che `IsReadableEntity` prende ora anche l'opcode — un solo predicato
+costringerebbe a rifiutare la posizione di un altro giocatore per colpa di un
+pacchetto diverso. Il suo `st` non è mai stato osservato.
+
+### Conseguenza: si vede, non si nomina, non si attacca
+
+Un altro giocatore appare come posizione, specie `Player`, **senza vnum** — e
+senza vnum `TargetEstablishment` non stabilisce nulla, esattamente come per ogni
+entità mai nominata. Non è servita una regola nuova.
+
+**Il personaggio proprio non è mai un'entità del mondo.** Il server non manda mai
+la propria posizione — zero occorrenze del proprio id fra i 20 876 `mv` di
+`messaggi.noscap` — e il decoder non si fida di quel fatto: se un giorno la
+mandasse, pubblicarla creerebbe un secondo sé stesso accanto a quello che `stat`
+e `cond` già descrivono.
+
+**Misurato**: «tipo entità non letto» è ora **zero su cinque registrazioni su
+sei**; su `messaggi.noscap` restano 5 pacchetti, tutti `in` di tipo 1. Il World
+Model di quella cattura vede **176 mostri, 33 astanti e 8 giocatori**.
 
 ---
 
