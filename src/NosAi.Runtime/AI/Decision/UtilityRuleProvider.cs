@@ -116,6 +116,21 @@ public static class BuiltInRuleSet
                 new RuleCondition("player.hp_ratio", ConditionOperator.GreaterOrEqual, 0.35)),
             0.90, CombatPriority, "Bersaglio quasi morto: finirlo prima che rigeneri"),
 
+        // Consumes Fase 3 (cooldown) and Fase 2 (MP) together. A ready skill is
+        // preferred over the basic attack, but only when its cooldown is actually
+        // OBSERVED ready and there is MP. If either fact is UNKNOWN -- which is the
+        // spec's expected state for cooldown until concordance is recorded -- the
+        // engine skips this rule and combat.engage fires the basic attack instead.
+        // Proposing a skill on an unknown cooldown is exactly what makes Verify
+        // fail the action one by one (SPEC_ESTENSIONE_LAYOUT_MEMORIA.md, Fase 3).
+        new DecisionRule("combat.skill_ready", "ACTION_CAST_SKILL",
+            ImmutableArray.Create(
+                new RuleCondition("target.hp_ratio", ConditionOperator.GreaterThan, 0.0),
+                new RuleCondition("player.hp_ratio", ConditionOperator.GreaterOrEqual, 0.50),
+                new RuleCondition("skill.primary.cooldown_ready", ConditionOperator.Equal, 1),
+                new RuleCondition("player.mp_ratio", ConditionOperator.GreaterOrEqual, 0.10)),
+            0.80, CombatPriority, "Bersaglio valido, vita e MP sufficienti, abilita' pronta: cast invece dell'attacco base"),
+
         new DecisionRule("combat.engage", "ACTION_ATTACK_TARGET",
             ImmutableArray.Create(
                 new RuleCondition("target.hp_ratio", ConditionOperator.GreaterThan, 0.0),
