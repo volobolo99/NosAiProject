@@ -280,18 +280,37 @@ public sealed class MapReconstructionSourceTests
         Assert.Same(snapshot.Map, result);
     }
 
+    /// <summary>
+    /// Senza store, la ricostruzione continua in memoria e lo dice.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>La condizione va costruita, non assunta.</b> Fino al 2026-09-07 questo
+    /// test non passava alcuna opzione, e il suo commento diceva che il volume
+    /// <c>NOSAI-SSD</c> «is not attached on this test host». Era vero su quella
+    /// macchina e in quel momento: l'operatore ha collegato il volume e il test
+    /// e' diventato rosso senza che una riga di produzione fosse cambiata.
+    /// </para>
+    /// <para>
+    /// Il verde precedente non era quindi evidenza del percorso fail-soft: era
+    /// evidenza di come era fatto il PC. Ora l'etichetta del volume e' un GUID,
+    /// che nessuna macchina puo' avere per caso, e il percorso sotto esame e'
+    /// lo stesso ovunque.
+    /// </para>
+    /// </remarks>
     [Fact]
     public void Resolve_NoStoreAvailable_StillReconstructsInMemoryForTheSession()
     {
-        // No SqliteJournalOptions override is passed, so the constructor
-        // tries MapModelStore.OpenFromVolume against the default "NOSAI-SSD"
-        // label, which is not attached on this test host -- exercising the
-        // fail-soft "continue with a null store" path.
         using TempMapsDir maps = TempMapsDir.Create();
         WriteGridFile(maps.Directory, mapId: 1, width: 1, height: 1, cells: new byte[] { 0x00 });
         var logger = new RecordingLogger();
 
-        using var source = new MapReconstructionSource(mapsDirectoryOverride: maps.Directory, logger: logger);
+        var noSuchVolume = new SqliteJournalOptions(
+            VolumeLabel: $"NO-VOLUME-{Guid.NewGuid():N}",
+            FileName: "nosai-maps.db");
+
+        using var source = new MapReconstructionSource(
+            storeOptions: noSuchVolume, mapsDirectoryOverride: maps.Directory, logger: logger);
         MapModel result = source.Resolve(SnapshotFor(new MapId("map-1"), T0), T0);
 
         Assert.Single(result.Tiles);

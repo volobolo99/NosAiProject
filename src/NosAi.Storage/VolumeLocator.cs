@@ -1,5 +1,7 @@
 using System.IO;
 
+using System.Linq;
+
 namespace NosAi.Storage;
 
 /// <summary>
@@ -48,7 +50,55 @@ public static class VolumeLocator
     }
 
     /// <summary>
-    /// Resolves the full database path for <paramref name="options"/>.
+    /// The directory the deployment document reserves for SQLite and its
+    /// WAL/SHM companions, relative to the volume root.
+    /// </summary>
+    /// <remarks>
+    /// <c>docs/EXTERNAL_SSD_DEPLOYMENT.md</c> § 3 has always said
+    /// <c>&lt;NOSAI-SSD&gt;:\NosAi\data\db\</c>. Until 2026-09-07 this class
+    /// combined the file name straight onto the volume root, so <c>nosai.db</c>
+    /// and <c>nosai-maps.db</c> landed beside <c>$RECYCLE.BIN</c> while
+    /// <c>reference.db</c> sat two directories deeper — three databases of one
+    /// project in two places, neither of them the documented one. Aligned on
+    /// the operator's instruction, with the existing files moved rather than
+    /// abandoned: a database the code stops looking at is a database the
+    /// project silently starts over from.
+    /// </remarks>
+    public static readonly string[] DatabaseDirectorySegments = { "NosAi", "data", "db" };
+
+    /// <summary>
+    /// Where the database would be, without creating anything and without
+    /// throwing when the volume is absent.
+    /// </summary>
+    /// <remarks>
+    /// Per chi deve <b>guardare</b> il file invece di aprirlo — un rapporto di
+    /// sola lettura che distingue «mai creato» da «creato e vuoto» non puo'
+    /// usare <see cref="ResolveDatabasePath"/>, che la cartella la crea. Ed e'
+    /// qui e non nel chiamante perche' la formula del percorso deve stare in un
+    /// posto solo: la versione precedente la ricalcolava altrove e le due
+    /// divergevano appena una delle due cambiava.
+    /// </remarks>
+    public static bool TryResolveDatabasePath(
+        SqliteJournalOptions options, out string path, out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (!TryResolve(options.VolumeLabel, out string root))
+        {
+            path = string.Empty;
+            failureReason = $"volume_not_attached:{options.VolumeLabel}";
+            return false;
+        }
+
+        path = Path.Combine(
+            new[] { root }.Concat(DatabaseDirectorySegments).Append(options.FileName).ToArray());
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Resolves the full database path for <paramref name="options"/>, creating
+    /// the directory when it does not exist yet.
     /// </summary>
     /// <exception cref="InvalidOperationException">
     /// The labeled volume is not attached. There is deliberately no fallback to
@@ -67,6 +117,14 @@ public static class VolumeLocator
                 "labeled volume and does not fall back to a different drive.");
         }
 
-        return Path.Combine(root, options.FileName);
+        string directory = Path.Combine(new[] { root }.Concat(DatabaseDirectorySegments).ToArray());
+
+        // Creare la cartella, non il database: sono due cose diverse e solo la
+        // prima e' innocua. Chi legge un registro deve poter distinguere "mai
+        // creato" da "creato e vuoto" (OutcomeReportCommand), e quella
+        // distinzione sopravvive solo se ad aprire lo store e' chi scrive.
+        Directory.CreateDirectory(directory);
+
+        return Path.Combine(directory, options.FileName);
     }
 }

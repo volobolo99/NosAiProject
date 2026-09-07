@@ -210,13 +210,12 @@ public static class OutcomeReportCommand
         // questo rapporto esiste per fare. Misurato il 2026-09-07: eseguire
         // --outcome-report creo' D:\nosai.db, 16 KB, vuoto.
         var options = new SqliteJournalOptions();
-        if (!VolumeLocator.TryResolve(options.VolumeLabel, out string volumeRoot))
+        if (!VolumeLocator.TryResolveDatabasePath(options, out string databasePath, out string? pathReason))
         {
-            Console.WriteLine($"[REFUSED] {LedgerUnavailableReason}:volume_not_attached:{options.VolumeLabel}");
+            Console.WriteLine($"[REFUSED] {LedgerUnavailableReason}:{pathReason}");
             return ExitRefused;
         }
 
-        string databasePath = Path.Combine(volumeRoot, options.FileName);
         if (!File.Exists(databasePath))
         {
             // Una risposta, non un rifiuto: il volume risponde, e cio' che dice

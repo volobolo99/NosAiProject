@@ -111,8 +111,15 @@ public static class GameReferenceLocator
     }
 
     /// <summary>
-    /// <c>&lt;NOSAI-SSD&gt;\NosAi\data</c>, or a reason the volume is absent.
+    /// <c>&lt;NOSAI-SSD&gt;\NosAi\data\db</c>, or a reason the volume is absent.
     /// </summary>
+    /// <remarks>
+    /// Il segmento <c>db</c> e' arrivato il 2026-09-07, allineando il catalogo
+    /// alla struttura che <c>docs/EXTERNAL_SSD_DEPLOYMENT.md</c> § 3 descrive e
+    /// alla cartella in cui <c>NosAi.Storage.VolumeLocator</c> mette gli altri
+    /// tre database. Prima, <c>reference.db</c> stava un livello piu' su e gli
+    /// altri alla radice del volume: nessuno dei tre dove il documento diceva.
+    /// </remarks>
     public static bool TryFindDedicatedDataDirectory(out string path, out string? failureReason)
     {
         path = "";
@@ -125,7 +132,7 @@ public static class GameReferenceLocator
                 if (!string.Equals(drive.VolumeLabel, VolumeLabel, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                path = Path.Combine(drive.RootDirectory.FullName, "NosAi", "data");
+                path = Path.Combine(drive.RootDirectory.FullName, "NosAi", "data", "db");
                 failureReason = null;
                 return true;
             }
