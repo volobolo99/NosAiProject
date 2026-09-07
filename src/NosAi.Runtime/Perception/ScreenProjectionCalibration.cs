@@ -89,6 +89,17 @@ public sealed record ScreenProjectionCalibration
     public const int MinimumSamples = 3;
 
     /// <summary>
+    /// The fewest pairs before the two perspective terms are fitted at all.
+    /// </summary>
+    /// <remarks>
+    /// Eight unknowns need four pairs to be determined and a fifth before the fit
+    /// can be checked against anything it did not already reproduce. Under five,
+    /// the map stays affine — which is not a compromise but the honest answer:
+    /// with four pairs a perspective term is whatever the noise asks for.
+    /// </remarks>
+    public const int PerspectiveMinimumSamples = 5;
+
+    /// <summary>
     /// How far a sample may land from where the fitted transform puts it, measured
     /// in map tiles rather than in pixels.
     /// </summary>
@@ -199,7 +210,15 @@ public sealed record ScreenProjectionCalibration
     /// </para>
     /// </remarks>
     private const string Magic = "nosai-screen-projection";
-    private const int Version = 4;
+    private const int Version = 5;
+
+    /// <summary>
+    /// La versione 4 e' la stessa mappa senza i due termini prospettici, cioe'
+    /// con entrambi a zero. Si legge ancora: una calibrazione affine e' una
+    /// prospettica con la prospettiva a zero, e rifiutarla costringerebbe a
+    /// ricalibrare per una differenza che il file sa esprimere.
+    /// </summary>
+    private const int AffineOnlyVersion = 4;
 
     private ScreenProjectionCalibration(
         bool isCalibrated,
@@ -210,11 +229,14 @@ public sealed record ScreenProjectionCalibration
         int verifiedAgainst,
         DpiAwarenessRegime regime,
         uint clientDpi,
-        DateTime? calibratedAtUtc)
+        DateTime? calibratedAtUtc,
+        double g = 0,
+        double h = 0)
     {
         IsCalibrated = isCalibrated;
         A = a; B = b; C = c;
         D = d; E = e; F = f;
+        G = g; H = h;
         ClientWidth = clientWidth;
         ClientHeight = clientHeight;
         WorstResidualPixels = worstResidual;
@@ -231,6 +253,33 @@ public sealed record ScreenProjectionCalibration
     public double A { get; }
     public double B { get; }
     public double C { get; }
+
+    /// <summary>
+    /// I due termini prospettici del denominatore <c>G·Δx + H·Δy + 1</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perche' esistono, misurato.</b> Fino al 2026-09-07 questa mappa era
+    /// affine, e non tornava: i dodici campioni del 3 settembre lasciavano 2,43
+    /// caselle di residuo contro una soglia di 1,5, e undici campioni raccolti il
+    /// 7 ne lasciavano 3,77. Dividendo ciascuna delle due sessioni fra i clic
+    /// nella meta' alta e quelli nella meta' bassa della finestra, il passo della
+    /// casella cambia nella stessa direzione in tutte e due: 30,7 -> 36,6 px in
+    /// orizzontale il 3 settembre, 36,9 -> 42,9 il 7. La casella e' piu' grande in
+    /// basso e piu' piccola in alto, che e' quello che fa una telecamera inclinata
+    /// e che nessuna mappa affine puo' rappresentare.
+    /// </para>
+    /// <para>
+    /// Aggiungendo i due termini il residuo del 3 settembre scende da 2,43 a 1,23
+    /// caselle — sotto soglia, con gli stessi campioni che prima venivano
+    /// rifiutati — e i due termini che le due sessioni misurano indipendentemente
+    /// concordano: <c>H</c> vale -0,0181 e -0,0153, <c>G</c> e' circa zero in
+    /// entrambe, come dev'essere per una telecamera inclinata attorno al solo asse
+    /// orizzontale.
+    /// </para>
+    /// </remarks>
+    public double G { get; }
+    public double H { get; }
 
     /// <summary>Coefficients of <c>screenY = D·Δx + E·Δy + F</c>.</summary>
     public double D { get; }
@@ -415,31 +464,39 @@ public sealed record ScreenProjectionCalibration
         (double d, double e, double f) = SolveComponent(
             samples, meanX, meanY, sxx, sxy, syy, determinant, static s => s.ScreenY);
 
+        // La prospettiva si aggiunge solo se paga. L'affine resta la risposta di
+        // partenza, la prospettica viene misurata sugli stessi campioni, e vince
+        // solo se il residuo peggiore -- l'unica cosa che decide se la
+        // calibrazione viene scritta -- e' davvero piu' piccolo. Un modello con
+        // due parametri in piu' che non riduce l'errore sta adattando il rumore.
+        double g = 0, h = 0;
+        double perspectiveVarianceX = 0, perspectiveVarianceY = 0;
+        if (samples.Count >= PerspectiveMinimumSamples
+            && TrySolvePerspective(samples, out double[]? projective,
+                   out double factorX, out double factorY)
+            && WorstTiles(samples, projective![0], projective[1], projective[2],
+                   projective[3], projective[4], projective[5], projective[6], projective[7],
+                   out double projectiveTiles, out _)
+            && WorstTiles(samples, a, b, c, d, e, f, 0, 0, out double affineTiles, out _)
+            && projectiveTiles < affineTiles)
+        {
+            a = projective[0]; b = projective[1]; c = projective[2];
+            d = projective[3]; e = projective[4]; f = projective[5];
+            g = projective[6]; h = projective[7];
+            perspectiveVarianceX = factorX;
+            perspectiveVarianceY = factorY;
+        }
+
         // A residual is a pixel distance, but the measurement error is not: what
         // was read back is a tile index, so the disagreement is carried back
         // through the fitted transform and judged in the unit it was made in.
-        // Inverting it requires it to be a transform at all.
-        double transformDeterminant = (a * e) - (b * d);
-        if (Math.Abs(transformDeterminant) < 1e-9)
+        // Inverting it requires it to be a transform at all -- e con la
+        // prospettiva l'inversa cambia da punto a punto, quindi si usa la
+        // derivata locale invece della matrice costante.
+        if (!WorstTiles(samples, a, b, c, d, e, f, g, h, out double worstTiles, out double worst))
         {
             failureReason = "fitted_transform_collapses_the_plane";
             return false;
-        }
-
-        double worst = 0;
-        double worstTiles = 0;
-        foreach (ScreenProjectionSample sample in samples)
-        {
-            double px = (a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c;
-            double py = (d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f;
-            double errorX = px - sample.ScreenX;
-            double errorY = py - sample.ScreenY;
-
-            worst = Math.Max(worst, Math.Sqrt((errorX * errorX) + (errorY * errorY)));
-
-            double tileX = ((e * errorX) - (b * errorY)) / transformDeterminant;
-            double tileY = ((a * errorY) - (d * errorX)) / transformDeterminant;
-            worstTiles = Math.Max(worstTiles, Math.Sqrt((tileX * tileX) + (tileY * tileY)));
         }
 
         if (worstTiles > MaxVerificationResidualTiles)
@@ -454,23 +511,35 @@ public sealed record ScreenProjectionCalibration
         // estimate that noise from; at exactly three pairs there are none, the fit
         // reproduces its input, and there is nothing to say - which is what
         // VerifiedAgainstSamples reports as zero.
-        int degreesOfFreedom = (2 * samples.Count) - 6;
+        // Otto parametri quando la prospettiva e' stata adottata, sei quando no:
+        // dividere la somma dei quadrati per i gradi di liberta' sbagliati non e'
+        // una approssimazione, e' un'altra grandezza.
+        bool perspective = g != 0 || h != 0;
+        int parameters = perspective ? 8 : 6;
+        int degreesOfFreedom = (2 * samples.Count) - parameters;
         if (degreesOfFreedom > 0)
         {
             double sumOfSquares = 0;
             foreach (ScreenProjectionSample sample in samples)
             {
-                double px = (a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c;
-                double py = (d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f;
+                double denominator = (g * sample.MapDelta.X) + (h * sample.MapDelta.Y) + 1;
+                double px = ((a * sample.MapDelta.X) + (b * sample.MapDelta.Y) + c) / denominator;
+                double py = ((d * sample.MapDelta.X) + (e * sample.MapDelta.Y) + f) / denominator;
                 sumOfSquares += ((px - sample.ScreenX) * (px - sample.ScreenX))
                                 + ((py - sample.ScreenY) * (py - sample.ScreenY));
             }
 
-            // Standard error of the two scale coefficients, from the same centred
-            // normal matrix the fit came out of.
+            // L'errore standard dei due coefficienti di scala, dalla matrice
+            // normale da cui il fit e' uscito davvero. Riusare quella affine per
+            // un fit a otto parametri darebbe un numero che non descrive nulla:
+            // e' la matrice di un altro problema.
             double variance = sumOfSquares / degreesOfFreedom;
-            double standardErrorX = Math.Sqrt(variance * syy / determinant);
-            double standardErrorY = Math.Sqrt(variance * sxx / determinant);
+            double standardErrorX = perspective
+                ? Math.Sqrt(variance * perspectiveVarianceX)
+                : Math.Sqrt(variance * syy / determinant);
+            double standardErrorY = perspective
+                ? Math.Sqrt(variance * perspectiveVarianceY)
+                : Math.Sqrt(variance * sxx / determinant);
 
             double pitchX = Math.Sqrt((a * a) + (d * d));
             double pitchY = Math.Sqrt((b * b) + (e * e));
@@ -509,7 +578,9 @@ public sealed record ScreenProjectionCalibration
             samples.Count - MinimumSamples,
             regime ?? DpiAwareness.Current(),
             clientDpi,
-            calibratedAtUtc);
+            calibratedAtUtc,
+            g,
+            h);
         failureReason = null;
         return true;
     }
@@ -529,9 +600,22 @@ public sealed record ScreenProjectionCalibration
     /// click lands in an arbitrary part of the window.
     /// </remarks>
     public (double X, double Y)? ProjectDelta(MapPoint mapDelta)
-        => IsCalibrated
-            ? ((A * mapDelta.X) + (B * mapDelta.Y) + C, (D * mapDelta.X) + (E * mapDelta.Y) + F)
-            : null;
+    {
+        if (!IsCalibrated)
+            return null;
+
+        double denominator = (G * mapDelta.X) + (H * mapDelta.Y) + 1;
+
+        // Il denominatore si annulla sull'orizzonte: la' il piano della mappa e'
+        // parallelo alla vista e una casella occupa zero pixel. Nessun pixel e'
+        // la risposta giusta, e sceglierne uno qualsiasi manderebbe un clic in un
+        // punto arbitrario della finestra.
+        if (Math.Abs(denominator) < 1e-6)
+            return null;
+
+        return (((A * mapDelta.X) + (B * mapDelta.Y) + C) / denominator,
+                ((D * mapDelta.X) + (E * mapDelta.Y) + F) / denominator);
+    }
 
     /// <summary>Loads the calibration, or returns <see cref="Uncalibrated"/> with a reason.</summary>
     /// <remarks>
@@ -574,13 +658,27 @@ public sealed record ScreenProjectionCalibration
             return Uncalibrated;
         }
 
-        if (version != Version)
+        if (version != Version && version != AffineOnlyVersion)
         {
             failureReason = $"screen_projection_version_unsupported:{version}";
             return Uncalibrated;
         }
 
+        // La v4 non porta i due termini prospettici, e quello che manca vale zero:
+        // e' esattamente cio' che quella versione affermava.
+        int perspectiveFields = version == Version ? 2 : 0;
+        double g = 0, h = 0;
         string[] fields = lines[1].Split(' ');
+        if (perspectiveFields == 2
+            && (fields.Length != 15 || !TryNumber(fields[6], out g) || !TryNumber(fields[7], out h)))
+        {
+            failureReason = "screen_projection_entry_malformed";
+            return Uncalibrated;
+        }
+
+        if (perspectiveFields == 2)
+            fields = fields.Take(6).Concat(fields.Skip(8)).ToArray();
+
         if (fields.Length != 13
             || !TryNumber(fields[0], out double a) || !TryNumber(fields[1], out double b)
             || !TryNumber(fields[2], out double c) || !TryNumber(fields[3], out double d)
@@ -615,7 +713,8 @@ public sealed record ScreenProjectionCalibration
         }
 
         return new ScreenProjectionCalibration(
-            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, clientDpi, at);
+            true, a, b, c, d, e, f, clientWidth, clientHeight, residual, verified, regime, clientDpi, at,
+            g, h);
     }
 
     /// <summary>Writes the calibration, creating the directory if needed.</summary>
@@ -635,7 +734,7 @@ public sealed record ScreenProjectionCalibration
 
         var text = new StringBuilder();
         text.Append(Magic).Append(' ').Append(Version).Append('\n');
-        foreach (double value in new[] { A, B, C, D, E, F })
+        foreach (double value in new[] { A, B, C, D, E, F, G, H })
             text.Append(value.ToString("R", CultureInfo.InvariantCulture)).Append(' ');
         text
             .Append(ClientWidth.ToString(CultureInfo.InvariantCulture)).Append(' ')
@@ -685,6 +784,224 @@ public sealed record ScreenProjectionCalibration
         double b = ((sxx * ty) - (sxy * tx)) / determinant;
         double c = meanV - (a * meanX) - (b * meanY);
         return (a, b, c);
+    }
+
+    /// <summary>
+    /// Fits the eight coefficients of the projective map by least squares.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Ogni coppia da' due equazioni lineari nelle otto incognite, ottenute
+    /// moltiplicando per il denominatore: <c>u·(G·Δx + H·Δy + 1) = A·Δx + B·Δy + C</c>
+    /// e altrettanto per <c>v</c>. E' la forma diretta, quella che minimizza
+    /// l'errore algebrico e non quello geometrico -- differenza che conta quando i
+    /// punti sono quasi sull'orizzonte, e che qui non conta: i clic stanno dentro
+    /// una finestra di 1024x768 e il denominatore misurato sulle sessioni reali
+    /// resta fra 0,7 e 1,3.
+    /// </para>
+    /// <para>
+    /// Il risultato viene comunque giudicato in caselle da <see cref="WorstTiles"/>,
+    /// cioe' sull'errore che l'operatore vedrebbe, e adottato solo se batte
+    /// l'affine su quella misura. Un fit che minimizza una cosa e viene accettato
+    /// su un'altra e' onesto solo se e' la seconda a decidere.
+    /// </para>
+    /// </remarks>
+    private static bool TrySolvePerspective(
+        IReadOnlyList<ScreenProjectionSample> samples,
+        out double[]? coefficients,
+        out double varianceFactorX,
+        out double varianceFactorY)
+    {
+        coefficients = null;
+        varianceFactorX = 0;
+        varianceFactorY = 0;
+
+        var normal = new double[8, 9];
+        Span<double> row = stackalloc double[8];
+
+        foreach (ScreenProjectionSample sample in samples)
+        {
+            double x = sample.MapDelta.X;
+            double y = sample.MapDelta.Y;
+
+            foreach (bool horizontal in new[] { true, false })
+            {
+                double target = horizontal ? sample.ScreenX : sample.ScreenY;
+                row.Clear();
+                row[horizontal ? 0 : 3] = x;
+                row[horizontal ? 1 : 4] = y;
+                row[horizontal ? 2 : 5] = 1;
+                row[6] = -target * x;
+                row[7] = -target * y;
+
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                        normal[i, j] += row[i] * row[j];
+                    normal[i, 8] += row[i] * target;
+                }
+            }
+        }
+
+        // La copia serve perche' l'eliminazione consuma la matrice, e la stessa
+        // matrice serve dopo: la diagonale della sua inversa dice quanto sono
+        // determinati i coefficienti, che e' una domanda diversa da quanto bene
+        // riproducono i campioni.
+        var forInverse = (double[,])normal.Clone();
+        if (!TrySolveInPlace(normal, out double[] solved))
+            return false;
+        if (!TryInvertDiagonal(forInverse, out varianceFactorX, out varianceFactorY))
+            return false;
+
+        // Un denominatore che cambia segno fra un campione e l'altro vuol dire che
+        // il piano passa dietro la telecamera: aritmeticamente una soluzione,
+        // geometricamente niente.
+        foreach (ScreenProjectionSample sample in samples)
+        {
+            double denominator = (solved[6] * sample.MapDelta.X) + (solved[7] * sample.MapDelta.Y) + 1;
+            if (denominator <= 0.1)
+                return false;
+        }
+
+        coefficients = solved;
+        return true;
+    }
+
+    /// <summary>
+    /// The two diagonal entries of the inverse normal matrix that belong to the
+    /// horizontal and vertical scale coefficients.
+    /// </summary>
+    /// <remarks>
+    /// Sono i due moltiplicatori che, per la varianza dei residui, danno la
+    /// varianza di quei coefficienti. Si ottengono risolvendo la normale contro le
+    /// colonne della matrice identita' corrispondenti -- <c>A</c> e' l'incognita 0,
+    /// <c>E</c> la 4 -- senza mai formare l'inversa intera, che non serve.
+    /// </remarks>
+    private static bool TryInvertDiagonal(double[,] normal, out double forA, out double forE)
+    {
+        forA = 0;
+        forE = 0;
+
+        foreach (int index in new[] { 0, 4 })
+        {
+            var augmented = new double[8, 9];
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                    augmented[i, j] = normal[i, j];
+                augmented[i, 8] = i == index ? 1 : 0;
+            }
+
+            if (!TrySolveInPlace(augmented, out double[] column))
+                return false;
+            if (column[index] <= 0)
+                return false;
+
+            if (index == 0) forA = column[0];
+            else forE = column[4];
+        }
+
+        return true;
+    }
+
+    /// <summary>Gaussian elimination with partial pivoting on an 8x9 augmented matrix.</summary>
+    private static bool TrySolveInPlace(double[,] matrix, out double[] solution)
+    {
+        const int n = 8;
+        solution = new double[n];
+
+        for (int column = 0; column < n; column++)
+        {
+            int pivot = column;
+            for (int r = column + 1; r < n; r++)
+                if (Math.Abs(matrix[r, column]) > Math.Abs(matrix[pivot, column]))
+                    pivot = r;
+
+            if (Math.Abs(matrix[pivot, column]) < 1e-12)
+                return false;
+
+            if (pivot != column)
+                for (int j = column; j <= n; j++)
+                    (matrix[column, j], matrix[pivot, j]) = (matrix[pivot, j], matrix[column, j]);
+
+            double divisor = matrix[column, column];
+            for (int j = column; j <= n; j++)
+                matrix[column, j] /= divisor;
+
+            for (int r = 0; r < n; r++)
+            {
+                if (r == column) continue;
+                double factor = matrix[r, column];
+                if (factor == 0) continue;
+                for (int j = column; j <= n; j++)
+                    matrix[r, j] -= factor * matrix[column, j];
+            }
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            if (double.IsNaN(matrix[i, n]) || double.IsInfinity(matrix[i, n]))
+                return false;
+            solution[i] = matrix[i, n];
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The worst disagreement between the map and its samples, in tiles and in
+    /// pixels, or false when the map cannot be inverted where a sample sits.
+    /// </summary>
+    /// <remarks>
+    /// Con la prospettiva l'inversa non e' una matrice sola: quanti pixel vale una
+    /// casella dipende da dove si guarda. L'errore in pixel viene quindi riportato
+    /// in caselle attraverso la derivata della mappa <i>in quel campione</i>, che
+    /// per un campione affine si riduce esattamente alla matrice costante di
+    /// prima.
+    /// </remarks>
+    private static bool WorstTiles(
+        IReadOnlyList<ScreenProjectionSample> samples,
+        double a, double b, double c, double d, double e, double f, double g, double h,
+        out double worstTiles, out double worstPixels)
+    {
+        worstTiles = 0;
+        worstPixels = 0;
+
+        foreach (ScreenProjectionSample sample in samples)
+        {
+            double x = sample.MapDelta.X;
+            double y = sample.MapDelta.Y;
+
+            double denominator = (g * x) + (h * y) + 1;
+            if (Math.Abs(denominator) < 1e-6)
+                return false;
+
+            double numeratorX = (a * x) + (b * y) + c;
+            double numeratorY = (d * x) + (e * y) + f;
+            double projectedX = numeratorX / denominator;
+            double projectedY = numeratorY / denominator;
+
+            double errorX = projectedX - sample.ScreenX;
+            double errorY = projectedY - sample.ScreenY;
+            worstPixels = Math.Max(worstPixels, Math.Sqrt((errorX * errorX) + (errorY * errorY)));
+
+            // Derivata della mappa nel campione: le due colonne dicono di quanti
+            // pixel si sposta il punto per una casella in x e per una in y.
+            double duDx = ((a * denominator) - (numeratorX * g)) / (denominator * denominator);
+            double duDy = ((b * denominator) - (numeratorX * h)) / (denominator * denominator);
+            double dvDx = ((d * denominator) - (numeratorY * g)) / (denominator * denominator);
+            double dvDy = ((e * denominator) - (numeratorY * h)) / (denominator * denominator);
+
+            double jacobian = (duDx * dvDy) - (duDy * dvDx);
+            if (Math.Abs(jacobian) < 1e-9)
+                return false;
+
+            double tileX = ((dvDy * errorX) - (duDy * errorY)) / jacobian;
+            double tileY = ((duDx * errorY) - (dvDx * errorX)) / jacobian;
+            worstTiles = Math.Max(worstTiles, Math.Sqrt((tileX * tileX) + (tileY * tileY)));
+        }
+
+        return true;
     }
 
     /// <summary>Whether the character's own pixel falls inside the window.</summary>

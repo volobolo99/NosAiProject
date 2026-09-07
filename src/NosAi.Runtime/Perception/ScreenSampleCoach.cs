@@ -63,10 +63,25 @@ public sealed record ScreenSampleCoverage(
 public sealed class ScreenSampleCoach
 {
     /// <summary>
-    /// How many samples to ask for. Twelve, because that is the size of the one
-    /// set in this repository that ever produced an accepted calibration.
+    /// How many samples to ask for.
     /// </summary>
-    public const int DefaultWantedSamples = 12;
+    /// <remarks>
+    /// <para>
+    /// Era dodici, la dimensione dell'unico insieme che avesse mai prodotto una
+    /// calibrazione accettata. Con la prospettiva i parametri sono otto invece di
+    /// sei, e dodici campioni non li determinano: le due sessioni reali del
+    /// 2026-09-07 e del 2026-09-03, entrambe con residuo sotto soglia una volta
+    /// adottato il modello giusto, si fermano a 6-8% di incertezza sulla scala
+    /// contro il 5% richiesto.
+    /// </para>
+    /// <para>
+    /// L'incertezza scende come la radice dei gradi di liberta': da 7% con dodici
+    /// campioni (sedici gradi) servono circa trentuno gradi per arrivare al 5%,
+    /// cioe' una ventina di campioni. Venti e' quel numero, non un margine scelto
+    /// a occhio.
+    /// </para>
+    /// </remarks>
+    public const int DefaultWantedSamples = 20;
 
     /// <summary>
     /// The shortest click that carries usable geometry, in tiles.

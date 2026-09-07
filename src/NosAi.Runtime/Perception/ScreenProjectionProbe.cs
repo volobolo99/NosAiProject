@@ -128,6 +128,8 @@ public static class ScreenProjectionProbe
             Say("  Nothing was written. The old calibration, if any, is untouched.");
             if (reason is not null && reason.StartsWith("samples_are_collinear", StringComparison.Ordinal))
                 Say("  The offsets lie on a line: one of them has to cross the others' direction.");
+            if (reason is not null && reason.StartsWith("samples_disagree", StringComparison.Ordinal))
+                NameTheOddOneOut(samples, clientWidth, clientHeight, Say);
             return 1;
         }
 
@@ -181,6 +183,53 @@ public static class ScreenProjectionProbe
     /// but silently dropping the stale ones and saying so is more use to the
     /// operator than a refusal they have to diagnose.
     /// </remarks>
+    /// <summary>
+    /// Dice quale campione litiga con gli altri, quando l'insieme non si risolve.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Rifa' il fit togliendo un campione alla volta e guarda quale rimozione
+    /// aiuta di piu'. Non toglie niente: scartare un dato perche' e' scomodo e'
+    /// il modo piu' rapido di calibrare su una misura sbagliata. Dice
+    /// all'operatore quale clic rifare, e la decisione resta sua.
+    /// </para>
+    /// <para>
+    /// Costa <c>n</c> fit su un insieme di una dozzina di punti, e usa lo stesso
+    /// <see cref="ScreenProjectionCalibration.TrySolve"/> pubblico -- nessuna
+    /// seconda aritmetica che possa dissentire dalla prima.
+    /// </para>
+    /// </remarks>
+    private static void NameTheOddOneOut(
+        IReadOnlyList<ScreenProjectionSample> samples,
+        int clientWidth, int clientHeight, Action<string> say)
+    {
+        if (samples.Count <= ScreenProjectionCalibration.PerspectiveMinimumSamples)
+            return;
+
+        for (int skipped = 0; skipped < samples.Count; skipped++)
+        {
+            List<ScreenProjectionSample> subset = samples.Where((_, i) => i != skipped).ToList();
+            if (!ScreenProjectionCalibration.TrySolve(
+                    subset, clientWidth, clientHeight, DateTime.UtcNow, out _, out string? subsetReason))
+            {
+                say(string.Create(CultureInfo.InvariantCulture,
+                    $"    senza ({samples[skipped].MapDelta.X},{samples[skipped].MapDelta.Y}): {subsetReason}"));
+                continue;
+            }
+
+            ScreenProjectionSample odd = samples[skipped];
+            say("");
+            say(string.Create(CultureInfo.InvariantCulture,
+                $"  Senza UN campione gli altri {subset.Count} si risolvono: "
+                + $"delta ({odd.MapDelta.X},{odd.MapDelta.Y}) al pixel ({odd.ScreenX},{odd.ScreenY})."));
+            say("  Rifai quel clic -- oppure aggiungine altri, che e' sempre meglio che togliere.");
+            return;
+        }
+
+        say("");
+        say("  Non c'e' un solo campione da incolpare: l'insieme non si accorda in piu' punti.");
+    }
+
     private static List<ScreenProjectionSample> ReadSamples(
         string path, out int clientWidth, out int clientHeight, Action<string>? report = null)
     {

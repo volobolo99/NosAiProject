@@ -307,17 +307,33 @@ public sealed class ScreenProjectionTests : IDisposable
 
     /// <summary>
     /// And the bar is not so high that ordinary noise cannot clear it: pairs spread
-    /// across ten tiles, each carrying half a tile of slip, are accepted.
+    /// across two rings, each carrying half a tile of slip, are accepted.
     /// </summary>
+    /// <remarks>
+    /// <b>Il numero di coppie e' cresciuto il 2026-09-07, e non per farlo passare.</b>
+    /// La mappa e' passata da affine a prospettica -- otto parametri invece di sei,
+    /// perche' su due sessioni reali indipendenti la casella misura piu' pixel in
+    /// basso che in alto -- e due parametri in piu' chiedono piu' coppie per essere
+    /// determinati con la stessa precisione. Con le sole otto di prima l'insieme
+    /// arriva a 6x5% contro il 5% richiesto: non e' la soglia a essere diventata
+    /// severa, e' l'insieme a essere diventato piccolo per il modello. Sedici
+    /// coppie su due raggi sono cio' che una sessione reale raccoglie adesso.
+    /// </remarks>
     [Fact]
     public void Samples_spread_wide_enough_clear_the_uncertainty_bar()
     {
         (double a, double b, double c, double d, double e, double f) = Isometric;
 
         (int X, int Y)[] offsets =
-            { (10, 3), (4, 11), (-6, 9), (-11, 2), (-9, -6), (-2, -11), (6, -9), (11, -3) };
+        {
+            (10, 3), (4, 11), (-6, 9), (-11, 2), (-9, -6), (-2, -11), (6, -9), (11, -3),
+            (18, 5), (7, 19), (-11, 16), (-19, 4), (-16, -10), (-4, -19), (10, -16), (19, -5)
+        };
         (double X, double Y)[] slips =
-            { (0.4, -0.3), (-0.3, 0.4), (0.2, 0.4), (-0.4, -0.2), (0.4, 0.1), (-0.2, -0.4), (0.1, 0.3), (-0.4, 0.2) };
+        {
+            (0.4, -0.3), (-0.3, 0.4), (0.2, 0.4), (-0.4, -0.2), (0.4, 0.1), (-0.2, -0.4), (0.1, 0.3), (-0.4, 0.2),
+            (-0.2, 0.3), (0.4, 0.2), (-0.4, 0.1), (0.3, -0.4), (-0.1, -0.3), (0.2, 0.4), (-0.3, -0.2), (0.4, -0.4)
+        };
 
         var samples = new List<ScreenProjectionSample>();
         for (var i = 0; i < offsets.Length; i++)

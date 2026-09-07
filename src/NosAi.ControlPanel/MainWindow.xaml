@@ -338,7 +338,7 @@
             <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Calibrazione schermo &#8594; mappa</TextBlock>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,10" TextWrapping="Wrap">Quanti pixel vale una casella, misurato facendo tradurre al client i tuoi clic. Si raccoglie da qui: il file finisce in data/perception/screen-samples.txt del repository, mai nella cartella da cui e' partito un comando. Ogni clic va fatto DA FERMO e lontano dal personaggio; il pannello dice dove cliccare dopo ognuno, e alla fine se i campioni si risolvono.</TextBlock>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-              <Button x:Name="ScreenSampleButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Raccogli campioni (3 min)" Click="OnScreenSamples" Margin="0,0,8,0"/>
+              <Button x:Name="ScreenSampleButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Raccogli campioni (5 min)" Click="OnScreenSamples" Margin="0,0,8,0"/>
               <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Calibra ora" Click="OnScreenCalibrate" Margin="0,0,8,0"/>
               <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Content="Aggiorna stato" Click="OnScreenCalibrationRefresh" Margin="0,0,8,0"/>
               <Button Style="{StaticResource DangerButton}" HorizontalAlignment="Left" Content="Azzera campioni" Click="OnScreenSamplesClear"/>

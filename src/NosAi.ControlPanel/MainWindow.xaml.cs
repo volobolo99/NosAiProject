@@ -621,7 +621,7 @@ public partial class MainWindow : Window
         try
         {
             int code = await Task.Run(() => ScreenProjectionWatcher.Run(
-                seconds: 180,
+                seconds: 300,
                 wanted: ScreenSampleCoach.DefaultWantedSamples,
                 repoRoot: _repoRoot,
                 report: line => Dispatcher.Invoke(() => CalibrationSay(line)))).ConfigureAwait(true);

@@ -48,7 +48,10 @@ public sealed class ScreenSampleCoachTests
 
     private static ScreenSampleCoach Feed((int Dx, int Dy, int Px, int Py)[] rows)
     {
-        var coach = new ScreenSampleCoach(1024, 768);
+        // La dimensione dell'insieme e' dichiarata: questi sono i clic di sessioni
+        // reali, e chiedere il numero di oggi a una sessione del 3 settembre
+        // misurerebbe il numero di oggi, non quei clic.
+        var coach = new ScreenSampleCoach(1024, 768, wanted: Math.Max(3, rows.Length));
         foreach (var row in rows)
             coach.Offer(Sample(row), characterWasAtRest: true);
         return coach;

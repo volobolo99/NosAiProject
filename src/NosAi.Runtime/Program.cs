@@ -490,7 +490,7 @@ public static class Program
                           && int.TryParse(args[watchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedSeconds)
                           && parsedSeconds > 0
                 ? parsedSeconds
-                : 180;
+                : 300;
 
             // Dodici campioni con una pausa vera fra un clic e l'altro non stanno
             // in un minuto, e cinque campioni non determinano il fit.
