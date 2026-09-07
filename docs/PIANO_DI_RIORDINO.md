@@ -202,14 +202,34 @@ invece di sopravvivere al debito che descriveva.
 > lo stesso giorno e allo stesso modo: ora legge il sorgente di tutto `src/`, lo
 > stesso insieme di file, così i due registri non possono discordare su cosa esiste.
 >
-> Allargata, la misura dice **diciotto**. Le nuove non sono rumore:
+> Allargata, la misura dice **venti** — e il numero è stato corretto il giorno stesso:
+> la prima stesura di questa riga diceva diciotto, contati a occhio invece che
+> sull'elenco della prova, che a `f786b20` ne dichiarava venti. Oggi sono
+> **diciannove**, perché `SequenceGuard` è uscito. Le nuove non sono rumore:
 >
-> - **`SequenceGuard`** — due politiche anti-replay diverse sotto un nome. Quella di
->   `NosAi.Protocol` (`WireProtocol.cs:229`) è un contatore monotono stretto che
->   accetta solo la sequenza esatta successiva; quella di `NosAi.Security`
->   (`SequenceGuard.cs:11`) è una finestra scorrevole da 1024 bit che accetta il fuori
->   ordine. È esattamente il danno che il paragrafo qui sopra descrive con i due
->   `SafetyGate`, su una primitiva di sicurezza, e nessuno poteva vederlo.
+> - **`SequenceGuard`** — due politiche anti-replay diverse sotto un nome, ed era il
+>   peggiore dei venti: non perché i tipi fossero due, ma perché **i due capi dello
+>   stesso canale Gate 1 validano gli ingressi con uno ciascuno**. `GuardAiClient`
+>   numera i frame in uscita e valida quelli in entrata
+>   (`GuardAiClient.cs:288`, `GuardAiClient.cs:332`) col contatore monotono di
+>   `NosAi.Protocol`, che accetta solo la sequenza esatta successiva e rifiuta ogni
+>   salto come `sequence_gap`; `NosAiHost` valida gli ingressi (`NosAiHost.cs:199`) con
+>   la finestra scorrevole da 1024 bit di `NosAi.Security`, che tollera fuori ordine e
+>   salti. L'host è quindi più permissivo di qualunque cosa quel client possa
+>   produrre: accetta un salto che il protocollo dice non possa avvenire. È
+>   esattamente il danno che il paragrafo qui sopra descrive con i due `SafetyGate`, su
+>   una primitiva di sicurezza, e nessuno poteva vederlo.
+>
+>   **Risolto il 2026-09-07 rinominando, non unificando** — `MonotonicSequenceGuard`
+>   (`WireProtocol.cs:256`) e `SlidingWindowSequenceGuard` (`SequenceGuard.cs:33`) —
+>   come questa stessa sezione ha fatto con i due `SafetyGate`, e per la stessa
+>   ragione: quale politica il canale debba imporre è una decisione di protocollo, su
+>   un canale verificato una volta contro hardware reale non disponibile per un nuovo
+>   test. Ciascuna delle due classi ora documenta l'altra e il disaccordo;
+>   `SequenceGuardPolicyTests` (4 test, `NosAi.Core.Tests`) fissa l'asimmetria invece
+>   di descriverla, così stringere l'host per farlo combaciare col client rende rosso
+>   un test invece di passare inosservato. **Resta aperta** la domanda se l'host debba
+>   essere severo quanto il client.
 > - **Cinque gemelli morti** che ombreggiano un tipo vivo — `GoalStack`, `GoalId`,
 >   `RankedAction` (in `NosAi.Core.Planning`), `RecoveryController` e `RecoveryState`
 >   (in `NosAi.Core.Safety`). In ognuno il vivo è quello che `Gate3Runtime` compone e
