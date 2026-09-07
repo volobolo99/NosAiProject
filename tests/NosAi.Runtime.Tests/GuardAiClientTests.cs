@@ -109,8 +109,20 @@ public sealed class GuardAiClientTests
         // while still referenced, or two rentals aliasing the same array, would
         // show up here as a corrupted sequence number or a snapshot that fails to
         // parse -- not as a slow leak a three-exchange test would never reach.
+        // La scadenza qui e' piu' larga di quella condivisa, e il motivo e'
+        // misurato. Su macchina libera questo test dura **un secondo**; con altri
+        // host di test in parallelo ha superato i dieci della scadenza comune, e
+        // la cancellazione del token chiude il socket a meta' lettura -- che
+        // arriva come `receive_failed: IOException`, cioe' esattamente la forma
+        // di un buffer corrotto. Il test rosso diceva quindi la cosa piu'
+        // allarmante possibile per la ragione piu' banale.
+        //
+        // Sessanta secondi restano una guardia contro un blocco vero (sarebbero
+        // sessanta volte la durata a riposo) e tolgono il falso rosso. Il conto
+        // di quale delle due cose sia successa non e' lasciato a chi legge: il
+        // catch qui sotto lo dice.
         await using var channel = StartChannel();
-        using var cts = Deadline();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         await using var client = new GuardAiClient("127.0.0.1", channel.Port, channel.TrustedKey, channel.Auth.RuntimePublicKeyPem);
         await client.ConnectAsync(cts.Token);
@@ -127,7 +139,14 @@ public sealed class GuardAiClientTests
             }
             catch (Exception ex)
             {
-                throw new Exception($"failed at iteration {i}: {ex.Message}", ex);
+                // Due guasti diversi non devono leggersi uguale: una scadenza
+                // scaduta e' una macchina occupata, un errore prima della
+                // scadenza e' il difetto che questo test cerca.
+                string cause = cts.IsCancellationRequested
+                    ? "la scadenza di 60s e' scaduta: macchina troppo occupata, "
+                      + "non un buffer corrotto"
+                    : "guasto prima della scadenza: e' il caso che questo test cerca";
+                throw new Exception($"failed at iteration {i} ({cause}): {ex.Message}", ex);
             }
         }
     }
