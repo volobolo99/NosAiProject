@@ -100,26 +100,51 @@ public sealed class GuardAdmissionTests
         Assert.Equal("authentication_deadline_exceeded", reason);
     }
 
+    /// <summary>
+    /// A peer that connects and then says nothing loses the slot to the
+    /// admission deadline, not to the heartbeat one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// That claim used to be checked with a stopwatch: measure how long the slot
+    /// was held and assert it stayed under
+    /// <see cref="GuardAiNetworkChannel.HeartbeatTimeout"/>. The two budgets are
+    /// 1500 ms and 2000 ms, so the margin was 500 ms of wall-clock in a suite of
+    /// 2338 tests running in parallel -- and the wait is a polling loop, which
+    /// needs the thread to be scheduled promptly to observe the drop near the
+    /// instant it happened. It failed in full runs and passed in isolation:
+    /// the machine, not the code.
+    /// </para>
+    /// <para>
+    /// The reason the channel raises states the same fact directly and cannot
+    /// drift with load. It is also strictly stronger: a stopwatch reading under
+    /// 2000 ms is consistent with the heartbeat path firing early, while
+    /// <c>authentication_deadline_exceeded</c> names which budget fired. Same
+    /// sibling technique <c>ACandidateThatNeverAuthenticatesIsDroppedAndSaysWhy</c>
+    /// already documents: wait on the observable being asserted.
+    /// </para>
+    /// </remarks>
     [Fact]
-    public async Task ASilentPeerIsDroppedBeforeTheHeartbeatBudgetWouldHaveExpired()
+    public async Task ASilentPeerIsDroppedByTheAdmissionDeadline_NotTheHeartbeatOne()
     {
         using var deviceKey = RSA.Create(2048);
         using var auth = new SessionAuth(deviceKey.ExportSubjectPublicKeyInfoPem());
         await using var channel = NewChannel(auth);
+
+        string? reason = null;
+        channel.OnSessionTerminated += r => reason = r;
         channel.Start();
 
         using var squatter = new TcpClient();
         await squatter.ConnectAsync(IPAddress.Loopback, channel.LocalPort);
         await WaitUntilAsync(() => channel.IsClientConnected, Patience);
 
-        var started = DateTime.UtcNow;
-        await WaitUntilAsync(() => !channel.IsClientConnected, GuardAiNetworkChannel.AuthenticationDeadline + Patience);
-        var held = DateTime.UtcNow - started;
+        await WaitUntilAsync(
+            () => !channel.IsClientConnected && reason is not null,
+            GuardAiNetworkChannel.AuthenticationDeadline + Patience);
 
         Assert.False(channel.IsClientConnected);
-        Assert.True(
-            held < GuardAiNetworkChannel.HeartbeatTimeout,
-            $"held a slot for {held.TotalMilliseconds:F0} ms, which is the heartbeat budget, not the admission one");
+        Assert.Equal("authentication_deadline_exceeded", reason);
     }
 
     // ---------------------------------------------------------- the whole point
