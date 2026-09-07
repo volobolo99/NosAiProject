@@ -77,6 +77,15 @@ non risponde a questa. E se il client potesse cambiare scala a DPI e dimensioni
 costanti, il regime della riga non lo vedrebbe: resta un buco noto, scritto nel
 formato.
 
+### Il formato nuovo c'e' gia' (2026-09-07)
+
+Il file dei campioni porta ora una versione in testa e **sette** campi per riga,
+il settimo e' il DPI. Il formato vecchio a sei campi -- cioe' il file oggi in
+archivio -- e' rifiutato intero con
+`screen_samples_version_unsupported`, e il rifiuto dice cosa fare. Quindi il
+passo (1) qui sotto non e' una pulizia opzionale: senza, nessun campione viene
+letto.
+
 ### Cosa deve fare l'operatore
 
 1. `--screen-samples-clear` per svuotare il file misto.

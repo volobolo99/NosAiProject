@@ -1,5 +1,13 @@
 # AP-02 / A2+A4 — DeepSeek — il regime su ogni riga dei campioni
 
+> **CONSEGNATO il 2026-09-07 da Claude, non da DeepSeek.** L'utente era via e
+> DeepSeek non era comandabile; il formato doveva esistere prima del
+> ricampionamento (T-15), quindi l'ho implementato io. Il file dei campioni ha
+> ora una versione e sette campi per riga, il vecchio formato e' rifiutato
+> intero, e cinque prove lo fissano -- fra cui quella che conta: due regimi che
+> differiscono **solo** per il DPI sono riconosciuti come due. Resta all'utente
+> il ricampionamento a zoom costante.
+
 **Prendibile quando i task `refusal_reason_coverage` e `unobserved_breakdown`
 sono consegnati.** Nessun file in comune con loro, ma questo task **aggiunge una
 costante `…Reason`** in `src/NosAi.Runtime`, e il registro dei rifiuti misura
