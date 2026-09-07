@@ -124,7 +124,13 @@ public static class LiveWireMonitor
     /// <see cref="InMemoryPacketSource"/> runs this to completion on its own,
     /// which is what lets the decode-and-print behaviour be pinned in a test.
     /// </remarks>
-    public static Summary Monitor(IPacketSource source, TextWriter output, CancellationToken cancellationToken = default)
+    /// <param name="sourceKind">
+    /// The provenance of <paramref name="source"/>'s bytes. Defaults to
+    /// <see cref="DataSourceKind.Live"/> so the driver path is unchanged; a
+    /// caller reading a <c>.noscap</c> passes <see cref="DataSourceKind.Cached"/>
+    /// so recorded bytes are never framed as live.
+    /// </param>
+    public static Summary Monitor(IPacketSource source, TextWriter output, CancellationToken cancellationToken = default, DataSourceKind sourceKind = DataSourceKind.Live)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(output);
@@ -134,7 +140,7 @@ public static class LiveWireMonitor
         int port = source.ServerPort;
         long frames = 0, interpreted = 0, notInterpreted = 0, undecipherable = 0;
 
-        var engine = new GameTrafficCaptureEngine(source, NosTaleWorldFramer.Factory(DataSourceKind.Live));
+        var engine = new GameTrafficCaptureEngine(source, NosTaleWorldFramer.Factory(sourceKind));
         engine.FrameProduced += frame =>
         {
             string time = frame.TimestampUtc.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture);

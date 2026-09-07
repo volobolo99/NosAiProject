@@ -821,6 +821,13 @@ public static class Program
             return await NosAi.Runtime.Observability.DecideReplayCommand.RunAsync(recording, cycles).ConfigureAwait(false);
         }
 
+        // Measure what the wire actually carries instead of guessing it (AP-05).
+        // Read-only, offline, no driver: censuses every opcode's field shape, or
+        // prints one opcode's raw lines up to --max. It never assigns a meaning
+        // to a field and never actuates.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.WireInspectCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Observability.WireInspectCommand.Run(args);
+
         // Offset discovery for the memory provider (ADR-0014). Read-only, and it
         // answers nothing on its own: an address is identified by narrowing across
         // several changes of the value, which is why the candidate set persists
@@ -1112,7 +1119,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect"
         };
 
     private static int RunDxgiProbe()
