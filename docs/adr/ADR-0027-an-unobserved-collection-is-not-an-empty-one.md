@@ -47,8 +47,22 @@ orientamento, vita, mappa — e poi dichiara quattro collezioni vuote. Uno
 snapshot il cui nome è «Unknown» afferma quattro fatti positivi che nessuno ha
 osservato.
 
-**Siti di lettura** (`src/` + `tests/`): `Skills` 7+6, `Cooldowns` 2+2,
-`Inventory` 24+13, `Equipment` 8+1.
+**Siti di lettura in produzione: 14.** Un `grep` grezzo su `.Skills`/`.Cooldowns`/
+`.Inventory`/`.Equipment` ne conta 41, ma la maggior parte non tocca `Player`:
+sono righe `using` sul namespace `NosAi.Economy.Inventory`, membri di enum
+(`GameFunctionKind.Inventory`), letture di `observation.Inventory` /
+`profile.Inventory` / `state?.Inventory`, e citazioni nei commenti. Le letture
+vere, verificate una per una:
+
+| Campo | Siti | Dove |
+|---|---|---|
+| `Skills` | 3 | `CombatPlanner.cs:90`, `:267`, `:284` |
+| `Cooldowns` | 2 | `CombatPlanner.cs:92`, `:291` |
+| `Inventory` | 4 | `LoadoutPlanner.cs:63`, `:107`; `CollectCommand.cs:139`, `:156` |
+| `Equipment` | 5 | `LoadoutPlanner.cs:37`, `:81`, `:108`, `:112`, `:116` |
+
+Sono concentrate in tre file: `CombatPlanner` (5), `LoadoutPlanner` (7),
+`CollectCommand` (2).
 
 ### Il difetto si è già manifestato due volte
 
@@ -82,9 +96,10 @@ finché un canale non lo osserva.
 
 - **Coerente** con l'invariante e con il resto del modello; nessun concetto nuovo
   da imparare.
-- **Costo:** i 6 siti di costruzione cambiano firma; i ~41 siti di lettura in
-  `src/` diventano `player.Skills.Value` con un controllo `HasValue` dove serve
-  una decisione. `Inventory` (24 letture) è il grosso del lavoro.
+- **Costo:** i 6 siti di costruzione cambiano firma; le 14 letture in `src/`
+  diventano `player.Skills.Value` con un controllo `HasValue` dove serve una
+  decisione. Sono concentrate in tre file, quindi il lavoro è più piccolo di
+  quanto il conteggio grezzo suggerisse.
 - **Effetto collaterale desiderato:** ogni lettura che oggi ignora
   silenziosamente la differenza *non compila più* finché non la affronta. È il
   motivo principale per preferire questa opzione: la migrazione è guidata dal
@@ -99,7 +114,7 @@ trattamento additivo che `Player.Velocity` ha già
 every existing construction site keeps compiling»).
 
 - **Costo minimo:** i 6 siti di costruzione continuano a compilare invariati.
-- **Difetto:** non forza nessuna lettura ad affrontare la distinzione. Le ~41
+- **Difetto:** non forza nessuna lettura ad affrontare la distinzione. Le 14
   letture esistenti restano com'erano, cioè sbagliate nello stesso modo di oggi,
   finché qualcuno non le rivede una per una — e nulla segnala quali. Riproduce
   la forma di `Velocity`, ma per un motivo diverso: lì il default era corretto
@@ -120,12 +135,15 @@ osservare una collezione realmente vuota.
 ## Decisione da prendere
 
 Nessuna presa. La raccomandazione è **A**, e la ragione decisiva non è
-l'eleganza: è che A trasforma ~41 letture da riesaminare a mano in ~41 errori di
+l'eleganza: è che A trasforma 14 letture da riesaminare a mano in 14 errori di
 compilazione. B costa meno oggi e lascia aperto esattamente il difetto che ha
 già prodotto due bug.
 
-Se A è troppo ampia per una sola sessione, si divide per campo — `Skills` per
-primo, che ha 7 letture ed è quello che ha già causato entrambi i problemi noti.
+Con 6 costruzioni e 14 letture in tre file, A è una sessione di lavoro, non un
+refactor di giornata. Se la si vuole comunque divisa, l'ordine è `Skills`
+(3 letture, tutte in `CombatPlanner`, ed è il campo che ha causato entrambi i
+problemi noti), poi `Cooldowns` (2, stesso file), poi `Equipment` e `Inventory`
+insieme, perché condividono `LoadoutPlanner`.
 
 ## Conseguenze
 

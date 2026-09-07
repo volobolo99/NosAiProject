@@ -1,3 +1,4 @@
+using System.IO;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.LiveIntegration;
@@ -20,6 +21,7 @@ namespace NosAi.Runtime.Tests;
 /// non-<c>UseSkill</c> kind → <c>NotAttempted</c> without reading vitals or
 /// touching the input backend at all.
 /// </summary>
+[Collection(ConsoleCaptureCollection.Name)]
 public sealed class EngageCommandTests
 {
     private static readonly DateTime Now = new(2026, 9, 6, 9, 30, 0, DateTimeKind.Utc);
@@ -330,29 +332,49 @@ public sealed class EngageCommandTests
     // boundary every other guard in this command already gives, and the only
     // part of Run/RunWindows testable without a desktop.
 
-    [Fact]
-    public void Run_BlankTargetEntityId_IsRefusedCleanly_NeverThrows()
+    /// <summary>
+    /// Each guard is pinned by the reason it prints, not by its exit code.
+    /// </summary>
+    /// <remarks>
+    /// Every refusal in this command returns
+    /// <see cref="NosAi.Runtime.Navigation.WalkCommand.ExitAbandoned"/>,
+    /// including the ones further down that fire when no client is attached --
+    /// which is every run on a machine without the game open, i.e. every run
+    /// in this suite. Asserting only the exit code therefore passed whether or
+    /// not the argument guard existed at all: deleting it would have left
+    /// these three green, because <c>Run</c> would have gone one step further
+    /// and refused for the next reason instead. That is also why the obvious
+    /// contrast -- usable arguments getting <b>past</b> the guard -- is not
+    /// tested here: past the guard is <c>RunWindows</c>, which attaches to a
+    /// running client and, on a machine where the game is open and WinDivert
+    /// is available, presses a key. A unit test must not be one elevation
+    /// away from actuating.
+    /// </remarks>
+    [Theory]
+    [InlineData("   ", "201", 1)]
+    [InlineData("mob-1", "", 1)]
+    [InlineData("mob-1", "201", 0)]
+    [InlineData("", "", 0)]
+    public void Run_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient(
+        string targetEntityId, string skillId, int rounds)
     {
-        int exitCode = EngageCommand.Run(targetEntityId: "   ", skillId: "201");
+        TextWriter original = Console.Out;
+        var captured = new StringWriter();
+        Console.SetOut(captured);
+        int exitCode;
+        try
+        {
+            exitCode = EngageCommand.Run(targetEntityId, skillId, rounds);
+        }
+        finally
+        {
+            Console.SetOut(original);
+        }
 
-        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
+        Assert.Equal(NosAi.Runtime.Navigation.WalkCommand.ExitAbandoned, exitCode);
+        Assert.Contains(EngageCommand.InvalidArgumentsReason, captured.ToString(), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Run_BlankSkillId_IsRefusedCleanly_NeverThrows()
-    {
-        int exitCode = EngageCommand.Run(targetEntityId: "mob-1", skillId: "");
-
-        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
-    }
-
-    [Fact]
-    public void Run_ZeroRounds_IsRefusedCleanly_NeverThrows()
-    {
-        int exitCode = EngageCommand.Run(targetEntityId: "mob-1", skillId: "201", rounds: 0);
-
-        Assert.Equal(WalkCommand.ExitAbandoned, exitCode);
-    }
 
     // ------------------------------------------------------------ wiring
 
