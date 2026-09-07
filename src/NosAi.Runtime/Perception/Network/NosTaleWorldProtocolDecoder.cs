@@ -234,11 +234,21 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// </summary>
     private DecodedObservations DecodeMove(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
-        if (fields.Length < 5 || !IsReadableEntity(fields[1]))
+        if (fields.Length < 5 || !IsReadableEntity("mv", fields[1]))
             return DecodedObservations.Empty;
         if (!TryLong(fields[2], out long entityId)
             || !TryDouble(fields[3], out double x)
             || !TryDouble(fields[4], out double y))
+            return DecodedObservations.Empty;
+
+        // Il personaggio proprio non e' un'entita' del mondo. Sulle registrazioni
+        // il server non manda mai la propria posizione -- zero occorrenze del
+        // proprio id fra i 20 876 `mv` di data/messaggi.noscap -- e questo
+        // controllo non si fida di quel fatto: se un giorno la mandasse,
+        // pubblicarla creerebbe un secondo se stesso accanto a quello che `stat`
+        // e `cond` gia' descrivono, e le due fonti divergerebbero senza che
+        // nessuno lo noti.
+        if (_playerEntityId is { } own && entityId == own)
             return DecodedObservations.Empty;
 
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
@@ -794,8 +804,12 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// gli da' solo il nome sotto cui il resto del sistema lo conosce. Un tipo che
     /// <see cref="IsReadableEntity"/> non accetta non arriva mai qui.
     /// </remarks>
-    private static string KindOf(string typeField) =>
-        typeField == "2" ? EntitySighting.BystanderKind : EntitySighting.MonsterKind;
+    private static string KindOf(string typeField) => typeField switch
+    {
+        "1" => EntitySighting.PlayerKind,
+        "2" => EntitySighting.BystanderKind,
+        _ => EntitySighting.MonsterKind
+    };
 
     /// <summary>
     /// Whether an entity message carries the one layout this decoder can read.
@@ -854,6 +868,38 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// </para>
     /// </remarks>
     internal static bool IsReadableEntity(string typeField) => typeField is "2" or "3";
+
+    /// <summary>
+    /// Se il layout di questo tipo è stabilito <i>per questo opcode</i>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Il tipo 1 è il caso che obbliga a distinguere. Il suo <c>mv</c> ha
+    /// esattamente la forma degli altri — <c>mv 1 8309202 74 108 12</c>, sei
+    /// token come <c>mv 3 3023 51 162 5</c> — e i suoi id sono gli stessi che
+    /// <c>in</c> dichiara. Il suo <c>in</c> no: porta un <b>nome</b> dove gli
+    /// altri portano il vnum (<c>in 1 GaM1 - 8309204 76 121 2 …</c>), quindi id,
+    /// x e y stanno un campo più in là. Un solo predicato per entrambi
+    /// costringerebbe a rifiutare la posizione di un altro giocatore per colpa di
+    /// un pacchetto diverso.
+    /// </para>
+    /// <para>
+    /// <b>Misurato su <c>data/messaggi.noscap</c>:</b> 125 passi di tipo 1, mediana
+    /// 3,6 caselle contro le 2,0 dei tipi 2 e 3 — e non è un layout sbagliato, è
+    /// la velocità che quegli stessi pacchetti dichiarano, 11-12 contro 4-5. Il
+    /// salto più grande è 9,0 caselle su una mappa larga oltre 160: campi letti
+    /// nel posto sbagliato darebbero salti da un capo all'altro, non una
+    /// camminata veloce. Il personaggio proprio non compare mai in <c>mv</c>
+    /// (zero occorrenze del proprio id), quindi leggere il tipo 1 non introduce
+    /// una seconda fonte sulla propria posizione.
+    /// </para>
+    /// <para>
+    /// <c>st</c> di tipo 1 non è mai stato osservato in nessuna registrazione, e
+    /// resta rifiutato: non c'è niente da cui stabilirne il layout.
+    /// </para>
+    /// </remarks>
+    internal static bool IsReadableEntity(string opcode, string typeField) =>
+        typeField == "1" ? opcode == "mv" : IsReadableEntity(typeField);
 
     /// <summary>
     /// The entity type a player carries, confirmed in <c>su</c>, <c>cond</c> and

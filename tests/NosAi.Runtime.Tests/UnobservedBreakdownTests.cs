@@ -85,22 +85,23 @@ public sealed class UnobservedBreakdownTests
     /// <para>
     /// <b>Il tipo di questo test è cambiato il 2026-09-08.</b> Era il tipo 2, che
     /// allora non era letto perché il suo layout non era stabilito. Ora lo è, e il
-    /// tipo 2 si legge: al suo posto qui c'è il <b>tipo 1</b>, l'altro giocatore,
-    /// che resta l'unico tipo osservato di cui nessuna misura abbia mai mostrato
-    /// dove stanno i campi. La categoria non è cambiata — è cambiato chi ci
-    /// finisce dentro, e questo test esiste per tenerla non vuota.
+    /// tipo 2 si legge, e con lui il <c>mv</c> del tipo 1. Quello che resta, ed è
+    /// quello che questo test tiene, è il <c>in</c> del tipo 1: porta un
+    /// <b>nome</b> dove gli altri portano il vnum, quindi id, x e y stanno un
+    /// campo più in là. La categoria non è cambiata — è cambiato chi ci finisce
+    /// dentro, e questo test esiste per tenerla non vuota.
     /// </para>
     /// </remarks>
     [Fact]
     public void An_entity_type_the_decoder_does_not_read_is_its_own_category()
     {
         WorldChannelReplaySummary summary = WorldChannelReplay.Replay(Recording(
-            Encoded("mv 1 3443217 153 23 5")));
+            Encoded("in 1 GaM1 - 8309204 76 121 2 0 0 1 7 3")));
         UnobservedBreakdown b = summary.Unobserved;
 
         Assert.Equal(1, summary.UndecodedMessages);
         Assert.Equal(1, b.EntityTypeNotReadTotal);
-        Assert.Contains(b.EntityTypeNotRead, o => o.Key == "mv" && o.Value == 1);
+        Assert.Contains(b.EntityTypeNotRead, o => o.Key == "in" && o.Value == 1);
 
         // E non e' una riga rotta: la distinzione e' il punto.
         Assert.Equal(0, b.RejectedTotal);

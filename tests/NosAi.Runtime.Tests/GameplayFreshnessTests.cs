@@ -392,15 +392,15 @@ public sealed class GameplayFreshnessTests
     /// analizzano benissimo; è esattamente per questo che vengono rifiutate.
     /// </summary>
     /// <remarks>
-    /// <b>Il tipo 2 è uscito da questo elenco il 2026-09-08</b>, quando il suo
-    /// layout è stato stabilito: vedi
-    /// <see cref="An_entity_of_type_two_is_read_and_labelled_a_bystander"/>. Il
-    /// tipo 1 non lo è, e la differenza non è di età — è che nessuna misura ha
-    /// mai mostrato dove stanno i suoi campi.
+    /// <b>Questo elenco si è svuotato in due passi il 2026-09-08.</b> Prima è
+    /// uscito il tipo 2, quando il suo layout è stato stabilito; poi il
+    /// <c>mv</c> del tipo 1, che ha la stessa forma degli altri. Restano il
+    /// <c>in</c> del tipo 1 — che porta un <b>nome</b> dove gli altri portano il
+    /// vnum, quindi id, x e y stanno un campo più in là — e il suo <c>st</c>, che
+    /// nessuna registrazione ha mai mostrato.
     /// </remarks>
     [Theory]
-    [InlineData("in 1 36 3443217 120 109 2 100 100")]
-    [InlineData("mv 1 3443217 121 110 5")]
+    [InlineData("in 1 GaM1 - 8309204 76 121 2 0 0 1 7 3")]
     [InlineData("st 1 3443217 8 0 66 100 198 52 310 52 0")]
     public void An_entity_type_this_decoder_has_never_seen_is_refused(string line)
     {
@@ -432,6 +432,60 @@ public sealed class GameplayFreshnessTests
         Assert.Equal(1488, sighting.Vnum);
     }
 
+    /// <summary>
+    /// Il <c>mv</c> di un altro giocatore si legge, ed esce come tale.
+    /// </summary>
+    /// <remarks>
+    /// Ha la stessa forma a sei token degli altri tipi, e i suoi id sono gli
+    /// stessi che <c>in</c> dichiara. Il passo mediano è maggiore — 3,6 caselle
+    /// contro 2,0 — e non perché i campi siano nel posto sbagliato: è la velocità
+    /// che quegli stessi pacchetti riferiscono, 11-12 contro 4-5. Il salto più
+    /// grande misurato è 9,0 caselle su una mappa larga oltre 160.
+    /// </remarks>
+    [Fact]
+    public void The_movement_of_another_player_is_read_and_labelled_a_player()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        DecodedObservations decoded = decoder.Decode(
+            Packet("mv 1 8309202 74 108 12", DataSourceKind.Live));
+
+        EntitySighting sighting = Assert.Single(decoded.Sightings);
+        Assert.Equal(EntitySighting.PlayerKind, sighting.Kind);
+        Assert.Equal(8309202, sighting.EntityId);
+
+        // Il vnum arriva solo da `in`, e quello del tipo 1 resta rifiutato:
+        // un altro giocatore si vede muovere e non si sa mai cosa sia.
+        Assert.Null(sighting.Vnum);
+    }
+
+    /// <summary>
+    /// Un altro giocatore non e' un bersaglio, e non serve una regola nuova.
+    /// </summary>
+    /// <remarks>
+    /// Il vnum non arriva mai — solo <c>in</c> lo porta, e il <c>in</c> del tipo 1
+    /// e' rifiutato — quindi <c>TargetEstablishment</c> si ferma dove si ferma per
+    /// ogni entita' senza vnum osservato. La difesa c'era gia'.
+    /// </remarks>
+    [Fact]
+    public void Another_player_is_never_an_established_target()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+        DecodedObservations decoded = decoder.Decode(
+            Packet("mv 1 8309202 74 108 12", DataSourceKind.Live));
+        EntitySighting sighting = Assert.Single(decoded.Sightings);
+
+        var entity = new NosAi.Runtime.Autonomy.SelectableEntity(
+            sighting.EntityId, new MapPoint((int)sighting.X, (int)sighting.Y),
+            sighting.HpRatio, DateTime.UtcNow, sighting.Vnum, sighting.Vitals, sighting.Kind);
+
+        NosAi.Runtime.Autonomy.TargetVerdict verdict =
+            NosAi.Runtime.Autonomy.TargetEstablishment.Assess(
+                entity, hitBy: null, selected: null, catalogue: null);
+
+        Assert.False(verdict.IsEstablished);
+    }
+
     [Fact]
     public void An_entity_of_type_three_is_still_a_monster()
     {
@@ -454,6 +508,11 @@ public sealed class GameplayFreshnessTests
     public void Refusing_type_one_does_not_cost_the_player_position_because_it_is_never_sent()
     {
         var decoder = new NosTaleWorldProtocolDecoder();
+
+        // `cond` nomina il personaggio controllato; da li' in poi il suo `mv` --
+        // che il server non manda mai, zero occorrenze su 20 876 -- non
+        // diventerebbe comunque un'entita' del mondo accanto a se stesso.
+        decoder.Decode(Packet("cond 1 3443217 0 0 11", DataSourceKind.Live));
 
         Assert.True(decoder.Decode(Packet("mv 1 3443217 121 110 5", DataSourceKind.Live)).IsEmpty);
         Assert.NotNull(decoder

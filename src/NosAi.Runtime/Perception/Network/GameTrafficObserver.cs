@@ -152,6 +152,27 @@ public sealed record EntitySighting(
     /// </para>
     /// </remarks>
     public const string BystanderKind = "Bystander";
+
+    /// <summary>
+    /// La specie che il filo chiama tipo 1: un altro giocatore.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Solo posizione, e solo da <c>mv</c>. Il <c>in</c> del tipo 1 porta un
+    /// <b>nome</b> dove gli altri portano il vnum — <c>in 1 GaM1 - 8309204 76 121
+    /// 2 …</c> — quindi id, x e y stanno un campo più in là, e quel pacchetto
+    /// resta rifiutato: leggerlo alle posizioni degli altri prenderebbe una
+    /// coordinata da qualcos'altro.
+    /// </para>
+    /// <para>
+    /// <b>Mai un bersaglio, e non per una regola aggiunta qui.</b> Il vnum di un
+    /// altro giocatore non arriva mai, perché arriva solo da <c>in</c>, e
+    /// <c>TargetEstablishment</c> rifiuta già chi non ha vnum osservato. La specie
+    /// serve a dire all'operatore <i>chi</i> sta occupando quella casella, non a
+    /// difendere il bersaglio: quella difesa c'era già.
+    /// </para>
+    /// </remarks>
+    public const string PlayerKind = "Player";
 }
 
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>

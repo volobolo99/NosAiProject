@@ -510,7 +510,7 @@ public static class WorldChannelReplay
             // ripeterlo qui: chi decide quali tipi leggere e' lui.
             if (fields.Length > 1
                 && CarriesEntityTypeFirst(opcode)
-                && !NosTaleWorldProtocolDecoder.IsReadableEntity(fields[1]))
+                && !NosTaleWorldProtocolDecoder.IsReadableEntity(opcode, fields[1]))
             {
                 Add(entityTypeNotRead, opcode);
                 continue;
@@ -564,7 +564,9 @@ public static class WorldChannelReplay
     /// Elencati invece di dedotti: <c>stat</c> comincia con i punti vita e
     /// <c>sr</c> con uno slot, quindi «il campo 1 e' un numero piccolo» non
     /// distingue niente. Questi cinque sono quelli i cui decoder chiamano
-    /// <c>IsReadableEntity(fields[1])</c>.
+    /// <c>IsReadableEntity(opcode, fields[1])</c> — con l'opcode, perche' dal
+    /// 2026-09-08 il tipo 1 si legge in <c>mv</c> e non in <c>in</c>: il suo
+    /// pacchetto di comparsa porta un nome dove gli altri portano il vnum.
     /// </remarks>
     private static bool CarriesEntityTypeFirst(string opcode) =>
         opcode is "in" or "mv" or "st" or "su" or "die";
