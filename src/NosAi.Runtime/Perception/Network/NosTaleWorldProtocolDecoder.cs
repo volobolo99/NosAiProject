@@ -794,14 +794,47 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// established.
     /// </remarks>
     /// <remarks>
+    /// <para>
     /// <b>Correzione del 2026-09-07.</b> Questo commento diceva «Type 2 was never
     /// observed at all». È falso, e lo dice una registrazione di questo
     /// repository: <c>data/equip_test.noscap</c> porta <b>430 pacchetti
     /// <c>mv</c> di tipo 2</b> contro 3039 di tipo 3, cioè il 12% dei suoi
-    /// movimenti. Il tipo 2 si osserva; quello che non si è stabilito è il suo
-    /// layout di campi, ed è per questo che resta rifiutato. La ragione del
-    /// rifiuto non cambia — cambia che non si fonda più su un'assenza che non
-    /// c'è.
+    /// movimenti.
+    /// </para>
+    /// <para>
+    /// <b>Il layout è stato stabilito lo stesso giorno, e il tipo 2 resta
+    /// rifiutato per un motivo diverso.</b> Su <c>data/messaggi.noscap</c> — 2718
+    /// <c>mv</c>, 14 <c>st</c> e 6 <c>in</c> di tipo 2, su 30 entità distinte — i
+    /// campi stanno dove stanno per il tipo 3, e lo dicono tre misure:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>
+    /// <b>continuità del movimento</b>: 2688 passi di tipo 2 contro 17849 di tipo
+    /// 3, stessa mediana (2,0 caselle), stesso novantesimo percentile (2,8), il
+    /// 99,3% entro tre caselle contro il 99,9%. Campi letti nel posto sbagliato
+    /// darebbero salti casuali, non una camminata;
+    /// </description></item>
+    /// <item><description>
+    /// <b>il vnum risolve</b>: tutti e quattro i vnum visti in <c>in</c> di tipo 2
+    /// (2362, 1494, 1488, 2557) esistono nella stessa tabella <c>monster</c> del
+    /// catalogo e danno nomi sensati — «Caverna dei Conigli», «Pir»,
+    /// «Baby^panda», «Graham»;
+    /// </description></item>
+    /// <item><description>
+    /// <b><c>st</c> ha gli stessi dodici campi</b>, e i suoi valori soddisfano
+    /// ogni invariante di plausibilità (<c>0 ≤ hp ≤ maxHp</c>, <c>maxHp &gt; 0</c>).
+    /// </description></item>
+    /// </list>
+    /// <para>
+    /// <b>Perché allora resta fuori.</b> Quei nomi non sono mostri: sono NPC, pet
+    /// e portali. <see cref="Sighting"/> etichetta ogni avvistamento
+    /// <c>"Monster"</c>, e quell'etichetta arriva al World Model attraverso
+    /// <c>GameTrafficObserver</c>. Ammettere il tipo 2 così com'è significherebbe
+    /// presentare al pianificatore un negoziante, o il pet del giocatore stesso,
+    /// come un bersaglio. Il tipo 2 entrerà quando l'avvistamento porterà la
+    /// specie osservata invece di una costante — che è un cambio di contratto, non
+    /// una riga in questo metodo.
+    /// </para>
     /// </remarks>
     internal static bool IsReadableEntity(string typeField) => typeField == "3";
 

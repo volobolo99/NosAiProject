@@ -47,10 +47,60 @@ silent about what only the client knows.
 
 | Concept | Observed |
 |---|---|
+| Entity type `2` | **NPC, pet e portali — layout stabilito il 2026-09-07, ancora non letto**: vedi sotto |
 | Entity type `1` | player — **confirmed** (the session's own character id `3443217` appears as type 1 in `su`, `cond`, `sayi`) |
 | Entity type `2` | not observed in these captures |
 | Entity type `3` | monster / NPC — **confirmed** (all `mv`, `in`, `die`) |
 | Entity id | stable per entity for its lifetime — **confirmed** (traced `313816` across `in`, `st`, `su`, `mv`, `die`) |
+
+---
+
+## Entity type `2` — stabilito, e deliberatamente non letto
+
+Il decoder legge solo il tipo 3. Fino al 2026-09-07 il motivo era che il layout
+del tipo 2 non era stabilito. **Ora lo è**, misurato su `data/messaggi.noscap`
+(2718 `mv`, 14 `st`, 6 `in` di tipo 2, su 30 entità distinte), e il motivo del
+rifiuto è cambiato.
+
+### Le tre misure
+
+| Misura | Tipo 2 | Tipo 3 |
+|---|---|---|
+| passi di `mv` osservati | 2 688 | 17 849 |
+| mediana del passo | 2,0 caselle | 2,0 caselle |
+| novantesimo percentile | 2,8 | 2,8 |
+| entro tre caselle | 99,3% | 99,9% |
+
+Campi letti nella posizione sbagliata darebbero salti casuali, non una
+camminata. In più: tutti e quattro i vnum visti in `in` di tipo 2 esistono nella
+stessa tabella `monster` del catalogo, e danno nomi sensati; e `st` di tipo 2 ha
+gli stessi dodici campi del tipo 3, con valori che soddisfano ogni invariante di
+plausibilità.
+
+```
+st 2 3102 92 0 100 100 100520 2881 100520 2881 0     livello 92, 100520/100520 HP
+st 3 3205  8 0 100 100    310   52    310   52 0     livello 8,     310/310 HP
+```
+
+### Perché resta fuori
+
+I nomi dicono cos'è il tipo 2:
+
+| vnum | nome |
+|---|---|
+| 2362 | Caverna dei Conigli |
+| 1494 | Pir |
+| 1488 | Baby^panda |
+| 2557 | Graham |
+
+**Non sono mostri**: sono NPC, pet e portali. Ogni avvistamento che il decoder
+pubblica è etichettato `"Monster"`, e quell'etichetta arriva al World Model.
+Ammettere il tipo 2 così com'è metterebbe davanti al pianificatore un
+negoziante — o il pet del giocatore stesso — come bersaglio.
+
+Il tipo 2 entrerà quando l'avvistamento porterà **la specie osservata** invece di
+una costante. È un cambio di contratto, e finché non c'è, un buco dichiarato
+nella percezione vale più di un bersaglio sbagliato.
 
 ---
 
