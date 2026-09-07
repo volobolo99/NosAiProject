@@ -378,8 +378,14 @@
                      Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
                      BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
                      Text=""/>
-            <TextBlock x:Name="WireCaptureSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,16"
+            <TextBlock x:Name="WireCaptureSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
                        Text="Nessuna registrazione in questa sessione."/>
+            <TextBox x:Name="WireMessagePairing" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                     FontFamily="Consolas" FontSize="12" MinHeight="60" MaxHeight="260"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,0,0,16"
+                     Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                     BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
+                     Text="Qui compaiono, dopo la registrazione, gli id che il filo ha detto e le righe del catalogo che contengono le parole della tua nota. Accostarli non e' provarli: serve che lo stesso id e lo stesso testo tornino insieme almeno due volte."/>
 
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>

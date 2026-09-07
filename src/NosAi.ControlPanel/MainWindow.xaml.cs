@@ -862,6 +862,16 @@ public partial class MainWindow : Window
                 ? $"Cattura scritta in data/{stem}.noscap. La nota e' VUOTA: senza il testo visto a schermo la cattura non chiude T-16."
                 : $"Cattura e nota scritte: data/{stem}.noscap e data/{stem}.note.txt.";
             _log.Operator($"Registrazione filo {stem}, nota {(string.IsNullOrWhiteSpace(note) ? "vuota" : "presente")}.");
+
+            // Le due meta' di T-16 esistono entrambe solo adesso: gli id che il filo
+            // ha appena detto, e il testo che l'operatore ha appena scritto. Metterle
+            // una accanto all'altra qui evita che qualcuno debba rileggere la cattura
+            // a mano piu' tardi, quando non ricordera' piu' cosa aveva visto.
+            string capturePath = Path.Combine(_repoRoot, "data", $"{stem}.noscap");
+            WireMessageRead read = await Task.Run(
+                () => WireMessageInspect.Read(capturePath, note, WorldReplayCommand.CatalogLanguage))
+                .ConfigureAwait(true);
+            WireMessagePairing.Text = WireMessageInspect.Describe(read);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
