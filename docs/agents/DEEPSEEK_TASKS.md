@@ -273,6 +273,24 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE DA TUTTI, ANCHE IN PARALLELO** (2026-09-07): **i rifiuti che
+nessuno ha mai provato.** src/NosAi.Runtime dichiara **190** costanti
+`public const string ...Reason`: sono il vocabolario con cui il runtime rifiuta
+per nome invece che con un booleano, e quei nomi finiscono sotto gli occhi
+dell'operatore. Confrontate con tutto `tests/`, per nome della costante e per
+valore della stringa: **48 sono prodotte e nessun test le verifica**, e **4 non
+sono prodotte da nulla** — compaiono una volta sola, nella loro stessa
+dichiarazione. Nel gruppo mai verificato ci sono i rifiuti del confine di
+attuazione (`authority_not_verified`, `token_integrity_unreadable`,
+`actuation_scope_aborted`, i quattro `*_input_backend_not_gated`): i percorsi
+che tengono chiusa la porta, e nessuno ha mai controllato che si chiudano. Il
+task costruisce un registro nello stile di `DuplicateTypeNameTests` (elenco
+dichiarato, un motivo per voce, rosso sia su una voce nuova sia su una diventata
+stantia) e copre per intero il gruppo dell'attuazione. **Non tocca un solo file
+di `src/`**: se per coprire un rifiuto servisse toccarlo, la specifica dice di
+fermarsi e riferire. Specifica:
+`docs/agents/phases/AP-10/AP-10_A2A4_DEEPSEEK_refusal_reason_coverage.md`.
+
 **INDIPENDENTE** (2026-09-07): **il registro degli esiti si scrive e non si
 legge.** `ActionOutcomeLedgerStore` e' un registro durevole append-only su
 SQLite, e quattro comandi ci scrivono davvero — `--scout`, `--autoplay`,
