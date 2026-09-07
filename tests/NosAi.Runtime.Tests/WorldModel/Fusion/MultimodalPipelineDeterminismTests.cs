@@ -124,18 +124,25 @@ public sealed class MultimodalPipelineDeterminismTests
     /// already exists and already has this exact branch today.
     /// </para>
     /// <para>
-    /// Deliberately red: the test picks <c>nowUtc</c> in the year 2099 (the
-    /// same technique AP-01/A5 used for the same class of bug) so a truly
-    /// deterministic implementation would stamp the new mob's Unknown
-    /// velocity with a 2099 instant; the real implementation instead stamps
-    /// real wall-clock time (2026 in this sandbox), breaking
-    /// <see cref="WorldModelTemporalEnricher"/>'s own documented "the same
-    /// two snapshots always enrich to the same result" guarantee for any mob
-    /// seen for the first time.
+    /// <b>Written deliberately red; green since the gap was closed.</b> The
+    /// test picks <c>nowUtc</c> in the year 2099 (the same technique AP-01/A5
+    /// used for the same class of bug) so that only an implementation
+    /// threading the caller's instant through can pass: a wall-clock leak
+    /// would stamp 2026 and fail the assertion. It did fail, which was the
+    /// point of writing it; <see cref="WorldModelTemporalEnricher"/> now
+    /// stamps the instant it was given, and its documented "the same two
+    /// snapshots always enrich to the same result" guarantee holds for a mob
+    /// seen for the first time too.
+    /// </para>
+    /// <para>
+    /// The name and the inline comments used to say the assertion failed,
+    /// and kept saying it after the fix landed -- a green test describing
+    /// itself as red, which is worse than either. What the test asserts has
+    /// not changed.
     /// </para>
     /// </summary>
     [Fact]
-    public void EnrichMobs_FirstSightingOfANewMob_LeaksRealWallClockTime_InsteadOfADeterministicInstant_KnownWorldModelTemporalEnricherGap()
+    public void EnrichMobs_FirstSightingOfANewMob_StampsTheInstantItWasGiven_NotRealWallClockTime()
     {
         DateTime year2099 = new(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         WorldModelSnapshot previousNoMobs = WorldModelSnapshot.Unknown("no_prior_fusion_cycle", year2099);
@@ -158,12 +165,23 @@ public sealed class MultimodalPipelineDeterminismTests
         Assert.False(enrichedMob.Velocity.HasValue); // correctly Unknown -- no prior sighting to derive from.
         Assert.Equal(
             year2099,
-            enrichedMob.Velocity.ObservedAtUtc); // FAILS: real wall-clock time leaks through instead.
+            enrichedMob.Velocity.ObservedAtUtc); // the caller's instant, not DateTime.UtcNow.
     }
 
-    /// <summary>Direct companion pinning down the exact same-instant replay failure this causes, mirroring AP-01/A5's own <c>ThreeConsecutiveCycles...</c> determinism test but for a newly-sighted mob specifically.</summary>
+    /// <summary>
+    /// Direct companion to the test above, mirroring AP-01/A5's own
+    /// <c>ThreeConsecutiveCycles...</c> determinism test for a newly-sighted
+    /// mob specifically: the observable consequence of the instant being
+    /// threaded through is that two replays of identical inputs are equal.
+    /// </summary>
+    /// <remarks>
+    /// The <c>Thread.Sleep(5)</c> between the two replays is the whole point:
+    /// it guarantees the two calls happen at different real instants, so a
+    /// wall-clock leak anywhere in the chain makes them unequal. It was
+    /// written to fail, and did.
+    /// </remarks>
     [Fact]
-    public void EnrichMobs_FirstSightingOfANewMob_ReplayedTwice_DoesNotProduceBitForBitEqualResults_KnownWorldModelTemporalEnricherGap()
+    public void EnrichMobs_FirstSightingOfANewMob_ReplayedTwice_ProducesBitForBitEqualResults()
     {
         DateTime nowUtc = new(2026, 9, 5, 12, 0, 0, DateTimeKind.Utc);
         WorldModelSnapshot previousNoMobs = WorldModelSnapshot.Unknown("no_prior_fusion_cycle", nowUtc);
@@ -180,10 +198,10 @@ public sealed class MultimodalPipelineDeterminismTests
         Thread.Sleep(5);
         WorldModelSnapshot replayB = WorldModelTemporalEnricher.Enrich(previousNoMobs, currentWithNewMob, nowUtc, MaxAge, MaxObservationGap);
 
-        // FAILS today: each replay's new-mob Velocity.ObservedAtUtc captures
-        // a different real instant, so the two otherwise-identical replays
-        // are not equal -- violating the "same inputs -> same output"
-        // guarantee this audit was asked to check for explicitly (item 4).
+        // The five milliseconds slept above are visible to nothing here:
+        // every instant in both replays comes from nowUtc, so the two are
+        // equal -- the "same inputs -> same output" guarantee this audit was
+        // asked to check for explicitly (item 4).
         Assert.Equal(replayA, replayB);
     }
 
@@ -197,7 +215,7 @@ public sealed class MultimodalPipelineDeterminismTests
     /// fusion/enrichment involved), at
     /// <c>src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs:196-216</c>:
     /// the factory's own top-level <c>ObservedAtUtc</c> positional field
-    /// correctly uses <c>atUtc ?? DateTime.UtcNow</c>, but every one of its
+    /// correctly used <c>atUtc ?? DateTime.UtcNow</c>, while every one of its
     /// sixteen per-field defaults (<c>PlayerPosition</c>, <c>MapId</c>,
     /// <c>StandingCell</c>, <c>Entities</c>, <c>HitBy</c>,
     /// <c>SelectedTarget</c>, <c>SkillsReady</c>, <c>Inventory</c>,
@@ -221,6 +239,9 @@ public sealed class MultimodalPipelineDeterminismTests
     /// (via <see cref="ClassifiedValueBridge.ToWorldFact{TSource,TResult}"/>,
     /// which faithfully preserves whatever <c>ObservedAtUtc</c> it is
     /// handed) into <c>Player.CurrentMap</c>'s own <c>ObservedAtUtc</c>.
+    /// <b>That was the defect; the per-field defaults now take the same
+    /// instant the factory was given, and this test has been green since.</b>
+    /// Its name said otherwise until long after the fix.
     /// <para>
     /// Worth noting as an added inconsistency this test also surfaces: the
     /// SAME logical "map not observed" fact is represented twice in a
@@ -234,28 +255,26 @@ public sealed class MultimodalPipelineDeterminismTests
     /// </para>
     /// </summary>
     [Fact]
-    public void GameplayObservationUnobserved_LeavesEveryUnoverriddenFieldWallClockStamped_InsteadOfUsingItsOwnAtUtcParameter_KnownGameplayObservationGap()
+    public void GameplayObservationUnobserved_StampsEveryUnoverriddenFieldWithItsOwnAtUtcParameter()
     {
         DateTime year2099 = new(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         GameplayObservation observation = GameplayObservation.Unobserved("reason", year2099);
 
-        // A deterministic implementation would stamp every per-field Unknown
-        // with the same 2099 instant it was explicitly given; the real
-        // implementation stamps real wall-clock time (2026 in this sandbox)
-        // on every one of these instead.
+        // Every per-field Unknown carries the 2099 instant the factory was
+        // explicitly given. A wall-clock leak would read 2026 here.
         Assert.Equal(year2099, observation.MapId.ObservedAtUtc);
     }
 
     /// <summary>
     /// Direct replay-equality companion: two calls to
     /// <c>GameplayObservation.Unobserved</c> with the IDENTICAL <c>reason</c>
-    /// and <c>atUtc</c> should be equal (records compare structurally), but
-    /// are not, because each call's leftover fields independently capture a
-    /// different real instant.
+    /// and <c>atUtc</c> are equal, because records compare structurally and
+    /// no leftover field captures an instant of its own. While the defect
+    /// above was open they were not.
     /// </summary>
     [Fact]
-    public void GameplayObservationUnobserved_CalledTwiceWithIdenticalArguments_DoesNotProduceEqualResults_KnownGameplayObservationGap()
+    public void GameplayObservationUnobserved_CalledTwiceWithIdenticalArguments_ProducesEqualResults()
     {
         DateTime fixedInstant = new(2026, 9, 5, 12, 0, 0, DateTimeKind.Utc);
 

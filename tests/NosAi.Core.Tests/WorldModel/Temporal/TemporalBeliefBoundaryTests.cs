@@ -102,20 +102,22 @@ public sealed class TemporalBeliefBoundaryTests
     /// defect); this test isolates and pins down the defect itself, on the
     /// primitive directly.
     ///
-    /// INTENTIONALLY FAILING until fixed -- do not delete/weaken/skip. Fix
-    /// direction (left for A6/A3, out of A5's file ownership): pass
+    /// Written intentionally failing, with the fix direction named: pass
     /// <c>current.ObservedAtUtc</c> explicitly to all three
     /// <c>WorldFact&lt;WorldVelocity&gt;.Unknown(...)</c> calls in this
-    /// method.
+    /// method. That was done, and this has been green since; the name and
+    /// this paragraph went on saying it failed, which is how a reader looking
+    /// for open gaps finds a closed one. What is asserted has not changed --
+    /// still the same year-2099 probe, still red the moment a wall-clock
+    /// instant leaks back in.
     /// </summary>
     [Fact]
-    public void EstimateVelocity_InsufficientHistoryResult_LeaksRealWallClockTime_InsteadOfADeterministicInstant_KnownA3RobustnessGap()
+    public void EstimateVelocity_InsufficientHistoryResult_StampsADeterministicInstant_NotRealWallClockTime()
     {
         // Timestamped far in the future so a real wall-clock leak is
-        // unmistakable: a deterministic implementation stamping this
-        // Unknown result from its own inputs (e.g. current.ObservedAtUtc)
-        // would also report a year-2099 instant; the real implementation
-        // does not.
+        // unmistakable: stamping this Unknown result from the method's own
+        // inputs (current.ObservedAtUtc) reports a year-2099 instant, while
+        // any DateTime.UtcNow default reports the year the test is run in.
         var farFuture = new DateTime(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         WorldFact<WorldPosition> unknownPrevious = WorldFact<WorldPosition>.Unknown("no_prior_sighting", farFuture);
         WorldFact<WorldPosition> unknownCurrent = WorldFact<WorldPosition>.Unknown("no_prior_sighting", farFuture);
@@ -130,14 +132,15 @@ public sealed class TemporalBeliefBoundaryTests
 
     /// <summary>
     /// Same root cause, a second call site: <see cref="TemporalBelief.PredictPosition"/>'s
-    /// "no_last_known_position_to_extrapolate_from" early return also omits
+    /// "no_last_known_position_to_extrapolate_from" early return also omitted
     /// <c>observedAtUtc</c>, even though this method already receives an
-    /// explicit <c>asOfUtc</c> parameter it could have used instead. See the
+    /// explicit <c>asOfUtc</c> parameter it could use instead -- and now does. See the
     /// sibling test above for the full defect writeup; not duplicated here.
-    /// INTENTIONALLY FAILING until fixed -- do not delete/weaken/skip.
+    /// Written intentionally failing, fixed, green since -- and, like its
+    /// sibling, named as if it still failed until long after.
     /// </summary>
     [Fact]
-    public void PredictPosition_NoLastKnownPositionResult_LeaksRealWallClockTime_InsteadOfUsingItsOwnAsOfUtcParameter_KnownA3RobustnessGap()
+    public void PredictPosition_NoLastKnownPositionResult_UsesItsOwnAsOfUtcParameter_NotRealWallClockTime()
     {
         var farFuture = new DateTime(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         WorldFact<WorldPosition> unknownLastKnown = WorldFact<WorldPosition>.Unknown("never_observed", farFuture);

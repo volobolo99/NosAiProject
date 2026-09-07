@@ -116,6 +116,13 @@ già oggi.
 inequivocabile) e il companion
 `.EnrichMobs_FirstSightingOfANewMob_ReplayedTwice_DoesNotProduceBitForBitEqualResults_KnownWorldModelTemporalEnricherGap`.
 
+> Nota 2026-09-07: il difetto è stato corretto e i due test sono verdi da
+> allora. Sono stati rinominati in
+> `EnrichMobs_FirstSightingOfANewMob_StampsTheInstantItWasGiven_NotRealWallClockTime`
+> e `..._ReplayedTwice_ProducesBitForBitEqualResults`, perché i nomi
+> continuavano ad affermare un fallimento che non avveniva più. I nomi citati
+> qui sopra restano quelli del momento in cui l'audit fu scritto.
+
 **Correzione suggerita (fuori ownership di A5):** passare
 `mob.Position.ObservedAtUtc` (o il `nowUtc` del chiamante) a quella chiamata
 `Unknown(...)`, esattamente come già fatto per i tre punti analoghi in
@@ -185,6 +192,10 @@ deterministica, l'altra no.
 (isolato, verifica diretta `observation.MapId.ObservedAtUtc` contro un
 `atUtc` fissato all'anno 2099) e il companion
 `.GameplayObservationUnobserved_CalledTwiceWithIdenticalArguments_DoesNotProduceEqualResults_KnownGameplayObservationGap`
+
+> Nota 2026-09-07: corretto anche questo; i due test sono verdi e rinominati in
+> `GameplayObservationUnobserved_StampsEveryUnoverriddenFieldWithItsOwnAtUtcParameter`
+> e `..._CalledTwiceWithIdenticalArguments_ProducesEqualResults`.
 (due chiamate identiche non producono record uguali).
 
 **Workaround applicato nel test "verde" di questo audit** (non una
