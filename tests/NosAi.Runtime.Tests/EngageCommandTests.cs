@@ -457,6 +457,111 @@ public sealed class EngageCommandTests
         Assert.Equal(expected, EngageCommand.DescribeTargetRefusal(verdict));
     }
 
+    // ------------------------------------- the picture the act is decided from
+
+    private static readonly DateTime GuardNow = new(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc);
+
+    private static Mob MobObservedAt(DateTime at, double confidence = 1.0, string id = "mob-1") => new(
+        new EntityId(id),
+        WorldFact<WorldPosition>.Cached(new WorldPosition(1, 0), confidence, at),
+        WorldFact<string>.Unknown("species_name_catalog_not_available", at),
+        WorldFact<bool>.Live(true, 1.0, at),
+        WorldFact<bool>.Derived(true, 1.0, at),
+        CombatantStatus.Empty);
+
+    private static CombatActionCandidate SkillOn(string id = "mob-1") => new(
+        CombatActionKind.UseSkill, target: new EntityId(id), skill: new SkillId("7"));
+
+    /// <summary>
+    /// A position observed seconds ago still permits the act: these sightings
+    /// come from a channel that stops mentioning a monster that stops moving.
+    /// </summary>
+    [Fact]
+    public void ARecentlyObservedTarget_IsFitToDecideFrom()
+    {
+        string? refusal = EngageCommand.DescribeUnfitPicture(
+            SkillOn(),
+            EquatableArray<Mob>.From(new[] { MobObservedAt(GuardNow.AddSeconds(-5)) }),
+            gateIsLive: true,
+            GuardNow);
+
+        Assert.Null(refusal);
+    }
+
+    /// <summary>
+    /// The hole this closes: nothing on this path read
+    /// <see cref="WorldFact{T}.ObservedAtUtc"/>, so a position of any age passed
+    /// every check in silence.
+    /// </summary>
+    [Fact]
+    public void APositionOlderThanTheBound_RefusesAndSaysHowOld()
+    {
+        string? refusal = EngageCommand.DescribeUnfitPicture(
+            SkillOn(),
+            EquatableArray<Mob>.From(new[] { MobObservedAt(GuardNow.AddSeconds(-45)) }),
+            gateIsLive: true,
+            GuardNow);
+
+        Assert.NotNull(refusal);
+        Assert.StartsWith(EngageCommand.PictureNotFitReason, refusal, StringComparison.Ordinal);
+        Assert.Contains("position_age_ms=45000/30000", refusal, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A closed gate refuses before the key press rather than at it, and the
+    /// refusal says which condition failed.
+    /// </summary>
+    [Fact]
+    public void AClosedSafetyGate_RefusesTheRound()
+    {
+        string? refusal = EngageCommand.DescribeUnfitPicture(
+            SkillOn(),
+            EquatableArray<Mob>.From(new[] { MobObservedAt(GuardNow.AddSeconds(-1)) }),
+            gateIsLive: false,
+            GuardNow);
+
+        Assert.NotNull(refusal);
+        Assert.Contains("gate_live=False", refusal, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A position the runtime is not confident about does not authorise an act.
+    /// </summary>
+    /// <remarks>
+    /// Today's live path stamps 1.0, so this branch never fires on a real
+    /// client -- which is exactly why it is pinned here rather than assumed: the
+    /// first fused or screen-derived position with a lower confidence must meet
+    /// a guard that is already in place, not one somebody remembers to add.
+    /// </remarks>
+    [Fact]
+    public void APositionBelowTheConfidenceThreshold_RefusesTheRound()
+    {
+        string? refusal = EngageCommand.DescribeUnfitPicture(
+            SkillOn(),
+            EquatableArray<Mob>.From(new[] { MobObservedAt(GuardNow.AddSeconds(-1), confidence: 0.40) }),
+            gateIsLive: true,
+            GuardNow);
+
+        Assert.NotNull(refusal);
+        Assert.Contains("confidence=0.40/0.80", refusal, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The guard runs after the target check, so a target it cannot find is a
+    /// disagreement between two views of the same instant, not a normal refusal.
+    /// </summary>
+    [Fact]
+    public void ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition()
+    {
+        string? refusal = EngageCommand.DescribeUnfitPicture(
+            SkillOn("mob-that-is-not-there"),
+            EquatableArray<Mob>.From(new[] { MobObservedAt(GuardNow.AddSeconds(-1)) }),
+            gateIsLive: true,
+            GuardNow);
+
+        Assert.Equal($"{EngageCommand.PictureNotFitReason}:target_vanished_between_checks", refusal);
+    }
+
     /// <summary>
     /// A target the world does not contain is refused by name rather than
     /// taken on the operator's word -- the gap <c>--engage</c> was changed to

@@ -1,9 +1,11 @@
 using System.Globalization;
 using System.Runtime.Versioning;
+using NosAi.Core.CharacterControl;
 using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
 using NosAi.LiveIntegration;
+using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
@@ -143,6 +145,29 @@ public static class EngageCommand
     /// Administrator, so this command does too.
     /// </remarks>
     public const string TargetNotVerifiableReason = "engage_target_not_verifiable";
+
+    /// <summary>Reported when the picture the act would be decided from is not fit to decide from.</summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="CombatPlanner.CheckTargetConstraints"/> asks whether the world
+    /// permits this act. This asks the prior question: whether what we know of
+    /// the world is current, confident and complete enough for that answer to
+    /// mean anything. Nothing on this path asked it before -- neither
+    /// <c>CheckTargetConstraints</c> nor the commit point inside
+    /// <c>GatedInputBackend</c> reads <see cref="WorldFact{T}.ObservedAtUtc"/>,
+    /// so a target's position could be arbitrarily old and every check would
+    /// pass on it, in silence.
+    /// </para>
+    /// <para>
+    /// The answer comes from
+    /// <see cref="FailClosedCharacterActionGuard"/>, which existed, was tested,
+    /// and was reached by nothing -- a guard that refuses nothing looks exactly
+    /// like a guard that is working. The refusal carries the measured values
+    /// beside their bounds, because the guard answers <see langword="bool"/> and
+    /// restating its conditions here would be a second copy of the policy.
+    /// </para>
+    /// </remarks>
+    public const string PictureNotFitReason = "engage_picture_not_fit_to_decide_from";
 
     /// <summary>Reported when the target was judged and the hard constraints refused it.</summary>
     /// <remarks>
@@ -292,6 +317,7 @@ public static class EngageCommand
     private static CombatExecutionEvidence? JudgeTarget(
         LiveCombatObserver observer,
         ClientMemorySession attached,
+        GatedInputBackend gate,
         CombatActionCandidate candidate,
         DateTime nowUtc)
     {
@@ -302,10 +328,104 @@ public static class EngageCommand
         }
 
         CombatConstraintCheck verdict = CombatPlanner.CheckTargetConstraints(candidate, player, mobs);
-        return DescribeTargetRefusal(verdict) is { } refusal
-            ? CombatExecutionEvidence.NotAttempted(candidate, refusal, nowUtc)
+        if (DescribeTargetRefusal(verdict) is { } refusal)
+            return CombatExecutionEvidence.NotAttempted(candidate, refusal, nowUtc);
+
+        // The target passed. Whether the picture that said so is fit to have
+        // said it is the separate, later question -- so it is asked last, which
+        // is where a guard that only ever refuses belongs.
+        return DescribeUnfitPicture(candidate, mobs, gate.IsLive, nowUtc) is { } unfit
+            ? CombatExecutionEvidence.NotAttempted(candidate, unfit, nowUtc)
             : null;
     }
+
+    /// <summary>
+    /// The guard's verdict on this round's picture, as a refusal string, or
+    /// <see langword="null"/> when it permits the act.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Every field of the context is a value something actually observed, and
+    /// none is defaulted into existence:
+    /// <see cref="CharacterControlContext.IsSafetyGateOpen"/> is the emitting
+    /// boundary's own <see cref="GatedInputBackend.IsLive"/>;
+    /// <see cref="CharacterControlContext.HasFreshObservation"/> and the age
+    /// come from the target's <see cref="Mob.Position"/> fact and its
+    /// <see cref="WorldFact{T}.ObservedAtUtc"/>; the confidence is that fact's
+    /// own. Fabricating any of them -- a <c>true</c> for the gate, a zero for
+    /// the age -- would turn the one component whose whole purpose is to refuse
+    /// into one that always permits.
+    /// </para>
+    /// <para>
+    /// The age bound is not the guard's 500 ms default, and the reason is the
+    /// channel rather than the policy. These sightings come from the packet
+    /// capture, which announces a change and then says nothing: a monster
+    /// standing still is not mentioned again for as long as it stands there. At
+    /// 500 ms every stationary target would be refused, which is fail-closed and
+    /// useless -- an operator would read it as the command being broken.
+    /// <c>TargetSelectionPolicy.EffectiveMaxSightingAge</c> already argues this
+    /// exact point for these exact sightings and answers 30 seconds, so that one
+    /// number is reused rather than a second one invented here.
+    /// </para>
+    /// </remarks>
+    /// <param name="candidate">The act about to be attempted.</param>
+    /// <param name="mobs">This round's mobs, as the projection produced them.</param>
+    /// <param name="gateIsLive">
+    /// <see cref="GatedInputBackend.IsLive"/>, taken as a value rather than the
+    /// backend itself: this method needs the one fact and nothing else, and a
+    /// bool is something a test can state. Reading it from a live gate here
+    /// would have made the only interesting branch unreachable without a client.
+    /// </param>
+    /// <param name="nowUtc">The instant the round is judged at.</param>
+    internal static string? DescribeUnfitPicture(
+        CombatActionCandidate candidate,
+        EquatableArray<Mob> mobs,
+        bool gateIsLive,
+        DateTime nowUtc)
+    {
+        Mob? found = null;
+        foreach (Mob mob in mobs)
+        {
+            if (mob.Id.Equals(candidate.Target!.Value))
+            {
+                found = mob;
+                break;
+            }
+        }
+
+        // CheckTargetConstraints ran first and allowed this candidate, which it
+        // cannot do for a target it did not find with a known position.
+        if (found is not { } target || !target.Position.HasValue)
+            return $"{PictureNotFitReason}:target_vanished_between_checks";
+
+        double ageMs = (nowUtc - target.Position.ObservedAtUtc).TotalMilliseconds;
+        double maxAgeMs = TargetSelectionPolicy.Default.EffectiveMaxSightingAge.TotalMilliseconds;
+
+        var action = new CharacterAction(
+            Id: string.Create(CultureInfo.InvariantCulture, $"engage:{candidate.Target!.Value.Value}:{candidate.Skill!.Value.Value}"),
+            Kind: CharacterActionKind.UseSkill,
+            Target: new CharacterTarget(target.Id.Value, target.Position.Value.X, target.Position.Value.Y),
+            FunctionId: $"{KeybindsCheck.SkillPrefix}{candidate.Skill!.Value.Value}",
+            Priority: 0,
+            Confidence: target.Position.Confidence);
+
+        var context = new CharacterControlContext(
+            HasFreshObservation: true,
+            IsSafetyGateOpen: gateIsLive,
+            ObservationAgeMs: ageMs,
+            MaxObservationAgeMs: maxAgeMs);
+
+        if (Guard.IsAllowed(action, context))
+            return null;
+
+        return string.Create(CultureInfo.InvariantCulture,
+            $"{PictureNotFitReason}:gate_live={context.IsSafetyGateOpen} "
+            + $"position_age_ms={ageMs:F0}/{maxAgeMs:F0} "
+            + $"confidence={action.Confidence:F2}/{context.ConfidenceThreshold:F2}");
+    }
+
+    /// <summary>The last-line guard, held once: it carries no state and its verdict depends only on its arguments.</summary>
+    private static readonly FailClosedCharacterActionGuard Guard = new();
 
     /// <summary>
     /// The refusal string a verdict earns, or <see langword="null"/> when the
@@ -410,7 +530,7 @@ public static class EngageCommand
                 // the wire had established. A check taken once at the start
                 // would authorise the later rounds on a picture that no longer
                 // holds.
-                CombatExecutionEvidence? refusal = JudgeTarget(observer, attached, candidate, nowUtc);
+                CombatExecutionEvidence? refusal = JudgeTarget(observer, attached, gated, candidate, nowUtc);
                 if (refusal is { } refused)
                     Console.WriteLine($"[REFUSED] {refused.Detail}");
 

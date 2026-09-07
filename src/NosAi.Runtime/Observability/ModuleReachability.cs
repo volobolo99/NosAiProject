@@ -149,6 +149,14 @@ public static class ModuleReachability
         new("NosAi.Adapter", ModuleReach.Integrated),
         new("NosAi.Core", ModuleReach.Integrated),
         new("NosAi.Core.Cognitive", ModuleReach.Integrated),
+        new("NosAi.Core.CharacterControl", ModuleReach.Integrated),
+        new("NosAi.Core.Game", ModuleReach.Integrated,
+            "Reached, but by inheritance rather than by use, and the distinction "
+            + "is worth keeping: this register works at namespace granularity, so "
+            + "GameFunctionCatalog counts as reached because CharacterActionPlanner "
+            + "sits in a namespace EngageCommand now calls into -- for the guard, "
+            + "not for the planner. The catalogue's only caller is still that "
+            + "planner, and still nothing calls it."),
         new("NosAi.Core.Memory", ModuleReach.Integrated),
         new("NosAi.Core.Navigation", ModuleReach.Integrated),
         new("NosAi.Core.Testing", ModuleReach.Integrated),
@@ -231,15 +239,6 @@ public static class ModuleReachability
             + "return EngineRefusalCode.NotImplemented. Its own doc comment calls "
             + "it a declared seam rather than a hidden placeholder, which is "
             + "honest -- but a seam nothing has ever attached to."),
-
-        new("NosAi.Core.CharacterControl", ModuleReach.Unreferenced,
-            "Includes FailClosedCharacterActionGuard: a safety guard on no path. "
-            + "A guard nothing calls guards nothing, and its being fail-closed by "
-            + "construction is exactly why nobody would notice."),
-
-        new("NosAi.Core.Game", ModuleReach.Unreferenced,
-            "GameFunctionCatalog, reached only from NosAi.Core.CharacterControl "
-            + "-- itself unreached, so the reference is not a path."),
 
         new("NosAi.Core.Hardware", ModuleReach.Unreferenced,
             "The tier/capability contracts of AP-00. Reached only from "
