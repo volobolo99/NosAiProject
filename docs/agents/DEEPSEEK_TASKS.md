@@ -170,6 +170,21 @@ Concretamente, prima di consegnare:
 
 ---
 
+## Cartella di lavoro — una sola, sempre
+
+`C:\Users\volob\Desktop\nos\NosAiProject` è l'unica copia di lavoro del
+progetto. Apri sempre questa in Cursor.
+
+Ogni altra cartella `NosAiProject*` sul Desktop è materiale morto, tenuto solo
+come archivio: non ha commit propri, non va aperta, non va modificata. Lavorare
+in una di quelle significa partire da una base vecchia e perdere il lavoro.
+
+Prima di iniziare un task: `git pull`. Ogni commit fatto qui viene pushato su
+`origin/main` automaticamente (hook `post-commit`), quindi GitHub non resta mai
+indietro rispetto al disco.
+
+---
+
 ## Come usare questo file
 
 1. Guarda la sezione **"Pronto ora"** qui sotto. Se è vuota, guarda
