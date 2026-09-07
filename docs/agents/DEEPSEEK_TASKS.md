@@ -273,6 +273,20 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**IN CODA, DOPO QUELLO SOPRA** (2026-09-07): **leggere dal filo cosa il
+personaggio indossa** — gli opcode `eq` e `equip`. ADR-0027 ha misurato che
+**nessun sito di produzione popola `Player.Equipment`**: ogni snapshot mai
+prodotto afferma che il personaggio non indossa nulla, e LoadoutPlanner pianifica
+su quello. Q-091 aveva concluso che serviva un operatore a lanciare un test e
+mandare le righe reali: quel test era già registrato — `data/equip_test.noscap`
+è una sessione catturata mentre si equipaggiava e disequipaggiava, e i 43
+pacchetti che il decoder scarta sono esattamente quel canale. La verifica non
+dipende da alcuna fonte esterna: tre vnum (309, 518, 284) escono da uno slot di
+`equip` ed entrano in uno slot di `ivn` dentro la stessa cattura, quindi i due
+opcode si confermano a vicenda. Specifica:
+`docs/agents/phases/AP-07/AP-07_A2A4_DEEPSEEK_worn_equipment_from_wire.md`.
+**Non prenderlo insieme al task sopra**: modificano gli stessi quattro file.
+
 **PRONTO ORA** (2026-09-07): **pubblicare la progressione che il filo già
 porta** — l'opcode `lev`. `docs/PROTOCOLLO_NOSTALE.md:236` lo dice in una riga:
 «Progression — level and XP from `lev` (catalogued, not yet published)».

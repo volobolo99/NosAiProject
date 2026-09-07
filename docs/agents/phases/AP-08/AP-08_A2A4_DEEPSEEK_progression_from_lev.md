@@ -44,39 +44,45 @@ census move. Nothing here actuates anything.
 
 ## The evidence — measured, not remembered
 
-All 23 `lev` lines of `data/nostale_combat.noscap`, decoded through the shipping
-chain (`CaptureFile.Open` → `GameTrafficCaptureEngine` →
-`NosTaleWorldDecoder.Decode`) on 2026-09-07:
+`lev` is in **three** of the five recordings, **38 packets in total**. All of
+them, decoded through the shipping chain (`CaptureFile.Open` →
+`GameTrafficCaptureEngine` → `NosTaleWorldDecoder.Decode`) on 2026-09-07:
 
 ```
- 1: lev 56 9688533 39 43226 18247900 185500 35106 7 0 0 1 0
- 2: lev 56 9688629 39 43250 18247900 185500 35106 7 0 0 1 0
- ...
-23: lev 56 9690657 39 43754 18247900 185500 35106 7 0 0 1 0
+data/nostale_combat.noscap   23 packets
+   1: lev 56 9688533 39 43226 18247900 185500 35106 7 0 0 1 0
+  23: lev 56 9690657 39 43754 18247900 185500 35106 7 0 0 1 0
+
+data/certificazione.noscap   11 packets
+   1: lev 56 9728169 39 46778 18247900 185500 35106 7 0 0 1 0
+  11: lev 56 9731949 39 47018 18247900 185500 35106 7 0 0 1 0
+
+data/nostale_live.noscap      4 packets
+   1: lev 56 9708129 39 44858 18247900 185500 35106 7 0 0 1 0
+   4: lev 56 9709347 39 44930 18247900 185500 35106 7 0 0 1 0
 ```
 
-| # | Field | Value across the 23 | Reading | Confidence |
+`data/nostale_01.noscap` (idle) and `data/equip_test.noscap` carry **zero**. That
+is not an error — it is the other half of the evidence, and a test asserts it.
+
+| # | Field | Across the 38 | Reading | Confidence |
 |---:|---|---|---|---|
-| 1 | level | `56`, constant | character level | **probable** |
-| 2 | xp | `9688533` → `9690657`, **strictly rising every packet** | experience | **probable** |
-| 3 | jobLevel | `39`, constant | job level | **probable** |
-| 4 | jobXp | `43226` → `43754`, **strictly rising every packet** | job experience | **probable** |
-| 5 | xpMax | `18247900`, constant, `>` xp | experience for the next level | **probable** |
-| 6 | jobXpMax | `185500`, constant, `>` jobXp | job experience for the next job level | **probable** |
-| 7 | — | `35106`, constant | candidate reputation | **unknown** |
-| 8–12 | — | `7 0 0 1 0`, constant | — | **unknown** |
+| 1 | level | `56` in all three sessions | character level | **probable** |
+| 2 | xp | rises **strictly, every packet, in each session** | experience | **probable** |
+| 3 | jobLevel | `39` in all three | job level | **probable** |
+| 4 | jobXp | rises **strictly, every packet, in each session** | job experience | **probable** |
+| 5 | xpMax | `18247900`, identical in all three | experience for the next level | **probable** |
+| 6 | jobXpMax | `185500`, identical in all three | job experience for the next job level | **probable** |
+| 7 | — | `35106`, identical in all three | candidate reputation | **unknown** |
+| 8–12 | — | `7 0 0 1 0`, identical in all three | — | **unknown** |
 
-`data/nostale_01.noscap` (the idle session) carries **zero** `lev`: its census is
-`mv 2468` and `stat 22`, nothing else. That is not an error — it is the second
-half of the evidence, and a test asserts it.
-
-**Fields 7 to 12 are not to be decoded.** They are constant across the only
-capture that has them, which means the recording cannot tell a real reading from
-a coincidence. A constant is not a confirmation. Anything you cannot read from
-the table above stays out of the contract entirely — not `0`, not a nullable set
-to null "for now": absent.
-
----
+**Fields 7 to 12 are not to be decoded**, and the three sessions are the reason
+rather than an excuse. Fields 2 and 4 move within every session *and* between
+sessions; fields 7 to 12 never move at all, in 38 packets across three separate
+recordings. A value that has never once changed cannot be told apart from a
+constant the server always sends, so the capture cannot confirm any meaning for
+it. Anything you cannot read from the table above stays out of the contract
+entirely — not `0`, not a nullable set to null "for now": absent.
 
 ## OWN (new files only)
 
@@ -104,11 +110,12 @@ In `GameTrafficObserver.cs`, beside the other reading records
 /// <summary>What the wire says about the character's progression.</summary>
 /// <remarks>
 /// Six fields, and deliberately not the other six the packet carries. Fields 7
-/// through 12 of `lev` are constant across the only recording that has any
-/// (`35106 7 0 0 1 0`), and a constant is not a confirmation: nothing in the
-/// evidence distinguishes a real reading from a coincidence, so they are not in
-/// this contract at all -- not zero, not a null "for now". See
-/// docs/PROTOCOLLO_NOSTALE.md § lev.
+/// through 12 of `lev` (`35106 7 0 0 1 0`) are identical in all 38 packets of
+/// the three recordings that carry any, while fields 2 and 4 move in every one
+/// of them. A value that has never once changed cannot be told apart from a
+/// constant the server always sends, so nothing here can confirm a meaning for
+/// it: it is not in this contract at all -- not zero, not a null "for now".
+/// See docs/PROTOCOLLO_NOSTALE.md § lev.
 /// </remarks>
 public readonly record struct PlayerProgression(
     int Level,
@@ -223,7 +230,15 @@ Against the real recording, with the attribute that already exists for this
    This is the cross-check CLAUDE.md § *External reference data* requires: a
    decoded field checked against a real observed value, not against the document
    that describes it.
-7. `[RecordedCaptureFact("nostale_01.noscap")]` — the idle recording yields
+7. The same, `[RecordedCaptureFact("certificazione.noscap")]`: **11** readings,
+   first `9728169`, last `9731949`, strictly rising.
+8. The same, `[RecordedCaptureFact("nostale_live.noscap")]`: **4** readings,
+   first `9708129`, last `9709347`, strictly rising.
+   Three sessions rather than one because a single capture cannot distinguish a
+   field that is constant from a field that never had the chance to move — which
+   is the entire argument for leaving fields 7 to 12 undecoded, and it deserves
+   to be a test rather than a paragraph.
+9. `[RecordedCaptureFact("nostale_01.noscap")]` — the idle recording yields
    **zero** progression readings, and the replay still reports `2490/2490`.
 
 ---
@@ -255,7 +270,9 @@ Against the real recording, with the attribute that already exists for this
   run for real, and its progression block pasted into the completion report,
   together with the census line showing **8170/8211**.
 - The same command on `data/nostale_01.noscap`, showing zero readings and
-  `2490/2490`.
+  `2490/2490`, and on `data/certificazione.noscap` (11 readings, census
+  `11508/11528`) and `data/nostale_live.noscap` (4 readings, census
+  `1905/1913`).
 - `docs/PROTOCOLLO_NOSTALE.md:236` still says "catalogued, not yet published" —
   **leave it**: correcting the document is Claude's half (REGOLA #2), and it is
   the check that the two halves met.
