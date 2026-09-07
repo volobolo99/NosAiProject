@@ -102,28 +102,22 @@ public static class ScreenProjectionWatcher
 
             var backend = new Win32InputBackend();
             int target = Math.Max(wanted, ScreenSampleCoach.DefaultWantedSamples);
-            var coach = new ScreenSampleCoach(target);
+            var coach = new ScreenSampleCoach(clientArea.Width, clientArea.Height, target);
             var recorded = new List<string>();
 
-            // A session that collects eight good clicks and then runs out of time
-            // used to throw all eight away, because the file was overwritten. The
-            // rows already on file for THIS regime are taken back in, so the
-            // operator resumes instead of restarting -- and so the advice below
-            // knows which directions are already covered.
+            // Ogni sessione parte da zero, e quella prima viene archiviata invece
+            // che riscritta.
+            //
+            // Fino al 2026-09-07 i campioni dello stesso regime venivano ripresi,
+            // per non buttare una sessione interrotta. La misura ha detto che non
+            // si puo': tre campioni della prima sessione del 7 settembre uniti ai
+            // nove della seconda danno un residuo di 9,62 caselle, i nove da soli
+            // 4,23. Le due sessioni avevano la stessa finestra e lo stesso DPI --
+            // stesso regime, quindi -- e proiezioni diverse. Il regime non
+            // identifica la proiezione, e una sessione ereditata e' una miscela
+            // che nessun filtro presente sa vedere.
             string samplesPath = Path.Combine(repoRoot, ScreenProjectionProbe.SamplesRelativePath);
-            int carriedOver = 0, carriedDropped = 0;
-            foreach ((ScreenProjectionSample existing, string line) in ReadExistingRows(samplesPath, clientArea, shape))
-            {
-                if (coach.Offer(existing, characterWasAtRest: true).Accepted)
-                {
-                    recorded.Add(line);
-                    carriedOver++;
-                }
-                else
-                {
-                    carriedDropped++;
-                }
-            }
+            string? archived = ArchivePreviousSession(samplesPath);
 
             Say($"Client area {clientArea.Width}x{clientArea.Height} at {clientArea.X},{clientArea.Y}");
             Say();
@@ -135,9 +129,8 @@ public static class ScreenProjectionWatcher
             Say("  Ogni clic e' un campione: il client stesso traduce il pixel in una casella.");
             Say($"  Hai {seconds} secondi. Ti dico io dove cliccare dopo ognuno.");
             Say();
-            if (carriedOver > 0 || carriedDropped > 0)
-                Say($"  Ripresi {carriedOver} campioni gia' sul file per questo regime"
-                    + (carriedDropped > 0 ? $", scartati {carriedDropped} (doppioni o troppo vicini)." : "."));
+            if (archived is not null)
+                Say($"  La sessione precedente e' stata archiviata in {Path.GetFileName(archived)}.");
             Say($"  -> {coach.Advice}");
 
             int acceptedThisSession = 0;
@@ -221,7 +214,7 @@ public static class ScreenProjectionWatcher
                 Say($"  -> {verdict.Advice}");
             }
 
-            if (acceptedThisSession == 0 && carriedOver == 0)
+            if (acceptedThisSession == 0)
             {
                 Say();
                 Say("[REFUSED] no_clicks_observed");
@@ -237,7 +230,7 @@ public static class ScreenProjectionWatcher
                 new[] { ScreenProjectionProbe.SamplesHeader }.Concat(recorded));
 
             Say();
-            Say($"{recorded.Count} campioni scritti in {samplesPath} ({acceptedThisSession} nuovi in questa sessione)");
+            Say($"{recorded.Count} campioni scritti in {samplesPath}");
             Say("  Le coordinate sono DELTA rispetto al personaggio, non assolute:");
             Say("  con la telecamera che lo segue, e' la sola forma che significhi qualcosa.");
 
@@ -268,43 +261,24 @@ public static class ScreenProjectionWatcher
     }
 
     /// <summary>
-    /// The rows already on file that were measured under the geometry in front of
-    /// us now, with the line they came from so it can be written back byte for byte.
+    /// Sposta i campioni della sessione precedente in un file con la propria data,
+    /// e restituisce dove sono finiti.
     /// </summary>
     /// <remarks>
-    /// Rows of another regime are left alone rather than migrated: a sample taken
-    /// at a different window size or DPI describes a different projection, and
-    /// carrying it forward would put two geometries in one fit. A file that is not
-    /// version 1 is not resumed at all — <c>--screen-samples-clear</c> is the way
-    /// to start over, and guessing a regime for rows that never recorded one is
-    /// how the mixture this format exists to prevent gets back in.
+    /// Archiviare e non cancellare: una sessione di campioni costa all'operatore
+    /// una partita, e il 2026-09-07 e' servito rileggerne tre vecchie per capire
+    /// perche' la quarta non si risolveva.
     /// </remarks>
-    private static IEnumerable<(ScreenProjectionSample Sample, string Line)> ReadExistingRows(
-        string path, PixelRect area, GeometryShape shape)
+    private static string? ArchivePreviousSession(string samplesPath)
     {
-        if (!File.Exists(path))
-            yield break;
+        if (!File.Exists(samplesPath))
+            return null;
 
-        string[] lines = File.ReadAllLines(path);
-        if (lines.Length == 0
-            || !string.Equals(lines[0].Trim(), ScreenProjectionProbe.SamplesHeader, StringComparison.Ordinal))
-            yield break;
-
-        foreach (string line in lines.Skip(1))
-        {
-            string[] fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (fields.Length != 7) continue;
-            if (!int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mx)) continue;
-            if (!int.TryParse(fields[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int my)) continue;
-            if (!int.TryParse(fields[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int sx)) continue;
-            if (!int.TryParse(fields[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out int sy)) continue;
-            if (!int.TryParse(fields[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out int w)) continue;
-            if (!int.TryParse(fields[5], NumberStyles.Integer, CultureInfo.InvariantCulture, out int h)) continue;
-            if (!uint.TryParse(fields[6], NumberStyles.Integer, CultureInfo.InvariantCulture, out uint dpi)) continue;
-            if (w != area.Width || h != area.Height || dpi != shape.Dpi) continue;
-
-            yield return (new ScreenProjectionSample(new Contracts.MapPoint(mx, my), sx, sy), line);
-        }
+        string directory = Path.GetDirectoryName(samplesPath) ?? ".";
+        string archived = Path.Combine(directory, string.Create(CultureInfo.InvariantCulture,
+            $"screen-samples-{DateTime.Now:yyyyMMdd-HHmmss}.txt"));
+        File.Move(samplesPath, archived, overwrite: false);
+        return archived;
     }
 
     private static PixelRect? LocateClientArea(int processId, out IntPtr windowHandle)

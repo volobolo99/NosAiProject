@@ -95,6 +95,7 @@ internal static class ScreenCalibrationInspect
         // ha dodici campioni utilizzabili, e dirlo come "12" sarebbe una bugia
         // aritmeticamente corretta.
         var byRegime = new Dictionary<string, List<ScreenProjectionSample>>(StringComparer.Ordinal);
+        var geometry = new Dictionary<string, (int Width, int Height)>(StringComparer.Ordinal);
         int malformed = 0;
         foreach (string line in lines.Skip(1))
         {
@@ -109,7 +110,16 @@ internal static class ScreenCalibrationInspect
                 continue;
             }
 
-            string regime = $"{f[4]}x{f[5]} @ {f[6]} DPI";
+            if (!int.TryParse(f[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out int w)
+                || !int.TryParse(f[5], NumberStyles.Integer, CultureInfo.InvariantCulture, out int h)
+                || w <= 0 || h <= 0)
+            {
+                malformed++;
+                continue;
+            }
+
+            string regime = $"{w}x{h} @ {f[6]} DPI";
+            geometry[regime] = (w, h);
             if (!byRegime.TryGetValue(regime, out List<ScreenProjectionSample>? bucket))
                 byRegime[regime] = bucket = new List<ScreenProjectionSample>();
             bucket.Add(new ScreenProjectionSample(new MapPoint(dx, dy), px, py));
@@ -123,7 +133,8 @@ internal static class ScreenCalibrationInspect
 
         foreach ((string regime, List<ScreenProjectionSample> rows) in byRegime)
         {
-            var coach = new ScreenSampleCoach();
+            (int w, int h) = geometry[regime];
+            var coach = new ScreenSampleCoach(w, h);
             foreach (ScreenProjectionSample row in rows)
                 coach.Offer(row, characterWasAtRest: true);
 

@@ -48,7 +48,7 @@ public sealed class ScreenSampleCoachTests
 
     private static ScreenSampleCoach Feed((int Dx, int Dy, int Px, int Py)[] rows)
     {
-        var coach = new ScreenSampleCoach();
+        var coach = new ScreenSampleCoach(1024, 768);
         foreach (var row in rows)
             coach.Offer(Sample(row), characterWasAtRest: true);
         return coach;
@@ -57,7 +57,7 @@ public sealed class ScreenSampleCoachTests
     [Fact]
     public void Un_clic_col_personaggio_ancora_in_cammino_e_rifiutato()
     {
-        var coach = new ScreenSampleCoach();
+        var coach = new ScreenSampleCoach(1024, 768);
 
         ScreenSampleVerdict verdict = coach.Offer(Sample((8, 2, 843, 466)), characterWasAtRest: false);
 
@@ -69,7 +69,7 @@ public sealed class ScreenSampleCoachTests
     [Fact]
     public void Lo_stesso_pixel_due_volte_conta_una_volta_sola()
     {
-        var coach = new ScreenSampleCoach();
+        var coach = new ScreenSampleCoach(1024, 768);
         Assert.True(coach.Offer(Sample((-9, -5, 174, 346)), true).Accepted);
 
         ScreenSampleVerdict second = coach.Offer(Sample((-9, -5, 174, 346)), true);
@@ -82,7 +82,7 @@ public sealed class ScreenSampleCoachTests
     [Fact]
     public void Un_clic_troppo_vicino_al_personaggio_e_rifiutato()
     {
-        var coach = new ScreenSampleCoach();
+        var coach = new ScreenSampleCoach(1024, 768);
 
         // (-4,1) dista 4,12 caselle: sotto il minimo, ed e' il primo dei cinque
         // clic della sessione rifiutata.
@@ -127,7 +127,7 @@ public sealed class ScreenSampleCoachTests
     [Fact]
     public void Il_consiglio_nomina_una_direzione_ancora_scoperta()
     {
-        var coach = new ScreenSampleCoach();
+        var coach = new ScreenSampleCoach(1024, 768);
         coach.Offer(Sample((8, 2, 843, 466)), true);   // a destra
 
         // Il primo settore scoperto in ordine e' quello successivo a destra.
@@ -141,7 +141,7 @@ public sealed class ScreenSampleCoachTests
     [Fact]
     public void Coperte_tutte_le_direzioni_il_consiglio_chiede_solo_piu_lontano()
     {
-        var coach = new ScreenSampleCoach(wanted: 12);
+        var coach = new ScreenSampleCoach(1024, 768, wanted: 12);
         foreach (var row in AnelloDodici.Take(11))
             coach.Offer(Sample(row), true);
 
@@ -169,5 +169,77 @@ public sealed class ScreenSampleCoachTests
 
         Assert.Equal(direct, failure);
         Assert.Equal(solved, calibration.IsCalibrated);
+    }
+
+    /// <summary>I nove clic della seconda sessione del 2026-09-07.</summary>
+    /// <remarks>
+    /// Sette dicono tredici caselle con il cursore quasi addosso al personaggio.
+    /// La posizione letta dalla memoria era vecchia della camminata precedente, e
+    /// il delta se l'e' inglobata. Insieme si accordavano abbastanza da fittare, e
+    /// la trasformazione che ne usciva metteva il personaggio a (271, 603) di una
+    /// finestra 1024x768: nell'angolo in basso a sinistra, dove la telecamera non
+    /// lo disegna mai.
+    /// </remarks>
+    private static readonly (int Dx, int Dy, int Px, int Py)[] NoveConPosizioneVecchia =
+    [
+        (6, -34, 178, 152), (13, -4, 491, 349), (13, -2, 507, 396), (12, -1, 502, 397),
+        (13, -5, 484, 356), (13, -1, 530, 411), (13, -9, 458, 292), (12, -2, 466, 387),
+        (-11, 0, 106, 440)
+    ];
+
+    /// <summary>
+    /// Il test che questa classe non aveva, e che e' costato una sessione:
+    /// tredici caselle da un clic a quaranta pixel non sono una misura.
+    /// </summary>
+    [Fact]
+    public void I_campioni_con_la_posizione_vecchia_sono_rifiutati_e_i_due_buoni_no()
+    {
+        var coach = new ScreenSampleCoach(1024, 768);
+        var refused = new List<string?>();
+
+        foreach (var row in NoveConPosizioneVecchia)
+        {
+            ScreenSampleVerdict verdict = coach.Offer(Sample(row), characterWasAtRest: true);
+            if (!verdict.Accepted)
+                refused.Add(verdict.Reason);
+        }
+
+        Assert.Equal(7, refused.Count);
+        Assert.All(refused, reason =>
+            Assert.Equal(ScreenSampleCoach.ImpliedScaleTooSmallReason, reason));
+
+        // Restano i due che il rifit indipendente conferma: (-11,0) implica 37 px
+        // per casella, (6,-34) ne implica 13. Le sessioni buone stanno fra 11 e 41.
+        Assert.Equal(2, coach.Coverage.Accepted);
+    }
+
+    [Fact]
+    public void Le_sessioni_buone_passano_tutte_la_stessa_regola()
+    {
+        var coach = new ScreenSampleCoach(1024, 768);
+
+        foreach (var row in AnelloDodici)
+        {
+            double implied = coach.ImpliedPixelsPerTile(Sample(row));
+            Assert.True(implied >= ScreenSampleCoach.MinimumPixelsPerTile,
+                $"delta=({row.Dx},{row.Dy}) implica {implied:F1} px/casella");
+        }
+    }
+
+    /// <summary>
+    /// Dodici campioni tutti in un arco non bastano: la copertura fa parte della
+    /// condizione di fine, o il consiglio a schermo resterebbe inascoltabile.
+    /// </summary>
+    [Fact]
+    public void Dodici_campioni_in_una_sola_direzione_non_soddisfano()
+    {
+        var coach = new ScreenSampleCoach(1024, 768, wanted: 3);
+        coach.Offer(Sample((8, 2, 843, 466)), true);
+        coach.Offer(Sample((10, -13, 796, 253)), true);
+        coach.Offer(Sample((11, -6, 867, 356)), true);
+
+        Assert.Equal(3, coach.Coverage.Accepted);
+        Assert.True(coach.Coverage.SectorsFilled < ScreenSampleCoach.SectorCount);
+        Assert.False(coach.IsSatisfied);
     }
 }
