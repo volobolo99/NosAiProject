@@ -31,76 +31,68 @@ Gli agenti ricordano le voci **aperte** a ogni resoconto di fine lavoro.
 
 ---
 
-## T-15 — ricampionare la proiezione schermo: i dodici campioni sono due sessioni
+## T-15 — proiezione schermo → mappa — **CHIUSO il 2026-09-07**
 
-**Aperto il 2026-09-07.** DeepSeek ha rimandato indietro il task sui campioni
-reali dicendo che i dati non si riallineano, e aveva ragione. Misurato adattando
-un'affine ai campioni di `data/perception/screen-samples.txt`, senza toccare i
-file:
+**La mappa non era affine, ed era quello il problema.** Il test era stato aperto
+perché i dodici campioni allora in archivio lasciavano 2,43 caselle di residuo
+contro una soglia di 1,5, e sottoinsiemi contigui si adattavano a trasformazioni
+diverse. La lettura di allora — «il file è una miscela di due sessioni» — era
+sbagliata: era una sola geometria, descritta con il modello sbagliato.
 
-| Sottoinsieme | residuo peggiore | scala px/casella |
-|---|---:|---|
-| tutti e 12 | **73,6 px ≈ 2,9 caselle** | 32,9 / 14,7 |
-| primi 5 | 16,1 px ≈ 0,63 caselle | 36,6 / 22,8 |
-| primi 8 | 26,3 px ≈ 1,0 casella | 37,9 / 15,5 |
-| ultimi 6 | 31,8 px ≈ 1,25 caselle | 30,3 / 12,7 |
+### La misura che l'ha deciso
 
-`ScreenProjectionCalibration.MaxVerificationResidualTiles` è **1,5 caselle**. I
-dodici insieme non passano; sottoinsiemi contigui sì, e con **trasformazioni
-diverse** — scala 36,6 contro 30,3, un rapporto di circa 0,83.
+Dividendo ciascuna sessione fra i clic nella metà alta e quelli nella metà bassa
+della finestra, il passo della casella cambia nella stessa direzione in tutte e
+due:
 
-**Non è un dato da ri-solvere: è una miscela.** Il file contiene campioni presi
-in due stati di geometria diversi. `screen-projection.calibration` dichiara `5`
-campioni: fu risolta sui primi cinque, e il file è cresciuto dopo.
+| sessione | passo in alto | passo in basso |
+|---|---|---|
+| 2026-09-03, 12 clic | 30,7 × 13,0 | 36,6 × 22,8 |
+| 2026-09-07, 11 clic | 36,9 × 14,0 | 42,9 × 17,3 |
 
-### Il difetto che questo scopre, e che nessun ricampionamento risolve
+La casella è più grande in basso e più piccola in alto: è una telecamera
+inclinata, e nessuna mappa affine può rappresentarla. Con i due termini
+prospettici i dodici campioni del 3 settembre passano da 2,43 a **1,23 caselle**
+— sotto soglia, con gli stessi campioni che venivano rifiutati. I due termini che
+le due sessioni misurano indipendentemente concordano: `H` vale −0,0181 e
+−0,0153, `G` è circa zero in entrambe.
 
-Il file dei campioni registra larghezza, altezza e DPI, **non il livello di
-zoom**. Due regimi diversi sono quindi indistinguibili riga per riga, e si
-mescolano in silenzio: nulla, oggi, impedisce di sommare campioni di sessioni
-che il client disegnava a scale diverse. Il residuo che sfonda la soglia è
-l'unico sintomo, e arriva alla fine.
+### Cosa è stato corretto lungo la strada
 
-**Decisione dell'operatore, 2026-09-07: il regime sta su ogni riga.** Non una
-procedura da ricordare, ma un dato che il file porta, così che due regimi diversi
-non possano mescolarsi nemmeno per distrazione. La specifica è
-`docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_sample_regime.md`, e il formato
-nuovo porta il DPI accanto a larghezza e altezza — cioè la `GeometryShape` che
-il repository già definisce.
+- **`--screen-watch` chiedeva cinque campioni.** Cinque clic non determinano un
+  fit: la sessione delle 21:14 è stata rifiutata con `scale_not_determined:72x43pct`,
+  con una dispersione di 150 contro le 893 000 dell'anello che aveva calibrato.
+- **La posizione del personaggio si legge in ritardo.** Una sessione ha prodotto
+  sette clic su nove che dichiaravano ~13 caselle con il cursore entro 40 px dal
+  personaggio: il delta aveva inglobato la camminata precedente. Il consigliere
+  rifiuta ora un campione i cui pixel dal centro finestra, divisi per le caselle,
+  scendono sotto 8 — soglia scelta misurando: le sessioni buone stanno fra 11 e
+  41, quella cattiva dava 1, 1, 2, 3, 3, 4, 7.
+- **L'incertezza era calcolata con la matrice del fit affine** applicata a un fit
+  a otto parametri. Sui campioni veri la differenza era fra 13×35% e 5×8%.
+- **Il DPI scritto nel file era 0**, quindi la calibrazione apparteneva a un
+  regime che nessun campione aveva.
 
-**Con un limite che va conosciuto**: le dodici righe attuali hanno tutte la
-stessa larghezza e altezza, quindi la distinzione dipenderebbe interamente dal
-DPI. È plausibile (il rapporto di scala misurato, ~0,83, è vicino a 96/120 = 0,8)
-ma **non è provato**, perché il DPI di quelle righe non fu registrato e non è più
-recuperabile. Il formato nuovo rende la domanda rispondibile la prossima volta;
-non risponde a questa. E se il client potesse cambiare scala a DPI e dimensioni
-costanti, il regime della riga non lo vedrebbe: resta un buco noto, scritto nel
-formato.
+### Il risultato
 
-### Il formato nuovo c'e' gia' (2026-09-07)
+Venti clic dell'operatore, uno scartato come fuori bersaglio, diciannove usati:
 
-Il file dei campioni porta ora una versione in testa e **sette** campi per riga,
-il settimo e' il DPI. Il formato vecchio a sei campi -- cioe' il file oggi in
-archivio -- e' rifiutato intero con
-`screen_samples_version_unsupported`, e il rifiuto dice cosa fare. Quindi il
-passo (1) qui sotto non e' una pulizia opzionale: senza, nessun campione viene
-letto.
+```
+Passo 38,14 × 16,83 px per casella
+Personaggio disegnato a (516, 445) di 1024×768 a 120 DPI
+Residuo peggiore 52 px su 19 campioni
+```
 
-### Cosa deve fare l'operatore
+`data/perception/screen-projection.calibration`, versione 5. Il runtime la
+rilegge e la dichiara **usable**.
 
-1. `--screen-samples-clear` per svuotare il file misto.
-2. Con il client a **uno** zoom, non cambiato per tutta la raccolta,
-   `--screen-autocalibrate` (o `--screen-watch` mentre clicchi) fino ad avere un
-   anello di almeno otto campioni.
-3. `--screen-calibrate` per risolvere, e **annotare il residuo che stampa**.
-4. Se il residuo supera 1,5 caselle con campioni di un solo zoom, il problema non
-   è la miscela ed è un'altra indagine.
+### Quello che resta
 
-**Da registrare:** quanti campioni, il residuo, e se lo zoom è stato toccato.
-Finché questo non è fatto, il task
-`AP-02_A2A4_DEEPSEEK_real_screen_samples.md` resta **bloccato sull'operatore**:
-non è re-specificabile a tavolino, perché i dati che dovrebbe verificare non
-descrivono una sola geometria.
+La calibrazione scritta ha i termini prospettici a zero: tolto il campione fuori
+bersaglio, l'affine batteva la prospettica sul residuo, e la regola adotta la
+prospettiva solo se paga. Vale dentro la regione campionata; una sessione con
+clic più estremi in verticale probabilmente farebbe vincere la prospettica.
+Non è un blocco: è la prossima misura utile, non un difetto.
 
 ---
 
@@ -132,6 +124,28 @@ Quindi: o l'id non è quel campo, o la numerazione delle chiavi ha un'altra
 regola, o la tabella giusta è un'altra. **Tre ipotesi che i dati registrati non
 sanno distinguere**, perché nessuna delle cinque catture ha accanto ciò che
 l'operatore vedeva sullo schermo in quel momento.
+
+### Metà stabilita il 2026-09-07 — l'argomento
+
+`data/messaggi.noscap` (2657 pacchetti, registrati apposta) contiene l'evento
+intero: `drop 8 …`, `get … 4867701 0`, `sayi 1 3548294 12 975 2 8 1 0 0`,
+`ivn 0 0.8.…`. Il campo 4 è **l'id del messaggio**, il campo 6 il suo
+**argomento**, e l'argomento è il vnum dell'oggetto raccolto — confermato su due
+catture indipendenti con due vnum diversi (`8` e `2006`). Il vnum risolve nel
+catalogo: «Fionda in legno». Vedi `docs/PROTOCOLLO_NOSTALE.md` § `sayi`.
+
+### Quello che resta, e dove non è
+
+**L'id del messaggio non indicizza il catalogo.** Cercato `zts975?e` — con il
+carattere marcatore, la regola che risolve i nomi dei mostri — in tutte e dodici
+le tabelle di `NSlangData_IT.NOS`, per 975, 654, 697 e 2110: solo voci
+scollegate. Il testo dei messaggi di sistema non è in quell'archivio. Il
+candidato non ancora aperto è **`NScliData_IT.NOS`**, che `ReferenceImporter`
+non legge.
+
+Serve ancora una coppia osservata (testo a schermo ↔ riga della cattura) per
+confermare quale tabella sia, e il pannello ora la raccoglie: **Rete → «Registra
+il filo, e annota cosa hai visto»** scrive cattura e nota con lo stesso nome.
 
 ### Cosa serve, ed è poco
 

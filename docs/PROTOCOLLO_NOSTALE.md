@@ -123,13 +123,76 @@ su 1 3443217 3 313816 226 250 12 522 0 0 0 0 698 5 0 0 310
 | attacker type, attacker id | **confirmed** |
 | target type, target id | **confirmed** |
 | skill vnum (field 5) | **probable** — `0` for a monster's basic attack, `226` for a player skill |
-| damage | **probable** — `698` against a monster whose max HP is 310, i.e. an overkill; matches the `die` that follows |
-| target HP percent | **probable** — `99` while the player sat at 7289/7305 |
-| **last two fields** | **confirmed for the player as target** — `7289 7305` is exactly the player's HP/maxHP, and it tracks `stat` |
+| damage (field 13) | **probable** — `698` against a monster whose max HP is 310, i.e. an overkill; matches the `die` that follows |
+| **field 11** | **confirmed — bandiera di presenza** dei due campi finali |
+| field 12 | **non decodificato**: sembra una percentuale e non lo è (con 475/888, cioè 53,5%, vale 59; il massimo osservato è 112) |
+| **fields 16, 17** | **confirmed** — HP corrente e HP massimo del bersaglio, **letti dal decoder dal 2026-09-07** |
+
+**Misurato su 212 pacchetti `su`** di quattro catture (`nostale_live` 13,
+`equip_test` 2, `nostale_combat` 117, `certificazione` 80; `nostale_01` non ne
+ha), tutti a 18 campi:
+
+| Misura | Risultato |
+|---|---|
+| `fields[16] <= fields[17]` e `fields[17] > 0` | 212 su 212 |
+| `fields[17]` costante per id bersaglio | 40 bersagli distinti, zero con due valori |
+| `fields[11] == 1` ⟺ `fields[16] > 0` | 212 su 212, zero controesempi |
+
+**La bandiera è il punto.** Quando `fields[11]` vale `0` — **40 pacchetti su 212,
+il 18,9%** — `fields[16]` vale `0`, e quello zero significa *non riferito*, non
+*morto*: nelle stesse catture ci sono **5** `die` in tutto. Un decoder che
+leggesse la coppia senza guardare la bandiera pubblicherebbe quaranta morti
+inventate. `NosTaleWorldProtocolDecoder.DecodeHit` legge i due campi solo con la
+bandiera a 1, e mai per il personaggio controllato: su quella vita `stat` è già
+la fonte, e due numeri diversi allo stesso istante sarebbero un conflitto
+inventato da noi.
 
 `su` is the per-hit event stream: who hit whom, with what, for how much, and the
 target's resulting HP. It is the highest-value packet for combat reasoning after
 `stat`.
+
+---
+
+## `sayi` — un messaggio con un argomento
+
+```
+sayi 1 3548294 12 975 2 8 1 0 0
+     ty id      ?  id  ?  arg ? ? ?
+```
+
+| Campo | Confidenza |
+|---|---|
+| tipo, id del personaggio (1, 2) | **confermato** |
+| campo 3 | **probabile — colore o canale**: si muove sempre insieme al campo 4 (975↔12, 654↔10, 697↔11) |
+| **campo 4 — id del messaggio** | **confermato** |
+| **campo 6 — argomento** | **confermato**: è il vnum dell'oggetto quando il campo 5 vale 2 |
+
+**Come è stato stabilito**, il 2026-09-07, con `data/messaggi.noscap` — 2657
+pacchetti, registrati apposta. La cattura contiene l'evento intero:
+
+```
+drop 8 4867701 51 154 1 0 0      l'oggetto vnum 8 cade a terra
+get  1 3548294 4867701 0         il personaggio lo raccoglie
+sayi 1 3548294 12 975 2 8 1 0 0  il messaggio nomina 8
+ivn  0 0.8.0.0.0.0.0             8 entra nell'inventario
+```
+
+Il messaggio **975** compare in due catture indipendenti con due argomenti
+diversi — `8` qui, `2006` in `nostale_combat` — e in entrambe l'argomento è il
+vnum dell'oggetto appena raccolto, corroborato da `drop`, `get` e `ivn`. Il vnum
+risolve nel catalogo: 8 è «Fionda in legno», 13 «Uniforme da allenamento».
+
+### Quello che resta aperto
+
+**L'id del messaggio non indicizza il catalogo.** Cercato `zts975?e` — con il
+carattere marcatore, la stessa regola che risolve i nomi dei mostri — in **tutte
+e dodici** le tabelle di `NSlangData_IT.NOS`, per 975, 654, 697 e 2110: escono
+solo voci scollegate («Kamil», «Tinta per capelli lilla»). Il testo dei messaggi
+di sistema **non è in quell'archivio**. Il candidato non ancora aperto è
+`NScliData_IT.NOS`, che l'importatore non legge.
+
+Quindi: il legame **id → argomento → catalogo** è chiuso; il legame
+**id → testo del messaggio** no, e ora si sa dove non cercarlo.
 
 ---
 
@@ -263,7 +326,7 @@ abbastanza per provarci.
 | `sr` | 17 | `sr 0`, `sr 2`, `sr 6` | Skill ready / cooldown ended, by skill slot — **probable** |
 | `ski` | 0 | — | Elenco delle abilita' del personaggio — **mai osservato**. Censito il 2026-09-07 su tutte e cinque le catture (27 726 messaggi inbound): zero occorrenze. Non e' assenza dal protocollo ma assenza dalle *nostre* registrazioni: e' inviato una volta al caricamento del personaggio, e ogni cattura di questo repository comincia a client gia' in gioco. OpenNos lo descrive come `ski {skibase}{elenco vnum}` — pista non riscontrata, nessun valore osservato con cui confrontarla |
 | `ct` | 108 | `ct 3 313816 1 3443217 -1 -1 0` | Targeting between two entities — **probable** |
-| `sayi`, `msgi` | 18 | `sayi 1 3443217 12 975 2 2006 1 0 0` | Localised message ids, not text — **probable** |
+| `sayi`, `msgi` | 18 | `sayi 1 3443217 12 975 2 2006 1 0 0` | Id di messaggio e **argomento**: campo 4 l'id, campo 6 l'argomento — vedi sotto |
 | `guri` | 6 | `guri 2 1 3443217 0` | **unknown** |
 | `icon` | 2 | `icon 1 3443217 1 2006` | **unknown** |
 | `delay` | 6 | `delay 4000 4 #guri^400^3324` | Timed action, ms + a callback string — **probable**; the only packet with non-numeric payload |
