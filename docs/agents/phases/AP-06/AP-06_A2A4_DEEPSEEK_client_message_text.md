@@ -134,3 +134,73 @@ dove il client non è installato — **mai** `if (…) return`):
 - Livello: **Integrated** (`Verified` vorrebbe un operatore che legge lo stesso
   messaggio sullo schermo mentre la cattura gira — il pannello lo raccoglie ora,
   in Rete → «Registra il filo, e annota cosa hai visto»).
+
+---
+
+# Addendum del 2026-09-08 — la colonna chiave si decodifica
+
+**Il tuo risultato negativo è confermato, due volte.** L'id `sayi` non indicizza
+`conststring.dat`: né come chiave diretta (975, 654, 2110 non esistono; 697 dà
+«Lacrima», che non c'entra), né con uno scarto costante — fissato lo scarto sulla
+coppia giusta (975 → 10666, «Hai raccolto [%s]»), gli altri tre cadono su «Sono
+passate %d ore», «Stessa età» e «Questo giocatore è già sposato». Hai fatto bene
+a non rivendicare un lookup.
+
+**Ma la chiave si legge**, e il motivo per cui `NosDataTable` non ce la fa è
+preciso.
+
+## La causa
+
+`NosDataTable.Parse` fa così:
+
+```csharp
+byte declared = body[at + 1];
+int start = at + 2;          // <-- il byte "lunghezza" viene saltato
+```
+
+Per le chiavi sotto 100 quel byte **è** una lunghezza e tutto torna: la riga 11
+esce `11\x0bNome`. Per le chiavi da 100 in su quel byte **è il marcatore di
+numero impacchettato** — `0x83` per tre cifre, `0x84` per quattro — e saltarlo
+lascia il lettore dentro il payload, che finisce interpretato come testo XOR. È
+per questo che la chiave esce come `Gî?` invece che come un numero.
+
+La distinzione è nel nibble alto, la stessa che `ReadLine` già usa:
+
+```
+riga  11:  02 01 38 7d 5a 50 58        02 = lunghezza,  chiave "11"
+riga  99:  83 54 40 08 38 70 52 ...    83 = marcatore,  chiave "100"
+riga 3099: 84 75 44 4a 38 7a 5f ...    84 = marcatore,  chiave "3099"
+```
+
+`0x38 ^ 0x33 = 0x0B`, il tabulatore: tutto ciò che sta prima è la chiave.
+
+## Cosa ne esce
+
+Leggendo il byte come marcatore quando `(b & 0xF0) == 0x80` e come lunghezza
+altrimenti, la tabella dà **7565 chiavi numeriche distinte** su 7869 righe, in
+ordine crescente dall'1, e i testi giusti accanto:
+
+```
+   3098  -> "è ottenuto."
+   3099  -> "è raccolto."
+  10665  -> "[%s] raccolta:<NEW_TYPE><0>"
+  10666  -> "Hai raccolto [%s]:<NEW_TYPE><0>"
+```
+
+Resta un byte in coda alla chiave che il mio lettore di prova non consuma
+(`100;`, `101>`): un dettaglio a una misura di distanza, non un ostacolo.
+
+## Cosa ti chiedo adesso
+
+1. **Correggi `NosDataTable.Parse`** perché distingua il marcatore dalla
+   lunghezza. È un difetto del lettore, non di questa tabella: ogni tabella con
+   chiavi da 100 in su lo subisce.
+2. **Importa `conststring` fra le `TextOnlyTables`**, con le chiavi numeriche.
+   Ora ha senso: il testo è indicizzabile anche se l'id del filo non lo indicizza.
+3. **Non inventare il collegamento con `sayi`.** Resta aperto, ed è giusto che
+   resti: si chiuderà con una coppia osservata (testo a schermo ↔ riga della
+   cattura), che il pannello ora raccoglie in Rete → «Registra il filo, e annota
+   cosa hai visto».
+
+Il test che vale: la chiave 10666 dà «Hai raccolto [%s]» e la 3099 «è raccolto.»,
+lette dal file e non attese.
