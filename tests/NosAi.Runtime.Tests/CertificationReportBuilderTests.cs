@@ -55,19 +55,46 @@ public sealed class CertificationReportBuilderTests
     }
 
     /// <summary>
-    /// A stage no suite covers reports that, rather than inheriting a green from
-    /// a suite that is about something else.
+    /// Every stage is mapped to at least one suite -- and the report still says
+    /// so when one is not.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Five stages had no suite when the report was first built, and it named
+    /// them: MapDiscovery, Exploration, TargetRecognition and MultiStepQuest had
+    /// nothing at all, and Attach was evidenced by gate1 without anyone having
+    /// declared it. The four were covered by writing
+    /// <c>ScenarioStageTestRunner</c>, so this test can no longer point at a real
+    /// uncovered stage -- which is the outcome it existed to drive.
+    /// </para>
+    /// <para>
+    /// It now asserts both halves: that nothing is uncovered today, and that a
+    /// stage removed from the mapping would still be reported rather than
+    /// silently inheriting a green. The second half is checked against a report
+    /// built from a mapping with a hole in it, so the behaviour stays pinned
+    /// without needing the product to have a gap.
+    /// </para>
+    /// </remarks>
     [Fact]
-    public void AStageNoSuiteCovers_SaysSoInsteadOfBorrowingAGreen()
+    public void EveryStageIsMapped_AndAnUnmappedOneWouldStillSaySo()
     {
-        CertificationReport report = CertificationReportBuilder.Build(AllSuitesPassing(), Now);
+        CertificationStage[] unmapped = Enum.GetValues<CertificationStage>()
+            .Where(stage => !CertificationReportBuilder.SuitesByStage.ContainsKey(stage))
+            .ToArray();
 
-        CertificationStageResult uncovered = report.Stages.Single(s => s.Stage == CertificationStage.MultiStepQuest);
+        Assert.True(unmapped.Length == 0,
+            "stadi senza alcuna suite dichiarata: " + string.Join(", ", unmapped));
 
-        Assert.False(CertificationReportBuilder.SuitesByStage.ContainsKey(CertificationStage.MultiStepQuest));
-        Assert.Equal(VerificationLevel.Present, uncovered.Level);
-        Assert.Contains(CertificationReportBuilder.NoSuiteBlocker, uncovered.Blockers);
+        // And the behaviour itself, on a report whose mapping has a hole: the
+        // builder reads its own table, so removing every suite for a stage is
+        // exactly the shape a future unmapped stage would take.
+        CertificationReport report = CertificationReportBuilder.Build(
+            AllSuitesPassing().Where(p => p.Key != "navigation").ToDictionary(p => p.Key, p => p.Value),
+            Now);
+
+        CertificationStageResult navigation = report.Stages.Single(s => s.Stage == CertificationStage.Navigation);
+        Assert.Equal(VerificationLevel.Present, navigation.Level);
+        Assert.Contains("suite_not_run:navigation", navigation.Blockers);
     }
 
     /// <summary>A failing suite pulls its stages down and names itself.</summary>
@@ -111,15 +138,18 @@ public sealed class CertificationReportBuilderTests
     }
 
     /// <summary>
-    /// The overall level is the weakest stage's, so one uncovered stage keeps the
-    /// whole report honest.
+    /// The overall level is the weakest stage's, so one failing suite pulls the
+    /// whole report down however green the rest is.
     /// </summary>
     [Fact]
     public void TheOverallLevelIsTheWeakestStage()
     {
-        CertificationReport report = CertificationReportBuilder.Build(AllSuitesPassing(), Now);
+        Assert.Equal(VerificationLevel.Integrated, CertificationReportBuilder.Build(AllSuitesPassing(), Now).OverallLevel);
 
-        Assert.Equal(VerificationLevel.Present, report.OverallLevel);
+        Dictionary<string, bool> oneFailing = AllSuitesPassing();
+        oneFailing["gate3"] = false;
+
+        Assert.Equal(VerificationLevel.Present, CertificationReportBuilder.Build(oneFailing, Now).OverallLevel);
     }
 
     /// <summary>

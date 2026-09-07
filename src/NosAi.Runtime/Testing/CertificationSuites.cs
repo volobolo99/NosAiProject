@@ -67,6 +67,10 @@ public static class CertificationSuites
             () => Task.FromResult(NosAi.Economy.Inventory.InventoryEconomyTestRunner.RunAll())),
         new("perception", "--perception-test", "Pipeline di percezione",
             () => Task.FromResult(NosAi.Runtime.Perception.PerceptionPipelineTestRunner.RunAll())),
+        new("scenario", "--scenario-test",
+            "Scenario AP-10 — mappa, esplorazione, riconoscimento bersaglio, quest",
+            ScenarioStageTestRunner.RunAllTestsAsync),
+
         new("security", "--security-test", "Sessioni effimere e crittografia",
             () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()))
     };

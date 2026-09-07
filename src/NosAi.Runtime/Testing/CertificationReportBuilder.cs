@@ -27,10 +27,13 @@ namespace NosAi.Runtime.Testing;
 /// answer this repository could produce.
 /// </para>
 /// <para>
-/// <b>An unmapped stage says so.</b> Five of the fourteen have no suite that
-/// evidences them, and they report <see cref="VerificationLevel.Present"/> with
-/// that as the blocker rather than borrowing a neighbouring suite's green. A
-/// guessed mapping would turn a real gap into a passing line.
+/// <b>An unmapped stage says so.</b> Five of the fourteen had no suite when this
+/// was written, and reporting that -- rather than borrowing a neighbouring
+/// suite's green -- is what got them covered: four now rest on
+/// <c>ScenarioStageTestRunner</c>, written for them, and Attach on the gate1
+/// checks that were already about attaching and had never been declared. A
+/// guessed mapping would have turned a real gap into a passing line and nobody
+/// would have written a check.
 /// </para>
 /// </remarks>
 public static class CertificationReportBuilder
@@ -59,7 +62,23 @@ public static class CertificationReportBuilder
         new Dictionary<CertificationStage, IReadOnlyList<string>>
         {
             [CertificationStage.Startup] = new[] { "gate1" },
+
+            // gate1 evidences two stages, and its own checks split cleanly
+            // between them: the wire header, sequence guard, RSA challenge and
+            // heartbeat are startup; "Missing client does not invent gameplay",
+            // "OS session baseline is LIVE when observed", "UNKNOWN client
+            // fields are not published as values" and "Bootstrap without a
+            // client reports DEGRADED" are about attaching to one.
+            [CertificationStage.Attach] = new[] { "gate1" },
+
             [CertificationStage.Perception] = new[] { "perception", "netobserve" },
+
+            // Written for these four, which no suite covered: the report said so
+            // itself, and that was the first time the gap was visible.
+            [CertificationStage.MapDiscovery] = new[] { "scenario" },
+            [CertificationStage.Exploration] = new[] { "scenario" },
+            [CertificationStage.TargetRecognition] = new[] { "scenario" },
+            [CertificationStage.MultiStepQuest] = new[] { "scenario" },
             [CertificationStage.Navigation] = new[] { "navigation" },
             [CertificationStage.Combat] = new[] { "gate3" },
             [CertificationStage.Recovery] = new[] { "gate3" },
