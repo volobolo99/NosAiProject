@@ -386,21 +386,62 @@ public sealed class GameplayFreshnessTests
     // --------------------------------------------------------- entity type gate
 
     /// <summary>
-    /// The catalogue's shapes are entity type 3's. Type 1 was confirmed only in
-    /// <c>su</c>, <c>cond</c> and <c>sayi</c>, and another player entering view
-    /// carries a name where a monster carries a vnum — so reading x and y at the
-    /// monster's positions would take a coordinate out of something else. The
-    /// numbers below parse perfectly well; that is exactly why they are refused.
+    /// Il tipo 1 resta rifiutato: un altro giocatore che entra in vista porta un
+    /// nome dove un mostro porta un vnum, quindi leggere x e y alle posizioni del
+    /// mostro prenderebbe una coordinata da qualcos'altro. Le righe qui sotto si
+    /// analizzano benissimo; è esattamente per questo che vengono rifiutate.
     /// </summary>
+    /// <remarks>
+    /// <b>Il tipo 2 è uscito da questo elenco il 2026-09-08</b>, quando il suo
+    /// layout è stato stabilito: vedi
+    /// <see cref="An_entity_of_type_two_is_read_and_labelled_a_bystander"/>. Il
+    /// tipo 1 non lo è, e la differenza non è di età — è che nessuna misura ha
+    /// mai mostrato dove stanno i suoi campi.
+    /// </remarks>
     [Theory]
     [InlineData("in 1 36 3443217 120 109 2 100 100")]
-    [InlineData("in 2 36 3443217 120 109 2 100 100")]
     [InlineData("mv 1 3443217 121 110 5")]
     [InlineData("st 1 3443217 8 0 66 100 198 52 310 52 0")]
     public void An_entity_type_this_decoder_has_never_seen_is_refused(string line)
     {
         Assert.True(new NosTaleWorldProtocolDecoder()
             .Decode(Packet(line, DataSourceKind.Live)).IsEmpty);
+    }
+
+    /// <summary>
+    /// Il tipo 2 si legge, e arriva etichettato per quello che è.
+    /// </summary>
+    /// <remarks>
+    /// Il layout è lo stesso del tipo 3 — 2688 passi di <c>mv</c> con la stessa
+    /// mediana e lo stesso novantesimo percentile di quelli dei mostri, su
+    /// <c>data/messaggi.noscap</c> — ma le entità non lo sono: un varco, due NPC e
+    /// un pet. Quello che rende sicuro leggerle è che l'avvistamento porta la
+    /// specie, e <c>TargetEstablishment</c> la guarda.
+    /// </remarks>
+    [Fact]
+    public void An_entity_of_type_two_is_read_and_labelled_a_bystander()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        DecodedObservations decoded = decoder.Decode(
+            Packet("in 2 1488 2328703 79 150 2 100 100", DataSourceKind.Live));
+
+        EntitySighting sighting = Assert.Single(decoded.Sightings);
+        Assert.Equal(EntitySighting.BystanderKind, sighting.Kind);
+        Assert.Equal(2328703, sighting.EntityId);
+        Assert.Equal(1488, sighting.Vnum);
+    }
+
+    [Fact]
+    public void An_entity_of_type_three_is_still_a_monster()
+    {
+        var decoder = new NosTaleWorldProtocolDecoder();
+
+        DecodedObservations decoded = decoder.Decode(
+            Packet("in 3 36 313826 109 63 2 100 100", DataSourceKind.Live));
+
+        EntitySighting sighting = Assert.Single(decoded.Sightings);
+        Assert.Equal(EntitySighting.MonsterKind, sighting.Kind);
     }
 
     /// <summary>

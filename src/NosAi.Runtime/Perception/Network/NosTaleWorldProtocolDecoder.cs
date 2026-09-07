@@ -186,7 +186,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // Fresh health, and a position from whichever packet last carried one —
         // stamped with that packet's instant, not this one's.
         return Sighting(
-            entityId, previous.X, previous.Y, hpRatio, Stale(source),
+            entityId, KindOf(fields[1]), previous.X, previous.Y, hpRatio, Stale(source),
             positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc, vnum: previous.Vnum,
             vitals: vitals);
     }
@@ -222,7 +222,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc, Vnum: vnum);
         // Position and health both come from this packet, so nothing stale is
         // mixed in and the sighting keeps the packet's own provenance and time.
-        return Sighting(entityId, x, y, hpRatio, source, capturedUtc, capturedUtc, vnum, vitals: null);
+        return Sighting(entityId, KindOf(fields[1]), x, y, hpRatio, source, capturedUtc, capturedUtc, vnum, vitals: null);
     }
 
     /// <summary>
@@ -249,8 +249,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // instant. With no health at all there is nothing stale mixed in, and the
         // packet keeps its own provenance.
         return previous.HasHp
-            ? Sighting(entityId, x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum, previous.Vitals)
-            : Sighting(entityId, x, y, null, source, capturedUtc, null, previous.Vnum, vitals: null);
+            ? Sighting(entityId, KindOf(fields[1]), x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum, previous.Vitals)
+            : Sighting(entityId, KindOf(fields[1]), x, y, null, source, capturedUtc, null, previous.Vnum, vitals: null);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
@@ -369,6 +369,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return ImmutableArray<EntitySighting>.Empty;
         if (_playerEntityId is { } own && targetId == own)
             return ImmutableArray<EntitySighting>.Empty;
+        if (!IsReadableEntity(fields[3]))
+            return ImmutableArray<EntitySighting>.Empty;
         if (!TryInt(fields[11], out int vitalsFlag) || vitalsFlag != 1)
             return ImmutableArray<EntitySighting>.Empty;
         if (!TryInt(fields[16], out int hp) || !TryInt(fields[17], out int maxHp))
@@ -387,8 +389,11 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         if (!previous.HasPosition)
             return ImmutableArray<EntitySighting>.Empty;
 
+        // La specie e' quella del bersaglio, campo 3, non quella dell'attaccante:
+        // un colpo su un astante ne riferisce la vita, e chiamarlo mostro perche'
+        // qualcuno lo ha colpito sarebbe dedurre la specie dall'evento.
         return ImmutableArray.Create(new EntitySighting(
-            targetId, "Monster", previous.X, previous.Y, hpRatio, Stale(source),
+            targetId, KindOf(fields[3]), previous.X, previous.Y, hpRatio, Stale(source),
             previous.PositionAtUtc, capturedUtc, previous.Vnum, vitals));
     }
 
@@ -774,12 +779,23 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     private static bool IsPlausibleCoordinate(int value) => value >= 0 && value <= MaxPlausibleCoordinate;
 
     private static DecodedObservations Sighting(
-        long entityId, double x, double y, double? hpRatio, DataSourceKind source,
+        long entityId, string kind, double x, double y, double? hpRatio, DataSourceKind source,
         DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum, AbsoluteVitals? vitals = null)
         => new(
             ImmutableArray.Create(new EntitySighting(
-                entityId, "Monster", x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum, vitals)),
+                entityId, kind, x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum, vitals)),
             ImmutableArray<GameEvent>.Empty);
+
+    /// <summary>
+    /// La specie che il filo dichiara, per i soli tipi di cui il layout e' stabilito.
+    /// </summary>
+    /// <remarks>
+    /// Non un'interpretazione: il tipo e' un campo del pacchetto, e questa funzione
+    /// gli da' solo il nome sotto cui il resto del sistema lo conosce. Un tipo che
+    /// <see cref="IsReadableEntity"/> non accetta non arriva mai qui.
+    /// </remarks>
+    private static string KindOf(string typeField) =>
+        typeField == "2" ? EntitySighting.BystanderKind : EntitySighting.MonsterKind;
 
     /// <summary>
     /// Whether an entity message carries the one layout this decoder can read.
@@ -826,17 +842,18 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// </description></item>
     /// </list>
     /// <para>
-    /// <b>Perché allora resta fuori.</b> Quei nomi non sono mostri: sono NPC, pet
-    /// e portali. <see cref="Sighting"/> etichetta ogni avvistamento
-    /// <c>"Monster"</c>, e quell'etichetta arriva al World Model attraverso
-    /// <c>GameTrafficObserver</c>. Ammettere il tipo 2 così com'è significherebbe
-    /// presentare al pianificatore un negoziante, o il pet del giocatore stesso,
-    /// come un bersaglio. Il tipo 2 entrerà quando l'avvistamento porterà la
-    /// specie osservata invece di una costante — che è un cambio di contratto, non
-    /// una riga in questo metodo.
+    /// <b>Ed è entrato il 2026-09-08, con la specie accanto.</b> Quei nomi non
+    /// sono mostri: sono NPC, pet e portali. Finché ogni avvistamento veniva
+    /// etichettato <c>"Monster"</c>, ammettere il tipo 2 avrebbe presentato al
+    /// pianificatore un negoziante — o il pet del giocatore stesso — come un
+    /// bersaglio. Ora <see cref="Sighting"/> porta
+    /// <see cref="EntitySighting.BystanderKind"/> per il tipo 2 e
+    /// <see cref="EntitySighting.MonsterKind"/> per il tipo 3, e
+    /// <c>TargetEstablishment</c> rifiuta il primo per nome. Il buco nella
+    /// percezione si chiude senza aprirne uno nel bersaglio.
     /// </para>
     /// </remarks>
-    internal static bool IsReadableEntity(string typeField) => typeField == "3";
+    internal static bool IsReadableEntity(string typeField) => typeField is "2" or "3";
 
     /// <summary>
     /// The entity type a player carries, confirmed in <c>su</c>, <c>cond</c> and

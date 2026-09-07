@@ -10,6 +10,8 @@ using NosAi.Runtime.GameData;
 using Aggressor = NosAi.Runtime.Perception.Network.Aggressor;
 using TargetedEntity = NosAi.Runtime.Perception.Network.TargetedEntity;
 
+using NosAi.Runtime.Perception.Network;
+
 namespace NosAi.Runtime.Autonomy;
 
 /// <summary>How an entity came to count as something the runtime may attack.</summary>
@@ -130,6 +132,9 @@ public static class TargetEstablishment
     /// </remarks>
     public const string MonsterKind = "monster";
 
+    /// <summary>La specie letta sul filo dice che non è un bersaglio.</summary>
+    public const string BystanderReason = "target_is_a_bystander";
+
     /// <summary>The reason an entity whose vnum nobody read carries.</summary>
     public const string VnumNotObservedReason = "vnum_not_observed";
 
@@ -167,6 +172,19 @@ public static class TargetEstablishment
 
         if (selected is { HasValue: true } target && target.Value.EntityId == entity.EntityId)
             return TargetVerdict.Established(TargetEvidence.WeActedOnIt);
+
+        // La specie prima del catalogo, perche' e' l'unico discriminante misurato.
+        // Le quattro entita' di tipo 2 osservate su data/messaggi.noscap -- un
+        // varco, due NPC e un pet -- stanno tutte nella tabella monster e nessuna
+        // ha il RaceType 8 che IsSpecialNonMonsterEntity cerca: il catalogo le
+        // chiamerebbe mostri. Il filo no, e qui vince il filo.
+        //
+        // Dopo le due prove per evidenza, non prima: se un astante ci ha colpito,
+        // o ci abbiamo agito sopra, quello che e' successo pesa piu' di come e'
+        // etichettato -- l'evidenza batte la classificazione, come gia' fa per il
+        // vnum mai osservato.
+        if (string.Equals(entity.Kind, EntitySighting.BystanderKind, StringComparison.Ordinal))
+            return TargetVerdict.NotEstablished(BystanderReason);
 
         if (entity.Vnum is not { } vnum)
         {

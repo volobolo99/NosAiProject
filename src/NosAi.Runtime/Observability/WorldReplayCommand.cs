@@ -19,6 +19,15 @@ namespace NosAi.Runtime.Observability;
 /// <param name="HpText">Last HP ratio, or UNKNOWN when the sighting had none.</param>
 /// <param name="PositionAgeText">Age of the position against the recording's last stamp.</param>
 /// <param name="HpAgeText">Age of the health against the recording's last stamp.</param>
+/// <param name="KindText">
+/// La specie che il filo ha dichiarato per questa entità.
+/// </param>
+/// <remarks>
+/// Aggiunta il 2026-09-08, quando il decoder ha cominciato a leggere anche il
+/// tipo 2. Senza, l'operatore vedrebbe comparire nell'elenco decine di entità
+/// nuove — su <c>messaggi.noscap</c> il tipo 2 sono 2718 movimenti — senza niente
+/// che dica che sono NPC, pet e varchi e non mostri apparsi dal nulla.
+/// </remarks>
 public readonly record struct WorldReplayEntityRow(
     long EntityId,
     string VnumText,
@@ -27,7 +36,8 @@ public readonly record struct WorldReplayEntityRow(
     double Y,
     string HpText,
     string PositionAgeText,
-    string HpAgeText);
+    string HpAgeText,
+    string KindText = "");
 
 /// <summary>What <c>--world-replay</c> collected from the observation contract.</summary>
 /// <param name="Summary">The existing census <see cref="WorldChannelReplay"/> already printed.</param>
@@ -293,7 +303,7 @@ public static class WorldReplayCommand
         foreach (WorldReplayEntityRow row in report.Entities)
         {
             text.AppendLine(string.Create(CultureInfo.InvariantCulture,
-                $"  id={row.EntityId}  {row.VnumText}  name={row.NameText}  pos={row.X},{row.Y}  hp={row.HpText}  pos_age={row.PositionAgeText}  hp_age={row.HpAgeText}"));
+                $"  id={row.EntityId}  specie={row.KindText}  {row.VnumText}  name={row.NameText}  pos={row.X},{row.Y}  hp={row.HpText}  pos_age={row.PositionAgeText}  hp_age={row.HpAgeText}"));
         }
 
         AppendCounted(text, "aggressors", report.Hits.Count, PlayerHitEmpty);
@@ -390,7 +400,8 @@ public static class WorldReplayCommand
             ? "UNKNOWN (hp_not_on_sighting)"
             : AgeText(asOf, sighting.HpObservedAtUtc, "hp_not_stamped");
         return new WorldReplayEntityRow(
-            sighting.EntityId, vnumText, name, sighting.X, sighting.Y, hp, posAge, hpAge);
+            sighting.EntityId, vnumText, name, sighting.X, sighting.Y, hp, posAge, hpAge,
+            sighting.Kind);
     }
 
     /// <summary>

@@ -123,6 +123,35 @@ public sealed record EntitySighting(
     /// source that always has health keeps producing a value every time.
     /// </remarks>
     public Detection? ToDetection() => HpRatio is { } hp ? new Detection(Kind, X, Y, hp) : null;
+
+    /// <summary>La specie che il filo chiama tipo 3: quello che si combatte.</summary>
+    /// <remarks>
+    /// Il nome storico di questo campo, tenuto perche' e' quello che il World
+    /// Model, il replay e il pannello mostrano gia' oggi.
+    /// </remarks>
+    public const string MonsterKind = "Monster";
+
+    /// <summary>
+    /// La specie che il filo chiama tipo 2: presente nel mondo, mai un bersaglio.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perche' un nome che non dice cosa sia.</b> Le quattro entita' di tipo 2
+    /// identificate su <c>data/messaggi.noscap</c> sono un varco («Caverna dei
+    /// Conigli»), due NPC («Pir», «Graham») e un pet («Baby^panda»): chiamarle
+    /// <c>Npc</c> sarebbe falso per il pet, <c>Pet</c> falso per gli altri tre. Il
+    /// filo le mette insieme e quello che hanno in comune e' l'unica cosa che
+    /// serve saperne — <b>ci sono, e non si attaccano</b>.
+    /// </para>
+    /// <para>
+    /// Il catalogo non sa distinguerle: tutte e quattro stanno nella tabella
+    /// <c>monster</c> e nessuna ha il RaceType 8 che
+    /// <c>TargetEstablishment</c> usa per scartare gli «Special NPCs». La specie
+    /// letta sul filo e' l'unico discriminante misurato che esista, ed e' per
+    /// questo che viene portata fin qui invece di essere ricostruita a valle.
+    /// </para>
+    /// </remarks>
+    public const string BystanderKind = "Bystander";
 }
 
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>

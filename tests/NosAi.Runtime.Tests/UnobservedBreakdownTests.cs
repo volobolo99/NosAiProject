@@ -83,17 +83,19 @@ public sealed class UnobservedBreakdownTests
     /// nessun numero diceva.
     /// </para>
     /// <para>
-    /// Il tipo 2 non è nemmeno «mai osservato», come il commento del decoder
-    /// affermava: <c>equip_test.noscap</c> ne porta 430. È osservato, e resta
-    /// rifiutato perché il suo layout di campi non è stabilito — che è una
-    /// ragione diversa e vera.
+    /// <b>Il tipo di questo test è cambiato il 2026-09-08.</b> Era il tipo 2, che
+    /// allora non era letto perché il suo layout non era stabilito. Ora lo è, e il
+    /// tipo 2 si legge: al suo posto qui c'è il <b>tipo 1</b>, l'altro giocatore,
+    /// che resta l'unico tipo osservato di cui nessuna misura abbia mai mostrato
+    /// dove stanno i campi. La categoria non è cambiata — è cambiato chi ci
+    /// finisce dentro, e questo test esiste per tenerla non vuota.
     /// </para>
     /// </remarks>
     [Fact]
     public void An_entity_type_the_decoder_does_not_read_is_its_own_category()
     {
         WorldChannelReplaySummary summary = WorldChannelReplay.Replay(Recording(
-            Encoded("mv 2 3062 153 23 5")));
+            Encoded("mv 1 3443217 153 23 5")));
         UnobservedBreakdown b = summary.Unobserved;
 
         Assert.Equal(1, summary.UndecodedMessages);

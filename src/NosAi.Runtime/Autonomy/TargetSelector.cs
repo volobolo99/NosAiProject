@@ -19,11 +19,28 @@ namespace NosAi.Runtime.Autonomy;
 /// </param>
 /// <param name="Vnum">
 /// What the entity is, by the game's own number, or null when no spawn packet
-/// has said. Carried, never interpreted: the wire's type 3 is monster and NPC
-/// together, and whether a vnum is something to fight is the reference
-/// catalogue's answer (<c>GameReferenceDatabase.Lookup</c>), not a guess made
-/// here (docs/TASTI_E_BERSAGLIO.md § 5.2). Null is not "a monster".
+/// has said. Carried, never interpreted: whether a vnum is something to fight is
+/// the reference catalogue's answer (<c>GameReferenceDatabase.Lookup</c>), not a
+/// guess made here (docs/TASTI_E_BERSAGLIO.md § 5.2). Null is not "a monster".
+///
+/// <b>Correzione del 2026-09-08.</b> Questo commento diceva che «il tipo 3 del
+/// filo è mostro e NPC insieme». Non lo è: il filo li separa, tipo 3 i mostri e
+/// tipo 2 gli astanti, e la separazione è confermata da 2688 passi di movimento
+/// indistinguibili da quelli dei mostri e da quattro vnum che il catalogo
+/// risolve in un varco, due NPC e un pet. È il <b>catalogo</b> a non saperli
+/// distinguere: tutti e quattro stanno nella tabella <c>monster</c> senza il
+/// RaceType 8 che dovrebbe scartarli.
 /// </param>
+/// <param name="Kind">
+/// La specie che il filo ha dichiarato — <c>EntitySighting.MonsterKind</c> o
+/// <c>EntitySighting.BystanderKind</c> — o null dove nessuno l'ha detta.
+/// </param>
+/// <remarks>
+/// Null non è «un mostro»: è la stessa regola del vnum. Un'entità che arriva da
+/// una sorgente che la specie non la dichiara resta non stabilita, e
+/// <c>TargetEstablishment</c> risponde con il proprio motivo invece di
+/// presumere.
+/// </remarks>
 /// <param name="Vitals">
 /// The same health in absolute points, when the packet that stated it stated it
 /// that way -- <c>st</c> does, <c>in</c> and <c>mv</c> do not, so null is the
@@ -40,7 +57,8 @@ public readonly record struct SelectableEntity(
     double? HpRatio,
     DateTime ObservedAtUtc,
     int? Vnum = null,
-    NosAi.Runtime.Perception.Network.AbsoluteVitals? Vitals = null);
+    NosAi.Runtime.Perception.Network.AbsoluteVitals? Vitals = null,
+    string? Kind = null);
 
 /// <summary>What the operator considers worth aiming at.</summary>
 /// <param name="MaxRangeTiles">

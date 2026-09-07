@@ -685,7 +685,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
             // Last mentioned by whichever half this packet stated.
             DateTime stated = sighting.HpObservedAtUtc is { } hpAt && hpAt > positionAt ? hpAt : positionAt;
             _entities[sighting.EntityId] = new Retained<SelectableEntity>(
-                new SelectableEntity(sighting.EntityId, at, sighting.HpRatio, positionAt, sighting.Vnum, sighting.Vitals),
+                new SelectableEntity(sighting.EntityId, at, sighting.HpRatio, positionAt, sighting.Vnum, sighting.Vitals, sighting.Kind),
                 sighting.Source, stated, Fresh: true);
             _entityEverSeen = true;
         }
