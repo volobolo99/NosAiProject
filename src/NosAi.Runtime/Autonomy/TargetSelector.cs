@@ -24,12 +24,23 @@ namespace NosAi.Runtime.Autonomy;
 /// catalogue's answer (<c>GameReferenceDatabase.Lookup</c>), not a guess made
 /// here (docs/TASTI_E_BERSAGLIO.md § 5.2). Null is not "a monster".
 /// </param>
+/// <param name="Vitals">
+/// The same health in absolute points, when the packet that stated it stated it
+/// that way -- <c>st</c> does, <c>in</c> and <c>mv</c> do not, so null is the
+/// ordinary case. Never contradicts <paramref name="HpRatio"/>: where this is
+/// non-null the ratio was computed from these two numbers in the same packet, so
+/// nothing that reads only the ratio needs to change. Carried so the World Model
+/// can state a monster's health in points instead of a bare fraction over two
+/// unknown bounds; nothing in target selection reads it, and selection ranks on
+/// distance and the ratio exactly as before.
+/// </param>
 public readonly record struct SelectableEntity(
     long EntityId,
     MapPoint At,
     double? HpRatio,
     DateTime ObservedAtUtc,
-    int? Vnum = null);
+    int? Vnum = null,
+    NosAi.Runtime.Perception.Network.AbsoluteVitals? Vitals = null);
 
 /// <summary>What the operator considers worth aiming at.</summary>
 /// <param name="MaxRangeTiles">

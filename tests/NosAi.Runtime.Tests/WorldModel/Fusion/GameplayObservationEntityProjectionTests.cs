@@ -37,6 +37,16 @@ public sealed class GameplayObservationEntityProjectionTests
     private static SelectableEntity Monster313816(double? hpRatio = 198d / 310d, DateTime? at = null) =>
         new(313816, new MapPoint(109, 63), hpRatio, at ?? Earlier, Vnum: 36);
 
+    /// <summary>
+    /// The same monster as the wire's <c>st</c> packet states it: the fraction
+    /// and the two numbers it was divided from.
+    /// </summary>
+    private static SelectableEntity Monster313816WithPoints(int current = 198, int maximum = 310) =>
+        Monster313816((double)current / maximum) with
+        {
+            Vitals = new NosAi.Runtime.Perception.Network.AbsoluteVitals(current, maximum)
+        };
+
     [Fact]
     public void NoClassifier_LeavesBothListsEmpty_EvenWithEntitiesInView()
     {
@@ -79,6 +89,79 @@ public sealed class GameplayObservationEntityProjectionTests
         Assert.False(health.Maximum.HasValue);
         Assert.Equal(GameplayObservationProjector.FractionOnlyHealthReason, health.Current.Reason);
         Assert.Equal(GameplayObservationProjector.FractionOnlyHealthReason, health.Maximum.Reason);
+    }
+
+
+    /// <summary>
+    /// When the wire stated points, the World Model holds points. This is the
+    /// whole reason the decoder stopped dividing them away.
+    /// </summary>
+    /// <remarks>
+    /// The fraction is not discarded either: <see cref="Resource"/> derives it
+    /// from the two bounds itself, so a consumer reading only
+    /// <see cref="Resource.Fraction"/> sees the same number as before while one
+    /// reading the bounds now sees something instead of Unknown.
+    /// </remarks>
+    [Fact]
+    public void MobHealth_IsHeldInPoints_WhenTheWireStatedPoints()
+    {
+        WorldModelSnapshot snapshot = Project(
+            WithEntities(Monster313816WithPoints()), _ => CatalogueClass.Monster);
+
+        Resource health = Assert.Single(Assert.Single(snapshot.Mobs).Status.Resources);
+        Assert.Equal(ResourceKind.Health, health.Kind);
+
+        Assert.True(health.Current.HasValue);
+        Assert.True(health.Maximum.HasValue);
+        Assert.Equal(198d, health.Current.Value);
+        Assert.Equal(310d, health.Maximum.Value);
+
+        Assert.True(health.Fraction.HasValue);
+        Assert.Equal(198d / 310d, health.Fraction.Value, precision: 10);
+    }
+
+    /// <summary>
+    /// The bounds carry the same Cached label and the same named reason the
+    /// fraction already carried, and for the same cause: the numbers are real,
+    /// and <see cref="SelectableEntity.ObservedAtUtc"/> is the position's
+    /// instant, so their age is not knowable here.
+    /// </summary>
+    [Fact]
+    public void MobHealthInPoints_IsCached_NotLive()
+    {
+        WorldModelSnapshot snapshot = Project(
+            WithEntities(Monster313816WithPoints()), _ => CatalogueClass.Monster);
+
+        Resource health = Assert.Single(Assert.Single(snapshot.Mobs).Status.Resources);
+
+        Assert.Equal(CoreDataSourceKind.Cached, health.Current.Source);
+        Assert.Equal(CoreDataSourceKind.Cached, health.Maximum.Source);
+        Assert.Equal(GameplayObservationProjector.AbsoluteVitalsReason, health.Current.Reason);
+        Assert.Equal(GameplayObservationProjector.AbsoluteVitalsReason, health.Maximum.Reason);
+    }
+
+    /// <summary>
+    /// An entity the wire only ever described in percent keeps the fraction-only
+    /// shape. The two shapes coexist because the two packets differ, and neither
+    /// is turned into the other.
+    /// </summary>
+    [Fact]
+    public void TwoMobs_OneWithPointsAndOneWithout_KeepTheirOwnShapes()
+    {
+        SelectableEntity withPoints = Monster313816WithPoints();
+        var withoutPoints = new SelectableEntity(313826, new MapPoint(110, 64), 1.0, Earlier, Vnum: 36);
+
+        WorldModelSnapshot snapshot = Project(
+            WithEntities(withPoints, withoutPoints), _ => CatalogueClass.Monster);
+
+        Assert.Equal(2, snapshot.Mobs.Count);
+
+        Resource stated = Assert.Single(snapshot.Mobs.Single(m => m.Id.Value == "mob-313816").Status.Resources);
+        Resource inferred = Assert.Single(snapshot.Mobs.Single(m => m.Id.Value == "mob-313826").Status.Resources);
+
+        Assert.True(stated.Maximum.HasValue);
+        Assert.False(inferred.Maximum.HasValue);
+        Assert.Equal(GameplayObservationProjector.FractionOnlyHealthReason, inferred.Maximum.Reason);
     }
 
     /// <summary>

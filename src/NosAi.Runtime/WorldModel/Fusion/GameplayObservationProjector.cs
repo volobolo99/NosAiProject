@@ -46,6 +46,9 @@ public static class GameplayObservationProjector
     /// <summary>Reason a projected entity's health carries when the wire stated a fraction and no absolute bound.</summary>
     public const string FractionOnlyHealthReason = "wire_states_fraction_only_no_absolute_bounds";
 
+    /// <summary>Reason recorded on the bounds of an entity's health when the wire stated them in points.</summary>
+    public const string AbsoluteVitalsReason = "st_states_current_and_maximum_hp";
+
     /// <summary>
     /// Reason recorded on every health-derived fact of a projected entity:
     /// <see cref="SelectableEntity.ObservedAtUtc"/> is the instant its
@@ -243,14 +246,7 @@ public static class GameplayObservationProjector
             ? WorldFact<double>.Cached(ratio, 1.0, entity.ObservedAtUtc, HealthInstantNotCarriedReason)
             : WorldFact<double>.Unknown("hp_never_stated_for_this_entity", entity.ObservedAtUtc);
 
-        CombatantStatus status = healthFraction.HasValue
-            ? new CombatantStatus(
-                EquatableArray<Resource>.From(new[]
-                {
-                    Resource.FromObservedFraction(ResourceKind.Health, healthFraction, FractionOnlyHealthReason)
-                }),
-                EquatableArray<StatusEffect>.Empty)
-            : CombatantStatus.Empty;
+        CombatantStatus status = BuildHealth(entity, healthFraction);
 
         return new Mob(
             new EntityId(string.Create(CultureInfo.InvariantCulture, $"mob-{entity.EntityId}")),
@@ -351,6 +347,56 @@ public static class GameplayObservationProjector
             return WorldFact<bool>.Unknown(hp.FailureReason ?? "hp_not_observed", hp.ObservedAtUtc);
 
         return WorldFact<bool>.Derived(hp.Value > 0, 1.0, hp.ObservedAtUtc);
+    }
+
+
+    /// <summary>
+    /// An entity's health, in points when the wire stated points and as a bare
+    /// fraction when it did not.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The <c>st</c> packet states a monster's current and maximum hit points
+    /// and the decoder keeps both (<see cref="SelectableEntity.Vitals"/>), so
+    /// where they exist the <see cref="Resource"/> is built from them and its
+    /// <see cref="Resource.Fraction"/> is derived by the contract itself. Where
+    /// they do not -- an entity seen only through <c>in</c>, which states a
+    /// percentage, or through <c>mv</c>, which states no health at all -- the
+    /// fraction is the whole observation and
+    /// <see cref="Resource.FromObservedFraction"/> says so by leaving both
+    /// bounds Unknown with a named reason. Neither shape guesses the other.
+    /// </para>
+    /// <para>
+    /// Both bounds carry <see cref="HealthInstantNotCarriedReason"/>'s instant
+    /// for the same reason the fraction does:
+    /// <see cref="SelectableEntity.ObservedAtUtc"/> is the <i>position</i>'s
+    /// instant, and that record carries no separate one for the health. They are
+    /// <c>Cached</c>, not <c>Live</c>, for exactly that reason -- the numbers are
+    /// real and their age is not known here.
+    /// </para>
+    /// </remarks>
+    private static CombatantStatus BuildHealth(SelectableEntity entity, WorldFact<double> healthFraction)
+    {
+        if (entity.Vitals is { } points)
+        {
+            var health = new Resource(
+                ResourceKind.Health,
+                WorldFact<double>.Cached(points.Current, 1.0, entity.ObservedAtUtc, AbsoluteVitalsReason),
+                WorldFact<double>.Cached(points.Maximum, 1.0, entity.ObservedAtUtc, AbsoluteVitalsReason));
+
+            return new CombatantStatus(
+                EquatableArray<Resource>.From(new[] { health }),
+                EquatableArray<StatusEffect>.Empty);
+        }
+
+        return healthFraction.HasValue
+            ? new CombatantStatus(
+                EquatableArray<Resource>.From(new[]
+                {
+                    Resource.FromObservedFraction(ResourceKind.Health, healthFraction, FractionOnlyHealthReason)
+                }),
+                EquatableArray<StatusEffect>.Empty)
+            : CombatantStatus.Empty;
     }
 
 }
