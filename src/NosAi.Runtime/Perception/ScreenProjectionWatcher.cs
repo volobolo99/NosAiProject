@@ -5,6 +5,8 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Contracts;
 
 
+using System.Linq;
+
 namespace NosAi.Runtime.Perception;
 
 /// <summary>
@@ -61,10 +63,24 @@ public static class ScreenProjectionWatcher
 
         using (session)
         {
-            PixelRect? area = LocateClientArea(session!.ProcessId);
+            PixelRect? area = LocateClientArea(session!.ProcessId, out IntPtr windowHandle);
             if (area is not { } clientArea)
             {
                 Console.WriteLine("[REFUSED] client_window_not_located");
+                return 1;
+            }
+
+            // Il regime va sulla riga, e il DPI ne fa parte: due sessioni alla
+            // stessa dimensione di finestra e DPI diverso sono geometrie diverse,
+            // ed e' il caso che il formato precedente non sapeva vedere. Senza
+            // DPI leggibile non si raccoglie: un campione di regime ignoto entra
+            // nel fit e nessuno sa piu' di che sessione fosse.
+            GeometryShape shape = GeometryEpoch.Read(windowHandle).Shape;
+            if (!shape.IsKnown)
+            {
+                Console.WriteLine("[REFUSED] client_geometry_unknown");
+                Console.WriteLine("  Il DPI della finestra non e' leggibile, e senza regime un campione");
+                Console.WriteLine("  vale meno di nessun campione.");
                 return 1;
             }
 
@@ -125,7 +141,7 @@ public static class ScreenProjectionWatcher
                     new Contracts.MapPoint(tx - player.X, ty - player.Y), relativeX, relativeY);
                 samples.Add(sample);
                 recorded.Add(string.Create(CultureInfo.InvariantCulture,
-                    $"{sample.MapDelta.X} {sample.MapDelta.Y} {relativeX} {relativeY} {clientArea.Width} {clientArea.Height}"));
+                    $"{sample.MapDelta.X} {sample.MapDelta.Y} {relativeX} {relativeY} {clientArea.Width} {clientArea.Height} {shape.Dpi}"));
 
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                     $"  campione {samples.Count}/{wanted}: sono a ({player.X},{player.Y}), "
@@ -146,7 +162,8 @@ public static class ScreenProjectionWatcher
             string? directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
-            File.WriteAllLines(path, recorded);
+            File.WriteAllLines(path,
+                new[] { ScreenProjectionProbe.SamplesHeader }.Concat(recorded));
 
             Console.WriteLine();
             Console.WriteLine($"{samples.Count} campioni scritti in {path}");
@@ -156,8 +173,17 @@ public static class ScreenProjectionWatcher
         }
     }
 
-    private static PixelRect? LocateClientArea(int processId)
-        => OperatingSystem.IsWindows()
-            ? ClientWindowLocator.TryFind(processId, out _)?.ClientArea
-            : null;
+    private static PixelRect? LocateClientArea(int processId, out IntPtr windowHandle)
+    {
+        windowHandle = IntPtr.Zero;
+        if (!OperatingSystem.IsWindows())
+            return null;
+
+        var window = ClientWindowLocator.TryFind(processId, out _);
+        if (window is null)
+            return null;
+
+        windowHandle = window.Handle;
+        return window.ClientArea;
+    }
 }

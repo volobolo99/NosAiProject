@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.Perception;
@@ -28,6 +29,43 @@ public static class ScreenProjectionProbe
 {
     /// <summary>Where the pending samples live, relative to the repository root.</summary>
     public const string SamplesRelativePath = "data/perception/screen-samples.txt";
+
+    /// <summary>Prima riga del file dei campioni.</summary>
+    public const string SamplesMagic = "nosai-screen-samples";
+
+    /// <summary>La versione del formato che questa build scrive e legge.</summary>
+    /// <remarks>
+    /// <para>
+    /// La versione 1 porta <b>sette</b> campi per riga invece di sei: l'ultimo è
+    /// il DPI della finestra, cioè il terzo componente di
+    /// <see cref="GeometryShape"/>. Il formato senza intestazione ne portava sei
+    /// — larghezza e altezza sì, DPI no — e per questo non sapeva distinguere
+    /// due sessioni disegnate a scale diverse alla stessa dimensione di
+    /// finestra.
+    /// </para>
+    /// <para>
+    /// <b>Perché serviva.</b> Misurato il 2026-09-07 sui dodici campioni allora
+    /// in archivio: adattati insieme davano un residuo peggiore di 73,6 px
+    /// contro una soglia di 1,5 caselle (≈38 px), mentre sottoinsiemi contigui
+    /// si adattavano bene e a <i>trasformazioni diverse</i> — scala 36,6 contro
+    /// 30,3 px per casella. Il file era una miscela di due sessioni, e il filtro
+    /// che c'era (stessa larghezza e altezza) non poteva vederlo perché
+    /// entrambe erano 1024×768.
+    /// </para>
+    /// </remarks>
+    public const int SamplesVersion = 1;
+
+    /// <summary>Un file senza intestazione, o di un'altra versione, è rifiutato intero.</summary>
+    /// <remarks>
+    /// Rifiutato e non letto a metà: il formato vecchio non sa dire il regime, e
+    /// leggerlo mettendo DPI zero fabbricherebbe l'unica cosa che serve sapere.
+    /// <c>GeometryShape.IsKnown</c> è già <see langword="false"/> con DPI zero, e
+    /// il suo commento dice perché: <i>unknown is not a shape</i>.
+    /// </remarks>
+    public const string SamplesVersionUnsupportedReason = "screen_samples_version_unsupported";
+
+    /// <summary>L'intestazione che i due raccoglitori scrivono in testa al file.</summary>
+    public static string SamplesHeader => $"{SamplesMagic} {SamplesVersion}";
 
     /// <summary>
     /// The hand-aimed sample, which is refused: it records the wrong quantity.
@@ -148,35 +186,64 @@ public static class ScreenProjectionProbe
         if (!File.Exists(path))
             return samples;
 
-        var parsed = new List<(ScreenProjectionSample Sample, int Width, int Height)>();
-        foreach (string line in File.ReadAllLines(path))
+        string[] lines = File.ReadAllLines(path);
+        if (lines.Length == 0 || !string.Equals(lines[0].Trim(), SamplesHeader, StringComparison.Ordinal))
+        {
+            Console.WriteLine($"[REFUSED] {SamplesVersionUnsupportedReason}: {path}");
+            Console.WriteLine($"  Attesa la prima riga \"{SamplesHeader}\". Un file senza regime per riga");
+            Console.WriteLine("  non sa dire se i suoi campioni vengono da una sola geometria.");
+            Console.WriteLine("  Svuotarlo con --screen-samples-clear e ricampionare.");
+            return samples;
+        }
+
+        var parsed = new List<(ScreenProjectionSample Sample, GeometryShape Shape)>();
+        foreach (string line in lines.Skip(1))
         {
             string[] fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (fields.Length != 6) continue;
+            if (fields.Length != 7) continue;
             if (!int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mx)) continue;
             if (!int.TryParse(fields[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int my)) continue;
             if (!int.TryParse(fields[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int sx)) continue;
             if (!int.TryParse(fields[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out int sy)) continue;
             if (!int.TryParse(fields[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out int w)) continue;
             if (!int.TryParse(fields[5], NumberStyles.Integer, CultureInfo.InvariantCulture, out int h)) continue;
-            parsed.Add((new ScreenProjectionSample(new MapPoint(mx, my), sx, sy), w, h));
+            if (!uint.TryParse(fields[6], NumberStyles.Integer, CultureInfo.InvariantCulture, out uint dpi)) continue;
+
+            var shape = new GeometryShape(w, h, dpi);
+            if (!shape.IsKnown) continue;
+            parsed.Add((new ScreenProjectionSample(new MapPoint(mx, my), sx, sy), shape));
         }
 
         if (parsed.Count == 0)
             return samples;
 
-        (_, clientWidth, clientHeight) = parsed[^1];
-        foreach ((ScreenProjectionSample sample, int width, int height) in parsed)
+        // Il regime dell'ultimo campione e' quello che vale: chi ha appena
+        // raccolto sa in che stato era il client, e i campioni di prima no.
+        GeometryShape current = parsed[^1].Shape;
+        clientWidth = current.Width;
+        clientHeight = current.Height;
+
+        foreach ((ScreenProjectionSample sample, GeometryShape shape) in parsed)
         {
-            if (width == clientWidth && height == clientHeight)
+            if (shape == current)
                 samples.Add(sample);
         }
 
         int dropped = parsed.Count - samples.Count;
         if (dropped > 0)
         {
-            Console.WriteLine(
-                $"  {dropped} sample(s) taken at a different client size were ignored.");
+            // Dire *quale* regime, non solo quanti: due sessioni alla stessa
+            // dimensione e DPI diverso sono esattamente il caso che il formato
+            // vecchio non sapeva vedere, e "N campioni ignorati" non lo direbbe.
+            string others = string.Join(", ", parsed
+                .Select(x => x.Shape)
+                .Where(x => x != current)
+                .Distinct()
+                .Select(x => $"{x.Width}x{x.Height}@{x.Dpi}dpi"));
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  {dropped} campione(i) di un altro regime ignorati: {others}"));
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  Tenuti quelli di {current.Width}x{current.Height}@{current.Dpi}dpi."));
         }
 
         return samples;

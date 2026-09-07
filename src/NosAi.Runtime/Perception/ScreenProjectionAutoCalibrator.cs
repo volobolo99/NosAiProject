@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using NosAi.LiveIntegration;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Safety;
@@ -198,6 +199,13 @@ public static class ScreenProjectionAutoCalibrator
                 RequireGuardApproval: false);
             var input = new GatedInputBackend(new Win32InputBackend(), policy);
 
+            // The scale the fit is being made at. Read from the window rather than
+            // assumed, and stored beside the client size, because the two together are
+            // the shape a later projection has to still be looking at. Letta **prima**
+            // della raccolta dal 2026-09-07: ogni campione porta il proprio regime, e
+            // il regime va conosciuto quando il campione si scrive, non alla fine.
+            GeometryEpoch epoch = GeometryEpoch.Read(window.Handle);
+
             IReadOnlyList<(int X, int Y)> points = ProbePoints(area, SampleCount);
 
             Console.WriteLine($"Client area {area.Width}x{area.Height} at {area.X},{area.Y} ({window.ClassName})");
@@ -238,7 +246,7 @@ public static class ScreenProjectionAutoCalibrator
 
                 samples.Add(sample);
                 recorded.Add(string.Create(CultureInfo.InvariantCulture,
-                    $"{sample.MapDelta.X} {sample.MapDelta.Y} {sample.ScreenX} {sample.ScreenY} {area.Width} {area.Height}"));
+                    $"{sample.MapDelta.X} {sample.MapDelta.Y} {sample.ScreenX} {sample.ScreenY} {area.Width} {area.Height} {epoch.Dpi}"));
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
                     $"  point {sample.ScreenX},{sample.ScreenY} -> offset ({sample.MapDelta.X},{sample.MapDelta.Y})"));
             }
@@ -252,11 +260,6 @@ public static class ScreenProjectionAutoCalibrator
                 Console.WriteLine("  portals and monsters, and run it again.");
                 return 1;
             }
-
-            // The scale the fit is being made at. Read from the window rather than
-            // assumed, and stored beside the client size, because the two together are
-            // the shape a later projection has to still be looking at.
-            GeometryEpoch epoch = GeometryEpoch.Read(window.Handle);
 
             if (!Solve(samples, area, out ScreenProjectionCalibration calibration,
                     out int dropped, out string? solveFailure, clientDpi: epoch.Dpi))
@@ -282,7 +285,10 @@ public static class ScreenProjectionAutoCalibrator
             string? sampleDirectory = Path.GetDirectoryName(samplePath);
             if (!string.IsNullOrEmpty(sampleDirectory))
                 Directory.CreateDirectory(sampleDirectory);
-            File.WriteAllLines(samplePath, recorded);
+            // L'intestazione dice la versione del formato: un file senza non e'
+            // di questa build e viene rifiutato intero invece che letto a meta'.
+            File.WriteAllLines(samplePath,
+                new[] { ScreenProjectionProbe.SamplesHeader }.Concat(recorded));
 
             string path = Path.Combine(repoRoot, ScreenProjectionCalibration.RelativePath);
             calibration.Save(path);
