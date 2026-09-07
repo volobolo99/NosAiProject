@@ -752,6 +752,15 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.ReferenceInfoCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Observability.ReferenceInfoCommand.Run();
 
+        // AP-07/Q-094: what LoadoutPlanner would propose right now against
+        // the live inventory and the real on-disk item catalogue, and whether
+        // each proposal passes its hard constraints. Read-only: no key, no
+        // mouse, no input arming -- nothing here can equip, unequip or
+        // upgrade. A report with zero candidates is a valid result, not a
+        // failure; a missing catalogue degrades only the Equip section.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.LoadoutReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Tactical.LoadoutReportCommand.Run();
+
         // Re-imports the reference catalogue and the broader native file
         // inventory from the installed client, reporting what a client update
         // changed since the last run.
@@ -1044,7 +1053,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report"
         };
 
     private static int RunDxgiProbe()
