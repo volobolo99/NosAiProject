@@ -102,6 +102,30 @@ Il tipo 2 entrerà quando l'avvistamento porterà **la specie osservata** invece
 una costante. È un cambio di contratto, e finché non c'è, un buco dichiarato
 nella percezione vale più di un bersaglio sbagliato.
 
+### E il catalogo non basta a distinguerle
+
+Verrebbe da pensare che ci sia già una difesa: `TargetEstablishment` non si fida
+della sola presenza in tabella, e scarta le voci **RaceType 8** di `monster.dat`
+— «Special NPCs», cioè trappole, teletrasporti e NPC parlanti. Il commento di
+quel campo porta però il proprio avvertimento, *«not yet cross-checked against a
+real client capture»*, e il riscontro — fatto il 2026-09-07 — viene fuori
+negativo:
+
+| vnum | nome | RaceType |
+|---|---|---:|
+| 2362 | Caverna dei Conigli | 0 |
+| 1494 | Pir | 3 |
+| 1488 | Baby^panda | 2 |
+| 2557 | Graham | 3 |
+
+**Nessuno è 8.** Il catalogo chiamerebbe mostri tutte e quattro. Quindi la
+garanzia che il pianificatore non prenda di mira un negoziante sta nel decoder
+che rifiuta il tipo 2, **non** nel classificatore — ed è il contrario di come il
+commento del RaceType si lascia leggere.
+
+Il filo distingue queste quattro dai mostri; il catalogo no. Quando il tipo 2
+entrerà, a decidere dovrà essere la specie letta sul filo.
+
 ---
 
 ## `stat` — the player's own vitals

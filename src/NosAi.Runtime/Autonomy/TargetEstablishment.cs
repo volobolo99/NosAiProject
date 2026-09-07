@@ -213,6 +213,29 @@ public static class TargetEstablishment
     /// <see cref="CatalogueClass.CatalogueUnreadable"/> rather than taking the
     /// cycle down, and never yields a classification by omission.
     /// </para>
+    /// <para>
+    /// <b>Quanto stretto sia davvero questo filtro, misurato il 2026-09-07.</b>
+    /// <c>MonsterReference.IsSpecialNonMonsterEntity</c> — il RaceType 8, «Special
+    /// NPCs» — porta da sempre il proprio avvertimento: <i>«not yet cross-checked
+    /// against a real client capture»</i>. Il riscontro ora c'è, e viene fuori
+    /// negativo. Le quattro entità di <b>tipo 2</b> osservate su
+    /// <c>data/messaggi.noscap</c> — vnum 2362 «Caverna dei Conigli», 1494 «Pir»,
+    /// 1488 «Baby^panda», 2557 «Graham», cioè un varco, due NPC e un pet —
+    /// esistono tutte nella tabella <c>monster</c> e hanno RaceType
+    /// <b>0, 3, 2, 3</b>. Nessuno è 8. Questo predicato le chiamerebbe
+    /// <see cref="CatalogueClass.Monster"/>.
+    /// </para>
+    /// <para>
+    /// <b>Perché oggi non è un difetto, e cosa lo diventerebbe.</b> Quelle entità
+    /// non arrivano mai fin qui: <c>NosTaleWorldProtocolDecoder.IsReadableEntity</c>
+    /// accetta il solo tipo 3, quindi nessun avvistamento di tipo 2 raggiunge il
+    /// World Model. La garanzia che il pianificatore non prenda di mira un
+    /// negoziante sta lì, nel decoder, e <b>non</b> in questo predicato — che è il
+    /// contrario di come il commento del RaceType si lascia leggere. Il giorno in
+    /// cui l'avvistamento porterà la specie osservata e il tipo 2 entrerà, è la
+    /// specie letta sul filo a dover decidere, non la tabella: il filo distingue
+    /// queste quattro dai mostri, il catalogo no.
+    /// </para>
     /// </remarks>
     /// <param name="vnum">The entity's own number, as the wire stated it.</param>
     /// <param name="catalogue">The reference database, or null when none is loaded.</param>
