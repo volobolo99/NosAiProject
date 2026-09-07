@@ -271,8 +271,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
     /// <summary>
     /// <c>su atkType atkId tgtType tgtId …</c> — a hit resolving. Identities are
-    /// confirmed. The last fields sometimes repeat the player's HP, but they
-    /// never carry MP, so this packet is the hit event and not a vitals source.
+    /// confirmed. The packet is the hit event, and — measured below — also a
+    /// vitals source for the target when field 11 is 1.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -290,6 +290,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// because its false positive is UNKNOWN, a fact the planner skips. The
     /// aggressor may not, because its false positive would be a counter-attack
     /// aimed at whoever a stranger nearby happened to be fighting.
+    /// </para>
+    /// <para>
+    /// Target vitals, measured across the four captures that carry <c>su</c>
+    /// (212 packets: nostale_live 13, equip_test 2, nostale_combat 117,
+    /// certificazione 80; all 18 fields): field 11 is a presence flag, and in
+    /// every one of the 212 it equals 1 exactly when field 16 is positive —
+    /// 172 packets with flag 1, 40 with flag 0. Where flag 1, field 16 is at
+    /// most field 17 and field 17 is positive, in all 172; field 17 is constant
+    /// per target id (40 distinct targets). A flag of 0 makes field 16 a zero
+    /// that means <i>not reported</i>, never <i>dead</i>, so the decoder reads
+    /// the target's HP and max HP only when field 11 is 1.
     /// </para>
     /// </remarks>
     private DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)
@@ -324,12 +335,61 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
                 ? new PlayerHit(new Aggressor(attackerId, attackerType), capturedUtc, source)
                 : null;
 
+        ImmutableArray<EntitySighting> sightings = ReadTargetVitals(fields, targetId, source, capturedUtc);
+
         return new DecodedObservations(
-            ImmutableArray<EntitySighting>.Empty,
+            sightings,
             ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source, capturedUtc)),
             Vitals: null,
             PlayerAttackedAtUtc: playerAttacked ? capturedUtc : null,
             PlayerHit: hit);
+    }
+
+    /// <summary>
+    /// The target's vitals when <c>su</c> reports them, or no sighting at all.
+    /// </summary>
+    /// <remarks>
+    /// Field 11 is a presence flag: only when it is 1 do fields 16 and 17 name
+    /// the target's current and maximum HP, and a 0 there means the target's HP
+    /// is not reported on this packet, not that the target is dead. Reading the
+    /// pair without the flag would publish "0 HP" forty times out of 212 in these
+    /// captures, every one of them a lie. The same plausibility check
+    /// <see cref="DecodeOtherVitals"/> applies — <c>maxHp &gt; 0</c> and
+    /// <c>0 &lt;= hp &lt;= maxHp</c> — refuses an implausible pair, and the
+    /// tracked entity and the sighting are updated exactly as that method does,
+    /// so a remembered position carries the fresh health out as CACHED.
+    /// The controlled character is never published here: <c>stat</c> is the
+    /// source for its own life, and a second, possibly different number from
+    /// <c>su</c> would be a conflict this decoder invented.
+    /// </remarks>
+    private ImmutableArray<EntitySighting> ReadTargetVitals(
+        string[] fields, long targetId, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 18)
+            return ImmutableArray<EntitySighting>.Empty;
+        if (_playerEntityId is { } own && targetId == own)
+            return ImmutableArray<EntitySighting>.Empty;
+        if (!TryInt(fields[11], out int vitalsFlag) || vitalsFlag != 1)
+            return ImmutableArray<EntitySighting>.Empty;
+        if (!TryInt(fields[16], out int hp) || !TryInt(fields[17], out int maxHp))
+            return ImmutableArray<EntitySighting>.Empty;
+        if (maxHp <= 0 || hp < 0 || hp > maxHp)
+            return ImmutableArray<EntitySighting>.Empty;
+
+        var vitals = new AbsoluteVitals(hp, maxHp);
+        double hpRatio = (double)hp / maxHp;
+        TrackedEntity previous = _entities.GetValueOrDefault(targetId);
+        _entities[targetId] = previous with
+        {
+            HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc, Vitals = vitals
+        };
+
+        if (!previous.HasPosition)
+            return ImmutableArray<EntitySighting>.Empty;
+
+        return ImmutableArray.Create(new EntitySighting(
+            targetId, "Monster", previous.X, previous.Y, hpRatio, Stale(source),
+            previous.PositionAtUtc, capturedUtc, previous.Vnum, vitals));
     }
 
     /// <summary>

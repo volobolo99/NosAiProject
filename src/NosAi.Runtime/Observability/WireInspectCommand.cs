@@ -59,8 +59,20 @@ public static class WireInspectCommand
     /// <summary>Cap on raw lines in <c>--opcode</c> mode. <c>0</c> means all.</summary>
     public const string MaxOption = "--max";
 
+    /// <summary>Per-field census of the opcode named by <c>--opcode</c>.</summary>
+    public const string FieldsOption = "--fields";
+
     /// <summary>How many raw lines <c>--opcode</c> prints when <c>--max</c> is absent.</summary>
     public const int DefaultMaxLines = 20;
+
+    /// <summary>How many example values <c>--fields</c> prints per field.</summary>
+    /// <remarks>
+    /// Five is enough to recognise a constant, an enum-like field (a handful of
+    /// distinct values) and a free-running counter at a glance, while the min and
+    /// max already bound a numeric field — printing every distinct value would
+    /// flood the operator on a field that assumes hundreds.
+    /// </remarks>
+    public const int MaxFieldExamples = 5;
 
     /// <summary>Exit code for a refused argument vector. Matches the replay commands.</summary>
     public const int ExitRefused = 2;
@@ -85,6 +97,12 @@ public static class WireInspectCommand
 
     /// <summary>No recording path followed the flag.</summary>
     public const string MissingPathReason = "missing_path";
+
+    /// <summary>An argument starting with <c>--</c> that is not a known option.</summary>
+    public const string UnknownOptionReason = "unknown_option";
+
+    /// <summary><c>--fields</c> was given without <c>--opcode</c>, so no opcode was requested to census.</summary>
+    public const string FieldsWithoutOpcodeReason = "fields_without_opcode";
 
     /// <summary>
     /// Decodes every line of a finite packet source and measures each opcode's
@@ -169,10 +187,11 @@ public static class WireInspectCommand
 
     /// <summary>
     /// The whole command as one pure function: decode the source and write the
-    /// census (no <paramref name="opcode"/>) or the raw lines (with it) to
+    /// census (no <paramref name="opcode"/>), the raw lines (with it), or the
+    /// per-field census (with it and <paramref name="showFields"/>) to
     /// <paramref name="output"/>.
     /// </summary>
-    public static void Inspect(IPacketSource source, TextWriter output, DataSourceKind sourceKind, string? opcode, int maxLines)
+    public static void Inspect(IPacketSource source, TextWriter output, DataSourceKind sourceKind, string? opcode, int maxLines, bool showFields = false)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(output);
@@ -180,6 +199,12 @@ public static class WireInspectCommand
         if (opcode is null)
         {
             WriteCensus(output, Census(source, sourceKind));
+            return;
+        }
+
+        if (showFields)
+        {
+            WriteFieldCensus(output, source, sourceKind, opcode);
             return;
         }
 
@@ -193,10 +218,20 @@ public static class WireInspectCommand
     /// path, opcode and max line count in the out parameters).
     /// </summary>
     public static string? Validate(string[] args, out string? path, out string? opcode, out int maxLines)
+        => Validate(args, out path, out opcode, out maxLines, out _);
+
+    /// <summary>
+    /// Validates the argument vector against the flag grammar. Returns the named
+    /// refusal reason, or null when the vector is well-formed (with the parsed
+    /// path, opcode, max line count and <c>--fields</c> presence in the out
+    /// parameters).
+    /// </summary>
+    public static string? Validate(string[] args, out string? path, out string? opcode, out int maxLines, out bool showFields)
     {
         path = null;
         opcode = null;
         maxLines = DefaultMaxLines;
+        showFields = false;
 
         int flagIndex = Array.FindIndex(args, a => string.Equals(a, Flag, StringComparison.OrdinalIgnoreCase));
         if (flagIndex < 0)
@@ -226,14 +261,22 @@ public static class WireInspectCommand
                 continue;
             }
 
-            if (arg.StartsWith("--", StringComparison.Ordinal))
+            if (string.Equals(arg, FieldsOption, StringComparison.OrdinalIgnoreCase))
+            {
+                showFields = true;
                 continue;
+            }
+
+            if (arg.StartsWith("--", StringComparison.Ordinal))
+                return $"{UnknownOptionReason}:{arg}";
 
             path ??= arg;
         }
 
         if (string.IsNullOrWhiteSpace(path))
             return MissingPathReason;
+        if (showFields && opcode is null)
+            return FieldsWithoutOpcodeReason;
         if (!string.Equals(Path.GetExtension(path), ".noscap", StringComparison.OrdinalIgnoreCase))
             return BadExtensionReason;
         if (!File.Exists(path))
@@ -245,18 +288,18 @@ public static class WireInspectCommand
     /// <summary>Console entry. Validates, opens the recording, and inspects it.</summary>
     public static int Run(string[] args)
     {
-        string? refusal = Validate(args, out string? path, out string? opcode, out int maxLines);
+        string? refusal = Validate(args, out string? path, out string? opcode, out int maxLines, out bool showFields);
         if (refusal is not null)
         {
             Console.WriteLine($"[REFUSED] {refusal}");
-            Console.WriteLine($"Usage: {Flag} <file.noscap> [--opcode <opcode>] [--max <n>]");
+            Console.WriteLine($"Usage: {Flag} <file.noscap> [--opcode <opcode>] [--max <n>] [--fields]");
             return ExitRefused;
         }
 
         try
         {
             using IPacketSource source = CaptureFile.Open(path!);
-            Inspect(source, Console.Out, DataSourceKind.Cached, opcode, maxLines);
+            Inspect(source, Console.Out, DataSourceKind.Cached, opcode, maxLines, showFields);
             return 0;
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException)
@@ -297,6 +340,112 @@ public static class WireInspectCommand
             }
 
             output.WriteLine("         " + string.Join("  ", parts));
+        }
+    }
+
+    /// <summary>
+    /// The per-field census of one opcode (<c>--fields</c>): for each field
+    /// index — numbered as the decoder does, <c>fields[0]</c> being the opcode —
+    /// the distinct count, the min and max when every value is numeric, and up to
+    /// <see cref="MaxFieldExamples"/> example values. A field with one distinct
+    /// value is written <c>costante</c>, and packets of different lengths are
+    /// censused separately because mixing them would invent variance that is not
+    /// on the wire.
+    /// </summary>
+    public static void WriteFieldCensus(TextWriter output, IPacketSource source, DataSourceKind sourceKind, string opcode)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentException.ThrowIfNullOrWhiteSpace(opcode);
+
+        var packets = new List<string[]>();
+        foreach (string line in DecodeLines(source, sourceKind))
+        {
+            string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length > 0 && string.Equals(tokens[0], opcode, StringComparison.Ordinal))
+                packets.Add(tokens);
+        }
+
+        if (packets.Count == 0)
+        {
+            output.WriteLine($"{opcode}  n=0");
+            return;
+        }
+
+        var groups = packets
+            .GroupBy(p => p.Length)
+            .Select(g => (Arity: g.Key - 1, Packets: g.ToArray()))
+            .OrderBy(g => g.Arity)
+            .ToArray();
+
+        if (groups.Length == 1)
+        {
+            output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"{opcode}  n={packets.Count}  campi={groups[0].Arity}  (fields[0]=opcode)"));
+            WriteFieldRows(output, groups[0].Packets, groups[0].Arity);
+            return;
+        }
+
+        string arities = string.Join(",", groups.Select(g => g.Arity.ToString(CultureInfo.InvariantCulture)));
+        output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"{opcode}  n={packets.Count}  campi={arities}  (lunghezze diverse: censiti per lunghezza, fields[0]=opcode)"));
+        foreach ((int arity, string[][] groupPackets) in groups)
+        {
+            output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"  -- campi={arity} (n={groupPackets.Length}) --"));
+            WriteFieldRows(output, groupPackets, arity);
+        }
+    }
+
+    /// <summary>
+    /// One line per field index for a group of equal-length packets: the index,
+    /// the distinct count (<c>costante</c> when it is one), the min and max when
+    /// numeric, and up to <see cref="MaxFieldExamples"/> example values.
+    /// </summary>
+    private static void WriteFieldRows(TextWriter output, IReadOnlyList<string[]> packets, int arity)
+    {
+        for (int index = 1; index <= arity; index++)
+        {
+            var distinctValues = new List<string>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string[] tokens in packets)
+                if (seen.Add(tokens[index]))
+                    distinctValues.Add(tokens[index]);
+
+            if (distinctValues.Count == 1)
+            {
+                output.WriteLine($"  {index.ToString(CultureInfo.InvariantCulture)}  costante={distinctValues[0]}");
+                continue;
+            }
+
+            var numeric = new List<long>();
+            bool allNumeric = true;
+            foreach (string value in distinctValues)
+            {
+                if (!long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsed))
+                {
+                    allNumeric = false;
+                    break;
+                }
+                numeric.Add(parsed);
+            }
+
+            var parts = new List<string>(5)
+            {
+                index.ToString(CultureInfo.InvariantCulture),
+                $"distinti={distinctValues.Count.ToString(CultureInfo.InvariantCulture)}",
+            };
+            if (allNumeric)
+            {
+                parts.Add($"min={numeric.Min().ToString(CultureInfo.InvariantCulture)}");
+                parts.Add($"max={numeric.Max().ToString(CultureInfo.InvariantCulture)}");
+            }
+            int exampleCount = Math.Min(MaxFieldExamples, distinctValues.Count);
+            parts.Add($"es={string.Join(",", distinctValues.Take(exampleCount))}");
+            if (!allNumeric)
+                parts.Add("(non numerico)");
+
+            output.WriteLine("  " + string.Join("  ", parts));
         }
     }
 
