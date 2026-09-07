@@ -101,3 +101,53 @@ Finché questo non è fatto, il task
 `AP-02_A2A4_DEEPSEEK_real_screen_samples.md` resta **bloccato sull'operatore**:
 non è re-specificabile a tavolino, perché i dati che dovrebbe verificare non
 descrivono una sola geometria.
+
+---
+
+## T-16 — collegare un id sul filo al testo che l'operatore legge sullo schermo
+
+**Aperto il 2026-09-07.** Il catalogo contiene ora **50 704** voci di testo del
+client, fra cui 3639 missioni, 22 358 battute di NPC e 374 nomi di mappa
+(`--reference-info` le conta). Il filo porta id in `sayi` e `msgi`. Nessuno ha
+stabilito la corrispondenza fra i due, e **non si stabilisce dai dati che
+abbiamo**.
+
+### Cosa è già stato provato, e perché non basta
+
+La riga reale, da `data/nostale_combat.noscap`:
+
+```
+sayi 1 3443217 12 975 2 2006 1 0 0
+```
+
+Il campo 6 è `2006`, che in quella stessa cattura è il vnum dell'oggetto caduto
+e raccolto (`drop 2006 …`, `ivn 2 34.2006.1.0`): il pacchetto porta quindi
+almeno un **parametro** riconoscibile, e la lettura «messaggio localizzato con
+argomenti» regge. Ma il candidato naturale per l'id — il campo 4, `975` —
+cercato in tutte e cinque le tabelle di solo testo, con e senza l'aggiustamento
+di ±1, dà testi che non c'entrano nulla («Torneremo presto! Non ci arrenderemo
+mai!», una missione di Hazel al Campo Akamur).
+
+Quindi: o l'id non è quel campo, o la numerazione delle chiavi ha un'altra
+regola, o la tabella giusta è un'altra. **Tre ipotesi che i dati registrati non
+sanno distinguere**, perché nessuna delle cinque catture ha accanto ciò che
+l'operatore vedeva sullo schermo in quel momento.
+
+### Cosa serve, ed è poco
+
+Una cattura in cui **si sappia quale messaggio è comparso**:
+
+1. `--record-wire <ip:porta> <file.noscap>` avviato.
+2. In gioco, provocare un messaggio inequivocabile e **annotarne il testo esatto**
+   — raccogliere un oggetto, accettare una missione, parlare con un NPC.
+   Meglio tre o quattro messaggi diversi, con l'ora di ciascuno.
+3. Fermare la cattura.
+4. `--wire-inspect <file> --opcode sayi` e `--opcode msgi` per vedere le righe.
+
+**Da registrare:** il testo esatto letto sullo schermo e le righe `sayi`/`msgi`
+della cattura. Con una sola coppia (testo osservato ↔ riga) la corrispondenza si
+stabilisce; con tre si conferma.
+
+Finché non è fatto, il testo resta nel catalogo e **nessuno può dire quale riga
+vale adesso** — ed è per questo che `DialogWindowStateComposer` continua a
+trattare lo schermo come sola fonte sulla presenza di un pannello.
