@@ -67,28 +67,28 @@ public sealed class DuplicateTypeNameTests
                 "scoperto da R1: due definizioni di un fotogramma catturato (Capture, Perception); da decidere",
             // --- visti solo da quando la scansione legge tutta la produzione ---
             // Nessuno di questi era visibile finché il controllo interrogava il
-            // solo assembly NosAi.Runtime. Sono la categoria peggiore: in ognuno
-            // il gemello sta in un namespace che ModuleReachability dichiara
+            // solo assembly NosAi.Runtime. Erano la categoria peggiore: in ognuno
+            // il gemello stava in un namespace che ModuleReachability dichiara
             // irraggiungibile, quindi scrivere `using` su quello e usare il nome
-            // compila, gira e prende in silenzio la copia che nessuno chiama.
-            ["GoalStack"] =
-                "pericolo: il vivo è NosAi.Runtime.Autonomy (lo compone Gate3Runtime), il gemello morto "
-                + "è in NosAi.Core.Planning; rimozione da decidere, Q-111",
+            // compilava, girava e prendeva in silenzio la copia che nessuno chiama.
+            //
+            // Cinque sono usciti il 2026-09-07 (Q-111), rinominati e non rimossi:
+            // NosAi.Core.Planning e NosAi.Core.Safety sono strati puri che
+            // CLAUDE.md nomina nel proprio flusso canonico (HTN/GOAP, recovery
+            // reattivo), quindi cancellarli avrebbe tolto una capacita' richiesta
+            // insieme alle sue prove. GoalId, GoalStack e RankedAction di
+            // NosAi.Core.Planning sono ora PlannerGoalId, PlannerGoalStack e
+            // PlannerRankedAction; RecoveryState e RecoveryController di
+            // NosAi.Core.Safety sono RetryBudgetState e RetryBudgetController --
+            // nomi che dicono a che livello stanno, cosi' nessuno li raggiunge
+            // per sbaglio credendo di avere in mano quelli autoritativi del
+            // runtime. Resta aperto se quegli strati vadano poi attaccati o tolti.
             ["Goal"] =
                 "vivo in entrambi: NosAi.Core.WorldModel (il contratto del World Model) e "
                 + "NosAi.Runtime.Autonomy (l'obiettivo dello stack di Gate 3). Non e' un gemello morto, "
                 + "e' un vero scontro di nomi fra due tipi in uso -- ha gia' prodotto un CS0104 in "
                 + "GameplayObservationProjector, che lo aggira con tre alias using. Da decidere: "
                 + "rinominare uno dei due, o dichiarare che gli alias sono la risposta",
-            ["GoalId"] =
-                "pericolo: vivo in NosAi.Core.WorldModel, gemello morto in NosAi.Core.Planning; Q-111",
-            ["RankedAction"] =
-                "pericolo: vivo in NosAi.Runtime.Tactical, gemello morto in NosAi.Core.Planning; Q-111",
-            ["RecoveryController"] =
-                "pericolo: il vivo è NosAi.Runtime.Safety (lo tiene Gate3ExecutionOrchestrator), il "
-                + "gemello morto è in NosAi.Core.Safety; Q-111",
-            ["RecoveryState"] =
-                "pericolo: vivo in NosAi.Runtime.Safety, gemello morto in NosAi.Core.Safety; Q-111",
 
             // Nota: SequenceGuard stava qui, ed e' uscito il 2026-09-07. Era il
             // caso peggiore che questa prova abbia trovato -- due politiche
@@ -243,11 +243,14 @@ public sealed class DuplicateTypeNameTests
     /// Legge il sorgente, non gli assembly caricati. La versione precedente
     /// interrogava <c>typeof(DataSourceKind).Assembly</c>, cioè il solo
     /// <c>NosAi.Runtime</c>: non vedeva <c>NosAi.Core</c>, e quindi non poteva
-    /// vedere i due duplicati che contano di più —
-    /// <c>NosAi.Core.Planning.GoalStack</c> accanto al
-    /// <c>NosAi.Runtime.Autonomy.GoalStack</c> che <c>Gate3Runtime</c> compone, e
-    /// <c>NosAi.Core.Safety.RecoveryController</c> accanto a quello che la stessa
-    /// classe tiene. È lo stesso difetto che <c>ModuleReachabilityTests</c> aveva
+    /// vedere i due duplicati che contavano di più: un secondo <c>GoalStack</c> in
+    /// <c>NosAi.Core.Planning</c> accanto al <c>NosAi.Runtime.Autonomy.GoalStack</c>
+    /// che <c>Gate3Runtime</c> compone, e un secondo <c>RecoveryController</c> in
+    /// <c>NosAi.Core.Safety</c> accanto a quello che la stessa classe tiene. Quei
+    /// due nomi non collidono più dal 2026-09-07 (Q-111): i gemelli di
+    /// <c>NosAi.Core</c> ora si chiamano <c>PlannerGoalStack</c> e
+    /// <c>RetryBudgetController</c>, ed è questa prova ad averli trovati.
+    /// È lo stesso difetto che <c>ModuleReachabilityTests</c> aveva
     /// e che è stato corretto allo stesso modo: un controllo ristretto a un
     /// progetto è cieco su tutto ciò che gli sta fuori.
     /// </para>

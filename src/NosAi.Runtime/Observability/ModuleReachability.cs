@@ -286,9 +286,11 @@ public static class ModuleReachability
             + "(Ranking -> Strategic Orchestrator -> HTN/GOAP -> Guard). No "
             + "production file reaches it; planning that runs today is "
             + "StrategyPlanner plus Gate3's own loop. LexicographicOrchestrator "
-            + "and DeadlinePlanner are not reached even by a test. There is also "
-            + "a second GoalStack here beside the one Gate3Runtime actually uses "
-            + "(NosAi.Runtime.Autonomy) -- two types, one name, one of them dead."),
+            + "and DeadlinePlanner are not reached even by a test. Its goal stack, "
+            + "goal id and ranked action shadowed live types under the same names "
+            + "until 2026-09-07; they are PlannerGoalStack, PlannerGoalId and "
+            + "PlannerRankedAction now, so reaching this layer by accident is no "
+            + "longer silent. Unreached is still what it is."),
 
         new("NosAi.Core.Planning.Goap", ModuleReach.Unreferenced,
             "The GOAP half of the layer above, unreached for the same reason."),
@@ -298,9 +300,12 @@ public static class ModuleReachability
             + "runtime and does not consult these."),
 
         new("NosAi.Core.Safety", ModuleReach.Unreferenced,
-            "41 lines. Safety that is authoritative lives in NosAi.Runtime.Safety, "
+            "One file. Safety that is authoritative lives in NosAi.Runtime.Safety, "
             + "which the architecture requires ('Runtime is authoritative for "
-            + "authorization and safety'); this one is reached by tests only."),
+            + "authorization and safety'); this one is reached by tests only. Its "
+            + "retry budget was called RecoveryController/RecoveryState until "
+            + "2026-09-07, the same names as the authoritative circuit breaker; it "
+            + "is RetryBudgetController/RetryBudgetState now."),
 
         new("NosAi.Core.Scheduling", ModuleReach.Unreferenced,
             "887 lines of tier queue and async execution, the largest unreached "

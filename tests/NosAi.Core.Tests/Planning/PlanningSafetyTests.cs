@@ -20,10 +20,10 @@ public sealed class PlanningSafetyTests
     [Fact]
     public void RecoveryEventuallyFailsClosed()
     {
-        var controller = new RecoveryController(new RecoveryPolicy(TimeSpan.FromSeconds(1), 1, TimeSpan.Zero));
+        var controller = new RetryBudgetController(new RetryBudgetPolicy(TimeSpan.FromSeconds(1), 1, TimeSpan.Zero));
         Assert.True(controller.OnTransientFailure());
         Assert.False(controller.OnTransientFailure());
-        Assert.Equal(RecoveryState.SafeStop, controller.State);
+        Assert.Equal(RetryBudgetState.SafeStop, controller.State);
     }
 
     [Fact]

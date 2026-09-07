@@ -205,7 +205,8 @@ invece di sopravvivere al debito che descriveva.
 > Allargata, la misura dice **venti** — e il numero è stato corretto il giorno stesso:
 > la prima stesura di questa riga diceva diciotto, contati a occhio invece che
 > sull'elenco della prova, che a `f786b20` ne dichiarava venti. Oggi sono
-> **diciannove**, perché `SequenceGuard` è uscito. Le nuove non sono rumore:
+> **quattordici**: sono usciti `SequenceGuard` e i cinque gemelli morti qui sotto.
+> Le nuove non erano rumore:
 >
 > - **`SequenceGuard`** — due politiche anti-replay diverse sotto un nome, ed era il
 >   peggiore dei venti: non perché i tipi fossero due, ma perché **i due capi dello
@@ -230,11 +231,30 @@ invece di sopravvivere al debito che descriveva.
 >   di descriverla, così stringere l'host per farlo combaciare col client rende rosso
 >   un test invece di passare inosservato. **Resta aperta** la domanda se l'host debba
 >   essere severo quanto il client.
-> - **Cinque gemelli morti** che ombreggiano un tipo vivo — `GoalStack`, `GoalId`,
+> - **Cinque gemelli morti** che ombreggiavano un tipo vivo — `GoalStack`, `GoalId`,
 >   `RankedAction` (in `NosAi.Core.Planning`), `RecoveryController` e `RecoveryState`
 >   (in `NosAi.Core.Safety`). In ognuno il vivo è quello che `Gate3Runtime` compone e
->   il morto sta in un namespace che `ModuleReachability` dichiara irraggiungibile:
->   scrivere `using` su quello e usare il nome compila e prende la copia sbagliata.
+>   il morto stava in un namespace che `ModuleReachability` dichiara irraggiungibile:
+>   scrivere `using` su quello e usare il nome compilava e prendeva la copia sbagliata.
+>
+>   **Risolti il 2026-09-07 rinominando, non cancellando.** La cancellazione era la
+>   risposta ovvia e sarebbe stata sbagliata su entrambi gli strati: `NosAi.Core.Planning`
+>   è lo strato HTN/GOAP che il flusso canonico di `CLAUDE.md` nomina per esteso, e
+>   `NosAi.Core.Safety` è il recovery reattivo dello stesso flusso. Sono costruiti,
+>   provati e non attaccati — togliere una capacità richiesta e le sue prove per
+>   chiudere un duplicato avrebbe pagato il disordine col progetto. Ora si chiamano
+>   `PlannerGoalId`, `PlannerGoalStack`, `PlannerRankedAction`, `RetryBudgetState` e
+>   `RetryBudgetController`: nomi che dicono a che livello stanno, così raggiungerli
+>   per sbaglio non è più silenzioso. **Resta aperto** se quegli strati vadano
+>   attaccati al runtime o tolti — ma è una decisione sull'architettura, non
+>   sull'igiene dei nomi.
+>
+>   La rinomina ha anche scoperto un guasto in `NosAi.Core.Safety`, che nessuno aveva
+>   letto perché nessuno lo chiamava: `_retries` è un `byte`, e il controllo guardava
+>   solo il tetto dei tentativi. Dopo il fermo, 256 fallimenti riportavano il contatore
+>   a zero, il tetto tornava a passare e `SafeStop` si scioglieva da solo — un fermo
+>   di sicurezza che cede proprio quando le cose vanno peggio. Corretto leggendo lo
+>   stato prima del contatore, con due prove che lo fissano.
 > - **`Goal`** — vivo in entrambi (`NosAi.Core.WorldModel` e
 >   `NosAi.Runtime.Autonomy`). Ha già prodotto un `CS0104` in
 >   `GameplayObservationProjector`, che lo aggira con tre alias `using`.

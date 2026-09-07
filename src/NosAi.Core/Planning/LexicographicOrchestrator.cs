@@ -4,19 +4,19 @@ public sealed class LexicographicOrchestrator : IOrchestrator
 {
     private const long MinimumActiveMs = 750;
     private const float Hysteresis = 0.15f;
-    private readonly GoalStack _goals;
+    private readonly PlannerGoalStack _goals;
 
-    public LexicographicOrchestrator(GoalStack goals)
+    public LexicographicOrchestrator(PlannerGoalStack goals)
     {
         _goals = goals ?? throw new ArgumentNullException(nameof(goals));
     }
 
-    public OrchestrationDecision Decide(in WorldState state, ReadOnlySpan<RankedAction> ranked, long nowUnixMs)
+    public OrchestrationDecision Decide(in WorldState state, ReadOnlySpan<PlannerRankedAction> ranked, long nowUnixMs)
     {
-        if (ranked.IsEmpty || _goals.Active == GoalId.None)
+        if (ranked.IsEmpty || _goals.Active == PlannerGoalId.None)
             return new OrchestrationDecision(_goals.Active, _goals.ActiveClass, 0, 0f, OrchestrationReason.NoViableAction);
 
-        RankedAction best = ranked[0];
+        PlannerRankedAction best = ranked[0];
         for (int i = 1; i < ranked.Length; i++)
         {
             var candidate = ranked[i];
