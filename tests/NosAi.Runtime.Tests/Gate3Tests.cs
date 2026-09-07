@@ -25,6 +25,29 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class Gate3Tests
 {
+
+    /// <summary>
+    /// A measured ability cost, so a cycle that plans a <c>UseSkill</c> can be
+    /// authorised at all.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>SimulationEngine</c> used to assume 35 MP for every ability in the
+    /// game, and <c>GuardPolicyEngine</c>'s only quantitative refusal keyed on
+    /// the risk computed from it -- so an ability the character could not afford
+    /// was predicted safe and authorised. It now reports itself unmeasured when
+    /// no cost source answers, and the policy engine refuses.
+    /// </para>
+    /// <para>
+    /// These tests are about recovery, post-conditions and the breaker, not
+    /// about that refusal: they need a cycle that gets past the gate, so they
+    /// state the cost instead of relying on an assumption. The numbers are the
+    /// ones the engine used to invent, so every assertion below still measures
+    /// what it measured before.
+    /// </para>
+    /// </remarks>
+    private static readonly Func<int, SkillCost?> MeasuredSkillCost =
+        _ => new SkillCost(MpCost: 35, CastTimeMs: 800);
     // A target of the shape each action type requires. The pairing is checked by
     // ActionCandidate itself now, so a test cannot quietly build an attack on
     // nothing the way "T", 0, 0 used to let it.
@@ -103,7 +126,7 @@ public sealed class Gate3Tests
     {
         // SafeDefault keeps live input off, so the pipeline must come up unable to
         // act rather than with something that stands in for acting.
-        var orchestrator = new Gate3ExecutionOrchestrator();
+        var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
 
         Assert.False(orchestrator.CanExecute);
         Assert.False(orchestrator.CanVerify);
@@ -125,7 +148,7 @@ public sealed class Gate3Tests
     {
         // The regression: 50 ms of sleep reported as a completed action while
         // nothing had touched the client.
-        var orchestrator = new Gate3ExecutionOrchestrator(goals: Hunting());
+        var orchestrator = new Gate3ExecutionOrchestrator(goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(800, 1000, 100, hasTarget: true, isInCombat: false);
 
@@ -143,7 +166,7 @@ public sealed class Gate3Tests
     public async Task ExecutedButUnobservedIsUnverifiedRatherThanConfirmed()
     {
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), goals: Hunting());
+            ExecutionAllowed, new CountingEffector(), goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
@@ -204,7 +227,7 @@ public sealed class Gate3Tests
     {
         // MP unchanged at 100 across the window: the skill was not cast.
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), new FixedObserver(hp: 800, mp: 100), goals: Hunting());
+            ExecutionAllowed, new CountingEffector(), new FixedObserver(hp: 800, mp: 100), goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
@@ -223,7 +246,7 @@ public sealed class Gate3Tests
         // Stamped well before the cycle runs, and never restamped.
         var stale = ObservedState.Live(800, 10, DateTime.UtcNow.AddSeconds(-1));
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), new StaleObserver(stale), goals: Hunting());
+            ExecutionAllowed, new CountingEffector(), new StaleObserver(stale), goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
@@ -252,7 +275,7 @@ public sealed class Gate3Tests
     {
         var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), observer, goals: Hunting());
+            ExecutionAllowed, new CountingEffector(), observer, goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 
@@ -266,7 +289,7 @@ public sealed class Gate3Tests
     {
         // The input-side twin of confirming an unobserved outcome: with nothing
         // known, any plan would be built on invented numbers.
-        var orchestrator = new Gate3ExecutionOrchestrator();
+        var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
             Gate3WorldState.Unobserved("gameplay_provider_not_available"));
@@ -281,7 +304,7 @@ public sealed class Gate3Tests
     {
         // A dry run is legitimate: it is how the pipeline is exercised without a
         // client. It just must not end in an action.
-        var orchestrator = new Gate3ExecutionOrchestrator(goals: Hunting());
+        var orchestrator = new Gate3ExecutionOrchestrator(goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
             Gate3WorldState.Simulated(800, 1000, 100, hasTarget: true, inCombat: false));
@@ -297,7 +320,7 @@ public sealed class Gate3Tests
         // on it. Without the check, a dry run wired to a real effector would drive
         // the client from numbers nobody observed.
         var effector = new CountingEffector();
-        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector);
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector, skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
             Gate3WorldState.Simulated(800, 1000, 100, true, false));
@@ -310,7 +333,7 @@ public sealed class Gate3Tests
     public async Task ObservedStateReachesTheEffector()
     {
         var effector = new CountingEffector();
-        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector, goals: Hunting());
+        var orchestrator = new Gate3ExecutionOrchestrator(ExecutionAllowed, effector, goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(
             Gate3WorldState.Live(800, 1000, 100, true, false));
@@ -382,7 +405,7 @@ public sealed class Gate3Tests
         // refusal after the fact.
         var effector = new CountingEffector();
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, effector, new FixedObserver(hp: 0, mp: 0), TrustTier.Tier0_ReadOnly, goals: Hunting());
+            ExecutionAllowed, effector, new FixedObserver(hp: 0, mp: 0), TrustTier.Tier0_ReadOnly, goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false));
 

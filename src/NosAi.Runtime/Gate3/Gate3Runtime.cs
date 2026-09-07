@@ -82,15 +82,58 @@ namespace NosAi.Runtime.Gate3
         public bool CountsAsFailure => Outcome is VerificationOutcome.Discrepant or VerificationOutcome.NotExecuted;
     }
 
+    /// <summary>What the client's own data says an ability costs to use.</summary>
+    /// <param name="MpCost">Mana spent, as the reference catalogue states it.</param>
+    /// <param name="CastTimeMs">How long the cast takes, in milliseconds.</param>
+    public readonly record struct SkillCost(int MpCost, int CastTimeMs);
+
     public sealed class SimulationEngine
     {
+        /// <summary>Reason a prediction for an ability rests on no measured cost.</summary>
+        public const string SkillCostNotMeasuredReason = "skill_cost_not_measured";
+
+        /// <summary>
+        /// The mana every ability was assumed to cost before a cost source
+        /// existed, kept only to name the assumption that replaced it.
+        /// </summary>
+        /// <remarks>
+        /// It is not used to predict anything. A single number standing for every
+        /// ability in the game is not an estimate, and the one place it mattered
+        /// was <c>GuardPolicyEngine</c>'s risk threshold: with the real cost far
+        /// above it, an ability the character could not afford was predicted at
+        /// risk 0.10 and authorised.
+        /// </remarks>
+        public const int UnmeasuredSkillMpAssumption = 35;
+
+        private readonly Func<int, SkillCost?>? _costOf;
+
+        /// <param name="costOf">
+        /// What an ability costs, by its own game id -- a pure function, supplied
+        /// by the caller, never a live <c>GameReferenceDatabase</c> handle: that
+        /// type is one unsynchronised <c>SqliteConnection</c> and this runs per
+        /// candidate per cycle. The same shape <c>GameplayObservationProjector</c>
+        /// takes its vnum classifier in.
+        /// <para>
+        /// Optional, and <see langword="null"/> today because no verified mapping
+        /// from the catalogue's skill row to an MP cost exists yet: the field is
+        /// decoded but which column carries the cost has never been cross-checked
+        /// against a number observed in game, and <c>CLAUDE.md</c> forbids
+        /// trusting an unverified decode on a path that is not diagnostic. This
+        /// one feeds the safety gate.
+        /// </para>
+        /// </param>
+        public SimulationEngine(Func<int, SkillCost?>? costOf = null) => _costOf = costOf;
+
         public PredictedOutcome Simulate(ActionCandidate candidate, int currentHp, int currentMp, int maxHp)
         {
+            ArgumentNullException.ThrowIfNull(candidate);
+
             int hpDelta = 0;
             int mpDelta = 0;
             int timeMs = 250;
             float successProb = 0.95f;
             float risk = 0.05f;
+            string? unmeasured = null;
 
             switch (candidate.Type)
             {
@@ -105,11 +148,32 @@ namespace NosAi.Runtime.Gate3
                     risk = currentHp < maxHp * 0.30 ? 0.65f : 0.15f;
                     break;
 
+                // The one branch whose numbers a safety threshold keys on, and
+                // the one that never read which ability it was predicting for.
                 case ActionType.UseSkill:
-                    mpDelta = -35;
-                    timeMs = 800;
-                    risk = currentMp < 35 ? 0.90f : 0.10f;
-                    successProb = currentMp >= 35 ? 0.98f : 0.0f;
+                    if (_costOf?.Invoke(candidate.SkillOrItemId) is { } cost)
+                    {
+                        mpDelta = -cost.MpCost;
+                        timeMs = cost.CastTimeMs;
+                        risk = currentMp < cost.MpCost ? 0.90f : 0.10f;
+                        successProb = currentMp >= cost.MpCost ? 0.98f : 0.0f;
+                    }
+                    else
+                    {
+                        // No measured cost, so no honest risk: reporting the
+                        // affordable case's 0.10 would be asserting the character
+                        // can pay a price nobody has read. The reason travels
+                        // with the prediction and GuardPolicyEngine decides what
+                        // an unmeasured one may authorise -- the alternative is
+                        // picking a risk value here, which is the same invention
+                        // in a different place.
+                        unmeasured = SkillCostNotMeasuredReason;
+                        mpDelta = 0;
+                        timeMs = 800;
+                        successProb = 0f;
+                        risk = 0f;
+                    }
+
                     break;
 
                 case ActionType.UseConsumable:
@@ -145,7 +209,8 @@ namespace NosAi.Runtime.Gate3
                 timeMs,
                 successProb,
                 risk,
-                signature);
+                signature,
+                unmeasured);
         }
     }
 
@@ -241,16 +306,28 @@ namespace NosAi.Runtime.Gate3
         /// How long an aggression stays a reason. <see cref="ReactionPolicy.Default"/>
         /// when omitted.
         /// </param>
+        private readonly Func<int, SkillCost?>? _costOf;
+
+        /// <param name="costOf">
+        /// What an ability costs, by its own game id. The same source
+        /// <see cref="SimulationEngine"/> takes, and passed to both from one
+        /// place on purpose: the planner decides whether to propose an ability
+        /// and the simulation decides whether it is affordable, and those two
+        /// answers keying on different numbers is how a candidate gets proposed
+        /// and then refused for a cost the proposer never considered.
+        /// </param>
         public ActionPlanner(
             GoalStack? goals = null,
             GameReferenceDatabase? catalogue = null,
             TimeProvider? clock = null,
-            ReactionPolicy? reaction = null)
+            ReactionPolicy? reaction = null,
+            Func<int, SkillCost?>? costOf = null)
         {
             _goals = goals ?? GoalStack.Empty();
             _catalogue = catalogue;
             _clock = clock ?? TimeProvider.System;
             _reaction = reaction ?? ReactionPolicy.Default;
+            _costOf = costOf;
         }
 
         /// <summary>What the runtime has been asked to do.</summary>
@@ -376,13 +453,30 @@ namespace NosAi.Runtime.Gate3
 
             if (hasTarget == true)
             {
-                if (playerMp >= 35)
+                // The ability's own game id. A number this planner asserts and
+                // nobody has confirmed, exactly as HpPotionSlot above is: it
+                // costs a named refusal at the effector rather than a keypress,
+                // because the effector looks the skill up in the operator's
+                // keybinds. Documented here because it had been read as decoded
+                // data more than once.
+                const int HighImpactSkillId = 201;
+
+                // Affordability, from the ability's measured cost when a source
+                // states it. With none, the planner proposes and SimulationEngine
+                // reports the prediction unmeasured, so the gate refuses -- the
+                // proposal is not the authorisation, and it is better for the
+                // refusal to name the missing measurement than for the planner to
+                // hide the candidate behind an assumed price.
+                int required = _costOf?.Invoke(HighImpactSkillId)?.MpCost
+                               ?? SimulationEngine.UnmeasuredSkillMpAssumption;
+
+                if (playerMp >= required)
                 {
                     list.Add(new ActionCandidate(
                         Guid.NewGuid(),
                         ActionType.UseSkill,
                         ActionTarget.Entity.Unidentified,
-                        201,
+                        HighImpactSkillId,
                         TrustTier.Tier2_SemiAutonomous,
                         "Bersaglio attivo: skill ad alto impatto"));
                 }
@@ -1030,15 +1124,21 @@ namespace NosAi.Runtime.Gate3
             Func<CancellationToken, Task<Gate3WorldState>>? worldSampler = null,
             GoalStack? goals = null,
             GameReferenceDatabase? catalogue = null,
-            ReactionPolicy? reaction = null)
+            ReactionPolicy? reaction = null,
+            Func<int, SkillCost?>? skillCostOf = null)
         {
             Policy = policy ?? policySource?.Invoke() ?? RuntimeSafetyPolicy.SafeDefault;
             TimeSpan maxAge = maxObservationAge ?? DefaultMaxObservationAge;
             if (maxAge < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(maxObservationAge));
             MaxObservationAge = maxAge;
             _clock = clock ?? TimeProvider.System;
-            _planner = new ActionPlanner(goals, catalogue, _clock, reaction);
-            _simulation = new SimulationEngine();
+            _planner = new ActionPlanner(goals, catalogue, _clock, reaction, skillCostOf);
+            // No default is supplied: with none, a UseSkill prediction reports
+            // itself unmeasured and GuardPolicyEngine refuses it. That is the
+            // fail-closed direction and it is deliberate -- the alternative was
+            // the previous behaviour, which assumed 35 MP for every ability in
+            // the game and let the gate authorise on it.
+            _simulation = new SimulationEngine(skillCostOf);
             _ranking = new TacticalRankingEngine();
             _guard = new GuardPolicyEngine();
             _trust = new TrustBoundary(initialTrust);
@@ -1539,6 +1639,21 @@ namespace NosAi.Runtime.Gate3
         private static PredictedOutcome Outcome(Guid id, float risk = 0.0f, string signature = "SIG") =>
             new(id, 0, 0, 200, 1.0f, risk, signature);
 
+        /// <summary>
+        /// A measured ability cost, so a cycle that plans a <c>UseSkill</c> gets
+        /// past the gate at all.
+        /// </summary>
+        /// <remarks>
+        /// Without one the prediction reports itself unmeasured and
+        /// <see cref="GuardPolicyEngine"/> refuses -- which is the point of the
+        /// change, and not the subject of the checks that use this. The numbers
+        /// are the ones <see cref="SimulationEngine"/> used to assume, so every
+        /// check below measures what it measured before; what changed is that
+        /// the cost is now stated by the caller instead of assumed by the engine.
+        /// </remarks>
+        private static readonly Func<int, SkillCost?> MeasuredSkillCost =
+            _ => new SkillCost(MpCost: 35, CastTimeMs: 800);
+
         private static ActionTokenIssuer Gate(TrustTier tier) =>
             new(new TrustBoundary(tier), new GuardPolicyEngine());
 
@@ -1567,21 +1682,38 @@ namespace NosAi.Runtime.Gate3
 
         // -- checks ----------------------------------------------------------
 
+        /// <summary>
+        /// Same inputs, same prediction -- and the cost comes from the caller.
+        /// </summary>
+        /// <remarks>
+        /// This check used to assert <c>ExpectedMpDelta == -35</c>, which was the
+        /// number <see cref="SimulationEngine"/> assumed for every ability in the
+        /// game: it pinned the defect rather than the property its own name
+        /// states. It now asserts the property, on a stated cost, and adds the
+        /// half that was missing -- that with no cost stated the engine says so
+        /// instead of predicting anything.
+        /// </remarks>
         private static bool TestSimulationPurity()
         {
-            var sim = new SimulationEngine();
             ActionCandidate candidate = Candidate(ActionType.UseSkill, TrustTier.Tier2_SemiAutonomous);
 
-            PredictedOutcome first = sim.Simulate(candidate, 1000, 100, 1000);
-            PredictedOutcome second = sim.Simulate(candidate, 1000, 100, 1000);
+            var measured = new SimulationEngine(MeasuredSkillCost);
+            PredictedOutcome first = measured.Simulate(candidate, 1000, 100, 1000);
+            PredictedOutcome second = measured.Simulate(candidate, 1000, 100, 1000);
 
-            return first.ExpectedMpDelta == -35 && first.StateSignatureAfter == second.StateSignatureAfter;
+            PredictedOutcome unmeasured = new SimulationEngine().Simulate(candidate, 1000, 100, 1000);
+
+            return first == second
+                && first.IsMeasured
+                && first.ExpectedMpDelta == -35
+                && !unmeasured.IsMeasured
+                && unmeasured.UnmeasuredReason == SimulationEngine.SkillCostNotMeasuredReason;
         }
 
         private static bool TestTacticalRankingPriorities()
         {
             var planner = new ActionPlanner();
-            var sim = new SimulationEngine();
+            var sim = new SimulationEngine(MeasuredSkillCost);
             var ranking = new TacticalRankingEngine();
 
             List<ActionCandidate> candidates = planner.PlanCandidates(200, 1000, 50, true, true);
@@ -1753,7 +1885,7 @@ namespace NosAi.Runtime.Gate3
         {
             // The regression this pins: the pipeline used to sleep 50 ms and report a
             // completed action while nothing had touched the client.
-            var orchestrator = new Gate3ExecutionOrchestrator();
+            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.ExecutionDisabled
@@ -1767,7 +1899,7 @@ namespace NosAi.Runtime.Gate3
             // Executed for real, but nothing can read the world back. The cycle must
             // say so rather than claim the prediction held.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector());
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
@@ -1778,7 +1910,7 @@ namespace NosAi.Runtime.Gate3
         {
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var observer = new FixedObserver(ObservedState.Live(1, 1));
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
@@ -1790,7 +1922,7 @@ namespace NosAi.Runtime.Gate3
             // The observation is built to match what the simulation predicts for the
             // action ranking will choose, so a confirmed cycle is reachable at all.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
-            var sim = new SimulationEngine();
+            var sim = new SimulationEngine(MeasuredSkillCost);
             var planner = new ActionPlanner();
             var ranking = new TacticalRankingEngine();
 
@@ -1805,7 +1937,7 @@ namespace NosAi.Runtime.Gate3
                 Math.Clamp(hp + predicted.ExpectedHpDelta, 0, maxHp),
                 Math.Max(0, mp + predicted.ExpectedMpDelta)));
 
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(hp, maxHp, mp, true, false)).ConfigureAwait(false);
 
             return result.Outcome == CycleOutcome.Confirmed && result.IsConfirmed;
@@ -1817,7 +1949,7 @@ namespace NosAi.Runtime.Gate3
             // pipeline and never look like a confirmation.
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var observer = new DelegateWorldStateObserver(_ => throw new InvalidOperationException("probe down"));
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, new RecordingEffector(), observer, skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 
@@ -1834,7 +1966,7 @@ namespace NosAi.Runtime.Gate3
         /// </remarks>
         private static async Task<bool> TestUnknownWorldStateIsRefusedAsync()
         {
-            var orchestrator = new Gate3ExecutionOrchestrator();
+            var orchestrator = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult result = await orchestrator
                 .ExecuteCycleAsync(Gate3WorldState.Unobserved("gameplay_provider_not_available"))
@@ -1850,14 +1982,14 @@ namespace NosAi.Runtime.Gate3
         {
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var effector = new RecordingEffector();
-            var orchestrator = new Gate3ExecutionOrchestrator(policy, effector);
+            var orchestrator = new Gate3ExecutionOrchestrator(policy, effector, skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult refused = await orchestrator
                 .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
                 .ConfigureAwait(false);
 
             // A dry run with nothing able to act is still legitimate.
-            var dryRun = new Gate3ExecutionOrchestrator();
+            var dryRun = new Gate3ExecutionOrchestrator(skillCostOf: MeasuredSkillCost);
             Gate3CycleResult planned = await dryRun
                 .ExecuteCycleAsync(Gate3WorldState.Simulated(800, 1000, 100, true, false))
                 .ConfigureAwait(false);
@@ -1875,7 +2007,7 @@ namespace NosAi.Runtime.Gate3
             var policy = new RuntimeSafetyPolicy(true, false, true, true);
             var effector = new RecordingEffector();
             var orchestrator = new Gate3ExecutionOrchestrator(
-                policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly);
+                policy, effector, new FixedObserver(ObservedState.Live(0, 0)), TrustTier.Tier0_ReadOnly, skillCostOf: MeasuredSkillCost);
 
             Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Gate3WorldState.Live(800, 1000, 100, true, false)).ConfigureAwait(false);
 

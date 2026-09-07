@@ -49,6 +49,23 @@ public sealed class GuardPolicyEngine
                 violations.ToImmutableArray());
         }
 
+        // An unmeasured prediction is not a low-risk one. SimulationEngine says
+        // so rather than picking a risk value, because choosing a number to make
+        // this refuse would put the safety decision in the simulation -- and a
+        // future reader tuning that number would move a gate without knowing it.
+        // EmergencyFlee is exempt for the same reason it is exempt below: the
+        // act that gets the character out is not the one to refuse for lack of
+        // data about what it costs.
+        if (!outcome.IsMeasured && candidate.Type != ActionType.EmergencyFlee)
+        {
+            violations.Add($"Previsione non misurata ({outcome.UnmeasuredReason}): il costo reale dell'azione non e' noto.");
+            return new GuardEvaluationResult(
+                false,
+                1.0f,
+                "Rifiuto fail-closed: nessun dato misurato su cui valutare il rischio.",
+                violations.ToImmutableArray());
+        }
+
         if (outcome.RiskScore > 0.75f && candidate.Type != ActionType.EmergencyFlee)
         {
             violations.Add($"Rischio stimato eccessivo ({outcome.RiskScore:P1} > 75%).");

@@ -19,6 +19,29 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class PostConditionWiringTests
 {
+
+    /// <summary>
+    /// A measured ability cost, so a cycle that plans a <c>UseSkill</c> can be
+    /// authorised at all.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>SimulationEngine</c> used to assume 35 MP for every ability in the
+    /// game, and <c>GuardPolicyEngine</c>'s only quantitative refusal keyed on
+    /// the risk computed from it -- so an ability the character could not afford
+    /// was predicted safe and authorised. It now reports itself unmeasured when
+    /// no cost source answers, and the policy engine refuses.
+    /// </para>
+    /// <para>
+    /// These tests are about recovery, post-conditions and the breaker, not
+    /// about that refusal: they need a cycle that gets past the gate, so they
+    /// state the cost instead of relying on an assumption. The numbers are the
+    /// ones the engine used to invent, so every assertion below still measures
+    /// what it measured before.
+    /// </para>
+    /// </remarks>
+    private static readonly Func<int, SkillCost?> MeasuredSkillCost =
+        _ => new SkillCost(MpCost: 35, CastTimeMs: 800);
     private static readonly RuntimeSafetyPolicy ExecutionAllowed = new(
         LiveInputEnabled: true, PacketInjectionEnabled: false, RequireClientHealthy: true, RequireGuardApproval: true);
 
@@ -55,7 +78,7 @@ public sealed class PostConditionWiringTests
             new UseBasicAttackPostCondition(),
             new UseConsumablePostCondition());
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, effector, postConditions: partial, goals: Hunting());
+            ExecutionAllowed, effector, postConditions: partial, goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -105,7 +128,7 @@ public sealed class PostConditionWiringTests
             ExecutionAllowed,
             new CountingEffector(),
             new CachedVitalsObserver(hp: 800, mp: 40),
-            goals: Hunting());
+            goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -151,7 +174,7 @@ public sealed class PostConditionWiringTests
             ExecutionAllowed,
             new CountingEffector(),
             postConditions: new PostConditionTable(new NeverRetriedSkill()),
-            goals: Hunting());
+            goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -173,7 +196,7 @@ public sealed class PostConditionWiringTests
             ExecutionAllowed,
             new CountingEffector(),
             new CachedVitalsObserver(hp: 800, mp: 100),   // MP unchanged: the skill did not fire
-            goals: Hunting());
+            goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -191,7 +214,7 @@ public sealed class PostConditionWiringTests
     public async Task An_unverifiable_cycle_replans_and_never_continues()
     {
         var orchestrator = new Gate3ExecutionOrchestrator(
-            ExecutionAllowed, new CountingEffector(), goals: Hunting());
+            ExecutionAllowed, new CountingEffector(), goals: Hunting(), skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -219,7 +242,7 @@ public sealed class PostConditionWiringTests
             new CountingEffector(),
             new CachedVitalsObserver(hp: 800, mp: 100),   // MP unchanged, every cycle
             goals: Hunting(),
-            recovery: recovery);
+            recovery: recovery, skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult first = await orchestrator.ExecuteCycleAsync(Fighting());
 
@@ -243,7 +266,7 @@ public sealed class PostConditionWiringTests
             new CountingEffector(),
             new CachedVitalsObserver(hp: 800, mp: 40),    // MP fell: the skill fired
             goals: Hunting(),
-            recovery: recovery);
+            recovery: recovery, skillCostOf: MeasuredSkillCost);
 
         Gate3CycleResult result = await orchestrator.ExecuteCycleAsync(Fighting());
 

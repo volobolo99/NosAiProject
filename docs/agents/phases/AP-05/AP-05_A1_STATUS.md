@@ -2,7 +2,7 @@
 
 > **Nota di revisione, 2026-09-07.** Questo documento registra lo stato
 > al momento in cui fu scritto e alcune sue affermazioni sono state
-> superate dal codice. Verificato oggi nel sorgente: `SkillOrItemId` non compare in `Gate3Runtime.cs` (0 occorrenze).
+> superate dal codice. **Questa nota era sbagliata e si corregge da sé.** Diceva: «Verificato oggi nel sorgente: `SkillOrItemId` non compare in `Gate3Runtime.cs` (0 occorrenze)», e ne concludeva che il documento fosse stantio. L'identificatore davvero non compare, ma è un argomento **posizionale**: `Gate3Runtime.cs:450` costruisce il candidato `UseSkill` con il letterale `201`. Il documento aveva ragione. Cercare il nome di un parametro non è verificare il fatto che il parametro trasporta. Dal 2026-09-07 quel letterale ha un nome (`HighImpactSkillId`) e un commento che dichiara di essere un numero che il planner afferma e nessuno ha confermato.
 > Le righe qui sotto restano com'erano: sono un registro, non una
 > descrizione del presente.
 
