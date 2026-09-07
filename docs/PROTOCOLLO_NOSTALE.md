@@ -575,10 +575,13 @@ chases it:
   are located long before their health is ever known.
   `EntitySighting.ToDetection()` returns null for such a sighting rather than a
   `Detection` at zero HP, because zero HP is a dead mob to the world model.
-- **Entity types other than 3 are refused** in `in`, `mv` and `st`. The shapes
-  above are type 3's; type 1 is confirmed only in `su`, `cond` and `sayi`, and
-  type 2 was never observed. Reading a type-1 `in` at these positions would take
-  x and y out of fields that are not x and y.
+- **Quali tipi di entità si leggono** (aggiornato il 2026-09-08; questo punto
+  diceva «solo il 3», ed era vero fino al giorno prima). Il tipo **3** e il tipo
+  **2** si leggono in `in`, `mv` e `st`; il tipo **1** solo in `mv`. Il `in` del
+  tipo 1 porta un **nome** dove gli altri portano il vnum, quindi id, x e y stanno
+  un campo più in là e leggerlo alle posizioni degli altri prenderebbe una
+  coordinata da qualcos'altro; il suo `st` non è mai stato osservato. Vedi le due
+  sezioni dedicate qui sopra per le misure.
 - **Opcodes marked unknown are not read at all**, which is 269 packets here:
   `ct`, `cond`, `lev`, `sr`, `sayi`, `eff`, `delay`, `guri`, `msgi`, `drop`,
   `ivn`, `get`, `icon`, `ms_c`, `cancel`.
