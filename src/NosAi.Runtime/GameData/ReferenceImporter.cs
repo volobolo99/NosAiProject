@@ -1,3 +1,4 @@
+using System.Linq;
 using NosAi.Runtime.Contracts;
 
 namespace NosAi.Runtime.GameData;
@@ -93,6 +94,48 @@ public sealed class ReferenceImporter
             ["skill"] = "Skill",
             ["card"] = "Card",
             ["bcard"] = "BCard"
+        };
+
+    /// <summary>
+    /// Le tabelle di testo che non hanno un'entità dietro: nomi di mappa, testi
+    /// di missione, battute degli NPC.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Perché sono separate da <see cref="LanguageTables"/>.</b> Quelle
+    /// risolvono la <c>name_key</c> di una riga di <c>NSgtdData.NOS</c>; queste
+    /// non hanno una riga da risolvere — sono testo indicizzato per numero, e
+    /// l'indice arriva da altrove (un id di mappa, di missione, di battuta).
+    /// Importarle nello stesso posto le farebbe sembrare nomi di entità che non
+    /// esistono.
+    /// </para>
+    /// <para>
+    /// <b>Scoperte il 2026-09-07 elencando l'archivio.</b> <c>NSlangData_IT.NOS</c>
+    /// ha dodici voci e questo importatore ne leggeva cinque. Le altre sette
+    /// contengono, misurato: <b>374 nomi di mappa</b> ("NosVille", "Prati di
+    /// NosVille"), <b>3639 testi di missione</b> ("Cattura un Pollo al di là del
+    /// ponte"), <b>22 358 battute di NPC</b> e 222 nomi di punto mappa. Il
+    /// repository documentava il testo di missione e di dialogo come <i>bloccato
+    /// da OCR/ML</i>: non lo è, sta nei file del client.
+    /// </para>
+    /// <para>
+    /// <b>Quello che questo non risolve</b>, e va detto perché la distanza fra le
+    /// due cose è tutta la differenza: avere il testo non significa sapere
+    /// <i>quale</i> testo vale adesso. Il filo porta degli id (<c>sayi</c>,
+    /// <c>msgi</c>) che nessuno ha ancora incrociato con queste tabelle. Importare
+    /// rende la domanda rispondibile; non la risponde.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyDictionary<string, string> TextOnlyTables { get; } =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["mapid"] = "MapIDData",
+            ["mappoint"] = "MapPointData",
+            ["quest"] = "quest",
+            ["npctalk"] = "npctalk",
+            ["actdesc"] = "act_desc",
+            ["nosmall"] = "nosmall",
+            ["team"] = "team"
         };
 
     private readonly string _directory;
@@ -195,7 +238,7 @@ public sealed class ReferenceImporter
                 new Dictionary<string, int>());
 
         var imported = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach ((string kind, string tableName) in LanguageTables)
+        foreach ((string kind, string tableName) in LanguageTables.Concat(TextOnlyTables))
         {
             string wanted = $"_code_{language.ToLowerInvariant()}_{tableName}.txt";
             NosArchiveEntry? entry = archive.Entries.FirstOrDefault(e =>
