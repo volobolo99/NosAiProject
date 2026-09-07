@@ -48,6 +48,46 @@ public static class CertificationReportBuilder
         "no_suite_evidences_this_stage: nessuna suite di certificazione copre questo stadio, "
         + "quindi il suo livello non e' sostenuto da nulla che questo processo possa eseguire.";
 
+    /// <summary>Evidence-nature label for a stage backed only by fixtures.</summary>
+    public const string SyntheticLabel = "sintetica";
+
+    /// <summary>Evidence-nature label for a stage backed only by recorded bytes.</summary>
+    public const string RecordedLabel = "registrata";
+
+    /// <summary>Evidence-nature label for a stage backed by both fixtures and recorded bytes.</summary>
+    public const string BothLabel = "entrambe";
+
+    /// <summary>
+    /// The nature of the evidence behind a stage, stated rather than left for a
+    /// reader to infer from the suite names.
+    /// </summary>
+    /// <param name="stage">The stage.</param>
+    /// <param name="recordedStages">
+    /// The stages whose recorded checks ran and passed this run. When null or
+    /// empty, no stage has recorded evidence and every stage is synthetic.
+    /// </param>
+    public static EvidenceNature NatureFor(
+        CertificationStage stage,
+        IReadOnlySet<CertificationStage>? recordedStages)
+    {
+        bool synthetic = SuitesByStage.ContainsKey(stage);
+        bool recorded = recordedStages?.Contains(stage) == true;
+        return (synthetic, recorded) switch
+        {
+            (true, true) => EvidenceNature.Both,
+            (false, true) => EvidenceNature.Recorded,
+            _ => EvidenceNature.Synthetic,
+        };
+    }
+
+    /// <summary>The printed label for a nature, stable enough to assert against.</summary>
+    public static string NatureLabel(EvidenceNature nature) => nature switch
+    {
+        EvidenceNature.Recorded => RecordedLabel,
+        EvidenceNature.Both => BothLabel,
+        _ => SyntheticLabel,
+    };
+
     /// <summary>
     /// Which suites evidence which stage.
     /// </summary>
@@ -97,11 +137,20 @@ public static class CertificationReportBuilder
     /// as its own blocker.
     /// </param>
     /// <param name="observedAtUtc">When the run happened.</param>
+    /// <param name="recordedEvidence">
+    /// The stages whose recorded checks ran and passed. When null, the value
+    /// <see cref="ScenarioStageTestRunner.LastRecordedEvidence"/> published by the
+    /// scenario suite this run is used, so a report compiled after
+    /// <c>--scenario-test</c> ran over real recordings says "both" for the stages
+    /// those recordings covered and "synthetic" for the rest.
+    /// </param>
     public static CertificationReport Build(
         IReadOnlyDictionary<string, bool> suitePassed,
-        DateTime observedAtUtc)
+        DateTime observedAtUtc,
+        IReadOnlySet<CertificationStage>? recordedEvidence = null)
     {
         ArgumentNullException.ThrowIfNull(suitePassed);
+        recordedEvidence ??= ScenarioStageTestRunner.LastRecordedEvidence;
 
         var stages = new List<CertificationStageResult>(14);
 
@@ -142,13 +191,45 @@ public static class CertificationReportBuilder
             // nothing here has touched a real client.
             blockers.Add(RealTargetBlocker);
 
+            // The nature of the evidence is stated before the suite list, so the
+            // printed report distinguishes a stage backed only by fixtures from
+            // one a real recording also exercised -- without anyone reading tests.
+            string suiteEvidence = ran.Count == 0
+                ? $"suite dichiarate: {string.Join(", ", keys)}"
+                : string.Join(", ", ran);
+            string nature = NatureLabel(NatureFor(stage, recordedEvidence));
+
             stages.Add(new CertificationStageResult(
                 stage,
                 allPassed ? VerificationLevel.Integrated : VerificationLevel.Present,
-                evidence: ran.Count == 0 ? $"suite dichiarate: {string.Join(", ", keys)}" : string.Join(", ", ran),
+                evidence: $"{nature}: {suiteEvidence}",
                 blockers: EquatableArray<string>.From(blockers)));
         }
 
         return new CertificationReport(EquatableArray<CertificationStageResult>.From(stages), observedAtUtc);
     }
+}
+
+/// <summary>
+/// What kind of evidence backs a certification stage.
+/// </summary>
+/// <remarks>
+/// A stage whose checks are all in-process fixtures is <see cref="Synthetic"/>;
+/// one whose checks ran over a real recording on top of those fixtures is
+/// <see cref="Both"/>. <see cref="Recorded"/> alone would be a stage evidenced
+/// only by recorded bytes with no fixture coverage, which this builder does not
+/// currently produce -- every stage carries synthetic checks, and recordings are
+/// added beside them, never instead of them. The value stays in the vocabulary
+/// so a report can state the full shape without inventing a new type later.
+/// </remarks>
+public enum EvidenceNature
+{
+    /// <summary>Backed only by fixtures built in process.</summary>
+    Synthetic = 0,
+
+    /// <summary>Backed only by recorded bytes.</summary>
+    Recorded = 1,
+
+    /// <summary>Backed by both fixtures and recorded bytes.</summary>
+    Both = 2
 }

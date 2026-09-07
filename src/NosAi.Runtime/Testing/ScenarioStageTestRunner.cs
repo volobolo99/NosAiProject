@@ -1,9 +1,11 @@
 using NosAi.Core.WorldModel;
+using NosAi.Core.WorldModel.Certification;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Quests;
 using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Navigation;
+using NosAi.Runtime.Observability;
 using NosAi.Runtime.Perception.Network;
 
 namespace NosAi.Runtime.Testing;
@@ -30,7 +32,16 @@ namespace NosAi.Runtime.Testing;
 /// they are all silent.
 /// </para>
 /// <para>
-/// Nothing here touches a real client, so nothing here is evidence for
+/// Two recorded checks run beside the synthetic ones when the recordings are
+/// present, proving the material those four components consume is what the wire
+/// really carries rather than only what a fixture described. MapDiscovery and
+/// MultiStepQuest have no recorded check because the wire carries neither a map
+/// id (a <c>c_map</c> change packet exists and no capture in the archive holds
+/// one) nor quest state; TargetRecognition rests on the vnum a real capture
+/// carries and Exploration on the distinct positions a real capture observes.
+/// </para>
+/// <para>
+/// Nothing here touches a live client, so nothing here is evidence for
 /// <c>Verified</c>; <see cref="CertificationReportBuilder"/> enforces that
 /// ceiling regardless of what these return.
 /// </para>
@@ -41,7 +52,20 @@ public static class ScenarioStageTestRunner
     private static readonly MapId Map = new("map-1");
 
     /// <summary>Runs every check and reports each one by name.</summary>
-    public static Task<bool> RunAllTestsAsync()
+    public static Task<bool> RunAllTestsAsync() => RunAllTestsAsync(captureDirectory: null);
+
+    /// <summary>
+    /// Runs every check, resolving recordings from <paramref name="captureDirectory"/>
+    /// when it is set instead of the environment or the repository's <c>data/</c>.
+    /// </summary>
+    /// <remarks>
+    /// The recorded checks are added beside the synthetic ones, never instead of
+    /// them: the fixtures prove the shape on every machine, the recordings prove
+    /// that shape is what the wire really carries. On a clone without the
+    /// recordings the recorded checks skip with the reason printed, and the
+    /// synthetic ones carry the load -- a skip is loud and is never a pass.
+    /// </remarks>
+    internal static Task<bool> RunAllTestsAsync(string? captureDirectory)
     {
         Console.WriteLine("=== Scenario stages - map discovery, exploration, target recognition, quests ===");
 
@@ -64,12 +88,126 @@ public static class ScenarioStageTestRunner
         allPassed &= Run("An unobserved inventory makes collect progress UNKNOWN, not zero", UnobservedInventoryIsUnknown);
         allPassed &= Run("An observed inventory without the item is a known zero", ObservedInventoryWithoutItemIsZero);
 
+        var recorded = new HashSet<CertificationStage>();
+        allPassed &= RunRecorded(
+            CertificationStage.TargetRecognition,
+            "A recorded capture carries entities whose vnum the wire stated",
+            TargetRecognitionRecording,
+            CaptureCarriesVnum,
+            recorded,
+            captureDirectory);
+        allPassed &= RunRecorded(
+            CertificationStage.Exploration,
+            "A recorded capture carries distinct entities at observed positions",
+            ExplorationRecording,
+            CaptureCarriesDistinctPositions,
+            recorded,
+            captureDirectory);
+
+        LastRecordedEvidence = recorded;
+
         Console.WriteLine(allPassed
             ? "=== Scenario stage checks passed. Local only: this is not real-environment verification. ==="
             : "=== Scenario stage checks FAILED. See the lines marked FAIL above. ===");
 
         return Task.FromResult(allPassed);
     }
+
+    /// <summary>
+    /// The stages whose recorded checks ran and passed on the most recent
+    /// scenario run, exposed so <see cref="CertificationReportBuilder.Build"/>
+    /// can say "both" for them rather than "synthetic".
+    /// </summary>
+    public static IReadOnlySet<CertificationStage> LastRecordedEvidence { get; private set; }
+        = new HashSet<CertificationStage>();
+
+    /// <summary>The environment variable that relocates the recordings, as the test suite's own.</summary>
+    public const string RecordedCaptureDirectoryVariable = "NOSAI_CAPTURE_DIR";
+
+    /// <summary>The recording that carries entities with a stated vnum.</summary>
+    private const string TargetRecognitionRecording = "nostale_combat.noscap";
+
+    /// <summary>The recording that carries entities moving across observed positions.</summary>
+    private const string ExplorationRecording = "nostale_01.noscap";
+
+    private static bool RunRecorded(
+        CertificationStage stage,
+        string name,
+        string recording,
+        Func<string, bool> check,
+        HashSet<CertificationStage> recorded,
+        string? captureDirectory)
+    {
+        string? path = ResolveRecording(recording, captureDirectory);
+        if (path is null)
+        {
+            // A skip is loud and is not a pass: the stage is not added to
+            // `recorded`, so the report says "synthetic", not "both".
+            Console.WriteLine($"[SKIP] {name} [{recording} assente sotto data/; evidenza registrata non raccolta]");
+            return true;
+        }
+
+        try
+        {
+            bool passed = check(path);
+            Console.WriteLine($"[{(passed ? "PASS" : "FAIL")}] {name}");
+            if (passed)
+                recorded.Add(stage);
+            return passed;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[FAIL] {name} [{ex.GetType().Name}: {ex.Message}]");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Resolves a recording the way the test suite's
+    /// <see cref="RecordedCaptureFactAttribute"/> does: an explicit directory
+    /// (or <c>NOSAI_CAPTURE_DIR</c>) first, then the repository's <c>data/</c>.
+    /// </summary>
+    internal static string? ResolveRecording(string fileName, string? captureDirectory = null)
+    {
+        string? directory = captureDirectory
+            ?? Environment.GetEnvironmentVariable(RecordedCaptureDirectoryVariable);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            string path = Path.Combine(directory, fileName);
+            return File.Exists(path) ? path : null;
+        }
+
+        string repo = TestSuiteRunner.FindRepositoryRoot(Environment.CurrentDirectory)
+                      ?? TestSuiteRunner.FindRepositoryRoot()
+                      ?? Directory.GetCurrentDirectory();
+        string repoPath = Path.Combine(repo, "data", fileName);
+        return File.Exists(repoPath) ? repoPath : null;
+    }
+
+    /// <summary>
+    /// The wire-level fact target recognition consumes: a real capture carries
+    /// at least one entity whose vnum the wire stated, not one defaulted from a
+    /// neighbour.
+    /// </summary>
+    internal static bool CaptureCarriesVnum(string path)
+    {
+        WorldReplayReport report = WorldReplayCommand.InspectFile(path);
+        return report.Ok && report.Entities.Any(e => IsReadVnum(e.VnumText));
+    }
+
+    /// <summary>
+    /// The wire-level fact exploration consumes: a real capture carries more
+    /// than one distinct observed position, the raw material a footprint is
+    /// built from.
+    /// </summary>
+    internal static bool CaptureCarriesDistinctPositions(string path)
+    {
+        WorldReplayReport report = WorldReplayCommand.InspectFile(path);
+        return report.Ok && report.Entities.Select(e => (e.X, e.Y)).Distinct().Count() > 1;
+    }
+
+    private static bool IsReadVnum(string vnumText) =>
+        vnumText != WorldReplayCommand.VnumNotRead && vnumText != WorldReplayCommand.VnumAbsent;
 
     private static bool Run(string name, Func<bool> check)
     {
