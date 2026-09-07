@@ -331,7 +331,10 @@ public sealed class MapInspectTests
         Assert.Contains("x:Name=\"ViewMap\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"StandingCellText\"", xaml, StringComparison.Ordinal);
         int mapStart = xaml.IndexOf("x:Name=\"ViewMap\"", StringComparison.Ordinal);
-        int mapEnd = xaml.IndexOf("x:Name=\"ViewPhone\"", StringComparison.Ordinal);
+        // The slice ends at whatever view comes next, not at a named later one:
+        // inserting a view between the two used to drag its buttons into this
+        // assertion and fail it for the wrong view.
+        int mapEnd = xaml.IndexOf("x:Name=\"View", mapStart + 1, StringComparison.Ordinal);
         Assert.True(mapStart > 0 && mapEnd > mapStart);
         string mapView = xaml[mapStart..mapEnd];
         Assert.DoesNotContain("<Button", mapView, StringComparison.Ordinal);

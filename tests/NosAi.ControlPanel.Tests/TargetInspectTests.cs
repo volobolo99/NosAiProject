@@ -260,7 +260,10 @@ public sealed class TargetInspectTests : IDisposable
         Assert.Contains("x:Name=\"NavTarget\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"ViewTarget\"", xaml, StringComparison.Ordinal);
         int start = xaml.IndexOf("x:Name=\"ViewTarget\"", StringComparison.Ordinal);
-        int end = xaml.IndexOf("x:Name=\"ViewPhone\"", StringComparison.Ordinal);
+        // The slice ends at whatever view comes next, not at a named later one:
+        // inserting a view between the two used to drag its buttons into this
+        // assertion and fail it for the wrong view.
+        int end = xaml.IndexOf("x:Name=\"View", start + 1, StringComparison.Ordinal);
         Assert.True(start > 0 && end > start);
         string view = xaml[start..end];
         Assert.DoesNotContain("<Button", view, StringComparison.Ordinal);
