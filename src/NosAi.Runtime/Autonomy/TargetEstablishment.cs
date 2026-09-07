@@ -50,6 +50,49 @@ public readonly record struct TargetVerdict(bool IsEstablished, TargetEvidence E
 }
 
 /// <summary>
+/// What the reference catalogue alone says a vnum is -- the third and
+/// weakest of <see cref="TargetEstablishment.Assess"/>'s three kinds of
+/// evidence, isolated so it can be asked on its own.
+/// </summary>
+/// <remarks>
+/// Session evidence (<see cref="TargetEvidence.AttackedUs"/>,
+/// <see cref="TargetEvidence.WeActedOnIt"/>) is deliberately not represented
+/// here: it authorises an act against <i>this</i> entity in <i>this</i>
+/// session and says nothing about what the vnum is in general, which is the
+/// only question a World Model projection can ask of a catalogue.
+/// </remarks>
+public enum CatalogueClass : byte
+{
+    /// <summary>No catalogue is loaded, so the table has said nothing either way.</summary>
+    CatalogueNotLoaded = 0,
+
+    /// <summary>The catalogue threw while being read. It establishes nothing, and denies nothing.</summary>
+    CatalogueUnreadable = 1,
+
+    /// <summary>The vnum is absent from <see cref="TargetEstablishment.MonsterKind"/>'s table.</summary>
+    AbsentFromMonsterTable = 2,
+
+    /// <summary>The vnum is in the monster table and is not one of its RaceType-8 rows: a real monster.</summary>
+    Monster = 3,
+
+    /// <summary>
+    /// The vnum is one of the monster table's RaceType-8 rows -- a trap, a
+    /// teleporter, a talkable NPC. It shares the table with real monsters and
+    /// is never one (see <see cref="NosAi.Runtime.GameData.MonsterReference.IsSpecialNonMonsterEntity"/>).
+    /// </summary>
+    SpecialNonMonsterEntity = 4
+}
+
+/// <summary>The catalogue's answer about one vnum, and the failure type when it could not answer.</summary>
+/// <param name="FailureType">
+/// The exception type's name when <see cref="Class"/> is
+/// <see cref="CatalogueClass.CatalogueUnreadable"/>; <see langword="null"/>
+/// otherwise. Kept so the caller can name the cause in its own refusal
+/// reason without re-running the lookup.
+/// </param>
+public readonly record struct CatalogueLookup(CatalogueClass Class, string? FailureType);
+
+/// <summary>
 /// Decides what the runtime is allowed to attack, without ever having to
 /// recognise what it is not allowed to attack.
 /// </summary>
@@ -133,23 +176,66 @@ public static class TargetEstablishment
             return TargetVerdict.NotEstablished(VnumNotObservedReason);
         }
 
+        CatalogueLookup lookup = ClassifyByCatalogue(vnum, catalogue);
+        return lookup.Class switch
+        {
+            CatalogueClass.Monster => TargetVerdict.Established(TargetEvidence.CataloguedMonster),
+            CatalogueClass.CatalogueNotLoaded => TargetVerdict.NotEstablished("reference_catalogue_not_loaded"),
+            CatalogueClass.CatalogueUnreadable => TargetVerdict.NotEstablished($"reference_catalogue_failed:{lookup.FailureType}"),
+
+            // Absent from the table, or present as one of its RaceType-8 rows:
+            // both leave the entity unestablished, and both carry the same
+            // reason they carried before this switch existed -- a talkable NPC
+            // is refused for exactly the same "nothing established it" cause as
+            // an entity the table has never heard of.
+            _ => TargetVerdict.NotEstablished(
+                string.Create(CultureInfo.InvariantCulture, $"{NeverEstablishedReason}:vnum={vnum}"))
+        };
+    }
+
+    /// <summary>
+    /// What the catalogue alone says <paramref name="vnum"/> is, with no
+    /// session evidence and no authorisation decision attached.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Extracted from <see cref="Assess"/> so that the World Model's own
+    /// entity projection (<c>NosAi.Runtime.WorldModel.Fusion.GameplayObservationProjector</c>)
+    /// can ask the same question without re-implementing the predicate.
+    /// Two independent answers to "is this vnum a monster" is precisely the
+    /// divergence this project cannot afford: the one that authorises an
+    /// attack and the one that fills the World Model must be the same
+    /// predicate, or a future change to one silently contradicts the other.
+    /// </para>
+    /// <para>
+    /// Total and non-throwing, exactly as the code inside <see cref="Assess"/>
+    /// already was: a catalogue that throws yields
+    /// <see cref="CatalogueClass.CatalogueUnreadable"/> rather than taking the
+    /// cycle down, and never yields a classification by omission.
+    /// </para>
+    /// </remarks>
+    /// <param name="vnum">The entity's own number, as the wire stated it.</param>
+    /// <param name="catalogue">The reference database, or null when none is loaded.</param>
+    public static CatalogueLookup ClassifyByCatalogue(int vnum, GameReferenceDatabase? catalogue)
+    {
         if (catalogue is null)
-            return TargetVerdict.NotEstablished("reference_catalogue_not_loaded");
+            return new CatalogueLookup(CatalogueClass.CatalogueNotLoaded, null);
 
         try
         {
-            if (catalogue.Exists(MonsterKind, vnum) && !IsSpecialNonMonsterEntity(catalogue, vnum))
-                return TargetVerdict.Established(TargetEvidence.CataloguedMonster);
+            if (!catalogue.Exists(MonsterKind, vnum))
+                return new CatalogueLookup(CatalogueClass.AbsentFromMonsterTable, null);
+
+            return IsSpecialNonMonsterEntity(catalogue, vnum)
+                ? new CatalogueLookup(CatalogueClass.SpecialNonMonsterEntity, null)
+                : new CatalogueLookup(CatalogueClass.Monster, null);
         }
         catch (Exception ex)
         {
             // A catalogue that cannot be read establishes nothing. It does not
             // establish the opposite either, and it does not take the cycle down.
-            return TargetVerdict.NotEstablished($"reference_catalogue_failed:{ex.GetType().Name}");
+            return new CatalogueLookup(CatalogueClass.CatalogueUnreadable, ex.GetType().Name);
         }
-
-        return TargetVerdict.NotEstablished(
-            string.Create(CultureInfo.InvariantCulture, $"{NeverEstablishedReason}:vnum={vnum}"));
     }
 
     /// <summary>

@@ -134,8 +134,14 @@ public sealed class GameplayObservationProjectorTests
         Assert.False(cooldown.IsActive);
     }
 
+    /// <summary>
+    /// Quests, equipment and skills have no observation channel at all; Mobs
+    /// and Npcs now have one, but it needs both an observed entity list and a
+    /// catalogue classifier, and this observation supplies neither. The
+    /// classified cases live in <c>GameplayObservationEntityProjectionTests</c>.
+    /// </summary>
     [Fact]
-    public void MobsAndNpcsAndQuests_StayEmpty_BecauseNoReferenceCatalogueOrQuestChannelExistsYet()
+    public void MobsAndNpcsAndQuests_StayEmpty_WhenNothingIsObservedAndNoClassifierIsSupplied()
     {
         GameplayObservation observation = GameplayObservation.Unobserved("reason", Now);
 

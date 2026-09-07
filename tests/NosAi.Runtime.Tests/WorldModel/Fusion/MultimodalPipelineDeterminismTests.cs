@@ -106,14 +106,16 @@ public sealed class MultimodalPipelineDeterminismTests
     /// fourth call site, one level up in the caller that consumes
     /// <c>TemporalBelief</c>, was missed).
     /// <para>
-    /// This call site is unreachable through today's real production wiring
-    /// (<see cref="GameplayObservationProjector.Project"/> always leaves
-    /// <see cref="WorldModelSnapshot.Mobs"/> empty -- AP-02's own explicit,
-    /// documented scope boundary), so it does not regress anything AP-02
-    /// shipped. It becomes reachable the moment a future phase bridges
-    /// <c>PerceptionResult.Entities</c>/network mob sightings into
-    /// <see cref="WorldModelSnapshot.Mobs"/> -- which <see cref="VisualObservationFusion"/>'s
-    /// own XML remarks flag as exactly the next task in this area. Found
+    /// This call site was unreachable through production wiring when the bug
+    /// was found: <see cref="GameplayObservationProjector.Project"/> then
+    /// always left <see cref="WorldModelSnapshot.Mobs"/> empty, AP-02's own
+    /// explicit scope boundary, so the fix regressed nothing AP-02 shipped.
+    /// It is reachable now: AP-05's Q-098 gave that method an optional
+    /// catalogue classifier, and network sightings the catalogue establishes
+    /// as monsters become real <see cref="Mob"/> records (see
+    /// <c>GameplayObservationEntityProjectionTests</c>). The bug this test
+    /// pins was therefore found and fixed before the path that would have
+    /// exercised it existed. Found
     /// here, before that phase starts, by chaining the current AP-02 primitives
     /// with <see cref="WorldModelTemporalEnricher"/> exactly as this audit
     /// command's item 4 asked, using a hand-built <see cref="Mob"/> to
