@@ -206,3 +206,155 @@ Claude **non** tocca `NosTaleWorldProtocolDecoder.cs`, `GameTrafficObserver.cs`,
 Lavora in parallelo su documentazione, pannello di controllo e test di altre
 aree. Se ti serve un file fuori da questa lista, **fermati e riferisci** invece
 di prenderlo.
+
+---
+
+# Addendum del 2026-09-08 — la skill si legge, e il catalogo lo conferma
+
+**Stesso task, stesso file, secondo pezzo.** Sta qui e non in un comando a parte
+perché tocca lo stesso `NosTaleWorldProtocolDecoder.cs`: due agenti su quel file
+non ci vanno.
+
+## Il fatto
+
+`docs/PROTOCOLLO_NOSTALE.md` dà il campo 5 di `su` come **skill vnum**, con
+confidenza **probable** — mai incrociato con niente. Ora è incrociato, e regge.
+
+Misurato su **282 pacchetti `su`** di tutte e otto le catture (`nostale_01` non
+ne ha), e su **272 pacchetti `ct`**:
+
+### Il campo 5 di `su`, separato per tipo di attaccante
+
+| tipo attaccante | pacchetti | valori distinti al campo 5 |
+|---|---:|---|
+| **1** (giocatore) | 118 | **7**: `220`×63, `200`×34, `226`×13, `222`×3, `224`×2, `228`×2, `223`×1 |
+| **2** (astante) | 5 | **1**: `0`×5 |
+| **3** (mostro) | 159 | **1**: `0`×159, **zero eccezioni** |
+
+### Il riscontro sul catalogo del client
+
+Tutti e sette i valori del giocatore esistono nella tabella `skill` del catalogo
+importato dai file del client (`entity` con `kind='skill'`, 1958 righe):
+
+| campo 5 | nome IT | posizione nella classe | livello |
+|---:|---|---:|---:|
+| 200 | Ritmo | 0 | 0 |
+| 220 | Colpo di base | 0 | 0 |
+| 222 | Colpo furioso | 2 | 1 |
+| 223 | Colpo preciso | 3 | 4 |
+| 224 | Energia della spada | 4 | 5 |
+| 226 | Terremoto | 6 | 1 |
+| 228 | Attacco Doppio | 8 | 3 |
+
+Il valore `0` dei mostri e degli astanti **non è** nella tabella `skill`
+(i vnum vanno da 1 a 2012): coerente con «attacco base, nessuna abilità».
+
+### Tre strutture che il filo non poteva sapere
+
+1. **I due giocatori hanno insiemi disgiunti.** L'id `3443217` usa
+   {220, 222, 223, 224, 226, 228}; l'id `3548294` usa {200}. Due personaggi, due
+   repertori separati.
+2. **200 e 220 hanno entrambi posizione 0** nella rispettiva classe — sono
+   l'attacco base di due classi diverse, ed è esattamente la coppia che i due
+   giocatori distinti usano.
+3. **`ct` e `su` non tornano per uno solo dei sette, ed è quello giusto.** Per
+   attaccante di tipo 1, ogni valore compare in `ct` tante volte quante in `su`
+   — rapporto 1,00 per 200, 220, 222, 223, 224, 228 — tranne **226**, dove il
+   rapporto è **6,50** (2 `ct` contro 13 `su`; in `nostale_combat` un `ct`
+   seguito da undici `su`). Nel catalogo `226` è **l'unica dei sette con raggio
+   d'area** (`TARGET` = `1 1 1 3 0`, quarto slot diverso da zero): un lancio,
+   molti colpi. L'unica anomalia si spiega da sé.
+
+### La contro-prova, e il suo limite
+
+**La sola presenza in `skill` è debole, e va detto.** Nell'intervallo 0-228 la
+tabella `monster` risponde a **229 vnum su 229** e `card` pure: qualunque numero
+in quell'intervallo «esiste» come mostro. Sette su sette in `skill` non è di per
+sé sorprendente.
+
+Quello che rompe la parità è misurato: i vnum di mostro **davvero presenti** in
+quelle otto catture (59 pacchetti `in` di tipo 3) sono
+`{2, 9, 20, 24, 36, 39, 40, 45, 48, 49, 96, 333}` — **intersezione vuota** con
+`{0, 200, 220, 222, 223, 224, 226, 228}`. Nessuno dei valori del campo 5 è un
+mostro visto in quelle sessioni, e `item` non ne contiene nessuno.
+
+## `ct` — il campo è il **7**, non il 6
+
+272 pacchetti, **sempre 7 campi**:
+
+| indice | distinti | valori |
+|---:|---:|---|
+| 1 | 3 | `3`×163, `1`×107, `2`×2 — **tipo del lanciatore** |
+| 2 | 37 | id del lanciatore |
+| 3 | 3 | `1`×164, `3`×107, `2`×1 — **tipo del bersaglio** |
+| 4 | 37 | id del bersaglio |
+| 5 | 2 | `-1`×265, `14`×7 — **non decodificato** |
+| 6 | 4 | `-1`×267, `518`×2, `521`×2, `516`×1 — **non decodificato** |
+| **7** | **8** | `0`×165, `220`×63, `200`×34, `222`×3, `224`×2, `226`×2, `228`×2, `223`×1 |
+
+L'insieme del campo 7 è **identico** a quello del campo 5 di `su`, con la stessa
+divisione per tipo: per lanciatore di tipo 1 assume i sette valori giocatore, per
+i tipi 2 e 3 vale sempre `0` (165 pacchetti).
+
+## Cosa fare
+
+### Parte 6 — leggere il vnum della skill
+
+`DecodeHit` (il gestore di `su`) legge oggi attaccante e bersaglio e i due campi
+finali della vita, e **salta il campo 5**. Portalo fuori:
+
+- **il vnum va sull'evento del colpo**, dove sta già il resto di ciò che il colpo
+  dice. Il contratto lo scegli tu, ma additivamente: nessuna firma esistente
+  cambia significato;
+- **`0` non è una skill.** È l'attacco base, ed è ciò che i mostri fanno sempre
+  (159 su 159). Un `0` pubblicato come «vnum 0» diventerebbe una skill inventata
+  al primo che lo cerca nel catalogo. Deve restare distinguibile: assente, non
+  zero. È la stessa regola che `fields[11]` impone alla vita del bersaglio, per
+  la stessa ragione;
+- **non risolvere il nome qui.** Il decoder non conosce il catalogo e non deve:
+  pubblica il numero, il nome lo dà chi ha il catalogo aperto.
+
+### Parte 7 — `DecodeCast` legge il campo 7
+
+`DecodeCast` (il gestore di `ct`) pubblica oggi la selezione del bersaglio.
+Aggiungi il campo 7 con **le stesse due regole**: additivo, e `0` assente invece
+che zero.
+
+**Non collegare `ct` e `su` fra loro.** Il rapporto 6,50 di `226` dice che un
+lancio può produrre molti colpi, e appaiarli uno a uno sarebbe sbagliato. Sono
+due letture indipendenti dello stesso numero.
+
+### Parte 8 — test
+
+Oltre a quelli già chiesti sopra:
+
+9. `su 1 3443217 3 313816 226 …` porta il vnum `226`; `su 3 313816 1 3443217 0 …`
+   **non porta nessun vnum** — e in particolare non ne porta uno che valga zero.
+10. Lo stesso per `ct` sul campo 7.
+11. Con `[RecordedCaptureTheory]` sulle catture reali: i valori distinti che il
+    decoder pubblica per l'attaccante di tipo 1 sono **esattamente**
+    `{200, 220, 222, 223, 224, 226, 228}`, e per il tipo 3 **nessuno**. Il numero
+    di pacchetti per cattura è nella tabella qui sopra — asseriscilo, perché un
+    test che ne vede zero passerebbe a vuoto.
+12. **Il test che vale il riscontro**: con `[NosTaleClientFact]`, ognuno dei
+    sette valori esiste nella tabella `skill` del catalogo e `0` non c'è. Se il
+    catalogo non è sul disco, il test **salta visibilmente** — mai `if (…) return`.
+
+## Ancora fuori scope
+
+- **Nessun consumatore**: non collegare il vnum alla selezione della skill, alla
+  predizione o al Guard. Sapere quale abilità è stata usata e *decidere* di
+  usarla sono due cose diverse.
+- **`ct[5]` e `ct[6]` restano `Unknown`.** `ct[6]` vale `516`/`518`/`521` in
+  5 pacchetti su 272, sempre insieme a `ct[5] = 14`, e quei tre vnum esistono sia
+  in `card` sia in `skill`: non incrociato, quindi non deciso. Non riempirli per
+  somiglianza con il campo 7 — è esattamente ciò che la regola sulle fonti
+  esterne vieta.
+
+## Definition of done, aggiornata
+
+Alla lista di sopra si aggiunge:
+
+- I sette valori e i loro sette nomi riprodotti dal tuo test contro il catalogo
+  reale, incollati nel report.
+- Il conteggio per cattura del test 11.
