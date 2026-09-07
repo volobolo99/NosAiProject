@@ -168,8 +168,21 @@ public sealed class ModuleReachabilityTests
             foreach (string file in files)
             {
                 if (namespaceOf.GetValueOrDefault(file) == ns) continue;
-                // A using directive, or the namespace spelled out at a use site.
+                // A using directive -- plain, static, or aliased -- or the
+                // namespace spelled out at a use site.
+                //
+                // The alias form was the blind spot, and it produced exactly the
+                // error this file's own remarks call the dangerous one. Two
+                // production files open with `using CoreHardware =
+                // NosAi.Core.Hardware;` and one of them *implements*
+                // CoreHardware.IHardwareCapabilityProvider, yet the register
+                // declared NosAi.Core.Hardware unreached: the plain-using pattern
+                // does not match an alias, and NamesATypeIn looks for the
+                // namespace followed by a dot, while an aliased namespace is
+                // followed by a semicolon. A module that looks dead and is not
+                // invites someone to delete working code.
                 if (Regex.IsMatch(code[file], $@"^\s*using\s+(static\s+)?{Regex.Escape(ns)}\s*;", RegexOptions.Multiline)
+                    || Regex.IsMatch(code[file], $@"^\s*using\s+\w+\s*=\s*{Regex.Escape(ns)}\s*;", RegexOptions.Multiline)
                     || NamesATypeIn(code[file], ns, namespaces))
                 {
                     found.Add(file);

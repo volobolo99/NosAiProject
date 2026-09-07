@@ -157,6 +157,18 @@ public static class ModuleReachability
             + "sits in a namespace EngageCommand now calls into -- for the guard, "
             + "not for the planner. The catalogue's only caller is still that "
             + "planner, and still nothing calls it."),
+        new("NosAi.Core.Hardware", ModuleReach.Integrated,
+            "Declared Unreferenced until 2026-09-07, and it was not: "
+            + "RuntimeHardwareCapabilityProvider implements its "
+            + "IHardwareCapabilityProvider and HardwareInferenceCapabilityGate is "
+            + "built on its InferenceTierFeasibility, both from "
+            + "NosAi.Runtime.Hardware. The scan could not see it because both "
+            + "files reach it through a using-alias -- `using CoreHardware = "
+            + "NosAi.Core.Hardware;` -- a form the referrer match did not know. "
+            + "That is the pessimistic error this register's own remarks call the "
+            + "worse of the two, and it stood here as an invitation to delete "
+            + "working code. Kept with a note rather than silently corrected, "
+            + "because the correction is the interesting part."),
         new("NosAi.Core.Memory", ModuleReach.Integrated),
         new("NosAi.Core.Navigation", ModuleReach.Integrated),
         new("NosAi.Core.Testing", ModuleReach.Integrated),
@@ -242,13 +254,6 @@ public static class ModuleReachability
             + "it a declared seam rather than a hidden placeholder, which is "
             + "honest -- but a seam nothing has ever attached to."),
 
-        new("NosAi.Core.Hardware", ModuleReach.Unreferenced,
-            "The tier/capability contracts of AP-00. Reached only from "
-            + "NosAi.Core.Scheduling, which nothing reaches; the runtime takes "
-            + "its hardware baseline from NosAi.Runtime.Hardware instead. Which "
-            + "of the two survives is the same open decision "
-            + "NosAi.Hardware.Autoscale carries."),
-
         new("NosAi.Core.Knowledge", ModuleReach.Unreferenced,
             "Adaptive knowledge contracts, reached only from a mission-strategy "
             + "adapter that is itself unreached."),
@@ -280,8 +285,14 @@ public static class ModuleReachability
             + "into use, and nothing carries it."),
 
         new("NosAi.Core.Statistics", ModuleReach.Unreferenced,
-            "Statistical helpers. Gate 4's BetaBinomialEvidence is the one the "
-            + "runtime uses."),
+            "An online mean and a two-point linear extrapolation. This note used "
+            + "to name Gate 4's BetaBinomialEvidence as the competitor that "
+            + "supersedes it; that is wrong. BetaBinomialEvidence is a posterior "
+            + "over binary outcomes with no time axis, and computes neither of "
+            + "these. Nothing in production computes either, and there is a place "
+            + "that wants one: SimulationEngine predicts every action's duration "
+            + "as a constant while the runtime measures the real one and discards "
+            + "it."),
 
         new("NosAi.Core.WorldModel.Certification", ModuleReach.Unreferenced,
             "Certification contracts for the World Model, beside the runtime's "
