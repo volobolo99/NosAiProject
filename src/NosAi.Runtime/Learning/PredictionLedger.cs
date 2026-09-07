@@ -1,5 +1,6 @@
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Gate4;
+using NosAi.Storage;
 
 namespace NosAi.Runtime.Learning;
 
@@ -215,6 +216,78 @@ public sealed class PredictionLedger
                 .ThenByDescending(c => c.Trials)
                 .Take(limit)
                 .ToArray();
+        }
+    }
+
+    /// <summary>
+    /// An immutable photograph of the resolved calibration, ready to persist.
+    /// </summary>
+    /// <remarks>
+    /// Only resolved state is exported. Open predictions are not: a prediction is
+    /// written before the act, never after, and persisting one would be persisting
+    /// a claim about an instant that no longer exists. Re-imported into another
+    /// process it would be resolved against a different world than the one it was
+    /// made against -- the exact opposite of the honesty this file's remarks
+    /// require. Entries are emitted in ordinal context-key order so the snapshot,
+    /// and any store fed from it, is deterministic.
+    /// </remarks>
+    public CalibrationSnapshot ExportCalibration()
+    {
+        lock (_lock)
+        {
+            var entries = new List<CalibrationSnapshotEntry>(_tally.Count);
+            foreach (KeyValuePair<string, (int Confirmed, int Refuted, int Ignored, double ErrorSum)> pair
+                     in _tally.OrderBy(p => p.Key, StringComparer.Ordinal))
+            {
+                string contextKey = pair.Key;
+                (int confirmed, int refuted, int ignored, double errorSum) = pair.Value;
+                BetaBinomialEvidence evidence = _evidence.TryGetValue(contextKey, out BetaBinomialEvidence? previous)
+                    ? previous
+                    : BetaBinomialEvidence.CreateUniformPrior();
+
+                entries.Add(new CalibrationSnapshotEntry(
+                    contextKey,
+                    evidence.Alpha,
+                    evidence.Beta,
+                    evidence.TotalTrials,
+                    confirmed,
+                    refuted,
+                    ignored,
+                    errorSum));
+            }
+
+            return CalibrationSnapshot.From(entries);
+        }
+    }
+
+    /// <summary>
+    /// Puts <paramref name="snapshot"/> back into the ledger, replacing whatever
+    /// resolved calibration was already there.
+    /// </summary>
+    /// <remarks>
+    /// Replace, not sum. The snapshot is the durable source of truth, and a
+    /// restore must be idempotent: importing the same file twice yields the same
+    /// belief, never double it. A summing import would make "loaded twice" look
+    /// identical to "genuinely learned twice" -- a ledger that believes itself
+    /// more experienced than it is, which is worse than one that starts over.
+    /// Open predictions are left untouched: they belong to the live cycle in
+    /// progress, not to calibration, and the snapshot carries none of them by
+    /// construction.
+    /// </remarks>
+    public void ImportCalibration(CalibrationSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        lock (_lock)
+        {
+            _evidence.Clear();
+            _tally.Clear();
+
+            foreach (CalibrationSnapshotEntry entry in snapshot.Entries)
+            {
+                _evidence[entry.ContextKey] = new BetaBinomialEvidence(entry.Alpha, entry.Beta, entry.TotalTrials);
+                _tally[entry.ContextKey] = (entry.Confirmed, entry.Refuted, entry.Ignored, entry.ErrorSum);
+            }
         }
     }
 

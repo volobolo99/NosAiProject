@@ -26,6 +26,7 @@ using NosAi.Runtime.Contracts;
 using NosAi.Runtime.GameData;
 using NosAi.Runtime.Observability;
 using NosAi.Runtime.Safety;
+using NosAi.Storage;
 
 namespace NosAi.Runtime.Gate3
 {
@@ -1238,6 +1239,38 @@ namespace NosAi.Runtime.Gate3
             _ensureSessionVerified = ensureSessionVerified;
             _postConditions = postConditions ?? PostConditionTable.Catalogue;
             _worldSampler = worldSampler;
+        }
+
+        /// <summary>
+        /// Restores the ledger's resolved calibration from <paramref name="store"/>.
+        /// </summary>
+        /// <remarks>
+        /// Additive: it reads the store once and hands the snapshot to
+        /// <see cref="PredictionLedger.ImportCalibration"/>. No write happens here,
+        /// and nothing in the decision cycle calls it -- a SQLite read inside
+        /// <c>Observe → … → Execute</c> would put the disk on the safety-critical
+        /// path. The host decides when a restore is safe to run (typically once,
+        /// before the first cycle).
+        /// </remarks>
+        public void RestoreCalibration(PredictionCalibrationStore store)
+        {
+            ArgumentNullException.ThrowIfNull(store);
+            _learning.ImportCalibration(store.Load());
+        }
+
+        /// <summary>
+        /// Persists the ledger's resolved calibration into <paramref name="store"/>.
+        /// </summary>
+        /// <remarks>
+        /// Additive: it exports the snapshot and hands it to the store. No write
+        /// happens inside the decision cycle; <see cref="PredictionLedger.Record"/>
+        /// stays free of I/O, so the loop never touches the disk on the
+        /// safety-critical path. The host decides when a save is safe to run.
+        /// </remarks>
+        public void SaveCalibration(PredictionCalibrationStore store)
+        {
+            ArgumentNullException.ThrowIfNull(store);
+            store.Save(_learning.ExportCalibration());
         }
 
         /// <summary>
