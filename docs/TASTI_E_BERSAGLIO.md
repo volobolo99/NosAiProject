@@ -187,19 +187,25 @@ passo.
 
 ## 5. Riconoscere chi e cosa c'è attorno
 
-### 5.1 Quello che arriva, e quello che viene buttato via
+### 5.1 Quello che arriva — corretto, non più buttato via
 
 Il pacchetto `in` porta `tipo, vnum, id, x, y, direzione, HP%, MP%`. Il decoder legge
 `fields[1]` (tipo), `fields[3]` (id), `fields[4]`, `fields[5]` (posizione) e
 `fields[7]` (HP%).
 
-**`fields[2]` è il vnum, e viene saltato.**
-
-Il vnum è l'unico campo che dice *che cosa* è un'entità, invece di *dove* è. Senza di
-esso un mostro e un mercante sono due id con una posizione. Il catalogo di riferimento
-ha già importato **2 705 mostri** con nome e provenienza, e `GameReferenceDatabase`
-espone già `Lookup(kind, vnum)`, `Exists(kind, vnum)` e `DisplayName(kind, vnum, lingua)`:
-la risposta esiste, manca il campo per farle la domanda.
+**Nota di correzione (2026-09-07): `fields[2]` è il vnum, e non viene più saltato.**
+Questa sezione diceva il contrario quando è stata scritta; oggi
+`NosTaleWorldProtocolDecoder.DecodeEnter` lo legge (`TryInt(fields[2], ...)`), lo
+conserva in `TrackedEntity.Vnum` e lo porta fino a `SelectableEntity.Vnum`
+(`GameplayProvider.cs`, la stessa lista che `TargetEstablishment.Assess` legge). Il
+vnum è l'unico campo che dice *che cosa* è un'entità, invece di *dove* è, ed è per
+questo che oggi `TargetEstablishment` può già rispondere "il suo vnum è nel catalogo
+dei mostri" come una delle prove che stabiliscono un bersaglio (§ 6.2) — il catalogo
+di riferimento ha già importato **2 705 mostri** con nome e provenienza, e
+`GameReferenceDatabase` espone `Lookup(kind, vnum)`, `Exists(kind, vnum)` e
+`DisplayName(kind, vnum, lingua)`. Resta aperto solo popolare `Mobs`/`Npcs` del World
+Model canonico (AP-01) con la stessa risposta — `GameplayObservationProjector` non lo
+fa ancora (vedi `docs/agents/EXECUTION_QUEUE.md`).
 
 ### 5.2 Il tipo del filo non basta, e va detto
 

@@ -57,9 +57,14 @@ public enum CombatExecutionResult
 /// Deliberately partial, and deliberately says so on every member: this does
 /// <b>not</b> confirm the target was hit, damaged, or affected in any way.
 /// <c>Mob.Status.Resources</c> (the target's HP in the canonical World
-/// Model) is not populated today -- AP-02's entity fusion is blocked on the
-/// same OCR/ONNX gap named in <c>AP-02_STATUS.md</c>. What can be observed
-/// honestly today is only whether <c>docs/ROADMAP_ESECUTIVA.md</c> S:AP-05's
+/// Model) is not populated today -- not purely the OCR/ONNX gap an earlier
+/// version of this remark named: <c>NosAi.Runtime.Autonomy.SelectableEntity.HpRatio</c>
+/// already carries a real, network-observed HP fraction for a sighted
+/// target, but it is a 0..1 fraction with no known maximum, not the raw
+/// current/maximum pair this contract's own <see cref="Resource"/> shape
+/// expects -- <c>GameplayObservationProjector</c> (Runtime) does not yet
+/// reshape it into one, a real, still-open task, not attempted here. What
+/// can be observed honestly today is only whether <c>docs/ROADMAP_ESECUTIVA.md</c> S:AP-05's
 /// own "execute -> verify" stage had a real resource-cost side effect on the
 /// player -- the same "unknown is not zero" boundary
 /// <see cref="Exploration.MovementExecutionEvidence"/> draws for movement,
