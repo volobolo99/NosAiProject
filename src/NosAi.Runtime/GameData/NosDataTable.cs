@@ -235,6 +235,44 @@ public static class NosDataTable
         return entries;
     }
 
+    /// <summary>
+    /// Reads the client-message table (<c>conststring.dat</c>): an integer key, a
+    /// vertical-tab separator, then the displayed text.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Not the <c>key TAB text</c> shape <see cref="ReadKeyedText"/> reads: the key
+    /// is a packed integer, and after its digits there is one framing byte that is
+    /// not part of the number. That byte is why a deobfuscated key reads as
+    /// <c>100;</c> or <c>3099?</c>; it varies and carries no index, so it is dropped
+    /// here and the leading digits are the key. A duplicate numeric key keeps the
+    /// first value — the same order the client reads the file in.
+    /// </para>
+    /// </remarks>
+    public static Dictionary<string, string> ReadNumberedText(ReadOnlySpan<byte> payload)
+    {
+        var entries = new Dictionary<string, string>(StringComparer.Ordinal);
+        NosTableResult table = Decode("conststring", payload);
+        if (!table.Ok || table.Lines is null)
+            return entries;
+
+        foreach (string line in table.Lines)
+        {
+            int sep = line.IndexOf('\v');
+            if (sep <= 0 || sep == line.Length - 1)
+                continue;
+
+            int digits = 0;
+            while (digits < sep && char.IsDigit(line[digits]))
+                digits++;
+            if (digits == 0)
+                continue;
+
+            entries.TryAdd(line[..digits], line[(sep + 1)..]);
+        }
+        return entries;
+    }
+
     /// <summary>Splits a decoded table into records.</summary>
     public static NosTableResult Parse(string name, ReadOnlySpan<byte> body)
     {
@@ -257,10 +295,18 @@ public static class NosDataTable
                 break;
 
             byte declared = body[at + 1];
-            int start = at + 2;
 
             if (declared == UnreliableLength)
                 unreliable++;
+
+            // The byte after the terminator is either the line's length (short keys)
+            // or the marker that opens a packed number (keys from 100 up). The
+            // marker's high nibble is 0x8, which a real length never reaches.
+            // Skipping a marker as if it were a length drops the packed number's
+            // first byte and leaves the reader one byte inside the payload, which is
+            // how a key such as 3099 comes out as binary text instead of a number.
+            bool startsPackedNumber = (declared & 0xF0) == PackedNumberMarker;
+            int start = startsPackedNumber ? at + 1 : at + 2;
 
             // A line runs to the next terminator. The declared length covers only the
             // text up to the first packed number, so it cannot delimit the line on its
@@ -270,7 +316,7 @@ public static class NosDataTable
             if (next < 0)
                 break;
 
-            if (declared != UnreliableLength && start + declared < next)
+            if (!startsPackedNumber && declared != UnreliableLength && start + declared < next)
                 tails++;
 
             lines.Add(ReadLine(body[start..next]));

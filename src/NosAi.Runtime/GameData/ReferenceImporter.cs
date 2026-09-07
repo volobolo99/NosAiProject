@@ -261,6 +261,30 @@ public sealed class ReferenceImporter
             imported[kind] = database.ImportText(language, kind, entries);
         }
 
+        // conststring.dat lives in its own archive (NScliData_<LANG>.NOS), not in
+        // NSlangData, and holds the client's system-message text: an integer key and
+        // one displayed message each. It is imported here because it is text and it
+        // is language-specific. The numeric key is what the wire does NOT yet index
+        // (T-16 / docs/PROTOCOLLO_NOSTALE.md § sayi): importing it makes the text
+        // indexable by number without inventing the sayi link, which stays open.
+        string cliPath = Path.Combine(_directory, $"NScliData_{language.ToUpperInvariant()}.NOS");
+        NosArchiveResult cli = NosArchive.Open(cliPath);
+        if (cli.Ok)
+        {
+            NosArchiveEntry? cliEntry = cli.Entries.FirstOrDefault(e =>
+                string.Equals(e.Name, "conststring.dat", StringComparison.OrdinalIgnoreCase));
+            if (cliEntry is not null)
+            {
+                MemoryReadOutcome cliPayload = NosArchive.ReadEntry(cliPath, cliEntry);
+                if (cliPayload.Ok)
+                {
+                    Dictionary<string, string> cliEntries = NosDataTable.ReadNumberedText(cliPayload.Bytes);
+                    if (cliEntries.Count > 0)
+                        imported["conststring"] = database.ImportText(language, "conststring", cliEntries);
+                }
+            }
+        }
+
         return new LanguageImportReport(language, imported.Count > 0,
             imported.Count > 0 ? null : "no_language_tables_found", imported);
     }
