@@ -490,9 +490,12 @@ public static class Program
                           && int.TryParse(args[watchFlag + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedSeconds)
                           && parsedSeconds > 0
                 ? parsedSeconds
-                : 60;
+                : 180;
 
-            return NosAi.Runtime.Perception.ScreenProjectionWatcher.Run(seconds, wanted: 5);
+            // Dodici campioni con una pausa vera fra un clic e l'altro non stanno
+            // in un minuto, e cinque campioni non determinano il fit.
+            return NosAi.Runtime.Perception.ScreenProjectionWatcher.Run(
+                seconds, wanted: NosAi.Runtime.Perception.ScreenSampleCoach.DefaultWantedSamples);
         }
 
         if (args.Any(a => string.Equals(a, "--screen-calibrate", StringComparison.OrdinalIgnoreCase)))

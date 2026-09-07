@@ -617,11 +617,11 @@ public partial class MainWindow : Window
         _busy = true;
         ScreenSampleButton.IsEnabled = false;
         ScreenCalibrationLog.Text = string.Empty;
-        Status("Raccolta campioni: clicca per camminare nel client, da fermo e lontano.");
+        Status("Raccolta campioni: aspetta che il personaggio si FERMI davvero, poi clicca lontano.");
         try
         {
             int code = await Task.Run(() => ScreenProjectionWatcher.Run(
-                seconds: 90,
+                seconds: 180,
                 wanted: ScreenSampleCoach.DefaultWantedSamples,
                 repoRoot: _repoRoot,
                 report: line => Dispatcher.Invoke(() => CalibrationSay(line)))).ConfigureAwait(true);
