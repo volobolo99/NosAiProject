@@ -17,9 +17,14 @@ namespace NosAi.Runtime.Tests;
 /// is tested against a real in-memory <see cref="GameReferenceDatabase"/>
 /// seeded the same way <c>GameReferenceDatabaseTests</c> seeds one, with the
 /// <c>"item"</c> kind its own <c>Import</c> helper hardcodes away.
-/// <see cref="LoadoutReportCommand.Run"/> itself is deliberately not tested:
-/// Windows-only, real-client-attached, the same limitation every other
-/// command's console entry already accepts.
+/// <see cref="LoadoutReportCommand.Run"/> is tested only on its off-Windows
+/// branch, the way <c>InputGuardsProbeTests</c>/<c>ClientWindowDpiProbeTests</c>
+/// already test theirs; the Windows path needs a real attached client and is
+/// not exercised here. An earlier version of this remark claimed no other
+/// command's console entry is tested at all -- false, and corrected:
+/// <c>CollectCommandTests</c>, <c>EngageCommandTests</c>,
+/// <c>RecoverCommandTests</c> and <c>AutoplayCommandTests</c> all call their
+/// own <c>Run</c>.
 /// </summary>
 public sealed class LoadoutReportCommandTests
 {
@@ -122,26 +127,35 @@ public sealed class LoadoutReportCommandTests
     /// </summary>
     private static void SeedItem(GameReferenceDatabase database, int vnum, string slotCode)
     {
+        // The five values around position 3 are deliberately distinct from each
+        // other and from every slot code a test asserts, so a decoder reading
+        // the wrong position cannot accidentally produce the expected answer.
         var record = new NosRecord(vnum, new[]
         {
             new NosField("VNUM", new[] { vnum.ToString() }),
-            new NosField("INDEX", new[] { "0", "0", "0", slotCode, "0", "0" }),
+            new NosField("INDEX", new[] { "90", "91", "92", slotCode, "94", "95" }),
         });
         database.Import("item", "test.NOS", "item.dat", "C:/test", new[] { record },
             System.Text.Encoding.UTF8.GetBytes($"payload-item-{vnum}-{Guid.NewGuid()}"));
     }
 
-    [Fact]
-    public void BuildResolveSlot_KnownVnum_DecodesItsSeededSlot()
+    /// <summary>
+    /// <see cref="EquipmentSlot.Gloves"/> is 3 -- a code that is neither the
+    /// enum's default nor equal to any neighbouring INDEX value, so this
+    /// asserts the decoder really reads position 3 and really maps the code.
+    /// </summary>
+    [Theory]
+    [InlineData(EquipmentSlot.Gloves)]
+    [InlineData(EquipmentSlot.Weapon)]
+    [InlineData(EquipmentSlot.MiniPet)]
+    public void BuildResolveSlot_KnownVnum_DecodesItsSeededSlot(EquipmentSlot expected)
     {
         using GameReferenceDatabase database = GameReferenceDatabase.OpenInMemory();
-        // EquipmentSlot.Weapon is 0, the code ItemReferenceDecoderTests already
-        // proves maps to the project's own enum member.
-        SeedItem(database, vnum: 12, slotCode: ((int)EquipmentSlot.Weapon).ToString());
+        SeedItem(database, vnum: 12, slotCode: ((int)expected).ToString());
 
         Func<ItemId, EquipmentSlot?> resolveSlot = LoadoutReportCommand.BuildResolveSlot(database);
 
-        Assert.Equal(EquipmentSlot.Weapon, resolveSlot(new ItemId("12")));
+        Assert.Equal(expected, resolveSlot(new ItemId("12")));
     }
 
     [Fact]
@@ -182,5 +196,34 @@ public sealed class LoadoutReportCommandTests
         Func<ItemId, EquipmentSlot?> resolveSlot = LoadoutReportCommand.BuildResolveSlot(database);
 
         Assert.Null(resolveSlot(new ItemId("13")));
+    }
+
+    // ------------------------------------------------- console entry, off Windows
+
+    /// <summary>
+    /// The one branch of <see cref="LoadoutReportCommand.Run"/> that needs no
+    /// client: off Windows it refuses before any window lookup or memory
+    /// attach, the same shape <c>InputGuardsProbeTests.ProbeRefusesOffWindows</c>
+    /// pins for its own probe.
+    /// </summary>
+    [Fact]
+    public void Run_OffWindows_RefusesWithoutTouchingTheClient()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        Assert.Equal(NosAi.Runtime.Navigation.WalkCommand.ExitAbandoned, LoadoutReportCommand.Run());
+    }
+
+    /// <summary>
+    /// The two refusal reasons are part of the operator-visible contract, so
+    /// they are pinned here rather than left to whoever next edits the strings.
+    /// </summary>
+    [Fact]
+    public void RefusalReasons_AreTheNamedIdentifiersTheOperatorSees()
+    {
+        Assert.Equal("loadout_report_requires_windows", LoadoutReportCommand.NotWindowsReason);
+        Assert.Equal("loadout_report_gameplay_provider_unavailable", LoadoutReportCommand.GameplayUnavailableReason);
+        Assert.Equal("--loadout-report", LoadoutReportCommand.Flag);
     }
 }

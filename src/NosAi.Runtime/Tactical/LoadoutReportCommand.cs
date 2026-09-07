@@ -32,7 +32,8 @@ namespace NosAi.Runtime.Tactical;
 /// <para>
 /// <b>Read-only by construction.</b> This command equips, unequips and
 /// upgrades nothing: no key press, no mouse event, no input arming, no
-/// <see cref="RuntimeComposition"/> at all -- nothing it does can actuate.
+/// <see cref="NosAi.Runtime.Orchestration.RuntimeComposition"/> at all --
+/// nothing it does can actuate.
 /// <c>--equip</c>/<c>--unequip</c> stay out of scope (the second half of
 /// T-12, confirming which <c>InventoryKind</c> means "worn" on a real
 /// client, is still open). Same read-only spirit as <c>--route</c>
@@ -58,9 +59,6 @@ public static class LoadoutReportCommand
     /// <summary>The operator flag.</summary>
     public const string Flag = "--loadout-report";
 
-    /// <summary>Where the audit events are attributed.</summary>
-    public const string SourceModule = "Tactical";
-
     /// <summary>Reported off Windows, where there is no session window to bind.</summary>
     public const string NotWindowsReason = "loadout_report_requires_windows";
 
@@ -82,10 +80,12 @@ public static class LoadoutReportCommand
     /// three generators and runs <see cref="LoadoutPlanner.CheckHardConstraints"/>
     /// on every one of them against <paramref name="player"/>. Pure: no
     /// <c>Console</c>, no clock read, no field access outside
-    /// <paramref name="player"/>/<paramref name="resolveSlot"/> -- the same
-    /// discipline <c>AutoplayCommand.ExecuteOneCycle</c> already follows, so
-    /// the exact hand-built <see cref="Player"/>/fake-<paramref name="resolveSlot"/>
-    /// pattern <c>LoadoutPlannerTests</c> uses drives the tests here too.
+    /// <paramref name="player"/>/<paramref name="resolveSlot"/>. It takes its
+    /// inputs as parameters the way <c>AutoplayCommand.ExecuteOneCycle</c>
+    /// does, but goes further than that method, which actuates: this one
+    /// returns a report and touches nothing. So the exact hand-built
+    /// <see cref="Player"/>/fake-<paramref name="resolveSlot"/> pattern
+    /// <c>LoadoutPlannerTests</c> uses drives the tests here too.
     /// </summary>
     /// <param name="player">The player whose inventory/equipment is judged.</param>
     /// <param name="resolveSlot">
@@ -133,8 +133,7 @@ public static class LoadoutReportCommand
     /// Failure propagates as null all the way through, never a guess: a vnum
     /// that does not parse, a catalogue that does not know the vnum
     /// (<see cref="GameReferenceDatabase.Lookup"/> returns null), and a
-    /// record <see cref="ItemReferenceDecoder.Decode"/> refuses (no
-    /// <c>VNUM</c>) or whose slot code the enum does not define all answer
+    /// record whose slot code the enum does not define all answer
     /// "no real slot known", which is what
     /// <see cref="LoadoutPlanner.GenerateEquipCandidates"/> expects to mean
     /// "produce no candidate".
@@ -281,12 +280,23 @@ public static class LoadoutReportCommand
     }
 
     /// <summary>
-    /// One line per check, plus a one-line count summary at the end
-    /// (the same shape <see cref="LiveIntegration.Capture.LiveWireMonitor"/>
-    /// uses for its own final summary line).
+    /// One line per check, plus a one-line count summary at the end. The
+    /// summary counts candidates the way
+    /// <see cref="LiveIntegration.Capture.LiveWireMonitor"/> counts frames,
+    /// but writes them value-first (<c>3 equip, 0 unequip, ...</c>) rather
+    /// than in that monitor's own label-first form.
     /// </summary>
+    /// <param name="report">
+    /// A report produced by <see cref="Build"/>. A default-constructed
+    /// <see cref="LoadoutReport"/> has null lists and is not a valid argument;
+    /// <see cref="Build"/> never returns one.
+    /// </param>
     public static void Print(LoadoutReport report)
     {
+        ArgumentNullException.ThrowIfNull(report.EquipChecks);
+        ArgumentNullException.ThrowIfNull(report.UnequipChecks);
+        ArgumentNullException.ThrowIfNull(report.UpgradeChecks);
+
         foreach (LoadoutConstraintCheck check in report.EquipChecks)
         {
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
