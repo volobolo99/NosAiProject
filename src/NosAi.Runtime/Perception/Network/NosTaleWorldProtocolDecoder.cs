@@ -18,10 +18,13 @@ namespace NosAi.Runtime.Perception.Network;
 /// out to be needed is a new capture, not a guess from its neighbours.
 /// </para>
 /// <para>
-/// Twelve opcodes are read. Seven carry the world: <c>stat</c>, <c>st</c>,
-/// <c>in</c>, <c>mv</c>, <c>die</c>, <c>su</c>, <c>cond</c>. Four carry the
-/// facts a post-condition needs (C1-3): <c>sr</c>, <c>ivn</c>, <c>get</c>,
-/// <c>drop</c>; <c>ct</c> carries which entity the character acts on. Those
+/// <b>Quindici opcode</b> sono letti — erano dodici quando questa frase è stata
+/// scritta, e il conto è tornato falso senza che nessuno lo aggiornasse. Sette
+/// portano il mondo: <c>stat</c>, <c>st</c>, <c>in</c>, <c>mv</c>, <c>die</c>,
+/// <c>su</c>, <c>cond</c>. Quattro portano i fatti che una post-condizione
+/// richiede (C1-3): <c>sr</c>, <c>ivn</c>, <c>get</c>, <c>drop</c>; <c>ct</c>
+/// porta su quale entità il personaggio agisce; <c>lev</c> la progressione, e
+/// <c>eq</c> ed <c>equip</c> l'equipaggiamento indossato. Quelle
 /// five are marked <i>probable</i> in the catalogue, and the
 /// discipline for a probable reading is the one <c>in</c> and <c>st</c> already
 /// follow for their probable fields: the reading keeps the packet's provenance
@@ -174,10 +177,17 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // state a monster's health in points.
         var vitals = new AbsoluteVitals(hp, maxHp);
         double hpRatio = (double)hp / maxHp;
+
+        // Il campo 3 e' il livello dell'entita': confermato il 2026-09-08
+        // confrontandolo con entity.level del catalogo per il vnum che `in`
+        // dichiara nella stessa cattura -- 26 confronti, 26 concordi.
+        int? level = TryInt(fields[3], out int stated) && stated >= 0 ? stated : null;
+
         TrackedEntity previous = _entities.GetValueOrDefault(entityId);
         _entities[entityId] = previous with
         {
-            HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc, Vitals = vitals
+            HpRatio = hpRatio, HasHp = true, HpAtUtc = capturedUtc, Vitals = vitals,
+            Level = level ?? previous.Level
         };
 
         if (!previous.HasPosition)
@@ -188,7 +198,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         return Sighting(
             entityId, KindOf(fields[1]), previous.X, previous.Y, hpRatio, Stale(source),
             positionAtUtc: previous.PositionAtUtc, hpAtUtc: capturedUtc, vnum: previous.Vnum,
-            vitals: vitals);
+            vitals: vitals, level: level ?? previous.Level);
     }
 
     /// <summary>
@@ -222,7 +232,11 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             PositionAtUtc: capturedUtc, HpAtUtc: capturedUtc, Vnum: vnum);
         // Position and health both come from this packet, so nothing stale is
         // mixed in and the sighting keeps the packet's own provenance and time.
-        return Sighting(entityId, KindOf(fields[1]), x, y, hpRatio, source, capturedUtc, capturedUtc, vnum, vitals: null);
+        // Nessun livello: `in` non lo porta, e questo pacchetto sostituisce l'entita'
+        // tracciata per intero -- la stessa scelta gia' presa per la coppia
+        // assoluta. Non e' una perdita: `in` porta il vnum, e il vnum da' il
+        // livello attraverso il catalogo; il prossimo `st` lo ridira' comunque.
+        return Sighting(entityId, KindOf(fields[1]), x, y, hpRatio, source, capturedUtc, capturedUtc, vnum, vitals: null, level: null);
     }
 
     /// <summary>
@@ -259,8 +273,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         // instant. With no health at all there is nothing stale mixed in, and the
         // packet keeps its own provenance.
         return previous.HasHp
-            ? Sighting(entityId, KindOf(fields[1]), x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum, previous.Vitals)
-            : Sighting(entityId, KindOf(fields[1]), x, y, null, source, capturedUtc, null, previous.Vnum, vitals: null);
+            ? Sighting(entityId, KindOf(fields[1]), x, y, previous.HpRatio, Stale(source), capturedUtc, previous.HpAtUtc, previous.Vnum, previous.Vitals, previous.Level)
+            : Sighting(entityId, KindOf(fields[1]), x, y, null, source, capturedUtc, null, previous.Vnum, vitals: null, level: previous.Level);
     }
 
     /// <summary><c>die type id …</c> — the entity is gone.</summary>
@@ -790,10 +804,11 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
     private static DecodedObservations Sighting(
         long entityId, string kind, double x, double y, double? hpRatio, DataSourceKind source,
-        DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum, AbsoluteVitals? vitals = null)
+        DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum, AbsoluteVitals? vitals = null,
+        int? level = null)
         => new(
             ImmutableArray.Create(new EntitySighting(
-                entityId, kind, x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum, vitals)),
+                entityId, kind, x, y, hpRatio, source, positionAtUtc, hpAtUtc, vnum, vitals, level)),
             ImmutableArray<GameEvent>.Empty);
 
     /// <summary>
@@ -1009,5 +1024,6 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         DateTime PositionAtUtc,
         DateTime HpAtUtc,
         int? Vnum = null,
-        AbsoluteVitals? Vitals = null);
+        AbsoluteVitals? Vitals = null,
+        int? Level = null);
 }

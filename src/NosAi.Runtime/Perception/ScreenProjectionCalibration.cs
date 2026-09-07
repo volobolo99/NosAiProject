@@ -71,7 +71,11 @@ public readonly record struct ScreenProjectionSample(MapPoint MapDelta, int Scre
 /// model has nowhere to hide.
 /// </para>
 /// <para>
-/// <b>Machine-specific, and therefore not committed.</b> It belongs in gitignored
+/// <b>Specifica di una macchina, e versionata lo stesso dal 2026-09-07</b> — la
+/// riga di <c>.gitignore</c> che escludeva <c>data/</c> per intero e' stata
+/// stretta apposta: senza questi sei numeri nessuna affermazione del repository
+/// sulla proiezione si riproduce, e il giorno in cui sono quasi andati persi lo
+/// ha reso evidente. Vale per una macchina sola, e va rifatta altrove. Sta in
 /// <c>data/perception/</c> beside the glyph atlas and the target-frame
 /// calibration, for the reason ADR-0017 gives for the atlas: it describes one
 /// client at one resolution on one display.
@@ -98,6 +102,17 @@ public sealed record ScreenProjectionCalibration
     /// with four pairs a perspective term is whatever the noise asks for.
     /// </remarks>
     public const int PerspectiveMinimumSamples = 5;
+
+    /// <summary>
+    /// Le coppie che una mappa prospettica consuma: otto incognite, due equazioni
+    /// per coppia.
+    /// </summary>
+    /// <remarks>
+    /// Distinto da <see cref="PerspectiveMinimumSamples"/>, che è quante ne
+    /// servono per <i>controllarla</i>: quattro la determinano e non la
+    /// verificano, perché quattro coppie la riproducono sempre in modo esatto.
+    /// </remarks>
+    public const int PerspectiveMinimumPairs = 4;
 
     /// <summary>
     /// How far a sample may land from where the fitted transform puts it, measured
@@ -211,6 +226,16 @@ public sealed record ScreenProjectionCalibration
     /// </remarks>
     private const string Magic = "nosai-screen-projection";
     private const int Version = 5;
+
+    /// <summary>
+    /// <b>Dalla 4 alla 5, il 2026-09-08</b>: due termini in coda ai sei
+    /// coefficienti, <c>G</c> e <c>H</c>, e un conteggio dei campioni scartati in
+    /// fondo alla riga. La mappa è passata da affine a prospettica perché la
+    /// casella vale più pixel in basso che in alto — misurato su due sessioni
+    /// indipendenti, che concordano sul termine verticale. Una v4 resta leggibile:
+    /// è la stessa mappa con la prospettiva a zero, ed è esattamente ciò che
+    /// quella versione affermava.
+    /// </summary>
 
     /// <summary>
     /// La versione 4 e' la stessa mappa senza i due termini prospettici, cioe'
@@ -364,12 +389,20 @@ public sealed record ScreenProjectionCalibration
 
     /// <summary>How much independent checking the residual represents.</summary>
     /// <remarks>
-    /// Samples beyond the three a general affine map needs, so: the degrees of
-    /// freedom left over once the fit has taken what it needs. Zero means the
-    /// calibration was solved from exactly three pairs, which three pairs always
-    /// reproduce exactly, so its residual of zero confirms nothing. Usable, and
-    /// worth knowing.
-    /// </remarks>
+    /// <para>
+    /// Le coppie oltre quelle che il fit consuma, cioè i gradi di libertà che
+    /// restano una volta che ha preso il suo. Zero significa che la calibrazione
+    /// è stata risolta da esattamente il minimo, che il minimo riproduce sempre
+    /// in modo esatto: il suo residuo di zero non conferma nulla. Utilizzabile, e
+    /// vale la pena saperlo.
+    /// </para>
+    /// <para>
+    /// <b>Corretto il 2026-09-08.</b> Questo numero sottraeva sempre tre — le
+    /// coppie che serve a una mappa affine — anche quando il fit aveva adottato
+    /// gli otto parametri prospettici, che di coppie ne consumano quattro. Il
+    /// residuo risultava così verificato contro una coppia in più di quante
+    /// l'avessero davvero verificato. Ora la sottrazione segue il modello scelto.
+    /// </para>
     public int VerifiedAgainstSamples { get; }
 
     /// <summary>
@@ -590,7 +623,9 @@ public sealed record ScreenProjectionCalibration
             true, a, b, c, d, e, f,
             clientWidth, clientHeight,
             worst,
-            samples.Count - MinimumSamples,
+            // Le coppie che il modello adottato consuma: tre per l'affine, quattro
+            // per la prospettica. Sottrarne sempre tre gonfierebbe la verifica.
+            samples.Count - (g != 0 || h != 0 ? PerspectiveMinimumPairs : MinimumSamples),
             discardedSamples,
             regime ?? DpiAwareness.Current(),
             clientDpi,

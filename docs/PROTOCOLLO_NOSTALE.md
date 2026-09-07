@@ -321,8 +321,9 @@ sayi 1 3548294 12 975 2 8 1 0 0
 | Campo | Confidenza |
 |---|---|
 | tipo, id del personaggio (1, 2) | **confermato** |
-| campo 3 | **probabile — colore o canale**: si muove sempre insieme al campo 4 (975↔12, 654↔10, 697↔11) |
+| campo 3 | **non decodificato.** Scritto qui il 2026-09-07 come «si muove sempre insieme al campo 4»: **falso**, e lo smentisce `nostale_combat`, dove il messaggio 975 esce sia con `11` sia con `12`. Non è funzione dell'id |
 | **campo 4 — id del messaggio** | **confermato** |
+| **campo 5 — tipo dell'argomento** | **confermato**: vale `2` quando il campo 6 è un vnum, e il campo 7 vale `1` esattamente allora — 20 pacchetti su 20 |
 | **campo 6 — argomento** | **confermato**: è il vnum dell'oggetto quando il campo 5 vale 2 |
 
 **Come è stato stabilito**, il 2026-09-07, con `data/messaggi.noscap` — 2657
@@ -339,6 +340,11 @@ Il messaggio **975** compare in due catture indipendenti con due argomenti
 diversi — `8` qui, `2006` in `nostale_combat` — e in entrambe l'argomento è il
 vnum dell'oggetto appena raccolto, corroborato da `drop`, `get` e `ivn`. Il vnum
 risolve nel catalogo: 8 è «Fionda in legno», 13 «Uniforme da allenamento».
+
+**Il campo 5 è il tipo dell'argomento.** Su tutti e 20 i pacchetti `sayi` delle
+sei registrazioni, il campo 7 vale `1` esattamente quando il campo 5 vale `2`, e
+quando vale 2 il campo 6 è un vnum già corroborato altrove. Con `4` (argomento
+50) e con `3` (argomento 2) il campo 7 è `0`, e l'argomento non è un oggetto.
 
 ### Quello che resta aperto
 

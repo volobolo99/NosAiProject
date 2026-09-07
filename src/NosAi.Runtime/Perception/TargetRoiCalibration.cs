@@ -24,8 +24,8 @@ namespace NosAi.Runtime.Perception;
 /// ADR-0018: until this file exists, <c>HasTarget</c> stays UNKNOWN.
 /// </para>
 /// <para>
-/// <b>Machine-specific, and therefore not committed.</b> The fractions are of one
-/// client at one resolution on one display. It lives in gitignored <c>data/</c>
+/// <b>Specifica di una macchina, e versionata lo stesso dal 2026-09-07.</b> Le frazioni sono di un
+/// client at one resolution on one display. It lives in <c>data/perception/</c>
 /// beside the glyph atlas and the T-03 crops, for the reason ADR-0017 gives for
 /// the atlas. A fresh clone reads <c>target_roi_not_calibrated</c>, which is a
 /// different state from broken and reports as one.

@@ -37,9 +37,9 @@ public readonly record struct InventorySlotRoi(double X, double Y, double Width,
 /// slot has a confirmed crop".
 /// </para>
 /// <para>
-/// <b>Machine-specific, and therefore not committed.</b> Same reasoning
+/// <b>Specifica di una macchina, e versionata lo stesso dal 2026-09-07.</b> Same reasoning
 /// as the two calibrations above: the fractions are of one client's UI
-/// theme at one resolution. Lives in gitignored <c>data/</c>. A fresh
+/// theme at one resolution. Lives in <c>data/perception/</c>. A fresh
 /// clone reads <see cref="NotCalibratedReason"/>, distinct from a broken
 /// read.
 /// </para>

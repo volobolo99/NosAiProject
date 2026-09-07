@@ -107,7 +107,7 @@ public sealed class InputActionEffector : IActionEffector
     /// Where the operator's keybinds live, relative to the repository root.
     /// </summary>
     /// <remarks>
-    /// Beside the glyph atlas and the target-frame calibration, in gitignored
+    /// Beside the glyph atlas and the target-frame calibration, in
     /// <c>data/</c>: which key means which intention is a fact about one person's
     /// quickbar, and a committed copy would be somebody else's.
     /// </remarks>

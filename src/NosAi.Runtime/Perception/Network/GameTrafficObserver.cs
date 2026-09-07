@@ -108,7 +108,8 @@ public sealed record EntitySighting(
     DateTime? PositionObservedAtUtc = null,
     DateTime? HpObservedAtUtc = null,
     int? Vnum = null,
-    AbsoluteVitals? Vitals = null)
+    AbsoluteVitals? Vitals = null,
+    int? Level = null)
 {
     /// <summary>
     /// Projects into the perception Detection consumed by the world model, or
@@ -173,6 +174,28 @@ public sealed record EntitySighting(
     /// </para>
     /// </remarks>
     public const string PlayerKind = "Player";
+
+    /// <summary>
+    /// Il livello dell'entità quando il filo lo dichiara, cioè da <c>st</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Confermato incrociando il filo con i file del client, il 2026-09-08.</b>
+    /// Il campo 3 di <c>st</c> era fra i non decodificati. Per ogni entità che
+    /// una cattura nomina sia in <c>in</c> (che dà il vnum) sia in <c>st</c>, il
+    /// valore di quel campo è stato confrontato con <c>entity.level</c> del
+    /// catalogo per quel vnum: <b>26 confronti su quattro registrazioni, 26
+    /// concordi, zero discordi</b> — 8 e 8 in <c>nostale_combat</c>, 25, 26 e 27
+    /// in <c>certificazione</c>, 1 in <c>messaggi</c>, 29 in <c>nostale_live</c>.
+    /// </para>
+    /// <para>
+    /// Non è ridondante col catalogo: il vnum arriva solo da <c>in</c>, e la
+    /// maggior parte delle entità viene osservata senza che nessun pacchetto di
+    /// comparsa abbia detto cosa siano — 25 <c>in</c> contro 7685 <c>mv</c> sulla
+    /// cattura di riferimento. Per quelle, il livello dal filo è l'unica cosa che
+    /// si sappia di loro oltre alla posizione.
+    /// </para>
+    /// </remarks>
 }
 
 /// <summary>A decoded tactical event (a hit, a death, a chat line).</summary>
