@@ -1,22 +1,25 @@
 # AP-05 / A2+A4 — DeepSeek: la lista abilità del personaggio
 
-**Stato:** da assegnare
+**Stato:** parte 1 eseguita il 2026-09-07 — esito negativo verificato; parte 2 bloccata su una cattura che non esiste ancora
 **Ownership:** `NosAi.Runtime` (osservazione + cablaggio). Non toccare
 `NosAi.Core`: i contratti `Skill`/`Cooldown`/`Player` sono di Claude (A1).
 
 ## Il fatto, verificato
 
-`Player.Skills` è `EquatableArray<Skill>.Empty` in **tutti e quattro** i siti di
-costruzione di produzione — verificato con
-`grep -rn "EquatableArray<Skill>" src/`:
+Nessun canale di osservazione popola `Player.Skills`. Fino al 2026-09-07 era
+`EquatableArray<Skill>.Empty` in tutti e quattro i siti di costruzione di
+produzione, il che significa che ogni snapshot mai prodotto da questo runtime
+*affermava* che il personaggio non ha abilità.
 
-- `src/NosAi.Core/WorldModel/WorldModelSnapshot.cs:49`
-- `src/NosAi.Runtime/WorldModel/Fusion/GameplayObservationProjector.cs:127`
-- `src/NosAi.Runtime/Tactical/AutoplayCommand.cs:570`
-- `src/NosAi.Runtime/Tactical/LiveCombatObserver.cs:149`
+**Quella metà è stata corretta** (`ADR-0027`, commit `c28dd74`): il campo è ora
+`WorldFact<EquatableArray<Skill>>` e i quattro siti dichiarano `Unknown` con una
+motivazione nominata — `skill_list_never_read:no_observation_channel` nel
+proiettore, `skill_list_not_read_by_this_observer` in `LiveCombatObserver`. Il
+modello non mente più su ciò che non sa.
 
-Nessun canale di osservazione la popola. Ogni snapshot che questo runtime abbia
-mai prodotto afferma quindi che il personaggio **non ha abilità**.
+Resta l'altra metà, che è questo compito: **nessuno legge ancora la lista**. La
+differenza è che un rifiuto ora dice `skill_list_not_observed` perché lo ha
+letto da un fatto, non perché ha dedotto da un array vuoto.
 
 Questo ha già prodotto due difetti reali, entrambi corretti aggirando il
 sintomo:
@@ -44,7 +47,43 @@ campo 5, classificato **probable**.
 
 ## Il compito
 
-### Parte 1 — stabilire se il wire la dice affatto (A2)
+### Parte 1 — ESEGUITA. Esito: il pacchetto non c'è in nessuna cattura
+
+Eseguito il 2026-09-07 con `--world-replay` su **tutte e cinque** le catture
+reali presenti su questa macchina (`Desktop/nos/NosAiProject/data/`). Il replay
+censisce ogni opcode che attraversa il filo, letto o no, quindi un pacchetto
+sconosciuto comparirebbe comunque nell'elenco.
+
+| Cattura | Messaggi inbound | Opcode distinti | `ski` |
+|---|---|---|---|
+| `nostale_combat.noscap` | 8 211 | 21 | **assente** |
+| `certificazione.noscap` | 11 528 | 16 | **assente** |
+| `equip_test.noscap` | 3 584 | 17 | **assente** |
+| `nostale_live.noscap` | 1 913 | 13 | **assente** |
+| `nostale_01.noscap` | 2 490 | 2 | **assente** |
+
+**27 726 messaggi, zero `ski`.** La spiegazione sta nel modo in cui le catture
+nascono: WinDivert si aggancia a un client **già in gioco**, e `ski` è inviato
+una sola volta al caricamento del personaggio. Lo stesso effetto è già
+documentato in forma più debole per `in` — 25 occorrenze contro 7 685 `mv` sulla
+stessa cattura, perché le entità già in vista non vengono ri-annunciate.
+
+La fonte esterna (OpenNos, `Character.GenerateSki()`) descrive il pacchetto come
+`ski {skibase}{generatedSkills}`: il vnum della prima abilità ripetuto due
+volte, poi l'elenco dei vnum. **Resta una pista non riscontrata.** La regola
+sulle fonti esterne di `CLAUDE.md` chiede di confrontare almeno un valore
+decodificato con uno realmente osservato, e qui non esiste alcun valore
+osservato con cui confrontarlo: scrivere il decoder ora significherebbe
+consegnare un parser mai eseguito su un byte vero.
+
+**Cosa serve, ed è l'unica cosa che serve.** Una cattura che cominci **prima**
+del login: avviare `--record-wire` a client chiuso, poi accedere ed entrare in
+gioco. Quel singolo file conterrebbe `ski`, e con esso i pacchetti di
+caricamento personaggio che `equip_test.noscap` mostra solo in parte (`sc`,
+`equip`, `inv`, `lev`). Nessun altro esperimento è necessario: il censimento qui
+sopra ha già escluso che il pacchetto sia nascosto nelle registrazioni esistenti.
+
+### Parte 1 — il metodo, conservato per riferimento
 
 Cercare, nelle catture reali già in repository e con
 `WinDivertProbe.exe --world <file.noscap>`, un pacchetto che elenchi le abilità
@@ -62,7 +101,7 @@ inventata da `sr` sarebbe peggio di nessuna lista. Uno slot che è tornato
 pronto dice che *quello slot esiste*, non quale abilità contiene né se è
 utilizzabile ora.
 
-### Parte 2 — cablarla, solo se la parte 1 è riuscita (A4)
+### Parte 2 — BLOCCATA finché non esiste una cattura da login (A4)
 
 Aggiungere il campo osservato a `GameplayObservation` con lo stesso trattamento
 additivo che gli altri già hanno, popolarlo nel provider, e proiettarlo in
@@ -80,11 +119,16 @@ corretto, non un ostacolo da rimuovere.
 
 ## Vincolo di contratto
 
-`Player.Skills` è oggi `EquatableArray<Skill>`, che non distingue «vuoto» da
-«non osservato». `docs/adr/ADR-0027` propone di cambiarlo e la decisione è
-dell'utente. **Non anticiparla**: cablare la lista dentro la forma attuale, e se
-la parte 1 riesce, dirlo nel resoconto — la lista osservata è precisamente il
-canale che rende la distinzione osservabile e quindi urgente.
+`Player.Skills` è `WorldFact<EquatableArray<Skill>>` da `ADR-0027` (Accepted,
+applicato in `c28dd74`). Chi esegue la parte 2 deve quindi produrre un **fatto**,
+non una lista: `Live(...)` quando il pacchetto è arrivato, `Unknown(motivo)`
+quando non è arrivato — e mai una lista vuota osservata per dire «non l'ho
+letta», che è precisamente l'errore che quell'ADR ha chiuso.
+
+Corollario da non perdere: una lista `ski` vuota è oggi **esprimibile e
+distinta**. Un personaggio appena creato che non ha ancora imparato alcuna
+abilità produce un `Live` su una lista vuota, e il rifiuto corretto per lui è
+`skill_not_found`, non `skill_list_not_observed`.
 
 ## Definizione di fatto
 

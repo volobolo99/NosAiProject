@@ -206,6 +206,7 @@ cond 1 3443217 0 0 11
 | `ivn` | 3 | `ivn 2 34.2006.1.0` | Inventory slot: `slot.vnum.amount.rarity` — **probable**, vnum `2006` matches the `drop` |
 | `eff` | 6 | `eff 3 313909 5000` | Visual effect on an entity — **probable** |
 | `sr` | 17 | `sr 0`, `sr 2`, `sr 6` | Skill ready / cooldown ended, by skill slot — **probable** |
+| `ski` | 0 | — | Elenco delle abilita' del personaggio — **mai osservato**. Censito il 2026-09-07 su tutte e cinque le catture (27 726 messaggi inbound): zero occorrenze. Non e' assenza dal protocollo ma assenza dalle *nostre* registrazioni: e' inviato una volta al caricamento del personaggio, e ogni cattura di questo repository comincia a client gia' in gioco. OpenNos lo descrive come `ski {skibase}{elenco vnum}` — pista non riscontrata, nessun valore osservato con cui confrontarla |
 | `ct` | 108 | `ct 3 313816 1 3443217 -1 -1 0` | Targeting between two entities — **probable** |
 | `sayi`, `msgi` | 18 | `sayi 1 3443217 12 975 2 2006 1 0 0` | Localised message ids, not text — **probable** |
 | `guri` | 6 | `guri 2 1 3443217 0` | **unknown** |
