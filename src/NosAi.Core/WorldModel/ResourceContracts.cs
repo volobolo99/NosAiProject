@@ -27,8 +27,11 @@ public enum ResourceKind
 public sealed record Resource
 {
     public ResourceKind Kind { get; init; }
-    public WorldFact<double> Current { get; init; }
-    public WorldFact<double> Maximum { get; init; }
+    /// <summary>The pool's current level. <c>private init</c>: see the remarks on <see cref="Fraction"/>.</summary>
+    public WorldFact<double> Current { get; private init; }
+
+    /// <summary>The pool's upper bound. <c>private init</c>: see the remarks on <see cref="Fraction"/>.</summary>
+    public WorldFact<double> Maximum { get; private init; }
     public string? CustomName { get; init; }
 
     /// <summary>
@@ -72,13 +75,18 @@ public sealed record Resource
     /// <para>
     /// Settable only from inside this type, so the constructor and
     /// <see cref="FromObservedFraction"/> are the only two doors and no
-    /// caller can pair a fraction with bounds that contradict it. It follows
-    /// that a <c>with</c> expression replacing <see cref="Current"/> or
-    /// <see cref="Maximum"/> carries the old fraction over rather than
-    /// recomputing it -- rebuild through the constructor instead. No call
-    /// site in this repository uses <c>with</c> on a
-    /// <see cref="Resource"/>; this note exists so the first one does not
-    /// acquire a stale fraction by accident.
+    /// caller can pair a fraction with bounds that contradict it.
+    /// </para>
+    /// <para>
+    /// That holds only because <see cref="Current"/> and
+    /// <see cref="Maximum"/> are <c>private init</c> too. While they were
+    /// <c>public init</c> the guarantee above was merely a convention: an
+    /// external <c>r with { Maximum = other }</c> copied the old fraction
+    /// verbatim -- a record's <c>with</c> clones the fields, it does not
+    /// re-run the constructor -- and produced exactly the contradiction this
+    /// paragraph promised was impossible. No call site ever did it, so
+    /// closing the door changed no behaviour; it only made the sentence true.
+    /// Rebuild through the constructor to change a bound.
     /// </para>
     /// </remarks>
     public WorldFact<double> Fraction { get; private init; }
