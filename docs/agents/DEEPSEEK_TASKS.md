@@ -273,6 +273,21 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
+**INDIPENDENTE DA TUTTI** (2026-09-07): **le abilità dicono quale effetto
+applicano, e nessuno sa cosa sia.** `ReferenceImporter` importa cinque tabelle da
+`NSgtdData.NOS`, e di `bcard` il codice stesso dice «gli effetti a cui le altre
+tabelle rimandano». `SkillReferenceDecoder` decodifica già, per ogni abilità, le
+`BCardApplication` che applica — vnum, sub, due valori, target — quindi il
+runtime sa che l'abilità 201 applica la BCard N e **non ha modo di sapere cosa
+faccia la BCard N**. Delle cinque tabelle importate, le due che spiegano gli
+effetti sono le uniche senza decoder, e sono proprio quelle a cui le altre
+puntano. I file veri sono su questa macchina (169 archivi in
+`C:\Program Files (x86)\Nostale\NostaleData`), quindi l'incrocio è offline: ogni
+`BCardVnum` che un'abilità reale applica deve esistere nella tabella `bcard` e
+decodificarsi — un rimando che risolve è la prova che il layout è giusto. Non
+tocca `Program.cs` né alcun file degli altri task. Specifica:
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_bcard_reference.md`.
+
 **INDIPENDENTE DA TUTTI** (2026-09-07): **dodici misure reali che nessun test
 guarda.** `data/perception/screen-samples.txt` contiene dodici campioni presi sul
 client vero a 1024x768 — offset dal personaggio e pixel a cui il client li ha
