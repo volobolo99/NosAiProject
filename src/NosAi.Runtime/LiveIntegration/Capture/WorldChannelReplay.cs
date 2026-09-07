@@ -45,7 +45,15 @@ public sealed record WorldChannelReplaySummary(
     long JobExperienceMin = 0,
     long JobExperienceMax = 0,
     IReadOnlyList<long>? ExperienceForNextLevelValues = null,
-    IReadOnlyList<long>? JobExperienceForNextJobLevelValues = null)
+    IReadOnlyList<long>? JobExperienceForNextJobLevelValues = null,
+    // Equipment from `eq` (the worn set) and `equip` (the equipment inventory).
+    // The two opcodes number slots differently, so the last worn set and the
+    // per-slot view are kept apart rather than merged into one slot space.
+    long EqReadings = 0,
+    long EquipReadings = 0,
+    IReadOnlyList<WornEquipmentSlot>? LastEqSlots = null,
+    IReadOnlyList<WornEquipmentSlot>? LastEquipSlots = null,
+    IReadOnlyList<int>? EquipSlotsSeen = null)
 {
     /// <summary>Packets carrying an opcode the decoder reads.</summary>
     public long ReadablePackets => Opcodes.Where(o => ReadOpcodes.Contains(o.Key)).Sum(o => o.Value);
@@ -96,6 +104,24 @@ public sealed record WorldChannelReplaySummary(
             sb.AppendLine("    Nessuna: nella finestra registrata non e' passato un 'lev'.");
         }
 
+        sb.AppendLine($"  equipaggiamento (eq/equip): {EqReadings + EquipReadings} letture");
+        if (EqReadings + EquipReadings > 0)
+        {
+            if (EqReadings > 0)
+            {
+                sb.AppendLine($"    indossato (eq)          : {DescribeSlots(LastEqSlots)}");
+            }
+            if (EquipReadings > 0)
+            {
+                sb.AppendLine($"    slot equip (ultima)     : {DescribeSlots(LastEquipSlots)}");
+                sb.AppendLine($"    slot equip visti        : {string.Join(" ", EquipSlotsSeen ?? [])}");
+            }
+        }
+        else
+        {
+            sb.AppendLine("    Nessuna: nella finestra registrata non e' passato un 'eq' o 'equip'.");
+        }
+
         sb.AppendLine($"  avvistamenti           : {Sightings} su {DistinctEntities} entita' distinte");
         sb.AppendLine(PlayerEntityId is { } ownId
             ? $"  entity id proprio      : {ownId} (da cond, tipo 1)"
@@ -105,6 +131,13 @@ public sealed record WorldChannelReplaySummary(
             : "  velocita' osservate    : nessuna (cond assente o non letto)");
         sb.AppendLine($"  eventi                 : {CombatHits} colpi, {Deaths} morti");
         return sb.ToString();
+    }
+
+    private static string DescribeSlots(IReadOnlyList<WornEquipmentSlot>? slots)
+    {
+        if (slots is null || slots.Count == 0)
+            return "-";
+        return string.Join(" ", slots.OrderBy(s => s.Slot).Select(s => $"{s.Slot}={s.Vnum}"));
     }
 }
 
@@ -141,7 +174,7 @@ public static class WorldChannelReplay
     // read as evidence of what the chain does and does not consume, so a stale
     // entry here understates the chain in exactly the direction nobody checks.
     private static readonly string[] ReadOpcodes =
-        { "stat", "st", "in", "mv", "die", "su", "cond", "lev", "sr", "ivn", "get", "drop", "ct" };
+        { "stat", "st", "in", "mv", "die", "su", "cond", "lev", "eq", "equip", "sr", "ivn", "get", "drop", "ct" };
 
     /// <summary>Reads a recording file and reports what the world channel said.</summary>
     public static WorldChannelReplaySummary ReplayFile(string path)
@@ -211,6 +244,10 @@ public static class WorldChannelReplay
         long jobExpMin = long.MaxValue, jobExpMax = 0;
         var expForNextValues = new SortedSet<long>();
         var jobExpForNextValues = new SortedSet<long>();
+        long eqReadings = 0, equipReadings = 0;
+        IReadOnlyList<WornEquipmentSlot>? lastEqSlots = null;
+        IReadOnlyList<WornEquipmentSlot>? lastEquipSlots = null;
+        var equipSlotsSeen = new SortedSet<int>();
 
         while (true)
         {
@@ -261,6 +298,22 @@ public static class WorldChannelReplay
                 expForNextValues.Add(progression.ExperienceForNextLevel);
                 jobExpForNextValues.Add(progression.JobExperienceForNextJobLevel);
             }
+
+            if (report.Equipment is { } worn)
+            {
+                if (worn.Opcode == EquipmentWireOpcode.Eq)
+                {
+                    eqReadings++;
+                    lastEqSlots = worn.Slots;
+                }
+                else
+                {
+                    equipReadings++;
+                    lastEquipSlots = worn.Slots;
+                    foreach (WornEquipmentSlot slot in worn.Slots)
+                        equipSlotsSeen.Add(slot.Slot);
+                }
+            }
         }
 
         return new WorldChannelReplaySummary(
@@ -281,6 +334,11 @@ public static class WorldChannelReplay
             progressionReadings == 0 ? 0 : jobExpMin,
             jobExpMax,
             expForNextValues.ToList(),
-            jobExpForNextValues.ToList());
+            jobExpForNextValues.ToList(),
+            eqReadings,
+            equipReadings,
+            lastEqSlots,
+            lastEquipSlots,
+            equipSlotsSeen.ToList());
     }
 }

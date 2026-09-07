@@ -170,6 +170,32 @@ public sealed class ActionOutcomeLedgerStore : IDisposable
         }
     }
 
+    /// <summary>
+    /// Every context that has at least one row, in ordinal ascending order,
+    /// with no duplicates. A context with no rows is not returned -- the
+    /// ledger is append-only and has no separate context registry, so a
+    /// context "exists" only by virtue of a recorded entry naming it.
+    /// </summary>
+    public EquatableArray<string> Contexts()
+    {
+        lock (_lock)
+        {
+            using SqliteCommand command = _connection.CreateCommand();
+            command.CommandText = """
+                SELECT DISTINCT context
+                FROM action_outcome_ledger
+                ORDER BY context ASC
+                """;
+
+            var contexts = new List<string>();
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+                contexts.Add(reader.GetString(reader.GetOrdinal("context")));
+
+            return EquatableArray<string>.From(contexts);
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

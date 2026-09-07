@@ -328,6 +328,34 @@ public readonly record struct PlayerProgression(
     long JobExperience,
     long JobExperienceForNextJobLevel);
 
+/// <summary>Which wire opcode produced a <see cref="WornEquipment"/> reading.</summary>
+public enum EquipmentWireOpcode
+{
+    /// <summary><c>eq</c>: the worn set, listed by equipment-panel position.</summary>
+    Eq,
+
+    /// <summary><c>equip</c>: the equipment inventory, per item slot with detail.</summary>
+    Equip,
+}
+
+/// <summary>One equipment slot the wire reported as occupied.</summary>
+/// <remarks>
+/// The slot is the number the packet carries, not a member of
+/// <c>NosAi.Economy.Inventory.EquipmentSlot</c>. Mapping the two is a separate
+/// decision with its own evidence (Item.dat, via ItemReferenceDecoder), and
+/// doing it here would bury a guess inside an observation. The two opcodes
+/// number slots differently — <c>eq</c> uses the equipment-panel position,
+/// <c>equip</c> uses the item slot id — so a slot number is only meaningful
+/// next to the <see cref="WornEquipment.Opcode"/> that produced it.
+/// </remarks>
+public readonly record struct WornEquipmentSlot(int Slot, int Vnum);
+
+/// <summary>What the wire reported about the character's equipment.</summary>
+public sealed record WornEquipment(
+    long EntityId,
+    ImmutableArray<WornEquipmentSlot> Slots,
+    EquipmentWireOpcode Opcode);
+
 /// <summary>The observations decoded from one packet.</summary>
 /// <param name="PlayerAttackedAtUtc">
 /// When this packet showed the player attacking, or null when it did not. The
@@ -379,7 +407,8 @@ public sealed record DecodedObservations(
     ItemPickup? Pickup = null,
     GroundItem? GroundItem = null,
     PlayerTargetSelection? PlayerTarget = null,
-    PlayerProgression? Progression = null)
+    PlayerProgression? Progression = null,
+    WornEquipment? Equipment = null)
 {
     public static readonly DecodedObservations Empty =
         new(ImmutableArray<EntitySighting>.Empty, ImmutableArray<GameEvent>.Empty);
@@ -389,7 +418,7 @@ public sealed record DecodedObservations(
         && PlayerMovementSpeed is null && PlayerEntityId is null
         && PlayerHit is null && SkillReady is null && InventorySlot is null
         && Pickup is null && GroundItem is null && PlayerTarget is null
-        && Progression is null;
+        && Progression is null && Equipment is null;
 }
 
 /// <summary>
@@ -456,7 +485,10 @@ public sealed record NetworkObservationReport(
     long? PlayerEntityId = null,
     // The most recent progression decoded in this batch, or null when the map
     // does not describe it. Null is not "level zero".
-    PlayerProgression? Progression = null)
+    PlayerProgression? Progression = null,
+    // The most recent equipment reading decoded in this batch, or null when the
+    // batch showed none. Null is not "wearing nothing".
+    WornEquipment? Equipment = null)
 {
     /// <summary>
     /// The most recent hit on the controlled character in this batch, or null
@@ -561,6 +593,7 @@ public sealed class GameTrafficObserver
         PlayerHit? playerHit = null;
         PlayerTargetSelection? playerTarget = null;
         PlayerProgression? progression = null;
+        WornEquipment? equipment = null;
         var skillsReady = ImmutableArray.CreateBuilder<SkillReady>();
         var inventorySlots = ImmutableArray.CreateBuilder<InventorySlotReading>();
         var pickups = ImmutableArray.CreateBuilder<ItemPickup>();
@@ -610,6 +643,9 @@ public sealed class GameTrafficObserver
             // is the more recent state, and keeping the first would report a
             // stale level as current.
             if (result.Progression is not null) progression = result.Progression;
+            // Same "most recent wins" rule as vitals and progression: the last
+            // equipment packet in a batch is the current worn/held state.
+            if (result.Equipment is not null) equipment = result.Equipment;
             // Latest wins on its own merit rather than on batch order: the
             // composer compares this against the screen's timestamp, and an
             // out-of-order packet must not move the answer backwards.
@@ -657,7 +693,8 @@ public sealed class GameTrafficObserver
             playerAttackedAt,
             playerSpeed,
             playerEntityId,
-            progression)
+            progression,
+            equipment)
         {
             LastPlayerHit = playerHit,
             LastPlayerTarget = playerTarget,

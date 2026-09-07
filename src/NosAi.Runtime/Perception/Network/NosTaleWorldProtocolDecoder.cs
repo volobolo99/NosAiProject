@@ -118,6 +118,8 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "su" => DecodeHit(fields, source, at),
             "cond" => DecodeCondition(fields),
             "lev" => DecodeProgression(fields, source, at),
+            "eq" => DecodeEq(fields, source, at),
+            "equip" => DecodeEquip(fields, source, at),
             "sr" => DecodeSkillReady(fields, source, at),
             "ivn" => DecodeInventorySlot(fields, source, at),
             "get" => DecodePickup(fields, source, at),
@@ -401,6 +403,96 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
         };
     }
 
+    /// <summary>
+    /// <c>eq id … dottedGroup …</c> — what the character is wearing, as one
+    /// line. The dotted group lists one vnum per equipment-panel position, with
+    /// <c>-1</c> for a position that is not worn.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The position index in the dotted group is the slot number, and a
+    /// <c>-1</c> position is not an empty slot in the contract — it is a slot
+    /// that is not worn, so it produces no <see cref="WornEquipmentSlot"/> at
+    /// all. The id is the session's own entity id, read from the packet rather
+    /// than remembered from <c>cond</c>, so this opcode is self-contained.
+    /// </para>
+    /// <para>
+    /// This opcode's slot numbering is the equipment-panel position, which is
+    /// not the same space as <c>equip</c>'s item slot ids; the two are kept
+    /// apart by <see cref="WornEquipment.Opcode"/>.
+    /// </para>
+    /// </remarks>
+    private static DecodedObservations DecodeEq(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        // eq id ? ? ? ? ? group ...
+        if (fields.Length < 8 || !TryLong(fields[1], out long entityId) || entityId <= 0)
+            return DecodedObservations.Empty;
+
+        string group = fields[7];
+        if (group.Length == 0 || group.IndexOf('.') < 0)
+            return DecodedObservations.Empty;
+
+        string[] positions = group.Split('.');
+        var slots = ImmutableArray.CreateBuilder<WornEquipmentSlot>();
+        for (int index = 0; index < positions.Length; index++)
+        {
+            if (!TryInt(positions[index], out int vnum) || vnum < -1)
+                return DecodedObservations.Empty;
+            if (vnum == -1)
+                continue; // not worn, not a slot
+            slots.Add(new WornEquipmentSlot(index, vnum));
+        }
+
+        return DecodedObservations.Empty with
+        {
+            Equipment = new WornEquipment(entityId, slots.ToImmutable(), EquipmentWireOpcode.Eq)
+        };
+    }
+
+    /// <summary>
+    /// <c>equip ? ? group…</c> — the equipment inventory, per item slot with
+    /// detail. Each group is <c>slot.vnum.…</c>; the first two numbers are read
+    /// and the rest ignored.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The packet carries no entity id, so the id the decoder already tracks
+    /// from <c>cond</c> is used; before that is known the packet is refused
+    /// rather than attributed to nobody — the same refusal shape
+    /// <see cref="DecodeCast"/> applies to a selection without an own id.
+    /// </para>
+    /// <para>
+    /// A partially-read set is the failure that matters here: a planner acting
+    /// on a weapon that is not there is worse than acting on nothing, so any
+    /// group that does not parse refuses the packet whole.
+    /// </para>
+    /// </remarks>
+    private DecodedObservations DecodeEquip(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (_playerEntityId is not { } entityId)
+            return DecodedObservations.Empty;
+
+        var slots = ImmutableArray.CreateBuilder<WornEquipmentSlot>();
+        for (int i = 3; i < fields.Length; i++)
+        {
+            string[] parts = fields[i].Split('.');
+            if (parts.Length < 2
+                || !TryInt(parts[0], out int slot)
+                || !TryInt(parts[1], out int vnum))
+                return DecodedObservations.Empty;
+            if (slot < 0 || vnum < 0)
+                return DecodedObservations.Empty;
+            if (vnum == 0)
+                continue; // an empty slot, not an occupied one
+            slots.Add(new WornEquipmentSlot(slot, vnum));
+        }
+
+        return DecodedObservations.Empty with
+        {
+            Equipment = new WornEquipment(entityId, slots.ToImmutable(), EquipmentWireOpcode.Equip)
+        };
+    }
+
     // ------------------------------------------------------------------ C1-3
 
     /// <summary>
@@ -432,14 +524,29 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     /// <c>drop</c> that preceded it; probable.
     /// </summary>
     /// <remarks>
-    /// The dotted field is read only in the four-part shape the capture showed.
-    /// Fewer parts is a truncated packet; more parts is a shape nobody has
-    /// observed, in which the third part may not be an amount at all, and reading
-    /// it as one would be the misplaced-field reading this decoder refuses
-    /// everywhere else. An empty slot (a vnum of −1, or an amount of 0) was never
-    /// observed either and is not read: the cost is that an emptied slot produces
-    /// no reading, which a consumer sees as the absence of a newer one rather
-    /// than as an invented empty.
+    /// <para>
+    /// The first field is an inventory-kind selector, and the group shape depends
+    /// on it. The bag shape (<c>ivn 2 …</c>) is four parts,
+    /// <c>slot.vnum.amount.rarity</c>; the equipment shape (<c>ivn 0 …</c>)
+    /// observed in <c>data/equip_test.noscap</c> is seven parts,
+    /// <c>slot.vnum</c> plus five unread trailing fields, where an emptied slot
+    /// carries vnum 0.
+    /// </para>
+    /// <para>
+    /// The four-part shape is read only as the capture showed it: fewer parts is
+    /// a truncated packet; a different count is a shape nobody has observed, in
+    /// which the third part may not be an amount at all. An empty slot (a vnum
+    /// of −1, or an amount of 0) was never observed in the bag shape and is not
+    /// read: the cost is that an emptied slot produces no reading, which a
+    /// consumer sees as the absence of a newer one rather than as an invented
+    /// empty.
+    /// </para>
+    /// <para>
+    /// The equipment shape carries no stack count or rarity: an equipment slot
+    /// holds a single item instance, so <see cref="InventorySlotReading.Amount"/>
+    /// is 1 and <see cref="InventorySlotReading.Rarity"/> is 0, neither of which
+    /// is stated by the wire on this shape.
+    /// </para>
     /// </remarks>
     private static DecodedObservations DecodeInventorySlot(string[] fields, DataSourceKind source, DateTime capturedUtc)
     {
@@ -447,19 +554,40 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             return DecodedObservations.Empty;
 
         string[] parts = fields[2].Split('.');
-        if (parts.Length != 4
-            || !TryInt(parts[0], out int slot)
-            || !TryInt(parts[1], out int vnum)
-            || !TryInt(parts[2], out int amount)
-            || !TryInt(parts[3], out int rarity))
-            return DecodedObservations.Empty;
-        if (slot < 0 || vnum <= 0 || amount <= 0)
-            return DecodedObservations.Empty;
 
-        return new DecodedObservations(
-            ImmutableArray<EntitySighting>.Empty,
-            ImmutableArray<GameEvent>.Empty,
-            InventorySlot: new InventorySlotReading(inventoryKind, slot, vnum, amount, rarity, capturedUtc, source));
+        if (parts.Length == 4)
+        {
+            // Bag shape: slot.vnum.amount.rarity.
+            if (!TryInt(parts[0], out int slot)
+                || !TryInt(parts[1], out int vnum)
+                || !TryInt(parts[2], out int amount)
+                || !TryInt(parts[3], out int rarity))
+                return DecodedObservations.Empty;
+            if (slot < 0 || vnum <= 0 || amount <= 0)
+                return DecodedObservations.Empty;
+
+            return new DecodedObservations(
+                ImmutableArray<EntitySighting>.Empty,
+                ImmutableArray<GameEvent>.Empty,
+                InventorySlot: new InventorySlotReading(inventoryKind, slot, vnum, amount, rarity, capturedUtc, source));
+        }
+
+        if (parts.Length == 7)
+        {
+            // Equipment shape: slot.vnum.<five unread trailing fields>.
+            if (!TryInt(parts[0], out int slot)
+                || !TryInt(parts[1], out int vnum))
+                return DecodedObservations.Empty;
+            if (slot < 0 || vnum <= 0)
+                return DecodedObservations.Empty;
+
+            return new DecodedObservations(
+                ImmutableArray<EntitySighting>.Empty,
+                ImmutableArray<GameEvent>.Empty,
+                InventorySlot: new InventorySlotReading(inventoryKind, slot, vnum, 1, 0, capturedUtc, source));
+        }
+
+        return DecodedObservations.Empty;
     }
 
     /// <summary>
