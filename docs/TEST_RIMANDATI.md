@@ -61,10 +61,21 @@ mescolano in silenzio: nulla, oggi, impedisce di sommare campioni di sessioni
 che il client disegnava a scale diverse. Il residuo che sfonda la soglia è
 l'unico sintomo, e arriva alla fine.
 
-**Serve una decisione prima del ricampionamento**: o il file porta il regime su
-ogni riga (e i campioni di regimi diversi non si mescolano), oppure `--screen-samples-clear`
-diventa obbligatorio a ogni cambio di zoom e il documento lo dice. La prima è
-robusta, la seconda è una procedura che qualcuno dimenticherà.
+**Decisione dell'operatore, 2026-09-07: il regime sta su ogni riga.** Non una
+procedura da ricordare, ma un dato che il file porta, così che due regimi diversi
+non possano mescolarsi nemmeno per distrazione. La specifica è
+`docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_sample_regime.md`, e il formato
+nuovo porta il DPI accanto a larghezza e altezza — cioè la `GeometryShape` che
+il repository già definisce.
+
+**Con un limite che va conosciuto**: le dodici righe attuali hanno tutte la
+stessa larghezza e altezza, quindi la distinzione dipenderebbe interamente dal
+DPI. È plausibile (il rapporto di scala misurato, ~0,83, è vicino a 96/120 = 0,8)
+ma **non è provato**, perché il DPI di quelle righe non fu registrato e non è più
+recuperabile. Il formato nuovo rende la domanda rispondibile la prossima volta;
+non risponde a questa. E se il client potesse cambiare scala a DPI e dimensioni
+costanti, il regime della riga non lo vedrebbe: resta un buco noto, scritto nel
+formato.
 
 ### Cosa deve fare l'operatore
 

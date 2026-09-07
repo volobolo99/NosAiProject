@@ -288,6 +288,22 @@ decodificarsi — un rimando che risolve è la prova che il layout è giusto. No
 tocca `Program.cs` né alcun file degli altri task. Specifica:
 `docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_bcard_reference.md`.
 
+**DOPO `refusal_reason_coverage` E `unobserved_breakdown`** (2026-09-07):
+**il regime su ogni riga dei campioni schermo.** I dodici campioni di
+`screen-samples.txt` non si adattano a una sola trasformazione — residuo 73,6 px
+contro una soglia di 1,5 caselle — perche' il file e' una miscela di due sessioni
+con geometria diversa, e nulla nel formato lo impedisce: la riga porta larghezza
+e altezza, non il DPI. **Decisione dell'operatore: il regime sta su ogni riga**,
+non una procedura da ricordare. Il tipo esiste gia' (`GeometryShape`, e il suo
+commento dice esattamente a cosa serve): la riga lo porta, il solutore rifiuta la
+miscela **prima** di adattare invece di scoprirla da un residuo alto alla fine, e
+chi non riesce a leggere il DPI non scrive il campione. Con un limite scritto nel
+codice e non nascosto: le dodici righe attuali hanno la stessa larghezza e
+altezza, quindi il controllo nuovo avrebbe retto solo se i DPI differivano —
+plausibile, non provato. **Va dopo gli altri due**: aggiunge una costante
+`...Reason`, e il registro dei rifiuti misura proprio quell'insieme. Specifica:
+`docs/agents/phases/AP-02/AP-02_A2A4_DEEPSEEK_sample_regime.md`.
+
 **INDIPENDENTE DA TUTTI** (2026-09-07): **dodici misure reali che nessun test
 guarda.** `data/perception/screen-samples.txt` contiene dodici campioni presi sul
 client vero a 1024x768 — offset dal personaggio e pixel a cui il client li ha
