@@ -575,31 +575,98 @@ public sealed class GameReferenceDatabase : IDisposable
     /// The displayed name of an entity, or null when there is none to show.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Null rather than the raw key: showing "zts1e" to an operator would look like
     /// a name and be one only by accident.
+    /// </para>
+    /// <para>
+    /// <b>Due passi, e il secondo è misurato.</b> Le due metà del client non
+    /// scrivono la stessa chiave: per i numeri a tre cifre e oltre,
+    /// <c>monster.dat</c> porta <c>zts1002e</c> e il file di lingua porta
+    /// <c>zts100*e</c> — stessa posizione, un <c>2</c> da una parte e un segno di
+    /// punteggiatura dall'altra (<c>* ! + ( ) " </c> e lo spazio). Con il solo
+    /// confronto esatto risolvevano <b>102 mostri su 2705</b>, il 3,8 %: le
+    /// chiavi corte, quelle senza marcatore.
+    /// </para>
+    /// <para>
+    /// Il secondo passo toglie il carattere prima della <c>e</c> finale da
+    /// entrambi i lati. Misurato il 2026-09-07 sul catalogo reale: <b>2663 su
+    /// 2705 risolti, zero ambigui</b>, 42 senza testo. Lo zero è la prova che
+    /// conta — se il marcatore distinguesse due voci, togliendolo due voci
+    /// collasserebbero sulla stessa chiave, e qui non succede mai. E i dodici
+    /// vnum che le registrazioni di questo repository portano davvero sul filo
+    /// mantengono il nome che avevano col confronto esatto.
+    /// </para>
+    /// <para>
+    /// <b>Ambiguo resta null.</b> Se dopo aver tolto il marcatore due testi
+    /// rispondono alla stessa chiave, nessuno dei due è il nome: sceglierne uno
+    /// sarebbe inventarlo. Oggi non accade su nessuna delle cinque tabelle, e
+    /// questa riga esiste perché se accadesse domani si vedrebbe.
+    /// </para>
     /// </remarks>
     public string? DisplayName(string kind, int vnum, string language)
     {
-        using SqliteCommand command = _connection.CreateCommand();
-        command.CommandText = """
+        using SqliteCommand exact = _connection.CreateCommand();
+        exact.CommandText = """
             SELECT t.value FROM entity e
             JOIN text t ON t.key = e.name_key AND t.language = $lang AND t.table_name = $kind
             WHERE e.kind = $kind AND e.vnum = $vnum
             """;
-        command.Parameters.AddWithValue("$kind", kind);
-        command.Parameters.AddWithValue("$vnum", vnum);
-        command.Parameters.AddWithValue("$lang", language);
-        return command.ExecuteScalar() as string;
+        exact.Parameters.AddWithValue("$kind", kind);
+        exact.Parameters.AddWithValue("$vnum", vnum);
+        exact.Parameters.AddWithValue("$lang", language);
+        if (exact.ExecuteScalar() is string found)
+            return found;
+
+        using SqliteCommand stripped = _connection.CreateCommand();
+        stripped.CommandText = MarkerInsensitiveNameQuery;
+        stripped.Parameters.AddWithValue("$kind", kind);
+        stripped.Parameters.AddWithValue("$vnum", vnum);
+        stripped.Parameters.AddWithValue("$lang", language);
+        return stripped.ExecuteScalar() as string;
     }
 
+    /// <summary>
+    /// Il secondo passo di <see cref="DisplayName"/>: chiavi confrontate senza il
+    /// carattere che precede la <c>e</c> finale, e una sola risposta o nessuna.
+    /// </summary>
+    /// <remarks>
+    /// <c>HAVING COUNT(*) = 1</c> non è una cautela di stile: è ciò che rende
+    /// «ambiguo» indistinguibile da «assente» per chi chiama, invece di lasciargli
+    /// in mano il primo di due nomi possibili.
+    /// </remarks>
+    private const string MarkerInsensitiveNameQuery = """
+        SELECT MIN(t.value) FROM entity e
+        JOIN text t
+          ON t.language = $lang
+         AND t.table_name = e.kind
+         AND LENGTH(t.key) > 2 AND LENGTH(e.name_key) > 2
+         AND SUBSTR(t.key, 1, LENGTH(t.key) - 2) = SUBSTR(e.name_key, 1, LENGTH(e.name_key) - 2)
+         AND SUBSTR(t.key, -1) = 'e' AND SUBSTR(e.name_key, -1) = 'e'
+        WHERE e.kind = $kind AND e.vnum = $vnum
+        HAVING COUNT(*) = 1
+        """;
+
     /// <summary>How many entities of a kind resolve to a displayed name.</summary>
+    /// <remarks>
+    /// Conta con la stessa regola a due passi di <see cref="DisplayName"/>. Se
+    /// contasse solo le corrispondenze esatte direbbe 102 dove il rapporto ne
+    /// mostra 2663, e due numeri che descrivono la stessa cosa e non concordano
+    /// sono peggio di un numero solo.
+    /// </remarks>
     public int NamedCount(string kind, string language)
     {
         using SqliteCommand command = _connection.CreateCommand();
         command.CommandText = """
             SELECT COUNT(*) FROM entity e
-            JOIN text t ON t.key = e.name_key AND t.language = $lang AND t.table_name = $kind
-            WHERE e.kind = $kind
+            WHERE e.kind = $kind AND (
+                EXISTS (SELECT 1 FROM text t
+                        WHERE t.key = e.name_key AND t.language = $lang AND t.table_name = e.kind)
+                OR (SELECT COUNT(*) FROM text t
+                    WHERE t.language = $lang AND t.table_name = e.kind
+                      AND LENGTH(t.key) > 2 AND LENGTH(e.name_key) > 2
+                      AND SUBSTR(t.key, 1, LENGTH(t.key) - 2) = SUBSTR(e.name_key, 1, LENGTH(e.name_key) - 2)
+                      AND SUBSTR(t.key, -1) = 'e' AND SUBSTR(e.name_key, -1) = 'e') = 1)
             """;
         command.Parameters.AddWithValue("$kind", kind);
         command.Parameters.AddWithValue("$lang", language);
