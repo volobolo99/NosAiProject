@@ -172,50 +172,32 @@ Concretamente, prima di consegnare:
 
 ## Cartella di lavoro — una sola, sempre
 
-`C:\Users\volob\Desktop\nos\NosAiProject` è l'unica copia di lavoro del
-progetto. Apri sempre questa in Cursor.
+`C:\Users\volob\Desktop\NosAiProject` è l'unica copia di lavoro del progetto.
+Apri sempre questa. `git pull` prima di ogni task.
 
-Per DeepSeek questo resta vero senza eccezioni: non aprire nessun'altra
-cartella, non lavorarci, `git pull` prima di ogni task. Ogni commit fatto qui
-viene pushato su `origin/main` automaticamente (hook `post-commit`), quindi
-GitHub non resta mai indietro rispetto al disco.
+**Due cose sono cambiate il 2026-09-07 e questa sezione diceva il falso su
+entrambe.**
 
-**Correzione verificata (2026-09-07).** La versione precedente di questa
-sezione diceva che ogni altra cartella `NosAiProject*` sul Desktop è
-«materiale morto … non ha commit propri». La seconda metà è falsa, ed è la
-metà pericolosa: `C:\Users\volob\Desktop\NosAiProject` contiene **46 commit
-che non esistono su nessun ref remoto**, distribuiti su 12 branch locali.
-Comando che lo mostra, da quella cartella:
+**(1) La cartella è un'altra.** Fino a oggi qui c'era scritto
+`C:\Users\volob\Desktop\nos\NosAiProject`. Quella cartella **non esiste più**:
+era un secondo clone, ed è stata rimossa nel consolidamento chiesto dall'utente.
+Prima di rimuoverla sono stati recuperati i suoi file ignorati, che esistevano
+solo lì — le cinque catture `.noscap`, le calibrazioni di `data/perception/`,
+`keybinds.json`, i file dello scan di memoria e `tools/windivert/`. Ora sono
+tutti nella cartella qui sopra.
 
-```
-for b in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
-  n=$(git rev-list --count "$b" --not --remotes=origin); [ "$n" -gt 0 ] && echo "$b: $n";
-done
-```
+**(2) Il push automatico non esiste.** Qui c'era scritto che ogni commit viene
+pushato su `origin/main` da un hook `post-commit`, «quindi GitHub non resta mai
+indietro rispetto al disco». Verificato: `.git/hooks/` di questa cartella **non
+contiene alcun hook** — solo i `.sample` di git. Quell'hook viveva nel clone
+rimosso. **Devi pushare tu, esplicitamente, alla fine di ogni task**, e dire nel
+report di completamento che l'hai fatto.
 
-I quattro maggiori, misurati contro il loro merge-base con `origin/main`:
-
-| Branch | Commit solo-locali | Dimensione |
-|---|---|---|
-| `codex/cursor-perception-contract` | 11 | 65 file, +9218 righe |
-| `worktree-piano-controllo-gioco` | 5 | +1837 righe (incl. `scripts/verifica-obiettivo.ps1`) |
-| `feature/tactical-simulator-v1` | 9 | +839 righe |
-| `main-merge-tactical` | 10 | +822 righe (contiene il precedente piu' un merge) |
-
-Il commit `0fe2a5a` ha recuperato da `feature/tactical-simulator-v1` soltanto
-la *documentazione*: il codice di quel branch resta solo su disco.
-
-Quella cartella e' anche l'unica delle due ad avere worktree attivi (9 contro
-1) e 30 branch locali contro 2. Non e' quindi un archivio: e' dove vive tutto
-il lavoro non ancora portato su GitHub.
-
-**Prima che quella cartella venga cancellata o considerata sacrificabile, quei
-branch vanno pushati su `origin`.** E' un'operazione additiva e reversibile;
-cancellare la cartella non lo e'. Finche' non e' fatto, la frase «materiale
-morto» non va riscritta in questa forma da nessun agente.
-
-Nulla di questo cambia per DeepSeek: la cartella di lavoro resta una sola,
-quella nominata in cima a questa sezione.
+**Sui 46 commit solo-locali** che questa sezione segnalava come non presenti su
+nessun ref remoto: la situazione è risolta. Sono su `origin` sotto i dodici rami
+`archivio/*`, ognuno verificato contenuto in un ref remoto prima che il ramo
+locale corrispondente venisse cancellato. In locale resta il solo `main`, e i
+comandi di quella vecchia procedura non servono più.
 
 ---
 
@@ -291,7 +273,18 @@ hardcoded — lavoro futuro di AP-08).
 read-only sui `Portal` reali via `MultiMapRoutePlanner` (Q-077). Nessun
 difetto trovato in audit.
 
-**PRONTO ORA** (Q-084, 2026-09-06): `--calibrate-inventory-panel` —
+**PRONTO ORA** (2026-09-07): **pubblicare la progressione che il filo già
+porta** — l'opcode `lev`. `docs/PROTOCOLLO_NOSTALE.md:236` lo dice in una riga:
+«Progression — level and XP from `lev` (catalogued, not yet published)».
+L'opcode è censito, i suoi campi sono classificati per confidenza, le
+registrazioni ne portano 23 — e `NosTaleWorldProtocolDecoder` non lo legge, per
+cui il censimento di `--world-replay` conta quei pacchetti fra quelli buttati
+(`8147/8211`). Task interamente offline: le due registrazioni sono su disco,
+nessun client reale serve, e nulla di quanto chiesto può attuare alcunché.
+Specifica completa, con tutte e 23 le righe reali misurate il 2026-09-07:
+`docs/agents/phases/AP-08/AP-08_A2A4_DEEPSEEK_progression_from_lev.md`.
+
+**CONSEGNATO** (Q-084, 2026-09-06): `--calibrate-inventory-panel` —
 seconda indagine AP-07/A2+A4 ha trovato un varco reale (non tutto il
 blocco): `InventoryKind` ora documentato da fonte esterna citata, e la
 calibrazione screen-space del pannello equipaggiamento (il vero collo di
@@ -343,7 +336,8 @@ kind non-dispatchabile) e un commento falso copiato dalla specifica
 (vedi Q-092 in `EXECUTION_QUEUE.md` per i dettagli esatti). Build 0
 errori/0 warning, Core 654/654, Runtime 2150/2150.
 
-**PRONTO ORA** (Q-094, 2026-09-07): **AP-07 — `--loadout-report`.** Audit
+**CONSEGNATO E INTEGRATO** (Q-094, 2026-09-07, commit `349eab1`): **AP-07 —
+`--loadout-report`.** Non prenderlo: e' fatto. Audit
 indipendente trova che `LoadoutPlanner`'s "nothing decodes an item's
 equipment category yet" è falso da quando `ItemReferenceDecoder` (Q-088)
 esiste. Lato `NosAi.Core` (Claude, già consegnato e testato):
