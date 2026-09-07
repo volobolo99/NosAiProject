@@ -15,9 +15,19 @@ Il dispositivo non deve essere considerato disco di sistema o di avvio. La veloc
 ## 1-bis. Cosa smette di funzionare senza il volume — misurato il 2026-09-07
 
 Questo documento descrive il volume come una scelta di distribuzione. È anche una
-**dipendenza di funzionamento**, e la macchina di sviluppo attuale non la
-soddisfa: `Get-Volume` riporta il solo `C:` etichettato `Acer`, nessun volume
-`NOSAI-SSD` collegato.
+**dipendenza di funzionamento**, e per un tratto della giornata del 2026-09-07 la
+macchina di sviluppo non la soddisfaceva: `Get-Volume` riportava il solo `C:`
+etichettato `Acer`.
+
+**Risolto lo stesso giorno**: `NOSAI-SSD` è collegato (`D:`, NTFS, 1863 GB) e
+l'operatore ha dichiarato che resterà collegato durante il lavoro. Il catalogo si
+apre — `--world-replay` stampa ora `reference catalog: D:\NosAi\data\reference.db`
+al posto di `nosai_ssd_not_found` — e `--reference-info` conta **2705 mostri,
+7727 item, 1958 abilità, 2763 card, 131 bcard**, importati dal client reale.
+
+La sezione resta scritta perché la conseguenza va conosciuta: è quello che
+succede la prossima volta che il volume non è collegato, ed è successo per mesi
+senza che nulla lo dicesse.
 
 `VolumeLocator.TryResolve` cerca per **etichetta** e non ha ripiego. La sua stessa
 doc-comment spiega perché, ed è una decisione giusta: «un journal atterrato in
@@ -34,8 +44,10 @@ Quattro cose ne dipendono, e senza il volume nessuna delle quattro conserva null
 | Registro degli esiti d'azione | `ActionOutcomeLedgerStore`, da `--scout`, `--engage`, `--autoplay`, `--recover` | **ogni atto mai eseguito ha registrato zero righe** |
 | Catalogo di riferimento del gioco | `GameReferenceLocator` | il catalogo non stabilisce alcun vnum come mostro |
 
-L'ultima riga è quella che si vede a occhio: `--world-replay` stampa
-`reference catalog: nosai_ssd_not_found` in testa a ogni esecuzione.
+L'ultima riga è quella che si vede a occhio: senza volume `--world-replay` stampa
+`reference catalog: nosai_ssd_not_found` in testa a ogni esecuzione, e con il
+volume stampa il percorso del catalogo. È il modo più rapido per sapere in quale
+dei due mondi si sta lavorando.
 
 **Non è un difetto del codice.** I comandi avvisano e proseguono
 (`[WARN] action_outcome_ledger_unavailable:…`), con il commento accanto che dice

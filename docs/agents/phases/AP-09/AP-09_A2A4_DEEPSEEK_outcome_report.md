@@ -38,10 +38,24 @@ lettura assente.
 
 ### Il secondo fatto, che il rapporto deve saper dire
 
-Su questa macchina **non esiste il volume `NOSAI-SSD`** (`Get-Volume` mostra il
-solo `C:` etichettato `Acer`), e `SqliteJournalOptions` lo cerca per etichetta.
-Quindi `TryOpenFromVolume` fallisce sempre qui, e il registro è **vuoto per
-costruzione**: nessun atto mai eseguito su questa macchina ha lasciato una riga.
+**Aggiornamento del 2026-09-07, dopo la prima stesura di questa specifica: il
+volume ora c'è.** L'operatore ha collegato `NOSAI-SSD` (`D:`, NTFS, 1863 GB) e ha
+dichiarato che resterà collegato. La versione precedente di questa sezione diceva
+che il volume non esisteva e che il registro era vuoto per costruzione: **era
+vero quando è stata scritta e non lo è più**, e la *Definition of done* qui sotto
+è cambiata di conseguenza.
+
+Cosa c'è già sul volume, misurato: `D:\NosAi\data\reference.db` (160 MB, 2705
+mostri, 7727 item, 1958 abilità, 2763 card, 131 bcard, importati dal client reale
+il 2026-09-06) e `nosai-maps.db`. Il registro degli esiti, invece, **non è ancora
+stato creato da nessuna esecuzione**: `--engage`/`--scout`/`--autoplay`/`--recover`
+lo aprono solo quando vengono eseguiti davvero, e su questa macchina non lo sono
+ancora stati con il volume collegato.
+
+Quindi al momento in cui prendi questo task, lo stato più probabile è **volume
+presente, file del registro assente** — la seconda riga della tabella qui sotto,
+non la prima. Verificalo invece di assumerlo, e riporta quale dei quattro casi
+hai trovato.
 
 I quattro comandi lo gestiscono già bene e non vanno toccati — avvisano con
 `[WARN] action_outcome_ledger_unavailable:<motivo>` e proseguono, e il commento
@@ -178,11 +192,15 @@ Su un file temporaneo, veri `Append` e vera rilettura:
 - `dotnet build NosAi.sln -c Release` — **0 errori, 0 avvisi**.
 - `dotnet test tests/NosAi.Runtime.Tests -c Release` e
   `tests/NosAi.Core.Tests` — 0 falliti, numeri riportati.
-- `--outcome-report` eseguito **davvero** su questa macchina: stamperà il
-  rifiuto per volume assente, ed è l'esito atteso. Incolla l'uscita: è la prova
-  che il percorso di rifiuto funziona ed è nominato.
+- `--outcome-report` eseguito **davvero** su questa macchina, con `NOSAI-SSD`
+  collegato. **Non fisso l'esito atteso**: dipende da quale dei quattro casi la
+  macchina si trova, e stabilirlo è parte del task. Incolla l'uscita e di' quale
+  caso hai trovato.
 - La stessa uscita per un percorso con uno store popolato dai test, così si vede
   anche il rapporto pieno.
-- Una riga nel report che dice quante righe aveva il registro reale: **zero**, e
-  perché.
+- **Il percorso di rifiuto va comunque provato**, e ora che il volume c'è non lo
+  provi eseguendo il comando: lo provi con un test che apre lo store da un
+  percorso inesistente. Un rifiuto che nessuno può più far scattare a mano è
+  esattamente quello che va fissato da una prova.
+- Una riga nel report che dice quante righe aveva il registro reale, e perché.
 - Livello: **Integrated**.
