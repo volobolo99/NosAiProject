@@ -218,6 +218,40 @@
             <ItemsControl x:Name="KeybindsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
               <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="CONFERMA UN TASTO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  Un tasto dichiarato e' un'ipotesi presa dai default del gioco, non una misura: il client consegna gli slot rapidi vuoti e li riempi tu.
+                  Finche' resta dichiarato viene letto, elencato e RIFIUTATO alla pressione con keybind_not_confirmed, e la catena di combattimento si ferma li'.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,8" TextWrapping="Wrap">
+                  Confermare non e' spuntare una casella: premi il tasto in gioco, guarda l'effetto (MP che scendono, HP che salgono, il pacchetto sr che nomina lo slot), e scrivi qui che cosa hai visto. Senza osservazione la conferma viene rifiutata.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Intento" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="KeybindIntent" Width="140" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Tasto, da 1 a 254" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="KeybindVirtualKey" Width="70" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="KeybindReloadButton" Style="{StaticResource GhostButton}" Content="Rileggi" Click="OnReloadKeybinds"/>
+                </StackPanel>
+                <TextBlock Text="Che cosa hai osservato" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4"/>
+                <TextBox x:Name="KeybindObservation" Margin="0,0,0,8" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="46"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                <Button x:Name="KeybindConfirmButton" Style="{StaticResource PrimaryButton}" Content="Conferma il tasto"
+                        HorizontalAlignment="Left" Click="OnConfirmKeybind" Margin="0,0,0,8"/>
+                <TextBlock x:Name="KeybindSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna conferma in questa sessione."/>
+                <TextBox x:Name="KeybindOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="90" MaxHeight="200" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
                 <TextBlock Style="{StaticResource CardLabel}" Text="T-13 — CATENA DI COMBATTIMENTO SUL CLIENT VIVO"/>
                 <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
                   1) Servono client in gioco, WinDivert, e questo pannello avviato come amministratore.
@@ -589,8 +623,10 @@
             <Label Content="Endpoint osservazione gioco (host:porta, vuoto = spento)" Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0"/>
             <DockPanel>
               <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Rileva endpoint" Click="OnDetectObserveGame" Margin="8,0,0,0"/>
-              <TextBox x:Name="SettingObserveGame"/>
+              <TextBox x:Name="SettingObserveGame" TextChanged="OnEndpointTextChanged"/>
             </DockPanel>
+            <TextBlock x:Name="EndpointProvenance" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                       Margin="0,4,0,0" Text="Nessun endpoint rilevato."/>
             <CheckBox x:Name="SettingRunDecisionLoop" Content="Avvia il ciclo di decisione Gate 3 (decide, non agisce)" Margin="0,12,0,0"/>
             <Label Content="Intervallo decisione (ms)" Foreground="{StaticResource MutedBrush}"/>
             <TextBox x:Name="SettingDecisionIntervalMs"/>

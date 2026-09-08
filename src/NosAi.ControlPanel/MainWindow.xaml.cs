@@ -248,6 +248,10 @@ public partial class MainWindow : Window
         ApplyTarget();
         ApplyInventoryPanelRoi();
         _lastSnapshot = snapshot;
+        // La rete del client si rileva da sola: il PID arriva qui a ogni giro, e
+        // finche' l'endpoint manca o il client cambia vale la pena chiederlo. Un
+        // valore digitato dall'operatore non viene mai toccato.
+        RefreshEndpointAutoDetect();
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
         SidebarDetail.Text = _session.Detail ?? snapshot.Warning;

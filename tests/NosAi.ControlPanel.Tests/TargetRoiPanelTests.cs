@@ -25,16 +25,26 @@ public class TargetRoiPanelTests
     {
         string xaml = File.ReadAllText(XamlPath());
 
+        // Scoped to the card, not to the file. The markers are ordinary text: any
+        // number followed by a bracket anywhere else in the window -- a range like
+        // "1..254" ends in "4)" -- used to be picked up as this card's step 4 and
+        // failed the assertion for a reason that had nothing to do with the card.
+        int cardStart = xaml.IndexOf("T-09 \u2014 CALIBRA IL RIQUADRO BERSAGLIO", StringComparison.Ordinal);
+        Assert.True(cardStart > 0, "The T-09 card is not in the window.");
+        int cardEnd = xaml.IndexOf("</Border>", cardStart, StringComparison.Ordinal);
+        Assert.True(cardEnd > cardStart, "The T-09 card is not closed.");
+        string card = xaml[cardStart..cardEnd];
+
         string[] markers = { "1)", "2)", "3)", "4)", "5)" };
         int previousIndex = -1;
         foreach (string marker in markers)
         {
-            int index = xaml.IndexOf(marker, StringComparison.Ordinal);
+            int index = card.IndexOf(marker, StringComparison.Ordinal);
             Assert.True(index > previousIndex, $"Step marker '{marker}' not found after index {previousIndex}.");
             previousIndex = index;
         }
 
-        Assert.True(xaml.IndexOf("frazioni", StringComparison.Ordinal) >= 0,
+        Assert.True(card.IndexOf("frazioni", StringComparison.Ordinal) >= 0,
             "The card does not mention 'frazioni'.");
     }
 
