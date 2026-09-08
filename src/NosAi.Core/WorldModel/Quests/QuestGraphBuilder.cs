@@ -19,7 +19,13 @@ public sealed record DanglingPrerequisite(QuestId Quest, QuestId MissingPrerequi
 /// <param name="Graph">The graph built from the observations, with duplicates collapsed to their first occurrence.</param>
 /// <param name="DuplicateIds">Quest ids observed more than once; only the first occurrence entered the graph.</param>
 /// <param name="DanglingPrerequisites">Prerequisite edges pointing outside the observed set.</param>
-/// <param name="Cycles">Prerequisite cycles, each listed as the quests forming it.</param>
+/// <param name="Cycles">
+/// Prerequisite cycles, each listed as the quests forming it. At least one cycle is
+/// reported for every cyclic region, which is what <see cref="IsSound"/> rests on; this
+/// is deliberately not an exhaustive enumeration of simple cycles, since that is
+/// exponential in the worst case and the planner only needs to know the graph cannot be
+/// walked. With edges a→b, a→c, b→c, c→a the cycle a→b→c→a is reported and a→c→a is not.
+/// </param>
 public sealed record QuestGraphBuildResult(
     QuestGraph Graph,
     EquatableArray<QuestId> DuplicateIds,
@@ -101,7 +107,7 @@ public static class QuestGraphBuilder
     }
 
     /// <summary>
-    /// Finds every prerequisite cycle with an iterative depth-first search.
+    /// Finds prerequisite cycles with an iterative depth-first search.
     /// </summary>
     /// <remarks>
     /// Iterative rather than recursive on purpose: the depth is the length of a quest chain as
@@ -110,7 +116,11 @@ public static class QuestGraphBuilder
     /// </remarks>
     /// <param name="nodes">Accepted nodes, already de-duplicated.</param>
     /// <param name="byId">Lookup for the accepted nodes.</param>
-    /// <returns>One entry per cycle, each listing the quests that form it in traversal order.</returns>
+    /// <returns>
+    /// At least one cycle per cyclic region, each listing the quests that form it in
+    /// traversal order. Once a quest is finished its remaining edges are not revisited,
+    /// so a second cycle through an already-finished quest is not reported separately.
+    /// </returns>
     private static List<EquatableArray<QuestId>> FindCycles(
         List<QuestNode> nodes,
         Dictionary<QuestId, QuestNode> byId)

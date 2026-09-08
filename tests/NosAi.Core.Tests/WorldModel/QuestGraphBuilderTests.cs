@@ -109,6 +109,22 @@ public sealed class QuestGraphBuilderTests
         Assert.Equal(5000, result.Graph.Nodes.Count);
     }
 
+    /// <summary>
+    /// Pins the documented limit rather than an accident: with edges a→b, a→c, b→c, c→a the
+    /// search reports the cycle it walked and not the shorter a→c→a, because c is already
+    /// finished when the second edge out of a is examined. What must never regress is the
+    /// verdict — the graph is still refused as unplannable.
+    /// </summary>
+    [Fact]
+    public void OverlappingCycles_StillRefuseTheGraphEvenIfOnlyOneIsListed()
+    {
+        QuestGraphBuildResult result = QuestGraphBuilder.Build(
+            new[] { Node("a", "b", "c"), Node("b", "c"), Node("c", "a") });
+
+        Assert.False(result.IsSound);
+        Assert.NotEmpty(result.Cycles);
+    }
+
     [Fact]
     public void NullObservation_Throws()
     {
