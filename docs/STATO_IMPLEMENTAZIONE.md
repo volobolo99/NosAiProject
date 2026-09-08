@@ -2,7 +2,7 @@
 
 **Versione:** 1.0 Beta  
 **Creatore:** Volodymyr Ryzhuk  
-**Aggiornato:** 2026-09-02
+**Aggiornato:** 2026-09-08
 
 ## Regola di avanzamento
 
@@ -109,7 +109,7 @@ Quel che resta dei tre limiti del canale Guard, ripreso dalla checklist:
 - Suite negativa sul confine del canale Guard: 15 test che guidano il canale reale su socket reale e verificano ciò che deve essere **rifiutato** — header wire v1 e v2, magic di discovery al posto di quello di sessione, firma da chiave non fidata (con la prova che nessuno snapshot esce comunque), frame in chiaro prima dell'autenticazione, `AuthResponse` senza hello, hello senza chiave effimera, punto non sulla curva, sequenza fuori ordine, firma replicata da una sessione precedente, e il rifiuto lato telefono di un runtime non pinnato. Ognuno asserisce il motivo strutturato, non solo che qualcosa è fallito.
 - App Guard AI: riconnessione automatica con backoff limitato, che distingue una causa passeggera da una che richiede l'operatore e **non ritenta** la seconda; stato di sicurezza **letto** dallo snapshot invece che affermato dallo schermo; custodia della chiave del dispositivo mostrata (Keystore o file, col motivo). La logica sta in `NosAi.GuardClient` proprio per poter essere testata senza telefono.
 - Gate 2 completo a livello di codice: WorldStateSnapshot immutabile con stato iniziale non osservato, riduzione deterministica delle osservazioni (`WorldModelReducer`: upsert/rimozione entità, scadenza staleness, cambio mappa, campi non osservati preservati), BoundedEventBus con priorità e drain garantito alla chiusura, slimming errori/contesto per VRAM (parità con `nosai/runtime/context_slimming.py`), persistenza SQLite WAL reale (policy centralizzata allineata a `nosai/storage/sqlite_policy.py`, `foreign_keys=ON`), sessioni e traiettorie con vincolo di integrità (parità con `nosai/persistence/sqlite_logger.py`), delta encoding con ricostruzione (`ApplyDelta`), codec binario versionato `G2D` v1 con risparmio banda ≥70% misurato, `DeltaSyncTracker` con resync fail-closed e composizione `Gate2IntegratedEngine`.
-- Suite automatica `Gate2TestRunner` (22 check nominali) integrata nel runtime principale (`--gate2-test`) e agganciata a `NosAi.Runtime.Tests`.
+- Suite automatica `Gate2TestRunner` (**23** check nominali, contati in `Gate2Runtime.RunAllTestsAsync`) integrata nel runtime principale (`--gate2-test`) e agganciata a `NosAi.Runtime.Tests`.
 - Gate 4 integrato a livello di codice: Progression Engine V2, DAG missioni, sblocco SP, Beta-Binomiale, UCB1/MAUT e Knowledge Base.
 - Suite automatica `Gate4TestRunner` integrata nel runtime principale.
 - Gate 5 completo a livello di codice: Provider Router local-first con escalation cloud fail-closed dietro autorizzazione esplicita, provider di inferenza dichiarati SIMULATED (nessuno stub etichettato come inferenza reale), Hardware Baseline con provenienza per campo (LIVE/UNKNOWN, niente valori inventati), storage discovery che riporta onestamente il fallback quando `NOSAI-SSD` è assente, Eye AI View a 3 strati con provenienza per strato (UNKNOWN senza sorgente reale, mai `IsSafetyAuthorized` senza autorizzazione) e Control Center REST loopback con allowlist comandi e enum in forma wire.
@@ -215,7 +215,7 @@ giro sul sistema reale.
 - [x] Test PC ↔ smartphone. *(reale, via Wi-Fi con il cavo staccato.)*
 - [x] Test dashboard. *(reale per la catena runtime → dashboard.)*
 - [x] Test errore/disconnessione/riconnessione. *(reale, ciclo completo sul dispositivo.)*
-- [x] Nessuna regressione bloccante. *(`pytest` 159, `NosAi.Runtime.Tests` 93, 18 suite del runtime verdi.)*
+- [x] Nessuna regressione bloccante. *(Misurato il 2026-09-08: `pytest` 185 su 32 file, `NosAi.Core.Tests` 771, `NosAi.Runtime.Tests` 2800 superati su 2809 con 9 ignorati, 21 suite di certificazione del runtime verdi.)*
 - [x] Documentazione coerente con il risultato osservato.
 
 **Il Gate 1 non blocca più lo sviluppo.** I tre limiti residui del canale restano
