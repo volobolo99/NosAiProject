@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 6.585 token (~$0.02 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 7.864 token (~$0.02 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -62,6 +62,9 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 17:45 | Claude (Direttore) | Verifica di un'area dichiarata Partial: lo squatter che parla e poi tace sul canale Guard | `docs/STATO_IMPLEMENTAZIONE.md` | PASS — gia' risolto in `Gate1Runtime.cs:304` e `:721`; `GuardAdmissionTests` 8 superati su 8. Il documento diceva il falso, non il codice | `+0` |
 | 2026-09-08 17:58 | Claude (Direttore) | "Serve hardware?" — no: il discovery esiste gia'. Trovato e corretto un difetto di rilevamento VRAM | `src/NosAi.Runtime/Hardware/HardwareProbe.cs`, `tests/NosAi.Runtime.Tests/Hardware/VramDetectionTests.cs`, `docs/STATO_IMPLEMENTAZIONE.md` | PASS — `AdapterRAM` e' `UInt32` e saturava a 4095 MB su una GPU da 8151 (confermato da `nvidia-smi` e dal registro a 64 bit); costava un tier grafico. 7 test nuovi verdi | `+0` |
 | 2026-09-08 18:10 | Claude (Direttore) | Audit: eseguite le 21 suite di certificazione e scoperta una suite Python che `CLAUDE.md` dichiarava inesistente | `CLAUDE.md`, `tests/NosAi.ControlPanel.Tests/HardwareProbeTests.cs` | PASS — 21 suite su 21 verdi; pytest 8.4.2, 32 file e 185 test tutti verdi, invocati da `.github/workflows/ci.yml` e da tre script. La riga «Non c'è pytest» era stata scritta oggi ed era falsa | `+0` |
+| 2026-09-08 18:25 | Claude (Direttore) | AP-06: `QuestGraphBuilder`, l'ingresso che mancava al grafo delle missioni — costruzione, duplicati, prerequisiti pendenti e cicli con DFS iterativo | `src/NosAi.Core/WorldModel/Quests/QuestGraphBuilder.cs` | PASS — compila al primo colpo, 11 test verdi inclusa una catena di 5000 quest senza stack overflow | `+0` |
+| 2026-09-08 18:25 | Qwen 7B Locale | AP-06: stesura dei 9 test di base sul builder | `tests/NosAi.Core.Tests/WorldModel/QuestGraphBuilderTests.cs` (assemblato da Claude, che ha aggiunto i 2 casi limite) | PASS | `+1279` |
+| 2026-09-08 18:25 | Claude (Direttore) | Test incrociato fra i due stack sul formato del filo | `tests/NosAi.Runtime.Tests/WireProtocolCrossStackTests.cs` | PASS — C# e Python erano allineati a `VERSION 4` per disciplina, senza nulla che lo garantisse: ora una divergenza fa fallire la CI | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
