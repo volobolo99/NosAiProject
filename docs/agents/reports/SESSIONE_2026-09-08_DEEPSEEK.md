@@ -763,3 +763,65 @@ incrociano. Niente commit e niente ripristino da parte mia: committare
 travolgerebbe il loro lavoro, ripristinare lo distruggerebbe. Lo stato combinato
 e' verde (114/114). Messaggio inviato con l'elenco esatto delle mie modifiche e
 la proposta di farle committare a chi arriva primo.
+
+---
+
+## Q-147, Q-148, Q-149 — le quattro misure diventano bottoni
+
+Tre incarichi, tutti chiusi. Con quelli gia' esistenti, **ogni misura che
+l'operatore deve produrre e' ora a portata di bottone**; restano fuori solo T-06
+e T-07, che vogliono il telefono.
+
+| Misura | Dove |
+|---|---|
+| T-14 cattura prima del login | Rete -> «Registra dal login» |
+| T-17 costo MP | Rete -> «Registra il filo, e annota» |
+| T-09 ROI del bersaglio | Percezione -> «Calibra il riquadro bersaglio» |
+| T-13 catena di combattimento | Attorno -> «Catena di combattimento» |
+| T-08 ciclo di decisione | Decisione -> «Ciclo di decisione sul client vivo» |
+| T-12 residuo `InventoryKind` | Equipaggiamento, gia' esistente |
+| T-03 barra parziale e glifi | coperta da T-09 piu' «Addestra glifi HUD» |
+
+### Il metodo, trovato per fallimenti
+
+Sette tentativi per tre incarichi. I fallimenti hanno insegnato piu' dei
+successi, e la regola finale e' una sola:
+
+**Un perimetro che contiene un file esistente e' un invito a esplorarlo, anche
+quando l'incarico vieta di leggere.** Misurato:
+
+| Incarico | Perimetro | Esito |
+|---|---|---|
+| Q-147, primo | 4 file, uno da 61 KB | morto leggendolo |
+| Q-148, primo | 4 file, uno da 40 KB | budget esaurito in analisi, 0 file scritti |
+| Q-148, secondo | idem, budget alzato da 14 a 30 chiamate | **di nuovo** esaurito, 0 file scritti |
+| Q-147a | 2 file, **entrambi inesistenti** | 111 s, 3 giri |
+| Q-148, terzo | 3 file, **tutti inesistenti** | 3 giri, 7 chiamate su 30 |
+| Q-149 | 3 file, **tutti inesistenti** | 13 giri, tutto consegnato |
+
+Alzare il budget non ha cambiato nulla: il vincolo non era il tetto. Da qui in
+poi **DeepSeek scrive file nuovi, Claude innesta in quelli esistenti** -- e la
+card XAML e' comunque markup che l'architetto detta riga per riga, quindi
+innestarla e' integrazione, non implementazione.
+
+### Tre errori di Claude, tutti dichiarati
+
+1. **`git add -A` con una delega in volo** ha raccolto 391 righe orfane di una
+   corsa interrotta, in uno stato che non compilava. Rimosso con un commit di
+   correzione. Fermare una delega non garantisce che le scritture siano
+   atterrate: il controllo dell'albero subito dopo e' un falso negativo.
+2. **L'ancora sbagliata per la card T-09**: `ViewTarget` e' blindata da un test
+   che vieta qualunque `<Button>`, ed e' una superficie di osservazione. Il test
+   aveva ragione, la card e' andata in `ViewPerception`, il test non e' stato
+   toccato.
+3. **Una correzione a T-08 che peggiorava il documento**: un grep su `Program.cs`
+   non trovava `--decide` e ho concluso che non esistesse. Vive in
+   `Gate1HostOptions`. **L'assenza da un grep non e' l'assenza di un artefatto**:
+   per un comando, la prova buona e' eseguirlo. Venti secondi, e non mente.
+
+### Correzioni di integrazione, dichiarate
+
+Un commento XML che conteneva `--` (build rotta), un `using System.IO;` mancante
+(sette errori), un `CS8600` dove `FirstOrDefault` restituisce `string?` e il
+codice controllava gia' il null. Tutte e tre corrette da Claude invece di
+spendere un giro di delega: il repository compila a zero avvisi e resta cosi'.
