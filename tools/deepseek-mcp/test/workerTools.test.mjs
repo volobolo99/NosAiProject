@@ -202,3 +202,68 @@ describe('write and edit', () => {
         assert.deepEqual(r.done.blockers, []);
     });
 });
+
+describe('a truncated result says how to continue', () => {
+    test('a read past the result cap names the next line to ask for', () => {
+        const { root, sandbox, journal } = build();
+        // One line per row, long enough that the whole file cannot fit in a single result.
+        const lines = [];
+        for (let i = 1; i <= 4000; i += 1) lines.push('riga ' + i + ' ' + 'x'.repeat(40));
+        root.write('src/big.txt', lines.join('\n') + '\n');
+        const tools = createWorkerTools(sandbox, journal);
+
+        const out = tools.invoke('read_file', { path: 'src/big.txt' });
+
+        assert.ok(out.ok);
+        assert.ok(out.text.length <= IO_LIMITS.maxToolResultChars + 400, 'the result stays near the cap');
+        const hint = /startLine=(\d+)/.exec(out.text);
+        assert.ok(hint, 'the truncation notice must name the line to continue from');
+        const next = Number(hint[1]);
+        assert.ok(next > 1 && next < 4000, 'the continuation line is inside the file, not invented');
+
+        // The named line is genuinely the one after the last line shown.
+        const shown = /Shown through line (\d+)/.exec(out.text);
+        assert.ok(shown);
+        assert.equal(next, Number(shown[1]) + 1);
+
+        // And asking for it actually returns the rest, so the hint is not decorative.
+        const rest = tools.invoke('read_file', { path: 'src/big.txt', startLine: next });
+        assert.ok(rest.ok);
+        assert.ok(rest.text.includes('riga ' + next + ' '));
+    });
+});
+
+describe('a failed edit says where to look', () => {
+    test('oldText that does not match names the lines where its first line appears', () => {
+        const { root, sandbox, journal } = build();
+        root.write('src/anchor.txt', 'intestazione\npublic void Calibrate(int slot)\n{\n}\n');
+        const tools = createWorkerTools(sandbox, journal);
+
+        // Right first line, wrong indentation on the second: the classic near miss.
+        // The anchor is long enough to be a real one; a four-character anchor is
+        // deliberately not searched for, because it would point almost anywhere.
+        const out = tools.invoke('edit_file', {
+            path: 'src/anchor.txt',
+            oldText: 'public void Calibrate(int slot)\n    {',
+            newText: 'public void Calibrate(int slot)\n{'
+        });
+
+        assert.equal(out.ok, false);
+        assert.match(out.text, /NO_MATCH/);
+        assert.match(out.text, /line 2\b/, 'it names the line where the first line really is');
+    });
+
+    test('oldText whose first line is nowhere says so instead of pointing at a line', () => {
+        const { sandbox, journal } = build();
+        const tools = createWorkerTools(sandbox, journal);
+
+        const out = tools.invoke('edit_file', {
+            path: 'src/app.txt',
+            oldText: 'questa riga non esiste affatto',
+            newText: 'irrilevante'
+        });
+
+        assert.equal(out.ok, false);
+        assert.match(out.text, /appears nowhere in the file/);
+    });
+});

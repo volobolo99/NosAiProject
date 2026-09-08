@@ -28,7 +28,24 @@ function looksBinary(buffer) {
 
 function truncate(text, limit = IO_LIMITS.maxToolResultChars) {
     if (text.length <= limit) return text;
-    return text.slice(0, limit) + '\n[... truncated at ' + limit + ' characters ...]';
+    // Cut on a line boundary so the hint can name a line the worker actually saw.
+    // A truncation that does not say how to continue is a dead end: the worker
+    // either guesses the rest or stops.
+    const cut = text.slice(0, limit);
+    const lastBreak = cut.lastIndexOf('\n');
+    const body = lastBreak > 0 ? cut.slice(0, lastBreak) : cut;
+    const lastLine = body.slice(body.lastIndexOf('\n') + 1);
+    const numbered = /^\s*(\d+)\t/.exec(lastLine);
+    if (!numbered) {
+        return body + '\n[... truncated at ' + limit + ' characters ...]';
+    }
+    const next = Number(numbered[1]) + 1;
+    return (
+        body +
+        '\n[... truncated at ' + limit + ' characters. Shown through line ' + numbered[1] +
+        '. Call read_file again on the same path with startLine=' + next +
+        ' to continue. Do not guess what follows. ...]'
+    );
 }
 
 /**
@@ -403,7 +420,25 @@ export function createWorkerTools(sandbox, journal) {
             const content = readTextFile(target.abs, target.rel);
             const occurrences = content.split(args.oldText).length - 1;
             if (occurrences === 0) {
-                throw new SandboxError('oldText not found in ' + target.rel, 'NO_MATCH');
+                // A bare "not found" costs a whole round: the worker re-reads the file
+                // and guesses again. Naming where the first line does appear turns the
+                // retry into one corrected call.
+                const firstLine = args.oldText.split(/\r?\n/)[0].trim();
+                const near = [];
+                if (firstLine.length >= 8) {
+                    const lines = content.split(/\r?\n/);
+                    for (let i = 0; i < lines.length && near.length < 3; i += 1) {
+                        if (lines[i].includes(firstLine)) near.push(i + 1);
+                    }
+                }
+                throw new SandboxError(
+                    'oldText not found in ' + target.rel +
+                        (near.length > 0
+                            ? '. Its first line appears at line ' + near.join(', ') +
+                              ': read those lines and copy the text exactly, indentation included.'
+                            : '. Its first line appears nowhere in the file: read the file before editing.'),
+                    'NO_MATCH'
+                );
             }
             if (occurrences > 1 && !args.replaceAll) {
                 throw new SandboxError(
