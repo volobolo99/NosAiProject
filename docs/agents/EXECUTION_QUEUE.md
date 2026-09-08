@@ -179,7 +179,19 @@ AP-10 ha A1 `Present` (Q-036): contratti di certificazione (`VerificationLevel`/
 
 **Con Q-036 la sequenza AP-00→AP-10 ha almeno un task A1 (contratti fondanti) completato per ogni fase. AP-04, AP-05, AP-06 e AP-08 hanno A2+A4 consegnati e ora integrati (AP-04: `--scout`; AP-05: `--engage`+`--recover`; AP-06: `--collect`; AP-08: `--autoplay`, il primo orchestratore — tutte e quattro `Integrated`, un difetto reale trovato e corretto in ciascuna consegna DeepSeek tranne `--recover`).** Il lavoro reale che resta non è "quale fase manca" ma i gap dati/esecuzione già segnalati in ogni singolo status doc (OCR/ONNX, dati skill/item reali, fonte portali, riconciliazione `KnowledgeScope`/`DataSourceKind`, validazione contro un client reale per tutto ciò che è ancora `Present`/`Integrated`) — nessuno di questi si chiude scrivendo altro codice di fase, servono dati reali, hardware reale o una decisione esplicita dell'utente. AP-07/A2+A4 (Q-042) è stato indagato e trovato genuinamente bloccato — nessuna specifica DeepSeek prodotta, serve prima nuova infrastruttura (calibrazione UI pannello o un opcode equip identificato). **Q-086 (2026-09-06, DeepSeek, livello `Present`)**: il comando `--calibrate-inventory-panel` (calibrazione screen-space del pannello, 18 `EquipmentSlot`) è consegnato e riallineato all'enum reale in integrazione — riga Q-086 sopra, follow-up operatore in T-12 (`docs/TEST_RIMANDATI.md`).
 
-## Nota ambiente (2026-09-06, Q-086) — suite Runtime: 5 fallimenti non correlati al diff
+## Nota ambiente — risolta il 2026-09-08
+
+**I cinque fallimenti descritti qui sotto non esistono più.** Rimisurato il
+2026-09-08 su questo stesso host: `NosAi.Runtime.Tests` riporta 2800 superati
+su 2809 con 9 ignorati e **nessun fallito**, e i tre nomi citati nella nota
+danno 56 superati su 58 se eseguiti insieme. I due test non-Windows sono ora
+correttamente **ignorati** invece che rossi, che era il difetto vero: un test
+che non può valere su questa piattaforma deve dichiararsi tale, non fallire.
+
+Il testo originale resta sotto perché descrive come si diagnosticano
+fallimenti d'ambiente, e quel metodo vale ancora. I numeri no.
+
+### Testo originale (2026-09-06, Q-086) — suite Runtime: 5 fallimenti non correlati al diff
 
 Su questo host la suite completa `NosAi.Runtime.Tests` riporta 2178/2183: 5 test rossi, **tutti estranei a Q-086** e nessuno tocca i file di Q-085/Q-086:
 
