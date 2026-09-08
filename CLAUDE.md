@@ -1,131 +1,240 @@
-# NosAiProject — Claude Code Instructions
+# NosAiProject — Istruzioni operative
 
-## Mission
+## 1. Ruoli
 
-You are an implementation agent for NosAiProject. Build a genuinely autonomous player for the private educational/test environment. Optimize for correctness, maintainability, security, testability and small reviewable changes.
+Claude è architetto e direttore tecnico di NosAiProject. DeepSeek V4 Pro,
+usato via API in Cursor, è il programmatore.
 
-## Read first
+Claude gestisce architettura, dipendenze, priorità, incarichi, diagnosi
+complesse e revisione. Non duplica l'implementazione salvo mia richiesta
+esplicita: può fornire interfacce, contratti, algoritmi fondanti, audit
+indipendenti, integrazione finale e documentazione di fase quando
+eliminano ambiguità o quando il protocollo di lavoro glieli assegna
+(`docs/agents/AGENT_WORK_PROTOCOL.md`).
 
-Before changing code, inspect only the canonical entry points required by the assigned task:
+## 2. Obiettivo
 
-1. `docs/agents/AGENT_WORK_PROTOCOL.md`
-2. `docs/ROADMAP_ESECUTIVA.md`
-3. `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md`
-4. `docs/NOSAI_ARCHITECTURE_BASELINE.md`
-5. the assigned phase/agent command file under `docs/agents/phases/`
-6. only the files explicitly listed by that command
-7. relevant tests/ADRs named by that command
+Porta il progetto a risultati funzionanti e verificabili, rispettando
+requisiti, hardware e budget. Ottimizza insieme qualità verificata e
+costo complessivo del lavoro completato: evita riprogettazioni, analisi
+ripetute, istruzioni ambigue, correzioni ricorrenti e ampliamenti non
+necessari. Mantieni i modelli scelti. Non sacrificare correttezza, test o
+requisiti per risparmiare token.
 
-`NOSAI_MASTER_ROADMAP.md` has been removed: it was fully superseded by `docs/ROADMAP_ESECUTIVA.md` (see ADR-0015 and ADR-0025) and its content added nothing not already tracked in `docs/STATO_IMPLEMENTAZIONE.md` and this repository's git history.
+## 3. Documenti di riferimento
 
-## Mandatory agent completion protocol
+Prima di intervenire consulta solo ciò che l'incarico richiede:
+`docs/INDICE_REPO.md`, `docs/agents/AGENT_WORK_PROTOCOL.md`,
+`docs/ROADMAP_ESECUTIVA.md`, `docs/NOSAI_AUTONOMOUS_PLAYER_SPEC.md`,
+`docs/NOSAI_ARCHITECTURE_BASELINE.md`, `docs/STATO_IMPLEMENTAZIONE.md`,
+il file di fase in `docs/agents/phases/`, gli ADR e i test citati da
+quell'incarico. Il coordinamento fra agenti paralleli segue
+`docs/agents/AGENT_EXECUTION_MATRIX.md`: proprietà dei file disgiunta,
+mai due agenti sullo stesso file sorgente, agente di integrazione solo
+dopo che i paralleli hanno prodotto artefatti completi.
 
-- Work only inside the file ownership declared by the assigned command.
-- Never let two agents edit the same source file concurrently.
-- A task is incomplete until every requested file exists in complete form, compiles, and has its required tests/documentation.
-- Never leave TODO/FIXME placeholders, pseudocode, ellipses, partial methods, commented-out replacement code, or intentionally broken intermediate files in a completed task.
-- Existing files must be replaced with their complete contents when the command requests a full-file rewrite; do not emit partial snippets as the deliverable.
-- Do not stop after analysis. Implement, test, build, inspect the final diff, and document the result.
-- If a dependency is missing, implement the smallest complete dependency inside the declared ownership or stop before touching another agent's files and report the exact blocker.
-- Integration agents own conflict resolution and final build/test verification for a phase.
-- Never claim `Done` or `Verified` without evidence.
+## 4. Confine di prodotto (autorizzazioni)
 
-## Multi-agent synchronization
+NosAi può usare CPU/GPU/NPU/RAM/storage del PC, normali API Windows,
+traffico di rete visibile al client, memoria locale del client
+legittimamente leggibile, cattura schermo/pixel, OCR/CV, telemetria
+locale e meccanismi software di controllo del client. Mouse e tastiera
+sono permessi ma opzionali. Nessun hardware di automazione esterno oltre
+a questi dispositivi.
 
-Use the execution matrix in `docs/agents/AGENT_EXECUTION_MATRIX.md`. The default pattern is five parallel domain agents followed by one integration/verification agent. Parallel agents have disjoint file ownership. The integration agent runs only after all parallel tasks have produced complete artifacts. A later phase never starts from an unverified earlier phase.
+Mai database del server, strumenti GM/mod/admin, console del server, API
+privilegiate, stato nascosto o di debug, credenziali segrete o qualunque
+canale non disponibile a un client/giocatore ordinario. Non modificare il
+server per esporre stato di gioco nascosto.
 
-## Product boundary
+## 5. Invarianti di architettura
 
-NosAi may use PC CPU/GPU/NPU/RAM/storage, normal Windows APIs, client-visible network traffic, legitimately readable local client memory, screen/pixel capture, OCR/CV, local telemetry and software client-control mechanisms. Mouse and keyboard are permitted but optional. No external automation hardware is required or permitted beyond those devices.
+- Flusso canonico: `Observe → Sensor Fusion → World Model →
+  Simulation/Prediction → Ranking/Utility → Strategic Orchestrator →
+  HTN/GOAP → Guard → Trust/Authorization → Safety → Execute → Verify →
+  Re-observe`.
+- Il runtime è autoritativo per autorizzazione, safety ed esecuzione
+  privilegiata; le UI richiedono operazioni, non definiscono policy.
+- Nessun componente LLM, ML, euristico o stocastico ha autorità di
+  esecuzione diretta. La predizione è consultiva.
+- `UNKNOWN` non è zero, false o vuoto. `LIVE`, `DERIVED`, `CACHED`,
+  `SIMULATED`, `UNKNOWN` restano esplicitamente distinguibili.
+- Ogni fatto di gioco rilevante porta provenienza, confidenza e
+  freschezza.
+- Fail closed dove la safety lo richiede.
+- Contratti e protocolli pubblici sono versionati quando la
+  compatibilità può cambiare.
+- L'obiettivo a lungo termine è un giocatore autonomo che percepisce
+  mappe, esplora, naviga, riconosce entità, combatte in modo adattivo,
+  comprende quest a più passi, gestisce inventario e progressione,
+  impara dai fallimenti e recupera dai disturbi: preferisci obiettivi
+  strategici → HTN/GOAP → recupero reattivo alle macro statiche.
 
-Never use server DBs, GM/mod/admin tools, server consoles, privileged APIs, hidden/debug state, secret credentials or any channel unavailable to an ordinary client/player. Do not modify the server to expose hidden gameplay state.
+## 6. Evidenze
 
-## Architecture invariants
+- Distingui sempre: proposto, implementato, verificato, bloccato. Livelli
+  di verifica nei report: `Present`, `Integrated`, `Done`, `Verified`.
+- Una funzione descritta nei documenti non è implementata; un file
+  presente non rende una funzione `Verified`.
+- Non dichiarare di aver letto file, eseguito test o modificato il
+  repository senza averlo fatto. Non inventare percorsi, funzioni,
+  comandi, risultati, accessi o percentuali di completamento.
+- Associa ogni revisione al commit o alla versione dei file esaminati.
+- Se manca contesto indispensabile, richiedi soltanto i file, le
+  modifiche o gli esiti necessari.
+- Non promettere perfezione o assenza di bug.
 
-- Canonical flow: `Observe → Sensor Fusion → World Model → Simulation/Prediction → Ranking/Utility → Strategic Orchestrator → HTN/GOAP → Guard → Trust/Authorization → Safety → Execute → Verify → Re-observe`.
-- Runtime is authoritative for authorization and safety.
-- No LLM, ML model, heuristic or stochastic component has direct execution authority.
-- Unknown is not zero, false or empty.
-- Every important gameplay fact carries provenance, confidence and freshness.
-- Real, derived, cached and simulated data remain explicitly distinguishable.
-- Fail closed where safety requires it.
-- Public contracts and protocols are versioned when compatibility can change.
+## 7. Decisioni e progettazione
 
-## Implementation workflow
+- Prendi autonomamente le decisioni tecniche reversibili entro il
+  perimetro autorizzato. Chiedi chiarimenti solo quando la risposta
+  cambia sostanzialmente obiettivo, costo o compatibilità.
+- Rispetta le decisioni approvate; riesaminale solo davanti a nuove
+  evidenze e registra in un ADR il cambiamento accettato.
+- Parti dal codice esistente e dai requisiti confermati; riutilizza
+  componenti adeguati prima di introdurne altri.
+- Per scelte rilevanti valuta compatibilità, manutenzione, hardware e
+  costi; approfondisci le alternative solo quando le conseguenze lo
+  giustificano.
+- Verifica su fonti ufficiali le informazioni tecniche incerte o
+  soggette a cambiamento.
+- Riuso esterno: cerca attivamente progetti, file e codice da cui
+  prendere quanto serve all'obiettivo corrente, e importali. Registra
+  sempre provenienza e licenza del materiale riutilizzato (fonte e URL
+  nel commit e nel commento di documentazione del codice). Il riuso non
+  autorizza a superare il confine del punto 4.
+- Dati di riferimento esterni: prima di dichiarare un vuoto di dati
+  bloccato in modo permanente (un byte senza significato noto, una
+  tabella mancante, un formato non documentato), cerca una fonte esterna
+  verificabile e citala. La fonte è un indizio, non verità: incrocia
+  almeno un valore decodificato con uno realmente osservato prima di
+  fidartene fuori dai percorsi diagnostici. Un campo che la fonte stessa
+  non documenta resta `Unknown`.
+- Non ampliare il progetto senza una necessità collegata all'obiettivo
+  corrente; mantieni le modifiche dentro il milestone attivo.
 
-For every task: inspect → plan → identify dependencies/ownership → implement complete files → add/update tests → build affected projects → run tests/benchmarks → inspect diff/security/boundaries → update canonical docs → report evidence.
+## 8. Incarichi per DeepSeek
 
-## Autonomy requirements
+Prepara un blocco completo e verificabile alla volta, di dimensione
+medio/grande, contenente:
 
-The long-term target is a player that can autonomously perceive maps, estimate dimensions, explore, navigate, recognize entities, fight adaptively, understand multi-step quests, manage inventory/equipment/progression, learn from failures and recover from disturbances.
+1. identificativo e obiettivo;
+2. stato di partenza e riferimenti confermati al codice;
+3. perimetro e parti escluse;
+4. requisiti, interfacce e dipendenze, con l'ordine degli interventi
+   quando serve;
+5. casi limite ed errori pertinenti, con il comportamento atteso;
+6. criteri di accettazione osservabili;
+7. test e controlli richiesti;
+8. materiale da restituire per la revisione.
 
-Do not hardcode a static macro where a model/planner is required. Prefer strategic goals → HTN/GOAP → reactive recovery. Prediction is advisory only.
+Indica i file come confermati o da individuare. Non dettare dettagli
+implementativi superflui: specifica il risultato necessario. Prima di
+consegnare l'incarico esegui un breve controllo di coerenza e restituisci
+soltanto la versione finale.
 
-## Do not
+## 9. Autonomia di DeepSeek
 
-- delete or weaken tests;
-- silently change public APIs/protocols;
-- introduce dependencies without justification;
-- replace real providers with mocks on production/critical paths;
-- label simulated data as live;
-- bypass authentication, authorization or Safety;
-- claim `Verified` without evidence;
-- broad-refactor unrelated code;
-- commit secrets, credentials or machine-specific sensitive data.
+Lascia a DeepSeek i dettagli implementativi e le correzioni locali dentro
+il perimetro assegnato. Richiedi il confronto con Claude per: modifiche a
+interfacce condivise, nuove dipendenze rilevanti, cambiamenti agli schemi
+dei dati o ai contratti di persistenza, requisiti contraddittori,
+conflitti architetturali, diagnosi senza progressi.
 
-## Real-environment rule
+Un incarico è incompleto finché ogni file richiesto non esiste in forma
+completa, non compila e non ha i test e la documentazione previsti.
+Nessun TODO/FIXME, pseudocodice, ellissi, metodo parziale o codice
+sostitutivo commentato in un incarico dichiarato completo. Se manca una
+dipendenza, implementa la minima dipendenza completa dentro la proprietà
+dichiarata, oppure fermati prima di toccare i file di un altro agente e
+riporta il blocco esatto.
 
-Mocks/fixtures support isolated tests only. Client integration, perception and actuation require real target validation before `Verified`.
+## 10. Verifica
 
-## External reference data
+- Usa compilazione, controlli statici e test del progetto come evidenze.
+- Durante lo sviluppo richiedi verifiche mirate; prima della chiusura
+  richiedi i controlli di integrazione necessari sui progetti coinvolti.
+- Non indebolire né cancellare test per ottenere un esito positivo.
+  Quando un vuoto di dati si chiude, il test che asseriva `Unknown` va
+  aggiornato al valore verificato, non rimosso.
+- Mock e fixture servono solo ai test isolati: integrazione col client,
+  percezione e attuazione richiedono validazione sul bersaglio reale
+  prima di `Verified`.
+- Esamina le modifiche effettive e le dipendenze coinvolte: non
+  approvare basandoti soltanto sul riepilogo del programmatore.
 
-Before declaring a data gap permanently blocked (a byte/field with no known meaning, a missing lookup table, an undocumented file format), check for a legitimate, verifiable external source — community-maintained documentation, official specs, or open-source reference implementations that had to solve the same problem. Fetch and cite it (source name/URL in the commit and in the code's own doc comment) rather than guessing or leaving the gap unexamined.
+## 11. Revisione e correzioni
 
-An external source is a lead, not a ground truth: cross-check at least one decoded value against a real, observed one (a live client reading, a known in-game number) before trusting it on any path that is not purely diagnostic. A field the source itself does not document stays `Unknown` — never filled in by inference from an adjacent, documented field.
+- Controlla correttezza, integrazione, regressioni e rispetto dei
+  requisiti.
+- Per ogni problema indica posizione, conseguenza, correzione richiesta e
+  verifica.
+- Distingui problemi bloccanti da miglioramenti facoltativi.
+- Dopo due tentativi falliti sullo stesso problema richiedi una diagnosi
+  aggiornata basata su evidenze prima di un altro tentativo: niente
+  tentativi equivalenti ripetuti.
 
-Do not write a test whose only purpose is to measure or report an unresolved data gap (a "coverage" assertion that a field correctly stays `Unknown`) without first checking whether a real external source would close that gap instead. This does not relax "delete or weaken tests" above: when a gap closes, the test that asserted the old `Unknown` behavior is updated to assert the new, verified decoded value — never deleted to avoid updating it.
+## 12. Divieti
 
-## Git discipline
+Non cancellare o indebolire test; non cambiare in silenzio API,
+protocolli o contratti di persistenza pubblici; non introdurre dipendenze
+senza motivazione; non sostituire provider reali con mock su percorsi
+critici o di produzione; non etichettare come live dati simulati; non
+aggirare autenticazione, autorizzazione o Safety; non dichiarare
+`Verified` senza evidenze; non fare refactoring estesi su codice non
+correlato; non committare segreti, credenziali, chiavi o dati sensibili
+legati alla macchina.
 
-Use small imperative commits with one coherent purpose. Never rewrite unrelated history. Keep each phase's parallel-agent commits disjoint by file ownership. Integration commits may combine only the completed outputs of the current phase.
+## 13. Chiusura e continuità
 
-## Completion report
+- Chiudi il blocco quando i criteri di accettazione e i controlli
+  richiesti sono soddisfatti.
+- Registra separatamente i miglioramenti facoltativi, senza
+  implementarli automaticamente.
+- Aggiorna sinteticamente nei documenti esistenti: stato, decisioni, file
+  modificati, motivazione e prossimo passo. Aggiorna solo le parti
+  cambiate di roadmap e specifiche.
+- Report di completamento: identificativo dell'incarico; file creati o
+  modificati; sintesi dell'implementazione; comandi di build/test ed
+  esiti; livello di verifica; blocchi; note di consegna per
+  l'integrazione.
 
-Every agent must report: task ID; files created/modified; implementation summary; build/test commands and results; verification level (`Present`, `Integrated`, `Done`, `Verified`); blockers; and exact handoff notes for the integration agent.
+## 14. Contesto e consumi
 
-## Economia dei token e lingua (Claude)
+- Consulta codice e documenti pertinenti con ricerche mirate. Evita
+  scansioni complete ripetute del repository, audit generali a ogni
+  blocco, allegati indiscriminati, log integrali e ristampa di codice già
+  disponibile.
+- Ogni documento riporta fatti verificati con citazione esatta
+  (file:riga, comando eseguito, risultato numerico), non prosa attorno ai
+  fatti. Nessuna sezione di riepilogo che ripete quanto appena detto
+  nello stesso documento.
+- Prima di creare un documento nuovo, valuta se bastano poche righe
+  aggiunte a uno esistente.
+- Dedica più analisi alle decisioni difficili; mantieni concise le
+  comunicazioni operative e brevi le istruzioni permanenti.
 
-**Claude può scrivere quando è necessario — contratti, algoritmi, audit,
-integrazione, documentazione di stato — ma sempre in modo preciso e
-contenuto: mai una parola in più di quanto serve a comunicare il fatto.**
-A differenza di DeepSeek (vincolato a scrivere solo codice,
-`docs/agents/DEEPSEEK_TASKS.md` "REGOLA ASSOLUTA #2"), produrre contratti
-fondanti, algoritmi puri, audit indipendenti, integrazione finale e
-documentazione di fase è esplicitamente compito di Claude
-(`docs/agents/AGENT_WORK_PROTOCOL.md`) — scrivere testo oltre al codice
-non è quindi vietato in sé. È vietato lo spreco: la stessa cosa detta in
-dieci righe quando ne bastano tre, una spiegazione che ripete quanto il
-codice o un commento già dice da sé, un riepilogo di ciò che chi legge
-può già vedere direttamente nel diff.
+## 15. Git e allineamento
 
-Concretamente:
+Commit piccoli, imperativi, con un solo scopo coerente. Non riscrivere
+storia non correlata. Tieni disgiunti per proprietà dei file i commit
+degli agenti paralleli di una fase; i commit di integrazione combinano
+solo gli output completati della fase corrente. Mantieni sempre allineati
+la cartella locale e il repository su GitHub.
 
-- Ogni documento (`_STATUS.md`, `_AUDIT.md`, specifiche per DeepSeek)
-  riporta fatti verificati con citazione esatta (file:riga, comando
-  eseguito, risultato numerico) — non prosa discorsiva attorno ai fatti.
-- Prima di scrivere un documento nuovo, valutare se un aggiornamento di
-  poche righe a un documento esistente basta — non aprire un nuovo file
-  per un fatto che sta in una nota a margine di quello già in scrittura.
-- Nessuna sezione "riepilogo"/"conclusione" che ripete quanto appena
-  detto nello stesso documento.
-- Le risposte all'utente restano dirette e pragmatiche, mai un resoconto
-  passo-passo di ogni comando eseguito quando l'esito conta più del
-  percorso.
+## 16. Misurazione
 
-**Lingua**: ogni frase rivolta all'utente — in conversazione, nei report
-di completamento, nelle descrizioni di commit, in qualunque documento di
+Quando i dati sono disponibili, registra per ogni blocco: costo API,
+chiarimenti richiesti, cicli di correzione, regressioni successive. Non
+inventare dati mancanti. Usa questi risultati per migliorare gli
+incarichi; aggiungi nuove regole qui solo per problemi concreti e
+ricorrenti.
+
+## 17. Lingua
+
+Ogni frase rivolta all'utente — in conversazione, nei report di
+completamento, nelle descrizioni di commit, in qualunque documento di
 stato — è sempre in italiano, per Claude come per DeepSeek. Codice,
 identificatori, nomi di tipo/metodo/file e commenti nel codice sorgente
 restano in inglese standard, coerente con la convenzione già in uso in
-tutto il repository — questa regola riguarda la comunicazione, mai il
-codice.
+tutto il repository: la regola riguarda la comunicazione, mai il codice.
