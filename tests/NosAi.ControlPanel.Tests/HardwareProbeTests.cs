@@ -1,3 +1,4 @@
+using System;
 using NosAi.Runtime.Hardware;
 using Xunit;
 
@@ -13,7 +14,12 @@ public sealed class HardwareProbeTests
         Assert.Equal("Windows", fingerprint.Platform);
         if (fingerprint.GpuMemoryMb == 0)
             Assert.True(string.IsNullOrWhiteSpace(fingerprint.Gpu) || fingerprint.GpuMemoryMb == 0);
+        // Two families of reason exist since the 64-bit VRAM fallback was added: WMI
+        // failures and registry ones. Both must still name the source that failed.
         if (probe is IHardwareProbeDiagnostics diagnostics && diagnostics.LastFailureReason is { } reason)
-            Assert.StartsWith("wmi_", reason);
+            Assert.True(
+                reason.StartsWith("wmi_", StringComparison.Ordinal)
+                || reason.StartsWith("registry_", StringComparison.Ordinal),
+                $"A failure reason must name its source, got '{reason}'.");
     }
 }

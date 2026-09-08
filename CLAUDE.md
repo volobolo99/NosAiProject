@@ -372,6 +372,18 @@ stato), `integratore` (commit disgiunti e allineamento a GitHub).
    si chiede la correzione puntuale, senza rigenerare il modulo. Resta il
    punto 10: un test non si indebolisce e non si cancella per ottenere il
    verde.
+5. **Nessun identificatore a memoria.** Un nome di classe, metodo, campo,
+   namespace o costante si copia da un `grep` eseguito adesso, mai
+   dall'inferenza sul nome del file: `HardwareProbe.cs` contiene
+   `WindowsHardwareProbe`, e assumerlo è costato un giro di compilazione il
+   2026-09-08.
+6. **Il valore atteso di un'asserzione si calcola sulla soglia vera.** Si
+   rilegge la riga che decide, con i suoi confronti, prima di scrivere il
+   numero atteso: `8151 >= 8192` è falso, e darlo per vero ha prodotto un
+   test rosso il 2026-09-08.
+7. **Un file è libero solo se la delega ha chiuso.** Lo dice `logact.md` con
+   `fine: completed` e il perimetro dell'incarico, non il timestamp del file:
+   il `mtime` può essere della propria modifica di poco prima.
 4. **Un fallito non è una regressione finché non ha un nome.** Si
    confrontano i nomi dei falliti, mai i totali, e un fallito da carico si
    rilancia isolato prima di chiamarlo regressione.
