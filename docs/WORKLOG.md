@@ -160,3 +160,58 @@ Regola: ogni intervento deve aggiungere una voce con:
 - Adapter ONNX base pronto.
 - Manca volutamente il decoder di una specifica architettura di detector e un modello validato.
 - Prossimo passo: model manifest + decoder specifico benchmarkabile, senza rendere il modello obbligatorio.
+
+---
+
+## 2026-09-08 — Collegamento MCP locale Claude → DeepSeek (`tools/deepseek-mcp`)
+
+**File**
+- `tools/deepseek-mcp/src/{config,sandbox,workerTools,deepseekClient,agentLoop,server}.mjs` — creati.
+- `tools/deepseek-mcp/test/{helpers,config,sandbox,workerTools,deepseekClient,agentLoop,server}.*.mjs` — creati.
+- `tools/deepseek-mcp/scripts/{check-connection,check-registration}.mjs` — creati.
+- `tools/deepseek-mcp/{package.json,README.md}` — creati.
+- `.mcp.json` — creato (ambito progetto, server `deepseek`).
+- `.gitignore` — aggiunto `node_modules/`.
+- `docs/INDICE_REPO.md`, `docs/WORKLOG.md` — aggiornati.
+
+**Perché**
+- Gli incarichi a DeepSeek passavano per copia-incolla manuale in Cursor: nessuna
+  tracciabilità di cosa fosse stato realmente scritto su disco, nessun perimetro
+  applicato dal programma.
+- Un blocco `docs/agents/phases/**` dichiara file di proprietà dell'agente: quel
+  perimetro ora è applicato dal codice, non dalla buona volontà del lavoratore.
+
+**Cosa è stato fatto**
+- Server MCP su stdio (`@modelcontextprotocol/server` 2.0.0, Node ≥ 20) con un
+  solo strumento `delegate_to_deepseek`.
+- Ciclo di tool-call verso l'API ufficiale DeepSeek (superficie OpenAI-compatibile):
+  il lavoratore cerca, legge, scrive e modifica file; una risposta di solo testo
+  non conta come implementazione e viene contestata dal ciclo.
+- Confinamento: ogni percorso è risolto attraverso link e giunzioni **prima** del
+  controllo di contenimento; `.git`, `node_modules`, `bin`, `obj` sempre negati.
+- Nessuna shell al lavoratore: build e test restano a Claude.
+- Nessuna delega ricorsiva: nessuno strumento la espone, e il server rifiuta di
+  operare se avviato con `NOSAI_DEEPSEEK_DELEGATION_ACTIVE=1`.
+- Modello da `DEEPSEEK_MODEL`, ammessi `deepseek-v4-flash` (default) e
+  `deepseek-v4-pro`; qualunque altro valore è un errore, mai una sostituzione, e
+  non esiste ripiego automatico su `pro` dopo un fallimento.
+- Rendiconto: modifiche reali su disco per confronto SHA-256 prima/dopo, chiamate
+  rifiutate, errori, token dichiarati dall'API. I token sono consumo riportato,
+  non un tetto di spesa garantito.
+- Tetti: giri API, chiamate strumento, scadenza complessiva, ritenti per chiamata.
+  `report_done` è esente dal tetto sulle chiamate, altrimenti una delega che
+  esaurisce il budget non potrebbe più chiudersi con un rapporto.
+
+**Stato**
+- IMPLEMENTATO e VERIFICATO su `main`.
+- 100 test locali verdi con API simulata (`npm test`).
+- Registrazione stdio verificata con il comando esatto di `.mcp.json`
+  (`node scripts/check-registration.mjs`).
+- Una richiesta reale minima riuscita: `GET /models` elenca `deepseek-v4-flash`,
+  `deepseek-v4-pro`, `deepseek-v4-flash-vision-exp`; la completion ha risposto
+  `"pronto"` con `finish_reason: stop`, modello `deepseek-v4-flash`, 147 token.
+- Manca: l'approvazione del server di progetto e una sessione nuova di Claude
+  Code perché `delegate_to_deepseek` sia richiamabile.
+- Prossimo passo: incarico dimostrativo in cartella temporanea (procedura in
+  `tools/deepseek-mcp/README.md`), poi il primo blocco reale. Lavoro notturno non
+  avviato.

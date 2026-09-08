@@ -87,3 +87,7 @@ tools/windivert/probe/obj/
 # I log dei test (dotnet test -l trx) non sono sorgente. Senza questa riga
 # restano come file non tracciati in un albero gia condiviso fra piu sessioni.
 TestResults/
+
+# Dipendenze del server MCP locale (tools/deepseek-mcp). Non anchorate: ogni
+# package.json ha la sua node_modules, e nessuna di queste e' sorgente.
+node_modules/
