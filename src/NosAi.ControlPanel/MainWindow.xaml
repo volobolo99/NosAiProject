@@ -525,6 +525,36 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Ciclo Gate 3 sullo snapshot canonico. ActingEnabled=false è la politica sicura (ADR-0016): decide, non agisce. In modalità COLLEGATO il ciclo vive in un altro processo e questa vista è UNKNOWN, non zero. Gli esiti si elencano per tipo: NoWorldState, NoCandidate e RefusedStaleInput non sono lo stesso fallimento.</TextBlock>
             <ItemsControl x:Name="DecisionFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-08 — CICLO DI DECISIONE SUL CLIENT VIVO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Client in gioco e endpoint rilevato in Impostazioni.
+                  2) Premi &quot;Avvia ciclo&quot;: parte l'host Gate 1 con l'osservazione attaccata, e resta in ascolto.
+                  3) Guarda le righe scorrere: il ciclo comincia a NoWorldState e deve passare a una decisione su letture LIVE.
+                  4) Premi &quot;Ferma&quot; quando hai visto abbastanza. Fermare non e' un errore.
+                </TextBlock>
+                <TextBlock x:Name="DecideExpectation" Foreground="{StaticResource WarnBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="ExecutionDisabled a valle del Safety Gate e' l'esito atteso, non un guasto: l'input resta disabilitato per politica."/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Endpoint" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="DecideEndpoint" Width="170" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Intervallo (ms)" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="DecideIntervalMs" Width="80" Text="5000" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="DecideStartButton" Style="{StaticResource PrimaryButton}" Content="Avvia ciclo" Click="OnStartDecideCycle" Margin="0,0,8,0"/>
+                  <Button x:Name="DecideStopButton" Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopDecideCycle" IsEnabled="False"/>
+                </StackPanel>
+                <TextBlock x:Name="DecideSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna corsa in questa sessione."/>
+                <TextBox x:Name="DecideOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="140" MaxHeight="300" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
