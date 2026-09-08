@@ -287,3 +287,5 @@ Quel che manca per `Verified` non è un decoder: è **la conferma LIVE su una se
 La priorità operativa corrente è quindi:
 
 **accendere `--observe-game` su una sessione reale e chiudere T-05** — alle condizioni fissate da `ADR-0012` e `ADR-0014` — **e chiudere quel che resta dei tre limiti del canale Guard.**
+
+Dal 2026-09-08 quella priorita' non richiede piu' di conoscere l'endpoint in anticipo. `AwaitClientCaptureCommand` (`--await-client-capture`, e il pulsante **Avvia cattura pre-login** nella sezione Certificazione del Control Panel) arma la cattura prima che il client esista, riconosce l'arrivo con `ClientArrivalWatcher`, si ferma da sola quando ha osservato `stat`, `in` e uno fra `ivn`/`equip`, e scrive l'evidenza differita di T-14 e T-05. All'operatore resta da aprire il gioco: T-05 non e' chiuso finche' quella sessione non e' stata osservata, e nessun valore viene inventato al suo posto.

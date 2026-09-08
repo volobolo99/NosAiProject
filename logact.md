@@ -58,6 +58,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 17:32 | Qwen 7B Locale | NSW-02: handler WPF della cattura pre-login e revisione di concorrenza dello stesso | `src/NosAi.ControlPanel/MainWindow.xaml.cs` (assemblato da Claude) | PASS — la revisione ha detto "nessun difetto"; Claude ha comunque corretto `Dispatcher.Invoke` in `BeginInvoke`, che bloccava il thread di cattura | `+1575` |
 | 2026-09-08 17:32 | DeepSeek Flash | NSW-02: matrice dei 6 stati del pulsante | nessuno | PASS — nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 17:32 | Claude (Direttore) | NSW-02: overload di `AwaitClientCaptureCommand.Run` con callback e token, pulsante in Certificazione, sblocco del build rotto da una delega ferma | `PreLoginCaptureSession.cs`, `MainWindow.xaml`, `MainWindow.xaml.cs`, `OpportunisticBarProbe.cs:422` | PASS — build 0/0, ControlPanel 175/175 | `+0` |
+| 2026-09-08 17:41 | Claude (Direttore) | Gate e integrazione del lavoro consegnato da `Q-SONDA-03` e dalle deleghe parallele: sonda T-03, calibratore ROI, test del prelude | `OpportunisticBarProbe.cs`, `TargetRoiAutoCalibrator.cs`, 3 file di test, `Program.cs`, `docs/STATO_IMPLEMENTAZIONE.md` | PASS — build 0/0, suite 2784 superati su 2793, 0 falliti; 18 attributi di test aggiunti, tutti headless; nessun TODO; moduli raggiungibili da `--watch-evidence` | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
@@ -3628,3 +3629,307 @@ funzione tornava `None`. Corretto; il canale pubblica
 - 17:33:07 `88y7` `list_files` `tests/NosAi.Runtime.Tests/Perception`
 - 17:33:07 `88y7` `read_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs` — **rifiutato**: ERROR [NOT_FOUND] file does not exist: tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs
 - 17:33:07 `88y7` `read_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs` — **rifiutato**: ERROR [NOT_FOUND] file does not exist: tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs
+- 17:35:45 `88y7` giro 2 — 157.6 s, fine `tool_calls`, token 31.961
+- 17:35:45 `88y7` **ragiona** (88.472 caratteri, troncato)
+  > Both files don't exist yet. I cannot read other files (ScreenVitalsCaptureTests.cs is outside my allowed paths). The assignment has all the signatures copied. I'll write both files based on the given signatures and conventions.
+  > 
+  > Let me carefully plan the code.
+  > 
+  > ### File 1: OpportunisticBarProbeTests.cs
+  > 
+  > Namespace flat `NosAi.Runtime.Tests`.
+  > 
+  > Using declarations:
+  > ```csharp
+  > using NosAi.LiveIntegration;
+  > using NosAi.Runtime.Contracts;
+  > using NosAi.Runtime.Perception;
+  > using NosAi.Runtime.Testing;
+  > using Xunit;
+  > 
+  > namespace NosAi.Runtime.Tests;
+  > ```
+  > 
+  > Wait — the "Intestazione esatta" says the header is exactly those 5 usings plus namespace. But test 5 uses `HudGlyphAtlas()` and `HudGlyphTrainingResult`. Those types come from where? Possibly `NosAi.Runtime.Perception`. HudGlyphAtlas is used as parameter type in Offer; probably declared in NosAi.Runtime.Perception. LastTraining returns HudGlyphTrainingResult. So covered by NosAi.Runtime.Perception.
+  > 
+  > Test 8 needs `System.IO` for Path/File/Directory — but ImplicitUsings active for net8.0-windows includes System.IO? ImplicitUsings for a normal SDK includes System, System.Collections.Generic, System.IO, System.Linq, System.Net.Http, System.Threading, System.Threading.Tasks. Yes, System.IO is included. So Path, File, Directory available.
+  > 
+  > Class with XML comment in English.
+  > 
+  > ```csharp
+  > public sealed class OpportunisticBarProbeTests
+  > {
+  >     private const int FrameWidth = 1000;
+  >     private const int FrameHeight = 1000;
+  >     private static readonly PixelRect ClientArea = new(0, 0, 1000, 1000);
+  >     private static readonly PixelRect HpBarRoi = new(112, 36, 121, 15);
+  >     private static readonly WirePlayerVitals Wire600 = new(600, 1000, null, null, null, null, "stat");
+  >     private static readonly WirePlayerVitals Wire1000 = new(1000, 1000, null, null, null, null, "stat");
+  >     private static readonly DateTime T0 = new(2026, 9, 8, 12, 0, 0, DateTimeKind.Utc);
+  > ```
+  > 
+  > Hmm — but the assignment says helper method signature `private static CaptureFrame Frame(int filledColumns, DateTime at)`. Let me write.
+  > 
+  > ```csharp
+  >     private static CaptureFrame Frame(int filledColumns, DateTime at)
+  >     {
+  >         byte[] bgra = new byte[FrameWidth * FrameHeight * 4];
+  >         for (int i = 0; i < bgra.Length; i += 4)
+  >         {
+  >             bgra[i + 3] = 255;
+  >         }
+  >         for (int x = 112; x < 112 + filledColumns; x++)
+  >         {
+  >             for (int y = 36; y <= 50; y++)
+  >             {
+  >                 int index = (y * FrameWidth + x) * 4;
+  >                 bgra[index] = 0;     // B
+  >                 bgra[index + 1] = 200; // G
+  >                 bgra[index + 2] = 0;   // R
+  >                 bgra[index + 3] = 255; // A
+  >             }
+  >         }
+  >         return new CaptureFrame(FrameWidth, FrameHeight, bgra, DataSourceKind.Live, at);
+  >     }
+  > ```
+  > 
+  > Note Buffer.BitConverter default for byte[] is fine; ReadOnlyMemory<byte> implicit from byte[].
+  > 
+  > Also a helper for the different-geometry frame 800x600:
+  > 
+  > ```csharp
+  >     private static CaptureFrame Frame800x600(int filledColumns, DateTime at)
+  >     {
+  >         const int width = 800;
+  >         const int height = 600;
+  >         byte[] bgra = new byte[width * height * 4];
+  >         ...
+  >     }
+  > ```
+  > 
+  > Test 7: two Offers with Frame(73) then a third Offer with the 800x600 frame and assert State == Waiting and Samples.Count <= 3. But careful: the 800x600 frame — filledColumns needs the ROI... Actually geometry differs (frame differs), so the frame gets rejected with frame_geometry_changed and no sample added. But the test says "se il terzo campione ha una (FrameWidth, FrameHeight) diversa la sonda NON deve risultare Confirmed. Se il terzo Offer viene rifiutato per un qualunque motivo, l'asserzione State == Waiting resta valida: asserisci solo quello e Samples.Count <= 3."
+  > 
+  > So we can use the second helper with some filled columns (e.g., 73) or maybe geometry differences. For the 800x600 frame, we need to know what the ROI would be... but since the frame will be rejected by geometry check, what we paint doesn't matter much. Just p
+- 17:35:45 `88y7` **dice**
+  > Both target files do not exist yet; the only other file in the folder is out of my allowed scope, so I will not read it. I have all required signatures and numbers from the assignment text. Now I write the two new test files.
+- 17:35:45 `88y7` `write_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:35:58 `88y7` giro 3 — 13.7 s, fine `tool_calls`, token 35.287
+- 17:35:58 `88y7` **ragiona** (17 caratteri)
+  > Now write file 2.
+- 17:35:58 `88y7` `write_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:36:02 `88y7` giro 4 — 3.2 s, fine `tool_calls`, token 35.616
+- 17:36:02 `88y7` **ragiona** (678 caratteri)
+  > Both files written. Let me verify them quickly by reading to check for mistakes (self-review). They're both in scope.
+  > 
+  > Check: The probe's `Frame` helper paints only rows y from BarRoiY to BarRoiY+BarRoiHeight-1, i.e., 36..50 inclusive. Good.
+  > 
+  > But wait — the fill predicate considers columns x within the ROI crop; we paint columns from 112 to 112+filledColumns-1 across rows 36..50. The ROI reading crop presumably spans exactly the ROI columns and rows. But rows 36..50 within crop produce columns across full crop? The reader measures column-wise ratio: within crop W wide, with k filled columns present in every row. Yes.
+  > 
+  > Now re-read file 1 to double-check no syntax errors.
+- 17:36:02 `88y7` **dice**
+  > Both files are written. Let me re-read them to verify correctness before reporting.
+- 17:36:02 `88y7` `read_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:36:02 `88y7` `read_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:36:26 `88y7` giro 5 — 24.8 s, fine `tool_calls`, token 45.877
+- 17:36:26 `88y7` **ragiona** (12.602 caratteri, troncato)
+  > Both files look complete and correct. Let me double check details against requirements once more:
+  > 
+  > File 1:
+  > - Header: five usings + `namespace NosAi.Runtime.Tests;` ✓
+  > - `public sealed class OpportunisticBarProbeTests` with English XML ✓
+  > - 8 [Fact] methods with required names ✓
+  > - Helper `Frame(int filledColumns, DateTime at)` ✓ 1000x1000, alpha everywhere, green fill from x=112 to 112+fc-1, y=36..50 ✓
+  > - Different geometry helper 800x600 background-only ✓
+  > - T0 constant 2026-09-08T12:00:00Z ✓
+  > - WireAtSixtyPercent (600,1000), WireAtFull (1000,1000) ✓
+  > - Test 1: 3 offers Frame(73) different instants, Confirmed, Samples.Count 3, each diff < 0.08 ✓
+  > - Test 2: Frame(24) once → Disagreed, Samples.Count 1, FailureReason startswith pixel_wire_disagree, evidence incomplete, valid_samples == 1, sample_1 key ✓
+  > - Test 3: Frame(121) x5 wire1000 → Waiting, samples empty, rejections bar_not_drained==5, IncompleteReason contains "piena" ✓
+  > - Test 4: Frame(0) → Samples empty, rejection no_bar_signature==1, Waiting ✓
+  > - Test 5: Frame(73) x3 wire null atlas new HudGlyphAtlas() → no samples, wire_unavailable 3, LastTraining null, AtlasLearnedTotal 0, PendingReason contains "seconda fonte" ✓
+  > - Test 6: clientInForeground false → client_not_foreground==1 ✓
+  > - Test 7: 2×Frame(73) + DifferentGeometryFrame(800x600); assert Waiting, samples <=3 ✓
+  > - Test 8: temp root nosai-t03-guid, close as test 1, Write evidence, exists, ReadPointer not null, ReadLatest Complete true TestId T-03, finally cleanup ✓
+  > 
+  > One check on test 7: the third Offer passes the 800x600 area with the 800x600 frame. Hmm, actual probe Offer requires a client area rect — different. Good.
+  > 
+  > Wait, one issue: in test 7, the first two Offers have samples accepted and the probe remains Waiting (needs 3). Then a third Offer with the other geometry frame. However there is a nuance: two samples, both differ <0.08 from wire. That's fine.
+  > 
+  > File 2:
+  > - Header without LiveIntegration + namespace flat ✓
+  > - `public sealed class TargetRoiAutoCalibratorTests` ✓ with XML English ✓
+  > - 7 [Fact] methods required names ✓
+  > - helpers WithTarget / WithoutTarget / WithNoisyTarget / Frame640x480 ✓
+  > - calibration path pattern per spec; cleanup in finally ✓
+  > - T09 test1: full flow → asserted.
+  > - Colors: fill B=0 G=200 R=0; background black + A=255. ✓ index formula ✓.
+  > - No Thread.Sleep/timer/UtcNow. ✓
+  > - No writes to data/ ✓.
+  > 
+  > Potential concerns to verify against the assignment wording:
+  > 
+  > 1. In T-03, "La ROI della barra HP che la sonda ricava dal segmentatore è esattamente PixelRect(112, 36, 121, 15)". We used those constants. The measured ratio exact = filledColumns / 121 = 0.6033 for 73 columns. ✓ Difference small.
+  > 
+  > 2. Difference check threshold: assignment says "ogni Difference minore di 0.08" — we assert < 0.08. ✓
+  > 
+  > 3. test 2 asserts Sample pixel ratio not zero etc. Fine.
+  > 
+  > One subtle question: In test 1 T-03 the required sample count is 3 but perhaps at each Offer, because ratio < drained threshold, three samples accumulate; after third Offer the probe becomes Confirmed. ✓.
+  > 
+  > Now check XML comments are in English and class-level per requirement. ✓ Helpers have XML comments in English too; fine.
+  > 
+  > Now verify file compiles plausibly. Possible compile nuance: In `Assert.NotNull(proposed);` then using `proposed!.X`. fine.
+  > 
+  > `File.ReadLines(writtenPath!).First()` — using System.Linq from ImplicitUsings. In a test project with net8.0-windows and ImplicitUsings enable, System.IO and System.Linq are imported. The existing project presumably has ImplicitUsings. Assignment says ImplicitUsings attivo. ✓
+  > 
+  > One more: `WirePlayerVitals` record struct construction with named? We used positional: `new WirePlayerVitals(600, 1000, null, null, null, null, "stat")`. ✓
+  > 
+  > Another: In T-03 test 5, `probe.Offer(Frame(73, T0.AddSeconds(i)), wire: null, ClientArea, atlas: new HudGlyphAtlas());` — the signature is `Offer(CaptureFrame? frame, WirePlayerVitals? wire, PixelRect? clientArea = null, HudGlyphAtlas? atlas = null, bool clientInForeground = true)`. Position
+- 17:36:26 `88y7` **dice**
+  > Both files look consistent. I'll make two small defensive edits to avoid any named-argument ordering subtlety, replacing mid-list named arguments with plain positional ones.
+- 17:36:26 `88y7` `edit_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:36:26 `88y7` `edit_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:36:43 `88y7` giro 6 — 17.1 s, fine `tool_calls`, token 48.328
+- 17:36:43 `88y7` **ragiona** (3.803 caratteri)
+  > Both files complete. Let me do a final sanity check on a couple of subtle points:
+  > 
+  > 1. Test 7 T-03: after 2 Offers the probe is Waiting. Actually wait — could the probe have closed after only 2 samples? RequiredSamples=3 default. So no.
+  > 
+  > 2. Also check the third Offer's geometry frame: I pass ClientArea 800x600 with DifferentGeometryFrame 800x600 — but no bar painted. There's a question: The probe "ricava la ROI dal segmentatore" for 1000x1000 as (112,36,121,15). For an 800x600 geometry, if geometry change isn't validated, the probe might try to read ROI (112,36,121,15) on an 800x600 frame and get no_bar_signature (empty crop, since nothing painted), hence rejection, no sample, still Waiting. That satisfies.
+  > 
+  > But hmm, wait — is the client area the probe checks for geometry? If Offer's geometry validation compares frame size or client area to previously seen, the 800x600 differs → rejection. Either path keeps State Waiting. Good.
+  > 
+  > 3. T-09 geometry change test: we pass hasTarget false on Frame640x480 whose background has no target. Wait, spec doesn't state the label for the changed geometry offer — I chose false. If the calibrator counts the geometry-changed offer itself... it's rejected per Rejections["frame_geometry_changed"]==1, so not counted. Sum ≤ 1 after reset regardless.
+  > 
+  > Actually wait — is it possible the geometry-change reset happens on the *offer with the new geometry*, and the counters reset *then the current frame counted*? If reset happens then counting of the current (640x480, label false, no target) as WithoutTarget would produce sum 1 → still ≤ 1. If the frame is rejected before counting: sum 0 ≤ 1. Both fine.
+  > 
+  > 4. One more consideration in T-09 test 3 (BersaglioMaiSelezionato...): six WithoutTarget offers with hasTarget false; FramesWithoutTarget >= 3. But is FramesWithoutTarget counted per accepted frame? Since no Proposed yet (Waiting), would WithoutTarget frames be counted? The assignment's expected outcome: FramesWithoutTarget >= 3 after six offers — trust it.
+  > 
+  > 5. T-09 test 2: no file written assertion: File.Exists(calibrationPath) false. Since no write occurs, dir may not even exist. Fine.
+  > 
+  > 6. Both evidence-write tests assert File.Exists on returned path and ReadPointer/ReadLatest non-null with root. Fine.
+  > 
+  > Now check that in test file 2, test "DerivaIlRettangoloNotoEChiudeQuandoLaVerificaPassa" asserts Contradictions == 0 and VerifiedPresent/Absent >= 3, which assume the calibrator semantics — provided by production code (not compiled here, but that's Claude's part).
+  > 
+  > I should also double check `Assert.NotNull(evidence.IncompleteReason);` then `Assert.Contains("piena", evidence.IncompleteReason!);` — Compiles.
+  > 
+  > Also check the file2 uses `(string directory, string calibrationPath) = CreateCalibrationPath();` tuple deconstruction with local functions — valid.
+  > 
+  > Everything ready. Report in Italian, with acceptance lines. State that compilation/tests were NOT run (I cannot run them; Claude will). Mention unverified items.
+  > 
+  > Acceptance criteria:
+  > 1. Existence of two files, no other file modified — I created only these two; other files outside scope untouched (unverified by tools, but I performed no other writes/reads).
+  > 2. namespace flat — both declare NosAi.Runtime.Tests.
+  > 3. 8 [Fact] methods T-03.
+  > 4. 7 [Fact] methods T-09.
+  > 5. colors and indexing.
+  > 6. paths under GetTempPath and cleanup in finally.
+  > 7. no Sleep/timer/UtcNow — instances from T0.
+  > 8. no existing test modified/deleted — unverified directly, but I only wrote two new files; ScreenVitalsCaptureTests untouched (I could not read it).
+  > 9. no TODO/FIXME/ellipsis/empty/Assert.True(true).
+  > 10. public sealed class with English XML.
+  > 
+  > Blockers: none for writing; build/test execution not possible by me (delegated to Claude). Mention can't verify compilation since no build tools.
+- 17:36:43 `88y7` **dice**
+  > Both files are complete and internally consistent. I performed no reads or writes outside the two permitted paths. I cannot compile or run the tests in this environment (no shell/build access), so compilation and test execution remain to be verified by Claude.
+- 17:36:43 `88y7` `report_done`
+- 17:36:43 `88y7` **modified** `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs` (3.186 → 8.016 byte)
+- 17:36:43 `88y7` **created** `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs` (0 → 13.203 byte)
+- 17:36:43 `88y7` rapporto: 10 criteri, 1 blocchi
+- 17:36:43 `88y7` **fine: blocked** — 6 giri, 10 strumenti (2 rifiutati), 2 file, 219.3 s, token 204.080
+
+
+### 17:37:37 · deepseek-v4-flash · `3d08`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`, `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`  
+**Tetti** 20 giri · 40 strumenti · 900 s
+
+  > Q-SONDA-03 / BLOCCO E — Correggere quattro errori di compilazione e un avviso nei due file di test appena scritti. ## VINCOLO DI PERIMETRO Puoi scrivere in due soli file, entrambi già esistenti: - `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs` - `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs` Non toccare nessun altro file. Non cambiare la logica dei tes...
+
+- 17:37:39 `3d08` giro 1 — 1.6 s, fine `tool_calls`, token 2.955
+- 17:37:39 `3d08` **ragiona** (55 caratteri)
+  > Let me start by reading the two files I need to modify.
+- 17:37:39 `3d08` `read_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:37:39 `3d08` `read_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:37:45 `3d08` giro 2 — 6.2 s, fine `tool_calls`, token 10.580
+- 17:37:45 `3d08` **ragiona** (2.786 caratteri)
+  > Now let me check the occurrences in both files:
+  > 
+  > In TargetRoiAutoCalibratorTests.cs:
+  > - Lines 46-51: the block to replace.
+  > - Check other occurrences of `Proposed` member access without `.Value`. Line 122: `Assert.Null(calibrator.Proposed);` - that's fine, no member access on `.X/.Y/.Width/.Height`.
+  > - Any other `.Proposed` usage? Line 46-51 only. Line 122 doesn't access members.
+  > 
+  > Let me double check for `PixelRect?` variable declarations and member access. Only line 46.
+  > 
+  > In OpportunisticBarProbeTests.cs:
+  > - Line 54: `Assert.Equal(1, probe.Samples.Count);` needs to become `Assert.Single(probe.Samples);`
+  > - Check other occurrences of `Assert.Equal(1, ...)`:
+  >   - Line 39: `Assert.Equal(3, probe.Samples.Count);` - count 3, leave.
+  >   - Line 54: `Assert.Equal(1, probe.Samples.Count);` - replace.
+  >   - Line 60: `Assert.Equal("1", evidence.Measurements["valid_samples"]);` - string, not a Count. Leave.
+  >   - Line 76: `Assert.Equal(5, probe.Rejections["bar_not_drained"]);` - leave.
+  >   - Line 91: `Assert.Equal(1, probe.Rejections["no_bar_signature"]);` - leave.
+  >   - Line 106: `Assert.Equal(3, probe.Rejections["wire_unavailable"]);` - leave.
+  >   - Line 120: `Assert.Equal(1, probe.Rejections["client_not_foreground"]);` - leave.
+  >   - Line 133: `Assert.True(probe.Samples.Count <= 3);` - not Equal(1). Leave.
+  > 
+  > Wait, but the assignment says "If the same form Assert.Equal(1, ....Count) appears elsewhere in one of the two files, apply the same substitution with Assert.Single(...)." The xUnit2013 warning applies only to collection size checks — Assert.Equal(1, probe.Rejections["no_bar_signature"]) checks a dictionary value which is an int, not a collection size. Those aren't `....Count` checks on a collection. Actually `Rejections["no_bar_signature"]` returns an int, that's fine and correct. Only line 54 matches the exact pattern `Assert.Equal(1, probe.Samples.Count);`. Let me search for other `Assert.Equal(1,` occurrences in both files.
+  > 
+  > Let me search to be thorough. In TargetRoiAutoCalibratorTests.cs:
+  > - Line 52: `Assert.Equal(0, calibrator.Contradictions);` - leave
+  > - Line 94: `Assert.Equal(0, calibrator.VerifiedPresent);` - leave
+  > - Line 119: `Assert.Equal(TargetRoiCalibrationState.Waiting, ...)` - leave
+  > - Line 120, 148, 149, 150, 168, 169, 191 - none with `1,` count except `Assert.Equal(0, ...)`.
+  > 
+  > Let me search for `Assert.Equal(1,` in both files to be careful.
+  > 
+  > Also let me search within TargetRoiAutoCalibratorTests.cs for other member access of `Proposed` without `.Value` — e.g., `calibrator.Proposed!.Width`, or PixelRect? variable with `.X`. Let me run a search for "Proposed" in the file, and also for patterns like `\.X` / `\.Y` / `\.Width` / `\.Height`.
+  > 
+  > Let me do the edit for line 46-51 in TargetRoiAutoCalibratorTests.cs and line 54 in OpportunisticBarProbeTests.cs.
+- 17:37:45 `3d08` **dice**
+  > I've read both files. Now let me verify there are no other occurrences of the relevant patterns before editing.
+- 17:37:45 `3d08` `search_files` `Assert\.Equal\(1,`
+- 17:37:45 `3d08` `search_files` `Proposed|PixelRect\?`
+- 17:37:48 `3d08` giro 3 — 3.2 s, fine `tool_calls`, token 11.485
+- 17:37:48 `3d08` **ragiona** (366 caratteri)
+  > Confirmed:
+  > - Only line 54 in OpportunisticBarProbeTests.cs is the `Assert.Equal(1, ...Count)` form. The others check `Rejections[...]` ints, not collection sizes — leave them.
+  > - Only line 46-51 in TargetRoiAutoCalibratorTests.cs involves a `PixelRect?` member access. Line 122 `Assert.Null(calibrator.Proposed)` doesn't access members, fine.
+  > 
+  > Now make the two edits.
+- 17:37:48 `3d08` **dice**
+  > Both confirmed. Only line 54 in OpportunisticBarProbeTests.cs is a collection-size `Assert.Equal(1, ...)`; the `Rejections[...]` checks return int dictionary values and must stay. In TargetRoiAutoCalibratorTests.cs the only `PixelRect?` member accesses are the block at lines 46-51. Now I apply the two edits.
+- 17:37:48 `3d08` `edit_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:37:48 `3d08` `edit_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:37:50 `3d08` giro 4 — 1.6 s, fine `tool_calls`, token 11.766
+- 17:37:50 `3d08` **ragiona** (63 caratteri)
+  > Now let me verify the edits by re-reading the modified regions.
+- 17:37:50 `3d08` **dice**
+  > Both edits applied. Let me verify the modified regions.
+- 17:37:50 `3d08` `read_file` `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs`
+- 17:37:50 `3d08` `read_file` `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs`
+- 17:37:57 `3d08` giro 5 — 7.1 s, fine `tool_calls`, token 13.316
+- 17:37:57 `3d08` **ragiona** (828 caratteri)
+  > Both edits verified. Let me do a final cross-check:
+  > 
+  > 1. In TargetRoiAutoCalibratorTests.cs, no member access on a PixelRect? without .Value or a PixelRect variable. The only `Proposed` references are lines 46-47 (the new block) and line 122 `Assert.Null(calibrator.Proposed)` (no member access). Confirmed via search earlier.
+  > 
+  > 2. The 46-51 block replaced exactly with specified version — verified.
+  > 
+  > 3. Line 54 in OpportunisticBarProbeTests.cs is now `Assert.Single(probe.Samples);` — verified.
+  > 
+  > 4. No tests added/removed/renamed/weakened, expected values unchanged. The remaining Assert.Equal(1, Rejections[...]) calls and Assert.Equal(3, probe.Samples.Count) etc. are intact.
+  > 
+  > 5. Only two files touched.
+  > 
+  > Line counts unchanged (333 and 221), so edits were in-place replacements, no lines added/removed. Done. Report in Italian.
+- 17:37:57 `3d08` **dice**
+  > Both edits are verified in place, and file line counts are unchanged (333 and 221 lines), so no test lines were added or removed. All checks are complete.
+- 17:37:57 `3d08` `report_done`
+- 17:37:57 `3d08` **modified** `tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs` (8.016 → 8.008 byte)
+- 17:37:57 `3d08` **modified** `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs` (13.203 → 13.219 byte)
+- 17:37:57 `3d08` rapporto: 5 criteri, 0 blocchi
+- 17:37:57 `3d08` **fine: completed** — 5 giri, 9 strumenti (0 rifiutati), 2 file, 19.7 s, token 50.102
+
