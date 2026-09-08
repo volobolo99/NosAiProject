@@ -12,6 +12,7 @@ using NosAi.Runtime.Gate2;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Testing;
 
 namespace NosAi.ControlPanel;
 
@@ -35,6 +36,9 @@ public partial class MainWindow : Window
     private FileSystemWatcher? _targetFiles;
     private string? _targetSignature;
     private string? _inventoryPanelRoiSignature;
+    private readonly StartupRoundClient _startupRound;
+    private CancellationTokenSource? _startupRoundCts;
+    private StartupRoundReport? _startupRoundReport;
 
     public MainWindow()
     {
@@ -43,6 +47,7 @@ public partial class MainWindow : Window
         _session = new RuntimeSession(_log);
         _settings = OperatorSettings.Load(_repoRoot);
         _elevated = ElevationInspect.IsElevated();
+        _startupRound = new StartupRoundClient(_repoRoot);
         UnequipGestureCombo.ItemsSource = new[] { "single", "double", "right" };
         ElevationCard.Visibility = _elevated ? Visibility.Collapsed : Visibility.Visible;
         _log.Written += entry =>
@@ -64,6 +69,9 @@ public partial class MainWindow : Window
         OverviewPhoneReminder.Text = ChannelView.PhoneReminder;
         Loaded += async (_, _) => await AutoStartAsync();
         Closed += async (_, _) => await ShutdownAsync();
+        ShowPreviousStartupRound();
+        Loaded += async (_, _) => await StartStartupRoundAsync(StartupRoundMode.Full);
+        Closed += (_, _) => _startupRoundCts?.Cancel();
     }
 
     private async Task AutoStartAsync()
@@ -496,6 +504,129 @@ public partial class MainWindow : Window
 
     private void RefreshSetup() => SetupList.ItemsSource = AutoSetup.Inspect(_repoRoot, _settings.ObserveGame, _elevated);
 
+    private void ShowPreviousStartupRound()
+    {
+        try
+        {
+            StartupRoundReport? previous = _startupRound.ReadLatest();
+            if (previous is null)
+            {
+                StartupRoundState.Text = "In corso…";
+                StartupRoundState.Foreground = (Brush)FindResource("MutedBrush");
+                return;
+            }
+
+            ApplyStartupRound(previous, previous: true);
+        }
+        catch (Exception ex)
+        {
+            // Never propagate: this method runs from the constructor and from OnNav.
+            // A missing or damaged report is already handled inside
+            // StartupRoundReport.TryRead, so anything reaching here is a genuine
+            // display fault. Swallowing it silently would leave the banner on
+            // "In corso...", indistinguishable from "no round has run yet".
+            _log.Error("Ronda di avvio: report precedente non mostrato", ex);
+        }
+    }
+
+    private async Task StartStartupRoundAsync(StartupRoundMode mode)
+    {
+        if (_startupRound.IsRunning)
+            return;
+
+        _startupRoundCts?.Dispose();
+        _startupRoundCts = new CancellationTokenSource();
+        StartupRoundRepeatButton.IsEnabled = false;
+        StartupRoundState.Text = "In corso…";
+        StartupRoundState.Foreground = (Brush)FindResource("MutedBrush");
+
+        try
+        {
+            StartupRoundOutcome outcome = await _startupRound
+                .RunAsync(mode, _startupRoundCts.Token)
+                .ConfigureAwait(true);
+
+            if (outcome.Report is not null)
+            {
+                ApplyStartupRound(outcome.Report, previous: false);
+                _log.Operator($"Ronda di avvio: Pass {outcome.Report.PassCount} · Fail {outcome.Report.FailCount} · Unknown {outcome.Report.UnknownCount} · Skipped {outcome.Report.SkippedCount} · {outcome.Report.TotalMs} ms");
+            }
+            else
+            {
+                StartupRoundState.Text = "UNKNOWN";
+                StartupRoundState.Foreground = (Brush)FindResource("WarnBrush");
+                StartupRoundDetail.Text = outcome.Failure ?? "Nessun report.";
+                _log.Operator($"Ronda di avvio non conclusa: {outcome.Failure}");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Window is closing: exit silently, no message.
+        }
+        catch (Exception ex)
+        {
+            StartupRoundState.Text = "UNKNOWN";
+            StartupRoundState.Foreground = (Brush)FindResource("WarnBrush");
+            StartupRoundDetail.Text = ex.Message;
+        }
+        finally
+        {
+            StartupRoundRepeatButton.IsEnabled = true;
+        }
+    }
+
+    private void ApplyStartupRound(StartupRoundReport report, bool previous)
+    {
+        if (report.FailCount > 0)
+        {
+            StartupRoundState.Text = "ROSSO";
+            StartupRoundState.Foreground = (Brush)FindResource("DangerBrush");
+        }
+        else if (report.UnknownCount > 0 || report.SkippedCount > 0)
+        {
+            StartupRoundState.Text = "GIALLO";
+            StartupRoundState.Foreground = (Brush)FindResource("WarnBrush");
+        }
+        else
+        {
+            StartupRoundState.Text = "VERDE";
+            StartupRoundState.Foreground = (Brush)FindResource("LiveBrush");
+        }
+
+        string counts = $"Pass {report.PassCount} · Fail {report.FailCount} · Unknown {report.UnknownCount} · Skipped {report.SkippedCount} · {report.TotalMs} ms";
+        StartupRoundDetail.Text = previous
+            ? $"Esito precedente del {report.StartedUtc:dd/MM/yyyy HH:mm} UTC — {counts}"
+            : counts;
+        StartupRoundSummary.Text = $"{counts} · ronda {report.Mode}";
+        StartupRoundFields.ItemsSource = report.Checks.Select(c => new DisplayField(
+            c.Title,
+            string.IsNullOrEmpty(c.Reason)
+                ? $"{c.Evidence} · {c.DurationMs} ms"
+                : $"{c.Evidence} · {c.DurationMs} ms · {c.Reason}",
+            c.Outcome.ToString().ToUpperInvariant())).ToArray();
+        _startupRoundReport = report;
+    }
+
+    private void OnStartupRoundDetails(object sender, RoutedEventArgs e)
+    {
+        OnNav(NavHealth, e);
+    }
+
+    private async void OnStartupRoundRepeat(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_startupRound.IsRunning)
+                return;
+
+            await StartStartupRoundAsync(StartupRoundMode.Full);
+        }
+        catch (Exception ex)
+        {
+            Status(ex.Message);
+        }
+    }
+
     private void OnNav(object sender, RoutedEventArgs e)
     {
         if (sender is not Button button)
@@ -513,6 +644,7 @@ public partial class MainWindow : Window
         NavDecision.Style = (Style)FindResource("NavButton");
         NavSecurity.Style = (Style)FindResource("NavButton");
         NavSuites.Style = (Style)FindResource("NavButton");
+        NavHealth.Style = (Style)FindResource("NavButton");
         NavSettings.Style = (Style)FindResource("NavButton");
         NavLog.Style = (Style)FindResource("NavButton");
         button.Style = (Style)FindResource("NavButtonActive");
@@ -529,6 +661,7 @@ public partial class MainWindow : Window
         ViewDecision.Visibility = Visibility.Collapsed;
         ViewSecurity.Visibility = Visibility.Collapsed;
         ViewSuites.Visibility = Visibility.Collapsed;
+        ViewHealth.Visibility = Visibility.Collapsed;
         ViewSettings.Visibility = Visibility.Collapsed;
         ViewLog.Visibility = Visibility.Collapsed;
 
@@ -545,6 +678,13 @@ public partial class MainWindow : Window
         }
         else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; ApplyInventoryPanelRoi(); ApplyUnequip(); }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
+        else if (ReferenceEquals(button, NavHealth))
+        {
+            if (_startupRoundReport is null)
+                ShowPreviousStartupRound();
+            ViewHealth.Visibility = Visibility.Visible;
+            PageTitle.Text = "Ronda di avvio";
+        }
         else if (ReferenceEquals(button, NavPerception))
         {
             ViewPerception.Visibility = Visibility.Visible;

@@ -79,6 +79,7 @@
           <Button x:Name="NavDecision" Style="{StaticResource NavButton}" Content="Decisione" Click="OnNav"/>
           <Button x:Name="NavSecurity" Style="{StaticResource NavButton}" Content="Sicurezza" Click="OnNav"/>
           <Button x:Name="NavSuites" Style="{StaticResource NavButton}" Content="Certificazione" Click="OnNav"/>
+          <Button x:Name="NavHealth" Style="{StaticResource NavButton}" Content="Ronda di avvio" Click="OnNav"/>
           <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Content="Impostazioni" Click="OnNav"/>
           <Button x:Name="NavLog" Style="{StaticResource NavButton}" Content="Diario" Click="OnNav"/>
         </StackPanel>
@@ -110,6 +111,24 @@
         <!-- Overview -->
         <ScrollViewer x:Name="ViewOverview" VerticalScrollBarVisibility="Auto">
           <StackPanel>
+            <Border x:Name="StartupRoundBanner" Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Style="{StaticResource CardLabel}" Text="RONDA DI AVVIO"/>
+                  <TextBlock x:Name="StartupRoundState" FontSize="18" FontWeight="SemiBold" Text="In corso…"/>
+                  <TextBlock x:Name="StartupRoundDetail" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"
+                             Text="Verifica automatica all'apertura. Nessun comando da digitare."/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <Button x:Name="StartupRoundDetailsButton" Style="{StaticResource GhostButton}" Content="Dettaglio" Click="OnStartupRoundDetails" Margin="0,0,8,0"/>
+                  <Button x:Name="StartupRoundRepeatButton" Style="{StaticResource GhostButton}" Content="Ripeti ronda" Click="OnStartupRoundRepeat"/>
+                </StackPanel>
+              </Grid>
+            </Border>
             <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
               <StackPanel>
                 <TextBlock Style="{StaticResource CardLabel}" Text="MODALITÀ"/>
@@ -169,6 +188,16 @@
             <TextBlock FontWeight="SemiBold" Margin="0,16,0,10">Resilienza</TextBlock>
             <ItemsControl x:Name="ResilienceFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock x:Name="OverviewWarning" Foreground="{StaticResource WarnBrush}" Margin="0,12,0,0" TextWrapping="Wrap"/>
+          </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="ViewHealth" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">
+              Esito dell'ultima ronda, controllo per controllo. UNKNOWN non è un fallimento: è una misura che questo ambiente non ha potuto prendere.
+            </TextBlock>
+            <TextBlock x:Name="StartupRoundSummary" FontWeight="SemiBold" Margin="0,0,0,12" TextWrapping="Wrap" Text="Nessuna ronda registrata."/>
+            <ItemsControl x:Name="StartupRoundFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
 

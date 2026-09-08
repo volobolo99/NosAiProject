@@ -76,6 +76,12 @@ public static class Program
             return 0;
         }
 
+        // Q-RONDA-01: the automatic startup checkup. Runs every certification
+        // suite in-process plus the read-only environment probes, and writes
+        // data/health so the operator's panel has an answer without typing one.
+        if (args.Any(a => string.Equals(a, StartupRound.Flag, StringComparison.OrdinalIgnoreCase)))
+            return await StartupRound.RunCommandAsync(args).ConfigureAwait(false);
+
         // Real-environment probe for the DXGI capture backend. The perception suite
         // certifies the contract without a desktop; only a real interactive session
         // can say whether Desktop Duplication actually yields live pixels here.
