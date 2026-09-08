@@ -16,6 +16,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { markdownOf } from './eventView.mjs';
+
 /** Set to '0' to turn the log off. Unset or anything else leaves it on. */
 export const LOG_ENABLED_ENV = 'NOSAI_DEEPSEEK_LOG';
 
@@ -47,6 +49,22 @@ const LOGGABLE_ARG_KEYS = ['path', 'directory', 'pattern', 'glob'];
 
 const DEFAULT_DIR = fileURLToPath(new URL('../logs/', import.meta.url));
 const FILE_NAME = 'delegations.jsonl';
+
+/**
+ * Path of the shared activity diary, or '0' to write none.
+ *
+ * The JSON Lines file is for programs; this one is for a person watching a
+ * Markdown preview while the work happens. Every agent appends to the same
+ * file, so each line carries the short id of the delegation that wrote it.
+ */
+export const ACTIVITY_MD_ENV = 'NOSAI_ACTIVITY_MD';
+
+const DEFAULT_ACTIVITY_MD = fileURLToPath(new URL('../../../logact.md', import.meta.url));
+
+/** Where the diary is written, so a reader never has to compose the path itself. */
+export function defaultActivityFile(env = process.env) {
+    return env[ACTIVITY_MD_ENV] ?? DEFAULT_ACTIVITY_MD;
+}
 
 /** A log that does nothing: the disabled case, and the default for callers that pass none. */
 export const nullEventLog = Object.freeze({
@@ -111,7 +129,24 @@ export function toolArgFields(args) {
  * @param {Function} [options.now] injected clock
  * @param {Function} [options.writer] injected sink, for tests
  */
-export function createEventLog({ env = process.env, dir, id, now = () => new Date(), writer } = {}) {
+/**
+ * The file the log is written to, and therefore the file every reader must open.
+ *
+ * Kept here beside the writer: a reader that composes this path on its own is a
+ * reader that shows an empty page the day the writer moves.
+ */
+export function defaultLogFile(env = process.env) {
+    return path.join(env[LOG_DIR_ENV] ?? DEFAULT_DIR, FILE_NAME);
+}
+
+export function createEventLog({
+    env = process.env,
+    dir,
+    id,
+    now = () => new Date(),
+    writer,
+    markdownWriter
+} = {}) {
     const delegationId = id ?? newDelegationId(now);
     const chosenDir = dir ?? env[LOG_DIR_ENV];
     // Under `node --test` the suite exercises the whole server, delegation tool
@@ -133,18 +168,54 @@ export function createEventLog({ env = process.env, dir, id, now = () => new Dat
             fs.appendFileSync(file, line, 'utf8');
         });
 
+    // Where the diary goes, in order of how explicit the intent is. A caller who
+    // redirected the machine log without naming a diary gets none: that caller is
+    // a test, and the diary it would otherwise touch is the operator's own file
+    // in the repository root.
+    const configuredMd =
+        env[ACTIVITY_MD_ENV] ??
+        (markdownWriter !== undefined
+            ? '(iniettato)'
+            : chosenDir
+              ? path.join(chosenDir, 'logact.md')
+              : writer !== undefined
+                ? '0'
+                : DEFAULT_ACTIVITY_MD);
+    const activityFile = configuredMd === '0' ? null : configuredMd;
+    let diaryBroken = activityFile === null;
+
+    const appendMarkdown =
+        markdownWriter ??
+        ((text) => {
+            fs.mkdirSync(path.dirname(activityFile), { recursive: true });
+            fs.appendFileSync(activityFile, text + '\n', 'utf8');
+        });
+
     return {
         id: delegationId,
         file,
+        activityFile: diaryBroken ? null : activityFile,
         enabled: true,
         thoughtsEnabled: (env[LOG_THOUGHTS_ENV] ?? '1') !== '0',
         event(name, fields = {}) {
-            if (broken) return;
+            const event = { ts: now().toISOString(), id: delegationId, ev: name, ...fields };
+            if (!broken) {
+                try {
+                    append(JSON.stringify(event) + '\n');
+                } catch (err) {
+                    broken = true;
+                    process.stderr.write('[nosai-deepseek] event log disabled: ' + err.message + '\n');
+                }
+            }
+            // The diary is a convenience: it fails on its own without taking the
+            // machine-readable log, or the delegation, down with it.
+            if (diaryBroken) return;
             try {
-                append(JSON.stringify({ ts: now().toISOString(), id: delegationId, ev: name, ...fields }) + '\n');
+                const line = markdownOf(event);
+                if (line !== null) appendMarkdown(line);
             } catch (err) {
-                broken = true;
-                process.stderr.write('[nosai-deepseek] event log disabled: ' + err.message + '\n');
+                diaryBroken = true;
+                process.stderr.write('[nosai-deepseek] activity diary disabled: ' + err.message + '\n');
             }
         }
     };

@@ -15,10 +15,8 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-import { LOG_DIR_ENV } from '../src/eventLog.mjs';
+import { defaultLogFile } from '../src/eventLog.mjs';
 import { formatEvent, parseLine } from '../src/eventView.mjs';
 
 const POLL_MS = 400;
@@ -45,11 +43,6 @@ function parseArgs(argv) {
         }
     }
     return options;
-}
-
-function defaultFile(env = process.env) {
-    const dir = env[LOG_DIR_ENV] ?? fileURLToPath(new URL('../logs/', import.meta.url));
-    return path.join(dir, 'delegations.jsonl');
 }
 
 /** Prints one line per event, skipping anything that is not one. */
@@ -129,7 +122,7 @@ async function main() {
         return;
     }
 
-    const file = options.file ?? defaultFile();
+    const file = options.file ?? defaultLogFile();
     const colors = options.colors && process.stdout.isTTY && process.env.NO_COLOR === undefined;
     const view = { ...options, colors };
 

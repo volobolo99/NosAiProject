@@ -55,7 +55,7 @@ export function clockOf(ts) {
     return d.toTimeString().slice(0, 8);
 }
 
-function seconds(ms) {
+export function seconds(ms) {
     if (typeof ms !== 'number') return '?';
     return ms < 1000 ? ms + ' ms' : (ms / 1000).toFixed(1) + ' s';
 }
@@ -66,7 +66,7 @@ function seconds(ms) {
  * built with: a viewer that formats differently on two machines is a viewer
  * whose numbers cannot be compared.
  */
-function thousands(n) {
+export function thousands(n) {
     if (typeof n !== 'number' || !Number.isFinite(n)) return '?';
     return Math.round(n)
         .toString()
@@ -179,5 +179,88 @@ export function parseLine(line) {
         return JSON.parse(trimmed);
     } catch {
         return null;
+    }
+}
+
+/** Short tag for one delegation, so concurrent agents stay apart in a shared diary. */
+export function shortId(id) {
+    return typeof id === 'string' && id.length >= 4 ? id.slice(-4) : '????';
+}
+
+/** Markdown blockquote of a passage, indented under its bullet. */
+function mdQuote(text) {
+    return text
+        .split('\n')
+        .map((line) => '  > ' + line)
+        .join('\n');
+}
+
+/**
+ * One event as a Markdown fragment for the shared activity diary, or null when
+ * the event adds nothing a reader would want in prose.
+ *
+ * A delegation opens a heading; everything else is a bullet tagged with the
+ * delegation's short id, because several agents append to the same file at the
+ * same time and a line that does not say who wrote it is noise.
+ */
+export function markdownOf(e) {
+    if (e === null || typeof e !== 'object' || typeof e.ev !== 'string') return null;
+    const at = clockOf(e.ts);
+    const tag = '`' + shortId(e.id) + '`';
+
+    switch (e.ev) {
+        case 'delegation_start':
+            return [
+                '',
+                '### ' + at + ' · ' + e.model + ' · ' + tag,
+                '',
+                '**Cartella** `' + e.workingDirectory + '`  ',
+                '**Perimetro** ' + (Array.isArray(e.allowedPaths) ? e.allowedPaths.map((p) => '`' + p + '`').join(', ') : '?') +
+                    (e.readOnly ? ' · **sola lettura**' : '') + '  ',
+                '**Tetti** ' + e.budget?.maxApiRounds + ' giri · ' + e.budget?.maxToolCalls + ' strumenti · ' +
+                    e.budget?.timeoutSeconds + ' s',
+                '',
+                e.task ? mdQuote(e.task) : '',
+                ''
+            ]
+                .filter((line, i, all) => !(line === '' && all[i - 1] === ''))
+                .join('\n');
+        case 'api_request_end':
+            return '- ' + at + ' ' + tag + ' giro ' + e.round + ' — ' + seconds(e.ms) + ', fine `' +
+                (e.finishReason ?? '?') + '`, token ' + thousands(e.usage?.totalTokens);
+        case 'api_request_error':
+            return '- ' + at + ' ' + tag + ' **giro ' + e.round + ' fallito** — ' + e.error;
+        case 'assistant_message': {
+            const blocks = [];
+            if (e.reasoning) {
+                blocks.push('- ' + at + ' ' + tag + ' **ragiona** (' + thousands(e.reasoning.chars) + ' caratteri' +
+                    (e.reasoning.truncated ? ', troncato' : '') + ')\n' + mdQuote(e.reasoning.text));
+            }
+            if (e.text) {
+                blocks.push('- ' + at + ' ' + tag + ' **dice**\n' + mdQuote(e.text.text));
+            }
+            return blocks.length > 0 ? blocks.join('\n') : null;
+        }
+        case 'tool_call': {
+            const target = e.path ?? e.directory ?? e.pattern ?? e.glob;
+            return '- ' + at + ' ' + tag + ' `' + e.name + '`' + (target ? ' `' + target + '`' : '') +
+                (e.ok === false ? ' — **rifiutato**: ' + (e.reason ?? 'senza motivo') : '');
+        }
+        case 'file_change':
+            return '- ' + at + ' ' + tag + ' **' + e.action + '** `' + e.path + '` (' +
+                thousands(e.bytesBefore) + ' → ' + thousands(e.bytesAfter) + ' byte)';
+        case 'worker_report':
+            return '- ' + at + ' ' + tag + ' rapporto: ' + e.acceptanceCriteriaMet + ' criteri, ' + e.blockers + ' blocchi';
+        case 'delegation_end':
+            return '- ' + at + ' ' + tag + ' **fine: ' + e.status + '** — ' + e.rounds + ' giri, ' + e.toolCalls +
+                ' strumenti (' + e.refusedCalls + ' rifiutati), ' + e.filesChanged + ' file, ' +
+                seconds(e.durationMs) + ', token ' + thousands(e.usage?.totalTokens) +
+                (e.error ? ' — ' + e.error : '') + '\n';
+        case 'delegation_refused':
+            return '- ' + at + ' ' + tag + ' **delega rifiutata** — ' + (e.reason ?? '');
+        case 'setup_error':
+            return '- ' + at + ' ' + tag + ' **avvio fallito** — ' + (e.error ?? '');
+        default:
+            return null;
     }
 }

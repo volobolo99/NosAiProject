@@ -95,3 +95,7 @@ node_modules/
 # Il registro operativo delle deleghe (tools/deepseek-mcp/logs/delegations.jsonl)
 # e' evidenza di esecuzione locale, non sorgente: cresce a ogni delega.
 tools/deepseek-mcp/logs/
+
+# Il diario delle attivita' degli agenti (logact.md, radice) e' evidenza locale
+# in tempo reale, non sorgente: ogni delega vi appende le proprie righe.
+logact.md

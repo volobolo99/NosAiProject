@@ -10,6 +10,8 @@
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
     "watch": "node scripts/watch.mjs",
+    "report": "node scripts/report.mjs",
+    "dashboard": "node scripts/dashboard.mjs",
     "check-connection": "node scripts/check-connection.mjs"
   },
   "dependencies": {

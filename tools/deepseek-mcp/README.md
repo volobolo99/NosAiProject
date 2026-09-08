@@ -211,3 +211,92 @@ Esempio di una delega bloccata dal perimetro:
 08:33:40   FILE created  src/NosAi.Runtime/Tactical/UnequipExecutor.cs   0 -> 14.203 B
 08:33:40 FINE blocked   2 giri, 4 strumenti (1 rifiutati), 1 file, 158.7 s, token 13.902
 ```
+
+## Il quadro delle deleghe
+
+Il visore risponde a «cosa sta succedendo adesso», un evento per volta. Dopo
+esserti allontanato, o quando piu' sessioni hanno delegato insieme e il registro
+le ha intrecciate, la domanda e' un'altra: «cosa e' successo, e cosa e' ancora
+aperto». Il rapporto raggruppa il registro per delega — la piu' recente in alto —
+e scrive una pagina che si apre da disco:
+
+```powershell
+node "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\scripts\report.mjs"
+```
+
+| Argomento | Cosa fa |
+|---|---|
+| *(nessuno)* | scrive `logs/report.html` |
+| `--markdown` | scrive `logs/report.md`, da incollare in un documento |
+| `--stdout` | stampa invece di scrivere |
+| `--out <percorso>` | sceglie il file da scrivere |
+| `--file <registro>` | legge un registro diverso da quello predefinito |
+
+Ogni delega diventa una scheda: modello, cartella, perimetro, tetti, giri,
+strumenti (con i rifiutati), file toccati, token, durata, incarico. Il bordo
+dice lo stato — verde in corso, ambra ferma da un po', grigio conclusa, rosso
+rifiutata o fallita.
+
+Una delega senza evento di chiusura e' riportata come aperta, mai come fallita:
+il registro dice cio' che e' stato scritto, e il silenzio non e' un esito. Una
+che non parla da due minuti e' segnata «ferma da», che e' un'osservazione, non
+un verdetto.
+
+La pagina e' un file solo: nessuno script, nessun carattere o foglio di stile da
+scaricare. Serve perche' si apre spesso mentre una delega e' ancora in corso, e
+una pagina che dipende da qualcosa che non riesce a raggiungere e' una pagina
+che mente sullo stato del lavoro. Non si aggiorna da sola: e' un'istantanea, e
+va rigenerata per vedere il seguito. Tutto cio' che non e' un numero — incarichi,
+percorsi, messaggi d'errore — viene scritto dal modello o preso dal filesystem,
+quindi finisce nella pagina come testo e mai come marcatura.
+
+## La pagina viva
+
+`report.mjs` produce un'istantanea da archiviare, senza script dentro.
+`dashboard.mjs` fa la cosa opposta: una pagina che **si aggiorna da sola** e
+mostra la cronologia completa di ogni delega — giri, ragionamento, strumenti,
+file — con il diario di tutti gli agenti in basso a sinistra.
+
+```powershell
+node "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\scripts\dashboard.mjs"
+```
+
+Poi apri <http://127.0.0.1:7717>. La pagina interroga `/api/state` ogni secondo
+e mezzo: le deleghe aperte hanno un punto che pulsa, quelle ferme da oltre due
+minuti lo dicono — «ferma» non e' «fallita», e la pagina non decide al posto di
+chi legge.
+
+| Argomento | Cosa fa |
+|---|---|
+| `--port <n>` | porta diversa dalla 7717 |
+| `--export <file.html>` | scrive un'istantanea della pagina viva e termina |
+| `--file <registro>`, `--activity <logact.md>` | sorgenti diverse da quelle predefinite |
+
+Il server ascolta **solo** su `127.0.0.1`, serve la pagina e il proprio JSON e
+nient'altro. Come gli altri due visori legge i file e basta: non parla con
+l'API, non tocca il repository, non puo' influenzare una delega in corso.
+
+## Il diario in Markdown
+
+Ogni evento viene appeso anche a `logact.md` nella radice del repository, in
+Markdown: aprilo in anteprima nell'editor e lo vedi crescere mentre gli agenti
+lavorano.
+
+```
+### 11:00:00 · deepseek-v4-pro · `aaaa`
+
+**Perimetro** `src/NosAi.Runtime/Tactical/**`
+**Tetti** 24 giri · 60 strumenti · 600 s
+
+- 11:00:07 `aaaa` giro 1 — 7.2 s, fine `tool_calls`, token 4.528
+- 11:00:07 `aaaa` **ragiona** (78 caratteri)
+  > Leggo ClickTargetExecutor prima di scrivere.
+- 11:00:08 `aaaa` `read_file` `src/NosAi.Runtime/Tactical/ClickTargetExecutor.cs`
+- 11:02:39 `bbbb` `read_file` — **rifiutato**: fuori perimetro
+```
+
+Piu' agenti scrivono nello stesso file nello stesso momento: ogni riga porta le
+ultime quattro lettere dell'id della delega che l'ha scritta, cosi' due lavori
+paralleli restano distinguibili. `NOSAI_ACTIVITY_MD` sposta il file, `=0` lo
+disattiva. Il diario e' un di piu': se la sua scrittura fallisce si spegne da
+solo, senza toccare il registro JSON ne' la delega.
