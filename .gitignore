@@ -91,3 +91,7 @@ TestResults/
 # Dipendenze del server MCP locale (tools/deepseek-mcp). Non anchorate: ogni
 # package.json ha la sua node_modules, e nessuna di queste e' sorgente.
 node_modules/
+
+# Il registro operativo delle deleghe (tools/deepseek-mcp/logs/delegations.jsonl)
+# e' evidenza di esecuzione locale, non sorgente: cresce a ogni delega.
+tools/deepseek-mcp/logs/

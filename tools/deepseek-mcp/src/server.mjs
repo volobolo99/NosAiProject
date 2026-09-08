@@ -18,6 +18,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod';
 
 import { DELEGATION_ACTIVE_ENV, SUPPORTED_MODELS, readConfig, resolveBudget, ConfigError } from './config.mjs';
+import { createEventLog, excerpt, TASK_EXCERPT_CHARS } from './eventLog.mjs';
 import { runDelegation, STATUS } from './agentLoop.mjs';
 
 /**
@@ -64,9 +65,10 @@ const inputSchema = z.object({
     maxRetries: z.number().int().optional().describe('Retries per API call on transient failures. Default 2, cap 5.')
 });
 
-function formatReport(result) {
+function formatReport(result, log) {
     const lines = [];
     lines.push('stato: ' + result.status);
+    if (log?.enabled) lines.push('registro: ' + log.file + '   id ' + log.id);
     lines.push('modello: ' + result.model + (result.modelSource ? ' (da ' + result.modelSource + ')' : ''));
     lines.push(
         'giri API: ' + result.rounds + '/' + (result.budget?.maxApiRounds ?? '?') +
@@ -158,7 +160,9 @@ export function createServer() {
             }
         },
         async (args) => {
+            const log = createEventLog();
             if (STARTED_INSIDE_DELEGATION) {
+                log.event('delegation_refused', { reason: 'recursive delegation: ' + DELEGATION_ACTIVE_ENV + '=1' });
                 return {
                     isError: true,
                     content: [
@@ -176,6 +180,9 @@ export function createServer() {
             try {
                 api = readConfig(process.env, args.model);
             } catch (err) {
+                log.event('delegation_refused', {
+                    reason: (err instanceof ConfigError ? 'config: ' : 'error: ') + excerpt(err.message)
+                });
                 return {
                     isError: true,
                     content: [
@@ -189,6 +196,17 @@ export function createServer() {
             }
 
             const budget = resolveBudget(args);
+            log.event('delegation_start', {
+                model: api.model,
+                modelSource: api.modelSource ?? null,
+                workingDirectory: args.workingDirectory,
+                allowedPaths: args.allowedPaths,
+                readOnly: args.readOnly === true,
+                budget,
+                taskChars: args.task.length,
+                acceptanceCriteria: args.acceptanceCriteria.length,
+                task: excerpt(args.task, TASK_EXCERPT_CHARS)
+            });
 
             activeDelegations += 1;
             process.env[DELEGATION_ACTIVE_ENV] = '1';
@@ -203,16 +221,27 @@ export function createServer() {
                         acceptanceCriteria: args.acceptanceCriteria,
                         context: args.context,
                         readOnly: args.readOnly === true
-                    }
+                    },
+                    log
                 });
                 result.modelSource = api.modelSource;
+                log.event('delegation_end', {
+                    status: result.status,
+                    rounds: result.rounds,
+                    toolCalls: result.toolCalls,
+                    refusedCalls: result.refusedCalls ?? 0,
+                    filesChanged: result.changes?.length ?? 0,
+                    durationMs: result.durationMs ?? 0,
+                    usage: result.usage ?? null,
+                    error: excerpt(result.error) ?? undefined
+                });
                 const failed =
                     result.status === STATUS.apiError ||
                     result.status === STATUS.setupError ||
                     result.status === STATUS.timeout;
                 return {
                     isError: failed,
-                    content: [{ type: 'text', text: formatReport(result) }]
+                    content: [{ type: 'text', text: formatReport(result, log) }]
                 };
             } finally {
                 activeDelegations -= 1;

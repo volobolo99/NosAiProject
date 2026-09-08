@@ -124,3 +124,42 @@ Get-ChildItem -Recurse (Join-Path $env:TEMP "nosai-deepseek-demo")
 Il rapporto restituito deve elencare `modified  src/greeting.txt` e nessun altro
 file. Se elenca `unchanged`, il lavoratore ha riscritto byte identici: non è una
 modifica.
+
+## Registro operativo
+
+Ogni delega scrive eventi in `tools/deepseek-mcp/logs/delegations.jsonl`, una
+riga JSON per evento, in aggiunta al rapporto finale che il server restituisce a
+Claude. Il file e' l'unica via per seguire una delega **mentre accade**: il
+trasporto e' stdio, quindi su stdout passa solo JSON-RPC e nient'altro.
+
+Ogni riga porta `ts` (UTC), `id` (identificativo della delega) ed `ev`:
+
+| `ev` | Cosa registra |
+|---|---|
+| `delegation_start` | modello e origine, cartella di lavoro, perimetro, tetti, estratto dell'incarico |
+| `api_request_start` / `api_request_end` | inizio e fine di ogni giro API, con durata, `finish_reason`, strumenti richiesti e token del giro |
+| `api_request_error` | giro fallito, con stato ed errore |
+| `tool_call` | strumento invocato, file o pattern interessato, esito, motivo del rifiuto |
+| `file_change` | file toccato davvero: azione e byte prima/dopo |
+| `worker_report` | quanti criteri dichiarati soddisfatti e quanti blocchi |
+| `delegation_end` | stato finale, giri, chiamate, rifiuti, durata, token totali |
+| `delegation_refused` | delega respinta prima di partire (ricorsione, configurazione) |
+| `setup_error` | perimetro non valido: nessuna chiamata API e' stata fatta |
+
+Il registro non contiene mai chiavi, contenuti dei file, testo dei messaggi o
+ragionamento del modello: solo eventi verificabili.
+
+Seguirlo in diretta:
+
+```powershell
+Get-Content -Wait -Tail 20 "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\logs\delegations.jsonl"
+```
+
+Una delega sola, leggibile:
+
+```powershell
+Get-Content "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\logs\delegations.jsonl" | ForEach-Object { $_ | ConvertFrom-Json } | Where-Object { $_.id -eq "<id>" } | Format-Table ts, ev, name, path, status
+```
+
+`NOSAI_DEEPSEEK_LOG=0` lo spegne; `NOSAI_DEEPSEEK_LOG_DIR` ne sposta la cartella.
+Il file cresce a ogni delega e non e' versionato.

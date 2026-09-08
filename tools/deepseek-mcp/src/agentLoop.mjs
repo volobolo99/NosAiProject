@@ -6,6 +6,7 @@
  */
 
 import { chatCompletion, readUsage, DeepSeekApiError } from './deepseekClient.mjs';
+import { excerpt, nullEventLog, toolArgFields } from './eventLog.mjs';
 import { createSandbox, SandboxError } from './sandbox.mjs';
 import { ChangeJournal, createWorkerTools } from './workerTools.mjs';
 
@@ -90,8 +91,17 @@ function accumulateUsage(total, usage) {
  * @param {Function} [options.fetchImpl] injected for tests
  * @param {Function} [options.sleepImpl] injected for tests
  * @param {Function} [options.now] injected for tests
+ * @param {object} [options.log] event log from createEventLog; the null log by default
  */
-export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl, now = () => Date.now() }) {
+export async function runDelegation({
+    api,
+    budget,
+    request,
+    fetchImpl,
+    sleepImpl,
+    now = () => Date.now(),
+    log = nullEventLog
+}) {
     const started = now();
     let sandbox;
     try {
@@ -101,10 +111,12 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
             readOnly: request.readOnly === true
         });
     } catch (err) {
+        const setupError = err instanceof SandboxError ? '[' + err.code + '] ' + err.message : err.message;
+        log.event('setup_error', { error: excerpt(setupError) });
         return {
             status: STATUS.setupError,
             model: api.model,
-            error: err instanceof SandboxError ? '[' + err.code + '] ' + err.message : err.message,
+            error: setupError,
             rounds: 0,
             toolCalls: 0,
             changes: [],
@@ -150,6 +162,9 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
             }
             rounds += 1;
 
+            const roundStarted = now();
+            log.event('api_request_start', { round: rounds });
+
             let response;
             try {
                 response = await chatCompletion({
@@ -175,16 +190,31 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
                             : err.message;
                     errors.push(apiError);
                 }
+                log.event('api_request_error', {
+                    round: rounds,
+                    ms: now() - roundStarted,
+                    status,
+                    error: excerpt(apiError ?? 'aborted')
+                });
                 break;
             }
 
-            usage = accumulateUsage(usage, readUsage(response));
+            const roundUsage = readUsage(response);
+            usage = accumulateUsage(usage, roundUsage);
             const choice = response?.choices?.[0];
             const message = choice?.message;
+            log.event('api_request_end', {
+                round: rounds,
+                ms: now() - roundStarted,
+                finishReason: choice?.finish_reason ?? null,
+                toolCallsRequested: Array.isArray(message?.tool_calls) ? message.tool_calls.length : 0,
+                usage: roundUsage ?? null
+            });
             if (!message) {
                 status = STATUS.apiError;
                 apiError = 'DeepSeek response carried no message';
                 errors.push(apiError);
+                log.event('api_request_error', { round: rounds, status, error: apiError });
                 break;
             }
             if (typeof message.content === 'string' && message.content.trim() !== '') {
@@ -228,6 +258,12 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
                         content: 'ERROR [BUDGET] tool call limit of ' + budget.maxToolCalls + ' reached. ' +
                             'Call report_done now with what you have.'
                     });
+                    log.event('tool_call', {
+                        round: rounds,
+                        name: call.function?.name ?? '(unnamed)',
+                        ok: false,
+                        reason: 'BUDGET: tool call limit of ' + budget.maxToolCalls + ' reached'
+                    });
                     continue;
                 }
                 toolCalls += 1;
@@ -240,6 +276,12 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
                     const text = 'ERROR [BAD_ARGUMENTS] arguments were not valid JSON: ' + err.message;
                     errors.push(call.function?.name + ': ' + text);
                     messages.push({ role: 'tool', tool_call_id: call.id, content: text });
+                    log.event('tool_call', {
+                        round: rounds,
+                        name: call.function?.name ?? '(unnamed)',
+                        ok: false,
+                        reason: excerpt(text)
+                    });
                     continue;
                 }
 
@@ -248,6 +290,13 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
                     refusedCalls += 1;
                     errors.push(call.function?.name + ': ' + result.text);
                 }
+                log.event('tool_call', {
+                    round: rounds,
+                    name: call.function?.name ?? '(unnamed)',
+                    ...toolArgFields(args),
+                    ok: result.ok !== false,
+                    reason: result.ok !== false ? undefined : excerpt(result.text)
+                });
                 messages.push({ role: 'tool', tool_call_id: call.id, content: result.text });
 
                 if (result.done) {
@@ -273,13 +322,31 @@ export async function runDelegation({ api, budget, request, fetchImpl, sleepImpl
         status = STATUS.timeout;
     }
 
+    const changes = journal.summary();
+    for (const change of changes) {
+        log.event('file_change', {
+            action: change.action,
+            path: change.path,
+            bytesBefore: change.bytesBefore,
+            bytesAfter: change.bytesAfter
+        });
+    }
+    if (report) {
+        // The report's own text goes back to Claude in the tool result; the log
+        // keeps only its shape, so the file stays a record of events.
+        log.event('worker_report', {
+            acceptanceCriteriaMet: report.acceptanceCriteriaMet?.length ?? 0,
+            blockers: report.blockers?.length ?? 0
+        });
+    }
+
     return {
         status,
         model: api.model,
         rounds,
         toolCalls,
         refusedCalls,
-        changes: journal.summary(),
+        changes,
         report,
         finalText: lastText,
         errors,
