@@ -550,49 +550,49 @@ public static class AwaitClientCaptureCommand
     /// <param name="outPath">Where the <c>.noscap</c> file must be written; when null or blank, <see cref="DefaultPath"/> is used.</param>
     /// <param name="timeoutMinutes">Session budget in minutes; when not positive, <see cref="DefaultTimeoutMinutes"/> is used.</param>
     /// <returns>Zero when <see cref="PreLoginOutcomeKind.Complete"/> was reached, one otherwise.</returns>
-    public static int Run(string? outPath, int timeoutMinutes)
+    /// <param name="report">Receives every line the command would otherwise print; the console entry point passes <see cref="Console.WriteLine(string)"/>.</param>
+    /// <param name="cancellationToken">Stops the wait and the capture; the console entry point wires Ctrl+C to it.</param>
+    public static int Run(string? outPath, int timeoutMinutes, Action<string> report, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(report);
         string path = string.IsNullOrWhiteSpace(outPath) ? DefaultPath(DateTime.UtcNow) : outPath;
         int minutes = timeoutMinutes > 0 ? timeoutMinutes : DefaultTimeoutMinutes;
 
-        Console.WriteLine("=== Cattura in attesa del client ===");
-        Console.WriteLine($"File di destinazione: {path}");
-        Console.WriteLine($"Scadenza: {minutes} minuti");
-        Console.WriteLine("L'operatore deve solo aprire NosTale: la cattura riconosce l'arrivo del client e si ferma da sola.");
+        report("=== Cattura in attesa del client ===");
+        report($"File di destinazione: {path}");
+        report($"Scadenza: {minutes} minuti");
+        report("L'operatore deve solo aprire NosTale: la cattura riconosce l'arrivo del client e si ferma da sola.");
 
         BroadWirePrelude? prelude = BroadWirePrelude.TryOpen(out string? failure);
         if (prelude == null)
         {
-            Console.WriteLine($"[NON DISPONIBILE] {failure}");
-            Console.WriteLine("Senza il driver di cattura non viene registrato nulla dal filo live e non viene inventato niente.");
+            report($"[NON DISPONIBILE] {failure}");
+            report("Senza il driver di cattura non viene registrato nulla dal filo live e non viene inventato niente.");
             return 1;
         }
 
         using (prelude)
         {
-            using var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
-
             var watcher = new ClientArrivalWatcher();
             using var session = new PreLoginCaptureSession(prelude, watcher, path, DataSourceKind.Live, TimeSpan.FromMinutes(minutes));
 
-            PreLoginCaptureOutcome outcome = session.Run(cts.Token, line => Console.WriteLine($"[stato] {line}"));
+            PreLoginCaptureOutcome outcome = session.Run(cancellationToken, line => report($"[stato] {line}"));
 
-            Console.WriteLine($"Esito: {outcome.Kind}");
-            Console.WriteLine($"File prodotto: {outcome.CapturePath ?? "(nessuno)"}");
-            Console.WriteLine($"Endpoint: {outcome.Endpoint?.ToString() ?? "(nessuno)"}");
-            Console.WriteLine($"Pacchetti prima della scoperta: {outcome.PacketsBeforeDiscovery}");
-            Console.WriteLine($"Pacchetti dopo la scoperta: {outcome.PacketsAfterDiscovery}");
-            Console.WriteLine($"Pacchetti scritti: {outcome.PacketsWritten}");
-            Console.WriteLine($"Opcodi osservati: {string.Join(",", outcome.OpcodesObserved)}");
-            Console.WriteLine($"Opcodi mancanti: {string.Join(",", outcome.OpcodesMissing)}");
-            Console.WriteLine($"Scartati per capienza: {outcome.DroppedForCapacity}");
-            Console.WriteLine($"Scartati per anzianita': {outcome.DroppedForAge}");
-            Console.WriteLine($"Handshake potrebbe mancare: {outcome.HandshakeMayBeMissing}");
-            Console.WriteLine($"Letture di vitals: {outcome.VitalsReadings} (provenienza {outcome.VitalsProvenance.ToWire()})");
+            report($"Esito: {outcome.Kind}");
+            report($"File prodotto: {outcome.CapturePath ?? "(nessuno)"}");
+            report($"Endpoint: {outcome.Endpoint?.ToString() ?? "(nessuno)"}");
+            report($"Pacchetti prima della scoperta: {outcome.PacketsBeforeDiscovery}");
+            report($"Pacchetti dopo la scoperta: {outcome.PacketsAfterDiscovery}");
+            report($"Pacchetti scritti: {outcome.PacketsWritten}");
+            report($"Opcodi osservati: {string.Join(",", outcome.OpcodesObserved)}");
+            report($"Opcodi mancanti: {string.Join(",", outcome.OpcodesMissing)}");
+            report($"Scartati per capienza: {outcome.DroppedForCapacity}");
+            report($"Scartati per anzianita': {outcome.DroppedForAge}");
+            report($"Handshake potrebbe mancare: {outcome.HandshakeMayBeMissing}");
+            report($"Letture di vitals: {outcome.VitalsReadings} (provenienza {outcome.VitalsProvenance.ToWire()})");
             if (outcome.Reason != null)
             {
-                Console.WriteLine($"Motivo: {outcome.Reason}");
+                report($"Motivo: {outcome.Reason}");
             }
 
             try
@@ -635,7 +635,7 @@ public static class AwaitClientCaptureCommand
                     DataSourceKind.Live,
                     attachments,
                     outcome.Reason);
-                Console.WriteLine($"Evidenza T-14 scritta in: {DeferredEvidence.Write(t14)}");
+                report($"Evidenza T-14 scritta in: {DeferredEvidence.Write(t14)}");
 
                 IReadOnlyList<DeferredCriterion> t05Criteria = DeferredEvidence.CriteriaFor("T-05");
                 var t05List = new List<DeferredCriterion>(t05Criteria.Count);
@@ -665,14 +665,35 @@ public static class AwaitClientCaptureCommand
                     outcome.VitalsProvenance,
                     attachments,
                     outcome.VitalsReason);
-                Console.WriteLine($"Evidenza T-05 scritta in: {DeferredEvidence.Write(t05)}");
+                report($"Evidenza T-05 scritta in: {DeferredEvidence.Write(t05)}");
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
             {
-                Console.WriteLine($"[avviso] evidenza non scritta: {ex.GetType().Name}");
+                report($"[avviso] evidenza non scritta: {ex.GetType().Name}");
             }
 
             return outcome.Kind == PreLoginOutcomeKind.Complete ? 0 : 1;
+        }
+        }
+
+    /// <summary>
+    /// Console entry point: prints to standard output and cancels on Ctrl+C.
+    /// </summary>
+    /// <param name="outPath">Where the <c>.noscap</c> file must be written; when null or blank, <see cref="DefaultPath"/> is used.</param>
+    /// <param name="timeoutMinutes">Session budget in minutes; when not positive, <see cref="DefaultTimeoutMinutes"/> is used.</param>
+    /// <returns>Zero when <see cref="PreLoginOutcomeKind.Complete"/> was reached, one otherwise.</returns>
+    public static int Run(string? outPath, int timeoutMinutes)
+    {
+        using var cts = new CancellationTokenSource();
+        ConsoleCancelEventHandler onCancel = (_, e) => { e.Cancel = true; cts.Cancel(); };
+        Console.CancelKeyPress += onCancel;
+        try
+        {
+            return Run(outPath, timeoutMinutes, Console.WriteLine, cts.Token);
+        }
+        finally
+        {
+            Console.CancelKeyPress -= onCancel;
         }
     }
 }

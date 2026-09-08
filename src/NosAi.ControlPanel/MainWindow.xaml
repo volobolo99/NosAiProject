@@ -469,6 +469,10 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Ogni pulsante lancia la suite corrispondente. Un fallimento è un fallimento: le suite non vengono indebolite da qui.</TextBlock>
             <WrapPanel x:Name="SuiteButtons"/>
+
+      <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,20,0,6" TextWrapping="Wrap">Cattura pre-login: arma la registrazione prima che il client esista, riconosce l'arrivo di NosTale e si ferma da sola quando lo vede caricare. Apri il gioco, non serve altro.</TextBlock>
+      <Button x:Name="AwaitCaptureButton" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Content="Avvia cattura pre-login" Click="OnAwaitClientCapture" Margin="0,0,8,0"/>
+      <TextBlock x:Name="PreLoginSummary" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,8" TextWrapping="Wrap" Text="Nessuna cattura in questa sessione."/>
           </StackPanel>
         </ScrollViewer>
 

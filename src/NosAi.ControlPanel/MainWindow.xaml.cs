@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
 using NosAi.LiveIntegration;
+using NosAi.LiveIntegration.Capture;
 using NosAi.Runtime.Configuration;
 using NosAi.Runtime.Gate2;
 using NosAi.Runtime.LowLevel;
@@ -1466,6 +1467,69 @@ public partial class MainWindow : Window
     {
         LogBox.Document.Blocks.Clear();
         LogBox.Document.Blocks.Add(new Paragraph());
+    }
+
+    private CancellationTokenSource? _preLoginCts;
+
+    /// <summary>
+    /// Arms the pre-login capture from the panel, so the operator never types a command:
+    /// a second click cancels the wait instead of starting a second capture.
+    /// </summary>
+    private async void OnAwaitClientCapture(object sender, RoutedEventArgs e)
+    {
+        if (_preLoginCts is { } running)
+        {
+            running.Cancel();
+            Status("Annullamento della cattura pre-login richiesto.");
+            return;
+        }
+
+        if (_busy)
+        {
+            Status("Il pannello sta gia' eseguendo un'operazione: attendi che finisca.");
+            return;
+        }
+
+        _busy = true;
+        AwaitCaptureButton.Content = "Annulla cattura";
+        PreLoginSummary.Text = "Cattura armata: apri NosTale, la registrazione si ferma da sola.";
+        Status("Cattura pre-login avviata.");
+
+        var cts = new CancellationTokenSource();
+        _preLoginCts = cts;
+        try
+        {
+            int code = await Task.Run(
+                () => AwaitClientCaptureCommand.Run(
+                    null,
+                    AwaitClientCaptureCommand.DefaultTimeoutMinutes,
+                    line => Dispatcher.BeginInvoke(() => PreLoginSummary.Text = line),
+                    cts.Token),
+                cts.Token).ConfigureAwait(true);
+
+            PreLoginSummary.Text = code == 0
+                ? "Cattura completata: handshake osservato."
+                : "Cattura incompleta: l'esito e' scritto nell'evidenza differita.";
+            Status(code == 0 ? "Cattura pre-login completata." : "Cattura pre-login incompleta.");
+        }
+        catch (OperationCanceledException)
+        {
+            PreLoginSummary.Text = "Cattura annullata dall'operatore.";
+            Status("Cattura pre-login annullata.");
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Cattura pre-login fallita.", ex);
+            PreLoginSummary.Text = $"Cattura fallita: {ex.Message}";
+            Status($"Cattura pre-login fallita: {ex.Message}");
+        }
+        finally
+        {
+            cts.Dispose();
+            _preLoginCts = null;
+            AwaitCaptureButton.Content = "Avvia cattura pre-login";
+            _busy = false;
+        }
     }
 
     private void Status(string text)
