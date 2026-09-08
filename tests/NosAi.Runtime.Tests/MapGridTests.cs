@@ -368,7 +368,14 @@ public sealed class MapGridTests
 
         // Warm up: first touch of a code path can allocate for reasons that are not
         // the code's, and the measurement is about the steady state.
-        for (var i = 0; i < 100; i++)
+        //
+        // A hundred was not enough. Tiered compilation promotes a method after about
+        // thirty calls, but the promotion is asynchronous: under the full suite the
+        // re-jit landed inside the measured window and its allocation was charged to
+        // this thread. Measured on 2026-09-08 -- five runs alone all green, and a
+        // failure here in a full run. FrameCodecTests, which measures the same way and
+        // has never flaked, warms up a thousand times; this now matches it.
+        for (var i = 0; i < 1000; i++)
         {
             _ = grid.IsWalkable(i % 8, i % 4);
             _ = grid.BlocksAttack(i % 8, i % 4);

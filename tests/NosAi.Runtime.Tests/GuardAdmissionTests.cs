@@ -24,7 +24,17 @@ public sealed class GuardAdmissionTests
 
     public GuardAdmissionTests(ITestOutputHelper output) => _output = output;
 
-    private static readonly TimeSpan Patience = TimeSpan.FromSeconds(5);
+    // A ceiling, not a delay: WaitUntilAsync returns the moment the condition
+    // holds, so this is only ever spent when something is actually wrong, and
+    // raising it costs nothing on the green path. Five seconds was thin next to
+    // 2700 tests competing for one machine.
+    //
+    // What this does NOT claim: that it fixes the suite's flakiness. Measured on
+    // 2026-09-08, the full run fails roughly one test per pass and a different one
+    // each time -- Gate1SuitePasses, ManyRapidHeartbeats..., QueryingAllocatesNothing
+    // -- and every one of them passes alone. That is contention across the suite,
+    // not a deadline in this file.
+    private static readonly TimeSpan Patience = TimeSpan.FromSeconds(30);
 
     /// <summary>A channel that can complete a handshake and answer with a snapshot.</summary>
     private static GuardAiNetworkChannel NewChannel(SessionAuth auth)
