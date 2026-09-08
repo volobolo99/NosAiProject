@@ -931,3 +931,41 @@ l'asserzione e' **piu' stretta**, non piu' larga.
 Anche con soli file nuovi nel perimetro, un incarico che *nomina* file esterni
 invita a cercarli. La forma che non fallisce mai e': un perimetro senza file
 esistenti **e** nessun rimando a file che il lavoratore non puo' aprire.
+
+---
+
+## Q-153 — misurato, e risulta vuoto
+
+L'operatore ha chiesto che «tutti i dati live e veri» si vedano nel pannello. La
+domanda giusta e': quanti campi dichiarano una provenienza **scritta a mano**
+invece di quella che il dato porta con se'? E' il difetto che l'audit AP-02 aveva
+trovato e che Q-144 aveva corretto in un punto.
+
+Primo conteggio, grezzo:
+
+| | |
+|---|---|
+| `DisplayField` con provenienza letterale | **164** |
+| `DisplayField` con provenienza derivata dal dato (`.ToWire()`) | **8** |
+
+Un rapporto che sembra disastroso. **Non lo e'**, e fermarsi al conteggio grezzo
+avrebbe prodotto un incarico grande e inutile.
+
+Un letterale e' sbagliato **solo** quando il valore mostrato porta gia' la propria
+provenienza -- cioe' e' un valore classificato -- e il codice ne scrive un'altra.
+Dove il fatto e' una misura locale (`Processo elevato`, `in ascolto: si/no`),
+`LIVE` scritto a mano e' esatto.
+
+Ristretto a quel caso: **un solo sospetto**, `NetworkInspect.cs:47`. Ed e' un
+falso positivo: `listening.Value` scarta un `bool?`, non un valore classificato.
+
+**Difetti reali di questo tipo: zero.** Il pannello dice gia' la verita' sulle
+provenienze; l'audit AP-02 aveva chiuso i casi veri.
+
+L'unica voce rimasta era `ElevationStatusText`, l'unico controllo nominato che il
+codice non tocca mai. Guardato: e' un'etichetta statica dentro la card «Riavvia
+come amministratore», con un nome che non le serve. Toglierlo sarebbe rumore, non
+ordine.
+
+**Q-153 si chiude senza lavoro**, e la misura che lo dimostra vale piu' del lavoro
+che avrebbe generato.
