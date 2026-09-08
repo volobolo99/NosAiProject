@@ -693,3 +693,73 @@ l'operatore deve produrre:
 
 I due aperti toccano entrambi `MainWindow`, quindi vanno **in serie**: mai due
 agenti sullo stesso file sorgente.
+
+---
+
+## Il ponte, misurato e corretto
+
+### Quanto costa davvero una delega
+
+La cache di DeepSeek **matcha soltanto il prefisso** dell'input, e un hit costa un
+decimo. Sulle sette deleghe di oggi il rapporto e' stato del 97-98 %: il numero
+grezzo di token dice molto piu' del costo reale.
+
+Ai prezzi Flash di settembre 2026 -- input 0,22 $/M, output 0,66 $/M, cache hit
+0,007 $/M:
+
+| Incarico | hit | miss | output | costo |
+|---|---:|---:|---:|---:|
+| Q-140 (gia' fatto) | 4 125 568 | 128 557 | 49 154 | 0,090 |
+| Q-143 (gia' fatto) | 1 000 192 | 58 263 | 63 348 | 0,062 |
+| Q-144 | 3 278 336 | 112 584 | 63 970 | 0,090 |
+| Q-145 | 1 200 640 | 54 489 | 62 041 | 0,061 |
+| Q-146 | 8 735 488 | 138 963 | 120 162 | 0,171 |
+| Q-147, primo tentativo | 22 912 | 33 102 | 626 | 0,008 |
+| **totale** | | | | **0,481 USD** |
+
+Di cui **0,151 USD** su lavoro gia' fatto. L'errore di metodo resta -- e la
+regola che lo impedisce e' scritta -- ma il danno economico era un sesto di
+dollaro, non una catastrofe. Registrarlo per quello che e' fa parte del non
+inventare dati.
+
+### Cinque difetti corretti, ognuno da un'evidenza di oggi
+
+| # | Osservato | Corretto |
+|---|---|---|
+| 1 | Un incarico e' morto scrivendo «The file was truncated. Let me read the remainder» -- e non poteva, pur esistendo gia' `startLine` | `truncate()` taglia su confine di riga e dichiara `Shown through line N. Call read_file again with startLine=N+1` |
+| 2 | Sette `NO_MATCH` in una giornata, ognuno un giro perso | `edit_file` indica le righe dove la prima riga di `oldText` compare davvero; sotto gli 8 caratteri tace, per non dare piste false |
+| 3 | Due deleghe morte **esattamente** a 180 s, una a zero token | `requestTimeoutMs` da 180 s a **600 s**: con la coda piena l'inferenza puo' non partire per dieci minuti |
+| 4 | Backoff deterministico `1s, 2s, 4s` | jitter, reso **iniettabile** come `jitterImpl` cosi' i test restano asserzioni esatte |
+| 5 | Due lavoratori hanno citato righe di file la cui lettura era stata **rifiutata**; uno ha dichiarato di compilare con otto errori dentro | regole 7 e 8 al lavoratore: mai citare cio' che non hai letto; un file visto a meta' e' un file non letto |
+
+`npm test` del ponte: **114 passati, 0 falliti** (erano 110). I quattro test nuovi
+coprono troncamento continuabile, `NO_MATCH` con e senza riscontro, e il jitter.
+
+**Le modifiche hanno effetto solo dopo un riavvio di Claude Code**: il server MCP
+e' un processo figlio avviato all'apertura della sessione.
+
+### Il metodo di delega, cambiato
+
+Il costo e' dominato dai token di *prompt*, e la conversazione dell'agente viene
+rispedita a ogni giro. Da oggi un incarico porta **dentro di se'** i dati:
+comando alla lettera, firme degli helper, blocco di testo dopo cui inserire,
+`using` presenti e mancanti, nomi delle risorse di stile, struttura del gestore.
+`allowedPaths` contiene **solo i file su cui si scrive**: nessun documento,
+nessun file di consultazione.
+
+Misura della differenza, sullo stesso incarico: **8 994 613 token in 56 giri**
+con quattro file di consultazione nel perimetro, contro **56 640 token** con i
+dati dentro. E quando anche quello e' morto -- leggendo un file da 61 KB che
+doveva modificare -- la risposta e' stata strutturale: `MainWindow` e' una classe
+`partial`, quindi i gestori vanno in un file **nuovo** e il file grande non si
+apre affatto.
+
+### Coordinamento con la sessione peer
+
+`tools/deepseek-mcp/` e' stato modificato **in parallelo** dalla sessione
+`nosaiproject-09`, nello stesso albero: `LOG_THOUGHTS_ENV` in `eventLog.mjs`, piu'
+il blocco `thoughtsEnabled` in `agentLoop.mjs`, dove le due modifiche si
+incrociano. Niente commit e niente ripristino da parte mia: committare
+travolgerebbe il loro lavoro, ripristinare lo distruggerebbe. Lo stato combinato
+e' verde (114/114). Messaggio inviato con l'elenco esatto delle mie modifiche e
+la proposta di farle committare a chi arriva primo.

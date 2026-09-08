@@ -15,6 +15,395 @@ using NosAi.Runtime.Perception;
 
 namespace NosAi.ControlPanel;
 
+/// <summary>
+/// Pure state and text for the target-ROI calibration card (T-09): fraction
+/// validation, crop-file freshness, the live target-state line and the run
+/// summaries. It lives in this file because the assignment may only write
+/// MainWindow.xaml.cs in the panel project; the tests assert on the strings
+/// and states it produces instead of on the window.
+/// </summary>
+internal static class TargetRoiCalibrationCard
+{
+    /// <summary>The crop file the probe writes for the candidate target-frame region.</summary>
+    public const string TargetLatestFileName = "target_latest.bmp";
+
+    /// <summary>
+    /// Validates four fractions of the client area before a runtime process is
+    /// started. On refusal, <paramref name="refusal"/> names the guilty fraction
+    /// and the violated rule; nothing is launched.
+    /// </summary>
+    public static bool TryValidateFractions(
+        string? xText, string? yText, string? wText, string? hText,
+        out double x, out double y, out double w, out double h,
+        out string? refusal)
+    {
+        x = y = w = h = 0;
+        refusal = null;
+        if (!TryReadFraction("x", xText, out x, out refusal)) return false;
+        if (!TryReadFraction("y", yText, out y, out refusal)) return false;
+        if (!TryReadFraction("w", wText, out w, out refusal)) return false;
+        if (!TryReadFraction("h", hText, out h, out refusal)) return false;
+
+        if (x < 0.0 || x >= 1.0)
+        {
+            refusal = $"x deve stare in [0, 1): valore {Invariant(x)}.";
+            return false;
+        }
+
+        if (y < 0.0 || y >= 1.0)
+        {
+            refusal = $"y deve stare in [0, 1): valore {Invariant(y)}.";
+            return false;
+        }
+
+        if (w <= 0.0 || w > 1.0)
+        {
+            refusal = $"w deve stare in (0, 1]: valore {Invariant(w)}.";
+            return false;
+        }
+
+        if (h <= 0.0 || h > 1.0)
+        {
+            refusal = $"h deve stare in (0, 1]: valore {Invariant(h)}.";
+            return false;
+        }
+
+        if (x + w > 1.0)
+        {
+            refusal = $"x + w vale {Invariant(x + w)} e supera 1: il riquadro esce dall'area client a destra.";
+            return false;
+        }
+
+        if (y + h > 1.0)
+        {
+            refusal = $"y + h vale {Invariant(y + h)} e supera 1: il riquadro esce dall'area client in basso.";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the crop file state off the disk: missing, or written when, with
+    /// the freshness verdict against the probe run just launched.
+    /// </summary>
+    public static TargetRoiCropState CropFileState(string cropPath, DateTime? runStartedUtc)
+    {
+        if (!File.Exists(cropPath))
+            return new TargetRoiCropState(TargetRoiCropKind.Missing, MissingMessage(cropPath), string.Empty);
+        return CropStateForWriteTime(cropPath, File.GetLastWriteTimeUtc(cropPath), runStartedUtc);
+    }
+
+    /// <summary>
+    /// Freshness verdict for a known write instant. A crop older than the probe
+    /// run just launched is Stale, never presented as new; a crop with no run
+    /// launched in this session is Stale too.
+    /// </summary>
+    public static TargetRoiCropState CropStateForWriteTime(
+        string cropPath, DateTime writeUtc, DateTime? runStartedUtc)
+    {
+        string stamp = $"{cropPath} — scritto il {WriteInstant(writeUtc)}.";
+        if (runStartedUtc is null)
+        {
+            stamp += " Nessuna esecuzione di probe in questa sessione: il file non e' il ritaglio di questa corsa.";
+            return new TargetRoiCropState(TargetRoiCropKind.Stale, null, stamp);
+        }
+
+        if (writeUtc < runStartedUtc.Value)
+        {
+            stamp += " Il file e' ANTERIORE all'esecuzione appena lanciata: non e' il ritaglio di questa corsa.";
+            return new TargetRoiCropState(TargetRoiCropKind.Stale, null, stamp);
+        }
+
+        stamp += " Il file e' stato scritto da questa esecuzione: e' il ritaglio da guardare.";
+        return new TargetRoiCropState(TargetRoiCropKind.Current, null, stamp);
+    }
+
+    /// <summary>Named message for a crop file that does not exist.</summary>
+    public static string MissingMessage(string cropPath)
+        => $"Nessun ritaglio da mostrare: {cropPath} non esiste. Seleziona un bersaglio e premi Esegui probe.";
+
+    /// <summary>Named message for a crop file that exists but does not decode.</summary>
+    public static string UnreadableMessage(string cropPath, string reason)
+        => $"Ritaglio illeggibile: {cropPath} non si apre come immagine BMP (motivo: {reason}).";
+
+    /// <summary>
+    /// The live target-state line for the card. UNKNOWN always carries the
+    /// runtime's reason; it is never drawn as an empty row.
+    /// </summary>
+    public static string DescribeTargetState(ClassifiedValue<bool>? hasTarget, string fallbackReason)
+    {
+        if (hasTarget is null || !hasTarget.HasValue)
+        {
+            string reason = string.IsNullOrWhiteSpace(hasTarget?.FailureReason)
+                ? fallbackReason
+                : hasTarget!.FailureReason;
+            return $"Bersaglio: UNKNOWN · {reason}";
+        }
+
+        return hasTarget.Value ? "Bersaglio: presente" : "Bersaglio: assente";
+    }
+
+    /// <summary>Outcome line of the plain probe run, keeping runtime refusals verbatim.</summary>
+    public static string SummariseProbeRun(int exitCode, string output)
+    {
+        string? refused = FirstLineStarting(output, "[REFUSED]")
+            ?? FirstLineStarting(output, "[UNKNOWN]");
+        if (refused is not null)
+            return refused;
+        if (exitCode != 0)
+            return $"Probe non riuscito (uscita {exitCode}). Motivo nel Diario.";
+
+        string? roi = FirstLineStarting(output, "Target roi=");
+        return roi is not null
+            ? $"Probe completato. Lettura del riquadro candidato: {roi}"
+            : "Probe completato. Guarda il ritaglio qui sopra; la lettura integrale e' nel Diario.";
+    }
+
+    /// <summary>Outcome line of the calibration run, keeping refusals verbatim.</summary>
+    public static string SummariseCalibrateRun(int exitCode, string output)
+    {
+        string? refused = FirstLineStarting(output, "[REFUSED]")
+            ?? FirstLineStarting(output, "Target ROI calibration refused");
+        if (refused is not null)
+            return refused;
+        if (exitCode != 0)
+            return $"Calibrazione non riuscita (uscita {exitCode}). Motivo nel Diario.";
+
+        string? written = FirstLineStarting(output, "Target ROI calibration written");
+        return written is not null
+            ? written
+            : "Registrazione eseguita senza righe di conferma: controlla il Diario e il file target-roi.calibration.";
+    }
+
+    private static bool TryReadFraction(string name, string? text, out double value, out string? refusal)
+    {
+        value = 0;
+        if (!double.TryParse(text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+            || !double.IsFinite(value))
+        {
+            refusal = $"{name} non e' un numero: '{text}'. Le quattro caselle devono contenere frazioni dell'area client.";
+            return false;
+        }
+
+        refusal = null;
+        return true;
+    }
+
+    private static string Invariant(double value)
+        => value.ToString("R", CultureInfo.InvariantCulture);
+
+    private static string WriteInstant(DateTime writeUtc)
+        => writeUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
+    private static string? FirstLineStarting(string output, string prefix)
+    {
+        foreach (string raw in output.Split('\n'))
+        {
+            string line = raw.Trim();
+            if (line.StartsWith(prefix, StringComparison.Ordinal))
+                return line;
+        }
+
+        return null;
+    }
+}
+
+/// <summary>How the card treats the crop file on disk.</summary>
+internal enum TargetRoiCropKind : byte
+{
+    /// <summary>The file does not exist: a named message, no image.</summary>
+    Missing,
+
+    /// <summary>The file exists but cannot be decoded: a named message, no image.</summary>
+    Unreadable,
+
+    /// <summary>The crop was written by the probe run just launched.</summary>
+    Current,
+
+    /// <summary>The crop predates the run just launched (or no run happened yet).</summary>
+    Stale
+}
+
+/// <summary>The crop-file picture the card draws.</summary>
+internal sealed record TargetRoiCropState(TargetRoiCropKind Kind, string? Message, string Stamp)
+{
+    /// <summary>Whether an image is shown at all. Missing and Unreadable are not images.</summary>
+    public bool ShowsImage => Kind is TargetRoiCropKind.Current or TargetRoiCropKind.Stale;
+}
+
+/// <summary>Handlers and drawing for the T-09 calibration card in a second
+/// partial of the window, so this file stays the only one the assignment may
+/// write in the panel project.</summary>
+public partial class MainWindow
+{
+    /// <summary>
+    /// Runs <c>--hud-probe</c> as a subprocess, then redraws the crop card. The
+    /// instant the run started is recorded first: the crop shown afterwards is
+    /// judged against it, so a leftover file from a previous session is never
+    /// presented as this run's crop.
+    /// </summary>
+    private async void OnTargetRoiProbe(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        _targetRoiProbeStartedUtc = DateTime.UtcNow;
+        TargetRoiValidationText.Text = string.Empty;
+        SetRunSummary("Probe in corso: scrive il ritaglio candidato in data/perception/crops/target_latest.bmp…");
+        var result = await RunToolAsync(
+            "dotnet", $"\"{dll}\" --hud-probe", "Probe HUD (riquadro bersaglio)", pairing: false);
+        SetRunSummary(TargetRoiCalibrationCard.SummariseProbeRun(result.ExitCode, result.Output ?? string.Empty));
+        RefreshTargetRoiCrop();
+    }
+
+    /// <summary>
+    /// Validates the four fractions in the panel, and only then runs
+    /// <c>--hud-probe --calibrate-target x y w h</c>. A violation is refused
+    /// here with the reason; the runtime outcome (refusals included) is shown
+    /// verbatim afterwards.
+    /// </summary>
+    private async void OnTargetRoiCalibrate(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        if (!TargetRoiCalibrationCard.TryValidateFractions(
+                TargetRoiXBox.Text, TargetRoiYBox.Text, TargetRoiWBox.Text, TargetRoiHBox.Text,
+                out double x, out double y, out double w, out double h, out string? refusal))
+        {
+            TargetRoiValidationText.Text = refusal ?? "Frazioni non valide.";
+            return;
+        }
+
+        TargetRoiValidationText.Text = string.Empty;
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        _targetRoiProbeStartedUtc = DateTime.UtcNow;
+        SetRunSummary("Registrazione in corso: il runtime scrive data/perception/target-roi.calibration e ritaglia il riquadro…");
+        var result = await RunToolAsync(
+            "dotnet",
+            $"\"{dll}\" --hud-probe --calibrate-target {FormatFraction(x)} {FormatFraction(y)} {FormatFraction(w)} {FormatFraction(h)}",
+            "Registra calibrazione riquadro bersaglio",
+            pairing: false);
+        SetRunSummary(TargetRoiCalibrationCard.SummariseCalibrateRun(result.ExitCode, result.Output ?? string.Empty));
+        RefreshTargetRoiCrop();
+        _targetSignature = null;
+        ApplyTarget();
+    }
+
+    /// <summary>
+    /// Re-reads the snapshot and draws the live target state on the card. When
+    /// the state stays UNKNOWN the runtime's reason is shown, never an empty row.
+    /// </summary>
+    private async void OnTargetRoiRefreshState(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        TargetRoiStateText.Text = "Rilettura dello stato del bersaglio…";
+        await RefreshSnapshotAsync().ConfigureAwait(true);
+        TargetRoiStateText.Text = TargetRoiCalibrationCard.DescribeTargetState(
+            _lastSnapshot.HasTarget, GameplayObservation.NotPublishedReason);
+    }
+
+    /// <summary>
+    /// Redraws the crop preview from <c>target_latest.bmp</c>. Missing and
+    /// undecodable files produce a named message with no image; a readable one
+    /// is loaded from a Stream with OnLoad so the file is not kept open, and is
+    /// stamped with its write instant and its freshness against the last run.
+    /// </summary>
+    private void RefreshTargetRoiCrop()
+    {
+        string cropPath = Path.Combine(
+            _repoRoot, HudCropWriter.RelativeDirectory, TargetRoiCalibrationCard.TargetLatestFileName);
+
+        if (!File.Exists(cropPath))
+        {
+            ShowCropMessage(TargetRoiCalibrationCard.MissingMessage(cropPath));
+            return;
+        }
+
+        BitmapImage bitmap;
+        try
+        {
+            bitmap = LoadBmpWithoutLocking(cropPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            ShowCropMessage(TargetRoiCalibrationCard.UnreadableMessage(cropPath, ex.GetType().Name));
+            return;
+        }
+
+        TargetRoiCropImage.Source = bitmap;
+        TargetRoiCropImage.Visibility = Visibility.Visible;
+        TargetRoiCropMessage.Visibility = Visibility.Collapsed;
+        TargetRoiCropMessage.Text = string.Empty;
+
+        TargetRoiCropState state = TargetRoiCalibrationCard.CropFileState(cropPath, _targetRoiProbeStartedUtc);
+        TargetRoiCropStamp.Text = state.Stamp;
+        TargetRoiCropStamp.Foreground = state.Kind == TargetRoiCropKind.Current
+            ? (Brush)FindResource("LiveBrush")
+            : (Brush)FindResource("WarnBrush");
+    }
+
+    private void ShowCropMessage(string message)
+    {
+        TargetRoiCropImage.Source = null;
+        TargetRoiCropImage.Visibility = Visibility.Collapsed;
+        TargetRoiCropMessage.Text = message;
+        TargetRoiCropMessage.Visibility = Visibility.Visible;
+        TargetRoiCropStamp.Text = string.Empty;
+    }
+
+    private void SetRunSummary(string text)
+    {
+        TargetRoiRunSummary.Text = text;
+        TargetRoiRunSummary.Foreground = text.Contains("[REFUSED]", StringComparison.Ordinal)
+            || text.Contains("refused", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("non riuscito", StringComparison.Ordinal)
+                ? (Brush)FindResource("DangerBrush")
+                : (Brush)FindResource("MutedBrush");
+    }
+
+    private static BitmapImage LoadBmpWithoutLocking(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.StreamSource = stream;
+        image.EndInit();
+        image.Freeze();
+        return image;
+    }
+
+    private static string FormatFraction(double value)
+        => value.ToString("R", CultureInfo.InvariantCulture);
+}
+
 public partial class MainWindow : Window
 {
     private readonly string _repoRoot;
@@ -35,6 +424,7 @@ public partial class MainWindow : Window
     private FileSystemWatcher? _targetFiles;
     private string? _targetSignature;
     private string? _inventoryPanelRoiSignature;
+    private DateTime? _targetRoiProbeStartedUtc;
 
     public MainWindow()
     {
@@ -540,6 +930,7 @@ public partial class MainWindow : Window
         {
             _targetSignature = null;
             ApplyTarget();
+            RefreshTargetRoiCrop();
             ViewTarget.Visibility = Visibility.Visible;
             PageTitle.Text = "Bersaglio";
         }
