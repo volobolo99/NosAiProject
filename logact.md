@@ -48,6 +48,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 16:06 | Qwen 7B Locale | Sesto ping (`ask_local_qwen`), domanda deterministica `17*23` + inversione di `ORCHESTRA` | nessuno | PASS — `(a) 391 (b) ARCEHTCOR`: prodotto esatto, inversione errata | `+160` |
 | 2026-09-08 16:06 | DeepSeek Flash | Sesto ping (`ask_deepseek_reasoner`), stessa domanda | nessuno | PASS — `391 ARTSEHCRO`, entrambe esatte; nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 16:06 | Qwen 14B Colab | Sesto ping (`ask_cloud_qwen_14b`), stessa domanda | nessuno | **PASS — primo verde dallo strumento MCP**: `(a) 391 (b) aterhcro`, prodotto esatto, inversione errata | `+99` |
+| 2026-09-08 16:09 | DeepSeek Flash | Verifica dell'identificativo del modello: interrogato il modello (non sa dichiararsi) e letto il campo `model` della risposta API grezza | nessuno (solo accertamento) | PASS — HTTP 200, `model: deepseek-v4-flash`, coincide con `orchestrator_mcp.py:104`; `usage` restituito dall'API ma scartato a `orchestrator_mcp.py:120` | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
