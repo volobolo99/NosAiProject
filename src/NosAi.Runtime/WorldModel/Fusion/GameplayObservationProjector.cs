@@ -223,11 +223,14 @@ public static class GameplayObservationProjector
     /// distinct from "read and wearing nothing".
     /// </summary>
     /// <remarks>
-    /// The wire numbers the worn slots positionally and <see cref="EquipmentSlot"/> has exactly
-    /// as many members as <c>eq</c> has positions, so an index maps to a member. That
-    /// correspondence is a reading of the packet, not something the protocol document confirms,
-    /// therefore an index outside the enum produces no item at all rather than a guessed slot:
-    /// T-05 on a live session is what turns it from plausible into observed.
+    /// The wire numbers the worn slots positionally, so an index is read as the matching
+    /// <see cref="EquipmentSlot"/> member. The two are not the same size — <c>eq</c> carries
+    /// eleven positions while the enum holds eighteen members, the wider set coming from the
+    /// item catalogue rather than from this packet — so the correspondence covers the low
+    /// indices only, and it is a reading of the packet rather than something the protocol
+    /// document confirms. An index the enum does not define therefore produces no item at all
+    /// instead of a guessed slot, and T-05 on a live session is what would turn the mapping
+    /// from plausible into observed.
     /// </remarks>
     /// <param name="observed">The worn set as published by the gameplay observation.</param>
     /// <param name="nowUtc">Instant stamped on the Unknown fact when nothing was published.</param>
