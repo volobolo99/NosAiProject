@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 651 token (~$0.00 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 910 token (~$0.00 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -13,10 +13,10 @@ $3,00 per milione di token. Una delega che non restituisce il tag
 non si inventa un numero (`CLAUDE.md` § 6).
 
 Dal 2026-09-08 i tre strumenti di `orchestrator_mcp.py` sono registrati in
-`.mcp.json`. Alle 15:58 tutti e tre rispondono, ma `ask_cloud_qwen_14b` solo
-eseguendo il modulo dal disco: il processo MCP della sessione porta ancora il
-codice anteriore alle 15:51 e cita un tunnel di due versioni fa. Serve una
-sessione riavviata.
+`.mcp.json`. Alle 16:06 tutti e tre rispondono attraverso lo strumento MCP,
+`ask_cloud_qwen_14b` compreso: il processo MCP ha ricaricato il modulo e
+l'auto-discovery risolve il tunnel corrente. Le righe FAIL dalle 15:24 alle
+16:01 restano a registro come storia della diagnosi.
 
 L'auto-discovery via ntfy aggiunta alle 15:51 non poteva funzionare:
 `resolve_colab_url()` chiamava `/raw` senza `poll=1`, che su ntfy è uno stream
@@ -45,6 +45,9 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 15:53 | DeepSeek Flash | Quarto ping (`ask_deepseek_reasoner`) | nessuno | PASS — nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 15:58 | Qwen 14B Colab | Causa radice dell'auto-discovery: `/raw` → `/raw?poll=1&since=all` in `resolve_colab_url()`, poi verifica end-to-end eseguendo il modulo dal disco | `orchestrator_mcp.py` | PASS — `Qwen 14B Colab OK` con tag METRICS | `+61` |
 | 2026-09-08 16:01 | 3 worker | Quinto ping dopo la correzione | nessuno | Locale PASS, Flash PASS, 14B FAIL — lo strumento cita `phd-yale-depot-ryan`, stringa che `grep -rn --include=*.py` non trova più in nessun sorgente: il processo MCP non ha ricaricato il file | `+118` |
+| 2026-09-08 16:06 | Qwen 7B Locale | Sesto ping (`ask_local_qwen`), domanda deterministica `17*23` + inversione di `ORCHESTRA` | nessuno | PASS — `(a) 391 (b) ARCEHTCOR`: prodotto esatto, inversione errata | `+160` |
+| 2026-09-08 16:06 | DeepSeek Flash | Sesto ping (`ask_deepseek_reasoner`), stessa domanda | nessuno | PASS — `391 ARTSEHCRO`, entrambe esatte; nessun tag METRICS, `API Flash Call` | `+0` |
+| 2026-09-08 16:06 | Qwen 14B Colab | Sesto ping (`ask_cloud_qwen_14b`), stessa domanda | nessuno | **PASS — primo verde dallo strumento MCP**: `(a) 391 (b) aterhcro`, prodotto esatto, inversione errata | `+99` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
