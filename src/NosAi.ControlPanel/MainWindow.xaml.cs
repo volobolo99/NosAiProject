@@ -1061,7 +1061,17 @@ public partial class MainWindow : Window
         };
     }
 
-    /// <summary>Rilegge l'ultima registrazione e mostra solo le righe inventario (kind/slot/vnum/amount/rarity).</summary>
+    /// <summary>
+    /// Rilegge l'ultima registrazione e mostra i due pacchetti che l'equip
+    /// muove: <c>equip</c> (cosa e' indossato) e <c>ivn</c> (cosa sta nella
+    /// borsa), in ordine di cattura.
+    /// </summary>
+    /// <remarks>
+    /// Fino al 2026-09-08 chiedeva <c>--world-replay</c> e teneva solo le righe
+    /// con <c>kind=</c>: mostrava i soli <c>ivn</c>, cioe' la meta' del filo che
+    /// non risponde alla domanda di T-12, e su una registrazione vera diceva
+    /// «nessuna riga inventario» mentre il Diario ne stampava due.
+    /// </remarks>
     private async void OnAnalyzeEquipWire(object sender, RoutedEventArgs e)
     {
         if (_busy)
@@ -1090,15 +1100,9 @@ public partial class MainWindow : Window
         // del 2 settembre, mostrata all'operatore come se fosse quella appena
         // registrata. La meta' che scrive era stata corretta, questa no.
         string name = Path.GetFileName(path);
-        var lines = new List<string>();
         ToolResult replay = await RunToolAsync(
-            "dotnet", $"\"{dll}\" --world-replay data/{name}",
-            "Analisi registrazione equip", pairing: false,
-            onLine: line =>
-            {
-                if (line.Contains("kind=", StringComparison.Ordinal))
-                    lines.Add(line.Trim());
-            });
+            "dotnet", $"\"{dll}\" --wire-inspect data/{name} --timeline {EquipWireInspect.Opcodes}",
+            "Analisi registrazione equip", pairing: false);
 
         // Una rigiocata fallita non e' una registrazione senza inventario: dirlo
         // con lo stesso messaggio manderebbe l'operatore a rifare una cattura
@@ -1107,18 +1111,22 @@ public partial class MainWindow : Window
         {
             EquipWireFields.ItemsSource = Array.Empty<DisplayField>();
             EquipWireSummary.Text =
-                $"La rigiocata di data/{name} non e' riuscita (uscita {replay.ExitCode}). Motivo nel Diario: la registrazione potrebbe essere vuota o illeggibile.";
+                $"La lettura di data/{name} non e' riuscita (uscita {replay.ExitCode}). Motivo nel Diario: la registrazione potrebbe essere vuota o illeggibile.";
             return;
         }
 
+        // Le righe si leggono dall'output del comando, non dalle callback riga
+        // per riga: quelle passano dal Dispatcher e vengono eseguite quando la
+        // coda dell'interfaccia le raggiunge, che non e' garantito sia prima di
+        // qui.
+        EquipWireReading reading = EquipWireInspect.Read(replay.Output);
+
         // Righe rilette da un file: CACHED, non LIVE. «Wire» non e' nemmeno uno
         // dei cinque valori del vocabolario di provenienza.
-        EquipWireFields.ItemsSource = lines.Count > 0
-            ? lines.Select((l, i) => new DisplayField($"riga {i + 1}", l, "Cached")).ToArray()
-            : Array.Empty<DisplayField>();
-        EquipWireSummary.Text = lines.Count > 0
-            ? $"{lines.Count} righe inventario da data/{name}. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
-            : $"Nessuna riga inventario (ivn) in data/{name}: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
+        EquipWireFields.ItemsSource = reading.Lines
+            .Select(l => new DisplayField($"{l.Opcode} #{l.Sequence}", l.Payload, "Cached"))
+            .ToArray();
+        EquipWireSummary.Text = $"data/{name}: {reading.Summary}";
     }
 
     /// <summary>
