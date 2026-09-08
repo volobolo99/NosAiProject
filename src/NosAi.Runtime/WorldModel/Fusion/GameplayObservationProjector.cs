@@ -130,6 +130,25 @@ public static class GameplayObservationProjector
                 ClassifiedValueBridge.WithSource(item.Source, item.Amount, item.ObservedAtUtc))))
             : EquatableArray<Drop>.Empty;
 
+        // The wire numbers the worn slots positionally and EquipmentSlot has exactly as many
+        // members as `eq` has positions, so index maps to member. That correspondence is a
+        // reading of the packet, not something the protocol document confirms, therefore an
+        // index outside the enum produces no item at all rather than a guessed slot: T-05 on a
+        // live session is what turns it from plausible into observed.
+        WorldFact<EquatableArray<EquipmentItem>> equipment = observation.Equipment.HasValue
+            ? ClassifiedValueBridge.WithSource(
+                observation.Equipment.Source,
+                EquatableArray<EquipmentItem>.From(observation.Equipment.Value
+                    .Where(worn => Enum.IsDefined(typeof(EquipmentSlot), worn.Slot))
+                    .Select(worn => new EquipmentItem(
+                        new ItemId(worn.Vnum.ToString(CultureInfo.InvariantCulture)),
+                        WorldFact<string>.Unknown("item_name_catalog_not_available", observation.Equipment.ObservedAtUtc),
+                        (EquipmentSlot)worn.Slot,
+                        ClassifiedValueBridge.WithSource(observation.Equipment.Source, true, observation.Equipment.ObservedAtUtc)))),
+                observation.Equipment.ObservedAtUtc)
+            : WorldFact<EquatableArray<EquipmentItem>>.Unknown(
+                observation.Equipment.FailureReason ?? EquipmentNeverReadReason, nowUtc);
+
         var player = new Player(
             playerId,
             position,
@@ -137,14 +156,14 @@ public static class GameplayObservationProjector
             isAlive,
             currentMap,
             status,
-            // No observation channel in this project reads either list. Stated
+            // No observation channel in this project reads the skill list. Stated
             // as Unknown with the reason rather than as an empty array, so a
             // reader is told nothing was looked for instead of being told the
-            // character has no abilities and wears nothing.
+            // character has no abilities.
             WorldFact<EquatableArray<Skill>>.Unknown(SkillListNeverReadReason, nowUtc),
             cooldowns,
             inventory,
-            WorldFact<EquatableArray<EquipmentItem>>.Unknown(EquipmentNeverReadReason, nowUtc));
+            equipment);
 
         MapModel map = observation.MapId.HasValue
             ? new MapModel(

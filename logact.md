@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 9.013 token (~$0.03 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 10.054 token (~$0.03 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -71,6 +71,9 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 19:05 | Claude (Direttore) | Lo stesso difetto "lista vuota ambigua" cercato negli altri pianificatori e chiuso in tre: esplorazione, combattimento, equipaggiamento | `ExplorationPlanner.cs`, `CombatPlanner.cs`, `LoadoutPlanner.cs` + 3 file di test | PASS — 17 test nuovi, Core 753 superati e Runtime 2793, nessun fallito | `+0` |
 | 2026-09-08 19:30 | Claude (Direttore) | I verdetti collegati alla scelta della meta: aggiunti i segnali `Farming`, `Optimization` e `Progression`, che nessuna funzione produceva | `src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs` + 3 file di test | PASS — tutti e sette gli `StrategicGoalKind` ora hanno una sorgente; Core 767 superati, nessun fallito | `+0` |
 | 2026-09-08 19:55 | Claude (Direttore) | I nuovi segnali arrivano davvero alla decisione: l'autoplay giudica l'esplorazione dalle caselle e conosce i mob prima di scegliere la meta | `src/NosAi.Runtime/Tactical/AutoplayCommand.cs` | PASS — una sola osservazione dei mob per ciclo, anticipata; Runtime 2793 superati, nessun fallito | `+0` |
+| 2026-09-08 20:20 | esploratore + DeepSeek Flash | AP-07: mappatura della catena dell'equipaggiamento dal filo al World Model, e principio di modellazione per "slot vuoto" contro "slot mai letto" | nessuno (indagine) | PASS — l'esploratore ha ipotizzato un campo `report.EquipmentSlots` che non esiste: verificato con grep e corretto. DeepSeek ha dato la regola: ignoto = assenza di fatto, vuoto = fatto con valore vuoto | `+0` |
+| 2026-09-08 20:20 | Claude (Direttore) | AP-07: l'equipaggiamento decodificato arriva finalmente al `Player` — campo su `GameplayObservation`, ritenzione nel provider, proiezione nel World Model | `GameplayProvider.cs`, `GameplayObservationProjector.cs` | PASS — Runtime 2797 superati su 2806, nessun fallito | `+0` |
+| 2026-09-08 20:20 | Qwen 7B Locale | Stesura dei 4 test di proiezione dell'equipaggiamento | `tests/NosAi.Runtime.Tests/WorldModel/Fusion/EquipmentProjectionTests.cs` | PASS | `+1041` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 

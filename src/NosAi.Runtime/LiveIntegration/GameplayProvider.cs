@@ -184,6 +184,18 @@ public sealed record GameplayObservation(
     public ClassifiedValue<IReadOnlyList<InventorySlotReading>> Inventory { get; init; }
         = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(NotPublishedReason);
 
+    /// <summary>
+    /// The worn set most recently reported by <c>eq</c>/<c>equip</c>, ordered by slot.
+    /// </summary>
+    /// <remarks>
+    /// Unknown until the wire says something, and an observed set with no occupied slot is a
+    /// present fact holding an empty list — not the same thing as never having looked. The
+    /// decoder already drops the wire's <c>-1</c> placeholders, so an empty list here means
+    /// "read, nothing worn", never "unread".
+    /// </remarks>
+    public ClassifiedValue<IReadOnlyList<WornEquipmentSlot>> Equipment { get; init; }
+        = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(NotPublishedReason);
+
     /// <summary>The most recent <c>get</c>, with its instant.</summary>
     public ClassifiedValue<ItemPickup> LastPickup { get; init; }
         = ClassifiedValue<ItemPickup>.Unknown(NotPublishedReason);
@@ -222,6 +234,7 @@ public sealed record GameplayObservation(
             SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            Equipment = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
         };
@@ -500,6 +513,8 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     private bool _lastPickupFresh;
     private readonly Dictionary<long, Retained<GroundItem>> _groundItems = new();
     private bool _groundItemEverSeen;
+    private readonly Dictionary<int, Retained<WornEquipmentSlot>> _equipment = new();
+    private bool _equipmentEverSeen;
 
     /// <inheritdoc />
     public string Name => "network_observation";
@@ -651,6 +666,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         AbsorbTarget(report);
         AbsorbSkills(report);
         AbsorbInventory(report);
+        AbsorbEquipment(report, now);
         AbsorbGroundItems(report, now);
         AbsorbPickup(report);
     }
@@ -764,6 +780,32 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         }
     }
 
+    /// <summary>
+    /// Takes the worn set from a batch that mentioned it, leaving the retained one untouched
+    /// when the batch said nothing.
+    /// </summary>
+    /// <remarks>
+    /// Both <c>eq</c> and <c>equip</c> describe the whole worn set, so a slot missing from a
+    /// batch that spoke is a free slot, not an unmentioned one: the table is replaced rather
+    /// than merged. Merging would keep a piece worn forever once taken off, which is a claim
+    /// about the character contradicted by the very packet being read.
+    /// </remarks>
+    private void AbsorbEquipment(NetworkObservationReport report, DateTime now)
+    {
+        if (report.Equipment is not { } worn)
+        {
+            return;
+        }
+
+        _equipment.Clear();
+        foreach (WornEquipmentSlot slot in worn.Slots)
+        {
+            _equipment[slot.Slot] = new Retained<WornEquipmentSlot>(slot, report.Source, now, Fresh: true);
+        }
+
+        _equipmentEverSeen = true;
+    }
+
     private void AbsorbGroundItems(NetworkObservationReport report, DateTime now)
     {
         foreach (Retained<GroundItem> retained in _groundItems.Values.ToList())
@@ -833,6 +875,9 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         Inventory = PublishList(
             _inventory.Values.OrderBy(r => r.Value.InventoryKind).ThenBy(r => r.Value.Slot),
             "no_inventory_slot_observed"),
+        Equipment = PublishList(
+            _equipment.Values.OrderBy(r => r.Value.Slot),
+            _equipmentEverSeen ? "no_equipment_retained" : "no_equipment_observed_yet"),
         LastPickup = _lastPickup is { } pickup
             ? Classify(pickup, _lastPickupFresh ? pickup.Source : Remembered(pickup.Source), pickup.ObservedAtUtc)
             : ClassifiedValue<ItemPickup>.Unknown("no_pickup_observed"),
