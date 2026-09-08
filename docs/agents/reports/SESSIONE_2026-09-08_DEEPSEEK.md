@@ -542,3 +542,76 @@ giro, entrambi verdi da soli, entrambi test a orologio da parete. Confrontare i
 nomi, mai i totali.
 
 Con i due Guard giudicati per quello che sono, **la suite e' interamente verde**.
+
+---
+
+## Stato completo della macchina, misurato a fine sessione
+
+| Suite | Esito |
+|---|---|
+| `NosAi.Core.Tests` | **714 superati, 0 falliti**, 1 ignorato (il budget p99, saltato per progetto fuori dalla passata isolata) |
+| `NosAi.Runtime.Tests` | 2721 superati, 1 fallito, 9 ignorati su 2731 — il fallito e' `GuardAiClientTests`, **8/8 verde da solo** |
+| `NosAi.ControlPanel.Tests` | **159 superati, 0 falliti** |
+| pytest | **tutto verde**, nessun fallimento |
+| Build soluzione Release | **0 errori, 0 avvisi** |
+
+## `--certification-report`: dove finisce il codice e comincia l'operatore
+
+Eseguito davvero, 397 righe. Tutti e quattordici gli stadi -- Startup, Attach,
+Perception, MapDiscovery, Exploration, Navigation, TargetRecognition, Combat,
+LootInventory, MultiStepQuest, EquipmentProgression, Recovery, Persistence,
+Evidence -- sono **`Integrated`**, e ognuno porta lo stesso identico ostacolo
+residuo:
+
+```
+verified_needs_real_target: una suite verde su questa macchina non e'
+validazione sul client reale.
+```
+
+Verdetto dello strumento, alla lettera:
+
+```
+livello complessivo: Integrated (il piu' debole degli stadi)
+certificato del tutto: no -- e non e' raggiungibile da qui: Verified richiede
+la validazione sul client reale, che nessuna suite di questo processo puo'
+fornire.
+```
+
+**Non e' una mia conclusione: e' il progetto che lo dice di se stesso.** Il
+lavoro che si puo' fare senza il client vivo e' finito. Ogni passo successivo
+richiede l'operatore davanti a NosTale, e nessuna delega puo' produrlo.
+
+### Cosa serve, in ordine di quanto sblocca
+
+1. **T-14 — una cattura che cominci prima del login.** `--record-wire` a client
+   chiuso, poi aprire, accedere, entrare in gioco. Un solo file basta. Sblocca
+   il pacchetto `ski`, cioe' la lista abilita' del personaggio: senza, AP-05
+   parte 2 resta un parser mai eseguito su un byte reale.
+2. **T-17 — la registrazione del costo MP.** Fermo, MP al massimo, **una sola**
+   abilita' a costo dichiarato, poi dieci secondi fermo. Conferma se `COST[0]`
+   e' l'MP, e chiude il `mp_cost_undecided_between_cp_and_data8` che
+   `--skill-report` dichiara oggi su ogni abilita'.
+3. **T-13 — la catena AP-05 sul client vivo.** Amministratore, WinDivert, SSD
+   `NOSAI-SSD` collegato. Porta da `Present` a `Verified` tutto cio' che sta
+   sopra il World Model.
+4. **T-09 e il residuo di T-12** — la ROI del riquadro bersaglio e la conferma di
+   quale `InventoryKind` produce un equip reale. Finche' mancano, `HasTarget`
+   resta UNKNOWN e `--equip`/`--unequip` restano bloccati.
+
+## Consumi finali della sessione
+
+| Voce | Token |
+|---|---|
+| Q-140 | 4 303 279 |
+| Q-143 | 1 121 803 |
+| Q-144 | 3 454 890 |
+| Q-145 | 1 317 170 |
+| Verifica del collegamento | 131 |
+| **Totale** | **10 197 273** |
+
+**Dei quali 8 879 972 spesi su lavoro gia' fatto** — Q-140, Q-143 e Q-144 erano
+gia' implementati e la coda non lo diceva. La regola che lo impedisce d'ora in
+poi: nessuna delega parte senza una prova che fallisce, o senza l'artefatto
+cercato nel sorgente e non trovato, citato nel campo `context` della delega.
+Q-145 e' il primo incarico scelto cosi', ed e' costato 1,3 M per un risultato
+reale: un test da rosso a verde.
