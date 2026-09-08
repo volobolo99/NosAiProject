@@ -1,6 +1,7 @@
 using System;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Exploration;
+using NosAi.Core.WorldModel.Strategy;
 using Xunit;
 
 namespace NosAi.Core.Tests.WorldModel.Exploration;
@@ -72,6 +73,42 @@ public sealed class ExplorationVerdictTests
             FixedInstant);
 
         Assert.Throws<ArgumentException>(() => ExplorationPlanner.ExplainFrontier(map, foreign));
+    }
+
+    /// <summary>
+    /// The footprint's own FullyExplored flag can sit Unknown while the tiles already answer the
+    /// question. Judging by the tiles means an unset flag no longer costs the whole signal.
+    /// </summary>
+    [Fact]
+    public void AnUnsetFullyExploredFlag_DoesNotSilenceTheSignal()
+    {
+        MapModel map = BuildMap((0, 0, TileTraversability.Walkable));
+
+        StrategicSignal? signal = StrategyPlanner.AssessExplorationUrgency(map, Footprint());
+
+        Assert.NotNull(signal);
+        Assert.Equal(1.0, signal!.Urgency);
+        Assert.Equal("frontier_available", signal.Reason);
+    }
+
+    [Fact]
+    public void AMapWhoseRemainderIsWall_ScoresZeroForItsOwnReason()
+    {
+        MapModel map = BuildMap((0, 0, TileTraversability.Walkable), (1, 0, TileTraversability.Blocked));
+
+        StrategicSignal? signal = StrategyPlanner.AssessExplorationUrgency(
+            map,
+            Footprint(new TileCoordinate(0, 0)));
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.0, signal!.Urgency);
+        Assert.Equal("remaining_tiles_unreachable", signal.Reason);
+    }
+
+    [Fact]
+    public void AMapWithNoObservedTile_ReportsNothingRatherThanNoUrgency()
+    {
+        Assert.Null(StrategyPlanner.AssessExplorationUrgency(BuildMap(), Footprint()));
     }
 
     private static ExplorationFootprint Footprint(params TileCoordinate[] visited) =>

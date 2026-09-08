@@ -160,6 +160,47 @@ public static class StrategyPlanner
     }
 
     /// <summary>
+    /// Exploration urgency judged against the map itself rather than the footprint's own
+    /// <see cref="ExplorationFootprint.FullyExplored"/> flag, which can be Unknown while the
+    /// tiles already say everything needed.
+    /// </summary>
+    /// <remarks>
+    /// The flag answers "did anyone conclude this map is done"; the tiles answer "is there
+    /// anywhere left to walk". The second is observable now, so an unset flag no longer costs
+    /// the whole signal. A map whose remaining tiles are all blocked scores zero urgency, but
+    /// says so with its own reason: it was never covered, it simply cannot be.
+    /// </remarks>
+    /// <param name="map">The map as currently modelled.</param>
+    /// <param name="footprint">Which tiles of that map have been visited.</param>
+    /// <returns>The exploration signal, or <see langword="null"/> when no tile has been observed at all.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="map"/> or <paramref name="footprint"/> is null.</exception>
+    /// <exception cref="ArgumentException">The footprint belongs to a different map.</exception>
+    public static StrategicSignal? AssessExplorationUrgency(MapModel map, ExplorationFootprint footprint)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        ArgumentNullException.ThrowIfNull(footprint);
+
+        ExplorationVerdict verdict = ExplorationPlanner.ExplainFrontier(map, footprint);
+
+        // Nothing observed is nothing to report, not "no urgency": an unseen map is exactly
+        // the one that might need exploring most.
+        if (verdict == ExplorationVerdict.MapUnknown)
+        {
+            return null;
+        }
+
+        (double urgency, string reason) = verdict switch
+        {
+            ExplorationVerdict.FrontierAvailable => (1.0, "frontier_available"),
+            ExplorationVerdict.FullyExplored => (0.0, "map_fully_explored"),
+            ExplorationVerdict.NoReachableFrontier => (0.0, "remaining_tiles_unreachable"),
+            _ => (0.0, "exploration_verdict_unhandled"),
+        };
+
+        return new StrategicSignal(StrategicGoalKind.Exploration, urgency, reason);
+    }
+
+    /// <summary>
     /// The highest-urgency signal, or <see cref="StrategicPlan.Unselected"/>
     /// when none were given. Ties keep whichever signal appears first in
     /// <paramref name="signals"/>, so two calls given the same inputs in the
