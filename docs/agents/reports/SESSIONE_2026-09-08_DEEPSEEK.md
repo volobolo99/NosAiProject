@@ -884,3 +884,50 @@ ordine di quanto tolgono di lavoro manuale: una sequenza guidata che esegue i
 passi in ordine e si ferma al primo rifiuto nominato; e il salvataggio
 dell'esito di ogni prova, cosi' che «l'ho gia' fatto» sia un fatto registrato e
 non un ricordo.
+
+---
+
+## Q-151 e Q-152 — due vicoli ciechi chiusi, trovati eseguendo
+
+Entrambi nati dalla stessa mossa: **eseguire i comandi che le card lanciano**,
+invece di fidarsi del fatto che compilino.
+
+### Q-151 — il tasto che avrebbe fermato T-13 all'ultimo passo
+
+`--keybinds-check`, eseguito: **nessun intento e' confermato**. `--engage`
+accetta solo intenti confermati, quindi la catena di combattimento appena
+consegnata sarebbe arrivata al passo 4 per rifiutare con `keybind_not_confirmed`.
+Un difetto invisibile leggendo il codice e ovvio eseguendolo.
+
+La card non offre una spunta, e il motivo lo dice il file stesso: un tasto
+dichiarato e' un'ipotesi presa dai default del gioco, non una misura, perche' il
+client consegna gli slot rapidi vuoti. **Senza dichiarare cosa si e' osservato la
+conferma e' rifiutata**, e l'osservazione viene scritta accanto a `confirmed` con
+la sua data: resta registrato *perche'* quel tasto e' considerato buono.
+Verificato riga per riga che `KeybindMap.TryParse` ignori i campi sconosciuti
+prima di aggiungerne due.
+
+### Q-152 — meta' automatico non e' automatico
+
+Il polling a un secondo rilevava gia' il client ma non la sua rete. Ora la rileva,
+con due vincoli piu' importanti dell'automatismo: un valore digitato non viene mai
+sovrascritto, e la provenienza dichiara da dove viene il valore e da quanto tempo.
+
+### Un test rafforzato
+
+`The_card_lists_the_five_steps_in_order` cercava i marcatori nell'intero file
+mentre il suo nome promette la card. L'etichetta `Tasto (1..254)` finisce in `4)`
+ed e' stata scambiata per il passo 4. Il test ora e' ancorato alla card T-09:
+l'asserzione e' **piu' stretta**, non piu' larga.
+
+### Il metodo, confermato una volta di piu'
+
+| Incarico | Perimetro | Esito |
+|---|---|---|
+| Q-151, primo giro | 3 file inesistenti, ma l'incarico rimandava a file esterni | budget esaurito, 2 file su 3 |
+| Q-151b, completamento | **1 file inesistente**, niente da leggere | **2 giri** |
+| Q-152 | 3 file inesistenti | 18 giri, tutto consegnato |
+
+Anche con soli file nuovi nel perimetro, un incarico che *nomina* file esterni
+invita a cercarli. La forma che non fallisce mai e': un perimetro senza file
+esistenti **e** nessun rimando a file che il lavoratore non puo' aprire.
