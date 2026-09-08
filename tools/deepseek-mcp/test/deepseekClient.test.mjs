@@ -41,7 +41,9 @@ describe('chatCompletion', () => {
             textResponse('pong')
         ]);
         const sleepImpl = recordingSleep();
-        const res = await chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 2 });
+        const res = await chatCompletion({
+            ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 2, jitterImpl: () => 0
+        });
         assert.equal(res.choices[0].message.content, 'pong');
         assert.equal(fetchImpl.calls.length, 2);
         assert.deepEqual(sleepImpl.waited, [1000]);
@@ -55,7 +57,7 @@ describe('chatCompletion', () => {
         ]);
         const sleepImpl = recordingSleep();
         await assert.rejects(
-            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 2 }),
+            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 2, jitterImpl: () => 0 }),
             (err) => err instanceof DeepSeekApiError && err.status === 502 && /gateway/.test(err.message)
         );
         assert.equal(fetchImpl.calls.length, 3);
@@ -66,7 +68,7 @@ describe('chatCompletion', () => {
         const fetchImpl = scriptedFetch([{ status: 401, body: { error: { message: 'Authentication Fails' } } }]);
         const sleepImpl = recordingSleep();
         await assert.rejects(
-            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 3 }),
+            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 3, jitterImpl: () => 0 }),
             (err) => {
                 assert.equal(err.status, 401);
                 assert.ok(!err.message.includes('SENTINEL'), 'error message must not carry the key');
@@ -92,7 +94,7 @@ describe('chatCompletion', () => {
     test('a 200 with a non-JSON body is an error, not a silent empty result', async () => {
         const fetchImpl = scriptedFetch([{ status: 200, body: '<html>gateway page</html>' }]);
         await assert.rejects(
-            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl: recordingSleep() }),
+            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl: recordingSleep(), jitterImpl: () => 0 }),
             (err) => /non-JSON body/.test(err.message)
         );
     });
@@ -105,7 +107,7 @@ describe('chatCompletion', () => {
         };
         const sleepImpl = recordingSleep();
         await assert.rejects(
-            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 1 }),
+            () => chatCompletion({ ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 1, jitterImpl: () => 0 }),
             (err) => err instanceof DeepSeekApiError && /network failure/.test(err.message)
         );
         assert.equal(calls, 2);
@@ -169,5 +171,25 @@ describe('readUsage', () => {
 
     test('returns null when the response carries no usage block', () => {
         assert.equal(readUsage({}), null);
+    });
+});
+
+describe('retry backoff', () => {
+    test('the jitter is added on top of the exponential delay', async () => {
+        let calls = 0;
+        const fetchImpl = async () => {
+            calls += 1;
+            if (calls <= 2) return new Response('{"error":{"message":"busy"}}', { status: 503 });
+            return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 });
+        };
+        const sleepImpl = recordingSleep();
+
+        await chatCompletion({
+            ...API, messages: MESSAGES, fetchImpl, sleepImpl, maxRetries: 2, jitterImpl: () => 137
+        });
+
+        // Without the jitter these would be exactly 1000 and 2000: the offset is real,
+        // and it is the same offset the injected function returned.
+        assert.deepEqual(sleepImpl.waited, [1137, 2137]);
     });
 });

@@ -30,7 +30,10 @@ export const BUDGET = {
     maxToolCalls: { def: 60, min: 1, max: 300 },
     timeoutSeconds: { def: 600, min: 10, max: 3600 },
     maxRetries: { def: 2, min: 0, max: 5 },
-    requestTimeoutSeconds: { def: 180, min: 10, max: 600 }
+    // A single reasoning answer on a large assignment can run past three minutes.
+    // 300 keeps that answer alive and still leaves a full second attempt inside
+    // the 600 s overall ceiling above.
+    requestTimeoutSeconds: { def: 300, min: 10, max: 600 }
 };
 
 /** Hard caps on what a single worker tool call may move. */

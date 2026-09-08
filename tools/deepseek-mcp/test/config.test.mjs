@@ -132,3 +132,18 @@ describe('budget clamping', () => {
         assert.throws(() => clamp('maxSpendEuro', 5), ConfigError);
     });
 });
+
+describe('the two timeouts stay in proportion', () => {
+    test('the default per-request ceiling leaves room for a second full attempt', () => {
+        // A per-request ceiling that eats the whole wall-clock budget turns one
+        // stalled call into the end of the delegation, with no retry left.
+        assert.ok(
+            BUDGET.requestTimeoutSeconds.def * 2 <= BUDGET.timeoutSeconds.def,
+            'requestTimeoutSeconds.def must fit twice inside timeoutSeconds.def'
+        );
+    });
+
+    test('a per-request ceiling can never exceed the overall one', () => {
+        assert.ok(BUDGET.requestTimeoutSeconds.max <= BUDGET.timeoutSeconds.max);
+    });
+});

@@ -53,6 +53,7 @@ function describeError(status, body) {
  * @param {AbortSignal} [options.signal] overall delegation deadline
  * @param {Function} [options.fetchImpl] injected for tests
  * @param {Function} [options.sleepImpl] injected for tests
+ * @param {Function} [options.jitterImpl] extra milliseconds per retry; injected for tests
  */
 export async function chatCompletion({
     apiKey,
@@ -63,10 +64,11 @@ export async function chatCompletion({
     temperature = 0,
     maxTokens = undefined,
     maxRetries = 2,
-    requestTimeoutMs = 180000,
+    requestTimeoutMs = 300000,
     signal,
     fetchImpl = globalThis.fetch,
-    sleepImpl = sleep
+    sleepImpl = sleep,
+    jitterImpl = () => Math.floor(Math.random() * 250)
 }) {
     const url = baseUrl + '/chat/completions';
     const payload = { model, messages, temperature, stream: false };
@@ -136,8 +138,10 @@ export async function chatCompletion({
         }
 
         if (attempt < maxRetries) {
-            // 1s, 2s, 4s ... capped; enough to clear a rate limit without stalling the session.
-            await sleepImpl(Math.min(8000, 1000 * 2 ** attempt));
+            // 1s, 2s, 4s ... capped, plus jitter: without it two callers that failed
+            // together retry together and rebuild the queue they were waiting on.
+            const backoff = Math.min(8000, 1000 * 2 ** attempt);
+            await sleepImpl(backoff + jitterImpl());
         }
     }
     throw lastError ?? new DeepSeekApiError('DeepSeek call failed with no recorded error', { retryable: false });
