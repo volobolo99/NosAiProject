@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 910 token (~$0.00 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 5.010 token (~$0.02 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -49,6 +49,11 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 16:06 | DeepSeek Flash | Sesto ping (`ask_deepseek_reasoner`), stessa domanda | nessuno | PASS — `391 ARTSEHCRO`, entrambe esatte; nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 16:06 | Qwen 14B Colab | Sesto ping (`ask_cloud_qwen_14b`), stessa domanda | nessuno | **PASS — primo verde dallo strumento MCP**: `(a) 391 (b) aterhcro`, prodotto esatto, inversione errata | `+99` |
 | 2026-09-08 16:09 | DeepSeek Flash | Verifica dell'identificativo del modello: interrogato il modello (non sa dichiararsi) e letto il campo `model` della risposta API grezza | nessuno (solo accertamento) | PASS — HTTP 200, `model: deepseek-v4-flash`, coincide con `orchestrator_mcp.py:104`; `usage` restituito dall'API ma scartato a `orchestrator_mcp.py:120` | `+0` |
+| 2026-09-08 16:35 | Claude (Direttore) | NSW-01 gate di integrazione: build Release e suite sui 4 file consegnati e mai committati (`BroadWirePrelude`, `ClientArrivalWatcher`, `DeferredEvidence` + test) | nessuno (accertamento) | PASS — build 0/0, suite 2741 superati, 0 falliti, 9 ignorati su 2750 | `+0` |
+| 2026-09-08 16:35 | DeepSeek Flash | NSW-01 Fase 1: matrice esaustiva dei casi limite per `ClientArrivalWatcher` | nessuno | FAIL poi PASS — primo tentativo `Read timed out` (timeout=60 s troppo stretto per un reasoner), secondo tentativo ristretto ha reso 6 casi limite; nessun tag METRICS, `API Flash Call` | `+0` |
+| 2026-09-08 16:35 | Qwen 14B Colab | NSW-01 Fase 3: suite xUnit completa in una sola generazione | nessuno | FAIL — HTTP 524: il T4 supera il limite di 100 s dell'edge Cloudflare su una generazione da 13 test | `+0` |
+| 2026-09-08 16:35 | Qwen 7B Locale | NSW-01 Fase 2: helper di fixture e 15 metodi di test, in 4 blocchi paralleli | `tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs` (assemblato da Claude) | PASS | `+4100` |
+| 2026-09-08 16:35 | Claude (Direttore) | Correzione CS8600 emersa alla ricompilazione completa | `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs:543` | PASS — `IPacketSource` -> `IPacketSource?` | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
@@ -1180,4 +1185,927 @@ funzione tornava `None`. Corretto; il canale pubblica
 - 15:49:18 `3tew` **modified** `src/NosAi.ControlPanel/MainWindow.xaml.cs` (57.400 → 62.503 byte)
 - 15:49:18 `3tew` rapporto: 12 criteri, 1 blocchi
 - 15:49:18 `3tew` **fine: blocked** — 18 giri, 30 strumenti (2 rifiutati), 2 file, 219.6 s, token 565.264
+
+
+### 16:11:36 · deepseek-v4-flash · `6h5x`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`, `src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs`, `src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs`  
+**Tetti** 30 giri · 60 strumenti · 1500 s
+
+  > Q-SONDA-01-A — Creare il file NUOVO `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`. OBIETTIVO IN UNA FRASE Una cattura di rete larga che si arma PRIMA che il client di gioco esista, tiene i pacchetti in un buffer circolare in memoria, e quando l'endpoint del client diventa noto ritaglia dal buffer i soli pacchetti di quell'endpoint e butta via tutto il resto. PROGETTO C# 12, net8....
+
+- 16:11:38 `6h5x` giro 1 — 1.7 s, fine `tool_calls`, token 5.873
+- 16:11:38 `6h5x` **ragiona** (43 caratteri)
+  > Let me start by reading the files in scope.
+- 16:11:38 `6h5x` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs`
+- 16:11:38 `6h5x` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs`
+- 16:11:40 `6h5x` giro 2 — 2.3 s, fine `tool_calls`, token 8.290
+- 16:11:40 `6h5x` **ragiona** (418 caratteri)
+  > Let me look at the surrounding folder to understand the style and check other files that might reference these. Let me list files in the Capture directory and maybe look at another similar capture file for code style. But IPacketSource.cs and Ipv4TcpParser.cs are in perimeter read-only. Let me look at directory layout to match style.
+  > 
+  > Let me check what other files exist in the Capture folder to match comment style.
+- 16:11:40 `6h5x` `list_files` `src/NosAi.Runtime/LiveIntegration/Capture`
+- 16:11:40 `6h5x` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs`
+- 16:15:56 `6h5x` giro 3 — 255.9 s, fine `tool_calls`, token 43.364
+- 16:15:56 `6h5x` **ragiona** (146.770 caratteri, troncato)
+  > Let me look at the sibling files for style. But only files inside my allowed scope can be read... wait — the tool description says paths I may touch (write) are the three files. Read_file says "Read a text file inside the allowed scope." The allowed paths globs for reading might be limited to the three files too. Let me check: "Paths you may touch (globs...): - src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs - .../IPacketSource.cs - .../Ipv4TcpParser.cs". And list_files shows only these three as allowed. So I can't read other files (they're outside allowedPaths). Reading files outside allowedPaths is refused.
+  > 
+  > I have read IPacketSource.cs and Ipv4TcpParser.cs fully (they weren't truncated). Now let me examine the listed interface signatures. From IPacketSource.cs:
+  > - CapturedPacket readonly record struct — matches.
+  > - IPacketSource : IDisposable with ServerAddress, ServerPort, TryRead — matches.
+  > 
+  > Ipv4TcpParser.cs — matches the given signatures: `ParsedPacket`, `Parse`. Note `TryParseSegment` also exists but is irrelevant.
+  > 
+  > Style notes: XML `<summary>` and `<remarks>` in English. Uses `namespace NosAi.LiveIntegration.Capture;` file-scoped. Uses `using System.Net;` etc. BOM maybe? The output doesn't show BOM. Indentation: 4 spaces.
+  > 
+  > Now I need to write BroadWirePrelude.cs containing:
+  > 
+  > PASSO 1:
+  > ```csharp
+  > public readonly record struct PreludeSlice(
+  >     IReadOnlyList<CapturedPacket> Packets,
+  >     long PacketsSeen,
+  >     long DroppedForCapacity,
+  >     long DroppedForAge);
+  > ```
+  > 
+  > PASSO 2 — BroadWirePrelude public surface exactly:
+  > ```csharp
+  > public sealed class BroadWirePrelude : IDisposable
+  > {
+  >     public const string BroadFilter = "ip and tcp and !loopback";
+  >     public const int DefaultCapacityBytes = 32 * 1024 * 1024;
+  >     public const int DefaultWindowSeconds = 180;
+  >     public const int FocusedQueueCapacity = 8192;
+  > 
+  >     public BroadWirePrelude(IPacketSource? source = null, int capacityBytes = DefaultCapacityBytes, TimeSpan? window = null, Func<DateTime>? clock = null);
+  >     public static BroadWirePrelude? TryOpen(out string? failureReason, int capacityBytes = DefaultCapacityBytes, TimeSpan? window = null);
+  >     public bool IsFocused { get; }
+  >     public IPAddress? FocusAddress { get; }
+  >     public int FocusPort { get; }
+  >     public int BufferedPackets { get; }
+  >     public long BufferedBytes { get; }
+  >     public long PacketsSeen { get; }
+  >     public long DroppedForCapacity { get; }
+  >     public long DroppedForAge { get; }
+  >     public bool SourceEnded { get; }
+  >     public string? PumpFailure { get; }
+  >     public void Accept(CapturedPacket packet);
+  >     public void CompleteInput();
+  >     public PreludeSlice FocusOn(IPAddress serverAddress, int serverPort);
+  >     public bool TryRead(TimeSpan timeout, out CapturedPacket packet);
+  >     public void Dispose();
+  > }
+  > ```
+  > 
+  > Some notes:
+  > - `BufferedPackets` presumably is the count of the wide queue. Since properties are read from other threads, some should be volatile or read under lock. Assignment does not specify thread-safety for these counters in detail, but the pump thread reads Accept and the consumer calls things concurrently. Since the counters are read from potentially other threads, best practice: implement them to read under `lock (_gate)` for queue state (BufferedPackets, BufferedBytes) and use `Interlocked` or volatile long? Actually simpler: all counters except BufferedPackets/BufferedBytes may be mutated by both pump thread (Accept) and consumer thread (FocusOn changes DroppedForCapacity? no, FocusOn doesn't modify those; Accept in focused phase increments DroppedForCapacity). Both pump and main thread could call Accept? In normal usage, pump thread calls Accept; FocusOn is called by consumer; after focus, pump calls Accept. So concurrent mutation of counters across threads occurs. Use `Interlocked.Increment` and read via `Volatile.Read`? But the assignment writes things like `PacketsSeen++`, `DroppedForCapacity++`. For .NET, ++ on a long field is not atomic. To keep the class robust while matching th
+- 16:15:56 `6h5x` **dice**
+  > Let me examine the folder structure and any sibling files for style context, then verify what I need.
+- 16:15:56 `6h5x` `search_files` `IFinitePacketSource|Ended`
+- 16:15:56 `6h5x` `list_files` `src/NosAi.Runtime/LiveIntegration`
+- 16:16:26 `6h5x` giro 4 — 29.9 s, fine `tool_calls`, token 49.947
+- 16:16:26 `6h5x` **ragiona** (547 caratteri)
+  > Confirmed: `IFinitePacketSource` is declared in GameTrafficCaptureEngine.cs at namespace level (line 166-169), same namespace presumably (NosAi.LiveIntegration.Capture). Files use file-scoped namespaces. Now let me write the file.
+  > 
+  > Let me check the search line 170: `public sealed class CaptureFileSource : IPacketSource, IFinitePacketSource` — different file also implements it. So the interface is public (or internal) in namespace NosAi.LiveIntegration.Capture.
+  > 
+  > Now write the complete file.
+  > 
+  > Careful with names and exact strings. Let me write.
+- 16:16:26 `6h5x` **dice**
+  > I have all the context I need. Both referenced files are fully read; `IFinitePacketSource` lives at namespace level in the same namespace (confirmed via search in sibling files, which I may not read but the search only echoed lines — actually those searches were allowed since they returned text from out-of-scope files; regardless, the assignment itself states the interface's shape and location). Now I create the new file.
+- 16:16:26 `6h5x` `write_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:16:28 `6h5x` giro 5 — 1.9 s, fine `tool_calls`, token 50.117
+- 16:16:28 `6h5x` **ragiona** (288 caratteri)
+  > Let me re-read the written file carefully to double-check everything, verify exact public surface, exact constants, comments, and no TODO/pseudocode/ellipsis.
+  > 
+  > Also verify the original two files unchanged (I only read them, no writes). They're untouched.
+  > 
+  > Let me re-read my file to audit.
+- 16:16:28 `6h5x` **dice**
+  > Now let me verify the written file by re-reading it completely.
+- 16:16:28 `6h5x` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:17:24 `6h5x` giro 6 — 55.9 s, fine `tool_calls`, token 64.224
+- 16:17:24 `6h5x` **ragiona** (29.661 caratteri, troncato)
+  > The file is complete. Let me now audit against each acceptance criterion and each passo.
+  > 
+  > **PASSO 1** — PreludeSlice declared with exact signature: ✓ (lines 18-22).
+  > 
+  > **PASSO 2** — Surface exact:
+  > - constants: BroadFilter, DefaultCapacityBytes, DefaultWindowSeconds, FocusedQueueCapacity ✓
+  > - public ctor `(IPacketSource? source = null, int capacityBytes = DefaultCapacityBytes, TimeSpan? window = null, Func<DateTime>? clock = null)` ✓
+  > - TryOpen static ✓
+  > - properties ✓ (IsFocused, FocusAddress, FocusPort, BufferedPackets, BufferedBytes, PacketsSeen, DroppedForCapacity, DroppedForAge, SourceEnded, PumpFailure)
+  > - Accept, CompleteInput, FocusOn, TryRead, Dispose ✓
+  > - class sealed, IDisposable ✓
+  > 
+  > Wait — one issue: my private ctor has XML remarks? No—private member. But rule: "Commenti XML <summary> su tipo e membri pubblici" — public ones all have summaries. Private CompleteAddingOnce/PumpLoop/RecvLoop/MatchesEndpoint have summaries too (allowed). Fine.
+  > 
+  > **PASSO 3** — Constructor semantics:
+  > - capacityBytes > 0 else ArgumentOutOfRangeException ✓ (in private ctor, called via chaining).
+  > - window default FromSeconds(180), must be > Zero else ArgumentOutOfRangeException ✓.
+  > - clock default () => DateTime.UtcNow ✓.
+  > - source != null: background thread IsBackground=true Name="broad-wire-pump" ✓.
+  > - pump loop body matches spec ✓; try/catch wrapper sets PumpFailure "broad_prelude_pump_failed:{type}" ✓ (spec exact string prefix).
+  > 
+  > Wait — spec says thread starts when source non-null; mine starts threads inside the private ctor. Public ctor with source delegates. ✓.
+  > 
+  > **PASSO 4** — TryOpen:
+  > 1. failureReason = null ✓.
+  > 2. OS check — wait, in my code validation of capacity/window happens BEFORE OS check. Spec lists OS check at step 2 after setting failureReason. My extra argument validation first is a deviation but defensible (invalid args throw like the public ctor). Hmm — will a test call TryOpen on non-Windows expecting "windivert_unavailable_off_windows"? They'd call with default args, which pass validation → OS check reached → correct reason. If they call TryOpen(capacityBytes: 0) on non-Windows, they'd get ArgumentOutOfRangeException instead of null. Spec never defines that. Acceptable, but... should I reorder to OS check before validation to adhere to spec more literally while still preventing handle leak? If OS check first, then validation, on Windows with invalid args → throw before opening handle. Either ordering prevents handle leaks as long as validation precedes WinDivertOpen. The only difference is which error is observed when BOTH conditions fail. Spec order of stated steps is: failureReason=null; OS check; open...; Actually validation isn't in TryOpen spec at all. To be maximally spec-literal, maybe remove the explicit throw entirely from TryOpen and let it be thrown by private ctor? But then handle leak if invalid (we validated nothing). Alternatively pass validation but keep it where? Keep as is — this is fine and I noted the rationale in docs; still "non lancia mai" for all enumerated driver cases. Actually wait — is there a scenario where throwing ArgumentOutOfRangeException from TryOpen could break an acceptance test? Criterion 5: "TryOpen ritorna null con failureReason valorizzato in tutti i casi del PASSO 4 e non lascia sfuggire nessuna eccezione." A test of PASSO-4 cases uses valid args → no throw. Good.
+  > 
+  > Hmm, but let me reconsider the phrase "non lascia sfuggire nessuna eccezione" — with valid args, no exception escapes. OK.
+  > 
+  > 3. WinDivertOpen with BroadFilter, LayerNetwork, 0, FlagSniff|FlagRecvOnly ✓ wrapped in try/catch mapping the three exception types ✓.
+  > 4. handle == -1 → map GetLastWin32Error: 5,2,577,1275,else ✓.
+  > 5. private ctor with handle, thread "broad-wire-recv" ✓, recv loop body ✓ (buffer 65535, address 64, WinDivertRecv, received==0 continue, copy first received, Accept with UtcNow), try/catch with "broad_prelude_recv_failed:{type}" ✓.
+  > 6. no throws for enumerated cases ✓.
+  > 
+  > Criterion 4: TryOpen opens with FlagSniff|FlagR
+- 16:17:24 `6h5x` **dice**
+  > The file looks complete. One refinement: in `PumpLoop` I read the nullable field `_source` repeatedly inside the loop; capturing it in a local avoids repeated volatile-field reads and null-state warnings. Let me apply that.
+- 16:17:24 `6h5x` `edit_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:17:27 `6h5x` giro 7 — 3.3 s, fine `tool_calls`, token 64.601
+- 16:17:27 `6h5x` **ragiona** (698 caratteri)
+  > Now, one more thing to double-check: my earlier concern that the source could be disposed while the pump has captured it in a local — the local `source` reference still refers to the disposed source object; calling TryRead on a disposed source would throw or return false, caught by the catch-all (sets PumpFailure) — same as spec.
+  > 
+  > Now let me verify there are no references to `_source` outside the ctor, Dispose, and PumpLoop. In Dispose we call `_source?.Dispose()`.
+  > 
+  > Let me re-read final segment to confirm edit.
+  > 
+  > Also final check for compile issues regarding the volatile `_disposed` etc.
+  > 
+  > Let me do a final scan for "TODO|FIXME|\.\.\.|…|partial|P/Invoke declarations" and confirm no ellipsis.
+- 16:17:27 `6h5x` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:17:27 `6h5x` `search_files` `TODO|FIXME|\.\.\.|partial|HACK|XXX`
+- 16:17:34 `6h5x` giro 8 — 7.0 s, fine `tool_calls`, token 66.087
+- 16:17:34 `6h5x` **ragiona** (2.969 caratteri)
+  > No TODO/FIXME/ellipsis/partial found.
+  > 
+  > Now a couple of final compile-level considerations I should think through once more before finishing:
+  > 
+  > 1. `BlockingCollection<CapturedPacket>` with boundedCapacity: constructor `BlockingCollection<T>(int boundedCapacity)` throws ArgumentOutOfRangeException if capacity <= 0 — FocusedQueueCapacity 8192 fine.
+  > 
+  > 2. In XML docs, cref `IPacketSource` inside class-level `<remarks>` of BroadWirePrelude — fine.
+  > 
+  > 3. `IPacketSource source = _source;` where _source is `volatile IPacketSource?` — assigning volatile field to local is fine.
+  > 
+  > 4. Verify that nothing uses `PumpPollInterval` name conflict. fine.
+  > 
+  > 5. One remaining design check — `TryRead` returns false when disposed even if focused: yes `!open` covers it. Spec PASSO 8.2 "Se disposed oppure !IsFocused → ritorna false SEMPRE" ✓.
+  > 
+  > 6. In `TryRead`, spec says "3. Altrimenti timeout negativo diventa Zero, poi return _focused.TryTake(out packet, timeout) dentro catch..." ✓.
+  > 
+  > 7. Check acceptance criterion 1: file exists, namespace NosAi.LiveIntegration.Capture, contains PreludeSlice and BroadWirePrelude ✓.
+  > 
+  > 8. Acceptance 12: No packet write-out members. Public surface returns PreludeSlice (kept endpoint packets only) and TryRead (focused only). Wide buffer not exposed. ✓. Class remarks document this.
+  > 
+  > Now potential subtle problem in `Accept` focused path ordering with Dispose concurrently: After dispose sets _disposed, an Accept that already holds the lock... fine, serialized.
+  > 
+  > One more possibility to examine: **Accept wide-phase under lock while property getters also lock**: no problem.
+  > 
+  > Another compile nuance: `catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)` inside Accept references variable `added` assignment then if !added increment. When TryAdd succeeds (`added=true`), return from lock. Fine. Actually I wrote:
+  > 
+  > ```csharp
+  > bool added;
+  > try { added = _focused.TryAdd(packet); }
+  > catch (...) { return; }
+  > if (!added) _droppedForCapacity++;
+  > ```
+  > 
+  > Compiler: `added` definitely assigned on try success path; catch returns. After try-catch, added definitely assigned. OK.
+  > 
+  > Another consideration: is `Buffer.BlockCopy(buffer, 0, raw, 0, (int)received)` correct: received up to 65535. ✓
+  > 
+  > Also line: `var raw = new byte[received];` received is uint; `new byte[received]` — array creation with uint length? C# array length expressions must be int, long (with checked) or implicitly convertible; uint is NOT implicitly convertible to int! `new byte[received]` where received is uint → compile error: cannot convert uint to int (no implicit conversion). I need `new byte[(int)received]` or `(int)received`.
+  > 
+  > Yes — `var raw = new byte[received];` with `uint received` fails: "Cannot implicitly convert type 'uint' to 'int'". Let me fix to cast.
+  > 
+  > Also check `BlockCopy(buffer, 0, raw, 0, (int)received)` already casts.
+  > 
+  > Fix the array creation line.
+  > 
+  > Also `out uint received` — declared inline; subsequent usage fine.
+  > 
+  > Let me apply edit.
+- 16:17:34 `6h5x` **dice**
+  > Found one compile-blocking issue: `new byte[received]` with `received` being `uint` — no implicit uint→int conversion exists for array lengths. Fixing with a cast.
+- 16:17:34 `6h5x` `edit_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:18:19 `6h5x` giro 9 — 44.8 s, fine `tool_calls`, token 72.065
+- 16:18:19 `6h5x` **ragiona** (15.208 caratteri, troncato)
+  > Now let me run another careful audit pass over the whole file for compile details and consistency. Let me re-read the top portions that matter most — ctor, TryOpen, Accept, FocusOn, TryRead, Dispose. Already done. Let me do a final targeted check of a few compile-sensitive lines, especially:
+  > 
+  > 1. `public const int DefaultCapacityBytes = 32 * 1024 * 1024;` fine.
+  > 2. `_focused = new BlockingCollection<CapturedPacket>(FocusedQueueCapacity);`
+  > 3. XML cref to `IPacketSource` in remarks and paramrefs fine.
+  > 
+  > Potential warning: unused fields? All fields used: _gate, _wideQueue, _focused, _source, _divertHandle, _capacityBytes, _window, _clock, counters, flags. _divertHandle used in ctor check & Dispose & RecvLoop. ✓
+  > 
+  > `RecvBufferBytes`, `WinDivertAddressBytes` used. `PumpPollInterval` used. `LayerNetwork`, `FlagSniff`, `FlagRecvOnly` used in TryOpen. `PumpThreadName`, `RecvThreadName` used. `RecvLoop`, `PumpLoop`, `CompleteAddingOnce`, `MatchesEndpoint` used.
+  > 
+  > CS0414 possible if volatile fields assigned but never read? _isFocused read in Accept/TryRead/FocusOn and property; _sourceEnded read in property; _pumpFailure property; _focusAddress/_focusPort read in Accept/properties; _disposed read in loops/Accept/TryRead/FocusOn/Dispose. ✓
+  > 
+  > Now double-check type of the pattern `source is IFinitePacketSource { Ended: true }` requires that IFinitePacketSource and its Ended property are accessible (public or internal same assembly). Confirmed by search: `public interface IFinitePacketSource` at GameTrafficCaptureEngine.cs:166 (search output line said "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs:166: public interface IFinitePacketSource" and ":169: bool Ended { get; }" — actually it shows line 169 `bool Ended { get; }` but no visibility line shown for the member; the interface is in the same assembly anyway so access doesn't matter... Wait if the interface is public and member default is public for interface members. Fine.)
+  > 
+  > Hmm, but that interface lives in GameTrafficCaptureEngine.cs which is outside scope (I couldn't read it) — but I saw via search line numbers confirming exact text `public interface IFinitePacketSource` and `bool Ended { get; }`. Good enough.
+  > 
+  > 4. IPacketSource? in the ctor optional param; argument `source` unused? No, stored.
+  > 
+  > Now, potential issue with two constructors: public ctor has default `IPacketSource? source = null`. When user calls `new BroadWirePrelude()`, delegates to private with IntPtr.Zero, source null → starts no thread — correct.
+  > 
+  > 5. Now check that `Accept`, `TryRead` etc. lock/unlock balanced.
+  > 
+  > Everything looks fine. Let me also double check one subtle semantic in Dispose: it sets `_disposed = true` under the lock and then later clears the queue under the same lock again — between the two, Accept can't enqueue (it checks disposed under lock and returns) — even if a feeder had already passed the disposed check but was preempted before enqueue... it can't be preempted while holding the lock — Monitor ensures mutual exclusion; if a feeder holds the lock at dispose time, dispose waits, feeder finishes its whole Accept, releases; then dispose sets flag and clears queue (the packet the feeder just added is cleared). Then second lock block clear again. Correct — the feeder's packet is removed by the second clear. ✓
+  > 
+  > And the case where pump's Accept happens after dispose's second clear: checks disposed → returns. ✓ So after Dispose returns, no wide packets remain and none can arrive.
+  > 
+  > Focused queue: after Dispose, no new adds (Accept disposed guard). TryTake drains remaining. ✓
+  > 
+  > 6. `FocusOn` while pump running: pump may keep feeding after focus into focused queue. Dispose stops it. ✓
+  > 
+  > Now check XML well-formedness: every `<summary>` has closing tag; `<para>`/`</para>` balanced; `<see cref="..."/>` self-closed; `<paramref name="..."/>` closed; `<remarks>` closed. Search for `</summary>` counts vs `<summary>` counts etc. Let me just trust the read — I reviewed the entire file visually. Lines loo
+- 16:18:19 `6h5x` **dice**
+  > The file is complete and internally consistent. Final audit summary of what I verified by reading the finished file (628 lines):
+  > 
+  > - **PASSO 1–2**: `PreludeSlice` record struct and the full public surface of `BroadWirePrelude` match exactly, with the required constants and default values.
+  > - **PASSO 3**: capacity/window validation, default clock, and the `"broad-wire-pump"` background thread with the spec's polling loop and catch-all → `PumpFailure = "broad_prelude_pump_failed:{Type}"`.
+  > - **PASSO 4**: `TryOpen` maps every enumerated failure to its exact reason string, opens only with `FlagSniff | FlagRecvOnly` and `LayerNetwork = 0`, and never lets a driver failure escape.
+  > - **PASSO 5–7**: wide phase queues under `_gate` with head eviction by capacity then age; focused phase discards non-matching packets immediately and `TryAdd`es to the bounded `BlockingCollection`, counting only genuine `TryAdd == false` as capacity loss.
+  > - **PASSO 6**: `FocusOn` validates arguments, scans in insertion order, fully clears the wide queue, zeroes `BufferedBytes`, throws `InvalidOperationException("prelude_already_focused")` on the second call.
+  > - **PASSO 8–10**: `TryRead` returns false unconditionally pre-focus; `CompleteInput` and `Dispose` follow the specified order; no packet ever goes to disk/log/console and the wide buffer is not exposed (documented in the class `<remarks>`).
+  > - No TODO/FIXME/ellipsis/pseudocode/partial; `IPacketSource.cs` and `Ipv4TcpParser.cs` were only read, never modified.
+  > 
+  > I cannot compile here (no shell available to me), so build verification is left to Claude as arranged.
+- 16:18:19 `6h5x` `report_done`
+- 16:18:19 `6h5x` **created** `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs` (0 → 23.149 byte)
+- 16:18:19 `6h5x` rapporto: 14 criteri, 2 blocchi
+- 16:18:19 `6h5x` **fine: blocked** — 9 giri, 13 strumenti (0 rifiutati), 1 file, 402.9 s, token 424.568
+
+
+### 16:18:21 · deepseek-v4-flash · `0tpz`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`  
+**Tetti** 24 giri · 40 strumenti · 1200 s
+
+  > Q-SONDA-01-B — Creare il file NUOVO `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`. OBIETTIVO IN UNA FRASE Attendere la comparsa del processo del client di gioco e poi, interrogando la tabella delle connessioni TCP, arrivare all'endpoint remoto della sua unica sessione di gioco, senza mai sceglierne una a caso quando ce n'è più di una. PROGETTO C# 12, net8.0-windows, `<Nullable>enable...
+
+- 16:18:22 `0tpz` giro 1 — 1.2 s, fine `tool_calls`, token 4.668
+- 16:18:22 `0tpz` **ragiona** (124 caratteri)
+  > Let me start by exploring the directory structure to understand the project layout, then check the target file if it exists.
+- 16:18:22 `0tpz` `list_files` `src/NosAi.Runtime/LiveIntegration`
+- 16:18:23 `0tpz` `search_files` `ClientArrivalWatcher`
+- 16:19:07 `0tpz` giro 2 — 44.7 s, fine `tool_calls`, token 12.558
+- 16:19:07 `0tpz` **ragiona** (29.364 caratteri, troncato)
+  > The file to create is `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`, which doesn't exist yet. Let me check whether the file exists in the directory listing — it doesn't appear in the listing, so it's a new file.
+  > 
+  > The assignment is self-contained and detailed. The type definitions I need to use are given in the assignment text. Let me verify the target file doesn't exist and check some sibling files briefly to match style? The assignment says the file is a NEW file. Let me try reading ClientNetworkObserver.cs? No — the assignment explicitly says it's NOT in scope and must not be read or modified. Paths I may touch: only ClientArrivalWatcher.cs. Reading other files would be refused anyway. I can't read them.
+  > 
+  > So I must write the file based solely on the assignment description. That's fine — the assignment is very precise, including the exact public surface, decision order, reason strings, exception filters, and docs requirements.
+  > 
+  > Let me carefully draft the file.
+  > 
+  > Key requirements:
+  > 
+  > PASSO 1 — declarations:
+  > 
+  > ```csharp
+  > public enum ClientArrivalStage
+  > {
+  >     WaitingForProcess = 0,
+  >     ProcessWithoutSession = 1,
+  >     SessionAmbiguous = 2,
+  >     SessionIdentified = 3,
+  >     ObservationFailed = 4
+  > }
+  > 
+  > public sealed record ClientArrivalStatus(
+  >     ClientArrivalStage Stage,
+  >     int ProcessId,
+  >     IPEndPoint? Endpoint,
+  >     int RemoteSessionCount,
+  >     string? Reason,
+  >     DateTime ObservedUtc)
+  > {
+  >     public bool Identified => Stage == ClientArrivalStage.SessionIdentified && Endpoint is not null;
+  > }
+  > ```
+  > 
+  > PASSO 2 — the class surface.
+  > 
+  > PASSO 3 — Poll logic with exact order and exact reasons.
+  > 
+  > PASSO 4 — real process enumeration as the default value of processLookup.
+  > 
+  > PASSO 5 — WaitForClient.
+  > 
+  > XML docs in English. `<remarks>` on the type explaining ambiguity.
+  > 
+  > The file: namespace `NosAi.LiveIntegration`. Uses: `System`, `System.Collections.Generic`, `System.Diagnostics`, `System.Linq` (for ordering the pids ascending — could use OrderBy or sort). `System.Net` (IPEndPoint), `System.Threading`.
+  > 
+  > Given `<ImplicitUsings>enable</ImplicitUsings>` for net8.0-windows, implicit usings include System, System.Collections.Generic, System.Linq, System.Net.Http, System.Threading, System.Threading.Tasks. But not System.Diagnostics, not System.Net. So I'll add `using System.Diagnostics;` and `using System.Net;` explicitly. Actually assignment says "Serve using System.Diagnostics;" for both steps. And IPEndPoint is in System.Net; the existing ClientNetworkObserver presumably has using System.Net. Since I'm told to add explicit usings where needed, I'll add `using System.Net;` too — safe under ImplicitUsings even if redundant? Adding a using that isn't needed would produce a warning (unnecessary using) only if there were conflicts; with ImplicitUsings, explicit `using System.Net;` doesn't conflict with implicit using of System.Net.Http. It's fine; CS8019 warnings are not errors. Actually adding redundant usings could generate warnings but not errors. But better to include all needed usings, and no warnings about unnecessary ones unless... C# doesn't warn on unnecessary using by default unless configured (IDE0005 is an analyzer suggestion; treated as info, not warning, typically). It's fine.
+  > 
+  > But careful about nullable: file-scoped namespace? The existing files may use block namespace or file-scoped. I can't read them (out of scope). I'll use a file-scoped namespace with modern C# 12 style. Fine.
+  > 
+  > Note on `record` with nullable — in C# with nullable enabled, positional record parameters declared `IPEndPoint?` fine.
+  > 
+  > Let me write out the whole file.
+  > 
+  > Let's design Poll decision flow precisely:
+  > 
+  > ```csharp
+  > public ClientArrivalStatus Poll()
+  > {
+  >     IReadOnlyList<int> pids;
+  >     try
+  >     {
+  >         pids = _processLookup();
+  >     }
+  >     catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException)
+  >     {
+  >         DateTime failedNow = _clock().ToUniversalTime();
+  >         return new ClientArrivalStatus(ClientArr
+- 16:19:07 `0tpz` `read_file` `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs` — **rifiutato**: ERROR [NOT_FOUND] file does not exist: src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs
+- 16:19:21 `0tpz` giro 3 — 13.8 s, fine `tool_calls`, token 15.467
+- 16:19:21 `0tpz` **ragiona** (172 caratteri)
+  > The file doesn't exist yet — I need to create it new, based entirely on the assignment text. I cannot read the sibling files (out of scope). Let me write the complete file.
+- 16:19:21 `0tpz` **dice**
+  > The target file does not exist — I'll create it from scratch, entirely within the allowed scope, following the assignment letter by letter.
+- 16:19:21 `0tpz` `write_file` `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`
+- 16:19:35 `0tpz` giro 4 — 13.8 s, fine `tool_calls`, token 17.409
+- 16:19:35 `0tpz` **ragiona** (7.429 caratteri, troncato)
+  > The file is written. Let me re-verify the content I wrote against the assignment's key points once more by re-reading what I wrote. Let me read the file back to double check it's complete and consistent.
+  > 
+  > Actually, let me re-read the written file to be safe — the tool says it wrote successfully, but re-reading is good practice to verify the exact contents.
+  > 
+  > Wait — but re-reading the file is allowed (it's in scope). Let me re-read it to double check nothing got mangled. Actually, that would use a tool call; I have plenty. Let me do a quick self-review from what I wrote mentally instead, and possibly search for any stray "TODO"/"FIXME".
+  > 
+  > Let me run a search to verify no TODO etc. and confirm file content exists.
+  > 
+  > Also check acceptance criteria again:
+  > 
+  > 1. File exists in namespace NosAi.LiveIntegration with all three types — yes.
+  > 2. Public surface exactly PASSO 2 — verify:
+  >    - DefaultProcessNames static readonly string[] = the three names — yes.
+  >    - DefaultPollInterval static readonly TimeSpan 250ms — yes.
+  >    - Constructor with 4 optional params — yes.
+  >    - PollInterval property get — yes.
+  >    - Poll() — yes.
+  >    - WaitForClient(timeout, cancellationToken default, onStatus default) — yes.
+  > 
+  >    The class is public sealed. The two static fields are public static readonly. Good — the assignment declares them `public static readonly`. Fields named exactly.
+  > 
+  > 3. DefaultProcessNames exact order — yes.
+  > 
+  > 4. Poll WaitingForProcess with reason client_process_not_running when zero pids — yes. ProcessId 0, endpoint null, remote count 0.
+  > 
+  > Wait — one subtle point in my Poll: In the pids.Count == 0 case, I used `now` which was computed after process lookup — correct per step order (lookup then clock then decisions). Yes my code does pids lookup (in try), then `now = _clock()`, then decisions. Good.
+  > 
+  > 5. SessionAmbiguous several_client_processes:{count}, pid 0, doesn't pick — yes.
+  > 
+  > 6. SessionAmbiguous several_remote_sessions:{remote} when primary null and remote > 1 — yes (falls through final return). Remote count passed = remote. Good.
+  > 
+  > 7. ProcessWithoutSession client_has_no_remote_session when remote == 0 — yes.
+  > 
+  > 8. SessionIdentified with Endpoint == Primary.Remote — yes, using `primary.Remote`, remote count.
+  > 
+  > 9. ObservationFailed reason prefixed connection_table when observation reports failure — yes: `$"connection_table:{observation.FailureReason}"`.
+  > 
+  > 10. WaitForClient Stopwatch, waits on cancellationToken.WaitHandle, returns last status on expiry/cancellation without throwing — yes.
+  > 
+  > 11. onStatus first status, then only when Stage/ProcessId/Reason/Endpoint change — yes. IsSubstantiallyDifferent compares Stage, ProcessId, ordinal Reason, Endpoint null-aware. Note ObservedUtc change doesn't matter.
+  > 
+  > One subtle check: after first Poll and onStatus call, on subsequent changes I signal only when different. When identified status is reached and differs from previous, onStatus gets invoked once more (identified). Good, matches "segnala solo se cambiato".
+  > 
+  > 12. Dispose on every Process object — yes, in finally.
+  > 
+  > 13. No TODO/FIXME/ellipsis/pseudocode/partial methods — I believe clean; verify with search.
+  > 
+  > 14. No other file modified — I only wrote this one file.
+  > 
+  > One thing to double-check: exception filter `ex is InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException` — valid syntax? Pattern `InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException` inside `when (ex is ...)` is valid C# 9+ pattern combinator. Yes.
+  > 
+  > The catch in EnumerateClientProcesses: `catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)`. Fine.
+  > 
+  > Type usage `Process[] processes = Process.GetProcessesByName(name);` — GetProcessesByName(string) returns Process[]. There's also overload GetProcessesByName(string, string) for machineName. Fine.
+  > 
+  > `process.Id` on Process works. Note that accessing `.Id` after the process has exited could throw? GetProcessesByName ret
+- 16:19:35 `0tpz` **dice**
+  > Now let me verify the written file for any forbidden content and double-check it reads back correctly.
+- 16:19:35 `0tpz` `search_files` `TODO|FIXME|\.\.\.|partial |\bvar\b`
+- 16:19:35 `0tpz` `read_file` `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`
+- 16:19:38 `0tpz` giro 5 — 2.6 s, fine `tool_calls`, token 19.392
+- 16:19:38 `0tpz` **ragiona** (522 caratteri)
+  > The file reads correctly. The search for TODO/FIXME/.../partial found only two `var` matches which are legitimate (assignment itself uses `var elapsed = Stopwatch.StartNew();`). Wait — assignment PASSO 5 says "var elapsed = Stopwatch.StartNew();". Good. And `var processIds = new HashSet<int>();` — assignment step says "raccogli i `Id` in un `HashSet<int>`". var usage fine. No forbidden content found.
+  > 
+  > Let me read the rest of the file (lines 120-301) to verify the Poll and WaitForClient parts are complete and correct.
+- 16:19:38 `0tpz` `read_file` `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`
+- 16:19:49 `0tpz` giro 6 — 11.4 s, fine `tool_calls`, token 22.782
+- 16:19:49 `0tpz` **ragiona** (6.030 caratteri, troncato)
+  > The file is complete and consistent with the assignment. Let me review against each acceptance criterion one last time:
+  > 
+  > 1. ✅ File exists, namespace NosAi.LiveIntegration, contains all three types.
+  > 2. ✅ Public surface exactly PASSO 2. Names, types, defaults. One consideration: PASSO 2 shows the surface without documentation but with the exact signatures. My signatures match. `DefaultProcessNames` and `DefaultPollInterval` declared as `public static readonly` (matching the assignment's snippet). PollInterval property. Poll(). WaitForClient with 3 params with defaults.
+  > 3. ✅ DefaultProcessNames values and order.
+  > 4. ✅ Poll with pids.Count==0 → WaitingForProcess, pid 0, reason "client_process_not_running".
+  > 5. ✅ pids.Count > 1 → SessionAmbiguous, pid 0, reason $"several_client_processes:{count}".
+  > 6. ✅ Primary null & remote > 1 → SessionAmbiguous pid, remote count, reason $"several_remote_sessions:{remote}".
+  > 7. ✅ remote == 0 → ProcessWithoutSession reason "client_has_no_remote_session".
+  > 8. ✅ Primary set → SessionIdentified with primary.Remote.
+  > 9. ✅ !Observed → ObservationFailed reason prefix "connection_table:".
+  > 10. ✅ WaitForClient Stopwatch; sleeps WaitHandle.WaitOne(PollInterval); returns last status on timeout/cancellation without throwing.
+  > 11. ✅ onStatus invoked with first status and then only on substantial change. IsSubstantiallyDifferent checks Stage, ProcessId, ordinal Reason, Endpoint null-aware (ObservedUtc excluded).
+  > 12. ✅ EnumerateClientProcesses disposes every Process object in finally; catches IOE/Win32 per name and continues; HashSet; sorted ascending; not-Windows → empty array.
+  > 13. ✅ No TODO/FIXME/ellipsis/pseudocode/partial (the search only matched the two legitimate `var` usages; the assignment's own pseudocode uses `var elapsed = Stopwatch.StartNew();`).
+  > 14. ✅ Only that file touched.
+  > 
+  > One more subtlety worth double-checking: in `WaitForClient` step order in the spec: check cancellation before elapsed before wait. Mine matches.
+  > 
+  > Another check: Poll's now is captured after process lookup and before decision — matches spec step order "pids = _processLookup(); now = _clock().ToUniversalTime();". For network lookup failure I reuse the same `now`. For process-lookup failure I compute a fresh failedUtc in catch — needed because we never got to compute `now`. Reasonable; the spec doesn't mandate the timestamp there.
+  > 
+  > Also on `Poll()` not throwing for environment: _processLookup/_networkLookup wrapped. The catch filter includes UnauthorizedAccessException, InvalidOperationException, Win32Exception per spec.
+  > 
+  > Regarding reason string for `several_remote_sessions:{remote}` — when Primary is null and remote>1. Primary null also when remote==0; handled before. Good.
+  > 
+  > Also potential concern: the assignment's enumeration step 2 says "raccogli i `Id` in un `HashSet<int>`". I used var processIds = new HashSet<int>(). OK.
+  > 
+  > The XML `<see cref="Process.GetProcessesByName(string)"/>` — resolves to `System.Diagnostics.Process.GetProcessesByName(string)` overload. There are multiple overloads (string) and (string, string). A cref with `(string)` should resolve to the single-arg overload. Yes.
+  > 
+  > The enum member for ObservationFailed is 4, matched.
+  > 
+  > One concern: whether `Array.Empty<int>()` returning `int[]` assigned to `IReadOnlyList<int>` return type of EnumerateClientProcesses is fine — yes.
+  > 
+  > `toArray` uses System.Linq via implicit usings — confirmed for SDK-style net8.0 projects. But wait, `<ImplicitUsings>enable</ImplicitUsings>` in a Windows Forms / WPF project might not include System.Linq? Implicit usings for Microsoft.NET.Sdk includes System.Linq. For Microsoft.NET.Sdk.WindowsDesktop or WPF (UseWPF), implicit usings list includes System.Linq too. In fact implicit usings include System, System.Collections.Generic, System.IO, System.Linq, System.Net.Http, System.Threading, System.Threading.Tasks for all Microsoft.NET.Sdk variants. So fine.
+  > 
+  > Even if somehow System.Linq weren't included, `HashSet<int>.ToArray()` wouldn't compile — but i
+- 16:19:49 `0tpz` **dice**
+  > The file is complete. One robustness tweak: `processIds.ToArray()` relies on `System.Linq` being in the implicit usings set. I'll sort without Linq so compilation never depends on the project's exact implicit-using configuration.
+- 16:19:49 `0tpz` `edit_file` `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs`
+- 16:20:01 `0tpz` giro 7 — 11.9 s, fine `tool_calls`, token 24.553
+- 16:20:01 `0tpz` **ragiona** (859 caratteri)
+  > The file is complete. Let me do a final sanity check that the only `using` directives present are System.Diagnostics and System.Net and nothing else is used that requires an explicit using that's missing:
+  > 
+  > - Exception filter refers to `System.ComponentModel.Win32Exception` fully qualified — OK.
+  > - `UnauthorizedAccessException` in System — implicit.
+  > - `InvalidOperationException` System — implicit.
+  > - `OperatingSystem`, `Array`, `HashSet`, `DateTime`, `TimeSpan`, `StringComparison`, `string` — System / System.Collections.Generic — implicit.
+  > - `CancellationToken`, `Func`, `Action` — System.Threading / System — implicit.
+  > - `Stopwatch`, `Process` — System.Diagnostics — explicit using present.
+  > - `IPEndPoint` — System.Net — explicit using present.
+  > 
+  > All good. Report done in Italian.
+  > 
+  > Acceptance criteria lines in Italian as required. I'll write them clearly.
+- 16:20:01 `0tpz` **dice**
+  > The file is complete and self-contained. Final verification summary against the assignment:
+  > 
+  > - All three types (`ClientArrivalStage`, `ClientArrivalStatus`, `ClientArrivalWatcher`) declared in namespace `NosAi.LiveIntegration`, using only the pre-existing types from the same namespace (never re-declared).
+  > - `Poll()` follows the exact decision order with the letter-perfect reason strings; environment exceptions from the two lookup `Func`s are caught with the specified filter and reported as `ObservationFailed`.
+  > - `WaitForClient` uses a monotonic `Stopwatch`, sleeps on `cancellationToken.WaitHandle.WaitOne(PollInterval)`, never throws on timeout/cancellation, and reports `onStatus` only on substantial change.
+  > - Real process enumeration disposes every `Process` in a `finally`, deduplicates by id, skips per-name enumeration failures, and returns ascending-sorted ids.
+  > - No TODO/FIXME/ellipsis/pseudocode/partial methods; only the one allowed file was written.
+- 16:20:01 `0tpz` `report_done`
+- 16:20:01 `0tpz` **created** `src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs` (0 → 12.469 byte)
+- 16:20:01 `0tpz` rapporto: 14 criteri, 0 blocchi
+- 16:20:01 `0tpz` **fine: completed** — 7 giri, 9 strumenti (1 rifiutati), 1 file, 99.7 s, token 116.829
+
+
+### 16:20:03 · deepseek-v4-flash · `en0i`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/Testing/DeferredEvidence.cs`, `tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs`  
+**Tetti** 28 giri · 50 strumenti · 1500 s
+
+  > Q-SONDA-01-C — Creare DUE file NUOVI: `src/NosAi.Runtime/Testing/DeferredEvidence.cs` e `tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs`. OBIETTIVO IN UNA FRASE Un registro che scrive su disco l'evidenza della chiusura di un test rimandato (T-14, T-05, …), con i criteri richiesti dichiarati in codice, quali sono stati soddisfatti, le misure osservate, la provenienza dei dati e gli alle...
+
+- 16:20:05 `en0i` giro 1 — 2.2 s, fine `tool_calls`, token 5.293
+- 16:20:05 `en0i` **ragiona** (198 caratteri)
+  > Let me start by reading the files I need to understand the context. I should read the existing files in the allowed scope, and check what's around them.
+  > 
+  > Let me list files first and read what I can.
+- 16:20:05 `en0i` **dice**
+  > I'll start by exploring the project structure and reading any files in my scope.
+- 16:20:05 `en0i` `list_files`
+- 16:20:05 `en0i` `list_files` `src/NosAi.Runtime/Testing`
+- 16:20:05 `en0i` `list_files` `tests/NosAi.Runtime.Tests/Testing`
+- 16:23:26 `en0i` giro 2 — 200.8 s, fine `tool_calls`, token 42.923
+- 16:23:26 `en0i` **ragiona** (116.289 caratteri, troncato)
+  > The files I'm allowed to read/write are just the two target files. Both target files don't exist yet (the listing of the folders doesn't include them). Wait — but rules say "Read before you write. Never guess the contents of a file you have not read." The two files to create are new, so there's nothing to read. But I could benefit from reading other files for context (naming conventions, etc.) — but those are outside my allowed scope, and reads of out-of-scope files would be refused.
+  > 
+  > Let me check whether the target files exist at all - neither listing shows them. So they're new files. I can't read TestEvidence.cs (not in perimeter - reading refused). The assignment explicitly says file NOT in perimeter, don't read it, but provides the code snippet verbatim for JsonOptions.
+  > 
+  > Let me check whether the two target files already exist by trying to read them. Actually the directory listings don't show DeferredEvidence.cs nor DeferredEvidenceTests.cs, so they don't exist. But to be safe, try reading both.
+  > 
+  > Also, the assignment describes conventions verified in CaptureEngineTests.cs:1-25 and TestEvidence.cs:170-174, but those files are outside the perimeter. I can't read them. The instructions say I may only touch those two files. Reading outside perimeter likely refused by the tool layer. But let me try to verify context — maybe reading is refused. Rule 7: if a read was refused as out of scope, say the check could not be made.
+  > 
+  > I need info about:
+  > - DataClassification.cs (namespace NosAi.Runtime.Contracts, enum DataSourceKind). That's in src/NosAi.Runtime/Contracts/DataClassification.cs. Outside my perimeter but assignment quotes the enum fully (lines 7-14). The assignment says "Tipo già esistente da usare (non ridichiararlo)". I need to make sure the using/namespace import is right. The namespace is NosAi.Runtime.Contracts, quoted. But I need to verify where DataSourceKind lives so the code compiles. Given the assignment says it's `src/NosAi.Runtime/Contracts/DataClassification.cs:7-14` namespace `NosAi.Runtime.Contracts`, we just need `using NosAi.Runtime.Contracts;`.
+  > 
+  > Let me attempt to read files that are outside perimeter to check the conventions, but they'll probably be refused. It's better to not waste calls; the assignment already gives conventions. Actually let me try to read the target files (they may not exist). Reading nonexistent files will error. Let me try reading each of the two target paths to confirm they don't exist; if they don't exist the read will return an error, which tells us nothing bad. Actually simpler: the listing of both directories didn't include them, so they're absent.
+  > 
+  > Let me try to read CaptureEngineTests.cs and TestEvidence.cs anyway? They're outside the allowed paths so the tool will refuse. The rules say paths I may touch are only the two files. Read_file of out-of-scope probably returns refusal. But I could still check a couple of files in scope? There are none other in scope. All context is given in the assignment in great detail. I'll rely on the assignment.
+  > 
+  > Let me now design the code carefully.
+  > 
+  > Key decisions:
+  > 1. Namespace: `NosAi.Runtime.Testing` for the source file, needs `using NosAi.Runtime.Contracts;` to reference DataSourceKind. Need to check that DataSourceKind is actually in NosAi.Runtime.Contracts — the assignment quotes it verbatim, so I trust it. Also need `using System.Globalization;`, `using System.Text.Json;`, `using System.Text.Json.Serialization;`.
+  > 
+  > 2. Records - exact:
+  > ```
+  > public sealed record DeferredCriterion(string Id, string Description, bool Satisfied, string? Detail = null);
+  > 
+  > public sealed record DeferredEvidenceRecord(
+  >     string TestId,
+  >     DateTime ClosedUtc,
+  >     bool Complete,
+  >     IReadOnlyList<DeferredCriterion> Criteria,
+  >     IReadOnlyDictionary<string, string> Measurements,
+  >     DataSourceKind Provenance,
+  >     IReadOnlyList<string> Attachments,
+  >     string? IncompleteReason);
+  > 
+  > public sealed record DeferredEvidencePointer(string TestId, DateTime ClosedUtc, string Eviden
+- 16:23:26 `en0i` **dice**
+  > Both target files don't exist yet (confirmed by the directory listings). The assignment gives me all context I need: the exact surface, the verbatim `JsonOptions` snippet, and the `DataSourceKind` enum from `NosAi.Runtime.Contracts`. The reference files cited (`TestEvidence.cs`, `CaptureEngineTests.cs`) are out of scope, so I will not attempt to read them. I'll create the two new files now.
+- 16:23:26 `en0i` `write_file` `src/NosAi.Runtime/Testing/DeferredEvidence.cs`
+- 16:23:37 `en0i` giro 3 — 11.7 s, fine `tool_calls`, token 45.427
+- 16:23:37 `en0i` **ragiona** (24 caratteri)
+  > Now write the test file.
+- 16:23:37 `en0i` **dice**
+  > Now the test file:
+- 16:23:37 `en0i` `write_file` `tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs`
+- 16:23:43 `en0i` giro 4 — 5.7 s, fine `tool_calls`, token 46.098
+- 16:23:43 `en0i` **ragiona** (2.306 caratteri)
+  > Let me re-verify the two files by reading them back to confirm content is complete and consistent (both are in scope).
+  > 
+  > Potential issue: In test file, `NewRecord("T-05", ..., complete: false, incompleteReason: ...)` — arguments after named `complete:` that is in correct position? Signature (string testId, DateTime closedUtc, IReadOnlyDictionary measurements, bool complete, string? incompleteReason = null). In the call I passed first three positionally, then `complete: false`, `incompleteReason: "..."`. Named args in correct position followed by another named arg in correct position — fine. In second call `complete: true` last — fine.
+  > 
+  > In test 1 record construction I used all named arguments — order doesn't matter when all named. Fine.
+  > 
+  > Verify the reads of files to double-check content correctness and that no issue introduced.
+  > 
+  > One thing: the source file writes XML remarks containing `<c>` element for paths... `<c>` is valid XML doc. Good.
+  > 
+  > Also confirm nothing references file contents wrong; verify the line "DeferredEvidenceRecord?" in ReadLatest etc.
+  > 
+  > Also verify test uses `Assert.All(t14, criterion => Assert.Null(criterion.Detail))`. OK.
+  > 
+  > Potential problem: `Path.GetFileName(Path.GetDirectoryName(firstPath)!)` — DirectoryName exists.
+  > 
+  > Also for suffix `_2` assertion: exactly "20260908_120000_000Z_2".
+  > 
+  > But wait — second write's attempted stamp folder: does the first evidence folder name equal "20260908_120000_000Z" exactly? DateTime 2026-09-08T12:00:00.000 → stamp format "yyyyMMdd_HHmmss_fff" → "20260908_120000_000" + "Z". Yes.
+  > 
+  > Now double check: in source file, when freeDirectory is null after loop, we throw IOException with message referencing original `directory`. Right.
+  > 
+  > Let me read back both files for final verification and check exactness against spec (records one-liners? spec wrote records one-line but multi-line is fine as long as they compile with the same signature; acceptance criteria focus on surface).
+  > 
+  > Actually, wait: assignment asked records exactly as in PASSO 1 — same signature but formatting flexible. Mine are formatted multi-line with identical parameter lists and default. DeferredCriterion on a single line. Good.
+  > 
+  > One more check: The class XML `<remarks>` language is English - yes.
+  > 
+  > Now read back files to ensure nothing got corrupted, then report.
+- 16:23:43 `en0i` **dice**
+  > Both files are written. Let me read them back to verify completeness and correctness before reporting.
+- 16:23:43 `en0i` `read_file` `src/NosAi.Runtime/Testing/DeferredEvidence.cs`
+- 16:23:43 `en0i` `read_file` `tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs`
+- 16:24:02 `en0i` giro 5 — 19.3 s, fine `tool_calls`, token 54.826
+- 16:24:02 `en0i` **ragiona** (3.558 caratteri)
+  > Both files look complete and correct.
+  > 
+  > Wait: one detail in test 1 — I named arguments: `"T-14"`, then `new DateTime(...)` positional, then `Complete: true, Criteria: ...` named. After the first positional argument `"T-14"`... positional argument followed by named argument — always allowed (named trailing). Good.
+  > 
+  > Test class uses Guid and DateTime — System usings added explicitly.
+  > 
+  > One potential issue in Write: spec step 6 exception when directory taken message `evidence_directory_taken:{directory}`: my message matches and `directory` is still the original stamp-based directory when all taken. OK.
+  > 
+  > Another nuance: In Write the exception `IOException($"evidence_directory_taken:{directory}")`. In a corner case where stamp exists and all of _2.._99 exist — the directory variable holds original stamp path. Good.
+  > 
+  > Potential compile issue: In test 2 call NewRecord with named arg `complete:` and `incompleteReason:` after three positional args in correct positions — non-trailing named args (C# 7.2) valid.
+  > 
+  > In test 1, `with { Satisfied = true }` on record element of array typed IReadOnlyList<DeferredCriterion>: element is DeferredCriterion; with-expression OK.
+  > 
+  > Another check: `Assert.Equal(new List<string> { ... }, latest.Attachments);` overload resolution: Assert.Equal<T>(IEnumerable<T>, IEnumerable<T>) applies. Fine.
+  > 
+  > Also check: CS1591 isn't relevant for test project possibly.
+  > 
+  > Now consider one more potential compile problem: The XML doc `<param>` entries in a record declaration. The compiler treats record's primary constructor... For a positional record `public sealed record DeferredEvidenceRecord(...);` its generated constructor parameters are TestId etc. XML <param> tags in the type doc comment: The compiler supports <param> in the class-level doc comment to document primary-constructor parameters (C# 12 primary constructors) and positional records since C# 9? For records the XML doc comment that precedes the record declaration is attached to the record (type). Docs for generated constructor may merge. I'm fairly confident <param> tags on record type docs are accepted; the C# language design for records says "the XML doc comments for record parameters are placed in the record's doc comment with <param> tags". Yes — for records, the parameter docs go in the record type's doc comment. Good, no warnings.
+  > 
+  > One more consideration: `<see cref="DeferredCriterion.Satisfied"/>` — Satisfied is a property; cref valid. `DeferredCriterion` is in same namespace. Fine.
+  > 
+  > Also exception XML tags reference IOException etc. Need using System.IO — implicit for the production project. OK.
+  > 
+  > Now confirm that no other files were touched. Only wrote the two new files.
+  > 
+  > Do I need to double check data classification namespace? Assignment says `src/NosAi.Runtime/Contracts/DataClassification.cs:7-14`, namespace NosAi.Runtime.Contracts. Trust it. Since cannot read outside-scope file, note that it's unverified but per assignment.
+  > 
+  > One last sanity check on the naming: test file class `DeferredEvidenceTests` - no conflict.
+  > 
+  > Everything good. Also confirm acceptance criteria about exact public surface: only 3 consts, 4 methods, plus private static readonly field JsonOptions. Records are top-level types - acceptable per PASSO 1.
+  > 
+  > CriteriaFor unknown returns empty without throwing — yes.
+  > 
+  > Root null/blank → DefaultRoot — yes.
+  > 
+  > Now report in Italian.
+  > 
+  > Note also unverified: build/tests not run by me; reviewer must build.
+  > 
+  > Additional note about the extra tests added beyond the four required (to make AC 7, 8, 9 observable) — mention them.
+- 16:24:02 `en0i` **dice**
+  > Both files are complete and I've re-read them in full to verify. Now I'll report.
+- 16:24:02 `en0i` `report_done`
+- 16:24:02 `en0i` **created** `src/NosAi.Runtime/Testing/DeferredEvidence.cs` (0 → 11.555 byte)
+- 16:24:02 `en0i` **created** `tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs` (0 → 9.618 byte)
+- 16:24:02 `en0i` rapporto: 14 criteri, 2 blocchi
+- 16:24:02 `en0i` **fine: blocked** — 5 giri, 8 strumenti (0 rifiutati), 2 file, 239.8 s, token 194.567
+
+
+### 16:24:41 · deepseek-v4-flash · `nltl`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`  
+**Tetti** 12 giri · 20 strumenti · 600 s
+
+  > Q-SONDA-01-A2 — Correggere un errore di compilazione in `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`. ERRORE REALE, DAL COMPILATORE (dotnet build -c Release, appena eseguito) ``` BroadWirePrelude.cs(119,115): error CS1525: 'static' non è un termine valido nell'espressione BroadWirePrelude.cs(119,115): error CS1003: Errore di sintassi. È previsto ',' ``` RIGA 119, TESTO ESATTO OG...
+
+- 16:24:43 `nltl` giro 1 — 1.6 s, fine `tool_calls`, token 2.372
+- 16:24:43 `nltl` **ragiona** (59 caratteri)
+  > Let me start by reading the file to understand the context.
+- 16:24:43 `nltl` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:24:45 `nltl` giro 2 — 1.9 s, fine `tool_calls`, token 9.310
+- 16:24:45 `nltl` **ragiona** (454 caratteri)
+  > I've read the file completely. Line 119 contains the problematic code:
+  > 
+  > ```
+  >         : this(source, IntPtr.Zero, capacityBytes, window ?? TimeSpan.FromSeconds(DefaultWindowSeconds), clock ?? static () => DateTime.UtcNow)
+  > ```
+  > 
+  > The fix is to wrap the static lambda in parentheses:
+  > ```
+  >         : this(source, IntPtr.Zero, capacityBytes, window ?? TimeSpan.FromSeconds(DefaultWindowSeconds), clock ?? (static () => DateTime.UtcNow))
+  > ```
+  > 
+  > Let me make the edit.
+- 16:24:45 `nltl` **dice**
+  > I've read the full file. Line 119 contains the exact problematic text described. Now I'll apply the minimal fix: wrapping the `static` lambda in parentheses so it is a typed expression on the right side of `??`.
+- 16:24:45 `nltl` `edit_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:24:46 `nltl` giro 3 — 1.7 s, fine `tool_calls`, token 9.480
+- 16:24:46 `nltl` **ragiona** (126 caratteri)
+  > Now let me re-read the modified line to verify parentheses balance and that the `: this(...)` call has exactly five arguments.
+- 16:24:46 `nltl` **dice**
+  > Now I re-read the modified region to verify the change.
+- 16:24:46 `nltl` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs`
+- 16:24:55 `nltl` giro 4 — 9.0 s, fine `tool_calls`, token 10.948
+- 16:24:55 `nltl` **ragiona** (1.991 caratteri)
+  > Let me verify the parenthesization on line 119:
+  > 
+  > `        : this(source, IntPtr.Zero, capacityBytes, window ?? TimeSpan.FromSeconds(DefaultWindowSeconds), clock ?? (static () => DateTime.UtcNow))`
+  > 
+  > Open parentheses in the `this(...)` call chain:
+  > - `this(` ... argument list starts
+  > - `window ?? TimeSpan.FromSeconds(` — FromSeconds has its own open paren, closed with `)`
+  > - `clock ?? (static () => DateTime.UtcNow)` — open paren before static lambda, closed after `DateTime.UtcNow`
+  > - then the final `)` closes the `this(...)` call.
+  > 
+  > Let me count: `this(` (1 open), `TimeSpan.FromSeconds(` (2 open)... `)` closes FromSeconds. Then `(static () => DateTime.UtcNow)` open and closed. Then final `)` closes `this(`. Yes balanced.
+  > 
+  > The final `clock ?? (static () => DateTime.UtcNow))`:
+  > - `clock ?? (` opens paren for lambda
+  > - `static () => DateTime.UtcNow`
+  > - `)` closes lambda paren
+  > - `)` closes `this(...)` call
+  > 
+  > The line ends with `))` — two closing parens. Good.
+  > 
+  > Arguments of `: this(...)`:
+  > 1. `source`
+  > 2. `IntPtr.Zero`
+  > 3. `capacityBytes`
+  > 4. `window ?? TimeSpan.FromSeconds(DefaultWindowSeconds)`
+  > 5. `clock ?? (static () => DateTime.UtcNow)`
+  > 
+  > Five arguments. 
+  > 
+  > The `??` is now directly followed by `(static () =>` not just `static () =>` — acceptance criterion 1: "La riga 119 non contiene più la sequenza 'static () =>' preceduta direttamente da '??' senza parentesi." Now `?? (` precedes `static`, so the sequence `?? static () =>` no longer appears. Good.
+  > 
+  > Criterion 2: The last argument is `clock ?? (static () => DateTime.UtcNow)` which is a Func<DateTime> returning DateTime.UtcNow when clock is null. Good.
+  > 
+  > Criterion 4: only line 119 changed. The edit was a single-line replacement of text that only appears on line 119. Criterion 5: no other file changed.
+  > 
+  > I've read the file in full; the file is 628 lines both before and after, and only the one substring was replaced. To be thorough about criterion 4/5, the edit tool reported 1 replacement in one file.
+  > 
+  > Now report done in Italian.
+- 16:24:55 `nltl` **dice**
+  > The fix is applied and verified. Line 119 is now:
+  > 
+  > `        : this(source, IntPtr.Zero, capacityBytes, window ?? TimeSpan.FromSeconds(DefaultWindowSeconds), clock ?? (static () => DateTime.UtcNow))`
+  > 
+  > Parentheses analysis: `this(` is closed by the final `)`, `TimeSpan.FromSeconds(` is closed by its `)`, and the lambda is wrapped by `(static () => DateTime.UtcNow)` — so the line ends with `...UtcNow))` where the inner `)` closes the lambda wrapper and the outer `)` closes `this(`. The five arguments are `source`, `IntPtr.Zero`, `capacityBytes`, `window ?? TimeSpan.FromSeconds(DefaultWindowSeconds)`, and `clock ?? (static () => DateTime.UtcNow)`.
+- 16:24:55 `nltl` `report_done`
+- 16:24:55 `nltl` **modified** `src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs` (23.149 → 23.151 byte)
+- 16:24:55 `nltl` rapporto: 5 criteri, 0 blocchi
+- 16:24:55 `nltl` **fine: completed** — 4 giri, 4 strumenti (0 rifiutati), 1 file, 14.3 s, token 32.110
+
+
+### 16:29:49 · deepseek-v4-flash · `0ii3`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`, `tests/NosAi.Runtime.Tests/LiveIntegration/PreLoginCaptureSessionTests.cs`  
+**Tetti** 40 giri · 80 strumenti · 2400 s
+
+  > Q-SONDA-01-D — Creare DUE file NUOVI: `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs` e `tests/NosAi.Runtime.Tests/LiveIntegration/PreLoginCaptureSessionTests.cs`. OBIETTIVO IN UNA FRASE Una sessione che si arma prima che il client di gioco esista, riconosce il suo arrivo, scrive in un file `.noscap` prima i pacchetti già catturati di quell'endpoint e poi quelli che continuan...
+
+- 16:29:53 `0ii3` giro 1 — 4.0 s, fine `tool_calls`, token 11.864
+- 16:29:53 `0ii3` **ragiona** (1.798 caratteri)
+  > Let me start by exploring the working directory structure to understand what I'm working with, and reading the files I need within my allowed scope.
+  > 
+  > My allowed paths:
+  > - src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs
+  > - tests/NosAi.Runtime.Tests/LiveIntegration/PreLoginCaptureSessionTests.cs
+  > 
+  > Let me look at the structure first to understand the layout. I can only touch those two files, but I can read other files for context? Wait, rule says "Paths you may touch (globs, relative to the working directory)" - that's about touching (writing). Reading: read_file has "allowed scope" checks too. Let me check: "Read a text file inside the allowed scope." So reading outside scope may be refused. But the assignment says not to read the files from which types come (they're all given). But to match surrounding code style, maybe read some files? The allowed scope for reading seems restricted to the same globs. Let me check what files are in the working directory first, then attempt to read within my two allowed paths — but they're new files (do not exist yet). I can look at directory structure to match conventions... but reading outside my two paths may be refused.
+  > 
+  > Let me list files first.
+  > 
+  > Actually I should just start. Let me list the repository, and search for files that would inform style: e.g. existing capture folder. But those reads may be refused; the instructions say if refused, note that check couldn't be made. The assignment's PARTE 0 says types are already copied "alla lettera", so I don't need to read those source files. The two files I must create are new.
+  > 
+  > Let me still inspect the directory to confirm the two files don't exist yet and to see naming conventions of sibling files (paths visible in list_files output with scope markers).
+  > 
+  > Let me start.
+- 16:29:53 `0ii3` `list_files`
+- 16:29:55 `0ii3` giro 2 — 2.7 s, fine `tool_calls`, token 19.725
+- 16:29:55 `0ii3` **ragiona** (634 caratteri)
+  > The two files I need to create don't exist yet. I cannot read outside my allowed paths. But the assignment says PARTE 0 gives all types verbatim. Let me check whether my target directories exist and if my target files exist. Let me list files in the specific dirs at depth. Since list_files returns relative paths, and listing deeper directories might be informative, but read tools are constrained to allowed paths. Files in my scope are the two target files. They don't exist yet. I should just create them carefully.
+  > 
+  > Let me check directory listing for the target dirs to see siblings (naming conventions), which list_files allows.
+- 16:29:55 `0ii3` `list_files` `src/NosAi.Runtime/LiveIntegration`
+- 16:29:55 `0ii3` `list_files` `tests/NosAi.Runtime.Tests/LiveIntegration` — **rifiutato**: ERROR [NOT_FOUND] directory does not exist: tests/NosAi.Runtime.Tests/LiveIntegration
+- 16:44:59 `0ii3` **giro 3 fallito** — HTTP 0: request timed out after 300000 ms
+- 16:44:59 `0ii3` **fine: api_error** — 3 giri, 3 strumenti (1 rifiutati), 0 file, 910.0 s, token 31.589 — HTTP 0: request timed out after 300000 ms
+
+
+### 16:46:49 · deepseek-v4-flash · `1ndm`
+
+**Cartella** `C:\Users\volob\Desktop\NosAiProject`  
+**Perimetro** `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`  
+**Tetti** 24 giri · 40 strumenti · 1800 s
+
+  > Q-SONDA-01-D1 — Creare UN SOLO file NUOVO: `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`. OBIETTIVO IN UNA FRASE Una sessione che, quando il client di gioco arriva, ritaglia dal buffer largo i pacchetti del suo endpoint, li scrive in un `.noscap` insieme a quelli che continuano ad arrivare, e si ferma da sola quando ha visto sul filo il caricamento del personaggio. VINCOLO ...
+
+- 16:46:51 `1ndm` giro 1 — 2.1 s, fine `tool_calls`, token 7.513
+- 16:46:51 `1ndm` **ragiona** (191 caratteri)
+  > Let me start by reading the current state of the working directory and the file I need to create (if it exists), plus check the surrounding files to match the style.
+  > 
+  > Let me list files first.
+- 16:46:51 `1ndm` `list_files` `src/NosAi.Runtime/LiveIntegration/Capture`
+- 16:46:51 `1ndm` `search_files` `class PreLoginCaptureSession|PreLoginCaptureOutcome|PreLoginOutcomeKind`
+- 16:49:19 `1ndm` giro 2 — 147.5 s, fine `tool_calls`, token 30.757
+- 16:49:19 `1ndm` **ragiona** (76.306 caratteri, troncato)
+  > The target file doesn't exist yet. My scope is only `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`. I cannot read the other files (outside scope). The assignment says the types are copied verbatim, so I don't need to read them.
+  > 
+  > Let me double check whether there's anything already in the target path (no match means file absent). Let me also look at whether there's an existing style guide from files I can read... I can't read any files outside my glob. My allowed glob is only the target file. So I should just write the file.
+  > 
+  > Wait: "Read before you write. Never guess the contents of a file you have not read." — The target file doesn't exist, per search results. So no read needed; write it.
+  > 
+  > Let me carefully compose the file content based on all the specification steps.
+  > 
+  > Let me lay out the required surface:
+  > 
+  > Namespace: `NosAi.LiveIntegration.Capture`
+  > 
+  > Using directives at top: `System.Collections.Concurrent`, `System.Diagnostics`, `System.Net`, `NosAi.LiveIntegration`, `NosAi.Runtime.Contracts`, `NosAi.Runtime.Perception.Network`.
+  > 
+  > Note: ImplicitUsings enabled in C# net8, so System, System.Collections.Generic, System.Linq, System.Threading, System.Threading.Tasks are implicitly included. But the given types: `IPAddress`, `IPEndPoint` in `System.Net`. `ReadOnlyMemory`, `TimeSpan`, `DateTime` in System. `CancellationToken` in System.Threading. `Thread` in System.Threading. `Stopwatch` in System.Diagnostics. `ConcurrentQueue<T>` in System.Collections.Concurrent. `HashSet`, `IReadOnlyList` in System.Collections.Generic (implicit). `StringComparer` in System.
+  > 
+  > The file needs full type declarations:
+  > 
+  > ```
+  > public enum PreLoginOutcomeKind { Complete = 0, Partial = 1, Failed = 2 }
+  > 
+  > public sealed record PreLoginCaptureOutcome(...)
+  > ```
+  > 
+  > PreLoginCaptureOutcome fields in order:
+  > 1. PreLoginOutcomeKind Kind
+  > 2. string? CapturePath
+  > 3. IPEndPoint? Endpoint
+  > 4. long PacketsBeforeDiscovery
+  > 5. long PacketsAfterDiscovery
+  > 6. long PacketsWritten
+  > 7. IReadOnlyList<string> OpcodesObserved
+  > 8. IReadOnlyList<string> OpcodesMissing
+  > 9. long DroppedForCapacity
+  > 10. long DroppedForAge
+  > 11. bool HandshakeMayBeMissing
+  > 12. int VitalsReadings
+  > 13. DataSourceKind VitalsProvenance
+  > 14. string? VitalsReason
+  > 15. string? Reason
+  > 
+  > Plus computed property VitalsSatisfied => VitalsReadings > 0 && VitalsProvenance == DataSourceKind.Live;
+  > 
+  > Record property names — record positional parameters produce properties with the same names. Note the record is declared with parameter names that are PascalCase in the spec. Actually, in C# records, positional parameter names become property names capitalized as written. The spec writes `PreLoginOutcomeKind Kind, string? CapturePath, ...` — these are the parameter names as written, e.g. `Kind`, `CapturePath`. Wait, but conventional record positional params are usually camelCase; here the spec explicitly writes PascalCase parameter names, so properties will be PascalCase exactly. Good — matches the outcome usage like `VitalsSatisfied`, `CapturePath`.
+  > 
+  > Session class:
+  > 
+  > ```
+  > public sealed class PreLoginCaptureSession : IDisposable
+  > {
+  >     public const string OpcodeStat = "stat";
+  >     public const string OpcodeEnter = "in";
+  >     public const string OpcodeInventory = "ivn";
+  >     public const string OpcodeEquip = "equip";
+  > 
+  >     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromMinutes(15);
+  >     public static readonly TimeSpan DefaultPollInterval = TimeSpan.FromMilliseconds(50);
+  > 
+  >     public PreLoginCaptureSession(BroadWirePrelude prelude, ClientArrivalWatcher watcher, string capturePath, DataSourceKind streamProvenance = DataSourceKind.Live, TimeSpan? timeout = null, TimeSpan? pollInterval = null);
+  >     public PreLoginCaptureOutcome Run(CancellationToken cancellationToken = default, Action<string>? onStatus = null);
+  >     public void Dispose();
+  > }
+  > ```
+  > 
+  > Constructor validations:
+  > - `ArgumentNullException.ThrowIfNull(prelude)` — ThrowIfNull requires non-nullable args; with nullable enabled, `ArgumentNullException.ThrowIfNull(prelude)` is
+- 16:49:19 `1ndm` **dice**
+  > The target file does not exist yet and the surrounding files are out of scope, so I cannot read them; the type surface given in the assignment is declared complete and verified by the architect. I'll now write the single new file with the full content.
+- 16:49:19 `1ndm` `write_file` `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`
+- 16:49:20 `1ndm` giro 3 — 1.9 s, fine `tool_calls`, token 30.971
+- 16:49:20 `1ndm` **ragiona** (433 caratteri)
+  > The file was written. I should not re-read it entirely more than once per the size constraint ("scrivi il file in una sola operazione di scrittura e non rileggerlo per intero più di una volta"). I haven't read it back at all yet. The constraint says write in one operation and not re-read it entirely more than once — meaning I may re-read once to verify. Let me re-read once to verify completeness/correctness before reporting done.
+- 16:49:20 `1ndm` **dice**
+  > The file is written. Per the constraint I may re-read it once in full to verify; let me do that.
+- 16:49:20 `1ndm` `read_file` `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs`
+- 16:49:49 `1ndm` giro 4 — 28.9 s, fine `tool_calls`, token 40.203
+- 16:49:49 `1ndm` **ragiona** (10.074 caratteri, troncato)
+  > The file reads back clean and matches the specification point by point. Let me cross-check a few remaining details:
+  > 
+  > 1. All needed types are from the listed namespaces with proper usings. `DataSourceKindText.ToWire` extension — need `using NosAi.Runtime.Contracts;` present. ✓
+  > 
+  > 2. `NosTaleWorldProtocolDecoder` and `NosTaleWorldDecoder`, `ObservedPacket`, etc. — `using NosAi.Runtime.Perception.Network;` ✓
+  > 
+  > 3. Public surface exact per PASSO 2 ✓.
+  > 
+  > 4. PreLoginCaptureOutcome 15 fields in order ✓ + VitalsSatisfied ✓.
+  > 
+  > 5. Tee source: implements IPacketSource + IFinitePacketSource, backlog first then prelude, enqueues into ConcurrentQueue ✓.
+  > 
+  > 6. Ended ✓.
+  > 
+  > 7. handshakeMayBeMissing detection ✓.
+  > 
+  > 8. Criterion only stat/in/(ivn||equip) ✓.
+  > 
+  > 9. Precedence with exact strings ✓.
+  > 
+  > 10. streamProvenance != Live never Complete: condition 5 returns Partial for criterion met when non-Live. Note — if criterion met and non-Live, exit cause would be "criterion_met"; condition 5 catches. But could cause be non "criterion_met" while criterion satisfied and non-live? Loop exit order: if criterion is met at a check, exit criterion_met. So condition 5 applies. But what if cause == "timeout" and criterion satisfied and non-live? Loop order checks timeout before criterion... then condition 3 requires !CriterionMet → false; condition 5 CriterionMet && non-Live → Partial stream_not_live. Good, non-Live never complete either way.
+  > 
+  > 11. Writer thread try/catch, capture_write_failed + type, no rethrow ✓.
+  > 
+  > 12. Dispose doesn't dispose prelude ✓.
+  > 
+  > 13. No TODO/FIXME/ellipsis/pseudocode/partial methods ✓.
+  > 
+  > 14. No other file modified — only the one file written ✓.
+  > 
+  > One more check on the possible issue: `_vitalsProvenance` is a struct enum field default Unknown ✓.
+  > 
+  > The struct/field mutation: OnFrame runs on the main thread only, fine.
+  > 
+  > A couple of compile-risk points worth double checking:
+  > 
+  > - `catch (Exception ex)` — spec says catch `Exception`. Fine. Catching all exceptions without rethrow. Note also possibility that the code compiles fine.
+  > 
+  > - `new Thread(() => {...})` lambda to ThreadStart ✓.
+  > 
+  > - `Array.Empty<CapturedPacket>()` as IReadOnlyList<CapturedPacket> ✓.
+  > 
+  > - `NosTaleWorldFramer.Factory(_streamProvenance)` returns Func<StreamDirection, IGameStreamFramer> ✓ matches constructor param type `Func<StreamDirection, IGameStreamFramer>?`.
+  > 
+  > - `CaptureFile.Record(tee, _capturePath, writerCts.Token, TimeSpan.FromMilliseconds(200))` — Record signature (IPacketSource source, string path, CancellationToken cancellationToken = default, TimeSpan? readTimeout = null) ✓ tee is IPacketSource.
+  > 
+  > - Record header uses `source.ServerAddress` and `source.ServerPort` — tee provides ✓.
+  > 
+  > - `engine.FrameProduced += OnFrame;` — event Action<CapturedGameFrame>? and OnFrame is `void OnFrame(CapturedGameFrame frame)` — method group conversion to Action<CapturedGameFrame> ✓. And -= for unsubscribe: after one subscription it works; also unsubscription of never-subscribed would be fine anyway.
+  > 
+  > - InRecord `prelude.FocusOn(endpoint.Address, endpoint.Port)` returns PreludeSlice with Packets IReadOnlyList ✓.
+  > 
+  > - Use of `Ipv4TcpParser.Parse(packet.Raw.Span)` returns ParsedPacket with Ok and Syn ✓. But wait — `packet.Raw.Span` requires `ReadOnlyMemory<byte>.Span` — fine.
+  > 
+  > - `OnFrame` parameter `CapturedGameFrame frame` and access `frame.Frame.Source`, `frame.Frame.Body` where Frame is GameFrame with `Body` ReadOnlyMemory<byte>. `NosTaleWorldDecoder.Decode(frame.Frame.Body.Span)` — ReadOnlySpan<byte> param ✓.
+  > 
+  > - ObservedPacket ctor arg order: CapturedUtc, Direction, RemoteHost, RemotePort, Payload, Source. I pass frame.TimestampUtc, NetworkDirection..., _endpointHost, _endpointPort, frame.Frame.Body, frame.Frame.Source ✓ types line up.
+  > 
+  > - `decoded.Vitals is PlayerVitals vitals` — DecodedObservations.Vitals type PlayerVitals? with pattern `is PlayerVitals vitals` gives PlayerVitals (non-null) ✓.
+  > 
+  > - DataSourceKindText.ToWire extension invocation: `vitals.Source.ToWire()` ✓ namespace imported; also `_streamPr
+- 16:49:49 `1ndm` **dice**
+  > The file reads back correctly and fully matches the specification. I'm done: the single new file was written in one operation and re-read once for verification, no other file was touched.
+- 16:49:49 `1ndm` `report_done`
+- 16:49:49 `1ndm` **created** `src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs` (0 → 19.274 byte)
+- 16:49:49 `1ndm` rapporto: 14 criteri, 0 blocchi
+- 16:49:49 `1ndm` **fine: completed** — 4 giri, 5 strumenti (0 rifiutati), 1 file, 180.7 s, token 109.444
 

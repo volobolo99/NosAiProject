@@ -329,6 +329,14 @@ si legge da `DEEPSEEK_API_KEY` nell'ambiente del processo, **mai** scritta
 nel sorgente (punto 12; la convenzione è già quella di
 `tools/deepseek-mcp/src/config.mjs:99`).
 
+**Limiti di generazione, misurati il 2026-09-08.** Il 14B su Colab passa da un
+tunnel Cloudflare che chiude a 100 s: una generazione lunga (13 test in un colpo)
+torna `524`. Si spezza in blocchi, oppure la stesura dei test va al 7B locale, che
+e' il suo ruolo. Il reasoner DeepSeek spende token di ragionamento prima di
+emettere: `timeout` in `orchestrator_mcp.py` sta a 300 s, e una specifica esaustiva
+si chiede comunque a fette. Claude assembla i pezzi: l'integrazione resta sua
+(punto 18).
+
 **Stack dei test.** Questo repository è C#/.NET: si verifica con
 `dotnet build NosAi.sln -c Release` e `dotnet test tests/<progetto>` su
 xUnit. Non c'è pytest e non va introdotto.
