@@ -1424,14 +1424,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private string? ResolveRuntimeDll()
-    {
-        var nextToPanel = Path.Combine(AppContext.BaseDirectory, "NosAi.Runtime.dll");
-        if (File.Exists(nextToPanel))
-            return nextToPanel;
-        var release = Path.Combine(_repoRoot, "src", "NosAi.Runtime", "bin", "Release", "net8.0-windows", "NosAi.Runtime.dll");
-        return File.Exists(release) ? release : null;
-    }
+    private string? ResolveRuntimeDll() => RuntimeDllLocator.Resolve(_repoRoot);
 
     private void AppendLog(LogEntry entry)
     {

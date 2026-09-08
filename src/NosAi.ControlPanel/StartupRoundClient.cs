@@ -165,15 +165,5 @@ public sealed class StartupRoundClient
         }
     }
 
-    private string? ResolveRuntimeDll()
-    {
-        string nextToPanel = Path.Combine(AppContext.BaseDirectory, "NosAi.Runtime.dll");
-        if (File.Exists(nextToPanel))
-        {
-            return nextToPanel;
-        }
-
-        string release = Path.Combine(_repoRoot, "src", "NosAi.Runtime", "bin", "Release", "net8.0-windows", "NosAi.Runtime.dll");
-        return File.Exists(release) ? release : null;
-    }
+    private string? ResolveRuntimeDll() => RuntimeDllLocator.Resolve(_repoRoot);
 }

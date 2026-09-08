@@ -15,9 +15,8 @@ public static class AutoSetup
     public static IReadOnlyList<SetupItem> Inspect(string repoRoot, string? observeGame = null, bool? elevated = null)
     {
         var python = ToolRunner.FindPython();
-        var runtimeDll = Path.Combine(AppContext.BaseDirectory, "NosAi.Runtime.dll");
-        if (!File.Exists(runtimeDll))
-            runtimeDll = Path.Combine(repoRoot, "src", "NosAi.Runtime", "bin", "Release", "net8.0-windows", "NosAi.Runtime.dll");
+        var runtimeDll = RuntimeDllLocator.Resolve(repoRoot)
+            ?? Path.Combine(repoRoot, "src", "NosAi.Runtime", "bin", "Release", "net8.0-windows", "NosAi.Runtime.dll");
 
         var phoneKey = Path.Combine(repoRoot, Gate1HostOptions.DefaultTrustedKeyPath);
         var identity = Path.Combine(repoRoot, RuntimeIdentity.DefaultPath);
