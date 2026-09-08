@@ -27,9 +27,17 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+try:  # avviato come script, la via normale (Ispettore.cmd)
+    from chat_page import CHAT_PAGE
+except ImportError:  # importato come modulo del pacchetto
+    from .chat_page import CHAT_PAGE
+
 PORT = int(os.environ.get("NOSAI_INSPECTOR_PORT", "8787"))
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVENT_LOG = REPO_ROOT / "data" / "traffic" / "events.jsonl"
+# Il testo delle deleghe: un record per scambio concluso, scritto dallo stesso
+# orchestratore che scrive gli eventi.
+CHAT_LOG = REPO_ROOT / "data" / "traffic" / "chats.jsonl"
 
 OLLAMA_LOCAL = "http://localhost:11434"
 SYNC_CHANNEL = "nosai-worker-sync-volob"
@@ -47,6 +55,10 @@ EVENT_TAIL_SECONDS = 0.5
 CLAUDE_ACTIVE_WINDOW = 120.0
 
 MAX_EVENTS = 200
+# Uno scambio porta il testo intero del prompt e della risposta - fino a 20 KB
+# per campo. Sessanta bastano a coprire una giornata di deleghe senza che lo
+# snapshot iniziale diventi un trasferimento da decine di megabyte.
+MAX_CHATS = 60
 
 
 def _get_json(url: str, timeout: float):
@@ -116,6 +128,7 @@ class State:
         }
         self.agents["colab"]["endpoint"] = None
         self.events: list[dict] = []
+        self.chats: list[dict] = []
 
     def subscribe(self) -> queue.Queue:
         channel: queue.Queue = queue.Queue(maxsize=64)
@@ -178,12 +191,20 @@ class State:
         if snapshot is not None:
             self._publish({"kind": "agent", "agent": snapshot})
 
+    def add_chat(self, chat: dict) -> None:
+        """One finished exchange, text included, straight to whoever is watching."""
+        with self._lock:
+            self.chats.append(chat)
+            del self.chats[:-MAX_CHATS]
+        self._publish({"kind": "chat", "chat": chat})
+
     def snapshot(self) -> dict:
         with self._lock:
             return {
                 "kind": "snapshot",
                 "agents": [dict(a) for a in self.agents.values()],
                 "events": list(self.events),
+                "chats": list(self.chats),
                 "serverTime": time.time(),
             }
 
@@ -323,33 +344,41 @@ def poll_claude() -> None:
         time.sleep(CLAUDE_POLL_SECONDS)
 
 
-def tail_events() -> None:
-    """Follows the event log the orchestrator writes, across truncation."""
+def _tail(path: Path, consume) -> None:
+    """Follows a JSON-lines log the orchestrator writes, across truncation."""
     position = 0
     signature = None
     while True:
         try:
-            if EVENT_LOG.exists():
-                stat = EVENT_LOG.stat()
+            if path.exists():
+                stat = path.stat()
                 current = (stat.st_ino, stat.st_dev)
                 if signature is not None and (current != signature or stat.st_size < position):
                     position = 0  # rotated or truncated: start over
                 signature = current
                 if stat.st_size > position:
-                    with EVENT_LOG.open("r", encoding="utf-8", errors="replace") as handle:
+                    with path.open("r", encoding="utf-8", errors="replace") as handle:
                         handle.seek(position)
                         for line in handle:
                             line = line.strip()
                             if not line:
                                 continue
                             try:
-                                STATE.add_event(json.loads(line))
+                                consume(json.loads(line))
                             except json.JSONDecodeError:
                                 continue
                         position = handle.tell()
         except OSError:
             pass
         time.sleep(EVENT_TAIL_SECONDS)
+
+
+def tail_events() -> None:
+    _tail(EVENT_LOG, STATE.add_event)
+
+
+def tail_chats() -> None:
+    _tail(CHAT_LOG, STATE.add_chat)
 
 
 PAGE = r"""<!DOCTYPE html>
@@ -403,6 +432,7 @@ PAGE = r"""<!DOCTYPE html>
 <div class="sub">
   <span class="live"><span class="dot pulse" id="conn"></span><span id="connLabel">in diretta</span></span>
   <span>|</span><span id="clock">--</span>
+  <span>|</span><a href="/chat" style="color:#38bdf8;text-decoration:none">chat dei worker &rarr;</a>
   <span>|</span><span>spinto dal server, nessun ricaricamento di pagina</span>
 </div>
 <div class="grid" id="agents"></div>
@@ -550,13 +580,17 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_events()
         elif self.path.startswith("/api/state"):
             self._serve_json(STATE.snapshot())
+        elif self.path.startswith("/api/chats"):
+            self._serve_json({"chats": STATE.snapshot()["chats"]})
+        elif self.path.startswith("/chat"):
+            self._serve_page(CHAT_PAGE)
         elif self.path in ("/", "/index.html"):
-            self._serve_page()
+            self._serve_page(PAGE)
         else:
             self.send_error(404)
 
-    def _serve_page(self) -> None:
-        body = PAGE.encode("utf-8")
+    def _serve_page(self, page: str) -> None:
+        body = page.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -600,12 +634,14 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     EVENT_LOG.parent.mkdir(parents=True, exist_ok=True)
-    for worker in (poll_local, poll_colab, poll_claude, tail_events):
+    for worker in (poll_local, poll_colab, poll_claude, tail_events, tail_chats):
         threading.Thread(target=worker, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     server.daemon_threads = True
     print("NosAi Traffic Inspector: http://localhost:" + str(PORT))
+    print("Chat dei worker:        http://localhost:" + str(PORT) + "/chat")
     print("Eventi seguiti da: " + str(EVENT_LOG))
+    print("Chat seguite da:   " + str(CHAT_LOG))
     try:
         server.serve_forever()
     except KeyboardInterrupt:

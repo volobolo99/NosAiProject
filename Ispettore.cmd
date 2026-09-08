@@ -9,6 +9,7 @@ set "PORT=%NOSAI_INSPECTOR_PORT%"
 if "%PORT%"=="" set "PORT=8787"
 
 echo Avvio dell'ispettore su http://localhost:%PORT%
+echo Chat dei worker:        http://localhost:%PORT%/chat
 start "" "http://localhost:%PORT%"
 python "tools\traffic_inspector\server.py"
 endlocal

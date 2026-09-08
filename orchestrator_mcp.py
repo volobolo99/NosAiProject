@@ -18,6 +18,34 @@ SYNC_CHANNEL = "nosai-worker-sync-volob"
 # endpoint di stato, e Ollama non conta le richieste).
 TRAFFIC_LOG = pathlib.Path(__file__).resolve().parent / "data" / "traffic" / "events.jsonl"
 
+# Le conversazioni per intero: un record per scambio, con il prompt inviato e la
+# risposta ricevuta. Sta in un file separato perche' `events.jsonl` e' la coda
+# che l'ispettore segue riga per riga, e un prompt da 12 KB dentro quella coda
+# rallenterebbe il flusso in diretta.
+CHAT_LOG = pathlib.Path(__file__).resolve().parent / "data" / "traffic" / "chats.jsonl"
+
+# Oltre questa soglia il testo si taglia: la pagina deve restare leggibile e il
+# registro non deve crescere senza limite. Il taglio e' dichiarato nel testo.
+CHAT_TEXT_LIMIT = 20000
+
+
+def _clip(text: str) -> str:
+  text = text or ""
+  if len(text) <= CHAT_TEXT_LIMIT:
+    return text
+  cut = len(text) - CHAT_TEXT_LIMIT
+  return text[:CHAT_TEXT_LIMIT] + f"\n\n[...troncato: {cut} caratteri]"
+
+
+def _emit_chat(record: dict) -> None:
+  """Registra uno scambio completo, senza mai far fallire una delega."""
+  try:
+    CHAT_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with CHAT_LOG.open("a", encoding="utf-8") as handle:
+      handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+  except OSError:
+    pass
+
 
 def _emit(event: dict) -> None:
   """Scrive un passaggio nel registro del traffico, senza mai far fallire una delega."""
@@ -32,11 +60,13 @@ def _emit(event: dict) -> None:
 class _Trace:
   """Un passaggio verso un worker: inizio subito visibile, esito quando arriva."""
 
-  def __init__(self, agent: str, agent_name: str, model: str, op: str):
+  def __init__(self, agent: str, agent_name: str, model: str, op: str,
+               prompt: str = ""):
     self.agent = agent
     self.agent_name = agent_name
     self.model = model
     self.op = op
+    self.prompt = prompt
     self.started = time.time()
     # Lo stesso id sull'inizio e sulla fine: la pagina aggiorna la riga che
     # sta gia' mostrando invece di aggiungerne una seconda per la stessa
@@ -52,10 +82,13 @@ class _Trace:
         "phase": "start",
     })
 
-  def done(self, ok: bool, tokens: int = 0, error: str = "") -> None:
+  def done(self, ok: bool, tokens: int = 0, error: str = "",
+           response: str = "", usage: dict | None = None) -> None:
+    ended = time.time()
+    duration = int((ended - self.started) * 1000)
     _emit({
         "id": self.id,
-        "at": time.time(),
+        "at": ended,
         "agent": self.agent,
         "agentName": self.agent_name,
         "model": self.model,
@@ -63,9 +96,26 @@ class _Trace:
         "phase": "end",
         "ok": ok,
         "tokens": tokens,
-        "durationMs": int((time.time() - self.started) * 1000),
+        "durationMs": duration,
         "error": error[:120],
     })
+    record = {
+        "id": self.id,
+        "at": self.started,
+        "endedAt": ended,
+        "agent": self.agent,
+        "agentName": self.agent_name,
+        "model": self.model,
+        "op": self.op,
+        "ok": ok,
+        "tokens": tokens,
+        "durationMs": duration,
+        "error": error[:400],
+        "prompt": _clip(self.prompt),
+        "response": _clip(response),
+    }
+    record.update(usage or {})
+    _emit_chat(record)
 
 # Cache locale in memoria per evitare query di rete superflue
 _cached_colab_url = None
@@ -96,7 +146,7 @@ def resolve_colab_url() -> str:
 def ask_local_qwen(instruction: str, context_code: str = "") -> str:
   """Worker Locale (RTX 5060 8GB): Scrittura codice rapido e test a costo zero."""
   prompt = f"Contesto:\n{context_code}\n\nIstruzione:\n{instruction}"
-  trace = _Trace("local", "Qwen locale", "qwen-worker", "ask_local_qwen")
+  trace = _Trace("local", "Qwen locale", "qwen-worker", "ask_local_qwen", prompt)
   try:
     res = requests.post(
         OLLAMA_LOCAL_URL,
@@ -111,7 +161,17 @@ def ask_local_qwen(instruction: str, context_code: str = "") -> str:
     res.raise_for_status()
     data = res.json()
     saved = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
-    trace.done(ok=True, tokens=saved)
+    trace.done(
+        ok=True,
+        tokens=saved,
+        response=data.get("response", ""),
+        usage={
+            "promptTokens": data.get("prompt_eval_count", 0),
+            "completionTokens": data.get("eval_count", 0),
+            "channel": "LOCAL_5060",
+            "free": True,
+        },
+    )
     return (
         f"{data.get('response', '')}\n\n<!-- METRICS: [LOCAL_5060]"
         f" TOKENS_SAVED={saved} -->"
@@ -124,7 +184,9 @@ def ask_local_qwen(instruction: str, context_code: str = "") -> str:
 @mcp.tool()
 def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
   """Worker Cloud Gratuito (Colab 16GB VRAM): Refactor e task complessi con auto-discovery."""
-  trace = _Trace("colab", "Qwen 14B Colab", "qwen2.5-coder:14b", "ask_cloud_qwen_14b")
+  prompt = f"Contesto:\n{context_code}\n\nIstruzione:\n{instruction}"
+  trace = _Trace(
+      "colab", "Qwen 14B Colab", "qwen2.5-coder:14b", "ask_cloud_qwen_14b", prompt)
   base_url = resolve_colab_url()
   if not base_url:
     trace.done(ok=False, error="nessun tunnel sul canale di sincronizzazione")
@@ -134,7 +196,6 @@ def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
     )
 
   endpoint = f"{base_url}/api/generate"
-  prompt = f"Contesto:\n{context_code}\n\nIstruzione:\n{instruction}"
   try:
     res = requests.post(
         endpoint,
@@ -149,7 +210,17 @@ def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
     res.raise_for_status()
     data = res.json()
     saved = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
-    trace.done(ok=True, tokens=saved)
+    trace.done(
+        ok=True,
+        tokens=saved,
+        response=data.get("response", ""),
+        usage={
+            "promptTokens": data.get("prompt_eval_count", 0),
+            "completionTokens": data.get("eval_count", 0),
+            "channel": "COLAB_14B",
+            "free": True,
+        },
+    )
     return (
         f"{data.get('response', '')}\n\n<!-- METRICS: [COLAB_14B]"
         f" TOKENS_SAVED={saved} -->"
@@ -162,7 +233,10 @@ def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
 @mcp.tool()
 def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
   """DeepSeek Flash: Logica pura, calcoli e interfacce senza testo superfluo."""
-  trace = _Trace("deepseek", "DeepSeek Flash", "deepseek-v4-flash", "ask_deepseek_reasoner")
+  prompt = f"SPECIFICHE:\n{context}\n\nTASK:\n{task_description}"
+  trace = _Trace(
+      "deepseek", "DeepSeek Flash", "deepseek-v4-flash", "ask_deepseek_reasoner",
+      prompt)
   key = os.environ.get("DEEPSEEK_API_KEY", "")
   if not key:
     trace.done(ok=False, error="DEEPSEEK_API_KEY non configurata")
@@ -170,10 +244,7 @@ def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
 
   payload = {
       "model": "deepseek-v4-flash",
-      "messages": [{
-          "role": "user",
-          "content": f"SPECIFICHE:\n{context}\n\nTASK:\n{task_description}",
-      }],
+      "messages": [{"role": "user", "content": prompt}],
       "temperature": 0.1,
   }
   headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
@@ -191,7 +262,20 @@ def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
     details = usage.get("completion_tokens_details") or {}
     choices = data.get("choices") or [{}]
     content = (choices[0].get("message") or {}).get("content") or ""
-    trace.done(ok=True, tokens=usage.get("total_tokens", 0))
+    trace.done(
+        ok=True,
+        tokens=usage.get("total_tokens", 0),
+        response=content,
+        usage={
+            "promptTokens": usage.get("prompt_tokens", 0),
+            "completionTokens": usage.get("completion_tokens", 0),
+            "reasoningTokens": details.get("reasoning_tokens", 0),
+            "cacheHitTokens": usage.get("prompt_cache_hit_tokens", 0),
+            "servedModel": data.get("model", "unknown"),
+            "channel": "DEEPSEEK_FLASH",
+            "free": False,
+        },
+    )
     return (
         f"{content}\n\n<!-- METRICS: [DEEPSEEK_FLASH]"
         f" TOKENS_SAVED={usage.get('total_tokens', 0)}"

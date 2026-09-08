@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 10.054 token (~$0.03 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 12.032 token (~$0.04 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -74,6 +74,9 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 20:20 | esploratore + DeepSeek Flash | AP-07: mappatura della catena dell'equipaggiamento dal filo al World Model, e principio di modellazione per "slot vuoto" contro "slot mai letto" | nessuno (indagine) | PASS — l'esploratore ha ipotizzato un campo `report.EquipmentSlots` che non esiste: verificato con grep e corretto. DeepSeek ha dato la regola: ignoto = assenza di fatto, vuoto = fatto con valore vuoto | `+0` |
 | 2026-09-08 20:20 | Claude (Direttore) | AP-07: l'equipaggiamento decodificato arriva finalmente al `Player` — campo su `GameplayObservation`, ritenzione nel provider, proiezione nel World Model | `GameplayProvider.cs`, `GameplayObservationProjector.cs` | PASS — Runtime 2797 superati su 2806, nessun fallito | `+0` |
 | 2026-09-08 20:20 | Qwen 7B Locale | Stesura dei 4 test di proiezione dell'equipaggiamento | `tests/NosAi.Runtime.Tests/WorldModel/Fusion/EquipmentProjectionTests.cs` | PASS | `+1041` |
+| 2026-09-08 20:05 | Qwen 14B Colab | Bozza del CSS per la pagina delle chat (`ask_cloud_qwen_14b`) | nessuno | FAIL — `502 Bad Gateway` dal tunnel `indexed-stereo-bryant-mil`, poi `530`: la cella Colab non serve piu' | `+0` |
+| 2026-09-08 20:07 | Qwen 7B Locale | Bozza del CSS per la pagina delle chat, ispezionata e corretta prima della scrittura: emetteva `card;` e `pillola;` come dichiarazioni, `wrap: wrap` al posto di `flex-wrap`, e la pillola senza `border-radius` | `tools/traffic_inspector/chat_page.py` | PASS | `+1856` |
+| 2026-09-08 20:14 | Claude (Direttore) | Vista `/chat` dell'ispettore: una conversazione per worker MCP con prompt e risposta per intero, token per scambio (prompt/risposta/ragionamento/cache) e totali per canale. L'orchestratore registra gli scambi in `data/traffic/chats.jsonl` | `orchestrator_mcp.py`, `tools/traffic_inspector/server.py`, `tools/traffic_inspector/chat_page.py`, `Ispettore.cmd` | PASS — `/chat` risponde 200 (15.160 byte), `/api/chats` espone lo scambio; verificata sul bersaglio reale una delega riuscita al 7B (+122 token, con prompt e risposta a schermo) e una fallita al tunnel Colab (`530`, card in rosso) | `+122` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
