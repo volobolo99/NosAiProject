@@ -310,13 +310,15 @@ invocabile: elencarlo qui come disponibile sarebbe inventare un comando
 | Claude | - | attivo | strategia, revisione, Bash, scrittura su disco, git |
 | Qwen 2.5 Coder 7B locale | `ask_local_qwen` | **verificato** 2026-09-08, ping PASS | implementazione, funzioni, test - costo zero |
 | DeepSeek reasoner | `ask_deepseek_reasoner` | **verificato** 2026-09-08, ping PASS | algoritmi, sfide logico-matematiche, reverse engineering |
-| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | registrato ma **irraggiungibile**: tunnel Colab spento | refactor multi-classe, contesto esteso - costo zero |
+| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | **verificato** 2026-09-08 eseguendo il modulo dal disco; rosso dallo strumento MCP finché la sessione non riparte | refactor multi-classe, contesto esteso - costo zero |
 | DeepSeek Flash | `mcp__deepseek__delegate_to_deepseek` | **non registrato**: `.mcp.json` espone `orchestrator` al posto di `deepseek` | carico pesante di sviluppo; modello `deepseek-v4-flash` |
 
 `.mcp.json` registra un solo server, `orchestrator` (`orchestrator_mcp.py`), e
 i suoi tre strumenti diventano invocabili solo a sessione riavviata. Ollama deve
 servire `qwen-worker` (`Modelfile.nosai`) su `localhost:11434`; il 14B cloud
-richiede il notebook Colab acceso e il tunnel Cloudflare vivo. Finché `deepseek`
+scopre il tunnel da solo leggendo `https://ntfy.sh/nosai-worker-sync-volob/raw`
+con `?poll=1&since=all` (senza quel parametro è uno stream che va sempre in
+timeout), quindi basta che il notebook Colab pubblichi. Finché `deepseek`
 non torna in `.mcp.json`, il carico pesante di sviluppo passa da
 `ask_deepseek_reasoner`.
 
