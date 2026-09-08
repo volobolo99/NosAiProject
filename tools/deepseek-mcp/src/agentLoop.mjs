@@ -6,7 +6,7 @@
  */
 
 import { chatCompletion, readUsage, DeepSeekApiError } from './deepseekClient.mjs';
-import { excerpt, nullEventLog, toolArgFields } from './eventLog.mjs';
+import { excerpt, nullEventLog, passage, toolArgFields } from './eventLog.mjs';
 import { createSandbox, SandboxError } from './sandbox.mjs';
 import { ChangeJournal, createWorkerTools } from './workerTools.mjs';
 
@@ -47,7 +47,12 @@ function buildSystemPrompt(sandbox, readOnly) {
         '   for identifiers and code comments (English).',
         '5. When you are done, or when you are blocked, call report_done exactly once. Write its summary,',
         '   acceptance lines and blockers in Italian - the operator reads them.',
-        '6. Do not invent evidence. If you did not verify something, say it is unverified.'
+        '6. Do not invent evidence. If you did not verify something, say it is unverified.',
+        '7. Never cite a file, a line number or a symbol you have not read in this session. If a read',
+        '   was refused as out of scope, say the check could not be made - never report line numbers',
+        '   for a file you could not open.',
+        '8. When a read_file result says it was truncated, continue from the line it names before you',
+        '   write. A file you have seen half of is a file you have not read.'
     ]
         .filter((line) => line !== '')
         .join('\n');
@@ -219,6 +224,23 @@ export async function runDelegation({
             }
             if (typeof message.content === 'string' && message.content.trim() !== '') {
                 lastText = message.content.trim();
+            }
+
+            if (log.thoughtsEnabled) {
+                // What the worker thought and said this round. Kept apart from the
+                // tool calls: one is the intention, the other is what actually
+                // happened, and reading them as one is how a plan gets mistaken
+                // for a change on disk. `reasoning_content` is present only on the
+                // models that expose it; its absence is not an error.
+                const reasoning = passage(message.reasoning_content);
+                const text = passage(message.content);
+                if (reasoning || text) {
+                    log.event('assistant_message', {
+                        round: rounds,
+                        reasoning: reasoning ?? undefined,
+                        text: text ?? undefined
+                    });
+                }
             }
 
             const calls = Array.isArray(message.tool_calls) ? message.tool_calls : [];

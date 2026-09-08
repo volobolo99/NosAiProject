@@ -7,6 +7,7 @@ import { runDelegation, STATUS } from '../src/agentLoop.mjs';
 import { resolveBudget } from '../src/config.mjs';
 import {
     LOG_ENABLED_ENV,
+    LOG_THOUGHTS_ENV,
     createEventLog,
     excerpt,
     newDelegationId,
@@ -227,5 +228,88 @@ describe('what the delegation loop records', () => {
         assert.equal(failure.round, 1);
         assert.equal(failure.status, STATUS.apiError);
         assert.match(failure.error, /HTTP 401/);
+    });
+
+    test('the worker reasoning and words are recorded, apart from what it then did', async () => {
+        const { log, parsed } = collectingLog();
+        const turn = toolCallResponse([{ name: 'report_done', args: { summary: 'fatto' } }]);
+        turn.choices[0].message.reasoning_content = 'Prima leggo il file,\npoi decido.';
+        turn.choices[0].message.content = 'Chiudo con il rapporto.';
+
+        await runDelegation({
+            api: API,
+            budget: resolveBudget({}),
+            request: {
+                task: 'Un incarico che si chiude subito.',
+                workingDirectory: root.dir,
+                allowedPaths: ['src/**'],
+                acceptanceCriteria: ['il ragionamento è registrato']
+            },
+            fetchImpl: scriptedFetch([turn]),
+            sleepImpl: recordingSleep(),
+            log
+        });
+
+        const said = parsed().find((e) => e.ev === 'assistant_message');
+        assert.equal(said.round, 1);
+        assert.equal(said.reasoning.text, 'Prima leggo il file,\npoi decido.');
+        assert.equal(said.reasoning.truncated, false);
+        assert.equal(said.text.text, 'Chiudo con il rapporto.');
+
+        const events = parsed().map((e) => e.ev);
+        assert.ok(
+            events.indexOf('assistant_message') < events.indexOf('tool_call'),
+            'what the worker thought comes before what it did, in the order it happened'
+        );
+    });
+
+    test('NOSAI_DEEPSEEK_THOUGHTS=0 keeps the words out and leaves the events in', async () => {
+        const { log, parsed } = collectingLog({ [LOG_THOUGHTS_ENV]: '0' });
+        const turn = toolCallResponse([{ name: 'report_done', args: { summary: 'fatto' } }]);
+        turn.choices[0].message.reasoning_content = 'SENTINELLA-DEL-PENSIERO';
+
+        await runDelegation({
+            api: API,
+            budget: resolveBudget({}),
+            request: {
+                task: 'Un incarico che si chiude subito.',
+                workingDirectory: root.dir,
+                allowedPaths: ['src/**'],
+                acceptanceCriteria: ['il ragionamento non è registrato']
+            },
+            fetchImpl: scriptedFetch([turn]),
+            sleepImpl: recordingSleep(),
+            log
+        });
+
+        const events = parsed();
+        assert.equal(events.find((e) => e.ev === 'assistant_message'), undefined);
+        assert.ok(events.some((e) => e.ev === 'tool_call'), 'the events are still there');
+        assert.ok(!JSON.stringify(events).includes('SENTINELLA-DEL-PENSIERO'));
+    });
+});
+
+describe('the log stays out of the test runner', () => {
+    test('under node --test nothing is written to the default directory', () => {
+        const log = createEventLog({ env: { NODE_TEST_CONTEXT: 'child-v8' } });
+        assert.equal(log.enabled, false);
+        assert.equal(log.file, null);
+    });
+
+    test('an explicit directory is honoured even under the runner', () => {
+        const root = makeTempRoot('nosai-log-runner-');
+        try {
+            const log = createEventLog({ env: { NODE_TEST_CONTEXT: 'child-v8' }, dir: root.dir });
+            assert.equal(log.enabled, true);
+            log.event('delegation_start', {});
+            assert.ok(fs.existsSync(log.file));
+        } finally {
+            root.cleanup();
+        }
+    });
+
+    test('this very suite runs with the guard on, so the real log is untouched', () => {
+        assert.notEqual(process.env.NODE_TEST_CONTEXT, undefined);
+        assert.equal(createEventLog().enabled, false);
     });
 });

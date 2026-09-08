@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
+    "watch": "node scripts/watch.mjs",
     "check-connection": "node scripts/check-connection.mjs"
   },
   "dependencies": {

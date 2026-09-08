@@ -22,6 +22,16 @@ export const LOG_ENABLED_ENV = 'NOSAI_DEEPSEEK_LOG';
 /** Overrides the directory the log file is written to. */
 export const LOG_DIR_ENV = 'NOSAI_DEEPSEEK_LOG_DIR';
 
+/**
+ * Set to '0' to keep the worker's own words out of the log. On by default: the
+ * operator asked to watch DeepSeek think, and a log of tool calls alone shows
+ * what was done without ever showing why.
+ */
+export const LOG_THOUGHTS_ENV = 'NOSAI_DEEPSEEK_THOUGHTS';
+
+/** How much of one assistant turn is kept. Long enough to follow it, bounded. */
+export const THOUGHT_CHARS = 4000;
+
 /** How much of the assignment is kept: enough to recognise it, not a copy of it. */
 export const TASK_EXCERPT_CHARS = 400;
 
@@ -43,6 +53,7 @@ export const nullEventLog = Object.freeze({
     id: null,
     file: null,
     enabled: false,
+    thoughtsEnabled: false,
     event() {}
 });
 
@@ -61,6 +72,22 @@ export function excerpt(text, max = FIELD_EXCERPT_CHARS) {
     const flat = text.replace(/\s+/g, ' ').trim();
     if (flat === '') return null;
     return flat.length <= max ? flat : flat.slice(0, max) + '...';
+}
+
+/**
+ * A bounded copy of a multi-line passage. Line breaks survive -- reasoning read
+ * as one paragraph is reasoning you cannot follow -- and the caller is told when
+ * the passage was cut rather than being left to guess.
+ */
+export function passage(text, max = THOUGHT_CHARS) {
+    if (typeof text !== 'string') return null;
+    const trimmed = text.trim();
+    if (trimmed === '') return null;
+    return {
+        text: trimmed.length <= max ? trimmed : trimmed.slice(0, max),
+        chars: trimmed.length,
+        truncated: trimmed.length > max
+    };
 }
 
 /** The subset of a tool call's arguments that names a target without quoting content. */
@@ -86,11 +113,16 @@ export function toolArgFields(args) {
  */
 export function createEventLog({ env = process.env, dir, id, now = () => new Date(), writer } = {}) {
     const delegationId = id ?? newDelegationId(now);
-    if ((env[LOG_ENABLED_ENV] ?? '1') === '0') {
+    const chosenDir = dir ?? env[LOG_DIR_ENV];
+    // Under `node --test` the suite exercises the whole server, delegation tool
+    // included. Without this the test runs would append fixtures to the operator's
+    // real log, which is the one file that must only ever hold real work.
+    const wouldUseDefaultDir = chosenDir === undefined && writer === undefined;
+    if ((env[LOG_ENABLED_ENV] ?? '1') === '0' || (env.NODE_TEST_CONTEXT !== undefined && wouldUseDefaultDir)) {
         return { ...nullEventLog, id: delegationId };
     }
 
-    const targetDir = dir ?? env[LOG_DIR_ENV] ?? DEFAULT_DIR;
+    const targetDir = chosenDir ?? DEFAULT_DIR;
     const file = path.join(targetDir, FILE_NAME);
     let broken = false;
 
@@ -105,6 +137,7 @@ export function createEventLog({ env = process.env, dir, id, now = () => new Dat
         id: delegationId,
         file,
         enabled: true,
+        thoughtsEnabled: (env[LOG_THOUGHTS_ENV] ?? '1') !== '0',
         event(name, fields = {}) {
             if (broken) return;
             try {

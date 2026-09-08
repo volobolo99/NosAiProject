@@ -141,13 +141,22 @@ Ogni riga porta `ts` (UTC), `id` (identificativo della delega) ed `ev`:
 | `api_request_error` | giro fallito, con stato ed errore |
 | `tool_call` | strumento invocato, file o pattern interessato, esito, motivo del rifiuto |
 | `file_change` | file toccato davvero: azione e byte prima/dopo |
+| `assistant_message` | cosa il lavoratore ha ragionato (`reasoning`) e cosa ha detto (`text`) in quel giro, con il conteggio dei caratteri e se e' stato troncato |
 | `worker_report` | quanti criteri dichiarati soddisfatti e quanti blocchi |
 | `delegation_end` | stato finale, giri, chiamate, rifiuti, durata, token totali |
 | `delegation_refused` | delega respinta prima di partire (ricorsione, configurazione) |
 | `setup_error` | perimetro non valido: nessuna chiamata API e' stata fatta |
 
-Il registro non contiene mai chiavi, contenuti dei file, testo dei messaggi o
-ragionamento del modello: solo eventi verificabili.
+Il registro contiene le parole del lavoratore — ragionamento e testo di ogni
+giro — perche' servono a capire *perche'* ha fatto quello che ha fatto. Non
+contiene mai chiavi, contenuti dei file scritti, o i messaggi di sistema.
+`reasoning_content` esiste solo sui modelli che lo espongono: dove manca,
+l'evento porta il solo `text`, e la sua assenza non e' un errore.
+
+Le due cose restano separate per costruzione: `assistant_message` e'
+un'intenzione, `tool_call` e `file_change` sono quello che e' successo davvero.
+Leggerle come una cosa sola e' il modo in cui un piano si scambia per una
+modifica su disco.
 
 Seguirlo in diretta:
 
@@ -161,5 +170,44 @@ Una delega sola, leggibile:
 Get-Content "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\logs\delegations.jsonl" | ForEach-Object { $_ | ConvertFrom-Json } | Where-Object { $_.id -eq "<id>" } | Format-Table ts, ev, name, path, status
 ```
 
-`NOSAI_DEEPSEEK_LOG=0` lo spegne; `NOSAI_DEEPSEEK_LOG_DIR` ne sposta la cartella.
-Il file cresce a ogni delega e non e' versionato.
+`NOSAI_DEEPSEEK_LOG=0` spegne tutto il registro; `NOSAI_DEEPSEEK_THOUGHTS=0`
+tiene fuori solo ragionamento e testo, lasciando gli eventi;
+`NOSAI_DEEPSEEK_LOG_DIR` ne sposta la cartella. Il file cresce a ogni delega e
+non e' versionato. Sotto `node --test` il registro reale non viene mai scritto.
+
+## Guardare DeepSeek al lavoro
+
+`Get-Content -Wait` mostra il JSON grezzo. Per leggerlo come lo leggerebbe una
+persona — un giro per volta, con il ragionamento indentato sotto la sua riga e
+il file toccato accanto allo strumento che l'ha toccato:
+
+```powershell
+node "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\scripts\watch.mjs" --last
+```
+
+| Argomento | Cosa fa |
+|---|---|
+| *(nessuno)* | segue solo cio' che accade da adesso; se il registro non esiste, aspetta la prima delega |
+| `--last` | ristampa l'ultima delega dall'inizio, poi segue |
+| `--all` | tutto il registro, poi segue |
+| `--id <id>` | una delega sola, dal suo inizio |
+| `--no-follow` | stampa e termina |
+| `--no-color`, `--file <percorso>` | senza colori; su un registro diverso da quello predefinito |
+
+Il visore e' un programma a se': legge il file e nient'altro. Non parla con
+l'API, non tocca il repository, e non puo' influenzare una delega in corso.
+
+Esempio di una delega bloccata dal perimetro:
+
+```
+08:31:02 DELEGA d20260908063102-a1b2
+          modello deepseek-v4-pro (da DEEPSEEK_MODEL)
+          perimetro src/NosAi.Runtime/Tactical/**, tests/NosAi.Runtime.Tests/**
+08:31:09   <- giro 1: 7.2 s   fine=tool_calls   strumenti chiesti 2   token 4.528 (cache hit 3.840)
+08:31:09 giro 1 — RAGIONA (176 caratteri)
+          | Non posso scrivere l'esecutore senza aver letto ClickTargetExecutor.
+08:31:09   USA read_file  src/NosAi.Runtime/Tactical/ClickTargetExecutor.cs
+08:31:09   USA read_file  src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs   RIFIUTATO — ERROR [OUT_OF_SCOPE]
+08:33:40   FILE created  src/NosAi.Runtime/Tactical/UnequipExecutor.cs   0 -> 14.203 B
+08:33:40 FINE blocked   2 giri, 4 strumenti (1 rifiutati), 1 file, 158.7 s, token 13.902
+```
