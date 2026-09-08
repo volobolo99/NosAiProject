@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using NosAi.Runtime.GameData;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Navigation;
 
@@ -131,15 +132,24 @@ internal static class MapInspect
     /// files are read; the client process is not attached from here. Map id and
     /// standing cell come from the snapshot.
     /// </summary>
+    /// <remarks>
+    /// The current set identity is derived from files on disk only: the grids in
+    /// <paramref name="mapsDirectory"/> and the client executable beside
+    /// <paramref name="clientDataDirectory"/>. Hashing that executable is a file
+    /// read, not an attach. When the fingerprint cannot be taken the current
+    /// identity stays null and "Identità verificata" stays UNKNOWN with its
+    /// reason: the recorded fingerprint is never reused to fake a match.
+    /// </remarks>
     public static MapView Observe(
         SessionKind kind,
         MapWorldReading world,
-        string? mapsDirectory = null)
+        string? mapsDirectory = null,
+        string? clientDataDirectory = null)
     {
         if (kind == SessionKind.Idle)
             return UnknownAll("runtime_not_connected");
 
-        return Compose(world, mapsDirectory);
+        return Compose(world, mapsDirectory, clientDataDirectory);
     }
 
     /// <summary>Every field UNKNOWN with the same reason. The crop is unknown, not open.</summary>
@@ -203,7 +213,7 @@ internal static class MapInspect
         _ => UnknownGlyph
     };
 
-    private static MapView Compose(MapWorldReading world, string? mapsDirectory)
+    private static MapView Compose(MapWorldReading world, string? mapsDirectory, string? clientDataDirectory)
     {
         string? maps = mapsDirectory;
         string? mapsReason = null;
@@ -238,7 +248,23 @@ internal static class MapInspect
             gridReason = world.MapId.FailureReason ?? mapsReason;
         }
 
-        return Build(world.MapId, world.CellX, world.CellY, grid, gridReason, fileHash, recorded, currentIdentity: null, gridSetCheck);
+        // Current identity: same grid files, but the fingerprint taken now rather
+        // than the one recorded. Asked only when there is a recorded identity to
+        // compare against, so a panel with no manifest never goes near the client
+        // install. A fingerprint that cannot be taken leaves this null, which is
+        // what keeps the field honestly UNKNOWN instead of trivially verified.
+        MapGridSetIdentity? current = null;
+        if (maps is not null && recorded is not null)
+        {
+            string client = clientDataDirectory ?? ReferenceImporter.DefaultDataDirectory;
+            if (MapGridExtractor.TryFingerprintClient(client, out string? fingerprint, out _)
+                && fingerprint is not null)
+            {
+                MapGridManifest.TryComputeCurrent(maps, fingerprint, out current, out _);
+            }
+        }
+
+        return Build(world.MapId, world.CellX, world.CellY, grid, gridReason, fileHash, recorded, current, gridSetCheck);
     }
 
     private static StandingCellKind ClassifyStanding(

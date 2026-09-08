@@ -280,9 +280,9 @@
 
             <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
               <StackPanel>
-                <TextBlock Style="{StaticResource CardLabel}" Text="TEST — QUALE INVENTORYKIND PRODUCE UN EQUIP REALE (T-12)"/>
+                <TextBlock Style="{StaticResource CardLabel}" Text="TEST — EQUIP E UNEQUIP SUL FILO (T-12)"/>
                 <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,10" TextWrapping="Wrap">
-                  1) Apri il client e l'inventario. 2) Premi "Rileva endpoint" se la casella sotto è vuota. 3) Premi "Registra equip (30s)": hai 30 secondi per equipaggiare e poi disequipaggiare un oggetto qualsiasi. 4) Premi "Analizza registrazione". Confronta il valore di "kind=" per lo stesso vnum prima e dopo: quello che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato.
+                  1) Apri il client e l'inventario. 2) Premi "Rileva endpoint" se la casella sotto è vuota. 3) Premi "Registra equip (30s)": hai 30 secondi per equipaggiare e poi disequipaggiare un oggetto qualsiasi. 4) Premi "Analizza registrazione". Sotto compaiono i pacchetti "equip" (cosa è indossato) e "ivn" (cosa sta nella borsa) in ordine di cattura: il pezzo che compare o scompare da "equip" è l'oggetto che hai mosso, e il primo campo di "ivn" è il tipo di inventario che il client ha usato.
                 </TextBlock>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                   <TextBlock Text="Endpoint osservato:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
@@ -315,6 +315,25 @@
                 </StackPanel>
                 <TextBlock x:Name="LiveDecodeSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
                            Text="Nessuna decodifica dal vivo in questa sessione."/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="TEST — TOGLI EQUIPAGGIAMENTO (CLICK + VERDETTO DAL FILO)"/>
+                <TextBlock x:Name="UnequipStatusText" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,8" TextWrapping="Wrap"
+                           Text="NON CALIBRATO"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Slot:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <ComboBox x:Name="UnequipSlotCombo" MinWidth="160" Margin="0,0,12,0"
+                            Foreground="{StaticResource TextBrush}" Background="#0B1220" BorderBrush="{StaticResource LineBrush}"/>
+                  <TextBlock Text="Gesto:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <ComboBox x:Name="UnequipGestureCombo" MinWidth="110" Margin="0,0,12,0"
+                            Foreground="{StaticResource TextBrush}" Background="#0B1220" BorderBrush="{StaticResource LineBrush}"/>
+                  <Button x:Name="UnequipButton" Style="{StaticResource PrimaryButton}" Content="Togli" Click="OnUnequip"/>
+                </StackPanel>
+                <TextBlock x:Name="UnequipResultText" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                           Text="Nessun tentativo in questa sessione."/>
               </StackPanel>
             </Border>
           </StackPanel>

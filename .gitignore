@@ -87,3 +87,15 @@ tools/windivert/probe/obj/
 # I log dei test (dotnet test -l trx) non sono sorgente. Senza questa riga
 # restano come file non tracciati in un albero gia condiviso fra piu sessioni.
 TestResults/
+
+# Dipendenze del server MCP locale (tools/deepseek-mcp). Non anchorate: ogni
+# package.json ha la sua node_modules, e nessuna di queste e' sorgente.
+node_modules/
+
+# Il registro operativo delle deleghe (tools/deepseek-mcp/logs/delegations.jsonl)
+# e' evidenza di esecuzione locale, non sorgente: cresce a ogni delega.
+tools/deepseek-mcp/logs/
+
+# Il diario delle attivita' degli agenti (logact.md, radice) e' evidenza locale
+# in tempo reale, non sorgente: ogni delega vi appende le proprie righe.
+logact.md

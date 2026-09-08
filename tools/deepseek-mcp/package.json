@@ -1,0 +1,23 @@
+{
+  "name": "nosai-deepseek-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server exposing delegate_to_deepseek: Claude assigns a scoped file-editing task to DeepSeek through the official API.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "watch": "node scripts/watch.mjs",
+    "dashboard": "node scripts/dashboard.mjs",
+    "check-connection": "node scripts/check-connection.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0"
+  }
+}

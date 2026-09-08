@@ -62,6 +62,8 @@ public sealed class RefusalReasonRegisterTests
                 "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
             ["click_target_input_backend_not_gated"] =
                 "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
+            ["unequip_input_backend_not_gated"] =
+                "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
 
             // --- richiedono un token Windows reale, non producibile in modo --------
             // --- deterministico da un unit test -----------------------------------
@@ -103,6 +105,7 @@ public sealed class RefusalReasonRegisterTests
             ["actuation_refused_no_decision"] = "richiede una politica di decisione senza decisione",
             ["sweep_no_candidate_is_reachable_from_a_base"] = "richiede una sweep senza candidati raggiungibili",
             ["sweep_every_candidate_reacts_to_any_skill"] = "richiede una sweep in cui ogni candidato reagisce a ogni skill",
+            ["unequip_equip_feed_unavailable"] = "richiede il processo client reale e il filo aperto: ramo RunWindows, connessione di gioco o WinDivert non disponibili",
 
             // --- comandi diagnostici: stato del ledger o della registrazione -------
             ["invalid_max"] = "richiede un argomento --max fuori range nel comando wire-inspect",

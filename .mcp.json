@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "deepseek": {
+      "command": "node",
+      "args": ["tools/deepseek-mcp/src/server.mjs"]
+    }
+  }
+}

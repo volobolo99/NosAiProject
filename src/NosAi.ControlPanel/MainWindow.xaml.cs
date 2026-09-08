@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         _session = new RuntimeSession(_log);
         _settings = OperatorSettings.Load(_repoRoot);
         _elevated = ElevationInspect.IsElevated();
+        UnequipGestureCombo.ItemsSource = new[] { "single", "double", "right" };
         ElevationCard.Visibility = _elevated ? Visibility.Collapsed : Visibility.Visible;
         _log.Written += entry =>
         {
@@ -341,6 +342,93 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// The unequip card: the slot list is read from the calibration file, and
+    /// the button is offered only when a calibration exists. Without one the
+    /// card says so and hides the button — a button that would refuse is worse
+    /// than no button. The resolution check itself is the runtime executor's
+    /// (the command refuses by name), and the result area surfaces it in full.
+    /// </summary>
+    private void ApplyUnequip()
+    {
+        string path = Path.Combine(_repoRoot, InventoryPanelRoiCalibration.RelativePath);
+        UnequipView view = UnequipInspect.Inspect(path);
+
+        UnequipStatusText.Text = view.Summary;
+        UnequipStatusText.Foreground = view.CanRun
+            ? (Brush)FindResource("LiveBrush")
+            : (Brush)FindResource("MutedBrush");
+        UnequipSlotCombo.ItemsSource = view.Slots;
+        UnequipSlotCombo.SelectedIndex = -1;
+        UnequipGestureCombo.SelectedIndex = -1;
+        UnequipButton.IsEnabled = view.CanRun;
+        UnequipButton.Visibility = view.CanRun ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Runs <c>--unequip</c> in a subprocess with the slot and gesture the
+    /// operator picked, and shows the wire verdict in full — never a green
+    /// tick: <c>confirmed</c>, <c>still-worn</c>, <c>not-confirmed</c> or the
+    /// named refusal reason.
+    /// </summary>
+    private async void OnUnequip(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        if (UnequipSlotCombo.SelectedItem is not string slot || string.IsNullOrWhiteSpace(slot))
+        {
+            UnequipResultText.Text = "Scegli prima uno slot dall'elenco.";
+            return;
+        }
+
+        if (UnequipGestureCombo.SelectedItem is not string gesture || string.IsNullOrWhiteSpace(gesture))
+        {
+            UnequipResultText.Text = "Scegli prima un gesto (single, double o right). Non c'è un gesto predefinito.";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        UnequipResultText.Text = $"Tentativo in corso: slot={slot} gesto={gesture}…";
+        var result = await RunToolAsync(
+            "dotnet",
+            $"\"{dll}\" --unequip {slot} --gesture {gesture} --arm-input",
+            $"Unequip {slot}",
+            pairing: false);
+
+        UnequipResultText.Text = SummariseUnequip(result);
+    }
+
+    private static string SummariseUnequip(ToolResult result)
+    {
+        // The command prints "verification: <outcome>" and "not-emitted: <reason>".
+        // The last relevant line is the whole verdict; a green tick would hide the
+        // difference between "the slot came off" and "the aim was wrong".
+        string output = result.Output ?? string.Empty;
+        string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            string line = lines[i].Trim();
+            if (line.StartsWith("verification:", StringComparison.Ordinal)
+                || line.StartsWith("not-emitted:", StringComparison.Ordinal))
+                return line;
+        }
+
+        if (result.ExitCode != 0)
+            return $"Unequip non riuscito (uscita {result.ExitCode}). Motivo nel Diario.";
+
+        return "Nessun verdetto leggibile. Controlla il Diario.";
+    }
+
+    /// <summary>
     /// Wakes the target view when the candidate or ROI file changes, instead of
     /// polling those files on their own timer.
     /// </summary>
@@ -455,7 +543,7 @@ public partial class MainWindow : Window
             ViewTarget.Visibility = Visibility.Visible;
             PageTitle.Text = "Bersaglio";
         }
-        else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; ApplyInventoryPanelRoi(); }
+        else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; ApplyInventoryPanelRoi(); ApplyUnequip(); }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception))
         {
@@ -973,7 +1061,17 @@ public partial class MainWindow : Window
         };
     }
 
-    /// <summary>Rilegge l'ultima registrazione e mostra solo le righe inventario (kind/slot/vnum/amount/rarity).</summary>
+    /// <summary>
+    /// Rilegge l'ultima registrazione e mostra i due pacchetti che l'equip
+    /// muove: <c>equip</c> (cosa e' indossato) e <c>ivn</c> (cosa sta nella
+    /// borsa), in ordine di cattura.
+    /// </summary>
+    /// <remarks>
+    /// Fino al 2026-09-08 chiedeva <c>--world-replay</c> e teneva solo le righe
+    /// con <c>kind=</c>: mostrava i soli <c>ivn</c>, cioe' la meta' del filo che
+    /// non risponde alla domanda di T-12, e su una registrazione vera diceva
+    /// «nessuna riga inventario» mentre il Diario ne stampava due.
+    /// </remarks>
     private async void OnAnalyzeEquipWire(object sender, RoutedEventArgs e)
     {
         if (_busy)
@@ -1002,15 +1100,9 @@ public partial class MainWindow : Window
         // del 2 settembre, mostrata all'operatore come se fosse quella appena
         // registrata. La meta' che scrive era stata corretta, questa no.
         string name = Path.GetFileName(path);
-        var lines = new List<string>();
         ToolResult replay = await RunToolAsync(
-            "dotnet", $"\"{dll}\" --world-replay data/{name}",
-            "Analisi registrazione equip", pairing: false,
-            onLine: line =>
-            {
-                if (line.Contains("kind=", StringComparison.Ordinal))
-                    lines.Add(line.Trim());
-            });
+            "dotnet", $"\"{dll}\" --wire-inspect data/{name} --timeline {EquipWireInspect.Opcodes}",
+            "Analisi registrazione equip", pairing: false);
 
         // Una rigiocata fallita non e' una registrazione senza inventario: dirlo
         // con lo stesso messaggio manderebbe l'operatore a rifare una cattura
@@ -1019,18 +1111,22 @@ public partial class MainWindow : Window
         {
             EquipWireFields.ItemsSource = Array.Empty<DisplayField>();
             EquipWireSummary.Text =
-                $"La rigiocata di data/{name} non e' riuscita (uscita {replay.ExitCode}). Motivo nel Diario: la registrazione potrebbe essere vuota o illeggibile.";
+                $"La lettura di data/{name} non e' riuscita (uscita {replay.ExitCode}). Motivo nel Diario: la registrazione potrebbe essere vuota o illeggibile.";
             return;
         }
 
+        // Le righe si leggono dall'output del comando, non dalle callback riga
+        // per riga: quelle passano dal Dispatcher e vengono eseguite quando la
+        // coda dell'interfaccia le raggiunge, che non e' garantito sia prima di
+        // qui.
+        EquipWireReading reading = EquipWireInspect.Read(replay.Output);
+
         // Righe rilette da un file: CACHED, non LIVE. «Wire» non e' nemmeno uno
         // dei cinque valori del vocabolario di provenienza.
-        EquipWireFields.ItemsSource = lines.Count > 0
-            ? lines.Select((l, i) => new DisplayField($"riga {i + 1}", l, "Cached")).ToArray()
-            : Array.Empty<DisplayField>();
-        EquipWireSummary.Text = lines.Count > 0
-            ? $"{lines.Count} righe inventario da data/{name}. Confronta \"kind=\" per lo stesso vnum prima e dopo l'equip: il valore che cambia (o appare solo da equipaggiato) è l'InventoryKind cercato."
-            : $"Nessuna riga inventario (ivn) in data/{name}: l'azione potrebbe non essere stata osservata. Ripeti la registrazione.";
+        EquipWireFields.ItemsSource = reading.Lines
+            .Select(l => new DisplayField($"{l.Opcode} #{l.Sequence}", l.Payload, "Cached"))
+            .ToArray();
+        EquipWireSummary.Text = $"data/{name}: {reading.Summary}";
     }
 
     /// <summary>

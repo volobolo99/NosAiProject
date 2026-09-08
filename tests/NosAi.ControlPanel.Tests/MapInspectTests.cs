@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.IO;
+using System.Security.Cryptography;
 using NosAi.ControlPanel;
 using NosAi.Runtime.Contracts;
 using NosAi.Runtime.Navigation;
@@ -215,6 +216,60 @@ public sealed class MapInspectTests
     }
 
     [Fact]
+    public void ObserveWithTheClientOnDiskVerifiesTheIdentityAsDerived()
+    {
+        using TempDir dir = TempDir.Create();
+        WriteVerifiableClientAndGrids(dir, "client-build-one"u8);
+
+        MapView view = MapInspect.Observe(
+            SessionKind.Hosted, MapNineAtOrigin(), dir.Maps, dir.ClientData);
+
+        DisplayField verified = Assert.Single(view.Fields, f => f.Label == "Identità verificata");
+        Assert.Equal("DERIVED", verified.Source);
+        Assert.StartsWith("sì", verified.Value, StringComparison.Ordinal);
+
+        DisplayField intact = Assert.Single(view.Fields, f => f.Label == "Griglie intatte");
+        Assert.Equal("CACHED", intact.Source);
+    }
+
+    [Fact]
+    public void ObserveAfterTheClientExecutableChangedRefusesTheIdentity()
+    {
+        using TempDir dir = TempDir.Create();
+        WriteVerifiableClientAndGrids(dir, "client-build-one"u8);
+        File.WriteAllBytes(dir.ClientExe, "client-build-two"u8.ToArray());
+
+        MapView view = MapInspect.Observe(
+            SessionKind.Hosted, MapNineAtOrigin(), dir.Maps, dir.ClientData);
+
+        DisplayField verified = Assert.Single(view.Fields, f => f.Label == "Identità verificata");
+        Assert.Equal("UNKNOWN", verified.Source);
+        Assert.Contains("client_build_changed:", verified.Value, StringComparison.Ordinal);
+
+        // The grids themselves did not move: the two checks answer different
+        // questions, and a patched client must not be reported as tampered files.
+        DisplayField intact = Assert.Single(view.Fields, f => f.Label == "Griglie intatte");
+        Assert.Equal("CACHED", intact.Source);
+    }
+
+    [Fact]
+    public void ObserveWithoutAClientOnDiskKeepsTheIdentityUnverified()
+    {
+        using TempDir dir = TempDir.Create();
+        WriteVerifiableClientAndGrids(dir, "client-build-one"u8);
+
+        MapView view = MapInspect.Observe(
+            SessionKind.Hosted,
+            MapNineAtOrigin(),
+            dir.Maps,
+            Path.Combine(dir.Root, "no-such-client"));
+
+        DisplayField verified = Assert.Single(view.Fields, f => f.Label == "Identità verificata");
+        Assert.Equal("UNKNOWN", verified.Source);
+        Assert.Contains("map_grids_current_identity_unknown", verified.Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void MapIdUnknownKeepsTheNamedReason()
     {
         MapView view = MapInspect.Build(
@@ -368,6 +423,32 @@ public sealed class MapInspectTests
         return file;
     }
 
+    private static MapWorldReading MapNineAtOrigin() => new(
+        ClassifiedValue<int>.Live(9),
+        ClassifiedValue<int>.Live(0),
+        ClassifiedValue<int>.Live(0));
+
+    /// <summary>
+    /// A maps directory whose manifest agrees with both the .grid on disk and the
+    /// fake client executable, so identity verification has something true to
+    /// verify. The archive is needed because the fingerprint refuses a data
+    /// directory with no map archives in it.
+    /// </summary>
+    private static void WriteVerifiableClientAndGrids(TempDir dir, ReadOnlySpan<byte> executableBytes)
+    {
+        byte[] grid = BuildGridFile(2, 1, 0x00, 0x01);
+        File.WriteAllBytes(Path.Combine(dir.Maps, "9.grid"), grid);
+        File.WriteAllBytes(Path.Combine(dir.ClientData, "NStcData.NOS"), "archive"u8.ToArray());
+        File.WriteAllBytes(dir.ClientExe, executableBytes.ToArray());
+
+        string fingerprint = Convert.ToHexString(SHA256.HashData(executableBytes)).ToLowerInvariant();
+        File.WriteAllText(
+            Path.Combine(dir.Maps, MapGridExtractor.ManifestFileName),
+            $"{MapGridExtractor.ManifestMagic} {MapGridExtractor.ManifestVersion}\n" +
+            $"fingerprint {fingerprint}\n" +
+            $"9 {MapGridSetIdentity.HashFile(grid)} 2 1\n");
+    }
+
     private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -381,6 +462,8 @@ public sealed class MapInspectTests
     {
         public string Root { get; }
         public string Maps => Path.Combine(Root, "maps");
+        public string ClientData => Path.Combine(Root, "client", "NostaleData");
+        public string ClientExe => Path.Combine(Root, "client", "NostaleClientX.exe");
 
         private TempDir(string root) => Root = root;
 
@@ -388,6 +471,7 @@ public sealed class MapInspectTests
         {
             string root = Path.Combine(Path.GetTempPath(), "nosai-panel-map-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(Path.Combine(root, "maps"));
+            Directory.CreateDirectory(Path.Combine(root, "client", "NostaleData"));
             return new TempDir(root);
         }
 

@@ -18,7 +18,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 | `docs/` | 51 documenti + 21 ADR |
 | `proto/` | `nosai_network_v1.proto` — schema del protocollo di rete |
 | `scripts/` | `build/test/validate` in PowerShell e bash |
-| `tools/` | `NosAi.Analyzers`, `find-vitals.ps1`, `windivert` |
+| `tools/` | `NosAi.Analyzers`, `find-vitals.ps1`, `windivert`, `deepseek-mcp` (server MCP locale: Claude delega a DeepSeek senza copia-incolla) |
 | `data/` | configurazioni, chiavi (`guard_public_key.pem`, `runtime_identity.dpapi`), catture `.noscap`, evidenze test |
 | Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `CLAUDE.md` |
 
