@@ -1,23 +1,36 @@
-import json
 import os
 from mcp.server.fastmcp import FastMCP
 import requests
 
 mcp = FastMCP("WorkerOrchestrator")
 
-# ==========================================
-# CONFIGURAZIONE ENDPOINT E CHIAVI
-# ==========================================
 OLLAMA_LOCAL_URL = "http://localhost:11434/api/generate"
-COLAB_WORKER_URL = "https://phd-yale-depot-ryan.trycloudflare.com/api/generate"
-
-# The key is never written in this file. Same convention the shipping Node
-# server already follows (tools/deepseek-mcp/src/config.mjs:99): read
-# DEEPSEEK_API_KEY from the process environment. A key in the source is one
-# `git add` away from being public -- CLAUDE.md point 12.
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-# ==========================================
+SYNC_CHANNEL = "nosai-worker-sync-volob"
+
+# Cache locale in memoria per evitare query di rete superflue
+_cached_colab_url = None
+
+
+def resolve_colab_url() -> str:
+  """Recupera l'URL attivo di Colab dal canale cloud senza intervento manuale."""
+  global _cached_colab_url
+  try:
+    # poll=1 e' obbligatorio: senza, /raw resta uno stream aperto e il
+    # timeout scatta sempre, azzerando la scoperta dell'URL.
+    url = f"https://ntfy.sh/{SYNC_CHANNEL}/raw?poll=1&since=all"
+    res = requests.get(url, timeout=4)
+    if res.status_code == 200 and res.text.strip():
+      lines = [
+          line.strip() for line in res.text.strip().split("\n") if line.strip()
+      ]
+      if lines:
+        last_url = lines[-1]
+        if last_url.startswith("http"):
+          _cached_colab_url = last_url.rstrip("/")
+  except Exception:
+    pass
+  return _cached_colab_url
 
 
 @mcp.tool()
@@ -37,10 +50,10 @@ def ask_local_qwen(instruction: str, context_code: str = "") -> str:
     )
     res.raise_for_status()
     data = res.json()
-    saved_tokens = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
+    saved = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
     return (
         f"{data.get('response', '')}\n\n<!-- METRICS: [LOCAL_5060]"
-        f" TOKENS_SAVED={saved_tokens} -->"
+        f" TOKENS_SAVED={saved} -->"
     )
   except Exception as e:
     return f"Errore Qwen Locale: {str(e)}"
@@ -48,11 +61,19 @@ def ask_local_qwen(instruction: str, context_code: str = "") -> str:
 
 @mcp.tool()
 def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
-  """Worker Cloud Gratuito (Google Colab 16GB VRAM): Refactor e task intermedi su Qwen 14B."""
+  """Worker Cloud Gratuito (Colab 16GB VRAM): Refactor e task complessi con auto-discovery."""
+  base_url = resolve_colab_url()
+  if not base_url:
+    return (
+        "Errore: Nessun worker Colab rilevato sul canale di sincronizzazione."
+        " Avvia la cella su Google Colab."
+    )
+
+  endpoint = f"{base_url}/api/generate"
   prompt = f"Contesto:\n{context_code}\n\nIstruzione:\n{instruction}"
   try:
     res = requests.post(
-        COLAB_WORKER_URL,
+        endpoint,
         json={
             "model": "qwen2.5-coder:14b",
             "prompt": prompt,
@@ -63,24 +84,24 @@ def ask_cloud_qwen_14b(instruction: str, context_code: str = "") -> str:
     )
     res.raise_for_status()
     data = res.json()
-    saved_tokens = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
+    saved = data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
     return (
         f"{data.get('response', '')}\n\n<!-- METRICS: [COLAB_14B]"
-        f" TOKENS_SAVED={saved_tokens} -->"
+        f" TOKENS_SAVED={saved} -->"
     )
   except Exception as e:
-    return f"Errore Cloud Colab: {str(e)}"
+    return f"Errore Cloud Colab ({endpoint}): {str(e)}"
 
 
 @mcp.tool()
 def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
-  """DeepSeek Flash: Analisi logico-matematica ad altissima velocità e zero fronzoli."""
-  key = DEEPSEEK_API_KEY or os.environ.get("DEEPSEEK_API_KEY", "")
-  if not key or "INSERISCI_QUI" in key:
-    return "Errore: DEEPSEEK_API_KEY non impostata."
+  """DeepSeek Flash: Logica pura, calcoli e interfacce senza testo superfluo."""
+  key = os.environ.get("DEEPSEEK_API_KEY", "")
+  if not key:
+    return "Errore: DEEPSEEK_API_KEY non configurata nelle variabili d'ambiente."
 
   payload = {
-      "model": "deepseek-v4-flash",  # Versione Flash ad alta efficienza
+      "model": "deepseek-v4-flash",
       "messages": [{
           "role": "user",
           "content": f"SPECIFICHE:\n{context}\n\nTASK:\n{task_description}",
@@ -88,7 +109,6 @@ def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
       "temperature": 0.1,
   }
   headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-
   try:
     res = requests.post(
         DEEPSEEK_URL, json=payload, headers=headers, timeout=60
@@ -96,7 +116,7 @@ def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
     res.raise_for_status()
     return res.json()["choices"][0]["message"]["content"]
   except Exception as e:
-    return f"Errore DeepSeek Flash: {str(e)}"
+    return f"Errore DeepSeek: {str(e)}"
 
 
 if __name__ == "__main__":
