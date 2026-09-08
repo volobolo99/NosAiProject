@@ -113,15 +113,7 @@ public static class GameplayObservationProjector
             EquatableArray<Resource>.From(pools),
             EquatableArray<StatusEffect>.Empty);
 
-        WorldFact<EquatableArray<Cooldown>> cooldowns = observation.SkillsReady.HasValue
-            ? ClassifiedValueBridge.WithSource(
-                observation.SkillsReady.Source,
-                EquatableArray<Cooldown>.From(observation.SkillsReady.Value.Select(ready => new Cooldown(
-                    new SkillId(ready.Slot.ToString(CultureInfo.InvariantCulture)),
-                    ClassifiedValueBridge.WithSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc)))),
-                observation.SkillsReady.ObservedAtUtc)
-            : WorldFact<EquatableArray<Cooldown>>.Unknown(
-                observation.SkillsReady.FailureReason ?? "skills_ready_not_published", nowUtc);
+        WorldFact<EquatableArray<Cooldown>> cooldowns = ProjectCooldowns(observation.SkillsReady, nowUtc);
 
         WorldFact<EquatableArray<InventoryItem>> inventory = observation.Inventory.HasValue
             ? ClassifiedValueBridge.WithSource(
@@ -231,6 +223,35 @@ public static class GameplayObservationProjector
     /// until it lands, a fraction over two Unknown bounds is the whole truth.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Turns the observed ready-skill readings into the World Model's cooldown fact.
+    /// </summary>
+    /// <remarks>
+    /// A skill reported ready has zero remaining cooldown; one never reported is not a skill
+    /// on cooldown, it is a skill nobody asked about, so the whole fact stays Unknown rather
+    /// than becoming an empty list.
+    /// </remarks>
+    /// <param name="skillsReady">Ready-skill readings as published by the gameplay observation.</param>
+    /// <param name="nowUtc">Instant stamped on the Unknown fact when nothing was published.</param>
+    /// <returns>The cooldown fact, Unknown when nothing was published.</returns>
+    public static WorldFact<EquatableArray<Cooldown>> ProjectCooldowns(
+        RuntimeContracts.ClassifiedValue<IReadOnlyList<NosAi.Runtime.Perception.Network.SkillReady>> skillsReady,
+        DateTime nowUtc)
+    {
+        if (!skillsReady.HasValue)
+        {
+            return WorldFact<EquatableArray<Cooldown>>.Unknown(
+                skillsReady.FailureReason ?? "skills_ready_not_published", nowUtc);
+        }
+
+        return ClassifiedValueBridge.WithSource(
+            skillsReady.Source,
+            EquatableArray<Cooldown>.From(skillsReady.Value.Select(ready => new Cooldown(
+                new SkillId(ready.Slot.ToString(CultureInfo.InvariantCulture)),
+                ClassifiedValueBridge.WithSource(ready.Source, TimeSpan.Zero, ready.ObservedAtUtc)))),
+            skillsReady.ObservedAtUtc);
+    }
+
     /// <summary>
     /// Turns an observed worn set into the World Model's equipment fact, keeping "never read"
     /// distinct from "read and wearing nothing".

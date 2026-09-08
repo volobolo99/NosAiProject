@@ -576,7 +576,9 @@ public static class AutoplayCommand
                     // Only the two facts something below actually reads are
                     // stated; these four are not read here and are not claimed.
                     WorldFact<EquatableArray<Skill>>.Unknown("skill_list_not_read_by_autoplay", now),
-                    WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_not_read_by_autoplay", now),
+                    gameplay is { } cooldownSource
+                        ? GameplayObservationProjector.ProjectCooldowns(cooldownSource.SkillsReady, now)
+                        : WorldFact<EquatableArray<Cooldown>>.Unknown("entity_feed_unavailable", now),
                     WorldFact<EquatableArray<InventoryItem>>.Unknown("inventory_not_read_by_autoplay", now),
                     gameplay is { } observedGameplay
                         ? GameplayObservationProjector.ProjectEquipment(observedGameplay.Equipment, now)
