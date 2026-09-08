@@ -500,3 +500,45 @@ Nessuna ricarica, nessun acquisto, nessuna spesa extra attivata. Modello
 Tre deleghe, zero cicli di correzione: nessuna consegna ha richiesto un secondo
 giro, perche' due erano rapporti negativi corretti e la terza era una modifica
 di una riga verificata al primo colpo.
+
+---
+
+## Q-145 — il primo incarico scelto da una prova che fallisce
+
+**La regola che questa sessione ha imparato a caro prezzo**: un documento che
+dice `PRONTO` non e' prova di lavoro aperto. Q-145 e' stato scelto perche'
+`RefusalReasonRegisterTests` era **rosso**, con esattamente quei tre nomi.
+
+22 giri API, 34 chiamate, 476 s, 1 317 170 token. Modifica consegnata: **sei
+righe**, tutte dentro il dizionario `Declared`.
+
+DeepSeek ha verificato la raggiungibilita' dei tre motivi e li ha dichiarati
+tutti e tre irraggiungibili, **senza scrivere test finti** per fingere
+copertura. Era la scelta corretta, e l'ho verificata nel sorgente invece di
+crederci -- tanto piu' che il rapporto cita di nuovo righe di un file la cui
+lettura gli era stata **rifiutata** (`InventoryPanelRoiCalibration.cs`).
+
+| Motivo | Verifica indipendente |
+|---|---|
+| `unequip_input_backend_not_gated` | `RunWindows` e' `private static` (`UnequipCommand.cs:216`): fuori portata di qualunque unit test. E `RuntimeComposition.cs:50` costruisce sempre `new GatedInputBackend(...)`, quindi il ramo non scatta comunque |
+| `unequip_equip_feed_unavailable` | stesso metodo privato, e richiede un client reale piu' WinDivert |
+| `unequip_slot_not_resolved` | `InventoryPanelRoiCalibration.Confirmed:124` lancia se `rois.Count != Slots.Length` o manca un solo slot; `Load:245` costruisce solo attraverso `Confirmed`; `Resolve` da' `null` solo per calibrazione assente — gia' rifiutata al passo 1 con `NotCalibratedReason` — o area a estensione zero, esclusa dal confronto di risoluzione del passo 2. Il commento del codice di produzione lo dichiarava gia' «kept defensive» |
+
+### Verifica finale
+
+| Controllo | Esito |
+|---|---|
+| Build `tests/NosAi.Runtime.Tests` | **0 errori, 0 avvisi** |
+| `RefusalReasonRegisterTests` | **2 superati, 0 falliti** — era rosso, ora e' verde |
+| Suite Runtime completa | 2721 superati, 1 fallito, 9 ignorati su 2731 |
+| Il fallito, rilanciato da solo | `GuardAiClientTests` **8/8 superati** |
+| ControlPanel | 159 superati, 0 falliti |
+
+**La famiglia Guard e' instabile sotto il carico della suite intera su questa
+macchina**, e non per una regressione: nella passata delle 05:47 era caduto
+`GuardAdmissionTests.ASilentPeerIsDroppedByTheAdmissionDeadline`, in quella
+delle 07:1x `GuardAiClientTests.ManyRapidHeartbeatsSurvive…`. Nomi diversi a ogni
+giro, entrambi verdi da soli, entrambi test a orologio da parete. Confrontare i
+nomi, mai i totali.
+
+Con i due Guard giudicati per quello che sono, **la suite e' interamente verde**.

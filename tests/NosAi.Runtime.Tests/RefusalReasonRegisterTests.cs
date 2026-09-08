@@ -43,9 +43,13 @@ public sealed class RefusalReasonRegisterTests
                 "mai prodotto: StepGuardChain.CheckAuthority restituisce direttamente il delegato, la costante non è usata",
             ["no_target_selected"] =
                 "mai prodotto come costante: il letterale vive solo in NetworkWorldFeed, la costante non è usata",
+            ["unequip_slot_not_resolved"] =
+                "mai prodotto: ramo difensivo in UnequipExecutor.Unequip; Confirmed/Load esigono una calibrazione con ogni slot dichiarato e Resolve non può mancare lo slot richiesto (i casi non calibrati sono già rifiutati prima con NotCalibratedReason)",
 
             // --- irraggiungibili: il ramo vive nel RunWindows privato e la --------
             // --- composizione restituisce sempre un backend gated (ADR-0003) -------
+            ["unequip_input_backend_not_gated"] =
+                "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
             ["walk_input_backend_not_gated"] =
                 "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
             ["scout_input_backend_not_gated"] =
@@ -77,6 +81,8 @@ public sealed class RefusalReasonRegisterTests
             ["keybinds_unavailable"] = "richiede i keybind reali del client",
             ["click_target_entity_not_found"] = "richiede un'entita' reale osservata sul filo (ramo RunWindows)",
             ["click_target_vnum_not_observed"] = "richiede un vnum reale osservato sul filo (ramo RunWindows)",
+            ["unequip_equip_feed_unavailable"] =
+                "richiede un client reale la cui osservazione di rete non rilevi un'unica connessione TCP di gioco, o la cui sorgente WinDivert non si apra (ramo privato RunWindows)",
             ["click_target_player_position_unreadable"] = "richiede la lettura fallita della posizione dalla memoria del client",
             ["map_id_not_read"] = "richiede la lettura fallita del map_id dalla memoria del client",
             ["map_id_not_on_wire"] = "richiede una cattura reale priva di map_id sul filo",
