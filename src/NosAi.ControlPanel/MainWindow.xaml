@@ -317,6 +317,25 @@
                            Text="Nessuna decodifica dal vivo in questa sessione."/>
               </StackPanel>
             </Border>
+
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="TEST — TOGLI EQUIPAGGIAMENTO (CLICK + VERDETTO DAL FILO)"/>
+                <TextBlock x:Name="UnequipStatusText" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,8" TextWrapping="Wrap"
+                           Text="NON CALIBRATO"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Slot:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <ComboBox x:Name="UnequipSlotCombo" MinWidth="160" Margin="0,0,12,0"
+                            Foreground="{StaticResource TextBrush}" Background="#0B1220" BorderBrush="{StaticResource LineBrush}"/>
+                  <TextBlock Text="Gesto:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}"/>
+                  <ComboBox x:Name="UnequipGestureCombo" MinWidth="110" Margin="0,0,12,0"
+                            Foreground="{StaticResource TextBrush}" Background="#0B1220" BorderBrush="{StaticResource LineBrush}"/>
+                  <Button x:Name="UnequipButton" Style="{StaticResource PrimaryButton}" Content="Togli" Click="OnUnequip"/>
+                </StackPanel>
+                <TextBlock x:Name="UnequipResultText" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                           Text="Nessun tentativo in questa sessione."/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
