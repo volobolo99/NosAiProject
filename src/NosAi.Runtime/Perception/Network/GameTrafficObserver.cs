@@ -30,6 +30,12 @@ public enum GameEventKind : byte
     EntityDeath = 2,
     ChatMessage = 3,
     Unknown = 4,
+
+    /// <summary>
+    /// An entity left the view (<c>out</c>). Not a death: the server said the
+    /// entity is gone, not that it was killed.
+    /// </summary>
+    EntityLeft = 5,
 }
 
 /// <summary>An entity seen on the wire, carried into the world model.</summary>
@@ -216,7 +222,8 @@ public sealed record GameEvent(
     string Descriptor,
     DataSourceKind Source,
     DateTime? ObservedAtUtc = null,
-    int? Vnum = null);
+    int? Vnum = null,
+    int? SkillVnum = null);
 
 /// <summary>Who hit the controlled character: an entity id and its type.</summary>
 /// <remarks>
@@ -267,7 +274,11 @@ public readonly record struct TargetedEntity(long EntityId, int EntityType);
 /// which the captures show for a self-buff and which selects nothing.
 /// </para>
 /// </remarks>
-public sealed record PlayerTargetSelection(TargetedEntity Target, DateTime ObservedAtUtc, DataSourceKind Source);
+public sealed record PlayerTargetSelection(
+    TargetedEntity Target,
+    DateTime ObservedAtUtc,
+    DataSourceKind Source,
+    int? SkillVnum = null);
 
 /// <summary><c>sr slot</c>: a skill slot came off cooldown.</summary>
 /// <remarks>

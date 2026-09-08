@@ -118,6 +118,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "in" => DecodeEnter(fields, source, at),
             "mv" => DecodeMove(fields, source, at),
             "die" => DecodeDeath(fields, source, at),
+            "out" => DecodeLeave(fields, source, at),
             "su" => DecodeHit(fields, source, at),
             "cond" => DecodeCondition(fields),
             "lev" => DecodeProgression(fields, source, at),
@@ -294,6 +295,39 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
     }
 
     /// <summary>
+    /// <c>out type id</c> — the entity left the view. Not a death: the server
+    /// announced that the entity is gone from view, not that it was killed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Same schema as <see cref="DecodeDeath"/>: read the id, read the vnum from
+    /// <see cref="_entities"/> <b>before</b> removing the entry (after the removal
+    /// the species is no longer recoverable), remove the entry, emit one event.
+    /// </para>
+    /// <para>
+    /// The first field is the entity type, observed as 1 (player), 2 (bystander)
+    /// and 3 (monster) across the eighteen <c>out</c> packets of
+    /// <c>data/messaggi.noscap</c>. The type is not read here for the same reason
+    /// <see cref="DecodeDeath"/> does not read it: the two-field shape is identical
+    /// for every type, the removal is type-agnostic, and a player's entry carries
+    /// no vnum (its <c>in</c> is never read), so nothing about the type is needed
+    /// to describe what left. A type nobody has established would not justify a
+    /// default — it is simply not read.
+    /// </para>
+    /// </remarks>
+    private DecodedObservations DecodeLeave(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 3 || !TryLong(fields[2], out long entityId))
+            return DecodedObservations.Empty;
+
+        int? vnum = _entities.GetValueOrDefault(entityId).Vnum;
+        _entities.Remove(entityId);
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray.Create(new GameEvent(GameEventKind.EntityLeft, entityId, "out", source, capturedUtc, vnum)));
+    }
+
+    /// <summary>
     /// <c>su atkType atkId tgtType tgtId …</c> — a hit resolving. Identities are
     /// confirmed. The packet is the hit event, and — measured below — also a
     /// vitals source for the target when field 11 is 1.
@@ -361,9 +395,19 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
 
         ImmutableArray<EntitySighting> sightings = ReadTargetVitals(fields, targetId, source, capturedUtc);
 
+        // Field 5 is the skill vnum the attacker used. A monster's basic attack
+        // carries 0, which is not a skill: it stays absent rather than a "skill 0"
+        // that someone would look up in the catalogue and find nothing for. The
+        // decoder does not resolve the name here — it publishes the number, and
+        // whoever has the catalogue open names it.
+        int? skillVnum = fields.Length > 5 && TryInt(fields[5], out int statedSkill) && statedSkill > 0
+            ? statedSkill
+            : null;
+
         return new DecodedObservations(
             sightings,
-            ImmutableArray.Create(new GameEvent(GameEventKind.CombatHit, targetId, "su", source, capturedUtc)),
+            ImmutableArray.Create(new GameEvent(
+                GameEventKind.CombatHit, targetId, "su", source, capturedUtc, Vnum: null, SkillVnum: skillVnum)),
             Vitals: null,
             PlayerAttackedAtUtc: playerAttacked ? capturedUtc : null,
             PlayerHit: hit);
@@ -775,10 +819,18 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             || targetId == own)
             return DecodedObservations.Empty;
 
+        // Field 7 is the skill vnum being cast — the same number <c>su</c> carries
+        // in field 5, read independently and never paired with it (one cast can
+        // produce many hits). 0 means a basic action, not a skill, and stays
+        // absent for the same reason the hit's field 5 does.
+        int? skillVnum = fields.Length > 7 && TryInt(fields[7], out int castSkill) && castSkill > 0
+            ? castSkill
+            : null;
+
         return new DecodedObservations(
             ImmutableArray<EntitySighting>.Empty,
             ImmutableArray<GameEvent>.Empty,
-            PlayerTarget: new PlayerTargetSelection(new TargetedEntity(targetId, targetType), capturedUtc, source));
+            PlayerTarget: new PlayerTargetSelection(new TargetedEntity(targetId, targetType), capturedUtc, source, skillVnum));
     }
 
     /// <summary>

@@ -14,6 +14,12 @@ namespace NosAi.Runtime.Observability;
 public readonly record struct WireFieldShape(int Position, string? ConstantValue, int DistinctCount);
 
 /// <summary>
+/// One decoded packet in capture order: its progressive position, the instant
+/// the TCP packet that carried it crossed the wire, and the decoded line.
+/// </summary>
+public readonly record struct WireTimelineEntry(long Ordinal, DateTime TimestampUtc, string Line);
+
+/// <summary>
 /// What one opcode looked like across a whole recording: how often it appeared,
 /// how many fields each packet carried (every arity, not just the last), and the
 /// shape of each field position up to the widest packet.
@@ -62,6 +68,9 @@ public static class WireInspectCommand
     /// <summary>Per-field census of the opcode named by <c>--opcode</c>.</summary>
     public const string FieldsOption = "--fields";
 
+    /// <summary>Prints packets in capture order, optionally filtered to a set of opcodes.</summary>
+    public const string TimelineOption = "--timeline";
+
     /// <summary>How many raw lines <c>--opcode</c> prints when <c>--max</c> is absent.</summary>
     public const int DefaultMaxLines = 20;
 
@@ -103,6 +112,9 @@ public static class WireInspectCommand
 
     /// <summary><c>--fields</c> was given without <c>--opcode</c>, so no opcode was requested to census.</summary>
     public const string FieldsWithoutOpcodeReason = "fields_without_opcode";
+
+    /// <summary><c>--timeline</c> carried a value that named no opcode.</summary>
+    public const string TimelineWithoutValueReason = "timeline_without_value";
 
     /// <summary>
     /// Decodes every line of a finite packet source and measures each opcode's
@@ -187,14 +199,29 @@ public static class WireInspectCommand
 
     /// <summary>
     /// The whole command as one pure function: decode the source and write the
-    /// census (no <paramref name="opcode"/>), the raw lines (with it), or the
-    /// per-field census (with it and <paramref name="showFields"/>) to
+    /// census (no <paramref name="opcode"/>), the raw lines (with it), the
+    /// per-field census (with it and <paramref name="showFields"/>), or the
+    /// chronological timeline (with <paramref name="timeline"/>) to
     /// <paramref name="output"/>.
     /// </summary>
-    public static void Inspect(IPacketSource source, TextWriter output, DataSourceKind sourceKind, string? opcode, int maxLines, bool showFields = false)
+    public static void Inspect(
+        IPacketSource source,
+        TextWriter output,
+        DataSourceKind sourceKind,
+        string? opcode,
+        int maxLines,
+        bool showFields = false,
+        bool timeline = false,
+        IReadOnlySet<string>? timelineOpcodes = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(output);
+
+        if (timeline)
+        {
+            WriteTimeline(output, Timeline(source, sourceKind, timelineOpcodes, maxLines));
+            return;
+        }
 
         if (opcode is null)
         {
@@ -213,12 +240,70 @@ public static class WireInspectCommand
     }
 
     /// <summary>
+    /// Every decoded packet in capture order, each with its progressive number
+    /// and the instant of the packet that carried it, optionally restricted to
+    /// the given opcodes.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The ordinal counts <b>every</b> decoded line, including the ones the opcode
+    /// filter drops, so a filtered view still shows the packet's true position in
+    /// the capture. The instant is the packet's own capture time, never the clock
+    /// of whoever runs this — the same reason a recording read today stays
+    /// stamped with the day it was made.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyList<WireTimelineEntry> Timeline(
+        IPacketSource source, DataSourceKind sourceKind, IReadOnlySet<string>? opcodes, int maxLines)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var entries = new List<WireTimelineEntry>();
+        long ordinal = 0;
+        bool capped = false;
+        var engine = new GameTrafficCaptureEngine(source, NosTaleWorldFramer.Factory(sourceKind));
+        engine.FrameProduced += frame =>
+        {
+            if (capped || frame.Frame.Source == DataSourceKind.Unknown)
+                return;
+
+            foreach (string line in NosTaleWorldDecoder.Decode(frame.Frame.Body.Span))
+            {
+                ordinal++;
+                string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string opcode = tokens.Length > 0 ? tokens[0] : string.Empty;
+                if (opcodes is not null && !opcodes.Contains(opcode))
+                    continue;
+                if (maxLines > 0 && entries.Count >= maxLines)
+                {
+                    capped = true;
+                    return;
+                }
+                entries.Add(new WireTimelineEntry(ordinal, frame.TimestampUtc, line));
+            }
+        };
+        engine.Run();
+        return entries;
+    }
+
+    /// <summary>One timeline entry per line, <c>#ordinal timestamp line</c>.</summary>
+    public static void WriteTimeline(TextWriter output, IReadOnlyList<WireTimelineEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(entries);
+
+        foreach (WireTimelineEntry entry in entries)
+            output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"#{entry.Ordinal} {entry.TimestampUtc.ToString("O", CultureInfo.InvariantCulture)} {entry.Line}"));
+    }
+
+    /// <summary>
     /// Validates the argument vector against the flag grammar. Returns the named
     /// refusal reason, or null when the vector is well-formed (with the parsed
     /// path, opcode and max line count in the out parameters).
     /// </summary>
     public static string? Validate(string[] args, out string? path, out string? opcode, out int maxLines)
-        => Validate(args, out path, out opcode, out maxLines, out _);
+        => Validate(args, out path, out opcode, out maxLines, out _, out _, out _);
 
     /// <summary>
     /// Validates the argument vector against the flag grammar. Returns the named
@@ -227,11 +312,29 @@ public static class WireInspectCommand
     /// parameters).
     /// </summary>
     public static string? Validate(string[] args, out string? path, out string? opcode, out int maxLines, out bool showFields)
+        => Validate(args, out path, out opcode, out maxLines, out showFields, out _, out _);
+
+    /// <summary>
+    /// Validates the argument vector against the flag grammar. Returns the named
+    /// refusal reason, or null when the vector is well-formed (with the parsed
+    /// path, opcode, max line count, <c>--fields</c> presence, <c>--timeline</c>
+    /// presence and its opcode filter in the out parameters).
+    /// </summary>
+    public static string? Validate(
+        string[] args,
+        out string? path,
+        out string? opcode,
+        out int maxLines,
+        out bool showFields,
+        out bool timeline,
+        out IReadOnlySet<string>? timelineOpcodes)
     {
         path = null;
         opcode = null;
         maxLines = DefaultMaxLines;
         showFields = false;
+        timeline = false;
+        timelineOpcodes = null;
 
         int flagIndex = Array.FindIndex(args, a => string.Equals(a, Flag, StringComparison.OrdinalIgnoreCase));
         if (flagIndex < 0)
@@ -267,6 +370,23 @@ public static class WireInspectCommand
                 continue;
             }
 
+            if (string.Equals(arg, TimelineOption, StringComparison.OrdinalIgnoreCase))
+            {
+                timeline = true;
+                // The opcode filter is optional. It is present when the next token
+                // is neither an option nor the recording path (a .noscap name).
+                if (i + 1 < args.Length
+                    && !args[i + 1].StartsWith("--", StringComparison.Ordinal)
+                    && !args[i + 1].EndsWith(".noscap", StringComparison.OrdinalIgnoreCase))
+                {
+                    IReadOnlySet<string>? parsed = ParseOpcodeSet(args[++i]);
+                    if (parsed is null)
+                        return TimelineWithoutValueReason;
+                    timelineOpcodes = parsed;
+                }
+                continue;
+            }
+
             if (arg.StartsWith("--", StringComparison.Ordinal))
                 return $"{UnknownOptionReason}:{arg}";
 
@@ -285,21 +405,28 @@ public static class WireInspectCommand
         return null;
     }
 
+    /// <summary>Splits a comma-separated opcode list, or null when it names none.</summary>
+    private static IReadOnlySet<string>? ParseOpcodeSet(string value)
+    {
+        string[] parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length == 0 ? null : new HashSet<string>(parts, StringComparer.Ordinal);
+    }
+
     /// <summary>Console entry. Validates, opens the recording, and inspects it.</summary>
     public static int Run(string[] args)
     {
-        string? refusal = Validate(args, out string? path, out string? opcode, out int maxLines, out bool showFields);
+        string? refusal = Validate(args, out string? path, out string? opcode, out int maxLines, out bool showFields, out bool timeline, out IReadOnlySet<string>? timelineOpcodes);
         if (refusal is not null)
         {
             Console.WriteLine($"[REFUSED] {refusal}");
-            Console.WriteLine($"Usage: {Flag} <file.noscap> [--opcode <opcode>] [--max <n>] [--fields]");
+            Console.WriteLine($"Usage: {Flag} <file.noscap> [--opcode <opcode>] [--max <n>] [--fields] [--timeline [op1,op2,...]]");
             return ExitRefused;
         }
 
         try
         {
             using IPacketSource source = CaptureFile.Open(path!);
-            Inspect(source, Console.Out, DataSourceKind.Cached, opcode, maxLines, showFields);
+            Inspect(source, Console.Out, DataSourceKind.Cached, opcode, maxLines, showFields, timeline, timelineOpcodes);
             return 0;
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException)

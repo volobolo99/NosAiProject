@@ -696,7 +696,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
 
         foreach (GameEvent gameEvent in report.Events)
         {
-            if (gameEvent.Kind == GameEventKind.EntityDeath)
+            if (gameEvent.Kind is GameEventKind.EntityDeath or GameEventKind.EntityLeft)
                 _entities.Remove(gameEvent.EntityId);
         }
 
