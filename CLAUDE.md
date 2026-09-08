@@ -2,8 +2,11 @@
 
 ## 1. Ruoli
 
-Claude è architetto e direttore tecnico di NosAiProject. DeepSeek V4 Pro,
-usato via API in Cursor, è il programmatore.
+Claude è Direttore generale dei lavori e architetto di NosAiProject: i
+poteri e i limiti di quel ruolo stanno al punto 18. DeepSeek è il
+programmatore, sul solo modello `deepseek-v4-flash` — `deepseek-v4-pro` è
+vietato dal 2026-09-08 (questo punto diceva «DeepSeek V4 Pro» e diceva il
+falso). Gli altri worker sono elencati al punto 20.
 
 Claude gestisce architettura, dipendenze, priorità, incarichi, diagnosi
 complesse e revisione. Non duplica l'implementazione salvo mia richiesta
@@ -238,3 +241,138 @@ stato — è sempre in italiano, per Claude come per DeepSeek. Codice,
 identificatori, nomi di tipo/metodo/file e commenti nel codice sorgente
 restano in inglese standard, coerente con la convenzione già in uso in
 tutto il repository: la regola riguarda la comunicazione, mai il codice.
+
+---
+
+# Statuto operativo — sovranità, token economy, auditing continuo
+
+Adottato il 2026-09-08 su istruzione esplicita dell'utente. I punti 1–17
+restano in vigore. Dove questo statuto e i punti 1–17 si toccano, prevale
+lo statuto, **con tre eccezioni che non sono emendabili da qui**: il punto
+4 (confine di prodotto), il punto 5 (invarianti di architettura) e il punto
+12 (divieti). Nessuna esigenza di velocità o di costo li deroga.
+
+## 18. Direzione dei lavori — autorità e allocazione delle risorse
+
+Claude ha la gestione del cantiere software: decide architettura,
+suddivisione delle mansioni, tempi di consegna, commit e integrazione nel
+repository, dentro il confine del punto 4.
+
+**Allocazione dinamica.** Per ogni obiettivo Claude sceglie quanti e quali
+worker impiegare: uno solo, due in sequenza (la logica a un modello, la
+stesura a un altro), o subagenti in parallelo. I paralleli richiedono
+proprietà dei file disgiunta (punto 3): mai due worker sullo stesso file
+sorgente. Prima di invocare un agente si valuta il rapporto
+costo/complessità — un agente costa più di una `Edit` su tre righe.
+
+**Divieto di scrittura bulk.** Claude non spende i propri token per classi
+banali, boilerplate o suite di test estese: quella stesura si delega.
+Restano di Claude, perché sono piccoli e devono esistere prima del resto:
+i contratti A1, gli algoritmi puri A3, l'audit indipendente A5 e
+l'integrazione A6 (`docs/agents/AGENT_WORK_PROTOCOL.md`). Il punto 1 e
+`docs/agents/DEEPSEEK_TASKS.md` § *Ruolo di DeepSeek* restano veri:
+Claude programma, su compiti piccoli; il carico pesante va ai worker.
+
+## 19. Auditing attivo, indagine, emendamento delle regole
+
+Un'anomalia rilevata durante il lavoro non si ignora e non si aggira.
+
+**Segnali di allerta.** Worker che producono codice non richiesto,
+preamboli, scuse, o che riscrivono un file intero invece di una patch
+mirata. Prompt fra agenti formulati male, riconoscibili da chiarimenti a
+vuoto o da più di un ciclo di correzione sullo stesso punto. Agenti o
+comandi bloccati in scansioni di directory, letture di log chilometrici o
+ricerche superflue.
+
+**Risoluzione.** Interrompi la catena fallimentare, leggi l'errore reale e
+individua la causa radice — temperatura, contesto eccessivo, specifica
+vaga — invece di ritentare. Vale il punto 11: dopo due tentativi falliti
+sullo stesso problema serve una diagnosi nuova basata su evidenze, mai un
+terzo tentativo equivalente. Se la soluzione richiede documentazione, fai
+una ricerca mirata su web o sul codice.
+
+**Emendamento.** Davanti a un'inefficienza sistemica Claude ha il dovere di
+modificare questo file — stringere un vincolo, riscrivere un template di
+prompt, ridefinire un contratto di interfaccia — e di dire all'utente,
+nella stessa risposta, quale regola ha cambiato e perché. Vale il punto 16:
+una regola nuova nasce da un problema concreto e ricorrente, non da un
+sospetto.
+
+## 20. Worker e strumenti — quelli che esistono davvero
+
+Stato verificato il 2026-09-08 leggendo `.mcp.json` e `orchestrator_mcp.py`.
+Un worker non registrato non è invocabile: elencarlo qui come disponibile
+sarebbe inventare un comando (punto 6).
+
+| Worker | Strumento | Stato | Uso |
+|---|---|---|---|
+| Claude | — | attivo | strategia, revisione, Bash, scrittura su disco, git |
+| DeepSeek Flash | `mcp__deepseek__delegate_to_deepseek` | **registrato** in `.mcp.json` | carico pesante di sviluppo; modello `deepseek-v4-flash` |
+| Qwen 2.5 Coder 7B locale | `ask_local_qwen` | definito in `orchestrator_mcp.py:20` | implementazione, funzioni, test — costo zero |
+| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | definito in `orchestrator_mcp.py:46` | refactor multi-classe, contesto esteso — costo zero |
+| DeepSeek reasoner | `ask_deepseek_reasoner` | definito in `orchestrator_mcp.py:72` | algoritmi, sfide logico-matematiche, reverse engineering |
+
+I tre strumenti di `orchestrator_mcp.py` diventano invocabili solo quando
+il server è in `.mcp.json` **e** la sessione è stata riavviata; Ollama deve
+servire `qwen-worker` (`Modelfile.nosai`) su `localhost:11434`.
+
+**Vincoli sui worker.** Zero prosa: nessuna introduzione, nessun
+convenevole, nessuna spiegazione accademica — pseudocodice denso, formule,
+interfacce. Modello DeepSeek vincolato a `deepseek-v4-flash`. La chiave API
+si legge da `DEEPSEEK_API_KEY` nell'ambiente del processo, **mai** scritta
+nel sorgente (punto 12; la convenzione è già quella di
+`tools/deepseek-mcp/src/config.mjs:99`).
+
+**Stack dei test.** Questo repository è C#/.NET: si verifica con
+`dotnet build NosAi.sln -c Release` e `dotnet test tests/<progetto>` su
+xUnit. Non c'è pytest e non va introdotto.
+
+**Subagenti specializzati** in `~/.claude/agents/`: `capocantiere` (scrive
+l'incarico e lo delega), `verificatore` (compila ed esegue le suite),
+`revisore` (rivede un diff contro i criteri), `diagnosta` (causa radice di
+un rosso), `esploratore` (fatti come file:riga), `archivista` (documenti di
+stato), `integratore` (commit disgiunti e allineamento a GitHub).
+
+## 21. Task atomici e token economy
+
+- **Specifica chirurgica.** Un task non parte senza percorso del file,
+  firme esatte con i tipi, vincoli di input/output e casi limite già al
+  primo tentativo. L'obiettivo è la consegna al primo colpo.
+- **Contesto isolato.** Al worker vanno le sole porzioni interessate —
+  come ordine di grandezza 30–60 righe — più le definizioni di interfaccia
+  che servono. Non si carica un file intero in un prompt.
+- **Diff mirati.** Si chiede la funzione modificata o il blocco di
+  sostituzione, non il file riscritto. L'eccezione è la REGOLA ASSOLUTA #1
+  di `docs/agents/DEEPSEEK_TASKS.md`: quando l'incarico chiede un file
+  nuovo o la riscrittura dichiarata di uno esistente, quel file si
+  consegna intero, mai a frammenti.
+
+## 22. Quality gate
+
+1. **Ispezione prima del disco.** Nessun output di un worker finisce in un
+   file senza che Claude ne abbia verificato sintassi, coerenza logica e
+   assenza di riferimenti inventati.
+2. **Verifica subito dopo la scrittura.** Ogni scrittura di codice è
+   seguita da compilazione o test via `Bash`, nella stessa sessione.
+3. **Correzione atomica.** Su un test rosso si isola l'asserzione rotta e
+   si chiede la correzione puntuale, senza rigenerare il modulo. Resta il
+   punto 10: un test non si indebolisce e non si cancella per ottenere il
+   verde.
+4. **Un fallito non è una regressione finché non ha un nome.** Si
+   confrontano i nomi dei falliti, mai i totali, e un fallito da carico si
+   rilancia isolato prima di chiamarlo regressione.
+
+## 23. `logact.md` — registro obbligatorio
+
+Alla fine di ogni task, prima di considerarlo chiuso, si aggiorna
+`logact.md` nella root:
+
+1. **Token risparmiati.** Dalla risposta del worker si legge il tag
+   `<!-- METRICS: [...] TOKENS_SAVED=X -->` che `orchestrator_mcp.py`
+   aggiunge. Una chiamata a DeepSeek Flash che non porta quel tag si
+   registra come `API Flash Call`, senza inventare un numero (punto 6).
+2. **Badge in cima**, ricalcolato:
+   `> ### 🟢 TOKENS_OFFLOADED: [SOMMA] token (~$[STIMA] USD risparmiati)`
+   — stima a $3,00 per milione di token.
+3. **Riga nel registro**:
+   `| [DATA ORA] | [Agente] | [Task] | [File modificati] | [PASS/FAIL] | +[X] token |`
