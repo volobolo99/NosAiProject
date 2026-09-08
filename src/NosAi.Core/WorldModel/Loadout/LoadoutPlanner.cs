@@ -81,6 +81,51 @@ public static class LoadoutPlanner
         return candidates;
     }
 
+    /// <summary>
+    /// Why no loadout change can be proposed, so an empty candidate list is never read as
+    /// "this character is already set up as well as it can be".
+    /// </summary>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="resolveSlot">Catalog lookup mapping an item to the slot it fits, or null when unknown.</param>
+    /// <returns>The verdict explaining the absence of candidates.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> or <paramref name="resolveSlot"/> is null.</exception>
+    public static LoadoutOpportunityVerdict ExplainCandidates(
+        Player player,
+        Func<ItemId, EquipmentSlot?> resolveSlot)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(resolveSlot);
+
+        bool equipmentRead = player.Equipment.HasValue;
+        bool inventoryRead = player.Inventory.HasValue;
+
+        if (!equipmentRead && !inventoryRead)
+        {
+            return LoadoutOpportunityVerdict.SourcesNeverRead;
+        }
+
+        if (GenerateUnequipCandidates(player).Count > 0
+            || GenerateEquipCandidates(player, resolveSlot).Count > 0
+            || GenerateUpgradeCandidates(player).Count > 0)
+        {
+            return LoadoutOpportunityVerdict.CandidatesAvailable;
+        }
+
+        // One source read and the other not: the emptiness is partly ignorance, and saying
+        // "nothing to change" would present a gap in reading as a finished assessment.
+        if (!equipmentRead)
+        {
+            return LoadoutOpportunityVerdict.EquipmentNeverRead;
+        }
+
+        if (!inventoryRead)
+        {
+            return LoadoutOpportunityVerdict.InventoryNeverRead;
+        }
+
+        return LoadoutOpportunityVerdict.NothingToChange;
+    }
+
     /// <summary>One <see cref="LoadoutActionKind.Upgrade"/> candidate per currently equipped item.</summary>
     public static IReadOnlyList<LoadoutActionCandidate> GenerateUpgradeCandidates(Player player)
     {
@@ -226,4 +271,27 @@ public static class LoadoutPlanner
 
         violations.Add("item_not_equipped");
     }
+}
+
+/// <summary>
+/// Why no equip, unequip or upgrade can be proposed. An empty list on its own cannot tell a
+/// character already well set up from one whose gear was never read, and the second is a gap
+/// in observation rather than a conclusion about the build.
+/// </summary>
+public enum LoadoutOpportunityVerdict
+{
+    /// <summary>Neither the equipment nor the inventory has ever been observed.</summary>
+    SourcesNeverRead = 0,
+
+    /// <summary>At least one loadout change can be proposed.</summary>
+    CandidatesAvailable = 1,
+
+    /// <summary>The inventory was read but the equipment was not: what is worn is unknown.</summary>
+    EquipmentNeverRead = 2,
+
+    /// <summary>The equipment was read but the inventory was not: what could be worn is unknown.</summary>
+    InventoryNeverRead = 3,
+
+    /// <summary>Both sources were read and neither offers a change.</summary>
+    NothingToChange = 4
 }
