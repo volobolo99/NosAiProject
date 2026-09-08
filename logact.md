@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 118 token (~$0.00 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 236 token (~$0.00 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -15,8 +15,12 @@ non si inventa un numero (`CLAUDE.md` § 6).
 Dal 2026-09-08 i tre strumenti di `orchestrator_mcp.py` sono registrati in
 `.mcp.json` e caricabili dalla sessione: il ping di validazione qui sotto lo
 dimostra per `ask_local_qwen` e `ask_deepseek_reasoner`. `ask_cloud_qwen_14b`
-non è raggiungibile finché il tunnel Cloudflare del notebook Colab non è
-attivo, quindi vale `+0` e non entra nel totale.
+resta giù per due guasti sovrapposti, accertati alle 15:30: il processo MCP in
+esecuzione tiene in memoria `phd-yale-depot-ryan.trycloudflare.com`, mentre
+`orchestrator_mcp.py:12` porta già `eval-gem-decorating-technique...` (serve una
+sessione riavviata perché il server rilegga il file); e quel nuovo host risolve
+ma risponde `403` con corpo vuoto da Cloudflare, cioè il quick tunnel non è più
+attivo. Finché il notebook Colab non riparte, il 14B vale `+0`.
 
 | Timestamp | Agente Esecutore | Task / Obiettivo | File Coinvolti | Esito Test | Token Risparmiati (Local/Colab) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -26,6 +30,9 @@ attivo, quindi vale `+0` e non entra nel totale.
 | 2026-09-08 15:24 | Qwen 7B Locale | Ping di validazione comunicazione worker (`ask_local_qwen`) | nessuno | PASS | `+118` |
 | 2026-09-08 15:24 | Qwen 14B Colab | Ping di validazione comunicazione worker (`ask_cloud_qwen_14b`) | nessuno | FAIL — DNS: `phd-yale-depot-ryan.trycloudflare.com` non risolto | `+0` |
 | 2026-09-08 15:24 | DeepSeek Flash | Ping di validazione comunicazione worker (`ask_deepseek_reasoner`) | nessuno | PASS — nessun tag METRICS, registrato come `API Flash Call` | `+0` |
+| 2026-09-08 15:30 | Qwen 7B Locale | Secondo ping di validazione (`ask_local_qwen`) | nessuno | PASS | `+118` |
+| 2026-09-08 15:30 | Qwen 14B Colab | Secondo ping (`ask_cloud_qwen_14b`) + diagnosi della causa radice | nessuno | FAIL — URL vecchio in memoria nel processo MCP; l'URL nuovo di `orchestrator_mcp.py:12` risponde `403` (quick tunnel spento) | `+0` |
+| 2026-09-08 15:30 | DeepSeek Flash | Secondo ping (`ask_deepseek_reasoner`) | nessuno | PASS — nessun tag METRICS, `API Flash Call` | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
@@ -167,3 +174,103 @@ attivo, quindi vale `+0` e non entra nel totale.
 
   > INCARICO Q-RONDA-01/A — I due file nuovi del runtime per la ronda di avvio ## 0. Vincolo operativo assoluto I due file da creare NON ESISTONO ancora. Non devi leggere nessun file: tutto quello che ti serve è scritto qui sotto. Se chiami read_file su qualcosa, stai sprecando il tuo budget: i due percorsi in allowedPaths sono vuoti. Scrivi direttamente i due file con write_file e poi chiudi con repo...
 
+- 15:31:46 `fvnp` giro 1 — 882.1 s, fine `tool_calls`, token 45.991
+- 15:31:46 `fvnp` **ragiona** (166.881 caratteri, troncato)
+  > Let me understand the assignment. I need to create two files in the NosAiProject:
+  > 
+  > 1. `src/NosAi.Runtime/Testing/StartupRoundReport.cs`
+  > 2. `src/NosAi.Runtime/Testing/StartupRound.cs`
+  > 
+  > The assignment says the files don't exist yet, and I shouldn't read any files (they're empty). However, the instructions also say to read before writing, but the assignment says the paths are empty and read_file would waste budget. The rules say I can use list_files to verify. Actually the assignment explicitly says: "Non devi leggere nessun file: tutto quello che ti serve è scritto qui sotto. Se chiami read_file su qualcosa, stai sprecando il tuo budget: i due percorsi in allowedPaths sono vuoti."
+  > 
+  > But the rules say "Read before you write. Never guess the contents of a file you have not read." These files don't exist. Since it says I may touch only those two paths, and they don't exist. But wait, I need to check whether they exist first? The tool layer may refuse reads outside allowed scope. Reads inside allowed scope: the two file paths. The assignment says they are empty/do not exist. I could do a quick list_files to confirm the structure but that's not necessary. Actually the assignment says reading is a waste of budget. The instruction 0 says do not read any file. So I'll write directly.
+  > 
+  > Let me now carefully craft both files based on the spec.
+  > 
+  > Let me plan File 1: StartupRoundReport.cs
+  > 
+  > ```csharp
+  > using System;
+  > using System.Collections.Generic;
+  > using System.Globalization;
+  > using System.IO;
+  > using System.Linq;
+  > using System.Text.Json;
+  > using System.Text.Json.Serialization;
+  > 
+  > namespace NosAi.Runtime.Testing;
+  > 
+  > public enum StartupRoundMode { Full, Quick }
+  > 
+  > public enum StartupCheckOutcome { Pass, Fail, Unknown, Skipped }
+  > 
+  > public sealed record StartupCheckRecord(
+  >     string Id,
+  >     string Title,
+  >     string Category,
+  >     StartupCheckOutcome Outcome,
+  >     long DurationMs,
+  >     string Evidence,
+  >     string? Reason)
+  > {
+  >     public const string SuiteCategory = "Suite";
+  >     public const string EnvironmentCategory = "Environment";
+  > }
+  > 
+  > public sealed record StartupRoundReport(
+  >     int SchemaVersion,
+  >     StartupRoundMode Mode,
+  >     DateTime StartedUtc,
+  >     long TotalMs,
+  >     int PassCount,
+  >     int FailCount,
+  >     int UnknownCount,
+  >     int SkippedCount,
+  >     IReadOnlyList<StartupCheckRecord> Checks)
+  > {
+  >     public const int CurrentSchemaVersion = 1;
+  >     public const string DefaultDirectory = "data/health";
+  >     public const string LatestFileName = "startup-latest.json";
+  >     public const string HistoryPrefix = "startup-";
+  >     public const int HistoryLimit = 20;
+  > 
+  >     private static readonly JsonSerializerOptions JsonOptions = new()
+  >     {
+  >         WriteIndented = true,
+  >         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+  >         PropertyNameCaseInsensitive = true,
+  >         Converters = { new JsonStringEnumConverter() }
+  >     };
+  > 
+  >     public bool HasFailures => FailCount > 0;
+  >     public bool HasUnknown => UnknownCount > 0;
+  > 
+  >     public static StartupRoundReport Create(
+  >         StartupRoundMode mode, DateTime startedUtc, long totalMs, IReadOnlyList<StartupCheckRecord> checks)
+  >     {
+  >         var materialized = checks.ToArray();
+  >         int pass = 0, fail = 0, unknown = 0, skipped = 0;
+  >         foreach (var check in materialized)
+  >         {
+  >             switch (check.Outcome)
+  >             {
+  >                 case StartupCheckOutcome.Pass: pass++; break;
+  >                 case StartupCheckOutcome.Fail: fail++; break;
+  >                 case StartupCheckOutcome.Unknown: unknown++; break;
+  >                 case StartupCheckOutcome.Skipped: skipped++; break;
+  >             }
+  >         }
+  >         return new StartupRoundReport(
+  >             CurrentSchemaVersion, mode, startedUtc, totalMs,
+  >             pass, fail, unknown, skipped, materialized);
+  >     }
+  > 
+  >     public string Serialize() => JsonSerializer.Serialize(this, JsonOptions);
+  > 
+  >     public static StartupRoundReport? TryParse(string json)
+  >     {
+  >         if (string.IsNullOrWhiteSpace(json)) return null;
+  >         try
+  >         {
+  >             var report = JsonSerializ
+- 15:31:46 `fvnp` `list_files` `src/NosAi.Runtime/Testing`
