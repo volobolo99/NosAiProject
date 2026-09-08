@@ -9,6 +9,10 @@
  * untrusted by construction -- and a viewer that could be made to execute what
  * it is meant to display would be a hole opened by the tool that watches for
  * holes.
+ *
+ * The state logic -- sinceLabel and statusOf -- is defined once, here in this
+ * module, and injected into the client script below: the tests call the very
+ * source the browser runs.
  */
 
 const STYLE = `
@@ -75,7 +79,43 @@ blockquote { margin: 6px 0 2px; padding: 6px 12px; border-left: 2px solid var(--
 .empty { padding: 40px 22px; color: var(--dim); }
 `;
 
-const CLIENT = `
+/**
+ * How long a delegation has been silent, in the unit a reader can act on.
+ *
+ * A delegation can sit open for hours, and "5322 s" is a number nobody
+ * converts in their head.
+ *
+ * Self-contained on purpose: this source is injected into the client script
+ * below, where nothing of this module exists.
+ */
+export function sinceLabel(ms) {
+    if (typeof ms !== 'number' || !Number.isFinite(ms)) return '?';
+    const total = Math.round(ms / 1000);
+    if (total < 90) return total + ' s';
+    const minutes = Math.round(total / 60);
+    if (minutes < 90) return minutes + ' min';
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return hours + ' h' + (rest > 0 ? ' ' + rest + ' min' : '');
+}
+
+/**
+ * The label and the colour class for one delegation's state.
+ *
+ * `open` is checked first, and on purpose: a delegation the log has not closed
+ * is open, never failed. Silence is not an outcome, so a quiet one says how
+ * long it has been quiet and leaves the verdict to the reader.
+ *
+ * Self-contained on purpose: injected into the client script, like sinceLabel.
+ */
+export function statusOf(d) {
+    if (d.open) return { label: d.quiet ? 'in corso · ferma da ' + sinceLabel(d.sinceMs) : 'in corso', cls: 'open' };
+    if (d.status === 'completed') return { label: 'completata', cls: 'closed' };
+    if (d.status === 'blocked') return { label: 'bloccata', cls: 'open' };
+    return { label: d.status || 'chiusa', cls: 'failed' };
+}
+
+const CLIENT_BODY = `
 const fmtTime = (ts) => {
     const d = new Date(ts);
     return Number.isNaN(d.getTime()) ? '--:--:--' : d.toTimeString().slice(0, 8);
@@ -92,13 +132,6 @@ function el(tag, className, text) {
     if (className) node.className = className;
     if (text !== undefined && text !== null) node.textContent = text;
     return node;
-}
-
-function statusOf(d) {
-    if (d.open) return { label: d.quiet ? 'in corso (silenziosa)' : 'in corso', cls: 'open' };
-    if (d.status === 'completed') return { label: 'completata', cls: 'closed' };
-    if (d.status === 'blocked') return { label: 'bloccata', cls: 'open' };
-    return { label: d.status || 'chiusa', cls: 'failed' };
 }
 
 function renderList() {
@@ -210,7 +243,7 @@ function renderDetail() {
     }
     if (d.open) {
         box.append(evRow(new Date().toISOString(), 'in corso', null,
-            el('span', 'dim', d.quiet ? 'nessun evento da oltre due minuti' : 'in attesa del prossimo evento')));
+            el('span', 'dim', d.quiet ? 'ferma da ' + sinceLabel(d.sinceMs) : 'in attesa del prossimo evento')));
     }
 }
 
@@ -255,6 +288,10 @@ state = JSON.parse(document.getElementById('data').textContent);
 render();
 if (state.live) setTimeout(poll, 1500);
 `;
+
+// One implementation, two runtimes. The state logic the tests call is the very
+// source the browser runs: injected here, never written a second time by hand.
+const CLIENT = String(sinceLabel) + '\n' + String(statusOf) + '\n' + CLIENT_BODY;
 
 /**
  * The whole page as one string.

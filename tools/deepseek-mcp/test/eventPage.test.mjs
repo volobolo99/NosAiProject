@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 
-import { renderPage } from '../src/eventPage.mjs';
+import { renderPage, sinceLabel, statusOf } from '../src/eventPage.mjs';
 
 function pageOf(overrides = {}) {
     return renderPage({
@@ -82,5 +82,52 @@ describe('the live page', () => {
         const still = pageOf({ live: false });
         assert.match(live, /"live":true/);
         assert.match(still, /"live":false/);
+    });
+});
+
+describe('lo stato di una delega', () => {
+    test("una delega senza evento di chiusura e' aperta, mai fallita", () => {
+        const st = statusOf({ open: true, quiet: false });
+        assert.equal(st.cls, 'open');
+        assert.equal(st.label, 'in corso');
+        assert.notEqual(st.cls, 'failed', 'senza status la delega aperta non e mai fallita');
+    });
+
+    test("una delega silenziosa dice da quanto tace, e resta aperta", () => {
+        const st = statusOf({ open: true, quiet: true, sinceMs: 90 * 60000 });
+        assert.equal(st.cls, 'open');
+        assert.ok(st.label.includes('ferma da 1 h 30 min'));
+    });
+
+    test("una delega rifiutata appare come fallita", () => {
+        const refused = statusOf({ open: false, status: 'refused' });
+        assert.equal(refused.cls, 'failed');
+        assert.equal(refused.label, 'refused');
+        const done = statusOf({ open: false, status: 'completed' });
+        assert.equal(done.cls, 'closed');
+        assert.equal(done.label, 'completata');
+    });
+
+    test("l'attesa e' scritta nell'unita' che un lettore usa", () => {
+        assert.equal(sinceLabel(45000), '45 s');
+        assert.equal(sinceLabel(300000), '5 min');
+        assert.equal(sinceLabel(3600000), '60 min');
+        assert.equal(sinceLabel(5400000), '1 h 30 min');
+        assert.equal(sinceLabel(null), '?');
+    });
+
+    test('un registro vuoto produce una pagina che lo dice', () => {
+        const html = pageOf();
+        assert.ok(html.includes('Nessuna delega registrata'));
+        const json = html.split('<script id="data" type="application/json">')[1].split('</script>')[0];
+        const data = JSON.parse(json.replace(/\\u003c/g, '<'));
+        assert.equal(data.delegations.length, 0);
+    });
+
+    test('la pagina spedisce la logica esportata, non una copia', () => {
+        const html = pageOf();
+        assert.ok(html.includes('function statusOf'));
+        assert.ok(html.includes('function sinceLabel'));
+        assert.equal(html.split('function statusOf').length - 1, 1);
     });
 });

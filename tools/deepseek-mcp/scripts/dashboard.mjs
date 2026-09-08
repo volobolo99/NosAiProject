@@ -4,9 +4,8 @@
  * worker was thinking when it made them -- refreshed on its own while the work
  * happens.
  *
- * Three views on the same log, and they do not overlap:
+ * Two views on the same log, and they do not overlap:
  *   watch.mjs      one event at a time, in a terminal
- *   report.mjs     a snapshot with no script in it, to archive or to send
  *   dashboard.mjs  this one: a page that keeps up, with the whole timeline
  *
  * It binds 127.0.0.1 and serves nothing but the page and its own JSON. It reads

@@ -5,8 +5,6 @@ import {
     QUIET_AFTER_MS,
     escapeHtml,
     groupDelegations,
-    renderMarkdown,
-    renderPage,
     summarise
 } from '../src/eventReport.mjs';
 
@@ -162,108 +160,5 @@ describe('escapeHtml', () => {
     test('null and undefined become empty text, not the words', () => {
         assert.equal(escapeHtml(null), '');
         assert.equal(escapeHtml(undefined), '');
-    });
-});
-
-describe('renderPage', () => {
-    const WHEN = new Date('2026-09-08T09:00:00.000Z');
-
-    test('markup from a model or a path cannot reach the page as markup', () => {
-        const events = [
-            start('aaa', 0, {
-                task: 'chiudi <script>alert(1)</script>',
-                workingDirectory: 'C:\\repo\\<img onerror=x>',
-                allowedPaths: ['src/"onmouseover="y']
-            })
-        ];
-        const html = renderPage(groupDelegations(events, T0 + 1000), WHEN);
-
-        assert.ok(!html.includes('<script>alert'), 'the task must not become a script tag');
-        assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
-        assert.ok(!html.includes('<img onerror'));
-        assert.ok(!html.includes('"onmouseover="'));
-    });
-
-    test('the page is self-contained: no script and nothing to fetch', () => {
-        const html = renderPage(groupDelegations([start('aaa', 0)], T0 + 1000), WHEN);
-        assert.ok(!/<script/i.test(html));
-        assert.ok(!/src\s*=\s*["']https?:/i.test(html));
-        assert.ok(!/@import|url\(\s*https?:/i.test(html));
-        assert.ok(html.startsWith('<!doctype html>'));
-    });
-
-    test('an open delegation reads as running, and a silent one says how long it has been silent', () => {
-        const events = [start('aaa', 0)];
-
-        assert.match(renderPage(groupDelegations(events, T0 + 1000), WHEN), /in corso/);
-
-        const idle = renderPage(groupDelegations(events, T0 + 90 * 60000), WHEN);
-        assert.match(idle, /ferma da 1 h 30 min/, 'a long wait is shown in hours, not in raw seconds');
-    });
-
-    test('a refused delegation is marked as a failure, not as an ordinary end', () => {
-        const html = renderPage(
-            groupDelegations([{ ts: at(0), id: 'aaa', ev: 'delegation_refused', reason: 'ricorsiva' }], T0 + 1000),
-            WHEN
-        );
-        assert.match(html, /class="card bad"/);
-        assert.match(html, /rifiutata/);
-        assert.match(html, /ricorsiva/);
-    });
-
-    test('an empty log produces a page that says so instead of an empty file', () => {
-        const html = renderPage([], WHEN);
-        assert.match(html, /nessuna delega/i);
-        assert.ok(html.includes('</html>'));
-    });
-
-    test('a read-only delegation is labelled as such', () => {
-        const html = renderPage(groupDelegations([start('aaa', 0, { readOnly: true })], T0 + 1000), WHEN);
-        assert.match(html, /sola lettura/);
-    });
-
-    test('the files a delegation touched are listed with their sizes', () => {
-        const events = [
-            start('aaa', 0),
-            {
-                ts: at(1000),
-                id: 'aaa',
-                ev: 'file_change',
-                action: 'modified',
-                path: 'src/Equip.cs',
-                bytesBefore: 18422,
-                bytesAfter: 19104
-            }
-        ];
-        const html = renderPage(groupDelegations(events, T0 + 2000), WHEN);
-        assert.match(html, /src\/Equip\.cs/);
-        assert.match(html, /18\.422 → 19\.104 B/);
-    });
-});
-
-describe('renderMarkdown', () => {
-    test('a delegation becomes a heading and its work becomes bullets', () => {
-        const events = [
-            start('20260908-0800-aa11', 0),
-            {
-                ts: at(1000),
-                id: '20260908-0800-aa11',
-                ev: 'file_change',
-                action: 'modified',
-                path: 'src/Equip.cs',
-                bytesBefore: 10,
-                bytesAfter: 20
-            }
-        ];
-        const md = renderMarkdown(events, new Date('2026-09-08T09:00:00.000Z'));
-
-        assert.match(md, /^# DeepSeek/);
-        assert.match(md, /### .* deepseek-v4-flash/);
-        assert.match(md, /- .*\*\*modified\*\* `src\/Equip\.cs`/);
-    });
-
-    test('an event that adds nothing in prose is left out', () => {
-        const md = renderMarkdown([{ ts: at(0), id: 'aaa', ev: 'api_request_start', round: 1 }], new Date());
-        assert.ok(!md.includes('api_request_start'));
     });
 });

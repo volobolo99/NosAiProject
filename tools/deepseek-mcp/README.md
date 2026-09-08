@@ -212,59 +212,26 @@ Esempio di una delega bloccata dal perimetro:
 08:33:40 FINE blocked   2 giri, 4 strumenti (1 rifiutati), 1 file, 158.7 s, token 13.902
 ```
 
-## Il quadro delle deleghe
+## La pagina viva
 
 Il visore risponde a «cosa sta succedendo adesso», un evento per volta. Dopo
 esserti allontanato, o quando piu' sessioni hanno delegato insieme e il registro
 le ha intrecciate, la domanda e' un'altra: «cosa e' successo, e cosa e' ancora
-aperto». Il rapporto raggruppa il registro per delega — la piu' recente in alto —
-e scrive una pagina che si apre da disco:
-
-```powershell
-node "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\scripts\report.mjs"
-```
-
-| Argomento | Cosa fa |
-|---|---|
-| *(nessuno)* | scrive `logs/report.html` |
-| `--markdown` | scrive `logs/report.md`, da incollare in un documento |
-| `--stdout` | stampa invece di scrivere |
-| `--out <percorso>` | sceglie il file da scrivere |
-| `--file <registro>` | legge un registro diverso da quello predefinito |
-
-Ogni delega diventa una scheda: modello, cartella, perimetro, tetti, giri,
-strumenti (con i rifiutati), file toccati, token, durata, incarico. Il bordo
-dice lo stato — verde in corso, ambra ferma da un po', grigio conclusa, rosso
-rifiutata o fallita.
-
-Una delega senza evento di chiusura e' riportata come aperta, mai come fallita:
-il registro dice cio' che e' stato scritto, e il silenzio non e' un esito. Una
-che non parla da due minuti e' segnata «ferma da», che e' un'osservazione, non
-un verdetto.
-
-La pagina e' un file solo: nessuno script, nessun carattere o foglio di stile da
-scaricare. Serve perche' si apre spesso mentre una delega e' ancora in corso, e
-una pagina che dipende da qualcosa che non riesce a raggiungere e' una pagina
-che mente sullo stato del lavoro. Non si aggiorna da sola: e' un'istantanea, e
-va rigenerata per vedere il seguito. Tutto cio' che non e' un numero — incarichi,
-percorsi, messaggi d'errore — viene scritto dal modello o preso dal filesystem,
-quindi finisce nella pagina come testo e mai come marcatura.
-
-## La pagina viva
-
-`report.mjs` produce un'istantanea da archiviare, senza script dentro.
-`dashboard.mjs` fa la cosa opposta: una pagina che **si aggiorna da sola** e
-mostra la cronologia completa di ogni delega — giri, ragionamento, strumenti,
-file — con il diario di tutti gli agenti in basso a sinistra.
+aperto». `dashboard.mjs` raggruppa il registro per delega — la piu' recente in
+alto — in una pagina che **si aggiorna da sola** e mostra la cronologia completa
+di ognuna: giri, ragionamento, strumenti, file, con il diario di tutti gli
+agenti in basso a sinistra.
 
 ```powershell
 node "C:\Users\volob\Desktop\NosAiProject\tools\deepseek-mcp\scripts\dashboard.mjs"
 ```
 
 Poi apri <http://127.0.0.1:7717>. La pagina interroga `/api/state` ogni secondo
-e mezzo: le deleghe aperte hanno un punto che pulsa, quelle ferme da oltre due
-minuti lo dicono — «ferma» non e' «fallita», e la pagina non decide al posto di
-chi legge.
+e mezzo: le deleghe aperte hanno un punto che pulsa, e quelle che non parlano da
+oltre due minuti dicono da quanto tacciono, in minuti o in ore. Una delega senza
+evento di chiusura e' riportata come aperta, mai come fallita: il registro dice
+cio' che e' stato scritto, e il silenzio non e' un esito. «Ferma da» e'
+un'osservazione, non un verdetto, e la pagina non decide al posto di chi legge.
 
 | Argomento | Cosa fa |
 |---|---|
@@ -275,6 +242,14 @@ chi legge.
 Il server ascolta **solo** su `127.0.0.1`, serve la pagina e il proprio JSON e
 nient'altro. Come gli altri due visori legge i file e basta: non parla con
 l'API, non tocca il repository, non puo' influenzare una delega in corso.
+
+La pagina non scarica nulla: nessun carattere, nessun foglio di stile, niente da
+fuori. Tutto cio' che le serve e' dentro il file, perche' si apre spesso mentre
+una delega e' ancora in corso, e una pagina che dipende da qualcosa che non
+riesce a raggiungere e' una pagina che mente sullo stato del lavoro. L'unico
+script e' il suo, e tutto cio' che non e' un numero — incarichi, percorsi,
+messaggi d'errore — viene scritto dal modello o preso dal filesystem: finisce
+nella pagina come testo, mai come marcatura.
 
 ## Il diario in Markdown
 
