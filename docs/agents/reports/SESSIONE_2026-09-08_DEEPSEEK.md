@@ -825,3 +825,62 @@ Un commento XML che conteneva `--` (build rotta), un `using System.IO;` mancante
 (sette errori), un `CS8600` dove `FirstOrDefault` restituisce `string?` e il
 codice controllava gia' il null. Tutte e tre corrette da Claude invece di
 spendere un giro di delega: il repository compila a zero avvisi e resta cosi'.
+
+---
+
+## Blocco richiesto dall'operatore — il pannello: ordine, dati veri, automazione
+
+Richiesta del 2026-09-08: «aggiornare il pannello di controllo, fare ordine, si
+devono vedere tutti i dati live e veri visto che abbiamo come rilevarlo, tutto
+quello che c'e' sul pannello deve funzionare. I test bisogna automatizzarli
+sempre il piu' possibile. Il pannello deve automaticamente rilevare client
+NosTale e la sua rete.»
+
+### Audit di partenza, misurato prima di proporre qualunque cosa
+
+| Controllo | Misura |
+|---|---|
+| Bottoni con `Click` | **34**, e tutti hanno un gestore: nessun bottone morto |
+| Controlli con `x:Name` | **135**, di cui **uno solo** mai citato nel codice: `ElevationStatusText` |
+| Aggiornamento automatico | esiste: `DispatcherTimer _poll` a **1 s** (`MainWindow.xaml.cs:28`) |
+| Rilevamento del client | **gia' automatico**: il polling porta `ClientProcessId` nello snapshot |
+| Rilevamento della **rete** | **manuale**: `SettingObserveGame.Text` e' scritto solo da `OnDetectObserveGame` (`:891`), mai dal polling |
+
+Il pannello non e' rotto: e' meta' automatico. Il client si rileva da solo, la sua
+rete no.
+
+### Q-152 — la rete si rileva da sola (prossimo, dopo Q-151)
+
+Criteri di accettazione, tutti osservabili:
+
+1. Quando il polling porta un `ClientProcessId` e l'endpoint e' vuoto, la rete
+   viene rilevata **senza premere nulla**.
+2. Un valore **digitato dall'operatore non viene mai sovrascritto**: rilevato,
+   digitato e letto dalle impostazioni sono tre provenienze diverse e la vista lo
+   dice.
+3. L'endpoint mostra **da dove viene e da quando**: un valore rilevato dieci
+   minuti fa non si disegna come uno di adesso -- e' la stessa regola dei ritagli
+   HUD.
+4. Il rilevamento non riparte a ogni secondo: scatta quando il PID compare o
+   cambia, non a ogni giro di orologio.
+5. Quando il client non c'e', il campo dice **perche'** invece di restare vuoto.
+6. Il bottone manuale resta e continua a funzionare: l'automatismo non toglie il
+   comando.
+
+### Q-153 — i dati mostrati sono veri, o dichiarano di non esserlo
+
+Da fare dopo Q-152, con lo stesso metodo dell'audit di AP-02: passare in rassegna
+ogni campo del pannello e verificare che il valore mostrato venga davvero dal
+runtime, che la provenienza (LIVE / DERIVED / CACHED / SIMULATED / UNKNOWN) sia
+quella del filo e non un'etichetta scritta a mano, e che un valore mai osservato
+si disegni come UNKNOWN con il motivo. Il controllo morto `ElevationStatusText`
+va tolto o popolato: un controllo che nessuno riempie e' una promessa che non
+mantiene.
+
+### Q-154 — automatizzare i test il piu' possibile
+
+Oggi ogni prova richiede all'operatore una sequenza di pressioni. Da valutare, in
+ordine di quanto tolgono di lavoro manuale: una sequenza guidata che esegue i
+passi in ordine e si ferma al primo rifiuto nominato; e il salvataggio
+dell'esito di ogni prova, cosi' che «l'ho gia' fatto» sia un fatto registrato e
+non un ricordo.
