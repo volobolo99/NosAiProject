@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private SnapshotView _lastSnapshot = SnapshotView.Empty("avvio");
     private FileSystemWatcher? _targetFiles;
     private string? _targetSignature;
+    private string? _inventoryPanelRoiSignature;
 
     public MainWindow()
     {
@@ -244,6 +245,7 @@ public partial class MainWindow : Window
         ApplyMap(snapshot);
         ApplyAround(snapshot);
         ApplyTarget();
+        ApplyInventoryPanelRoi();
         _lastSnapshot = snapshot;
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
@@ -314,6 +316,28 @@ public partial class MainWindow : Window
                 ? (Brush)FindResource("MutedBrush")
                 : (Brush)FindResource("LiveBrush");
         TargetRoiText.Foreground = (Brush)FindResource("MutedBrush");
+    }
+
+    /// <summary>
+    /// The equipment-panel ROI calibration is a versioned real file, not a
+    /// snapshot field: read it on the same cadence as the target ROI and draw
+    /// which slots are calibrated, when, and against which resolution. Read-only;
+    /// nothing here writes the file or executes equip/unequip.
+    /// </summary>
+    private void ApplyInventoryPanelRoi()
+    {
+        string path = Path.Combine(_repoRoot, InventoryPanelRoiCalibration.RelativePath);
+        string signature = InventoryPanelInspect.Signature(path);
+        if (signature == _inventoryPanelRoiSignature)
+            return;
+        _inventoryPanelRoiSignature = signature;
+
+        InventoryPanelRoiView view = InventoryPanelInspect.Inspect(path);
+        InventoryPanelRoiText.Text = view.Summary;
+        InventoryPanelRoiText.Foreground = view.Kind == InventoryPanelRoiKind.Calibrated
+            ? (Brush)FindResource("LiveBrush")
+            : (Brush)FindResource("MutedBrush");
+        InventoryPanelRoiFields.ItemsSource = view.Fields;
     }
 
     /// <summary>
@@ -431,7 +455,7 @@ public partial class MainWindow : Window
             ViewTarget.Visibility = Visibility.Visible;
             PageTitle.Text = "Bersaglio";
         }
-        else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; }
+        else if (ReferenceEquals(button, NavEquip)) { ViewEquip.Visibility = Visibility.Visible; PageTitle.Text = "Equipaggiamento"; ApplyInventoryPanelRoi(); }
         else if (ReferenceEquals(button, NavPhone)) { ViewPhone.Visibility = Visibility.Visible; PageTitle.Text = "Telefono Guard AI"; }
         else if (ReferenceEquals(button, NavPerception))
         {

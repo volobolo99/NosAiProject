@@ -234,6 +234,23 @@ adiacente confermato.
 
 ---
 
+# S5 — cliccare un bersaglio, e sapere dal filo se e' andata
+
+**Si prende dopo S3**, l'unica altra sessione che tocca `Program.cs`.
+
+La specifica intera sta in
+`docs/agents/phases/AP-05/AP-05_A2A4_DEEPSEEK_click_the_target.md`. In breve: il
+runtime clicca gia', ma solo per camminare; nessuno clicca su un'entita'. E il
+filo dice se il clic e' andato — `ct` porta l'id dell'entita' bersagliata — quindi
+il ciclo *Execute -> Verify -> Re-observe* si chiude per intero senza inventare
+niente.
+
+**File tuoi (5)**: `Tactical/ClickTargetExecutor.cs` (nuovo),
+`Tactical/ClickTargetCommand.cs` (nuovo), `Program.cs` (solo la registrazione),
+due file di test nuovi.
+
+---
+
 ## Cosa scrivere nel rapporto
 
 `docs/agents/reports/RAPPORTO_<SIGLA>.md`, in italiano, **fatti e numeri, non

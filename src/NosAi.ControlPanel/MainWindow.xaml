@@ -262,6 +262,14 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Test reali su AP-07 (equipaggiamento). Ogni card qui sotto si esegue solo con i bottoni: nessun comando da digitare.</TextBlock>
 
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="RIQUADRI SLOT EQUIPAGGIAMENTO (SCHERMO)"/>
+                <TextBlock x:Name="InventoryPanelRoiText" FontSize="14" TextWrapping="Wrap" Text="NON CALIBRATO"/>
+                <ItemsControl x:Name="InventoryPanelRoiFields" ItemTemplate="{StaticResource FieldTemplate}" Margin="0,8,0,0"/>
+              </StackPanel>
+            </Border>
+
             <Border x:Name="ElevationCard" Style="{StaticResource CardChrome}" Margin="0,0,0,14" Visibility="Collapsed">
               <StackPanel Orientation="Horizontal">
                 <TextBlock x:Name="ElevationStatusText" VerticalAlignment="Center" Margin="0,0,12,0" TextWrapping="Wrap"

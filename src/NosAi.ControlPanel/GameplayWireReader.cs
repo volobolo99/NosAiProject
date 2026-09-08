@@ -8,15 +8,23 @@ using NosAi.Runtime.Perception.Network;
 namespace NosAi.ControlPanel;
 
 /// <summary>
-/// Entities, last hit, and target as classified values, parsed from the wire
-/// form of <c>gameplayBaseline</c> without inventing members the payload omitted.
+/// Every field the baseline publishes, parsed from the wire form of
+/// <c>gameplayBaseline</c> without inventing members the payload omitted.
+/// The wire carries fourteen fields; this read keeps all of them, not the
+/// five the panel used to draw.
 /// </summary>
 internal readonly record struct GameplayPanelRead(
     ClassifiedValue<IReadOnlyList<SelectableEntity>> Entities,
     ClassifiedValue<Aggressor> HitBy,
     ClassifiedValue<bool> HasTarget,
     ClassifiedValue<int> MapId,
-    ClassifiedValue<MapPoint> StandingCell)
+    ClassifiedValue<MapPoint> StandingCell,
+    ClassifiedValue<IReadOnlyList<InventorySlotReading>> Inventory,
+    ClassifiedValue<TargetedEntity> SelectedTarget,
+    ClassifiedValue<IReadOnlyList<GroundItem>> GroundItems,
+    ClassifiedValue<ItemPickup> LastPickup,
+    ClassifiedValue<IReadOnlyList<SkillReady>> SkillsReady,
+    ClassifiedValue<bool> InCombat)
 {
     /// <summary>Nothing on the wire. Not an empty surroundings list.</summary>
     public static GameplayPanelRead Unknown(string reason) => new(
@@ -24,7 +32,13 @@ internal readonly record struct GameplayPanelRead(
         ClassifiedValue<Aggressor>.Unknown(reason),
         ClassifiedValue<bool>.Unknown(reason),
         ClassifiedValue<int>.Unknown(reason),
-        ClassifiedValue<MapPoint>.Unknown(reason));
+        ClassifiedValue<MapPoint>.Unknown(reason),
+        ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason),
+        ClassifiedValue<TargetedEntity>.Unknown(reason),
+        ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason),
+        ClassifiedValue<ItemPickup>.Unknown(reason),
+        ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason),
+        ClassifiedValue<bool>.Unknown(reason));
 }
 
 /// <summary>
@@ -54,9 +68,15 @@ internal static class GameplayWireReader
         return new GameplayPanelRead(
             ReadEntities(value),
             ReadHitBy(value),
-            ReadHasTarget(value),
+            ReadBool(value, "hasTarget"),
             ReadMapId(value),
-            ReadStandingCell(value));
+            ReadStandingCell(value),
+            ReadInventory(value),
+            ReadSelectedTarget(value),
+            ReadGroundItems(value),
+            ReadLastPickup(value),
+            ReadSkillsReady(value),
+            ReadBool(value, "inCombat"));
     }
 
     private static bool TryValueObject(JsonElement classified, out JsonElement value, out string reason)
@@ -113,9 +133,125 @@ internal static class GameplayWireReader
         return Classify(new Aggressor(id, type), source, at);
     }
 
-    private static ClassifiedValue<bool> ReadHasTarget(JsonElement payload)
+    private static ClassifiedValue<TargetedEntity> ReadSelectedTarget(JsonElement payload)
     {
-        if (!payload.TryGetProperty("hasTarget", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+        if (!payload.TryGetProperty("selectedTarget", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<TargetedEntity>.Unknown(GameplayObservation.NotPublishedReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<TargetedEntity>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement value) || value.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<TargetedEntity>.Unknown(reason);
+        if (!TryInt64(value, "entityId", out long id) || !TryInt32(value, "entityType", out int type))
+            return ClassifiedValue<TargetedEntity>.Unknown(reason);
+
+        return Classify(new TargetedEntity(id, type), source, at);
+    }
+
+    private static ClassifiedValue<IReadOnlyList<InventorySlotReading>> ReadInventory(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("inventory", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(GameplayObservation.NotPublishedReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement list) || list.ValueKind != JsonValueKind.Array)
+            return ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason);
+
+        DataSourceKind kind = ParseKind(source);
+        var rows = new List<InventorySlotReading>(list.GetArrayLength());
+        foreach (JsonElement item in list.EnumerateArray())
+        {
+            if (TryInventory(item, at, kind, out InventorySlotReading slot))
+                rows.Add(slot);
+        }
+
+        IReadOnlyList<InventorySlotReading> frozen = rows.Count == 0
+            ? Array.Empty<InventorySlotReading>()
+            : rows;
+        return Classify(frozen, source, at);
+    }
+
+    private static ClassifiedValue<IReadOnlyList<GroundItem>> ReadGroundItems(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("groundItems", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(GameplayObservation.NotPublishedReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement list) || list.ValueKind != JsonValueKind.Array)
+            return ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason);
+
+        DataSourceKind kind = ParseKind(source);
+        var rows = new List<GroundItem>(list.GetArrayLength());
+        foreach (JsonElement item in list.EnumerateArray())
+        {
+            if (TryGroundItem(item, at, kind, out GroundItem ground))
+                rows.Add(ground);
+        }
+
+        IReadOnlyList<GroundItem> frozen = rows.Count == 0
+            ? Array.Empty<GroundItem>()
+            : rows;
+        return Classify(frozen, source, at);
+    }
+
+    private static ClassifiedValue<IReadOnlyList<SkillReady>> ReadSkillsReady(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("skillsReady", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(GameplayObservation.NotPublishedReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement list) || list.ValueKind != JsonValueKind.Array)
+            return ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason);
+
+        DataSourceKind kind = ParseKind(source);
+        var rows = new List<SkillReady>(list.GetArrayLength());
+        foreach (JsonElement item in list.EnumerateArray())
+        {
+            if (TrySkillReady(item, at, kind, out SkillReady skill))
+                rows.Add(skill);
+        }
+
+        IReadOnlyList<SkillReady> frozen = rows.Count == 0
+            ? Array.Empty<SkillReady>()
+            : rows;
+        return Classify(frozen, source, at);
+    }
+
+    private static ClassifiedValue<ItemPickup> ReadLastPickup(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("lastPickup", out JsonElement node) || node.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<ItemPickup>.Unknown(GameplayObservation.NotPublishedReason);
+
+        if (!TryOpen(node, out string? source, out DateTime at, out string reason))
+            return ClassifiedValue<ItemPickup>.Unknown(reason);
+
+        if (!node.TryGetProperty("value", out JsonElement value) || value.ValueKind != JsonValueKind.Object)
+            return ClassifiedValue<ItemPickup>.Unknown(reason);
+        if (!TryInt32(value, "takerType", out int takerType)
+            || !TryInt64(value, "takerId", out long takerId)
+            || !TryInt64(value, "dropId", out long dropId))
+            return ClassifiedValue<ItemPickup>.Unknown(reason);
+
+        // Null is not false: before the own id is known the wire leaves byPlayer
+        // unset, and that absence stays a null rather than "not by the player".
+        bool? byPlayer = value.TryGetProperty("byPlayer", out JsonElement byNode)
+            && byNode.ValueKind is JsonValueKind.True or JsonValueKind.False
+                ? byNode.GetBoolean()
+                : null;
+
+        return Classify(new ItemPickup(takerType, takerId, dropId, byPlayer, at, ParseKind(source)), source, at);
+    }
+
+    private static ClassifiedValue<bool> ReadBool(JsonElement payload, string property)
+    {
+        if (!payload.TryGetProperty(property, out JsonElement node) || node.ValueKind != JsonValueKind.Object)
             return ClassifiedValue<bool>.Unknown(GameplayObservation.NotPublishedReason);
 
         if (!TryOpen(node, out string? source, out DateTime at, out string reason))
@@ -195,9 +331,7 @@ internal static class GameplayWireReader
         if (!TryInt32(item, "x", out int x) || !TryInt32(item, "y", out int y))
             return false;
 
-        DateTime at = item.TryGetProperty("observedAtUtc", out JsonElement timeNode) && TryTime(timeNode, out DateTime stated)
-            ? stated
-            : fallbackUtc;
+        DateTime at = ReadMemberTime(item, fallbackUtc);
 
         double? hp = null;
         if (item.TryGetProperty("hpRatio", out JsonElement hpNode) && hpNode.ValueKind == JsonValueKind.Number
@@ -223,6 +357,56 @@ internal static class GameplayWireReader
         entity = new SelectableEntity(id, new MapPoint(x, y), hp, at, vnum, Vitals: null, Kind: kind);
         return true;
     }
+
+    private static bool TryInventory(JsonElement item, DateTime fallbackUtc, DataSourceKind source, out InventorySlotReading slot)
+    {
+        slot = null!;
+        if (item.ValueKind != JsonValueKind.Object)
+            return false;
+        if (!TryInt32(item, "inventoryKind", out int kind)
+            || !TryInt32(item, "slot", out int slotIndex)
+            || !TryInt32(item, "vnum", out int vnum)
+            || !TryInt32(item, "amount", out int amount)
+            || !TryInt32(item, "rarity", out int rarity))
+            return false;
+
+        slot = new InventorySlotReading(kind, slotIndex, vnum, amount, rarity, ReadMemberTime(item, fallbackUtc), source);
+        return true;
+    }
+
+    private static bool TryGroundItem(JsonElement item, DateTime fallbackUtc, DataSourceKind source, out GroundItem ground)
+    {
+        ground = null!;
+        if (item.ValueKind != JsonValueKind.Object)
+            return false;
+        if (!TryInt64(item, "dropId", out long dropId)
+            || !TryInt32(item, "vnum", out int vnum)
+            || !TryInt32(item, "x", out int x)
+            || !TryInt32(item, "y", out int y)
+            || !TryInt32(item, "amount", out int amount)
+            || !TryInt64(item, "ownerId", out long ownerId))
+            return false;
+
+        ground = new GroundItem(vnum, dropId, x, y, amount, ownerId, ReadMemberTime(item, fallbackUtc), source);
+        return true;
+    }
+
+    private static bool TrySkillReady(JsonElement item, DateTime fallbackUtc, DataSourceKind source, out SkillReady skill)
+    {
+        skill = null!;
+        if (item.ValueKind != JsonValueKind.Object)
+            return false;
+        if (!TryInt32(item, "slot", out int slot))
+            return false;
+
+        skill = new SkillReady(slot, ReadMemberTime(item, fallbackUtc), source);
+        return true;
+    }
+
+    private static DateTime ReadMemberTime(JsonElement item, DateTime fallbackUtc)
+        => item.TryGetProperty("observedAtUtc", out JsonElement timeNode) && TryTime(timeNode, out DateTime stated)
+            ? stated
+            : fallbackUtc;
 
     private static bool TryInt64(JsonElement obj, string name, out long value)
     {
@@ -273,12 +457,21 @@ internal static class GameplayWireReader
         return true;
     }
 
-    private static ClassifiedValue<T> Classify<T>(T value, string? source, DateTime at) => source switch
+    private static DataSourceKind ParseKind(string? source) => source switch
     {
-        "LIVE" => ClassifiedValue<T>.Live(value, at),
-        "DERIVED" => ClassifiedValue<T>.Derived(value, at),
-        "CACHED" => ClassifiedValue<T>.Cached(value, at),
-        "SIMULATED" => ClassifiedValue<T>.Simulated(value, at),
+        "LIVE" => DataSourceKind.Live,
+        "DERIVED" => DataSourceKind.Derived,
+        "CACHED" => DataSourceKind.Cached,
+        "SIMULATED" => DataSourceKind.Simulated,
+        _ => DataSourceKind.Unknown
+    };
+
+    private static ClassifiedValue<T> Classify<T>(T value, string? source, DateTime at) => ParseKind(source) switch
+    {
+        DataSourceKind.Live => ClassifiedValue<T>.Live(value, at),
+        DataSourceKind.Derived => ClassifiedValue<T>.Derived(value, at),
+        DataSourceKind.Cached => ClassifiedValue<T>.Cached(value, at),
+        DataSourceKind.Simulated => ClassifiedValue<T>.Simulated(value, at),
         _ => ClassifiedValue<T>.Unknown("unclassified_source")
     };
 }

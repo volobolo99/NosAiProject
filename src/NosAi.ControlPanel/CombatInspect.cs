@@ -11,6 +11,7 @@ internal sealed class CombatView
 {
     public string LastHitLine { get; init; } = "";
     public string TargetLine { get; init; } = "";
+    public string SelectedTargetLine { get; init; } = "";
     public TargetFrameState TargetState { get; init; }
     public IReadOnlyList<DisplayField> Fields { get; init; } = Array.Empty<DisplayField>();
 }
@@ -27,22 +28,32 @@ internal static class CombatInspect
     public const string NoObservationLabel = SurroundingsInspect.NoObservationLabel;
 
     /// <summary>
+    /// Why the "which" row is UNKNOWN when the caller passed no selected target:
+    /// the panel's snapshot view does not carry <c>selectedTarget</c> (yet), so
+    /// nothing here claims the provider did not publish it.
+    /// </summary>
+    public const string SelectedTargetNotSurfacedReason = "selected_target_not_on_panel_snapshot";
+
+    /// <summary>
     /// Formats the combat row. Ages are measured against <paramref name="nowUtc"/>
     /// the same way surroundings ages are: the number is the drawing.
     /// </summary>
     public static CombatView Inspect(
         ClassifiedValue<Aggressor>? hitBy,
         ClassifiedValue<bool>? hasTarget,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        ClassifiedValue<TargetedEntity>? selectedTarget = null)
     {
         DisplayField hitField = HitField(hitBy, nowUtc, out string hitLine);
         DisplayField targetField = TargetField(hasTarget, out string targetLine, out TargetFrameState state);
+        DisplayField selectedField = SelectedTargetField(selectedTarget, out string selectedLine);
         return new CombatView
         {
             LastHitLine = hitLine,
             TargetLine = targetLine,
+            SelectedTargetLine = selectedLine,
             TargetState = state,
-            Fields = [hitField, targetField]
+            Fields = [hitField, targetField, selectedField]
         };
     }
 
@@ -91,5 +102,29 @@ internal static class CombatInspect
         state = TargetFrameState.Absent;
         line = $"Bersaglio: {AbsentLabel}";
         return new DisplayField("Bersaglio", $"{AbsentLabel} [{source}]", source);
+    }
+
+    /// <summary>
+    /// The wire's <i>which</i> beside the screen's <i>whether</i> (ADR-0018).
+    /// <c>SelectedTarget</c> is sticky by nature -- it names the last entity the
+    /// character acted on, not whether one is still selected -- so this row is
+    /// labelled "ultimo" and never claims a live selection.
+    /// </summary>
+    private static DisplayField SelectedTargetField(
+        ClassifiedValue<TargetedEntity>? selectedTarget,
+        out string line)
+    {
+        if (selectedTarget is null || !selectedTarget.HasValue)
+        {
+            string reason = selectedTarget?.FailureReason ?? SelectedTargetNotSurfacedReason;
+            line = $"Ultimo bersaglio: UNKNOWN · {reason}";
+            return new DisplayField("Ultimo bersaglio", $"UNKNOWN · {reason}", "UNKNOWN");
+        }
+
+        TargetedEntity who = selectedTarget.Value;
+        string source = selectedTarget.Source.ToWire();
+        line = string.Create(CultureInfo.InvariantCulture,
+            $"Ultimo bersaglio: id={who.EntityId} type={who.EntityType} [{source}]");
+        return new DisplayField("Ultimo bersaglio", line, source);
     }
 }
