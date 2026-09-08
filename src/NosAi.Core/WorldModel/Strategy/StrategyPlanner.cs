@@ -1,3 +1,4 @@
+using NosAi.Core.WorldModel.Combat;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Quests;
 
@@ -198,6 +199,43 @@ public static class StrategyPlanner
         };
 
         return new StrategicSignal(StrategicGoalKind.Exploration, urgency, reason);
+    }
+
+    /// <summary>
+    /// Farming urgency from AP-05's combat view: whether there is anything worth attacking and
+    /// whether it can be reached.
+    /// </summary>
+    /// <remarks>
+    /// Targets standing beyond reach score half, not zero. Zero would say "nothing to do here"
+    /// and let another goal win by default, when the honest reading is "there is prey and it
+    /// takes a few steps". A player position never observed reports nothing at all: every range
+    /// check rests on it, so scoring anything would be scoring a guess.
+    /// </remarks>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="mobs">This cycle's known mobs.</param>
+    /// <returns>The farming signal, or <see langword="null"/> when the player's own position is unknown.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> is null.</exception>
+    public static StrategicSignal? AssessFarmingUrgency(Player player, EquatableArray<Mob> mobs)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        CombatOpportunityVerdict verdict = CombatPlanner.ExplainCandidates(player, mobs);
+
+        if (verdict == CombatOpportunityVerdict.PlayerPositionUnknown)
+        {
+            return null;
+        }
+
+        (double urgency, string reason) = verdict switch
+        {
+            CombatOpportunityVerdict.CandidatesAvailable => (1.0, "targets_in_reach"),
+            CombatOpportunityVerdict.TargetsOutOfReach => (0.5, "targets_out_of_reach"),
+            CombatOpportunityVerdict.NoUsableAction => (0.0, "no_usable_action"),
+            CombatOpportunityVerdict.NoViableTarget => (0.0, "no_viable_target"),
+            _ => (0.0, "combat_verdict_unhandled"),
+        };
+
+        return new StrategicSignal(StrategicGoalKind.Farming, urgency, reason);
     }
 
     /// <summary>

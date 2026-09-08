@@ -1,6 +1,7 @@
 using System;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
+using NosAi.Core.WorldModel.Strategy;
 using Xunit;
 
 namespace NosAi.Core.Tests.WorldModel.Combat;
@@ -81,6 +82,43 @@ public sealed class CombatOpportunityVerdictTests
             EquatableArray<Mob>.From(new[] { BuildMob(position: new WorldPosition(4f, 0f)) }));
 
         Assert.Equal(CombatOpportunityVerdict.NoUsableAction, verdict);
+    }
+
+    /// <summary>
+    /// Prey a few steps away must not score zero: zero reads as "nothing to do here" and lets
+    /// another goal win by default, when the honest answer is that there is something worth
+    /// walking to.
+    /// </summary>
+    [Fact]
+    public void PreyBeyondReach_ScoresHalfRatherThanNothing()
+    {
+        StrategicSignal? signal = StrategyPlanner.AssessFarmingUrgency(
+            BuildPlayer(position: new WorldPosition(0f, 0f)),
+            EquatableArray<Mob>.From(new[] { BuildMob(position: new WorldPosition(50f, 0f)) }));
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.5, signal!.Urgency);
+        Assert.Equal("targets_out_of_reach", signal.Reason);
+    }
+
+    [Fact]
+    public void PreyInReach_ScoresFull()
+    {
+        StrategicSignal? signal = StrategyPlanner.AssessFarmingUrgency(
+            BuildPlayer(position: new WorldPosition(0f, 0f)),
+            EquatableArray<Mob>.From(new[] { BuildMob(position: new WorldPosition(1f, 0f)) }));
+
+        Assert.NotNull(signal);
+        Assert.Equal(1.0, signal!.Urgency);
+        Assert.Equal("targets_in_reach", signal.Reason);
+    }
+
+    [Fact]
+    public void AnUnknownPlayerPosition_ReportsNothingRatherThanNoUrgency()
+    {
+        Assert.Null(StrategyPlanner.AssessFarmingUrgency(
+            BuildPlayer(position: null),
+            EquatableArray<Mob>.From(new[] { BuildMob(position: new WorldPosition(1f, 0f)) })));
     }
 
     private static Player BuildPlayer(
