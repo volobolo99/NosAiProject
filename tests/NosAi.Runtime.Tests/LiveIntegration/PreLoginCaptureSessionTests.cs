@@ -327,4 +327,99 @@ public sealed class PreLoginCaptureSessionTests : IDisposable
         Assert.Equal(PreLoginOutcomeKind.Partial, outcome.Kind);
         Assert.Equal("handshake_not_in_recording:no_syn_before_discovery", outcome.Reason!);
     }
+
+    /// <summary>
+    /// A session whose client never arrives produces no recording at all and says in which words it
+    /// failed to produce one.
+    /// </summary>
+    [Fact]
+    public void A_session_whose_client_never_arrives_fails_naming_the_missing_endpoint()
+    {
+        string capturePath = Path.Combine(_root, "never-arrives.noscap");
+        using var prelude = Armed();
+        var watcher = new ClientArrivalWatcher(
+            processLookup: () => Array.Empty<int>(),
+            pollInterval: TimeSpan.FromMilliseconds(5));
+        using var session = new PreLoginCaptureSession(prelude, watcher, capturePath, timeout: TimeSpan.FromMilliseconds(50));
+
+        PreLoginCaptureOutcome outcome = session.Run();
+
+        Assert.Equal(PreLoginOutcomeKind.Failed, outcome.Kind);
+        Assert.NotNull(outcome.Reason);
+        Assert.StartsWith("no_client_endpoint:", outcome.Reason!);
+        Assert.Null(outcome.CapturePath);
+        Assert.Null(outcome.Endpoint);
+        Assert.False(File.Exists(capturePath));
+        Assert.Equal(0L, outcome.PacketsWritten);
+    }
+
+    /// <summary>
+    /// When the capture file cannot be written the session fails saying so, no exception escapes from
+    /// Run, and above all the wide buffer never spills anywhere onto disk.
+    /// </summary>
+    [Fact]
+    public void A_capture_file_that_cannot_be_written_fails_without_spilling_the_wide_buffer()
+    {
+        string blocker = Path.Combine(_root, "blocker");
+        File.WriteAllText(blocker, "not a directory");
+        string capturePath = Path.Combine(blocker, "denied", "writer-failed.noscap");
+
+        uint sequence = 1000;
+        CapturedPacket syn = OutboundSyn();
+        CapturedPacket stat = Inbound("stat 7305 7305 1420 1420 0 1184", ref sequence, 1);
+
+        using var prelude = Armed(syn, stat);
+        ClientArrivalWatcher watcher = IdentifiedWatcher();
+        using var session = new PreLoginCaptureSession(prelude, watcher, capturePath, timeout: TimeSpan.FromSeconds(10));
+
+        PreLoginCaptureOutcome outcome = session.Run();
+
+        Assert.Equal(PreLoginOutcomeKind.Failed, outcome.Kind);
+        Assert.NotNull(outcome.Reason);
+        Assert.StartsWith("capture_write_failed:", outcome.Reason!);
+        Assert.Equal(0L, outcome.PacketsWritten);
+        Assert.False(File.Exists(capturePath));
+        Assert.False(Directory.Exists(Path.Combine(blocker, "denied")));
+        Assert.Empty(Directory.GetFiles(_root, "*.noscap", SearchOption.AllDirectories));
+        Assert.Equal("not a directory", File.ReadAllText(blocker));
+    }
+
+    /// <summary>
+    /// If the conversation stays alive but incomplete, it is the deadline that closes the session, and
+    /// the session declares which opcode it never saw.
+    /// </summary>
+    [Fact]
+    public void A_session_that_runs_out_of_time_closes_partial_naming_the_missing_opcodes()
+    {
+        uint sequence = 1000;
+        CapturedPacket syn = OutboundSyn();
+        CapturedPacket stat = Inbound("stat 7305 7305 1420 1420 0 1184", ref sequence, 1);
+        CapturedPacket inventory = Inbound("in 1 2 3 4 5", ref sequence, 3);
+
+        string capturePath = Path.Combine(_root, "out-of-time.noscap");
+
+        // Deliberately not CompleteInput(): the source stays live, so only the deadline can end the loop.
+        using var prelude = new BroadWirePrelude(clock: () => At);
+        prelude.Accept(syn);
+        prelude.Accept(stat);
+        prelude.Accept(inventory);
+
+        ClientArrivalWatcher watcher = IdentifiedWatcher();
+        using var session = new PreLoginCaptureSession(
+            prelude,
+            watcher,
+            capturePath,
+            timeout: TimeSpan.FromMilliseconds(300),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        PreLoginCaptureOutcome outcome = session.Run();
+
+        Assert.Equal(PreLoginOutcomeKind.Partial, outcome.Kind);
+        Assert.NotNull(outcome.Reason);
+        Assert.StartsWith("timeout_before_criterion:", outcome.Reason!);
+        Assert.Contains("ivn|equip", outcome.Reason!);
+        Assert.Contains("ivn|equip", outcome.OpcodesMissing);
+        Assert.NotNull(outcome.CapturePath);
+        Assert.True(File.Exists(outcome.CapturePath));
+    }
 }

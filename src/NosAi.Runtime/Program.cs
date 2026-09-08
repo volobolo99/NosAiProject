@@ -94,6 +94,13 @@ public static class Program
         if (args.Any(a => string.Equals(a, "--input-probe", StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.LowLevel.InputEnvironmentProbe.RunConsoleProbe();
 
+        // Q-SONDA-03: le due sonde che aspettano la condizione invece di chiederla
+        // all'operatore. T-03 confronta la barra HP coi vitals del filo appena la
+        // barra scende; T-09 deriva la ROI del riquadro bersaglio dai frame che la
+        // seconda fonte etichetta. Entrambe scrivono l'evidenza e si chiudono da sole.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Perception.EvidenceWatch.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Perception.EvidenceWatch.Run(args);
+
         // Real-environment probe for the HUD reader (T-03). The Control Panel has
         // had this behind a button; running it here makes the test repeatable and
         // quotable instead of clicked and described.
