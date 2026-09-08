@@ -101,6 +101,67 @@ public static class CombatPlanner
         return candidates;
     }
 
+    /// <summary>
+    /// Why <see cref="GenerateCandidates"/> produced nothing, so an empty list is never read as
+    /// "there is no fight here".
+    /// </summary>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="mobs">This cycle's known mobs.</param>
+    /// <param name="basicAttackRange">Reach of the basic attack; same default as <see cref="GenerateCandidates"/>.</param>
+    /// <param name="skillRange">Reach of skills; same default as <see cref="GenerateCandidates"/>.</param>
+    /// <returns>The verdict explaining the absence of candidates.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> is null.</exception>
+    public static CombatOpportunityVerdict ExplainCandidates(
+        Player player,
+        EquatableArray<Mob> mobs,
+        double basicAttackRange = DefaultBasicAttackRange,
+        double skillRange = DefaultSkillRange)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!player.Position.HasValue)
+        {
+            return CombatOpportunityVerdict.PlayerPositionUnknown;
+        }
+
+        WorldPosition playerPosition = player.Position.Value;
+        double reach = Math.Max(basicAttackRange, skillRange);
+
+        bool anyViable = false;
+        bool anyWithinReach = false;
+
+        foreach (Mob mob in mobs)
+        {
+            if (!IsViableTarget(mob) || !mob.Position.HasValue)
+            {
+                continue;
+            }
+
+            anyViable = true;
+            if (Distance(playerPosition, mob.Position.Value) <= reach)
+            {
+                anyWithinReach = true;
+                break;
+            }
+        }
+
+        if (!anyViable)
+        {
+            return CombatOpportunityVerdict.NoViableTarget;
+        }
+
+        if (!anyWithinReach)
+        {
+            return CombatOpportunityVerdict.TargetsOutOfReach;
+        }
+
+        // A target stands in reach, yet the basic attack may be out of range while the skill
+        // list was never observed: reach without a usable action is not an opportunity.
+        return GenerateCandidates(player, mobs, basicAttackRange, skillRange).Count > 0
+            ? CombatOpportunityVerdict.CandidatesAvailable
+            : CombatOpportunityVerdict.NoUsableAction;
+    }
+
     /// <summary>A mob worth generating a candidate against: known hostile and known alive. Unknown either fact -- never assumed viable by omission.</summary>
     public static bool IsViableTarget(Mob mob) =>
         mob.IsHostile is { HasValue: true, Value: true } && mob.IsAlive is { HasValue: true, Value: true };
@@ -332,4 +393,30 @@ public static class CombatPlanner
         double dy = a.Y - b.Y;
         return Math.Sqrt((dx * dx) + (dy * dy));
     }
+}
+
+/// <summary>
+/// Why no combat action can be offered this cycle. An empty candidate list on its own cannot
+/// tell peace from blindness: "no enemy here" and "I do not know where I am" both produce
+/// nothing, and one asks the player to rest while the other asks it to look.
+/// </summary>
+public enum CombatOpportunityVerdict
+{
+    /// <summary>The player's own position was never observed, so every range check is meaningless.</summary>
+    PlayerPositionUnknown = 0,
+
+    /// <summary>At least one action can be taken against a target now.</summary>
+    CandidatesAvailable = 1,
+
+    /// <summary>No mob is known to be both hostile and alive, with a known position.</summary>
+    NoViableTarget = 2,
+
+    /// <summary>Viable targets exist but all of them stand beyond every reach: close the distance.</summary>
+    TargetsOutOfReach = 3,
+
+    /// <summary>
+    /// A target is in reach and still nothing can be done to it — typically an unobserved skill
+    /// list with the target outside basic-attack range. Not the same as having no target.
+    /// </summary>
+    NoUsableAction = 4
 }
