@@ -567,6 +567,33 @@ public static class Program
         // rather than read out of an archive. Entity ids are per-session and
         // vitals are per-instant, so a recording corroborates only the session it
         // was taken in; the probes had no way to obtain one until this flag.
+        // Con --record-wire l'operatore deve conoscere l'endpoint, che pero' non esiste
+        // finche' il client non si e' connesso. Questo flag arma la cattura prima,
+        // riconosce l'arrivo del client e si ferma da solo.
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.Capture.AwaitClientCaptureCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            int flag = Array.FindIndex(args, a =>
+                string.Equals(a, NosAi.LiveIntegration.Capture.AwaitClientCaptureCommand.Flag, StringComparison.OrdinalIgnoreCase));
+            string? outPath = null;
+            int outAt = Array.FindIndex(args, a => string.Equals(a, "--out", StringComparison.OrdinalIgnoreCase));
+            if (outAt >= 0 && outAt + 1 < args.Length && !args[outAt + 1].StartsWith("--", StringComparison.Ordinal))
+            {
+                outPath = args[outAt + 1];
+            }
+
+            var timeoutMinutes = 0;
+            int timeoutAt = Array.FindIndex(args, a => string.Equals(a, "--timeout", StringComparison.OrdinalIgnoreCase));
+            if (timeoutAt >= 0
+                && timeoutAt + 1 < args.Length
+                && int.TryParse(args[timeoutAt + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int minutes)
+                && minutes > 0)
+            {
+                timeoutMinutes = minutes;
+            }
+
+            return NosAi.LiveIntegration.Capture.AwaitClientCaptureCommand.Run(outPath, timeoutMinutes);
+        }
+
         if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.Capture.WireRecorder.Flag, StringComparison.OrdinalIgnoreCase)))
         {
             int flag = Array.FindIndex(args, a =>
@@ -1172,7 +1199,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };
