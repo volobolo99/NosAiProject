@@ -69,6 +69,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 18:45 | Claude (Direttore) | AP-06: `ExplainProgress` distingue "tutto completato" da "catena bloccata", che `GetStartableQuests` confondeva in una lista vuota | `src/NosAi.Core/WorldModel/Quests/QuestGraphPlanner.cs` | PASS — 8 test verdi; uno stato mai letto resta `Unknown` e non diventa `Blocked` | `+0` |
 | 2026-09-08 18:45 | Qwen 7B Locale | Stesura dei 7 test del verdetto | `tests/NosAi.Core.Tests/WorldModel/QuestProgressVerdictTests.cs` (assemblato da Claude, che ha corretto uno scenario sbagliato e aggiunto un caso) | PASS | `+1149` |
 | 2026-09-08 19:05 | Claude (Direttore) | Lo stesso difetto "lista vuota ambigua" cercato negli altri pianificatori e chiuso in tre: esplorazione, combattimento, equipaggiamento | `ExplorationPlanner.cs`, `CombatPlanner.cs`, `LoadoutPlanner.cs` + 3 file di test | PASS — 17 test nuovi, Core 753 superati e Runtime 2793, nessun fallito | `+0` |
+| 2026-09-08 19:30 | Claude (Direttore) | I verdetti collegati alla scelta della meta: aggiunti i segnali `Farming`, `Optimization` e `Progression`, che nessuna funzione produceva | `src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs` + 3 file di test | PASS — tutti e sette gli `StrategicGoalKind` ora hanno una sorgente; Core 767 superati, nessun fallito | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 

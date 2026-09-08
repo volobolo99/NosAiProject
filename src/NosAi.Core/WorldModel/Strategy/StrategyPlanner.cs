@@ -34,6 +34,12 @@ namespace NosAi.Core.WorldModel.Strategy;
 /// </remarks>
 public static class StrategyPlanner
 {
+    /// <summary>
+    /// Experience fraction from which the next level counts as within reach, so the reason names
+    /// the situation instead of leaving the caller to rediscover the threshold.
+    /// </summary>
+    public const double NearlyLevelledFraction = 0.9;
+
     /// <summary>Below this HP fraction, Survival becomes the loudest signal this method knows how to raise.</summary>
     public const double CriticalHealthFraction = 0.30;
 
@@ -276,6 +282,35 @@ public static class StrategyPlanner
         };
 
         return new StrategicSignal(StrategicGoalKind.Optimization, urgency, reason);
+    }
+
+    /// <summary>
+    /// Progression urgency from the experience pool: how close the character stands to its next
+    /// level.
+    /// </summary>
+    /// <remarks>
+    /// Urgency rises with the fraction already earned, because the value of pressing on grows as
+    /// the level nears: abandoning a bar at nine tenths wastes more than abandoning one just
+    /// begun. Experience never read reports nothing, not zero — a character whose progress was
+    /// never observed is not a character with nothing to gain.
+    /// </remarks>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <returns>The progression signal, or <see langword="null"/> when the experience pool was never read.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> is null.</exception>
+    public static StrategicSignal? AssessProgressionUrgency(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!TryGetFraction(player.Status, ResourceKind.Experience, out double fraction))
+        {
+            return null;
+        }
+
+        double urgency = Math.Clamp(fraction, 0.0, 1.0);
+        return new StrategicSignal(
+            StrategicGoalKind.Progression,
+            urgency,
+            fraction >= NearlyLevelledFraction ? "level_nearly_reached" : "experience_fraction");
     }
 
     /// <summary>
