@@ -196,6 +196,16 @@ public sealed record GameplayObservation(
     public ClassifiedValue<IReadOnlyList<WornEquipmentSlot>> Equipment { get; init; }
         = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(NotPublishedReason);
 
+    /// <summary>
+    /// The most recent level and experience reported by <c>lev</c>.
+    /// </summary>
+    /// <remarks>
+    /// Unknown until the wire states it. A character whose progress was never read is not a
+    /// character at zero experience, and the two must not collapse into the same reading.
+    /// </remarks>
+    public ClassifiedValue<PlayerProgression> Progression { get; init; }
+        = ClassifiedValue<PlayerProgression>.Unknown(NotPublishedReason);
+
     /// <summary>The most recent <c>get</c>, with its instant.</summary>
     public ClassifiedValue<ItemPickup> LastPickup { get; init; }
         = ClassifiedValue<ItemPickup>.Unknown(NotPublishedReason);
@@ -235,6 +245,7 @@ public sealed record GameplayObservation(
             SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             Equipment = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            Progression = ClassifiedValue<PlayerProgression>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
         };
@@ -515,6 +526,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     private bool _groundItemEverSeen;
     private readonly Dictionary<int, Retained<WornEquipmentSlot>> _equipment = new();
     private bool _equipmentEverSeen;
+    private Retained<PlayerProgression>? _progression;
 
     /// <inheritdoc />
     public string Name => "network_observation";
@@ -667,6 +679,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         AbsorbSkills(report);
         AbsorbInventory(report);
         AbsorbEquipment(report, now);
+        AbsorbProgression(report, now);
         AbsorbGroundItems(report, now);
         AbsorbPickup(report);
     }
@@ -806,6 +819,22 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         _equipmentEverSeen = true;
     }
 
+    /// <summary>
+    /// Keeps the most recent level/experience statement, leaving the retained one when a batch
+    /// says nothing about progression.
+    /// </summary>
+    private void AbsorbProgression(NetworkObservationReport report, DateTime now)
+    {
+        if (report.Progression is { } progression)
+        {
+            _progression = new Retained<PlayerProgression>(progression, report.Source, now, Fresh: true);
+        }
+        else if (_progression is { } retained)
+        {
+            _progression = retained with { Fresh = false };
+        }
+    }
+
     private void AbsorbGroundItems(NetworkObservationReport report, DateTime now)
     {
         foreach (Retained<GroundItem> retained in _groundItems.Values.ToList())
@@ -878,6 +907,9 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         Equipment = PublishList(
             _equipment.Values.OrderBy(r => r.Value.Slot),
             _equipmentEverSeen ? "no_equipment_retained" : "no_equipment_observed_yet"),
+        Progression = _progression is { } progress
+            ? Classify(progress.Value, progress.Fresh ? progress.Source : Remembered(progress.Source), progress.StatedAtUtc)
+            : ClassifiedValue<PlayerProgression>.Unknown("no_progression_observed"),
         LastPickup = _lastPickup is { } pickup
             ? Classify(pickup, _lastPickupFresh ? pickup.Source : Remembered(pickup.Source), pickup.ObservedAtUtc)
             : ClassifiedValue<ItemPickup>.Unknown("no_pickup_observed"),

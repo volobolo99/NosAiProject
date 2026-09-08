@@ -92,12 +92,25 @@ public static class GameplayObservationProjector
         WorldFact<MapId> currentMap = ClassifiedValueBridge.ToWorldFact(observation.MapId, id => new MapId($"map-{id.ToString(CultureInfo.InvariantCulture)}"));
         WorldFact<bool> isAlive = DeriveIsAlive(observation.Hp);
 
+        // Experience joins the pools only when the wire stated it. Adding a resource whose
+        // current and maximum are both Unknown would put a pool in the list that says nothing,
+        // and a reader counting pools would believe progression had been observed.
+        var pools = new List<Resource>(3)
+        {
+            new(ResourceKind.Health, ClassifiedValueBridge.ToWorldFact(observation.Hp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxHp, v => (double)v)),
+            new(ResourceKind.Mana, ClassifiedValueBridge.ToWorldFact(observation.Mp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxMp, v => (double)v)),
+        };
+
+        if (observation.Progression.HasValue)
+        {
+            pools.Add(new Resource(
+                ResourceKind.Experience,
+                ClassifiedValueBridge.WithSource(observation.Progression.Source, (double)observation.Progression.Value.Experience, observation.Progression.ObservedAtUtc),
+                ClassifiedValueBridge.WithSource(observation.Progression.Source, (double)observation.Progression.Value.ExperienceForNextLevel, observation.Progression.ObservedAtUtc)));
+        }
+
         var status = new CombatantStatus(
-            EquatableArray<Resource>.From(new[]
-            {
-                new Resource(ResourceKind.Health, ClassifiedValueBridge.ToWorldFact(observation.Hp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxHp, v => (double)v)),
-                new Resource(ResourceKind.Mana, ClassifiedValueBridge.ToWorldFact(observation.Mp, v => (double)v), ClassifiedValueBridge.ToWorldFact(observation.MaxMp, v => (double)v))
-            }),
+            EquatableArray<Resource>.From(pools),
             EquatableArray<StatusEffect>.Empty);
 
         WorldFact<EquatableArray<Cooldown>> cooldowns = observation.SkillsReady.HasValue
