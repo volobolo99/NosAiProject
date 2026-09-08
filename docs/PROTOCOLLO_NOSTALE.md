@@ -419,7 +419,22 @@ cond 1 3443217 0 0 11
 |---|---|
 | type, id | **confirmed** |
 | fields 3, 4 | **probable** — candidates: cannot-attack, cannot-move. Both `0` throughout, so never observed asserted |
-| speed (field 5) | **probable** — `11`, plausible for a level 56 character |
+| speed (field 5) | **probable** — `11`, plausible for a level 56 character. **Unit unknown**: see below |
+
+Il valore di `speed` resta decodificato e non usato finché non se ne conosce
+l'unità. L'uso ovvio sarebbe riconoscere uno spostamento impossibile fra due
+posizioni osservate — quindi una lettura corrotta — ma `11` senza scala non si
+converte in una distanza per unità di tempo, e sceglierne una a caso
+trasformerebbe un controllo di plausibilità in una sorgente di falsi allarmi.
+
+Per determinarla basta una cattura sola: il personaggio cammina fra due punti
+noti, `cond` dichiara la velocità, `mv` dà posizioni e istanti, e il rapporto
+fra distanza percorsa e tempo trascorso dà la scala.
+
+Da non confondere con la velocità istantanea: quella di `cond` è una
+statistica del personaggio, e per questo il commento di
+`TemporalBelief.EstimateVelocity` — «velocity is never itself observed» —
+resta vero anche ora che questo campo è decodificato.
 
 ---
 
