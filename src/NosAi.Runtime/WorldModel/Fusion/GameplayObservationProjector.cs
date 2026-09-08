@@ -130,24 +130,7 @@ public static class GameplayObservationProjector
                 ClassifiedValueBridge.WithSource(item.Source, item.Amount, item.ObservedAtUtc))))
             : EquatableArray<Drop>.Empty;
 
-        // The wire numbers the worn slots positionally and EquipmentSlot has exactly as many
-        // members as `eq` has positions, so index maps to member. That correspondence is a
-        // reading of the packet, not something the protocol document confirms, therefore an
-        // index outside the enum produces no item at all rather than a guessed slot: T-05 on a
-        // live session is what turns it from plausible into observed.
-        WorldFact<EquatableArray<EquipmentItem>> equipment = observation.Equipment.HasValue
-            ? ClassifiedValueBridge.WithSource(
-                observation.Equipment.Source,
-                EquatableArray<EquipmentItem>.From(observation.Equipment.Value
-                    .Where(worn => Enum.IsDefined(typeof(EquipmentSlot), worn.Slot))
-                    .Select(worn => new EquipmentItem(
-                        new ItemId(worn.Vnum.ToString(CultureInfo.InvariantCulture)),
-                        WorldFact<string>.Unknown("item_name_catalog_not_available", observation.Equipment.ObservedAtUtc),
-                        (EquipmentSlot)worn.Slot,
-                        ClassifiedValueBridge.WithSource(observation.Equipment.Source, true, observation.Equipment.ObservedAtUtc)))),
-                observation.Equipment.ObservedAtUtc)
-            : WorldFact<EquatableArray<EquipmentItem>>.Unknown(
-                observation.Equipment.FailureReason ?? EquipmentNeverReadReason, nowUtc);
+        WorldFact<EquatableArray<EquipmentItem>> equipment = ProjectEquipment(observation.Equipment, nowUtc);
 
         var player = new Player(
             playerId,
@@ -235,6 +218,42 @@ public static class GameplayObservationProjector
     /// until it lands, a fraction over two Unknown bounds is the whole truth.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Turns an observed worn set into the World Model's equipment fact, keeping "never read"
+    /// distinct from "read and wearing nothing".
+    /// </summary>
+    /// <remarks>
+    /// The wire numbers the worn slots positionally and <see cref="EquipmentSlot"/> has exactly
+    /// as many members as <c>eq</c> has positions, so an index maps to a member. That
+    /// correspondence is a reading of the packet, not something the protocol document confirms,
+    /// therefore an index outside the enum produces no item at all rather than a guessed slot:
+    /// T-05 on a live session is what turns it from plausible into observed.
+    /// </remarks>
+    /// <param name="observed">The worn set as published by the gameplay observation.</param>
+    /// <param name="nowUtc">Instant stamped on the Unknown fact when nothing was published.</param>
+    /// <returns>The equipment fact, Unknown when the set was never published.</returns>
+    public static WorldFact<EquatableArray<EquipmentItem>> ProjectEquipment(
+        RuntimeContracts.ClassifiedValue<IReadOnlyList<NosAi.Runtime.Perception.Network.WornEquipmentSlot>> observed,
+        DateTime nowUtc)
+    {
+        if (!observed.HasValue)
+        {
+            return WorldFact<EquatableArray<EquipmentItem>>.Unknown(
+                observed.FailureReason ?? EquipmentNeverReadReason, nowUtc);
+        }
+
+        return ClassifiedValueBridge.WithSource(
+            observed.Source,
+            EquatableArray<EquipmentItem>.From(observed.Value
+                .Where(worn => Enum.IsDefined(typeof(EquipmentSlot), worn.Slot))
+                .Select(worn => new EquipmentItem(
+                    new ItemId(worn.Vnum.ToString(CultureInfo.InvariantCulture)),
+                    WorldFact<string>.Unknown("item_name_catalog_not_available", observed.ObservedAtUtc),
+                    (EquipmentSlot)worn.Slot,
+                    ClassifiedValueBridge.WithSource(observed.Source, true, observed.ObservedAtUtc)))),
+            observed.ObservedAtUtc);
+    }
+
     private static (EquatableArray<Mob> Mobs, EquatableArray<Npc> Npcs) ProjectEntities(
         GameplayObservation observation,
         Func<int, CatalogueClass>? classifyVnum)

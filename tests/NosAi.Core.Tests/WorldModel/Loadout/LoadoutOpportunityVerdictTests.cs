@@ -97,15 +97,15 @@ public sealed class LoadoutOpportunityVerdictTests
     }
 
     [Fact]
-    public void AnAvailableChange_ScoresFull()
+    public void AvailableOptions_ScoreLowBecauseTheyAreNotRanked()
     {
         StrategicSignal? signal = StrategyPlanner.AssessOptimizationUrgency(
             BuildPlayer(equipment: EquatableArray<EquipmentItem>.From(new[] { BuildEquipped("sword", EquipmentSlot.Weapon) })),
             NoSlot);
 
         Assert.NotNull(signal);
-        Assert.Equal(1.0, signal!.Urgency);
-        Assert.Equal("loadout_change_available", signal.Reason);
+        Assert.Equal(0.2, signal!.Urgency);
+        Assert.Equal("loadout_options_available_unranked", signal.Reason);
     }
 
     private static EquipmentItem BuildEquipped(string id, EquipmentSlot slot) =>

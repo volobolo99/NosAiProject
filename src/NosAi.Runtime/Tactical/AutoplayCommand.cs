@@ -345,16 +345,15 @@ public static class AutoplayCommand
     /// </remarks>
     [SupportedOSPlatform("windows")]
     private static EquatableArray<Mob> ObserveMobs(
-        LiveObservationScope? feed,
+        GameplayObservation? observation,
         CatalogueClassifier classifier,
         EntityId playerId,
         long cycle,
         DateTime nowUtc)
     {
-        if (feed is null)
+        if (observation is null)
             return EquatableArray<Mob>.Empty;
 
-        GameplayObservation observation = feed.Gateway.Capture().Gameplay;
         return GameplayObservationProjector
             .Project(observation, playerId, cycle, nowUtc, classifier.Classify)
             .Mobs;
@@ -546,6 +545,12 @@ public static class AutoplayCommand
                 // Unknown/empty -- the same "minimal object with only the real
                 // facts" pattern ScoutCommand.RunWindows applies to the
                 // map/snapshot.
+                // One capture serves both the mobs and the worn set: taking it twice would ask
+                // the client the same question two times in the same cycle and could answer
+                // differently, describing a character that never existed in either instant.
+                GameplayObservation? gameplay = entityFeed?.Gateway.Capture().Gameplay;
+                EquatableArray<Mob> cycleMobs = ObserveMobs(gameplay, entityClassifier, entityPlayerId, cycle, now);
+
                 var healthResource = new Resource(
                     ResourceKind.Health,
                     WorldFact<double>.Live(vitals.Hp, confidence: 1d, now),
@@ -572,7 +577,9 @@ public static class AutoplayCommand
                     WorldFact<EquatableArray<Skill>>.Unknown("skill_list_not_read_by_autoplay", now),
                     WorldFact<EquatableArray<Cooldown>>.Unknown("cooldowns_not_read_by_autoplay", now),
                     WorldFact<EquatableArray<InventoryItem>>.Unknown("inventory_not_read_by_autoplay", now),
-                    WorldFact<EquatableArray<EquipmentItem>>.Unknown("equipment_not_read_by_autoplay", now));
+                    gameplay is { } observedGameplay
+                        ? GameplayObservationProjector.ProjectEquipment(observedGameplay.Equipment, now)
+                        : WorldFact<EquatableArray<EquipmentItem>>.Unknown("entity_feed_unavailable", now));
 
                 StrategicSignal? survival = StrategyPlanner.AssessSurvivalUrgency(playerFacts);
                 StrategicSignal? recovery = StrategyPlanner.AssessRecoveryUrgency(playerFacts, inCombat);
@@ -585,7 +592,6 @@ public static class AutoplayCommand
                 // taken every cycle for ExecuteOneCycle; taking it here costs no extra capture
                 // and lets the goal be chosen knowing whether there is anything to fight,
                 // instead of deciding blind and meeting the mobs afterwards.
-                EquatableArray<Mob> cycleMobs = ObserveMobs(entityFeed, entityClassifier, entityPlayerId, cycle, now);
                 StrategicSignal? farming = StrategyPlanner.AssessFarmingUrgency(playerFacts, cycleMobs);
 
                 // Recovery before Survival is deliberate, not arbitrary:

@@ -274,7 +274,13 @@ public static class StrategyPlanner
 
         (double urgency, string reason) = verdict switch
         {
-            LoadoutOpportunityVerdict.CandidatesAvailable => (1.0, "loadout_change_available"),
+            // Deliberately low. LoadoutPlanner emits one candidate per equipped piece, so a
+            // fully geared character always has candidates: they are options, not needs, and
+            // scoring them at one would make Optimization win every cycle over goals that
+            // measure a real deficit. A ranked benefit — which piece is actually better, and
+            // by how much — is AP-07's remaining work; until it exists this signal states
+            // presence, not priority.
+            LoadoutOpportunityVerdict.CandidatesAvailable => (0.2, "loadout_options_available_unranked"),
             LoadoutOpportunityVerdict.EquipmentNeverRead => (0.25, "equipment_never_read"),
             LoadoutOpportunityVerdict.InventoryNeverRead => (0.25, "inventory_never_read"),
             LoadoutOpportunityVerdict.NothingToChange => (0.0, "loadout_already_settled"),
