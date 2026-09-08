@@ -236,6 +236,59 @@ public static class ExplorationPlanner
             nowUtc);
     }
 
+    /// <summary>
+    /// Why frontier scoring produced nothing, so an empty candidate list is never read as
+    /// "this map is finished".
+    /// </summary>
+    /// <param name="map">The map as currently modelled.</param>
+    /// <param name="footprint">Which tiles of that map have been visited.</param>
+    /// <returns>The verdict explaining the absence of candidates, or <see cref="ExplorationVerdict.FrontierAvailable"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="map"/> or <paramref name="footprint"/> is null.</exception>
+    /// <exception cref="ArgumentException">The footprint belongs to a different map.</exception>
+    public static ExplorationVerdict ExplainFrontier(MapModel map, ExplorationFootprint footprint)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        ArgumentNullException.ThrowIfNull(footprint);
+
+        if (!map.Id.Equals(footprint.MapId))
+        {
+            throw new ArgumentException(
+                $"Footprint is for map '{footprint.MapId}' but the map given is '{map.Id}'.",
+                nameof(footprint));
+        }
+
+        if (map.Tiles.Count == 0)
+        {
+            return ExplorationVerdict.MapUnknown;
+        }
+
+        var visited = new HashSet<TileCoordinate>();
+        foreach (TileCoordinate coordinate in footprint.VisitedTiles)
+            visited.Add(coordinate);
+
+        bool anyUnvisited = false;
+        foreach (Tile tile in map.Tiles)
+        {
+            if (visited.Contains(tile.Coordinate))
+            {
+                continue;
+            }
+
+            anyUnvisited = true;
+            if (IsWalkable(tile))
+            {
+                return ExplorationVerdict.FrontierAvailable;
+            }
+        }
+
+        // Unvisited tiles that cannot be walked are not exploration left to do: the map is
+        // as covered as it can be, and saying "fully explored" would be a different claim
+        // from "what remains is wall".
+        return anyUnvisited
+            ? ExplorationVerdict.NoReachableFrontier
+            : ExplorationVerdict.FullyExplored;
+    }
+
     private static bool IsWalkable(Tile tile) =>
         tile.Traversability.HasValue && tile.Traversability.Value == TileTraversability.Walkable;
 
@@ -355,4 +408,27 @@ public sealed record FrontierScoringWeights(
         TravelCost: 0.5,
         Risk: 2.0,
         MissionRelevance: 1.0);
+}
+
+/// <summary>
+/// Why <see cref="ExplorationPlanner"/> has no frontier to offer. An empty candidate list on
+/// its own cannot tell a map never observed from one walked end to end, and the two demand
+/// opposite behaviour: look first, or leave.
+/// </summary>
+public enum ExplorationVerdict
+{
+    /// <summary>No tile of this map has been observed yet: there is nothing to reason about.</summary>
+    MapUnknown = 0,
+
+    /// <summary>At least one walkable tile has not been visited.</summary>
+    FrontierAvailable = 1,
+
+    /// <summary>Every observed tile has been visited: this map is done.</summary>
+    FullyExplored = 2,
+
+    /// <summary>
+    /// Tiles remain unvisited but none of them can be walked. Not the same claim as
+    /// <see cref="FullyExplored"/>: what is left is wall, not coverage.
+    /// </summary>
+    NoReachableFrontier = 3
 }
