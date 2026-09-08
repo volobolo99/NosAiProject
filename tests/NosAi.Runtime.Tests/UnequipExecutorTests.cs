@@ -232,6 +232,30 @@ public sealed class UnequipExecutorTests
         Assert.DoesNotContain(recorder.Events, e => e.StartsWith("click:", StringComparison.Ordinal));
     }
 
+    // ------------------------------------------------------- a slot the calibration does not name
+
+    [Fact]
+    public void ASlotOutsideTheCalibration_IsRefused_WithoutClicking()
+    {
+        var recorder = new RecordingInputBackend();
+        UnequipExecutor executor = Build(recorder);
+
+        // The calibration is complete, so it names every EquipmentSlot value
+        // produced by Enum.GetValues<EquipmentSlot>(). Casting to an undeclared
+        // value, e.g. (EquipmentSlot)200, is the only way to observe this
+        // defensive branch: a complete calibration cannot miss a declared slot.
+        UnequipReport report = executor.Unequip(
+            Request((EquipmentSlot)200),
+            Calibrated(),
+            in Operator,
+            EquipReader());
+
+        Assert.False(report.Emitted);
+        Assert.Equal(UnequipExecutor.SlotNotResolvedReason, report.RefusalReason);
+        Assert.Equal(UnequipOutcome.NotAttempted, report.Verification.Outcome);
+        Assert.Empty(recorder.Events);
+    }
+
     // ------------------------------------------------------- the gesture
 
     [Fact]
