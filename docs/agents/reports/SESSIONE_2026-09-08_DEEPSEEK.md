@@ -193,3 +193,72 @@ ripasserebbe la chiave vecchia.
 
 Due tentativi equivalenti su Q-140 e nessun terzo: la regola dei due cicli e'
 stata rispettata cambiando diagnosi invece di ripetere la chiamata.
+
+---
+
+## Ripresa 06:12 — la chiave e' giusta, la finestra che ha avviato Claude e' vecchia
+
+Terzo guasto, e non e' una ricaduta dei primi due. Q-140 rifiutato di nuovo
+prima di raggiungere l'API, **zero token**:
+
+```
+DEEPSEEK_API_KEY is not set in the server process environment.
+```
+
+Stato misurato subito dopo:
+
+| Ambito | Esito |
+|---|---|
+| `User` | lunghezza **35**, zero caratteri non ammessi, forma `^sk-[0-9a-f]{32}$` **valida** |
+| `User` `DEEPSEEK_MODEL` | `deepseek-v4-flash` |
+| Ambiente di Claude Code (e quindi del server MCP) | **ASSENTE** |
+
+La riparazione ha retto: il valore persistito e' corretto. Non arriva al
+processo.
+
+### La causa, dalla catena dei processi
+
+```
+claude.exe        PID 35328, avviato il 08/09/2026 06:10:24
+  lanciato da ->  powershell.exe PID 66124, aperta il 08/09/2026 04:56:46
+```
+
+La finestra che ha lanciato Claude Code e' stata aperta alle **04:56**, cioe'
+prima che la variabile esistesse (l'operatore l'ha impostata verso le 05:55, e la
+riparazione e' delle 06:06). Su Windows il blocco d'ambiente di un processo si
+fissa alla creazione e non si aggiorna: quella finestra non ha mai avuto la
+variabile, e ogni `claude` lanciato da li' la eredita vuota. Riavviare Claude
+Code dalla **stessa** finestra non cambia nulla, per costruzione.
+
+### Le due strade
+
+**Preferita** — in qualunque finestra, prima di lanciare `claude`:
+
+```powershell
+$env:DEEPSEEK_API_KEY = [Environment]::GetEnvironmentVariable('DEEPSEEK_API_KEY','User')
+$env:DEEPSEEK_MODEL   = [Environment]::GetEnvironmentVariable('DEEPSEEK_MODEL','User')
+$env:DEEPSEEK_API_KEY.Length    # deve stampare 35
+claude
+```
+
+Una finestra PowerShell **nuova** funziona da sola, perche' legge il registro
+all'apertura.
+
+**Alternativa, che toglie la dipendenza dalla finestra**: `.claude/` e' ignorato
+da git (`.gitignore:82`), quindi un blocco `env` in
+`.claude/settings.local.json` verrebbe applicato all'avvio senza passare dalla
+shell. Costo: la chiave finirebbe in chiaro su disco. Non fatto senza consenso
+esplicito dell'operatore.
+
+## Stato di Q-140
+
+**Non eseguito.** Tre invocazioni, nessuna ha raggiunto l'API, nessun file
+toccato, **zero token**. L'incarico e' formulato e pronto: si rimanda identico.
+
+## Consumi aggiornati
+
+| Voce | Token |
+|---|---|
+| Prova di collegamento del 2026-09-07 | 9244 |
+| Q-140, tentativi 1-3 (mai arrivati all'API) | **0** |
+| Verifica `check-connection` dopo la riparazione | 131 |
