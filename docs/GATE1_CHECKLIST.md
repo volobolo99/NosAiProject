@@ -44,7 +44,7 @@ Il Gate 1 è superato solo quando tutti i punti pertinenti risultano completati 
 | End-to-end | PC ↔ smartphone | [x] **reale via Wi-Fi** | NosTale reale → runtime → telefono su LAN senza USB: `authenticated=True`, heartbeat in avanzamento, `NostaleClientX [LIVE]` |
 | End-to-end | Runtime ↔ dashboard | [x] **reale** | catena verificata con client reale: runtime 8766 → dashboard 8765 `connected=true`, `telemetry_source=LIVE` |
 | End-to-end | Errore/disconnessione/riconnessione | [x] **reale** | ciclo completo su dispositivo fisico: connesso → ucciso → fail-closed → riconnesso con nuova sessione |
-| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 181; `NosAi.Runtime.Tests` 175; 18 suite del runtime verdi. Fra questi 15 test negativi sul confine del canale (peer v1/v2, magic estraneo, chiave non fidata, frame in chiaro, replay, punto fuori curva), ognuno con il motivo atteso. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
+| Governance | Nessuna regressione bloccante | [x] locale | `pytest` 185 su 32 file; `NosAi.Core.Tests` 771; `NosAi.Runtime.Tests` 2800 superati su 2809 con 9 ignorati; 21 suite di certificazione del runtime verdi (misurato il 2026-09-08). Fra questi 15 test negativi sul confine del canale (peer v1/v2, magic estraneo, chiave non fidata, frame in chiaro, replay, punto fuori curva), ognuno con il motivo atteso. Nota: su questa macchina l'apphost `.exe` è bloccato da Application Control (`0x800711C7`), quindi le suite vanno lanciate come `dotnet <percorso>.dll` |
 | Governance | Documentazione coerente | [x] locale | source of truth, checklist, stato |
 
 ---
