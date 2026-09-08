@@ -335,3 +335,168 @@ ritorno della stessa entita'.
 
 Rimuovere resta corretto in entrambi i casi: chi ricompare viene reinserito dal
 primo pacchetto che lo nomina.
+
+---
+
+## Q-143 e Q-144 — consegnati, e verificati uno per uno
+
+Delegati in parallelo, perche' le due specifiche certificano proprieta' dei file
+disgiunta fra loro e con Q-140. Nessuna collisione osservata.
+
+### Q-143 — nulla da integrare
+
+16 giri API, 40 chiamate, 560 s, 1 121 803 token. Il lavoratore ha riferito che
+le quattro parti erano gia' chiuse: la logica dei verdetti e' confluita in
+`PracticalTestCenter.cs` e `CognitiveMemoryWindow` stampa gia'
+`UNKNOWN (nessuna misura)` al posto delle percentuali. Verificato: vero, dal
+commit **`cfa22ff`**.
+
+Ha prodotto sette test nuovi in tre file `PanelTruth*`. **Non integrati**, perche'
+tutti e sette duplicano test gia' presenti:
+
+| Consegnato | Gia' presente |
+|---|---|
+| `T5_with_populated_entities_reads_the_real_path_and_stays_unknown` | `PracticalTestCenterVerdictTests.T5_with_populated_entities_is_not_blocked` |
+| `T5_without_entities_is_blocked_and_its_evidence_names_a_real_path` | `…T5_without_entities_is_blocked_and_evidence_names_a_real_path` |
+| `T8_with_populated_inventory_no_longer_prints_the_false_unpublished_reason` | `…T8_with_populated_inventory_no_longer_claims_the_contract_is_unpublished` |
+| `True_blocked_reasons_of_the_window_stay_pinned` | `…True_blocked_reasons_are_pinned` |
+| `Unknown_classified_value_with_reason_renders_UNKNOWN_and_reason_not_an_empty_cell` | `LiveFieldRenderingTests.Unknown_classified_value_shows_unknown_and_reason_not_an_empty_cell` |
+| `Cached_and_live_values_with_the_same_content_draw_differently` | `LiveFieldRenderingTests.Cached_and_live_values_with_same_content_draw_differently` |
+| `Cycle_without_measure_shows_the_outcome_fact_and_never_a_percentage` | `CognitiveDecisionDisplayTests.Cycle_decision_without_measure_never_prints_a_percentage` |
+
+Le uniche asserzioni non duplicate sono tre negazioni sul vecchio percorso
+(`mapWorld`, `map/entities`), gia' **implicate** dall'uguaglianza esatta che il
+test preesistente asserisce su `verdict.Evidence`. Copertura aggiunta: zero;
+costo di manutenzione: doppio. I tre file **non sono stati cancellati**, sono
+messi da parte e recuperabili con un `git add` se l'operatore li vuole.
+
+Difetto di qualita' rilevato, per il registro: in
+`Cached_and_live_values_with_the_same_content_draw_differently` la coda del test
+costruisce due stringhe **dentro il test** e asserisce che siano diverse -- una
+tautologia che non tocca il codice di produzione. Le asserzioni che contano
+(`hp.Source == "LIVE"`, `mp.Source == "CACHED"`) sono invece corrette.
+
+### Q-144 — una correzione vera, dieci byte
+
+33 giri API, 53 chiamate, 525 s, 3 454 890 token. Le cinque parti erano gia'
+fatte (commit **`9a9ae99`**), `PerceptionMapTargetTruthTests.cs` incluso. Il
+lavoratore ha trovato l'unico residuo e l'ha corretto:
+
+```diff
+-: $"HP/MP numerici UNKNOWN · {observation.Hp.Current.FailureReason ?? "ocr_glyphs_not_trained"}";
++: $"HP/MP numerici UNKNOWN · {observation.Hp.Current.FailureReason ?? "unclassified"}";
+```
+
+Verificato da Claude, non creduto sulla parola:
+
+- i fallback fratelli `BarField` (`:339`) e `FormatVital` (`:343`) usano davvero
+  `"unclassified"`: la modifica e' coerente con il file;
+- `ScreenVitalReader` allega **sempre** un motivo -- `no_frame_pixels`,
+  `ocr_glyphs_not_trained`, `no_glyphs_in_roi`, `unrecognized_glyph`,
+  `numeric_text_not_parsed` -- quindi il ramo `??` era morto e, se mai raggiunto,
+  avrebbe accusato l'OCR senza prove. La correzione e' giusta.
+
+**Rilievo sul metodo, non sul risultato**: il rapporto cita
+`ScreenVitalReader.cs:50-51,96,104-116` come evidenza, ma quella lettura gli era
+stata **rifiutata** (`OUT_OF_SCOPE`). I numeri di riga non potevano venire dal
+file. La sostanza regge -- l'ho verificata io -- ma una citazione di riga in un
+rapporto DeepSeek non e' una prova finche' non e' ricontrollata.
+
+### Un errore mio, corretto
+
+Avevo scritto che la Parte 1 di Q-144 era aperta, avendo letto la riga che
+restituisce `LIVE` senza la guardia che la precede. `HudCropField` e' invece
+gia' corretto: `crops.Count == 0` da' `UNKNOWN · crop_not_saved`, e ogni ritaglio
+scritto porta il proprio istante. Il lavoratore aveva ragione.
+
+---
+
+## Verifica finale, eseguita dall'architetto
+
+| Controllo | Comando | Esito |
+|---|---|---|
+| Build soluzione | `dotnet build NosAi.sln -c Release` | **0 errori, 0 avvisi** |
+| Test ControlPanel | `dotnet test tests/NosAi.ControlPanel.Tests -c Release` | **159 superati, 0 falliti**, 0 ignorati |
+| Test Runtime | `dotnet test tests/NosAi.Runtime.Tests -c Release` | **2721 superati, 1 fallito**, 9 ignorati, 2731 totali |
+
+Con i tre file `PanelTruth*` inclusi la suite ControlPanel compilava e passava
+comunque (169 su 169): i dieci casi in piu' erano corretti, solo ridondanti.
+
+### Il fallito Runtime non e' una regressione, ed e' un difetto vero
+
+`RefusalReasonRegisterTests.NoRefusalReasonIsUncoveredOutsideWhatIsDeclared`:
+
+```
+Rifiuti non coperti da alcun test e non dichiarati nel registro:
+  unequip_equip_feed_unavailable
+  unequip_input_backend_not_gated
+  unequip_slot_not_resolved
+```
+
+Preesistente al lavoro di oggi, dimostrato per costruzione e non per congettura:
+
+- l'unico file modificato e' `src/NosAi.ControlPanel/PerceptionProbe.cs`, e
+  `tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj` **non referenzia**
+  `NosAi.ControlPanel` -- quel file non puo' entrare in questa suite;
+- i tre motivi esistono gia' nel commit base, in
+  `35f99a3:src/NosAi.Runtime/Tactical/UnequipCommand.cs` e `UnequipExecutor.cs`,
+  cioe' vengono dal lavoro S8.
+
+La baseline delle 05:47 contava **2** falliti; oggi ne conta **1**, perche'
+`GuardAdmissionTests.ASilentPeerIsDroppedByTheAdmissionDeadline_NotTheHeartbeatOne`
+e' un test a orologio da parete ed e' passato in questa passata. **Confrontati i
+nomi, non i totali.**
+
+**Resta aperto, e non e' stato toccato**: i tre motivi di rifiuto di `--unequip`
+vanno coperti da un test o dichiarati nel registro. E' il difetto che questa
+sessione ha scoperto e che nessuno degli incarichi in coda copriva.
+
+### Q-142 provato davvero, non solo constatato
+
+```
+--skill-report                 -> [REFUSED] skill_report_no_target
+                                  Usage: --skill-report --vnum <n> | --recording <file.noscap>
+--skill-report --vnum 226      -> skill 226: Terremoto
+                                    TYPE[1] cast_id: 6            [CONFERMATO]
+                                    TYPE[2] job_class: 1          [CONFERMATO]
+                                    DATA[5] cooldown_tenths: 250  [CONFERMATO]
+                                    TARGET[3] area_targets: 3     [CONFERMATO]
+                                    COST[0] cp_cost: UNKNOWN      [PROVVISORIO]
+                                    DATA[8] mp_cost: UNKNOWN      [PROVVISORIO]
+                                    TARGET[2] range: UNKNOWN      [PROVVISORIO]
+```
+
+Rifiuta senza bersaglio con motivo nominato, e sul vnum reale distingue
+confermato da provvisorio invece di riempire i buchi. E' esattamente il vincolo
+che la specifica di Q-142 imponeva: `mp_cost_undecided_between_cp_and_data8`
+resta dichiarato aperto, non risolto per somiglianza. Collega la voce T-17 di
+`docs/TEST_RIMANDATI.md`, che si chiude con una registrazione dedicata.
+
+## Conclusione della sessione
+
+**La coda preparata e' esaurita**: dopo l'aggiornamento, `EXECUTION_QUEUE.md` non
+contiene piu' alcuna riga `PRONTO`. Tutti e quattro gli incarichi erano gia'
+implementati; il documento non era stato aggiornato dopo i commit `550d8ac`,
+`df8c726`, `cfa22ff` e `9a9ae99`.
+
+Prodotto netto delle tre deleghe: **una correzione di dieci byte** in
+`PerceptionProbe.cs`, verificata e integrata, piu' due rapporti negativi
+corretti che hanno impedito di riscrivere codice funzionante. Il valore vero
+della sessione e' la misura della Parte 5 e la scoperta che la coda mentiva.
+
+## Consumi finali
+
+| Voce | Token |
+|---|---|
+| Q-140 | 4 303 279 (cache hit 4 125 568) |
+| Q-143 | 1 121 803 (cache hit 1 000 192) |
+| Q-144 | 3 454 890 (cache hit 3 278 336) |
+| Verifica del collegamento | 131 |
+| **Totale** | **8 880 103** |
+
+Nessuna ricarica, nessun acquisto, nessuna spesa extra attivata. Modello
+`deepseek-v4-flash` per tutte e tre le deleghe, nessun passaggio a Pro.
+
+Tre deleghe, zero cicli di correzione: nessuna consegna ha richiesto un secondo
+giro, perche' due erano rapporti negativi corretti e la terza era una modifica
+di una riga verificata al primo colpo.
