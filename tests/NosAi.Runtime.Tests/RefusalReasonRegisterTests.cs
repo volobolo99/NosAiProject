@@ -60,6 +60,8 @@ public sealed class RefusalReasonRegisterTests
                 "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
             ["recover_input_backend_not_gated"] =
                 "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
+            ["click_target_input_backend_not_gated"] =
+                "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated",
 
             // --- richiedono un token Windows reale, non producibile in modo --------
             // --- deterministico da un unit test -----------------------------------
@@ -73,6 +75,9 @@ public sealed class RefusalReasonRegisterTests
             // --- richiedono un client reale, la sua memoria, il filo o il volume ----
             ["client_not_readable"] = "richiede un processo client reale da cui leggere",
             ["keybinds_unavailable"] = "richiede i keybind reali del client",
+            ["click_target_entity_not_found"] = "richiede un'entita' reale osservata sul filo (ramo RunWindows)",
+            ["click_target_vnum_not_observed"] = "richiede un vnum reale osservato sul filo (ramo RunWindows)",
+            ["click_target_player_position_unreadable"] = "richiede la lettura fallita della posizione dalla memoria del client",
             ["map_id_not_read"] = "richiede la lettura fallita del map_id dalla memoria del client",
             ["map_id_not_on_wire"] = "richiede una cattura reale priva di map_id sul filo",
             ["standing_cell_not_read"] = "richiede la lettura fallita della cella dalla memoria del client",

@@ -292,6 +292,14 @@ public static class Program
             return NosAi.Runtime.Tactical.EngageCommand.Run(targetEntityId, skillId, engageRounds);
         }
 
+        // One click on an established target (AP-05 "click the target"): assess,
+        // project, confine the pixel to the window, click through the gate, and
+        // verify on the wire that `ct` named the entity. Takes an entity id or
+        // --vnum <vnum>; --arm-input is required and this command never arms input
+        // itself. One click per invocation -- no loop, no retry.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.ClickTargetCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Tactical.ClickTargetCommand.Run(args);
+
         // One collect round (or --watch <n> rounds): walk to an operator-named
         // position and verify one Collect objective by reading the player's own
         // inventory count of the named vnum before and after the walk (wire ivn
@@ -1151,7 +1159,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };
 
     private static int RunDxgiProbe()
