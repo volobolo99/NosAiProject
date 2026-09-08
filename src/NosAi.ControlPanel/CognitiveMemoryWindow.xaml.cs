@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -60,8 +61,8 @@ public partial class CognitiveMemoryWindow : Window
         var traces = _cognitive.GetRecentTrace(250);
         TraceList.ItemsSource = traces.Reverse().Select(ToTraceRow).ToArray();
         var decision = _cognitive.GetLatestDecision();
-        DecisionText.Text = decision?.Status == "Committed" ? decision.SelectedAction : decision is null ? "UNKNOWN" : $"{decision.Status}: {decision.SelectedAction}";
-        DecisionMeta.Text = decision is null ? "Nessuna decisione osservata dal trace." : $"Obiettivo: {decision.Objective} · Confidence {decision.Confidence:P0} · Risk {decision.Risk:P0} · Cycle {decision.CycleId}";
+        DecisionText.Text = DecisionTitle(decision);
+        DecisionMeta.Text = DecisionMetaLine(decision);
         CandidateList.ItemsSource = decision?.Candidates.Select(c => new CandidateRow(c)).ToArray() ?? Array.Empty<CandidateRow>();
     }
 
@@ -106,8 +107,31 @@ public partial class CognitiveMemoryWindow : Window
         var active = e.Status is CognitiveNodeStatus.Completed or CognitiveNodeStatus.Running;
         var background = active ? new SolidColorBrush(Color.FromRgb(18, 48, 42)) : new SolidColorBrush(Color.FromRgb(17, 26, 45));
         var border = active ? new SolidColorBrush(Color.FromRgb(55, 150, 112)) : new SolidColorBrush(Color.FromRgb(38, 52, 81));
-        return new TraceRow(e.Node.ToString(), e.Summary, $"{e.EventType} · {e.OccurredAtUtc:HH:mm:ss.fff} · confidence {e.Confidence:P0}", e.Status.ToString(), background, border);
+        return new TraceRow(e.Node.ToString(), e.Summary, FormatTraceDetail(e), e.Status.ToString(), background, border);
     }
+
+    internal static string DecisionTitle(CognitiveDecisionView? decision)
+        => decision?.Status == "Committed" ? decision.SelectedAction : decision is null ? "UNKNOWN" : $"{decision.Status}: {decision.SelectedAction}";
+
+    /// <summary>
+    /// The decision's meta line. A cycle publishes no confidence or risk
+    /// measure, so those two slots read UNKNOWN instead of an invented
+    /// percentage; the outcome is the fact shown in their place.
+    /// </summary>
+    internal static string DecisionMetaLine(CognitiveDecisionView? decision)
+    {
+        if (decision is null) return "Nessuna decisione osservata dal trace.";
+        return $"Obiettivo: {decision.Objective} · Esito: {decision.Status} · Confidence {ConfidenceText(decision.Confidence)} · Risk {RiskText(decision.Risk)} · Cycle {decision.CycleId}";
+    }
+
+    internal static string FormatTraceDetail(CognitiveTraceEvent e)
+        => $"{e.EventType} · {e.OccurredAtUtc:HH:mm:ss.fff} · confidence {ConfidenceText(e.Confidence)}";
+
+    internal static string ConfidenceText(double confidence)
+        => double.IsNaN(confidence) ? "UNKNOWN (nessuna misura)" : confidence.ToString("P0", CultureInfo.InvariantCulture);
+
+    internal static string RiskText(double risk)
+        => double.IsNaN(risk) ? "UNKNOWN (nessuna misura)" : risk.ToString("P0", CultureInfo.InvariantCulture);
 
     private static string CategoryFor(string root, string file) => root switch { "memory" => "Semantic / Episodic Memory", "storage" => "Persistent Runtime Data", "logs" => "Event & Audit Journal", _ => file.Contains("knowledge", StringComparison.OrdinalIgnoreCase) ? "Knowledge" : "Runtime Data" };
     private static string IconFor(string category) => category switch { "Semantic / Episodic Memory" => "🧠", "Knowledge" => "📚", "Event & Audit Journal" => "📜", "Persistent Runtime Data" => "💾", _ => "📦" };

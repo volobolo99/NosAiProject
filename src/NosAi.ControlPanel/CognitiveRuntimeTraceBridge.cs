@@ -73,13 +73,17 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
             sequence = ++_sequence;
         }
 
+        // A Gate3LoopCycle carries no confidence or risk measure (the record
+        // holds the outcome, not a score — see Gate3DecisionLoop.cs). The two
+        // doubles are therefore left NaN, so the panel says UNKNOWN where it
+        // wants a figure instead of printing an invented percentage.
         _ = PublishDecisionAsync(new CognitiveDecisionView(
             Guid.NewGuid().ToString("N"),
             cycleId,
             "Gate3 cycle",
             cycle.SelectedAction.ToString(),
-            ConfidenceFor(cycle.Outcome),
-            RiskFor(cycle.Outcome),
+            double.NaN,
+            double.NaN,
             cycle.Outcome.ToString(),
             DateTimeOffset.UtcNow,
             ImmutableArray<DecisionCandidateView>.Empty));
@@ -94,7 +98,7 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
             "runtime.cycle",
             cycle.Summary,
             $"Outcome={cycle.Outcome}; observationAge={cycle.ObservationAge?.TotalMilliseconds:F0}ms",
-            ConfidenceFor(cycle.Outcome),
+            double.NaN,
             DateTimeOffset.UtcNow,
             sequence));
     }
@@ -127,24 +131,6 @@ public sealed class CognitiveRuntimeTraceBridge : IDisposable
         "Execute" => CognitiveNodeKind.Execute,
         "Verify" => CognitiveNodeKind.Verify,
         _ => CognitiveNodeKind.WorldModel
-    };
-
-    private static double ConfidenceFor(CycleOutcome outcome) => outcome switch
-    {
-        CycleOutcome.Confirmed => 1.0,
-        CycleOutcome.Unverified => 0.5,
-        CycleOutcome.NoCandidate => 0.8,
-        _ => 0.0
-    };
-
-    private static double RiskFor(CycleOutcome outcome) => outcome switch
-    {
-        CycleOutcome.Confirmed => 0.0,
-        CycleOutcome.NoCandidate => 0.1,
-        CycleOutcome.Unverified => 0.5,
-        CycleOutcome.Failed => 1.0,
-        CycleOutcome.Blocked or CycleOutcome.ExecutionDisabled => 0.0,
-        _ => 0.5
     };
 
     public void Dispose()
