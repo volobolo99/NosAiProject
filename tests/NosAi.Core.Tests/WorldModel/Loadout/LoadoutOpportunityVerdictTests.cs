@@ -1,6 +1,7 @@
 using System;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Loadout;
+using NosAi.Core.WorldModel.Strategy;
 using Xunit;
 
 namespace NosAi.Core.Tests.WorldModel.Loadout;
@@ -69,6 +70,42 @@ public sealed class LoadoutOpportunityVerdictTests
     {
         Assert.Throws<ArgumentNullException>(
             () => LoadoutPlanner.ExplainCandidates(BuildPlayer(), null!));
+    }
+
+    /// <summary>
+    /// Gear nobody ever read must not score zero: zero says the build needs no attention, which
+    /// is a claim about equipment that was never looked at.
+    /// </summary>
+    [Fact]
+    public void GearNeverRead_ReportsNothingRatherThanNoUrgency()
+    {
+        Assert.Null(StrategyPlanner.AssessOptimizationUrgency(
+            BuildPlayer(equipmentRead: false, inventoryRead: false),
+            NoSlot));
+    }
+
+    [Fact]
+    public void APartialReading_KeepsTheGoalAliveWithoutPretendingItIsPressing()
+    {
+        StrategicSignal? signal = StrategyPlanner.AssessOptimizationUrgency(
+            BuildPlayer(equipmentRead: false),
+            NoSlot);
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.25, signal!.Urgency);
+        Assert.Equal("equipment_never_read", signal.Reason);
+    }
+
+    [Fact]
+    public void AnAvailableChange_ScoresFull()
+    {
+        StrategicSignal? signal = StrategyPlanner.AssessOptimizationUrgency(
+            BuildPlayer(equipment: EquatableArray<EquipmentItem>.From(new[] { BuildEquipped("sword", EquipmentSlot.Weapon) })),
+            NoSlot);
+
+        Assert.NotNull(signal);
+        Assert.Equal(1.0, signal!.Urgency);
+        Assert.Equal("loadout_change_available", signal.Reason);
     }
 
     private static EquipmentItem BuildEquipped(string id, EquipmentSlot slot) =>

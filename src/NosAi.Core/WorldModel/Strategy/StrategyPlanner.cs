@@ -1,4 +1,5 @@
 using NosAi.Core.WorldModel.Combat;
+using NosAi.Core.WorldModel.Loadout;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Quests;
 
@@ -236,6 +237,45 @@ public static class StrategyPlanner
         };
 
         return new StrategicSignal(StrategicGoalKind.Farming, urgency, reason);
+    }
+
+    /// <summary>
+    /// Optimization urgency from AP-07's loadout view: whether there is a gear change worth
+    /// making, and whether the gear was ever read at all.
+    /// </summary>
+    /// <remarks>
+    /// Gear never read reports nothing rather than zero. Zero would say the build needs no
+    /// attention, which is a claim about equipment nobody has looked at; a partial reading
+    /// scores a quarter, enough to keep the goal alive without pretending it is pressing.
+    /// </remarks>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="resolveSlot">Catalog lookup mapping an item to the slot it fits, or null when unknown.</param>
+    /// <returns>The optimization signal, or <see langword="null"/> when neither gear source was ever observed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> or <paramref name="resolveSlot"/> is null.</exception>
+    public static StrategicSignal? AssessOptimizationUrgency(
+        Player player,
+        Func<ItemId, EquipmentSlot?> resolveSlot)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(resolveSlot);
+
+        LoadoutOpportunityVerdict verdict = LoadoutPlanner.ExplainCandidates(player, resolveSlot);
+
+        if (verdict == LoadoutOpportunityVerdict.SourcesNeverRead)
+        {
+            return null;
+        }
+
+        (double urgency, string reason) = verdict switch
+        {
+            LoadoutOpportunityVerdict.CandidatesAvailable => (1.0, "loadout_change_available"),
+            LoadoutOpportunityVerdict.EquipmentNeverRead => (0.25, "equipment_never_read"),
+            LoadoutOpportunityVerdict.InventoryNeverRead => (0.25, "inventory_never_read"),
+            LoadoutOpportunityVerdict.NothingToChange => (0.0, "loadout_already_settled"),
+            _ => (0.0, "loadout_verdict_unhandled"),
+        };
+
+        return new StrategicSignal(StrategicGoalKind.Optimization, urgency, reason);
     }
 
     /// <summary>
