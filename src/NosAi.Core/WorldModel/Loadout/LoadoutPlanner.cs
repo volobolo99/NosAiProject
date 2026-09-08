@@ -126,6 +126,58 @@ public static class LoadoutPlanner
         return LoadoutOpportunityVerdict.NothingToChange;
     }
 
+    /// <summary>
+    /// The subset of <see cref="GenerateEquipCandidates"/> whose target slot is provably free:
+    /// equipping these adds something where there was nothing.
+    /// </summary>
+    /// <remarks>
+    /// This is the only loadout improvement this project can currently prove. Comparing a
+    /// candidate against the piece already worn would need power statistics, and the item
+    /// catalogue exposes price, type, subtype and icon but no attack or defence value: ranking
+    /// on those would invent a benefit the data does not state. Filling an empty slot needs no
+    /// such comparison — there is nothing to lose.
+    /// <para>
+    /// An unread equipment list yields nothing rather than every slot: without knowing what is
+    /// worn, "this slot is free" is a guess.
+    /// </para>
+    /// </remarks>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="resolveSlot">Catalog lookup mapping an item to the slot it fits, or null when unknown.</param>
+    /// <returns>Equip candidates whose slot is known to be unoccupied.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> or <paramref name="resolveSlot"/> is null.</exception>
+    public static IReadOnlyList<LoadoutActionCandidate> GenerateEmptySlotCandidates(
+        Player player,
+        Func<ItemId, EquipmentSlot?> resolveSlot)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(resolveSlot);
+
+        var candidates = new List<LoadoutActionCandidate>();
+        if (!player.Equipment.HasValue)
+        {
+            return candidates;
+        }
+
+        var occupied = new HashSet<EquipmentSlot>();
+        foreach (EquipmentItem item in player.Equipment.Value)
+        {
+            if (item.IsEquipped is { HasValue: true, Value: true })
+            {
+                occupied.Add(item.Slot);
+            }
+        }
+
+        foreach (LoadoutActionCandidate candidate in GenerateEquipCandidates(player, resolveSlot))
+        {
+            if (candidate.Slot is { } slot && !occupied.Contains(slot))
+            {
+                candidates.Add(candidate);
+            }
+        }
+
+        return candidates;
+    }
+
     /// <summary>One <see cref="LoadoutActionKind.Upgrade"/> candidate per currently equipped item.</summary>
     public static IReadOnlyList<LoadoutActionCandidate> GenerateUpgradeCandidates(Player player)
     {

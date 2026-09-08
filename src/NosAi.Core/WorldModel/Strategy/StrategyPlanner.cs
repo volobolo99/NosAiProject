@@ -272,6 +272,15 @@ public static class StrategyPlanner
             return null;
         }
 
+        // An empty slot is the one loadout gain this project can prove: there is nothing to
+        // lose by filling it. Everything else is an option whose benefit the item catalogue
+        // does not state, so it must not outrank a proven one.
+        if (verdict == LoadoutOpportunityVerdict.CandidatesAvailable
+            && LoadoutPlanner.GenerateEmptySlotCandidates(player, resolveSlot).Count > 0)
+        {
+            return new StrategicSignal(StrategicGoalKind.Optimization, 0.6, "empty_slot_fillable");
+        }
+
         (double urgency, string reason) = verdict switch
         {
             // Deliberately low. LoadoutPlanner emits one candidate per equipped piece, so a

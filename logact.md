@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 12.887 token (~$0.04 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 13.994 token (~$0.04 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -78,9 +78,13 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 21:00 | Claude (Direttore) | Segnale di ottimizzazione collegato all'autoplay con il resolver reale degli slot dal catalogo `Item.dat`; corretto un commento falso sul mapping degli slot | `AutoplayCommand.cs`, `GameplayObservationProjector.cs` | PASS — 2 falliti sotto carico (`Gate1SuitePasses`, `ManyRapidHeartbeats`) entrambi verdi se rilanciati isolati: falliti da carico, non regressioni | `+0` |
 | 2026-09-08 21:20 | Claude (Direttore) | Stesso buco dell'equipaggiamento sulla progressione: `lev` era decodificato e non arrivava a nessuno. Ora diventa una risorsa Experience nel World Model | `GameplayProvider.cs`, `GameplayObservationProjector.cs` | PASS — Runtime 2800 superati su 2809, nessun fallito | `+0` |
 | 2026-09-08 21:20 | Qwen 7B Locale | Stesura dei 3 test di proiezione della progressione | `tests/NosAi.Runtime.Tests/WorldModel/Fusion/ProgressionProjectionTests.cs` | PASS — un'asserzione usava `Max`, la proprieta' vera e' `Maximum`: corretta leggendo il contratto | `+855` |
+| 2026-09-08 21:40 | Claude (Direttore) | Squadra riscritta al punto 20 sui worker che esistono davvero, con ruoli disgiunti e la soglia che decide a chi va un incarico | `CLAUDE.md` | PASS — i quattro strumenti nuovi non sono invocabili finche' la sessione non riparte: verificato con un ping, non dedotto | `+0` |
+| 2026-09-08 21:50 | DeepSeek reasoner | Criterio per ordinare l'equipaggiamento per beneficio | nessuno (analisi) | PASS — risposta utile perche' negativa: `Item.dat` non espone statistiche di potenza, quindi un ordinamento fra pezzo indossato e candidato sarebbe inventato. Resta dimostrabile solo il riempimento di uno slot vuoto | `+0` |
+| 2026-09-08 21:50 | Claude + Qwen 7B Locale | `GenerateEmptySlotCandidates` e il segnale che pesa 0.6 sul guadagno dimostrabile | `LoadoutPlanner.cs`, `StrategyPlanner.cs`, `LoadoutOpportunityVerdictTests.cs` | PASS — Core 771, Runtime 2799 con un fallito da carico verde isolato | `+1107` |
 | 2026-09-08 20:05 | Qwen 14B Colab | Bozza del CSS per la pagina delle chat (`ask_cloud_qwen_14b`) | nessuno | FAIL — `502 Bad Gateway` dal tunnel `indexed-stereo-bryant-mil`, poi `530`: la cella Colab non serve piu' | `+0` |
 | 2026-09-08 20:07 | Qwen 7B Locale | Bozza del CSS per la pagina delle chat, ispezionata e corretta prima della scrittura: emetteva `card;` e `pillola;` come dichiarazioni, `wrap: wrap` al posto di `flex-wrap`, e la pillola senza `border-radius` | `tools/traffic_inspector/chat_page.py` | PASS | `+1856` |
 | 2026-09-08 20:14 | Claude (Direttore) | Vista `/chat` dell'ispettore: una conversazione per worker MCP con prompt e risposta per intero, token per scambio (prompt/risposta/ragionamento/cache) e totali per canale. L'orchestratore registra gli scambi in `data/traffic/chats.jsonl` | `orchestrator_mcp.py`, `tools/traffic_inspector/server.py`, `tools/traffic_inspector/chat_page.py`, `Ispettore.cmd` | PASS — `/chat` risponde 200 (15.160 byte), `/api/chats` espone lo scambio; verificata sul bersaglio reale una delega riuscita al 7B (+122 token, con prompt e risposta a schermo) e una fallita al tunnel Colab (`530`, card in rosso) | `+122` |
+| 2026-09-08 21:5x | Claude (Direttore) | Diagnosi dell'avvio fallito del server MCP `orchestrator` (`CONNECTION_CLOSED`): `SyntaxError` a `orchestrator_mcp.py:40`, con due chiavi API in chiaro al posto dei nomi delle variabili d'ambiente. Chiavi riportate a `os.environ.get`. Rilevata inoltre una sovrascrittura del file (mtime 21:41, dopo il commit `c9195dc`) che rinomina i tre tool, elimina il tag `TOKENS_SAVED` e rimuove la vista chat da cui dipende `tools/traffic_inspector/server.py:40`: non ripristinata, in attesa di decisione | `orchestrator_mcp.py`, `logact.md`, `CLAUDE.md` | PASS — `py_compile` verde; handshake MCP `initialize` + `tools/list` risponde in processo separato; `git grep` non trova segreti nei file tracciati | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 

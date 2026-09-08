@@ -108,6 +108,65 @@ public sealed class LoadoutOpportunityVerdictTests
         Assert.Equal("loadout_options_available_unranked", signal.Reason);
     }
 
+    /// <summary>
+    /// Filling a free slot is the only loadout gain this project can prove: the item catalogue
+    /// exposes price, type and icon but no attack or defence, so comparing a candidate against
+    /// the piece already worn would rank on numbers nobody stated.
+    /// </summary>
+    [Fact]
+    public void AnItemFittingAFreeSlot_IsAProvableGain()
+    {
+        Player player = BuildPlayer(
+            equipment: EquatableArray<EquipmentItem>.Empty,
+            inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("500", 1) }));
+
+        Assert.Single(LoadoutPlanner.GenerateEmptySlotCandidates(player, _ => EquipmentSlot.Hat));
+    }
+
+    [Fact]
+    public void AnItemFittingAnOccupiedSlot_IsNotAProvableGain()
+    {
+        Player player = BuildPlayer(
+            equipment: EquatableArray<EquipmentItem>.From(new[] { BuildEquipped("900", EquipmentSlot.Hat) }),
+            inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("500", 1) }));
+
+        Assert.Empty(LoadoutPlanner.GenerateEmptySlotCandidates(player, _ => EquipmentSlot.Hat));
+    }
+
+    /// <summary>
+    /// Without knowing what is worn, "this slot is free" is a guess, so nothing is proposed.
+    /// </summary>
+    [Fact]
+    public void UnreadEquipment_YieldsNoEmptySlotCandidate()
+    {
+        Player player = BuildPlayer(
+            inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("500", 1) }),
+            equipmentRead: false);
+
+        Assert.Empty(LoadoutPlanner.GenerateEmptySlotCandidates(player, _ => EquipmentSlot.Hat));
+    }
+
+    [Fact]
+    public void AFillableSlot_RaisesTheOptimizationSignal()
+    {
+        Player player = BuildPlayer(
+            equipment: EquatableArray<EquipmentItem>.Empty,
+            inventory: EquatableArray<InventoryItem>.From(new[] { BuildStack("500", 1) }));
+
+        StrategicSignal? signal = StrategyPlanner.AssessOptimizationUrgency(player, _ => EquipmentSlot.Hat);
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.6, signal!.Urgency);
+        Assert.Equal("empty_slot_fillable", signal.Reason);
+    }
+
+    private static InventoryItem BuildStack(string id, int quantity) =>
+        new(
+            new ItemId(id),
+            WorldFact<string>.Live(id, 1d, Now),
+            WorldFact<int>.Live(quantity, 1d, Now),
+            WorldFact<int>.Live(0, 1d, Now));
+
     private static EquipmentItem BuildEquipped(string id, EquipmentSlot slot) =>
         new(new ItemId(id), WorldFact<string>.Live(id, 1d, Now), slot, WorldFact<bool>.Live(true, 1d, Now));
 
