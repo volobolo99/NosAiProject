@@ -337,9 +337,17 @@ emettere: `timeout` in `orchestrator_mcp.py` sta a 300 s, e una specifica esaust
 si chiede comunque a fette. Claude assembla i pezzi: l'integrazione resta sua
 (punto 18).
 
-**Stack dei test.** Questo repository è C#/.NET: si verifica con
-`dotnet build NosAi.sln -c Release` e `dotnet test tests/<progetto>` su
-xUnit. Non c'è pytest e non va introdotto.
+**Stack dei test.** Due stack, entrambi vivi. Il runtime è C#/.NET e si
+verifica con `dotnet build NosAi.sln -c Release` e
+`dotnet test tests/<progetto>` su xUnit: un test nuovo sul runtime nasce
+lì, e non si duplica in Python. Esiste però il pacchetto Python `nosai/`
+con la sua suite: 32 file e 185 test, tutti verdi il 2026-09-08, dichiarata
+in `pyproject.toml` (`testpaths = ["tests"]`) ed eseguita da
+`.github/workflows/ci.yml`, `scripts/test.ps1`, `scripts/test.sh` e
+`scripts/validate.ps1`. Si lancia con `python -m pytest tests/`. Chi tocca
+`nosai/` la esegue prima di chiudere, perché la CI la esegue comunque.
+Questo punto diceva «Non c'è pytest e non va introdotto» e diceva il falso:
+pytest 8.4.2 è installato e i test sono stati modificati il 2026-09-07.
 
 **Subagenti specializzati** in `~/.claude/agents/`: `capocantiere` (scrive
 l'incarico e lo delega), `verificatore` (compila ed esegue le suite),
