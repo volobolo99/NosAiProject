@@ -106,3 +106,90 @@ Il worktree, il ramo, le catture e la baseline restano in piedi. L'incarico
 Q-140 e' gia' scritto per intero (obiettivo, stato di partenza, riferimenti
 `file:riga` confermati, perimetro, vincoli, casi di errore, quindici criteri di
 accettazione, materiale da restituire) e va solo reinviato.
+
+---
+
+## Ripresa 06:00 — la chiave arriva, ma porta un carattere di troppo
+
+L'operatore ha ripristinato `DEEPSEEK_API_KEY` in ambito `User` e impostato
+`DEEPSEEK_MODEL=deepseek-v4-flash`. Verificato senza mostrare il valore: chiave
+presente in ambito Process e User (assente in Machine), modello `deepseek-v4-flash`
+in entrambi. Il server MCP era un processo nuovo (PID 69548, poi 74516).
+
+**Il primo guasto e' chiuso**: l'invocazione di Q-140 non e' piu' rifiutata dalla
+configurazione, quindi la chiave raggiunge davvero il server.
+
+**Secondo guasto, diverso.** Due invocazioni su due processi server distinti
+hanno dato lo stesso esito in 3 secondi, con **zero token**:
+
+```
+ERRORE API: HTTP 0: network failure calling DeepSeek: fetch failed
+```
+
+Non e' la rete. Misurato:
+
+| Prova | Esito |
+|---|---|
+| DNS `api.deepseek.com` | risolve (CloudFront, 3.173.21.63) |
+| TCP 443 | `TcpTestSucceeded = True` |
+| `GET /models` da PowerShell, senza chiave | **HTTP 401** — rifiuto applicativo |
+| `GET /models` da Node v24.19.0, senza chiave | **HTTP 401** |
+| `POST /chat/completions` da Node, senza chiave | **HTTP 401** — metodo ed endpoint passano |
+
+Una chiave sbagliata darebbe `401`; `fetch failed` significa che la richiesta non
+e' mai partita.
+
+### La causa
+
+La chiave era lunga **36** caratteri contro i 35 della precedente. Analizzata
+senza stamparla:
+
+```
+lunghezza dopo trim: 36
+tutti i caratteri sono ASCII stampabili? false
+caratteri non ammessi in un header: [{"posizione":0,"codice":"0x16"}]
+```
+
+`0x16` e' **SYN**, il carattere di controllo che la console di Windows inserisce
+quando si incolla con Ctrl+V. Sta in posizione 0, davanti a una chiave per il
+resto perfettamente valida (`sk-` piu' 32 esadecimali). `config.mjs` applica
+`trim()`, che non lo rimuove perche' non e' spaziatura, e `undici` rifiuta
+l'intestazione prima di aprire la connessione.
+
+### La riparazione
+
+Rimossi da `DEEPSEEK_API_KEY` in ambito `User` tutti i caratteri fuori
+`\x21-\x7E`, verificata la forma `^sk-[0-9a-f]{32}$`, riscritta. Il valore non e'
+mai stato stampato ne' scritto su disco.
+
+Verifica con lo strumento del repository:
+
+```
+node tools/deepseek-mcp/scripts/check-connection.mjs
+  chiave API      : presente nell ambiente (35 caratteri, non stampata)
+  modello risolto : deepseek-v4-flash (origine: DEEPSEEK_MODEL)
+  offerti         : deepseek-v4-flash, deepseek-v4-pro, deepseek-v4-flash-vision-exp
+  finish_reason   : stop      risposta: "pronto"
+  token           : prompt 94, completion 37, totale 131
+Collegamento verificato con deepseek-v4-flash.
+```
+
+### Cosa resta, e perche'
+
+Il server MCP in esecuzione porta ancora il valore corrotto: su Windows
+l'ambiente di un processo si fissa alla creazione, e il server e' figlio di
+Claude Code. Serve **un riavvio, l'ultimo** — e va aperto un terminale **nuovo**,
+perche' una finestra gia' aperta conserva il proprio blocco d'ambiente e
+ripasserebbe la chiave vecchia.
+
+## Consumi aggiornati
+
+| Voce | Token |
+|---|---|
+| Prova di collegamento del 2026-09-07 | 9244 |
+| Q-140, tentativo 1 (rifiuto di configurazione) | 0 |
+| Q-140, tentativo 2 (intestazione non costruibile) | 0 |
+| Verifica `check-connection` dopo la riparazione | 131 |
+
+Due tentativi equivalenti su Q-140 e nessun terzo: la regola dei due cicli e'
+stata rispettata cambiando diagnosi invece di ripetere la chiamata.
