@@ -1,0 +1,27 @@
+---
+description: "Esecuzione efficiente degli incarichi di sviluppo"
+alwaysApply: true
+---
+
+- Segui l'incarico e l'architettura approvata da Claude.
+  Riapri decisioni solo davanti a incompatibilità concrete.
+- Prima cerca file e simboli pertinenti, poi leggi il codice
+  necessario e le dipendenze coinvolte. Evita scansioni complete
+  ripetute del repository.
+- Non caricare documentazione, log o file voluminosi se non
+  necessari. Preferisci sezioni pertinenti e riepiloghi.
+- Implementa modifiche mirate. Evita refactoring e funzionalità
+  fuori dall'incarico.
+- Esegui test mirati durante lo sviluppo e i controlli richiesti
+  prima della consegna. Non indebolire test o requisiti.
+- Se due tentativi sullo stesso errore falliscono, cambia
+  approccio diagnostico; non ripetere tentativi equivalenti.
+- Usa gli strumenti locali per ricerca, conteggi, formattazione
+  e verifiche. Riporta solo risultati ed errori pertinenti.
+- Non ristampare in chat codice già salvato o log completi.
+- Al termine riporta: modifiche, test ed esiti, problemi residui.
+  Sii sintetico senza omettere informazioni necessarie.
+- Termina quando i criteri di accettazione sono soddisfatti.
+  Registra i miglioramenti facoltativi senza implementarli.---
+alwaysApply: true
+---
