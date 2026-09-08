@@ -342,6 +342,26 @@ public sealed record ItemPickup(
     DateTime ObservedAtUtc,
     DataSourceKind Source);
 
+/// <summary><c>icon type id ? vnum</c>: the client showed an item icon over an entity.</summary>
+/// <param name="EntityId">
+/// Field 2: the entity the icon appeared over. Every observed packet carries the
+/// controlled character's own id here, but that is not asserted — the id is read,
+/// and a consumer that cares compares it to the own id from <c>cond</c>.
+/// </param>
+/// <param name="ItemVnum">
+/// Field 4: the item's vnum. Confirmed on the wire itself: in three captures the
+/// <c>icon</c> sits between a <c>drop</c> of that vnum and the <c>get</c> of the
+/// same drop — <c>drop 8 …</c> then <c>icon … 8</c> in <c>messaggi</c>, and
+/// <c>drop 2006 …</c> then <c>icon … 2006</c> in <c>nostale_combat</c> and
+/// <c>certificazione</c>. It is the number <c>get</c> does not carry: <c>get</c>
+/// names the drop id, not the item.
+/// </param>
+public sealed record ItemIconShown(
+    long EntityId,
+    int ItemVnum,
+    DateTime ObservedAtUtc,
+    DataSourceKind Source);
+
 /// <summary><c>drop vnum dropId x y amount ? ownerId</c>: an item lying on the ground.</summary>
 /// <param name="OwnerId">
 /// Field 7, read as the owner's entity id because the catalogue records it so
@@ -490,6 +510,7 @@ public sealed record DecodedObservations(
     InventorySlotReading? InventorySlot = null,
     ItemPickup? Pickup = null,
     GroundItem? GroundItem = null,
+    ItemIconShown? ItemIcon = null,
     PlayerTargetSelection? PlayerTarget = null,
     PlayerProgression? Progression = null,
     WornEquipment? Equipment = null)
@@ -501,8 +522,8 @@ public sealed record DecodedObservations(
         Sightings.IsEmpty && Events.IsEmpty && Vitals is null
         && PlayerMovementSpeed is null && PlayerEntityId is null
         && PlayerHit is null && SkillReady is null && InventorySlot is null
-        && Pickup is null && GroundItem is null && PlayerTarget is null
-        && Progression is null && Equipment is null;
+        && Pickup is null && GroundItem is null && ItemIcon is null
+        && PlayerTarget is null && Progression is null && Equipment is null;
 }
 
 /// <summary>
@@ -603,6 +624,9 @@ public sealed record NetworkObservationReport(
 
     /// <summary>Every <c>drop</c> in this batch, in wire order.</summary>
     public ImmutableArray<GroundItem> GroundItems { get; init; } = ImmutableArray<GroundItem>.Empty;
+
+    /// <summary>Every <c>icon</c> in this batch, in wire order.</summary>
+    public ImmutableArray<ItemIconShown> ItemIcons { get; init; } = ImmutableArray<ItemIconShown>.Empty;
 }
 
 /// <summary>
@@ -682,6 +706,7 @@ public sealed class GameTrafficObserver
         var inventorySlots = ImmutableArray.CreateBuilder<InventorySlotReading>();
         var pickups = ImmutableArray.CreateBuilder<ItemPickup>();
         var groundItems = ImmutableArray.CreateBuilder<GroundItem>();
+        var itemIcons = ImmutableArray.CreateBuilder<ItemIconShown>();
 
         for (int i = 0; i < maxPackets && _source.TryObserve(out ObservedPacket packet); i++)
         {
@@ -764,6 +789,7 @@ public sealed class GameTrafficObserver
             if (result.InventorySlot is { } slot) inventorySlots.Add(slot);
             if (result.Pickup is { } pickup) pickups.Add(pickup);
             if (result.GroundItem is { } drop) groundItems.Add(drop);
+            if (result.ItemIcon is { } icon) itemIcons.Add(icon);
         }
 
         return new NetworkObservationReport(
@@ -786,6 +812,7 @@ public sealed class GameTrafficObserver
             InventorySlots = inventorySlots.ToImmutable(),
             Pickups = pickups.ToImmutable(),
             GroundItems = groundItems.ToImmutable(),
+            ItemIcons = itemIcons.ToImmutable(),
         };
     }
 

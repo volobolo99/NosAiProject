@@ -18,14 +18,16 @@ namespace NosAi.Runtime.Perception.Network;
 /// out to be needed is a new capture, not a guess from its neighbours.
 /// </para>
 /// <para>
-/// <b>Quindici opcode</b> sono letti — erano dodici quando questa frase è stata
-/// scritta, e il conto è tornato falso senza che nessuno lo aggiornasse. Sette
-/// portano il mondo: <c>stat</c>, <c>st</c>, <c>in</c>, <c>mv</c>, <c>die</c>,
-/// <c>su</c>, <c>cond</c>. Quattro portano i fatti che una post-condizione
-/// richiede (C1-3): <c>sr</c>, <c>ivn</c>, <c>get</c>, <c>drop</c>; <c>ct</c>
-/// porta su quale entità il personaggio agisce; <c>lev</c> la progressione, e
-/// <c>eq</c> ed <c>equip</c> l'equipaggiamento indossato. Quelle
-/// five are marked <i>probable</i> in the catalogue, and the
+/// <b>Diciassette opcode</b> sono letti — erano dodici quando questa frase è
+/// stata scritta, e il conto è tornato falso senza che nessuno lo aggiornasse.
+/// Sette portano il mondo: <c>stat</c>, <c>st</c>, <c>in</c>, <c>mv</c>,
+/// <c>die</c>, <c>su</c>, <c>cond</c>; <c>out</c> l'uscita dalla vista, e
+/// <c>icon</c> il vnum dell'oggetto la cui icona è mostrata. Quattro portano i
+/// fatti che una post-condizione richiede (C1-3): <c>sr</c>, <c>ivn</c>,
+/// <c>get</c>, <c>drop</c>; <c>ct</c> porta su quale entità il personaggio
+/// agisce; <c>lev</c> la progressione, e <c>eq</c> ed <c>equip</c>
+/// l'equipaggiamento indossato. Several are marked <i>probable</i> in the
+/// catalogue, and the
 /// discipline for a probable reading is the one <c>in</c> and <c>st</c> already
 /// follow for their probable fields: the reading keeps the packet's provenance
 /// — LIVE bytes that framed stay LIVE — because provenance says where the bytes
@@ -128,6 +130,7 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             "ivn" => DecodeInventorySlot(fields, source, at),
             "get" => DecodePickup(fields, source, at),
             "drop" => DecodeGroundItem(fields, source, at),
+            "icon" => DecodeItemIcon(fields, source, at),
             "ct" => DecodeCast(fields, source, at),
             _ => DecodedObservations.Empty,
         };
@@ -785,6 +788,42 @@ public sealed class NosTaleWorldProtocolDecoder : IGamePacketDecoder
             ImmutableArray<EntitySighting>.Empty,
             ImmutableArray<GameEvent>.Empty,
             GroundItem: new GroundItem(vnum, dropId, x, y, amount, ownerId, capturedUtc, source));
+    }
+
+    /// <summary>
+    /// <c>icon type id ? vnum</c> — the client shows an item icon over an entity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Field 4 is the item vnum, confirmed on the wire itself: in three captures
+    /// the <c>icon</c> sits between a <c>drop</c> of that vnum and the <c>get</c>
+    /// of the same drop — <c>drop 8 …</c> then <c>icon 1 3548294 1 8</c> then
+    /// <c>get … 4867701</c> in <c>messaggi</c>, and <c>drop 2006 …</c> then
+    /// <c>icon 1 3443217 1 2006</c> then <c>get … 1092257</c> (with the same pair
+    /// again) in <c>nostale_combat</c> and <c>certificazione</c>. The number
+    /// <c>icon</c> carries is what <c>get</c> does not: <c>get</c> names the drop
+    /// id, not the item.
+    /// </para>
+    /// <para>
+    /// Fields 1 and 3 are constant <c>1</c> in the observed packets, but nothing
+    /// states their meaning, so they are not read — a constant is not a meaning.
+    /// The shape check is the packet's own length, exactly as for the other
+    /// probable opcodes.
+    /// </para>
+    /// </remarks>
+    private static DecodedObservations DecodeItemIcon(string[] fields, DataSourceKind source, DateTime capturedUtc)
+    {
+        if (fields.Length < 5
+            || !TryLong(fields[2], out long entityId)
+            || !TryInt(fields[4], out int vnum))
+            return DecodedObservations.Empty;
+        if (entityId <= 0 || vnum <= 0)
+            return DecodedObservations.Empty;
+
+        return new DecodedObservations(
+            ImmutableArray<EntitySighting>.Empty,
+            ImmutableArray<GameEvent>.Empty,
+            ItemIcon: new ItemIconShown(entityId, vnum, capturedUtc, source));
     }
 
     /// <summary>
