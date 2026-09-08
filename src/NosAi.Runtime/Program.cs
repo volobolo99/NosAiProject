@@ -845,6 +845,13 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.LearningReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Observability.LearningReportCommand.Run(args);
 
+        // The reference skill catalogue next to what the wire observed (AP-05).
+        // Read-only: opens the catalogue and, with --recording, reads a capture;
+        // it never writes, imports or feeds the planner. Each field is marked
+        // confirmed or provisional.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Observability.SkillReportCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Observability.SkillReportCommand.Run(args);
+
         // Offset discovery for the memory provider (ADR-0014). Read-only, and it
         // answers nothing on its own: an address is identified by narrowing across
         // several changes of the value, which is why the candidate set persists
@@ -1136,7 +1143,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report"
         };
 
     private static int RunDxgiProbe()
