@@ -262,3 +262,76 @@ toccato, **zero token**. L'incarico e' formulato e pronto: si rimanda identico.
 | Prova di collegamento del 2026-09-07 | 9244 |
 | Q-140, tentativi 1-3 (mai arrivati all'API) | **0** |
 | Verifica `check-connection` dopo la riparazione | 131 |
+
+---
+
+## 06:21 — il canale regge, e la coda si rivela stale
+
+Chiave verificata nell'ambiente che il server MCP eredita (35 caratteri, forma
+valida, zero caratteri di controllo, mai mostrata), modello `deepseek-v4-flash`,
+server rigenerato. Q-140 delegato davvero: **35 giri API, 55 chiamate strumento,
+437 s, 4 303 279 token** (di cui 4 125 568 di cache hit).
+
+### Il verdetto del lavoratore, e la sua verifica
+
+DeepSeek ha riferito: **«il worktree contiene gia' l'implementazione completa,
+non ho modificato alcun file»**. Il server conferma `nessun file toccato` con il
+confronto SHA-256.
+
+Non preso per buono. Verificato nel sorgente al commit base `35f99a3`:
+
+| Atteso dall'incarico | Trovato |
+|---|---|
+| `GameEventKind.EntityLeft = 5` | `GameTrafficObserver.cs:38` |
+| dispatch `"out"` | `NosTaleWorldProtocolDecoder.cs:123` -> `DecodeLeave` (`:321`) |
+| evento `EntityLeft` con vnum letto prima della rimozione | `:330` |
+| `--timeline` | `WireInspectCommand.cs:72`, `Timeline()` a `:256` |
+| i tre file di test | `OutEntityLeftTests.cs`, `OutEntityRecordedCaptureTests.cs`, `WireInspectTimelineTests.cs` |
+
+Il lavoro era gia' dentro, dal commit **`550d8ac`** — il cui titolo e' letteralmente
+l'incarico: «feat(perception): out e' uscita dalla vista, non morte; su/ct portano
+il vnum della skill». **Il rapporto negativo era corretto**, ed e' stato dato
+invece di riscrivere codice funzionante: e' il comportamento giusto.
+
+### Lo stesso controllo sulle altre tre righe `PRONTO`
+
+| Q | Stato reale al commit base |
+|---|---|
+| Q-140 | **gia' fatto** (`550d8ac`) |
+| Q-142 | **gia' fatto**: `SkillCatalogue.cs`, `SkillReportCommand.cs`, `--skill-report` registrato in `Program.cs:1171` |
+| Q-143 | Parti 1, 2 e 4 **gia' fatte** — `ConfidenceText`/`RiskText` restituiscono `UNKNOWN (nessuna misura)` su `NaN`. Residuo: `CandidateRow.Meta` formatta ancora `Risk:P0`/`Confidence:P0` senza la stessa guardia |
+| Q-144 | Parte 4 **fatta** (`AttachedSnapshot.cs:291` legge `observedAtUtc`); **Parte 1 aperta**: `PerceptionProbe.cs:326-329` marca `LIVE` i ritagli HUD incondizionatamente |
+
+`docs/agents/EXECUTION_QUEUE.md` non e' stato aggiornato dopo quei commit: le
+quattro righe dicono `PRONTO` per un lavoro in gran parte gia' consegnato.
+
+## La misura della Parte 5, eseguita dall'architetto
+
+Il lavoratore non ha shell e non poteva produrla. Eseguita sulla build di
+baseline, senza ricompilare:
+
+```
+NosAi.Runtime.dll --wire-inspect data/messaggi.noscap --timeline in,mv,st,out --max 100000
+  20 992 righe, ordine di cattura, 18 pacchetti out
+```
+
+Per ognuno dei diciotto `out`, l'id ricompare in un `in`/`mv`/`st` **successivo**
+della stessa cattura?
+
+**Ricompaiono 8 su 18; non ricompaiono 10.** Divisi per tipo di entita':
+
+| tipo | ricompaiono | totale |
+|---|---:|---:|
+| 3 (mostro) | **5** | 6 |
+| 2 (astante) | 2 | 5 |
+| 1 (giocatore) | 1 | 7 |
+
+I mostri escono e rientrano — `3013` esce e rientra tre volte, `3012` due — mentre
+i giocatori quasi sempre non tornano. **`out` significa «uscito dalla vista», non
+«sparito per sempre»**, ed e' esattamente la lettura che la specifica chiedeva di
+stabilire invece di supporre. Conferma indipendentemente la decisione di non
+mapparlo su `EntityDeath`: cinque uscite su sei, per i mostri, sono seguite dal
+ritorno della stessa entita'.
+
+Rimuovere resta corretto in entrambi i casi: chi ricompare viene reinserito dal
+primo pacchetto che lo nomina.
