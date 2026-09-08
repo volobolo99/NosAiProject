@@ -198,6 +198,66 @@ public static class QuestGraphPlanner
             reason: found ? null : "item_absent_from_observed_inventory");
     }
 
+    /// <summary>
+    /// Why <see cref="GetStartableQuests"/> returned nothing, so an empty list is never read as
+    /// "there is nothing left to do".
+    /// </summary>
+    public static QuestProgressVerdict ExplainProgress(QuestGraph graph, EquatableArray<Quest> knownQuests)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+
+        if (graph.Nodes.Count == 0)
+        {
+            return QuestProgressVerdict.NothingKnown;
+        }
+
+        bool anyUnknown = false;
+        bool anyInProgress = false;
+        bool allCompleted = true;
+
+        foreach (QuestNode node in graph.Nodes)
+        {
+            if (IsStartable(node, knownQuests))
+            {
+                return QuestProgressVerdict.Startable;
+            }
+
+            Quest? quest = TryFindQuest(node.Id, knownQuests);
+            if (quest is not { } known || !known.OverallStatus.HasValue)
+            {
+                anyUnknown = true;
+                allCompleted = false;
+                continue;
+            }
+
+            QuestObjectiveStatus status = known.OverallStatus.Value;
+            if (status == QuestObjectiveStatus.InProgress)
+            {
+                anyInProgress = true;
+            }
+
+            if (status != QuestObjectiveStatus.Completed)
+            {
+                allCompleted = false;
+            }
+        }
+
+        // A quest seen in progress is an observed fact, so it outranks the doubt raised by
+        // another quest whose status was never read.
+        if (anyInProgress)
+        {
+            return QuestProgressVerdict.InProgress;
+        }
+
+        // Without every status in hand, "finished" and "stuck" are both guesses.
+        if (anyUnknown)
+        {
+            return QuestProgressVerdict.Unknown;
+        }
+
+        return allCompleted ? QuestProgressVerdict.AllCompleted : QuestProgressVerdict.Blocked;
+    }
+
     private static Quest? TryFindQuest(QuestId id, EquatableArray<Quest> quests)
     {
         foreach (Quest quest in quests)
@@ -208,4 +268,33 @@ public static class QuestGraphPlanner
 
         return null;
     }
+}
+
+/// <summary>
+/// Why nothing can be started right now. An empty startable list on its own cannot tell
+/// "every quest is done" from "the chain is stuck", and those two demand opposite behaviour
+/// from the player: one means move on, the other means something must be unblocked.
+/// </summary>
+public enum QuestProgressVerdict
+{
+    /// <summary>The graph holds no quest at all: nothing has been observed yet.</summary>
+    NothingKnown = 0,
+
+    /// <summary>At least one quest can be started now.</summary>
+    Startable = 1,
+
+    /// <summary>Nothing to start because a quest is already under way.</summary>
+    InProgress = 2,
+
+    /// <summary>Every quest in the graph is known to be completed.</summary>
+    AllCompleted = 3,
+
+    /// <summary>Quests remain, none can be started, and none is under way: the chain is stuck.</summary>
+    Blocked = 4,
+
+    /// <summary>
+    /// At least one quest status was never observed, so neither completion nor blockage can be
+    /// claimed. Not a synonym for <see cref="Blocked"/>.
+    /// </summary>
+    Unknown = 5
 }

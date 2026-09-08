@@ -124,7 +124,19 @@ public static class StrategyPlanner
         }
 
         double urgency = startable + inProgressWithNextObjective;
-        return new StrategicSignal(StrategicGoalKind.QuestUrgency, urgency, "startable_and_in_progress_quests");
+
+        // Zero urgency is ambiguous on its own: a finished quest line and a stuck one both
+        // count nothing startable. The verdict carries which of the two it is, so a blocked
+        // chain asks to be unblocked instead of reading as "nothing left to do".
+        string reason = QuestGraphPlanner.ExplainProgress(graph, knownQuests) switch
+        {
+            QuestProgressVerdict.Blocked => "quest_chain_blocked",
+            QuestProgressVerdict.Unknown => "quest_status_never_read",
+            QuestProgressVerdict.AllCompleted => "all_quests_completed",
+            _ => "startable_and_in_progress_quests",
+        };
+
+        return new StrategicSignal(StrategicGoalKind.QuestUrgency, urgency, reason);
     }
 
     /// <summary>

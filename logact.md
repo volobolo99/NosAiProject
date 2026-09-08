@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 7.864 token (~$0.02 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 9.013 token (~$0.03 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -65,6 +65,9 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 18:25 | Claude (Direttore) | AP-06: `QuestGraphBuilder`, l'ingresso che mancava al grafo delle missioni — costruzione, duplicati, prerequisiti pendenti e cicli con DFS iterativo | `src/NosAi.Core/WorldModel/Quests/QuestGraphBuilder.cs` | PASS — compila al primo colpo, 11 test verdi inclusa una catena di 5000 quest senza stack overflow | `+0` |
 | 2026-09-08 18:25 | Qwen 7B Locale | AP-06: stesura dei 9 test di base sul builder | `tests/NosAi.Core.Tests/WorldModel/QuestGraphBuilderTests.cs` (assemblato da Claude, che ha aggiunto i 2 casi limite) | PASS | `+1279` |
 | 2026-09-08 18:25 | Claude (Direttore) | Test incrociato fra i due stack sul formato del filo | `tests/NosAi.Runtime.Tests/WireProtocolCrossStackTests.cs` | PASS — C# e Python erano allineati a `VERSION 4` per disciplina, senza nulla che lo garantisse: ora una divergenza fa fallire la CI | `+0` |
+| 2026-09-08 18:40 | DeepSeek Flash | Revisione dell'algoritmo di rilevamento cicli di `QuestGraphBuilder` | `QuestGraphBuilder.cs` (documentazione), `QuestGraphBuilderTests.cs` | PASS — ha trovato un difetto reale: con `a->b, a->c, b->c, c->a` il ciclo corto non viene registrato. Riprodotto; il verdetto `IsSound` resta corretto, quindi allineata la promessa invece di rendere esponenziale l'algoritmo | `+0` |
+| 2026-09-08 18:45 | Claude (Direttore) | AP-06: `ExplainProgress` distingue "tutto completato" da "catena bloccata", che `GetStartableQuests` confondeva in una lista vuota | `src/NosAi.Core/WorldModel/Quests/QuestGraphPlanner.cs` | PASS — 8 test verdi; uno stato mai letto resta `Unknown` e non diventa `Blocked` | `+0` |
+| 2026-09-08 18:45 | Qwen 7B Locale | Stesura dei 7 test del verdetto | `tests/NosAi.Core.Tests/WorldModel/QuestProgressVerdictTests.cs` (assemblato da Claude, che ha corretto uno scenario sbagliato e aggiunto un caso) | PASS | `+1149` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
