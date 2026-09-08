@@ -576,7 +576,10 @@ public static class AutoplayCommand
 
                 StrategicSignal? survival = StrategyPlanner.AssessSurvivalUrgency(playerFacts);
                 StrategicSignal? recovery = StrategyPlanner.AssessRecoveryUrgency(playerFacts, inCombat);
-                StrategicSignal? exploration = StrategyPlanner.AssessExplorationUrgency(footprint);
+                // Judged against the tiles rather than the footprint's own FullyExplored flag:
+                // that flag sits Unknown at session start, which is exactly when exploration
+                // matters most, and reading it alone made the signal vanish precisely then.
+                StrategicSignal? exploration = StrategyPlanner.AssessExplorationUrgency(map, footprint);
 
                 // Recovery before Survival is deliberate, not arbitrary:
                 // SelectStrategicPlan breaks a tied Urgency by picking whichever
