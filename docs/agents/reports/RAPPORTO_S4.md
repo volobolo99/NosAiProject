@@ -56,3 +56,7 @@ Non mi sono fermato: tutto il perimetro S4 è completo (catalogo + 2 file di tes
 ## Spec vs codice
 
 - La spec assume «i vnum che le otto catture nominano davvero esistono nel catalogo». La misura dice **no per 11 su 14**. Ha ragione il codice: la premessa regge solo per 8, 13, 2612.
+
+## Test rimandati ancora aperti
+
+T-03, T-05, T-06, T-07, T-08, T-09, T-12, T-13, T-14, T-16, T-17.
