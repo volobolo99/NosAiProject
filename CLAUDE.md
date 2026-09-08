@@ -375,9 +375,16 @@ Alla fine di ogni task, prima di considerarlo chiuso, si aggiorna
 
 1. **Token risparmiati.** Dalla risposta del worker si legge il tag
    `<!-- METRICS: [...] TOKENS_SAVED=X -->` che `orchestrator_mcp.py`
-   aggiunge. Una chiamata a DeepSeek Flash che non porta quel tag si
-   registra come `API Flash Call`, senza inventare un numero (punto 6).
-2. **Badge in cima**, ricalcolato:
+   aggiunge. Dal 2026-09-08 lo emettono tutti e tre i canali:
+   `[LOCAL_5060]`, `[COLAB_14B]` e `[DEEPSEEK_FLASH]`. Quest'ultimo porta
+   anche `MODEL`, `PROMPT`, `COMPLETION`, `REASONING` e `CACHE_HIT`: il
+   modello che ha servito la richiesta si legge dalla risposta, non si
+   deduce dal sorgente. I token `[DEEPSEEK_FLASH]` sono offloadati ma
+   **non** gratuiti: si annotano nella riga del task e restano **fuori dal
+   badge**, che somma il solo lavoro a costo zero (locale e Colab). Una
+   chiamata che non porta il tag resta `API Flash Call`, senza inventare
+   un numero (punto 6).
+2. **Badge in cima**, ricalcolato sui soli canali a costo zero:
    `> ### 🟢 TOKENS_OFFLOADED: [SOMMA] token (~$[STIMA] USD risparmiati)`
    — stima a $3,00 per milione di token.
 3. **Riga nel registro**:

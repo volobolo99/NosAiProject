@@ -114,7 +114,22 @@ def ask_deepseek_reasoner(task_description: str, context: str = "") -> str:
         DEEPSEEK_URL, json=payload, headers=headers, timeout=60
     )
     res.raise_for_status()
-    return res.json()["choices"][0]["message"]["content"]
+    data = res.json()
+    # L'API restituisce sempre `usage`: senza questo blocco il canale
+    # DeepSeek finiva a registro con `+0` (CLAUDE.md 23).
+    usage = data.get("usage") or {}
+    details = usage.get("completion_tokens_details") or {}
+    choices = data.get("choices") or [{}]
+    content = (choices[0].get("message") or {}).get("content") or ""
+    return (
+        f"{content}\n\n<!-- METRICS: [DEEPSEEK_FLASH]"
+        f" TOKENS_SAVED={usage.get('total_tokens', 0)}"
+        f" MODEL={data.get('model', 'unknown')}"
+        f" PROMPT={usage.get('prompt_tokens', 0)}"
+        f" COMPLETION={usage.get('completion_tokens', 0)}"
+        f" REASONING={details.get('reasoning_tokens', 0)}"
+        f" CACHE_HIT={usage.get('prompt_cache_hit_tokens', 0)} -->"
+    )
   except Exception as e:
     return f"Errore DeepSeek: {str(e)}"
 
