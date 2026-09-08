@@ -248,60 +248,6 @@
                 <TextBlock x:Name="TargetRoiText" FontSize="14" TextWrapping="Wrap" Text="NON CALIBRATO"/>
               </StackPanel>
             </Border>
-            <!-- T-09: calibrazione del riquadro bersaglio guardando il ritaglio.
-                 Come nelle card Equipaggiamento l'operatore preme bottoni e non
-                 digita comandi: qui i bottoni lanciano le opzioni hud probe e
-                 calibrate-target del runtime come processi. Questa e' la prima
-                 immagine del pannello: il BMP e' caricato da uno Stream con
-                 CacheOption OnLoad, cosi' il file non resta aperto e una corsa
-                 successiva puo' sovrascriverlo. -->
-            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
-              <StackPanel>
-                <TextBlock Style="{StaticResource CardLabel}" Text="CALIBRA IL RIQUADRO BERSAGLIO GUARDANDOLO (T-09)"/>
-                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,10" TextWrapping="Wrap"
-                           Text="1) Seleziona un bersaglio nel gioco e tieni NosTale in primo piano.&#x0a;2) Premi &quot;Esegui probe&quot;: il runtime scrive il ritaglio candidato in data/perception/crops/target_latest.bmp e la card lo mostra.&#x0a;3) Guarda il ritaglio: se non è il riquadro bersaglio, correggi le quattro caselle sotto e premi di nuovo &quot;Registra calibrazione&quot;; ogni tentativo sovrascrive il precedente.&#x0a;4) Quando il ritaglio è il riquadro bersaglio, le quattro caselle x, y, w, h ne sono le frazioni dell'area client del gioco: premi &quot;Registra calibrazione&quot; e la calibrazione finisce in data/perception/target-roi.calibration.&#x0a;5) Verifica sul vivo con &quot;Rileggi stato bersaglio&quot;: bersaglio selezionato &#x2192; presente, deselezionato &#x2192; assente; se resta UNKNOWN la card mostra il motivo."/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                  <Button Style="{StaticResource PrimaryButton}" Content="Esegui probe" Click="OnTargetRoiProbe" Margin="0,0,8,0"/>
-                  <Button Style="{StaticResource GhostButton}" Content="Registra calibrazione" Click="OnTargetRoiCalibrate" Margin="0,0,8,0"/>
-                  <Button Style="{StaticResource GhostButton}" Content="Rileggi stato bersaglio" Click="OnTargetRoiRefreshState"/>
-                </StackPanel>
-                <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Background="#0B1220" Padding="8" Margin="0,0,0,6">
-                  <Grid>
-                    <Image x:Name="TargetRoiCropImage" MaxWidth="520" MaxHeight="240" Stretch="Uniform"
-                           RenderOptions.BitmapScalingMode="NearestNeighbor" Visibility="Collapsed"/>
-                    <TextBlock x:Name="TargetRoiCropMessage" Foreground="{StaticResource WarnBrush}" TextWrapping="Wrap"
-                               TextAlignment="Center" VerticalAlignment="Center"
-                               Text="Nessun ritaglio da mostrare: premi Esegui probe."/>
-                  </Grid>
-                </Border>
-                <TextBlock x:Name="TargetRoiCropStamp" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4" TextWrapping="Wrap"
-                           Text="Le quattro caselle sono frazioni dell'area client: x e y in [0, 1), w e h in (0, 1], e x + w e y + h non oltre 1."/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                  <TextBlock Text="x" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}"/>
-                  <TextBox x:Name="TargetRoiXBox" Width="80" Text="0.40" Margin="0,0,14,0" Padding="6,4"
-                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
-                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1"/>
-                  <TextBlock Text="y" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}"/>
-                  <TextBox x:Name="TargetRoiYBox" Width="80" Text="0.06" Margin="0,0,14,0" Padding="6,4"
-                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
-                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1"/>
-                  <TextBlock Text="w" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}"/>
-                  <TextBox x:Name="TargetRoiWBox" Width="80" Text="0.20" Margin="0,0,14,0" Padding="6,4"
-                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
-                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1"/>
-                  <TextBlock Text="h" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}"/>
-                  <TextBox x:Name="TargetRoiHBox" Width="80" Text="0.02" Padding="6,4"
-                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
-                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1"/>
-                </StackPanel>
-                <TextBlock x:Name="TargetRoiValidationText" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                <TextBlock x:Name="TargetRoiRunSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
-                           Text="Nessuna esecuzione in questa sessione."/>
-                <TextBlock x:Name="TargetRoiStateText" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
-                           Text="Non ancora letto in questa sessione."/>
-              </StackPanel>
-            </Border>
             <ItemsControl x:Name="TargetFields" ItemTemplate="{StaticResource FieldTemplate}"/>
           </StackPanel>
         </ScrollViewer>
