@@ -138,7 +138,7 @@ Le voci che richiedono uno smartphone sono **fuori scope** dalla roadmap corrent
 - Resta aperto: il **transport HTTP** degli eventi verso il lato Python. Il lettore e il formato JSON ci sono; agganciare un endpoint richiede una decisione su dove comporlo (tocca Gate1↔Gate2), non forzata qui.
 - PredictionEvaluator e metriche produttive.
 - Generazione binding Protobuf C++/TypeScript.
-- Discovery hardware e benchmark reali.
+- Benchmark reali. Il **discovery** invece esiste e gira su questa macchina (`WindowsHardwareProbe`): profilo in `%LOCALAPPDATA%\NosAi\PlayAi\hardware-profile.json`. Il 2026-09-08 vi è stato corretto un difetto: `Win32_VideoController.AdapterRAM` è un `UInt32` e saturava a 4095 MB, così una GPU da 8151 MB veniva registrata come 4095 e scendeva di un tier grafico (3 → 2). Ora il valore si legge a 64 bit da `HardwareInformation.qwMemorySize` quando WMI è saturo o assente; il profilo si rigenera da sé perché la VRAM entra nel fingerprint. **Non serve hardware nuovo**: ciò che manca sono le misure di throughput, non il rilevamento.
 - Shared Memory nativa e N-API.
 - Persistenza analitica completa.
 - Sandbox strumenti e capability enforcement.
