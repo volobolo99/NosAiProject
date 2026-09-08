@@ -6,6 +6,34 @@ Chiudere una riga richiede evidenza (log, checklist, o nota in `docs/GATE1_CHECK
 
 Gli agenti ricordano le voci **aperte** a ogni resoconto di fine lavoro.
 
+## Una sola partita chiude più voci insieme (verificato il 2026-09-08)
+
+`--await-client-capture` — il pulsante **Avvia cattura pre-login** nella
+sezione *Certificazione* del Control Panel — non registra soltanto gli opcode
+che gli servono per fermarsi. Il tee della sessione filtra **per endpoint e
+non per opcode** (`PreLoginCaptureSession.PreLoginTeeSource`), quindi il file
+`.noscap` prodotto contiene **tutto** il traffico di gioco di quella sessione.
+
+Ne segue che una sola sessione giocata normalmente produce l'evidenza per
+chiudere insieme:
+
+- **T-05** — gameplay osservato dal vivo, che è il criterio di chiusura del
+  comando stesso (`stat`, `in`, e uno fra `ivn`/`equip`);
+- **T-12, seconda metà** — quale `InventoryKind` produce un equip reale:
+  serve una cattura che contenga `equip` e `ivn` mentre si indossa qualcosa;
+- **la scala di `cond.speed`** — ignota oggi (vedi
+  `docs/PROTOCOLLO_NOSTALE.md`, `cond`): camminare fra due punti dà `cond`
+  per la velocità dichiarata e `mv` per posizioni e istanti, e il rapporto
+  dà l'unità;
+- **gli opcode delle missioni** — mai osservati perché ogni cattura esistente
+  comincia a client già in gioco: aprire il diario missioni durante la
+  registrazione li mette nel file.
+
+Perché rendano tutto questo, la sessione va giocata facendo quelle cose:
+indossare e togliere un pezzo, camminare in linea retta fra due punti
+riconoscibili, aprire il diario delle missioni. Restano gesti di gioco
+normale, non una procedura di collaudo.
+
 | ID | Cosa | Cosa fare | Aperto |
 |---|---|---|---|
 | T-01 | Wire v4 sul telefono (ADR-0009) | Reinstallare l'APK (`Abbina telefono`), poi sessione USB e sessione Wi-Fi. Un APK più vecchio viene rifiutato all'header. | **no** |
