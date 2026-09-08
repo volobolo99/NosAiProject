@@ -45,8 +45,11 @@ su disco.
 | Q-151 | logica+gestori | `deepseek-v4-flash` | 2026-09-08 | 1027 s | 928 016 | 824 960 | 0.055 $ | budget_exhausted | 2 file su 3 |
 | Q-151b | test | `deepseek-v4-flash` | 2026-09-08 | 350 s | 48 193 | 26 368 | 0.014 $ | blocked | 1 file: i test mancanti |
 | Q-152 | logica+gestori | `deepseek-v4-flash` | 2026-09-08 | 727 s | 919 264 | 822 272 | 0.055 $ | completed | 3 file: rete automatica |
+| Q-154a | logica pura | `deepseek-v4-flash` | 2026-09-08 | 907 s | 3 553 | 3 328 | 0.000 $ | api_error | 0 file: timeout a 180 s |
+| Q-154b | logica pura | `deepseek-v4-flash` | 2026-09-08 | 908 s | 3 641 | 3 456 | 0.000 $ | api_error | 0 file: timeout a 180 s |
+| esplorazione-flaky | esploratore | `haiku` | 2026-09-08 | 124 s | 65 927 | — | — | completed | evidenza sui due test instabili |
 
-**Totali**: 19 consegne, 22 644 793 token, 0.76 $, 160 minuti di lavoro degli agenti.
+**Totali**: 22 consegne, 22 717 914 token, 0.76 $, 191 minuti di lavoro degli agenti.
 
 ## Che cosa dicono questi numeri
 
@@ -59,3 +62,26 @@ niente da rileggere a ogni giro.
 Q-140 e Q-143 sono costati insieme 0,15 $ per scoprire che il lavoro era gia'
 fatto. E' l'errore che ha generato la regola: prima di delegare, cercare
 l'artefatto nel codice o partire da una prova che fallisce.
+
+## Quanto costa un timeout troppo stretto
+
+Sette deleghe uccise dallo stesso `requestTimeoutMs` a 180 s, tutte con zero o
+quasi zero file consegnati:
+
+| Delega | Attesa | Token |
+|---|---:|---:|
+| Q-147/1 | 550 s | 56 640 |
+| Q-147/2 | 543 s | 0 |
+| Q-147/3 | 1174 s | 27 194 |
+| Q-147b/1 | 543 s | 0 |
+| Q-154a | 907 s | 3 553 |
+| Q-154b | 908 s | 3 641 |
+
+**Oltre un'ora di attesa** per lavoro mai prodotto. Il costo non e' in token: e'
+in tempo in cui non succede niente, e in incarichi che vanno riscritti e
+rilanciati.
+
+Il rimedio -- 600 s, perche' con la coda piena DeepSeek puo' non avviare
+l'inferenza per dieci minuti -- e' scritto e provato, ma resta inerte finche' il
+server MCP non riparte: e' un processo figlio avviato all'apertura della
+sessione. **E' questa la riga che giustifica un riavvio.**
