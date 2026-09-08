@@ -57,7 +57,11 @@ public sealed class SkillReportCommandTests
     [InlineData("--skill-report --summary", SkillReportCommand.UnknownOptionReason)]
     [InlineData("--skill-report --vnum abc", SkillReportCommand.InvalidVnumReason)]
     [InlineData("--skill-report --recording", SkillReportCommand.RecordingWithoutValueReason)]
-    [InlineData("--skill-report", SkillReportCommand.NoTargetReason)]
+    // The value is asserted, not the constant name: TargetChainProbe declares a
+    // same-named constant with a different value, and RefusalReasonRegisterTests
+    // treats a name match as coverage — naming it here would mark that one covered
+    // too. See SkillCatalogueRefusalTests for the same rule.
+    [InlineData("--skill-report", "skill_report_no_target")]
     public void TryParse_rejects_malformed_arguments(string argsText, string expectedReason)
     {
         string[] args = argsText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
