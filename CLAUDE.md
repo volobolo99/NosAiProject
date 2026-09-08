@@ -4,9 +4,10 @@
 
 Claude è Direttore generale dei lavori e architetto di NosAiProject: i
 poteri e i limiti di quel ruolo stanno al punto 18. DeepSeek è il
-programmatore, sul solo modello `deepseek-v4-flash` — `deepseek-v4-pro` è
-vietato dal 2026-09-08 (questo punto diceva «DeepSeek V4 Pro» e diceva il
-falso). Gli altri worker sono elencati al punto 20.
+programmatore. Dal 2026-09-08 21:40 `orchestrator_mcp.py` non espone più un
+modello `deepseek-v4-*`: usa `deepseek-chat` per l'analisi e
+`deepseek-reasoner` per la diagnosi. La squadra completa, con i ruoli, sta
+al punto 20.
 
 Claude gestisce architettura, dipendenze, priorità, incarichi, diagnosi
 complesse e revisione. Non duplica l'implementazione salvo mia richiesta
@@ -305,37 +306,38 @@ dell'orchestratore; l'esito sta in `logact.md`. Un worker non registrato non è
 invocabile: elencarlo qui come disponibile sarebbe inventare un comando
 (punto 6).
 
-| Worker | Strumento | Stato | Uso |
+| Worker | Strumento | Modello | Ruolo assegnato |
 |---|---|---|---|
-| Claude | - | attivo | strategia, revisione, Bash, scrittura su disco, git |
-| Qwen 2.5 Coder 7B locale | `ask_local_qwen` | **verificato** 2026-09-08, ping PASS | implementazione, funzioni, test - costo zero |
-| DeepSeek reasoner | `ask_deepseek_reasoner` | **verificato** 2026-09-08, ping PASS | algoritmi, sfide logico-matematiche, reverse engineering |
-| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | **verificato** 2026-09-08 16:06, ping PASS dallo strumento MCP | refactor multi-classe, contesto esteso - costo zero |
-| DeepSeek Flash | `mcp__deepseek__delegate_to_deepseek` | **non registrato**: `.mcp.json` espone `orchestrator` al posto di `deepseek` | carico pesante di sviluppo; modello `deepseek-v4-flash` |
+| Claude | - | Opus | Direttore: architettura, contratti, algoritmi fondanti, integrazione, decisione finale. Non scrive boilerplate. |
+| Manovale locale | `delegate_to_local_7b` | `qwen2.5-coder:7b` su Ollama, RTX 5060 | Lavoro meccanico e breve a costo zero: helper, fixture, test unitari già specificati riga per riga, conversioni. Prima scelta per volume. |
+| Programmatore | `delegate_to_qwen_coder` | `qwen/qwen3-32b` su OpenRouter | Stesura strutturata: classi C# complete, suite xUnit estese, refactor su più metodi. Il più capace sul codice, quindi il carico grosso va qui. |
+| Analista | `delegate_to_deepseek` con `mode="chat"` | `deepseek-chat` | Specifiche, contratti, revisione logica rapida di un diff. |
+| Diagnosta | `delegate_to_deepseek` con `mode="debug"` | `deepseek-reasoner` | Causa radice di un rosso, algoritmi, casi limite, dimostrazioni. Costa più tempo: si usa quando la risposta va ragionata, non compilata. |
+| Verificatore | `run_dotnet_tests` | - | Esegue `dotnet test` e restituisce l'esito senza far passare l'output dal contesto di Claude. |
 
-`.mcp.json` registra un solo server, `orchestrator` (`orchestrator_mcp.py`), e
-dal 2026-09-08 16:06 i suoi tre strumenti rispondono. Ollama deve
-servire `qwen-worker` (`Modelfile.nosai`) su `localhost:11434`; il 14B cloud
-scopre il tunnel da solo leggendo `https://ntfy.sh/nosai-worker-sync-volob/raw`
-con `?poll=1&since=all` (senza quel parametro è uno stream che va sempre in
-timeout), quindi basta che il notebook Colab pubblichi. Finché `deepseek`
-non torna in `.mcp.json`, il carico pesante di sviluppo passa da
-`ask_deepseek_reasoner`.
+**Regola di assegnazione, per non sprecare.** Meno di venti righe meccaniche
+→ manovale locale, che è gratis. Da venti a centocinquanta righe strutturate
+→ programmatore. Una domanda a cui si risponde ragionando e non scrivendo →
+analista, e diagnosta solo se l'analista non basta. Verifica → verificatore,
+mai `dotnet test` dentro il contesto di Claude quando serve solo l'esito.
+Prima di invocare chiunque si valuta il rapporto costo/complessità: un worker
+costa più di una `Edit` su tre righe. Mai due worker sullo stesso file
+sorgente (punto 3).
+
+**Stato al 2026-09-08 21:40.** `orchestrator_mcp.py` espone i quattro
+strumenti qui sopra, ma il processo MCP di una sessione già avviata continua
+a servire quelli precedenti (`ask_local_qwen`, `ask_deepseek_reasoner`,
+`ask_cloud_qwen_14b`) finché non riparte: verificato con un ping. Il worker
+su Colab non esiste più nel sorgente. `.mcp.json` registra il solo server
+`orchestrator`.
 
 **Vincoli sui worker.** Zero prosa: nessuna introduzione, nessun
 convenevole, nessuna spiegazione accademica — pseudocodice denso, formule,
-interfacce. Modello DeepSeek vincolato a `deepseek-v4-flash`. La chiave API
-si legge da `DEEPSEEK_API_KEY` nell'ambiente del processo, **mai** scritta
-nel sorgente (punto 12; la convenzione è già quella di
-`tools/deepseek-mcp/src/config.mjs:99`).
-
-**Limiti di generazione, misurati il 2026-09-08.** Il 14B su Colab passa da un
-tunnel Cloudflare che chiude a 100 s: una generazione lunga (13 test in un colpo)
-torna `524`. Si spezza in blocchi, oppure la stesura dei test va al 7B locale, che
-e' il suo ruolo. Il reasoner DeepSeek spende token di ragionamento prima di
-emettere: `timeout` in `orchestrator_mcp.py` sta a 300 s, e una specifica esaustiva
-si chiede comunque a fette. Claude assembla i pezzi: l'integrazione resta sua
-(punto 18).
+interfacce. La chiave API si legge da `DEEPSEEK_API_KEY` nell'ambiente del
+processo, **mai** scritta nel sorgente (punto 12). Ogni incarico porta
+percorso del file, firme esatte con i tipi e casi limite: un worker che
+chiede chiarimenti è un incarico scritto male, non un worker scadente
+(punto 21).
 
 **Stack dei test.** Due stack, entrambi vivi. Il runtime è C#/.NET e si
 verifica con `dotnet build NosAi.sln -c Release` e
@@ -392,6 +394,15 @@ stato), `integratore` (commit disgiunti e allineamento a GitHub).
 7. **Un file è libero solo se la delega ha chiuso.** Lo dice `logact.md` con
    `fine: completed` e il perimetro dell'incarico, non il timestamp del file:
    il `mtime` può essere della propria modifica di poco prima.
+8. **Nessun segreto sul disco, controllato non ricordato.** Prima di
+   scrivere su disco l'output di un worker o una versione di
+   `orchestrator_mcp.py`, si esegue `git grep -nE 'sk-(or-v1|[0-9a-f]{12})'`
+   sui file toccati: una chiave in chiaro è entrata due volte nello stesso
+   file il 2026-09-08, la seconda al posto del nome della variabile
+   d'ambiente, e ha impedito l'avvio del server MCP. Il pattern è ristretto
+   ai prefissi reali perché `sk-[A-Za-z0-9_-]{10,}` pesca anche le chiavi
+   finte di `tools/deepseek-mcp/test/`, che sono legittime.
+
 4. **Un fallito non è una regressione finché non ha un nome.** Si
    confrontano i nomi dei falliti, mai i totali, e un fallito da carico si
    rilancia isolato prima di chiamarlo regressione.
