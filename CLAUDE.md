@@ -300,21 +300,25 @@ sospetto.
 
 ## 20. Worker e strumenti — quelli che esistono davvero
 
-Stato verificato il 2026-09-08 leggendo `.mcp.json` e `orchestrator_mcp.py`.
-Un worker non registrato non è invocabile: elencarlo qui come disponibile
-sarebbe inventare un comando (punto 6).
+Stato verificato il 2026-09-08 con un ping a costo zero sui tre strumenti
+dell'orchestratore; l'esito sta in `logact.md`. Un worker non registrato non è
+invocabile: elencarlo qui come disponibile sarebbe inventare un comando
+(punto 6).
 
 | Worker | Strumento | Stato | Uso |
 |---|---|---|---|
-| Claude | — | attivo | strategia, revisione, Bash, scrittura su disco, git |
-| DeepSeek Flash | `mcp__deepseek__delegate_to_deepseek` | **registrato** in `.mcp.json` | carico pesante di sviluppo; modello `deepseek-v4-flash` |
-| Qwen 2.5 Coder 7B locale | `ask_local_qwen` | definito in `orchestrator_mcp.py:20` | implementazione, funzioni, test — costo zero |
-| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | definito in `orchestrator_mcp.py:46` | refactor multi-classe, contesto esteso — costo zero |
-| DeepSeek reasoner | `ask_deepseek_reasoner` | definito in `orchestrator_mcp.py:72` | algoritmi, sfide logico-matematiche, reverse engineering |
+| Claude | - | attivo | strategia, revisione, Bash, scrittura su disco, git |
+| Qwen 2.5 Coder 7B locale | `ask_local_qwen` | **verificato** 2026-09-08, ping PASS | implementazione, funzioni, test - costo zero |
+| DeepSeek reasoner | `ask_deepseek_reasoner` | **verificato** 2026-09-08, ping PASS | algoritmi, sfide logico-matematiche, reverse engineering |
+| Qwen 2.5 Coder 14B cloud | `ask_cloud_qwen_14b` | registrato ma **irraggiungibile**: tunnel Colab spento | refactor multi-classe, contesto esteso - costo zero |
+| DeepSeek Flash | `mcp__deepseek__delegate_to_deepseek` | **non registrato**: `.mcp.json` espone `orchestrator` al posto di `deepseek` | carico pesante di sviluppo; modello `deepseek-v4-flash` |
 
-I tre strumenti di `orchestrator_mcp.py` diventano invocabili solo quando
-il server è in `.mcp.json` **e** la sessione è stata riavviata; Ollama deve
-servire `qwen-worker` (`Modelfile.nosai`) su `localhost:11434`.
+`.mcp.json` registra un solo server, `orchestrator` (`orchestrator_mcp.py`), e
+i suoi tre strumenti diventano invocabili solo a sessione riavviata. Ollama deve
+servire `qwen-worker` (`Modelfile.nosai`) su `localhost:11434`; il 14B cloud
+richiede il notebook Colab acceso e il tunnel Cloudflare vivo. Finché `deepseek`
+non torna in `.mcp.json`, il carico pesante di sviluppo passa da
+`ask_deepseek_reasoner`.
 
 **Vincoli sui worker.** Zero prosa: nessuna introduzione, nessun
 convenevole, nessuna spiegazione accademica — pseudocodice denso, formule,

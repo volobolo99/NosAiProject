@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "deepseek": {
-      "command": "node",
-      "args": ["tools/deepseek-mcp/src/server.mjs"]
+    "orchestrator": {
+      "command": "python",
+      "args": ["orchestrator_mcp.py"]
     }
   }
 }
