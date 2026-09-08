@@ -84,7 +84,7 @@ internal static class PerceptionProbe
                 }
 
                 var observation = ReadFrame(frame, window.ClientArea, atlas);
-                var cropDir = HudCropStore.TrySave(repoRoot, frame, observation);
+                IReadOnlyList<HudCropWrite> crops = HudCropStore.SaveCrops(repoRoot, frame, observation);
                 return new PerceptionProbeResult(
                     Summarize(frame, observation, window),
                     [
@@ -95,7 +95,7 @@ internal static class PerceptionProbe
                         new DisplayField("Fotogramma", $"{frame.Width}x{frame.Height} [{frame.Source.ToWire()}]", frame.Source.ToWire()),
                         new DisplayField("Byte", frame.Bgra.Length.ToString(), "LIVE"),
                         new DisplayField("Tentativo", attempt.ToString(), "DERIVED"),
-                        .. ObservationFields(observation, cropDir),
+                        .. ObservationFields(observation, crops),
                         new DisplayField("Snapshot Gate 1", "non aggiornato da questo probe", "DERIVED")
                     ]);
             }
@@ -289,7 +289,7 @@ internal static class PerceptionProbe
         return $"UNKNOWN · {bar.FailureReason ?? "unclassified"}";
     }
 
-    private static DisplayField[] ObservationFields(ScreenVitalObservation observation, string? cropDir)
+    private static DisplayField[] ObservationFields(ScreenVitalObservation observation, IReadOnlyList<HudCropWrite> crops)
     {
         return
         [
@@ -311,9 +311,26 @@ internal static class PerceptionProbe
                     ? "UNKNOWN · atlas_not_trained"
                     : observation.TrainedGlyphs.ToString(CultureInfo.InvariantCulture),
                 observation.TrainedGlyphs == 0 ? "UNKNOWN" : "DERIVED"),
-            new DisplayField("Ritagli HUD", cropDir is null ? "UNKNOWN · crop_not_saved" : cropDir, cropDir is null ? "UNKNOWN" : "LIVE")
+            HudCropField(crops)
         ];
     }
+
+    /// <summary>
+    /// The crops actually written in this pass, each with the instant its file
+    /// was written. Nothing is marked LIVE when nothing was written: a crop left
+    /// over from an earlier session is not a crop from this one.
+    /// </summary>
+    internal static DisplayField HudCropField(IReadOnlyList<HudCropWrite> crops)
+    {
+        if (crops.Count == 0)
+            return new DisplayField("Ritagli HUD", "UNKNOWN · crop_not_saved", "UNKNOWN");
+
+        string value = string.Join("; ", crops.Select(static c => $"{c.FileName} {FormatInstant(c.WrittenAtUtc)}"));
+        return new DisplayField("Ritagli HUD", value, "LIVE");
+    }
+
+    private static string FormatInstant(DateTime utc)
+        => utc.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC";
 
     private static DisplayField BarField(string label, ScreenBarFill bar)
     {
@@ -327,15 +344,14 @@ internal static class PerceptionProbe
 
     private static string FormatRoi(PixelRect rect) => $"{rect.X},{rect.Y} {rect.Width}x{rect.Height}";
 
-    private static DisplayField[] VitalUnknownFields()
+    internal static DisplayField[] VitalUnknownFields()
     {
-        var vitals = ScreenDerivedVitalGate.Unknown(0, "ocr_glyphs_not_trained");
         return
         [
             new DisplayField("HP barra", "UNKNOWN · no_frame_within_budget", "UNKNOWN"),
-            new DisplayField("HP attuale", "UNKNOWN · ocr_glyphs_not_trained", "UNKNOWN"),
-            new DisplayField("HP massimo", "UNKNOWN · ocr_glyphs_not_trained", "UNKNOWN"),
-            new DisplayField("HP classificazione", vitals.Current.Source.ToWire(), vitals.Current.Source.ToWire())
+            new DisplayField("HP attuale", "UNKNOWN · no_frame_within_budget", "UNKNOWN"),
+            new DisplayField("HP massimo", "UNKNOWN · no_frame_within_budget", "UNKNOWN"),
+            new DisplayField("HP classificazione", "UNKNOWN", "UNKNOWN")
         ];
     }
 }

@@ -119,6 +119,8 @@ internal static class TargetInspect
     public const string ClearedLabel = "Passata senza bersaglio";
     public const string AdviceLabel = "Prossimo passo";
     public const string RoiLabel = "Riquadro bersaglio";
+    public const string ProcessLabel = "Processo";
+    public const string ProcessNotRecorded = "process_not_recorded";
 
     /// <summary>
     /// Builds the view from the two files the hunt and the screen reader leave
@@ -163,6 +165,7 @@ internal static class TargetInspect
                 huntDrawing.RestartsField,
                 huntDrawing.ClearedField,
                 huntDrawing.AdviceField,
+                huntDrawing.ProcessField,
                 roiDrawing.Field
             ]
         };
@@ -205,6 +208,9 @@ internal static class TargetInspect
             $"{count} candidati ({durable} ancorati) — selezioni seguite {passes}/{TargetIdFinder.RequiredSelections}, riavvii {restarts}/1");
 
         string cached = DataSourceKind.Cached.ToWire();
+        DisplayField processField = candidates.ProcessId > 0
+            ? new DisplayField(ProcessLabel, $"{candidates.ProcessId} [{cached}]", cached)
+            : new DisplayField(ProcessLabel, $"UNKNOWN · {ProcessNotRecorded}", "UNKNOWN");
         return new HuntDrawing(
             kind,
             status,
@@ -222,7 +228,8 @@ internal static class TargetInspect
                 string.Create(CultureInfo.InvariantCulture, $"{restarts}/1 [{cached}]"),
                 cached),
             new DisplayField(ClearedLabel, clearedValue, cached),
-            new DisplayField(AdviceLabel, advice, DataSourceKind.Derived.ToWire()));
+            new DisplayField(AdviceLabel, advice, DataSourceKind.Derived.ToWire()),
+            processField);
     }
 
     private static HuntDrawing HuntUnknown(TargetHuntKind kind, string status, string reason)
@@ -239,7 +246,8 @@ internal static class TargetInspect
             unknown(SelectionsLabel),
             unknown(RestartsLabel),
             unknown(ClearedLabel),
-            unknown(AdviceLabel));
+            unknown(AdviceLabel),
+            unknown(ProcessLabel));
     }
 
     private static RoiDrawing DrawRoi(RoiReading roi)
@@ -249,8 +257,10 @@ internal static class TargetInspect
             string when = calibrated.CalibratedAtUtc is { } at
                 ? at.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
                 : "UNKNOWN";
+            string fractions = string.Create(CultureInfo.InvariantCulture,
+                $"x={calibrated.X:0.0000} y={calibrated.Y:0.0000} w={calibrated.Width:0.0000} h={calibrated.Height:0.0000}");
             string line = string.Create(CultureInfo.InvariantCulture,
-                $"calibrato il {when} su {calibrated.ClientWidth}x{calibrated.ClientHeight} — {IndependentSourceNote}");
+                $"calibrato il {when} su {calibrated.ClientWidth}x{calibrated.ClientHeight}, frazioni {fractions} — {IndependentSourceNote}");
             return new RoiDrawing(
                 TargetRoiKind.Calibrated,
                 $"{RoiLabel}: {line}",
@@ -405,7 +415,8 @@ internal static class TargetInspect
         DisplayField SelectionsField,
         DisplayField RestartsField,
         DisplayField ClearedField,
-        DisplayField AdviceField);
+        DisplayField AdviceField,
+        DisplayField ProcessField);
 
     private readonly record struct RoiDrawing(
         TargetRoiKind Kind,

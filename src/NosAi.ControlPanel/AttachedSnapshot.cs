@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using NosAi.Runtime.Contracts;
 
@@ -212,24 +213,26 @@ internal static class AttachedSnapshot
 
     private static ClassifiedValue<int> ReadClassifiedInt(JsonElement? obj, string key, string missing)
     {
-        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason))
+        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason, out DateTime? observedAtUtc))
             return ClassifiedValue<int>.Unknown(reason);
-        return Classify(value, source);
+        return Classify(value, source, observedAtUtc);
     }
 
     private static ClassifiedValue<int?> ReadClassifiedNullableInt(JsonElement? obj, string key, string missing)
     {
-        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason))
+        if (!TryReadClassifiedNumber(obj, key, missing, out var value, out var source, out var reason, out DateTime? observedAtUtc))
             return ClassifiedValue<int?>.Unknown(reason);
-        return Classify((int?)value, source);
+        return Classify((int?)value, source, observedAtUtc);
     }
 
     private static bool TryReadClassifiedNumber(
-        JsonElement? obj, string key, string missing, out int value, out DataSourceKind source, out string reason)
+        JsonElement? obj, string key, string missing,
+        out int value, out DataSourceKind source, out string reason, out DateTime? observedAtUtc)
     {
         value = 0;
         source = DataSourceKind.Unknown;
         reason = missing;
+        observedAtUtc = null;
         if (obj is not { } root || !root.TryGetProperty(key, out var node) || node.ValueKind != JsonValueKind.Object)
             return false;
 
@@ -244,16 +247,31 @@ internal static class AttachedSnapshot
         if (v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out value))
         {
             source = ParseSource(sourceText);
+            observedAtUtc = ReadObservedAt(node);
             return source != DataSourceKind.Unknown;
         }
 
         if (v.ValueKind == JsonValueKind.String && int.TryParse(v.GetString(), out value))
         {
             source = ParseSource(sourceText);
+            observedAtUtc = ReadObservedAt(node);
             return source != DataSourceKind.Unknown;
         }
 
         return false;
+    }
+
+    private static DateTime? ReadObservedAt(JsonElement node)
+    {
+        if (!node.TryGetProperty("observedAtUtc", out var at) || at.ValueKind != JsonValueKind.String)
+            return null;
+        string? text = at.GetString();
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+        return DateTime.TryParse(text, CultureInfo.InvariantCulture,
+            DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out DateTime parsed)
+            ? parsed
+            : null;
     }
 
     private static DataSourceKind ParseSource(string source) => source switch
@@ -265,12 +283,13 @@ internal static class AttachedSnapshot
         _ => DataSourceKind.Unknown
     };
 
-    private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source) => source switch
+    private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime? observedAtUtc) => source switch
     {
-        DataSourceKind.Live => ClassifiedValue<T>.Live(value),
-        DataSourceKind.Derived => ClassifiedValue<T>.Derived(value),
-        DataSourceKind.Cached => ClassifiedValue<T>.Cached(value, DateTime.UtcNow),
-        DataSourceKind.Simulated => ClassifiedValue<T>.Simulated(value),
+        DataSourceKind.Live => ClassifiedValue<T>.Live(value, observedAtUtc),
+        DataSourceKind.Derived => ClassifiedValue<T>.Derived(value, observedAtUtc),
+        DataSourceKind.Simulated => ClassifiedValue<T>.Simulated(value, observedAtUtc),
+        DataSourceKind.Cached when observedAtUtc is { } at => ClassifiedValue<T>.Cached(value, at),
+        DataSourceKind.Cached => ClassifiedValue<T>.Unknown("cached_observed_at_missing"),
         _ => ClassifiedValue<T>.Unknown("unclassified_source")
     };
 }

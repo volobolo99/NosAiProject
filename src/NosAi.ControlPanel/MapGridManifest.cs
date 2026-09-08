@@ -4,6 +4,27 @@ using NosAi.Runtime.Navigation;
 
 namespace NosAi.ControlPanel;
 
+/// <summary>How the .grid files on disk relate to the manifest's recorded set.</summary>
+public enum MapGridSetDiskState
+{
+    Intact = 0,
+    Changed = 1,
+    NotComputable = 2
+}
+
+/// <summary>
+/// The disk-only half of grid identity: whether the .grid files still on disk
+/// hash to the manifest's recorded set. The client fingerprint is held at its
+/// recorded value, so a mismatch here means the files themselves moved, and the
+/// check stays computable without attaching to a running client.
+/// </summary>
+public readonly record struct MapGridSetDiskCheck(MapGridSetDiskState State, string? Reason)
+{
+    public static MapGridSetDiskCheck Intact() => new(MapGridSetDiskState.Intact, null);
+    public static MapGridSetDiskCheck Changed(string reason) => new(MapGridSetDiskState.Changed, reason);
+    public static MapGridSetDiskCheck NotComputable(string reason) => new(MapGridSetDiskState.NotComputable, reason);
+}
+
 /// <summary>
 /// Reads the recorded <see cref="MapGridSetIdentity"/> from an extracted maps
 /// directory. Parse-only: it does not rewrite the manifest or the grid files.
@@ -108,4 +129,68 @@ internal static class MapGridManifest
             return false;
         }
     }
+
+    /// <summary>
+    /// Whether the .grid files still on disk hash to the recorded set. This is
+    /// the half of the identity computable without a running client: editing or
+    /// truncating a .grid changes its file hash, which changes the folded set
+    /// hash. The client fingerprint is held at its recorded value, so a mismatch
+    /// means the files themselves moved, not that the client changed.
+    /// </summary>
+    public static MapGridSetDiskCheck CheckIntact(string mapsDirectory, MapGridSetIdentity? recorded)
+    {
+        if (recorded is null)
+            return MapGridSetDiskCheck.NotComputable(ManifestMissing);
+
+        string[] paths;
+        try
+        {
+            paths = Directory.GetFiles(mapsDirectory, "*.grid");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return MapGridSetDiskCheck.NotComputable($"grid_directory_unreadable:{ex.GetType().Name}");
+        }
+
+        var files = new List<MapGridFile>(paths.Length);
+        foreach (string path in paths)
+        {
+            string stem = Path.GetFileNameWithoutExtension(path);
+            if (!int.TryParse(stem, NumberStyles.Integer, CultureInfo.InvariantCulture, out int mapId))
+                continue;
+
+            byte[] bytes;
+            try
+            {
+                bytes = File.ReadAllBytes(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return MapGridSetDiskCheck.NotComputable($"grid_unreadable:{ex.GetType().Name}");
+            }
+
+            files.Add(new MapGridFile(mapId, MapGridSetIdentity.HashFile(bytes)));
+        }
+
+        if (files.Count == 0)
+            return MapGridSetDiskCheck.NotComputable(MapGridExtractor.NoMapArchives);
+
+        MapGridSetIdentity current;
+        try
+        {
+            current = MapGridSetIdentity.Compute(files, recorded.ClientFingerprint);
+        }
+        catch (ArgumentException)
+        {
+            return MapGridSetDiskCheck.NotComputable("duplicate_map_id");
+        }
+
+        if (string.Equals(current.SetHash, recorded.SetHash, StringComparison.Ordinal))
+            return MapGridSetDiskCheck.Intact();
+
+        return MapGridSetDiskCheck.Changed(
+            $"map_grid_set_changed:{Short(recorded.SetHash)}_to_{Short(current.SetHash)}");
+    }
+
+    private static string Short(string hash) => hash.Length <= 12 ? hash : hash[..12];
 }

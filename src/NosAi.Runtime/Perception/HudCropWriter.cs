@@ -48,19 +48,46 @@ public static class HudCropWriter
         PixelRect? targetRoi = null,
         PixelRect? clientArea = null)
     {
+        IReadOnlyList<HudCropWrite> written = SaveCrops(repoRoot, frame, observation, targetRoi, clientArea);
+        return written.Count > 0 && repoRoot is { } root
+            ? Path.Combine(root, RelativeDirectory)
+            : null;
+    }
+
+    /// <summary>
+    /// Writes the crops that actually have pixels and returns each one with the
+    /// instant its file was written. A crop whose region falls outside the frame
+    /// is not written, and is not reported as written.
+    /// </summary>
+    public static IReadOnlyList<HudCropWrite> SaveCrops(
+        string? repoRoot,
+        CaptureFrame frame,
+        ScreenVitalObservation observation,
+        PixelRect? targetRoi = null,
+        PixelRect? clientArea = null)
+    {
         if (string.IsNullOrWhiteSpace(repoRoot) || !frame.HasPixels)
-            return null;
+            return Array.Empty<HudCropWrite>();
 
         string directory = Path.Combine(repoRoot, RelativeDirectory);
         Directory.CreateDirectory(directory);
 
-        WriteBmp(Path.Combine(directory, "hp_latest.bmp"), frame, observation.HpRoi);
-        WriteBmp(Path.Combine(directory, "mp_latest.bmp"), frame, observation.MpRoi);
+        var written = new List<HudCropWrite>(4);
+        WriteIfNotEmpty(directory, "hp_latest.bmp", frame, observation.HpRoi, written);
+        WriteIfNotEmpty(directory, "mp_latest.bmp", frame, observation.MpRoi, written);
         if (targetRoi is { } target)
-            WriteBmp(Path.Combine(directory, "target_latest.bmp"), frame, target);
+            WriteIfNotEmpty(directory, "target_latest.bmp", frame, target, written);
         if (clientArea is { } client)
-            WriteBmp(Path.Combine(directory, "client_latest.bmp"), frame, client);
-        return directory;
+            WriteIfNotEmpty(directory, "client_latest.bmp", frame, client, written);
+        return written;
+    }
+
+    private static void WriteIfNotEmpty(string directory, string fileName, CaptureFrame frame, PixelRect rect, List<HudCropWrite> written)
+    {
+        string path = Path.Combine(directory, fileName);
+        if (!WriteBmp(path, frame, rect))
+            return;
+        written.Add(new HudCropWrite(fileName, File.GetLastWriteTimeUtc(path)));
     }
 
     /// <summary>The panel preview bitmap's name, alongside the other named crops.</summary>
@@ -99,11 +126,11 @@ public static class HudCropWriter
     /// because that is the order a BMP with positive height is read back in; upside
     /// down crops would make the ROI look wrong when it was right.
     /// </remarks>
-    private static void WriteBmp(string path, CaptureFrame frame, PixelRect rect)
+    private static bool WriteBmp(string path, CaptureFrame frame, PixelRect rect)
     {
         byte[] bgra = ScreenVitalReader.Crop(frame, rect);
         if (bgra.Length == 0 || rect.Width <= 0 || rect.Height <= 0)
-            return;
+            return false;
 
         int rowStride = rect.Width * 4;
         int pixelBytes = rowStride * rect.Height;
@@ -122,5 +149,9 @@ public static class HudCropWriter
         stream.Write(header);
         for (int y = rect.Height - 1; y >= 0; y--)
             stream.Write(bgra, y * rowStride, rowStride);
+        return true;
     }
 }
+
+/// <summary>One crop written in a pass, and the instant its file was last written.</summary>
+public readonly record struct HudCropWrite(string FileName, DateTime WrittenAtUtc);

@@ -16,6 +16,6 @@ internal static class HudCropStore
 {
     public const string RelativeDirectory = HudCropWriter.RelativeDirectory;
 
-    public static string? TrySave(string? repoRoot, CaptureFrame frame, ScreenVitalObservation observation)
-        => HudCropWriter.TrySave(repoRoot, frame, observation);
+    public static IReadOnlyList<HudCropWrite> SaveCrops(string? repoRoot, CaptureFrame frame, ScreenVitalObservation observation)
+        => HudCropWriter.SaveCrops(repoRoot, frame, observation);
 }

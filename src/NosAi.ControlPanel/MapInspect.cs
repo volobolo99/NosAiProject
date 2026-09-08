@@ -110,13 +110,14 @@ internal static class MapInspect
         string? gridFailureReason,
         string? gridFileHash,
         MapGridSetIdentity? recordedIdentity,
-        MapGridSetIdentity? currentIdentity)
+        MapGridSetIdentity? currentIdentity,
+        MapGridSetDiskCheck? gridSetCheck = null)
     {
         StandingCellKind standing = ClassifyStanding(cellX, cellY, grid, gridFailureReason, out bool error, out string standingLine);
         MapCellDraw[] crop = Crop(grid, cellX, cellY);
         return new MapView
         {
-            Fields = Fields(mapId, grid, gridFailureReason, gridFileHash, recordedIdentity, currentIdentity),
+            Fields = Fields(mapId, grid, gridFailureReason, gridFileHash, recordedIdentity, currentIdentity, gridSetCheck),
             StandingLine = standingLine,
             StandingKind = standing,
             StandingIsError = error,
@@ -216,10 +217,12 @@ internal static class MapInspect
         string? gridReason = mapsReason;
         string? fileHash = null;
         MapGridSetIdentity? recorded = null;
+        MapGridSetDiskCheck? gridSetCheck = null;
 
         if (maps is not null)
         {
             MapGridManifest.TryRead(maps, out recorded, out _);
+            gridSetCheck = MapGridManifest.CheckIntact(maps, recorded);
             if (world.MapId.HasValue)
             {
                 if (!MapGridExtractor.TryInfo(maps, world.MapId.Value, out grid, out fileHash, out gridReason))
@@ -235,7 +238,7 @@ internal static class MapInspect
             gridReason = world.MapId.FailureReason ?? mapsReason;
         }
 
-        return Build(world.MapId, world.CellX, world.CellY, grid, gridReason, fileHash, recorded, currentIdentity: null);
+        return Build(world.MapId, world.CellX, world.CellY, grid, gridReason, fileHash, recorded, currentIdentity: null, gridSetCheck);
     }
 
     private static StandingCellKind ClassifyStanding(
@@ -291,7 +294,8 @@ internal static class MapInspect
         string? gridFailureReason,
         string? gridFileHash,
         MapGridSetIdentity? recordedIdentity,
-        MapGridSetIdentity? currentIdentity)
+        MapGridSetIdentity? currentIdentity,
+        MapGridSetDiskCheck? gridSetCheck)
     {
         bool mayLoad = MapGridSetIdentity.MayLoad(recordedIdentity, currentIdentity, out string? identityReason);
         string identitySource = recordedIdentity is null ? "UNKNOWN" : DataSourceKind.Cached.ToWire();
@@ -314,6 +318,7 @@ internal static class MapInspect
                     ? $"UNKNOWN · {identityReason ?? MapGridManifest.ManifestMissing}"
                     : $"{recordedIdentity.ClientFingerprint} [{identitySource}]",
                 identitySource),
+            GridsIntact(gridSetCheck, recordedIdentity),
             new DisplayField(
                 "Identità verificata",
                 mayLoad ? "sì [DERIVED]" : $"UNKNOWN · {identityReason ?? MapGridManifest.ManifestMissing}",
@@ -325,6 +330,22 @@ internal static class MapInspect
                     : $"{gridFileHash} [{DataSourceKind.Cached.ToWire()}]",
                 grid.IsLoaded && !string.IsNullOrWhiteSpace(gridFileHash) ? "CACHED" : "UNKNOWN")
         ];
+    }
+
+    private static DisplayField GridsIntact(MapGridSetDiskCheck? check, MapGridSetIdentity? recordedIdentity)
+    {
+        if (check is { } disk)
+        {
+            return disk.State switch
+            {
+                MapGridSetDiskState.Intact => new DisplayField("Griglie intatte", "sì [CACHED]", "CACHED"),
+                MapGridSetDiskState.Changed => new DisplayField("Griglie intatte", $"no · {disk.Reason}", "DERIVED"),
+                _ => new DisplayField("Griglie intatte", $"UNKNOWN · {disk.Reason}", "UNKNOWN")
+            };
+        }
+
+        string reason = recordedIdentity is null ? MapGridManifest.ManifestMissing : "grid_set_disk_check_not_run";
+        return new DisplayField("Griglie intatte", $"UNKNOWN · {reason}", "UNKNOWN");
     }
 
     private static DisplayField Provenance(ClassifiedValue<int> mapId)
