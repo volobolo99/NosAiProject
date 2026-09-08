@@ -582,7 +582,14 @@ public static class Program
                 watchSeconds = seconds;
             }
 
-            return NosAi.LiveIntegration.Capture.WireRecorder.Run(endpoint, file, watchSeconds);
+            // T-14 mode: --record-wire --await-client [file.noscap] [--watch N]
+            // waits for the client instead of receiving an endpoint, so a capture
+            // can begin before the login. Both together are refused inside
+            // WireRecorder.Run, never chosen silently.
+            bool awaitClient = args.Any(a => string.Equals(a,
+                NosAi.LiveIntegration.Capture.WireRecorder.AwaitClientFlag, StringComparison.OrdinalIgnoreCase));
+
+            return NosAi.LiveIntegration.Capture.WireRecorder.Run(endpoint, file, watchSeconds, awaitClient);
         }
 
         // Decodifica in tempo reale: stessa catena di decodifica di --world-replay

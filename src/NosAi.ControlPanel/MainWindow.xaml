@@ -414,6 +414,31 @@
                      BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
                      Text="Qui compaiono, dopo la registrazione, gli id che il filo ha detto e le righe del catalogo che contengono le parole della tua nota. Accostarli non e' provarli: serve che lo stesso id e lo stesso testo tornino insieme almeno due volte."/>
 
+            <!-- T-14: una cattura che cominci prima del login. Il bottone usa la
+                 modalita' di attesa del runtime (opzione await-client): il runtime attende il
+                 processo del client e la sua prima connessione di gioco, poi
+                 registra dall'aggancio in poi. Nessun comando da digitare. -->
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-14 — REGISTRA DAL LOGIN (PRIMA DEL COLLEGAMENTO)"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Chiudi il client NosTale. 2) Premi &quot;Registra dal login&quot;. 3) Apri il client, accedi ed entra in gioco. 4) Lascia correre qualche secondo. La registrazione comincia e finisce da sola.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,10" TextWrapping="Wrap">
+                  Limite: la cattura comincia quando la registrazione aggancia la connessione del client — i pacchetti scambiati prima dell'aggancio non sono catturati.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Durata (s)" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0"/>
+                  <TextBox x:Name="PreLoginCaptureSeconds" Width="70" Text="120" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="PreLoginCaptureButton" Style="{StaticResource PrimaryButton}" Content="Registra dal login" Click="OnRecordPreLoginWire"/>
+                </StackPanel>
+                <TextBlock x:Name="PreLoginCaptureSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="Nessuna registrazione in questa sessione."/>
+              </StackPanel>
+            </Border>
+
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Registro eventi</TextBlock>

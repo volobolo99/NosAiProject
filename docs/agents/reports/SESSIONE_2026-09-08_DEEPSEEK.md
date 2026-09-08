@@ -615,3 +615,81 @@ poi: nessuna delega parte senza una prova che fallisce, o senza l'artefatto
 cercato nel sorgente e non trovato, citato nel campo `context` della delega.
 Q-145 e' il primo incarico scelto cosi', ed e' costato 1,3 M per un risultato
 reale: un test da rosso a verde.
+
+---
+
+## Q-146 — rendere eseguibile T-14, che non lo era
+
+Secondo incarico scelto con la regola nuova, questa volta **provando l'assenza
+dell'artefatto** invece di partire da un test rosso:
+
+- `WireRecorder.cs:186` -> `Usage: --record-wire <ip>:<port> [file.noscap] [--watch N]`:
+  endpoint obbligatorio e posizionale, e prima del login quell'indirizzo non esiste;
+- ricerca di `await-client|wait-for-client|WaitForClient|attendi` sotto
+  `LiveIntegration/Capture/` e in `Program.cs`: **zero risultati**;
+- `MainWindow.xaml.cs:932`: «serve il client NosTale aperto e collegato».
+
+56 giri API su 60, 77 chiamate, 939 s, **8 994 613 token**. Consegna reale:
+`WireRecorder.cs` da 11 140 a 29 903 B, piu' `Program.cs`, il pannello e due
+file di test nuovi.
+
+### Due difetti di compilazione, corretti da Claude in integrazione
+
+Il lavoratore ha dichiarato di aver scritto codice che compila al primo colpo.
+Non era vero, e non poteva saperlo: non ha shell.
+
+1. `MainWindow.xaml:418` — un commento XML conteneva `--await-client`, e in XML
+   un commento non puo' contenere `--`. Build rotta (`error MC3000`).
+2. `tests/NosAi.ControlPanel.Tests/PreLoginPanelTests.cs` — sette errori
+   `CS0103`/`CS0246`, tutti da un `using System.IO;` mancante.
+
+Corretti in integrazione e **dichiarati**, non passati come consegna pulita.
+Mandare un giro di delega da milioni di token per due trattini e una direttiva
+`using` sarebbe stato sproporzionato; l'integrazione finale e' compito di Claude.
+
+### Cosa e' stato verificato, e non creduto
+
+| Requisito | Verifica |
+|---|---|
+| percorso vecchio intatto | l'unica riga rimossa nel diff e' la vecchia `Usage`; tutto il resto additivo |
+| nessun secondo meccanismo di cattura | riusa `WinDivertPacketSource.TryOpen` (`:616`) e `RecordFrom` (`:625`) |
+| il limite dichiarato **prima** | `WireRecorder.cs:549-551`, stampato all'aggancio, sopra la riga `stop:` |
+| l'attesa riportata | `attached after waiting X s` |
+| i tre motivi nuovi | `record_client_process_never_appeared`, `record_game_session_never_appeared`, `record_endpoint_and_await_conflict` — distinti, e asseriti con `Assert.Equal` sul **valore letterale** |
+| il registro dei rifiuti | resta verde **senza** aggiunte a `Declared`: coperti, non dichiarati |
+| nomi di processo | letti da `Gate1HostOptions.ClientProcessName`, nessun letterale nuovo |
+
+### Verifica finale
+
+| Controllo | Esito |
+|---|---|
+| Build soluzione Release | **0 errori, 0 avvisi** |
+| `NosAi.Runtime.Tests` | **2728 superati, 0 falliti**, 9 ignorati su 2737 (+6) |
+| `NosAi.ControlPanel.Tests` | **160 superati, 0 falliti** (+1) |
+
+**Prima passata della sessione senza un solo rosso.** La famiglia Guard, instabile
+nelle passate precedenti, e' passata anche dentro la suite completa.
+
+### Cosa cambia per l'operatore
+
+`docs/TEST_RIMANDATI.md` T-14 non chiede piu' di digitare un comando: Pannello ->
+**Rete** -> «T-14 — Registra dal login (prima del collegamento)». La voce resta
+**aperta**: e' cambiato come si fa, non che sia fatto. La cattura la produce
+l'operatore.
+
+## Il divario che resta sulla superficie dei test
+
+Censito oggi: il pannello sa lanciare **sette** comandi del runtime
+(`--arm-input`, `--gesture`, `--live-decode`, `--record-wire`, `--unequip`,
+`--watch`, `--world-replay`) su circa settanta esposti. Per le misure che
+l'operatore deve produrre:
+
+| Misura | Nel pannello |
+|---|---|
+| T-14, cattura prima del login | **chiusa da Q-146** |
+| T-17, costo MP | gia' coperta da «Registra il filo, e annota cosa hai visto» |
+| T-09, ROI del riquadro bersaglio | il riquadro si **legge**, ma nessun bottone esegue la calibrazione |
+| T-13, catena di combattimento | i keybind si leggono, ma `--combat-report` e `--engage` non sono lanciabili |
+
+I due aperti toccano entrambi `MainWindow`, quindi vanno **in serie**: mai due
+agenti sullo stesso file sorgente.
