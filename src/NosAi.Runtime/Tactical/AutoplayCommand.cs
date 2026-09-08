@@ -581,6 +581,13 @@ public static class AutoplayCommand
                 // matters most, and reading it alone made the signal vanish precisely then.
                 StrategicSignal? exploration = StrategyPlanner.AssessExplorationUrgency(map, footprint);
 
+                // Observed before the plan rather than after it. The same reading was already
+                // taken every cycle for ExecuteOneCycle; taking it here costs no extra capture
+                // and lets the goal be chosen knowing whether there is anything to fight,
+                // instead of deciding blind and meeting the mobs afterwards.
+                EquatableArray<Mob> cycleMobs = ObserveMobs(entityFeed, entityClassifier, entityPlayerId, cycle, now);
+                StrategicSignal? farming = StrategyPlanner.AssessFarmingUrgency(playerFacts, cycleMobs);
+
                 // Recovery before Survival is deliberate, not arbitrary:
                 // SelectStrategicPlan breaks a tied Urgency by picking whichever
                 // signal appears first in the list, and the two compute the
@@ -591,10 +598,14 @@ public static class AutoplayCommand
                 // actually decides the outcome: recovery first makes Recovery
                 // win that tie, which is the intended behaviour (out of combat,
                 // the more specific signal wins over the general one).
-                var signals = new List<StrategicSignal>(3);
+                var signals = new List<StrategicSignal>(4);
                 if (recovery is not null) signals.Add(recovery);
                 if (survival is not null) signals.Add(survival);
                 if (exploration is not null) signals.Add(exploration);
+
+                // Last on purpose: ties are broken by list order, and adding farming must not
+                // take a goal away from the three signals that already decided this loop.
+                if (farming is not null) signals.Add(farming);
 
                 StrategicPlan plan = StrategyPlanner.SelectStrategicPlan(signals, now);
                 string selection = plan.SelectedKind?.ToString() ?? "none";
@@ -637,7 +648,7 @@ public static class AutoplayCommand
                     map,
                     footprint,
                     new WorldPosition(player.X, player.Y),
-                    ObserveMobs(entityFeed, entityClassifier, entityPlayerId, cycle, now),
+                    cycleMobs,
                     origin,
                     in grid,
                     view,
