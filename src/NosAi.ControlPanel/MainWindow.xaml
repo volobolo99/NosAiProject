@@ -380,6 +380,39 @@
 
             <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Hardware osservato</TextBlock>
             <ItemsControl x:Name="HardwareFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardLabel}" Text="T-09 — CALIBRA IL RIQUADRO BERSAGLIO"/>
+                    <TextBlock Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" Text="1) Seleziona un bersaglio nel gioco.&#10;2) Premi &quot;Cattura ritaglio&quot;.&#10;3) Guarda l'immagine qui sotto: se non e' il riquadro bersaglio, cambia le quattro frazioni e ricattura.&#10;4) Quando e' giusto, premi &quot;Registra calibrazione&quot;.&#10;5) Premi &quot;Rileggi stato bersaglio&quot; con il bersaglio selezionato, poi deselezionato."/>
+                    <TextBlock Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" Text="Le quattro caselle sono frazioni dell'area client: ogni valore va da 0 a 1, in proporzione alla larghezza o all'altezza della finestra del gioco."/>
+                    <Image x:Name="TargetCropImage" Stretch="Uniform" MaxHeight="220" HorizontalAlignment="Left" Margin="0,8,0,4"/>
+                    <TextBlock x:Name="TargetCropInfo" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8" Text="Nessun ritaglio in questa sessione."/>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="X" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiX" Grid.Row="0" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.40"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Y" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiY" Grid.Row="1" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.06"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="W" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiW" Grid.Row="2" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.20"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="H" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiH" Grid.Row="3" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.02"/>
+                    </Grid>
+                    <Button x:Name="CaptureTargetCropButton" Style="{StaticResource PrimaryButton}" Content="Cattura ritaglio" Click="OnCaptureTargetCrop" Margin="0,0,0,6"/>
+                    <Button x:Name="RegisterTargetRoiButton" Style="{StaticResource PrimaryButton}" Content="Registra calibrazione" Click="OnRegisterTargetRoi" Margin="0,0,0,6"/>
+                    <Button x:Name="RereadTargetStateButton" Style="{StaticResource GhostButton}" Content="Rileggi stato bersaglio" Click="OnRereadTargetState" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="TargetRoiSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Text="Nessuna calibrazione in questa sessione."/>
+                </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
