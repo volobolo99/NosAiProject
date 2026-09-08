@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.Versioning;
 using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
@@ -594,6 +595,17 @@ public static class AutoplayCommand
                 // instead of deciding blind and meeting the mobs afterwards.
                 StrategicSignal? farming = StrategyPlanner.AssessFarmingUrgency(playerFacts, cycleMobs);
 
+                // The slot an item would occupy is a catalogue fact, not a wire one, so the
+                // lookup is the real Item.dat reader when the catalogue opened and a lookup
+                // that answers "unknown" when it did not — never a guessed slot.
+                Func<ItemId, EquipmentSlot?> resolveSlot = entityCatalogue is { } itemDatabase
+                    ? id => int.TryParse(id.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int vnum)
+                        && ItemCatalogue.Build(itemDatabase, vnum).Item is { } catalogued
+                            ? catalogued.Raw.Slot
+                            : null
+                    : _ => null;
+                StrategicSignal? optimization = StrategyPlanner.AssessOptimizationUrgency(playerFacts, resolveSlot);
+
                 // Recovery before Survival is deliberate, not arbitrary:
                 // SelectStrategicPlan breaks a tied Urgency by picking whichever
                 // signal appears first in the list, and the two compute the
@@ -604,7 +616,7 @@ public static class AutoplayCommand
                 // actually decides the outcome: recovery first makes Recovery
                 // win that tie, which is the intended behaviour (out of combat,
                 // the more specific signal wins over the general one).
-                var signals = new List<StrategicSignal>(4);
+                var signals = new List<StrategicSignal>(5);
                 if (recovery is not null) signals.Add(recovery);
                 if (survival is not null) signals.Add(survival);
                 if (exploration is not null) signals.Add(exploration);
@@ -612,6 +624,10 @@ public static class AutoplayCommand
                 // Last on purpose: ties are broken by list order, and adding farming must not
                 // take a goal away from the three signals that already decided this loop.
                 if (farming is not null) signals.Add(farming);
+
+                // Last of all: it scores lowest by design, and it must never take a tie from a
+                // goal measuring a real deficit.
+                if (optimization is not null) signals.Add(optimization);
 
                 StrategicPlan plan = StrategyPlanner.SelectStrategicPlan(signals, now);
                 string selection = plan.SelectedKind?.ToString() ?? "none";
