@@ -98,7 +98,7 @@ public partial class MainWindow
                                $"{h.ToString(CultureInfo.InvariantCulture)}";
             var result = await RunToolAsync("dotnet", arguments, "Registra calibrazione bersaglio", pairing: false);
 
-            string refusedLine = result.Output
+            string? refusedLine = result.Output
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
                 .FirstOrDefault(line => line.Contains("[REFUSED]", StringComparison.Ordinal));
             if (refusedLine is not null)

@@ -216,6 +216,47 @@
               Intenti che KeybindsCheck elenca come configurati, e intenti scoperti col loro nome. Un intento mancante si disegna come mancante, non come riga vuota. Il pannello non scrive il file.
             </TextBlock>
             <ItemsControl x:Name="KeybindsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-13 — CATENA DI COMBATTIMENTO SUL CLIENT VIVO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Servono client in gioco, WinDivert, e questo pannello avviato come amministratore.
+                  2) Premi &quot;Tasti confermati&quot;: l'id abilita' che serve sotto e' l'intento skill confermato, non il vnum.
+                  3) Con il personaggio fermo accanto a dei mostri, premi &quot;Rapporto combattimento&quot;.
+                  4) Fatti colpire da un mostro e ripremi: l'ostilita' si stabilisce solo da un colpo subito.
+                  5) Prendi un id da una riga engage con would_act=True, mettilo qui sotto e premi &quot;Ingaggia&quot;.
+                  6) Allontanati oltre la portata mentre i round girano: devono rifiutare senza fermarsi.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,6" TextWrapping="Wrap">
+                  Senza amministratore ogni passo rifiuta con un motivo nominato, e quel rifiuto non e' evidenza di nulla: non chiude la prova.
+                </TextBlock>
+                <TextBlock x:Name="CombatChainElevation" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8" Text="Elevazione non ancora verificata."/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Button x:Name="CheckKeybindsButton" Style="{StaticResource GhostButton}" Content="Tasti confermati" Click="OnCheckKeybinds" Margin="0,0,8,0"/>
+                  <Button x:Name="CombatReportButton" Style="{StaticResource PrimaryButton}" Content="Rapporto combattimento" Click="OnCombatReport"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Bersaglio" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageTargetId" Width="150" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Abilita'" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageSkillId" Width="110" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Round" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageRounds" Width="60" Text="3" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="EngageTargetButton" Style="{StaticResource PrimaryButton}" Content="Ingaggia" Click="OnEngageTarget"/>
+                </StackPanel>
+                <TextBlock x:Name="CombatChainSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna prova in questa sessione."/>
+                <TextBox x:Name="CombatChainOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="120" MaxHeight="260" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
