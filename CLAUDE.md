@@ -403,6 +403,21 @@ stato), `integratore` (commit disgiunti e allineamento a GitHub).
    ai prefissi reali perché `sk-[A-Za-z0-9_-]{10,}` pesca anche le chiavi
    finte di `tools/deepseek-mcp/test/`, che sono legittime.
 
+8. **Verifica mirata durante lo sviluppo, completa prima del commit.** La
+   suite di runtime dura circa due minuti: eseguirla dopo ogni riga la
+   trasforma nel collo di bottiglia. Durante il lavoro si usa
+   `dotnet test <progetto> --filter "FullyQualifiedName~<Classe>"`, che
+   risponde in secondi; la suite intera si esegue prima di committare.
+9. **Quattro test cadono sotto carico e sono verdi isolati**, misurati il
+   2026-09-08: `GuardAdmissionTests.OnlyOneOfTwoValidPeersBecomesTheSession`,
+   `GuardAdmissionTests.AnAuthenticatedSessionIsNotDisplacedByANewConnection`,
+   `GuardAiClientTests.ManyRapidHeartbeats…` e `Gate1Tests.Gate1SuitePasses`.
+   Guidano socket reali contro scadenze vere — la finestra di ammissione è
+   1500 ms — mentre xUnit parallelizza le classi. Rilanciarli isolati **prima**
+   di chiamarli regressione. Metterli in una collection non parallela è stato
+   provato e scartato: la suite è passata da 1m50s a 2m59s e un fallito è
+   rimasto, perché il carico che li disturba viene dal resto della suite, non
+   da loro fra loro.
 4. **Un fallito non è una regressione finché non ha un nome.** Si
    confrontano i nomi dei falliti, mai i totali, e un fallito da carico si
    rilancia isolato prima di chiamarlo regressione.
