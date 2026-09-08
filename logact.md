@@ -1,7 +1,7 @@
 # 📊 REGISTRO ATTIVITÀ & TOKEN SAVINGS (NosAiProject)
 
 > ### 💰 RISPARMIO TOTALE TOKEN OFFLOADATI
-> ### **🟢 `TOKENS_OFFLOADED`: 533 token (~$0.00 USD risparmiati su Claude/API)**
+> ### **🟢 `TOKENS_OFFLOADED`: 651 token (~$0.00 USD risparmiati su Claude/API)**
 > *(Totale cumulativo calcolato da esecuzioni su RTX 5060 Locale + Google Colab T4)*
 
 ---
@@ -44,6 +44,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 15:53 | Qwen 14B Colab | Quarto ping (`ask_cloud_qwen_14b`) | nessuno | FAIL — il processo MCP esegue ancora il codice anteriore alle 15:51 | `+0` |
 | 2026-09-08 15:53 | DeepSeek Flash | Quarto ping (`ask_deepseek_reasoner`) | nessuno | PASS — nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 15:58 | Qwen 14B Colab | Causa radice dell'auto-discovery: `/raw` → `/raw?poll=1&since=all` in `resolve_colab_url()`, poi verifica end-to-end eseguendo il modulo dal disco | `orchestrator_mcp.py` | PASS — `Qwen 14B Colab OK` con tag METRICS | `+61` |
+| 2026-09-08 16:01 | 3 worker | Quinto ping dopo la correzione | nessuno | Locale PASS, Flash PASS, 14B FAIL — lo strumento cita `phd-yale-depot-ryan`, stringa che `grep -rn --include=*.py` non trova più in nessun sorgente: il processo MCP non ha ricaricato il file | `+118` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
