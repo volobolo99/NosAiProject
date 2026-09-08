@@ -59,6 +59,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 | 2026-09-08 17:32 | DeepSeek Flash | NSW-02: matrice dei 6 stati del pulsante | nessuno | PASS — nessun tag METRICS, `API Flash Call` | `+0` |
 | 2026-09-08 17:32 | Claude (Direttore) | NSW-02: overload di `AwaitClientCaptureCommand.Run` con callback e token, pulsante in Certificazione, sblocco del build rotto da una delega ferma | `PreLoginCaptureSession.cs`, `MainWindow.xaml`, `MainWindow.xaml.cs`, `OpportunisticBarProbe.cs:422` | PASS — build 0/0, ControlPanel 175/175 | `+0` |
 | 2026-09-08 17:41 | Claude (Direttore) | Gate e integrazione del lavoro consegnato da `Q-SONDA-03` e dalle deleghe parallele: sonda T-03, calibratore ROI, test del prelude | `OpportunisticBarProbe.cs`, `TargetRoiAutoCalibrator.cs`, 3 file di test, `Program.cs`, `docs/STATO_IMPLEMENTAZIONE.md` | PASS — build 0/0, suite 2784 superati su 2793, 0 falliti; 18 attributi di test aggiunti, tutti headless; nessun TODO; moduli raggiungibili da `--watch-evidence` | `+0` |
+| 2026-09-08 17:45 | Claude (Direttore) | Verifica di un'area dichiarata Partial: lo squatter che parla e poi tace sul canale Guard | `docs/STATO_IMPLEMENTAZIONE.md` | PASS — gia' risolto in `Gate1Runtime.cs:304` e `:721`; `GuardAdmissionTests` 8 superati su 8. Il documento diceva il falso, non il codice | `+0` |
 
 ### 14:59:29 · deepseek-v4-flash · `txnf`
 
@@ -3932,4 +3933,7 @@ funzione tornava `None`. Corretto; il canale pubblica
 - 17:37:57 `3d08` **modified** `tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs` (13.203 → 13.219 byte)
 - 17:37:57 `3d08` rapporto: 5 criteri, 0 blocchi
 - 17:37:57 `3d08` **fine: completed** — 5 giri, 9 strumenti (0 rifiutati), 2 file, 19.7 s, token 50.102
+
+- 17:44:09 `77fs` **giro 1 fallito** — aborted
+- 17:44:09 `77fs` **fine: timeout** — 1 giri, 0 strumenti (0 rifiutati), 0 file, 900.1 s, token 0
 
