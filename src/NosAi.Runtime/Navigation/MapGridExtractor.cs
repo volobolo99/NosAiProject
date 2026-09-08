@@ -352,6 +352,61 @@ public static class MapGridExtractor
         return 0;
     }
 
+    /// <summary>
+    /// The fingerprint of the client install at <paramref name="clientDataDirectory"/>,
+    /// computed the same way <see cref="Extract"/> computes the one it records.
+    /// </summary>
+    /// <remarks>
+    /// Files on disk only: the client executable beside the data directory, or the
+    /// names and lengths of the map archives when it is absent. Nothing here attaches
+    /// to a running process. False means no fingerprint, never a substitute one.
+    /// </remarks>
+    public static bool TryFingerprintClient(
+        string clientDataDirectory,
+        out string? fingerprint,
+        out string? failureReason)
+    {
+        fingerprint = null;
+        failureReason = null;
+
+        if (string.IsNullOrWhiteSpace(clientDataDirectory) || !Directory.Exists(clientDataDirectory))
+        {
+            failureReason = $"{ClientDataNotFound}:{clientDataDirectory}";
+            return false;
+        }
+
+        string[] archives;
+        try
+        {
+            archives = Directory.GetFiles(clientDataDirectory, ArchiveSearchPattern);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            failureReason = $"{ClientDataNotFound}:{ex.GetType().Name}";
+            return false;
+        }
+
+        Array.Sort(archives, StringComparer.OrdinalIgnoreCase);
+        if (archives.Length == 0)
+        {
+            failureReason = NoMapArchives;
+            return false;
+        }
+
+        try
+        {
+            fingerprint = Fingerprint(clientDataDirectory, archives);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            fingerprint = null;
+            failureReason = $"client_fingerprint_unreadable:{ex.GetType().Name}";
+            return false;
+        }
+
+        return true;
+    }
+
     internal static bool TryDecodeGrid(
         IMapGridLoader loader,
         int mapId,

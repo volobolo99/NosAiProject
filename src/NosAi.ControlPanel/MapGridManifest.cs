@@ -142,6 +142,73 @@ internal static class MapGridManifest
         if (recorded is null)
             return MapGridSetDiskCheck.NotComputable(ManifestMissing);
 
+        if (!TryComputeCurrent(
+                mapsDirectory,
+                recorded.ClientFingerprint,
+                out MapGridSetIdentity? current,
+                out string? reason))
+        {
+            return MapGridSetDiskCheck.NotComputable(reason ?? ManifestMissing);
+        }
+
+        if (string.Equals(current!.SetHash, recorded.SetHash, StringComparison.Ordinal))
+            return MapGridSetDiskCheck.Intact();
+
+        return MapGridSetDiskCheck.Changed(
+            $"map_grid_set_changed:{Short(recorded.SetHash)}_to_{Short(current.SetHash)}");
+    }
+
+    /// <summary>
+    /// The identity of the .grid files on disk folded under a fingerprint supplied
+    /// by the caller, or why it cannot be computed.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is invented here: an unreadable directory, an unreadable grid, an
+    /// empty set or a duplicate map id all answer false with the reason, and the
+    /// caller keeps UNKNOWN. Callers that pass the recorded fingerprint are asking
+    /// whether the files moved; callers that pass a fingerprint taken now are asking
+    /// whether the whole identity still holds.
+    /// </remarks>
+    public static bool TryComputeCurrent(
+        string mapsDirectory,
+        string clientFingerprint,
+        out MapGridSetIdentity? identity,
+        out string? failureReason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mapsDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientFingerprint);
+
+        identity = null;
+        if (!TryReadDiskFiles(mapsDirectory, out List<MapGridFile> files, out failureReason))
+            return false;
+
+        try
+        {
+            identity = MapGridSetIdentity.Compute(files, clientFingerprint);
+            failureReason = null;
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            identity = null;
+            failureReason = MapGridExtractor.DuplicateMapId;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Every .grid file in the directory with the hash of its exact bytes. Shared by
+    /// <see cref="CheckIntact"/> and <see cref="TryComputeCurrent"/> so both see the
+    /// same set, read once and read the same way.
+    /// </summary>
+    private static bool TryReadDiskFiles(
+        string mapsDirectory,
+        out List<MapGridFile> files,
+        out string? failureReason)
+    {
+        files = new List<MapGridFile>();
+        failureReason = null;
+
         string[] paths;
         try
         {
@@ -149,10 +216,10 @@ internal static class MapGridManifest
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
-            return MapGridSetDiskCheck.NotComputable($"grid_directory_unreadable:{ex.GetType().Name}");
+            failureReason = $"grid_directory_unreadable:{ex.GetType().Name}";
+            return false;
         }
 
-        var files = new List<MapGridFile>(paths.Length);
         foreach (string path in paths)
         {
             string stem = Path.GetFileNameWithoutExtension(path);
@@ -166,31 +233,22 @@ internal static class MapGridManifest
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                return MapGridSetDiskCheck.NotComputable($"grid_unreadable:{ex.GetType().Name}");
+                failureReason = $"grid_unreadable:{ex.GetType().Name}";
+                return false;
             }
 
             files.Add(new MapGridFile(mapId, MapGridSetIdentity.HashFile(bytes)));
         }
 
         if (files.Count == 0)
-            return MapGridSetDiskCheck.NotComputable(MapGridExtractor.NoMapArchives);
-
-        MapGridSetIdentity current;
-        try
         {
-            current = MapGridSetIdentity.Compute(files, recorded.ClientFingerprint);
-        }
-        catch (ArgumentException)
-        {
-            return MapGridSetDiskCheck.NotComputable("duplicate_map_id");
+            failureReason = MapGridExtractor.NoMapArchives;
+            return false;
         }
 
-        if (string.Equals(current.SetHash, recorded.SetHash, StringComparison.Ordinal))
-            return MapGridSetDiskCheck.Intact();
-
-        return MapGridSetDiskCheck.Changed(
-            $"map_grid_set_changed:{Short(recorded.SetHash)}_to_{Short(current.SetHash)}");
+        return true;
     }
 
     private static string Short(string hash) => hash.Length <= 12 ? hash : hash[..12];
 }
+
