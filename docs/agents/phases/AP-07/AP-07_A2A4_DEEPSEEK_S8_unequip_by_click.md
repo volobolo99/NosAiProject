@@ -135,7 +135,8 @@ gioco invece che sulla nostra scommessa.
 ## Parte 4 — il comando
 
 `--unequip <slot> [--gesture single|double|right] [--verify-ms <n>]`, registrato
-in `Program.cs` (l'elenco delle opzioni note è a `Program.cs:1162`).
+in `Program.cs` (la whitelist che valida gli argomenti è `KnownProbeFlags`,
+`Program.cs:1156-1163`).
 
 `[REFUSED]` con il nome esatto di ciò che non va, come ogni altro comando del
 runtime: uno slot che l'enum `EquipmentSlot` non nomina è un **rifiuto**, non
@@ -203,6 +204,18 @@ senza prima asserire che non lo sia.
 
 ---
 
+## Quello che questo blocco rende possibile — non è compito tuo
+
+Il gap AP-07 ancora aperto è **uno solo**, e non è codice: `InventoryKind` "worn"
+(`Wear=8`) non è mai stato incrociato con un equip reale — `GameTrafficObserver.cs:302-306`
+e `GameplayObservationProjector.cs:33` lo dicono entrambi, ed è la seconda metà di
+**T-12** (`docs/TEST_RIMANDATI.md:22`). La prima esecuzione vera di questo comando,
+col filo registrato mentre l'operatore preme il bottone, **è** quella cattura.
+
+Non ti chiede niente in più: il verdetto di S8 si costruisce su `equip`, non su
+`ivn`, e non dipende da T-12. Scrivilo nel rapporto, così chi tiene il registro
+sa che quel test ha finalmente un modo di chiudersi.
+
 ## Il limite da dichiarare, e non è un difetto
 
 Che il **clic** provochi davvero l'unequip resta da verificare sul client vivo con
@@ -223,6 +236,13 @@ dichiararla è parte della consegna.
 5. Dove ti sei fermato, se ti sei fermato: quale file ti serviva e di chi era.
 6. Se la specifica e il codice non concordavano, cosa hai trovato. **Ha sempre
    ragione il codice.**
+7. **Gli id ancora aperti** di `docs/TEST_RIMANDATI.md` — lo chiede
+   `.cursor/rules/26-test-rimandati.mdc:13` a ogni rapporto di fine lavoro.
+
+Una nota per non inseguire un fantasma: `GuardAiClientTests.ManyRapidHeartbeats…`
+risulta rosso sotto carico parallelo e verde in isolamento in tre rapporti
+consecutivi (`RAPPORTO_S3.md:91-93`, `RAPPORTO_S5.md:26-28`). Se lo vedi rosso,
+rilancialo da solo prima di chiamarlo regressione.
 
 **Il criterio con cui sarà controllato**: non che il comando esista, ma che i
 quattro esiti restino quattro — e che un clic non verificato non venga mai
