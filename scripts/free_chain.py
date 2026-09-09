@@ -2,12 +2,15 @@
 Catena di riserva gratuita: elenca i modelli a costo zero già validati dal banco e ritenta la chiamata sui successivi quando quello scelto fallisce.
 """
 
-from typing import List, Sequence, Tuple, Callable
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import json
 from pathlib import Path
 
 FREE_ROSTER_PATH = Path(__file__).resolve().parent / 'free_roster.json'
 LENTO_SECONDI = 200
+GRUPPO_MAX = 3
+PROVIDER_GUASTI = ['Novita']
+
 
 def free_models(escludi_lenti: bool = True) -> List[str]:
     """
@@ -38,6 +41,7 @@ def free_models(escludi_lenti: bool = True) -> List[str]:
     ids = [e.get('id') for e in sorted_entries if 'id' in e]
     return ids
 
+
 def call_with_fallback(chiamata: Callable[[str], str], modelli: Sequence[str]) -> Tuple[str, str]:
     """
     Prova i modelli in ordine e restituisce la coppia testo prodotto e identificativo del modello che lo ha prodotto.
@@ -61,3 +65,82 @@ def call_with_fallback(chiamata: Callable[[str], str], modelli: Sequence[str]) -
     error_lines = [f"Modello '{modello}' fallito: {reason}" for modello, reason in failures]
     error_msg = "\n".join(error_lines)
     raise RuntimeError(error_msg)
+
+
+def gruppi(modelli: Sequence[str], dimensione: int = GRUPPO_MAX) -> List[List[str]]:
+    """
+    Suddivide i modelli in blocchi consecutivi lunghi al massimo la dimensione richiesta, mantenendo l'ordine originale.
+    """
+    if dimensione < 1:
+        raise ValueError("La dimensione dei gruppi deve essere almeno 1")
+
+    return [list(modelli[inizio:inizio + dimensione]) for inizio in range(0, len(modelli), dimensione)]
+
+
+def corpo_richiesta(messaggi: List[Dict[str, Any]], gruppo: Sequence[str], max_tokens: int = 8192, temperatura: float = 0.0, solo_gratuiti: bool = True) -> Dict[str, Any]:
+    """
+    Costruisce il corpo della richiesta OpenRouter per un gruppo di modelli.
+    """
+    if not gruppo:
+        raise ValueError("Il gruppo di modelli non può essere vuoto")
+    if len(gruppo) > GRUPPO_MAX:
+        raise ValueError(f"Il gruppo contiene più di {GRUPPO_MAX} modelli")
+
+    provider: Dict[str, Any] = {"ignore": list(PROVIDER_GUASTI)}
+    if solo_gratuiti:
+        provider["max_price"] = {"prompt": 0, "completion": 0}
+
+    return {
+        "model": gruppo[0],
+        "models": list(gruppo),
+        "messages": messaggi,
+        "max_tokens": max_tokens,
+        "temperature": temperatura,
+        "provider": provider,
+    }
+
+
+def testo_utile(payload: Dict[str, Any]) -> Tuple[str, str]:
+    """
+    Estrae dalla risposta il testo prodotto e l'identificativo del modello che lo ha prodotto.
+    """
+    try:
+        contenuto = payload["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as errore:
+        raise RuntimeError("La risposta non contiene un contenuto testuale valido") from errore
+
+    if contenuto is None or not isinstance(contenuto, str) or not contenuto or contenuto.isspace():
+        raise RuntimeError("La risposta non contiene un contenuto testuale utile")
+
+    try:
+        modello = payload["model"]
+    except KeyError as errore:
+        raise RuntimeError("La risposta non indica il modello che l'ha prodotta") from errore
+
+    if not isinstance(modello, str):
+        raise RuntimeError("La risposta non indica un modello valido")
+
+    return contenuto, modello
+
+
+def chiama_a_gruppi(post: Callable[[Dict[str, Any]], Dict[str, Any]], messaggi: List[Dict[str, Any]], modelli: Optional[Sequence[str]] = None, max_tokens: int = 8192, temperatura: float = 0.0, solo_gratuiti: bool = True) -> Tuple[str, str]:
+    """
+    Prova i gruppi di modelli in ordine, passando al successivo quando una risposta è mancante, vuota o causa un'eccezione.
+    """
+    modelli_da_provare = free_models() if modelli is None else modelli
+    motivi_di_fallimento = []
+
+    for indice, gruppo in enumerate(gruppi(modelli_da_provare), start=1):
+        try:
+            corpo = corpo_richiesta(messaggi, gruppo, max_tokens=max_tokens, temperatura=temperatura, solo_gratuiti=solo_gratuiti)
+            payload = post(corpo)
+            return testo_utile(payload)
+        except RuntimeError as errore:
+            motivi_di_fallimento.append(f"Gruppo {indice}: {errore}")
+        except Exception as errore:
+            motivi_di_fallimento.append(f"Gruppo {indice}: eccezione: {errore}")
+
+    if not motivi_di_fallimento:
+        raise RuntimeError("Nessun modello da provare")
+
+    raise RuntimeError("\n".join(motivi_di_fallimento))

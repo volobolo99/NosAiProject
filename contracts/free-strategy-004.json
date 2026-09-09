@@ -1,0 +1,62 @@
+{
+  "contract_id": "free-strategy-004",
+  "file": "scripts/free_chain.py",
+  "scopo": "Portare la catena gratuita da un ripiego a una strategia: sfruttare il fallback lato OpenRouter, imporre il costo zero a livello di piattaforma e superare il limite di tre modelli per richiesta.",
+  "fatti_verificati_il_2026_09_09": [
+    "l'array 'models' nel corpo della richiesta accetta AL MASSIMO 3 elementi: con quattro OpenRouter risponde 400 'models array must have 3 items or fewer'",
+    "il fallback dentro 'models' scatta sugli errori di runtime, compreso il 429: google/gemma-4-31b-it:free in 429 ha ceduto a nex-agi/nex-n2.5-mini:free in 698 ms con una sola richiesta HTTP",
+    "un identificativo di modello inesistente NON attiva il fallback: produce 400 subito",
+    "provider.max_price {prompt: 0, completion: 0} rifiuta con 404 'No endpoints found that satisfy the max price' qualunque modello a pagamento, e lascia passare i gratuiti",
+    "con una lista mista di modelli a pagamento e gratuiti, max_price 0 salta i primi e fa rispondere il gratuito a costo zero",
+    "il campo 'model' della risposta dichiara quale modello ha risposto davvero",
+    "una risposta 200 con content nullo NON attiva il fallback di OpenRouter: va intercettata dal chiamante"
+  ],
+  "costanti_nuove": {
+    "GRUPPO_MAX": "3, il numero massimo di modelli ammessi nell'array models",
+    "PROVIDER_GUASTI": "lista di nomi di provider da escludere sempre, inizialmente ['Novita'], che il 2026-09-09 ha risposto 200 con contenuto nullo"
+  },
+  "funzioni_nuove": {
+    "gruppi": {
+      "firma": "def gruppi(modelli: Sequence[str], dimensione: int = GRUPPO_MAX) -> List[List[str]]",
+      "comportamento": "spezza l'elenco in blocchi consecutivi lunghi al massimo 'dimensione', mantenendo l'ordine; da una lista vuota restituisce una lista vuota",
+      "errori": "ValueError se dimensione e' minore di 1"
+    },
+    "corpo_richiesta": {
+      "firma": "def corpo_richiesta(messaggi: List[Dict[str, Any]], gruppo: Sequence[str], max_tokens: int = 8192, temperatura: float = 0.0, solo_gratuiti: bool = True) -> Dict[str, Any]",
+      "comportamento": "costruisce il corpo JSON della richiesta: 'model' e' il primo del gruppo, 'models' e' l'intero gruppo, piu' messages, max_tokens e temperature",
+      "regole": [
+        "se il gruppo e' vuoto solleva ValueError",
+        "se il gruppo ha piu' di GRUPPO_MAX elementi solleva ValueError: la piattaforma li rifiuterebbe",
+        "la chiave 'provider' contiene sempre 'ignore' con PROVIDER_GUASTI",
+        "quando solo_gratuiti e' True la chiave 'provider' contiene anche 'max_price' con prompt 0 e completion 0: e' il lucchetto che impedisce qualunque spesa",
+        "quando solo_gratuiti e' False la chiave max_price non compare",
+        "la lista dentro provider['ignore'] e' una COPIA di PROVIDER_GUASTI: chi riceve il corpo non deve poter mutare la costante globale"
+      ]
+    },
+    "testo_utile": {
+      "firma": "def testo_utile(payload: Dict[str, Any]) -> Tuple[str, str]",
+      "comportamento": "estrae dalla risposta la coppia (testo, identificativo del modello che ha risposto), leggendo choices[0].message.content e il campo model",
+      "errori": "RuntimeError se il contenuto manca, e' nullo o e' composto di soli spazi: un 200 vuoto non e' un risultato"
+    },
+    "chiama_a_gruppi": {
+      "firma": "def chiama_a_gruppi(post: Callable[[Dict[str, Any]], Dict[str, Any]], messaggi: List[Dict[str, Any]], modelli: Optional[Sequence[str]] = None, max_tokens: int = 8192, temperatura: float = 0.0, solo_gratuiti: bool = True) -> Tuple[str, str]",
+      "comportamento": "orchestra la cascata: divide i modelli in gruppi con gruppi(), per ogni gruppo costruisce il corpo con corpo_richiesta() e lo passa a post(), poi ne estrae il risultato con testo_utile(); restituisce la prima coppia utile",
+      "regole": [
+        "quando modelli e None usa free_models()",
+        "post riceve il corpo gia pronto e restituisce il payload JSON gia decodificato",
+        "un gruppo fallisce se post solleva una eccezione oppure se testo_utile solleva RuntimeError: in entrambi i casi si passa al gruppo successivo",
+        "appena un gruppo produce un testo utile i gruppi successivi non vengono chiamati",
+        "se non ci sono modelli, oppure tutti i gruppi falliscono, solleva RuntimeError elencando ogni gruppo provato con il motivo del fallimento"
+      ]
+    }
+  },
+  "funzioni_esistenti": "free_models e call_with_fallback restano invariate nella firma e nel comportamento",
+  "vincoli": [
+    "solo libreria standard: nessuna chiamata di rete in questo modulo",
+    "firme e annotazioni non modificabili",
+    "docstring e messaggi di errore in italiano",
+    "nessun print()",
+    "Optional va importato da typing"
+  ],
+  "test_di_accettazione": "python -m pytest tests/test_free_chain.py"
+}
