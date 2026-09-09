@@ -1,0 +1,48 @@
+{
+  "contract_id": "model-scout-001",
+  "file": "scripts/model_scout.py",
+  "scopo": "Sorvegliare il catalogo OpenRouter e segnalare i modelli che potrebbero migliorare il roster. Non modifica mai il roster: produce solo un rapporto.",
+  "vincoli_di_governo": [
+    "nessuna modifica automatica a scripts/mcp_server.py, scripts/code_agent.py o scripts/model_prices.json",
+    "i modelli a pagamento vengono solo PROPOSTI: l'adozione richiede il consenso esplicito dell'operatore",
+    "i modelli gratuiti possono essere segnalati come adottabili senza consenso"
+  ],
+  "funzioni": {
+    "fetch_catalog": {
+      "firma": "def fetch_catalog(timeout: int = 60) -> List[Dict[str, Any]]",
+      "comportamento": "GET su CATALOG_URL, restituisce risposta.json()['data']",
+      "errori": "se status_code non e' 200 solleva RuntimeError contenente il codice HTTP nel messaggio"
+    },
+    "is_free": {
+      "firma": "def is_free(model: Dict[str, Any]) -> bool",
+      "comportamento": "True se float(pricing['prompt']) e float(pricing['completion']) valgono entrambi 0.0"
+    },
+    "cost_per_mtok": {
+      "firma": "def cost_per_mtok(model: Dict[str, Any]) -> Tuple[float, float]",
+      "comportamento": "(float(pricing['prompt']) * 1000000, float(pricing['completion']) * 1000000)"
+    },
+    "compare_to_roster": {
+      "firma": "def compare_to_roster(catalog: List[Dict[str, Any]], roster: Dict[str, str]) -> Dict[str, Any]",
+      "restituisce": "{'ruoli': {nome_ruolo: {'in_uso': str, 'prezzo_attuale': [float, float], 'gratuiti_nuovi': [str], 'pagamento_piu_economici': [{'id': str, 'prezzo': [float, float], 'risparmio_pct': float}]}}, 'roster_mancanti': [str]}",
+      "regole": [
+        "il modello in uso di un ruolo si cerca nel catalogo per campo 'id'",
+        "se non lo si trova, il suo identificativo va in roster_mancanti, e il ruolo riporta prezzo_attuale [0.0, 0.0] con entrambe le liste vuote",
+        "gratuiti_nuovi contiene gli id dei modelli gratuiti del catalogo, escluso il modello in uso",
+        "pagamento_piu_economici contiene SOLO modelli NON gratuiti: un modello gratuito non e' mai un candidato a pagamento e appartiene esclusivamente a gratuiti_nuovi",
+        "un modello non gratuito entra in pagamento_piu_economici quando: non e' il modello in uso, il suo context_length e' maggiore o uguale a quello in uso, e la somma dei suoi due prezzi per milione di token e' minore della somma dei prezzi del modello in uso",
+        "risparmio_pct = (somma_in_uso - somma_candidato) / somma_in_uso * 100, arrotondato a una cifra decimale",
+        "i ruoli il cui modello in uso non sta su OpenRouter, come il modello locale, finiscono in roster_mancanti: e' il comportamento atteso, non un errore"
+      ]
+    },
+    "render_report": {
+      "firma": "def render_report(confronto: Dict[str, Any]) -> str",
+      "comportamento": "rapporto Markdown in italiano che inizia con una riga di titolo '#'. Una sezione per ogni ruolo, con il nome del ruolo scritto per esteso. I candidati a pagamento stanno sotto un titolo che contiene la parola 'consenso' e dichiara che la loro adozione richiede l'approvazione dell'operatore."
+    },
+    "main": {
+      "firma": "def main() -> int",
+      "comportamento": "scarica il catalogo, confronta con ROSTER, scrive REPORT_PATH creando la cartella se manca, stampa un riepilogo di una riga, restituisce 0; se fetch_catalog solleva RuntimeError stampa l'errore e restituisce 1"
+    }
+  },
+  "dipendenze": ["requests", "pathlib", "typing"],
+  "vincoli": ["solo libreria standard piu' requests", "nessuna chiave nel sorgente", "firme e annotazioni non modificabili", "nessun print() fuori da main()"]
+}

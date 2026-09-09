@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "misurato_il": "2026-09-09T15:56Z",
+  "come": "reports/free-models-benchmark.md; giudice: validate_implementation di scripts/code_agent.py piu' i test di comportamento",
+  "regola": "elenco dei modelli a costo zero che hanno superato ogni controllo dei due banchi. I modelli a pagamento del roster restano i predefiniti e non sono sostituiti da questo file.",
+  "scartati": {
+    "liquid/lfm-2.5-2.6b:free": "0/16 e 3/14: non regge il contratto",
+    "thinkingmachines/inkling:free": "403: accessibile solo dalle agentic harness",
+    "thinkingmachines/inkling-small:free": "403: accessibile solo dalle agentic harness",
+    "google/gemma-4-31b-it:free": "429 ripetuti anche a richiesta singola",
+    "poolside/laguna-xs-2.1:free": "429 ripetuti anche a richiesta singola",
+    "google/gemma-4-26b-a4b-it:free": "429 sul banco A: qualita' non verificabile"
+  },
+  "validati": [
+    {
+      "id": "nex-agi/nex-n2.5-mini:free",
+      "sec_medi": 8,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": ""
+    },
+    {
+      "id": "openrouter/free",
+      "sec_medi": 9,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "2/2",
+      "note": "router: il modello effettivo varia a ogni chiamata"
+    },
+    {
+      "id": "dots-studio/dots-3-note-preview:free",
+      "sec_medi": 13,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "2/2",
+      "note": ""
+    },
+    {
+      "id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "sec_medi": 22,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": "ragiona prima di rispondere: servono almeno 1200 token di budget"
+    },
+    {
+      "id": "cohere/north-mini-code:free",
+      "sec_medi": 27,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": ""
+    },
+    {
+      "id": "poolside/laguna-s-2.1:free",
+      "sec_medi": 34,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": "risposte 429 frequenti: usare solo con nuovo tentativo"
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "sec_medi": 53,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "2/2",
+      "note": ""
+    },
+    {
+      "id": "nex-agi/nex-n2.5-pro:free",
+      "sec_medi": 61,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "2/2",
+      "note": ""
+    },
+    {
+      "id": "nvidia/nemotron-3.5-lightning:free",
+      "sec_medi": 229,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": "troppo lento per l'interattivo: solo lavori in differita"
+    },
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "sec_medi": 422,
+      "banco_a": "16/16",
+      "banco_b": "14/14",
+      "visione": "non provato",
+      "note": "troppo lento per l'interattivo: solo lavori in differita"
+    }
+  ]
+}
