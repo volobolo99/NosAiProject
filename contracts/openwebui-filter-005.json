@@ -1,0 +1,51 @@
+{
+  "contract_id": "openwebui-filter-005",
+  "file": "tools/open-webui/nosai_free_router.py",
+  "scopo": "Filter Function per Open WebUI che porta in chat le stesse due leve della catena NosAi: la cascata di ripiego dell'array models e il lucchetto sul costo di provider.max_price.",
+  "contesto": [
+    "Open WebUI 0.11.3 esegue il metodo inlet di una Filter Function prima di inoltrare la richiesta al provider",
+    "il corpo restituito da inlet arriva al provider senza che i campi sconosciuti vengano rimossi: models e provider passano",
+    "OpenRouter accetta al massimo 3 elementi nell'array models",
+    "provider.max_price con prompt 0 e completion 0 fa rispondere 404 a qualunque modello a pagamento"
+  ],
+  "struttura": "una classe di nome Filter, con una classe interna Valves che eredita da pydantic BaseModel, un metodo __init__ che istanzia self.valves, e i metodi asincroni inlet e outlet",
+  "valves": {
+    "abilitato": "bool, default True: quando e' False inlet restituisce il corpo senza toccarlo",
+    "ripieghi": "str, default 'nex-agi/nex-n2.5-mini:free,dots-studio/dots-3-note-preview:free,nvidia/nemotron-3-super-120b-a12b:free': elenco separato da virgole dei modelli gratuiti di ripiego",
+    "provider_guasti": "str, default 'Novita': elenco separato da virgole dei provider da escludere sempre",
+    "lucchetto_sui_gratuiti": "bool, default True: applica max_price zero quando il modello scelto e' gratuito"
+  },
+  "funzioni": {
+    "e_gratuito": {
+      "firma": "def e_gratuito(self, modello: str) -> bool",
+      "comportamento": "True se l'identificativo finisce con ':free' oppure e' esattamente 'openrouter/free'; False per qualunque altro valore, compresa una stringa vuota o None"
+    },
+    "inlet": {
+      "firma": "async def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict",
+      "comportamento": "arricchisce il corpo della richiesta e lo restituisce",
+      "regole": [
+        "se valves.abilitato e' False restituisce il corpo invariato",
+        "legge il modello scelto da body['model']",
+        "imposta sempre body['provider']['ignore'] con i provider guasti, come lista",
+        "quando il modello scelto e' gratuito e valves.lucchetto_sui_gratuiti e' True, imposta body['provider']['max_price'] con prompt 0 e completion 0",
+        "quando il modello scelto NON e' gratuito non imposta mai max_price: il lucchetto bloccherebbe una scelta deliberata dell'utente",
+        "quando il modello scelto e' gratuito costruisce body['models'] con il modello scelto per primo, seguito dai ripieghi non ancora presenti, troncando a 3 elementi in tutto",
+        "quando il modello scelto NON e' gratuito non tocca body['models']",
+        "non altera mai body['messages'] ne' gli altri campi gia' presenti",
+        "se body['model'] manca o e' vuoto restituisce il corpo con il solo ignore impostato"
+      ]
+    },
+    "outlet": {
+      "firma": "async def outlet(self, body: dict, __user__: Optional[dict] = None) -> dict",
+      "comportamento": "restituisce il corpo invariato: la risposta non va modificata"
+    }
+  },
+  "vincoli": [
+    "solo pydantic e typing come dipendenze",
+    "docstring iniziale del modulo con i metadati nel formato dei commenti di Open WebUI: title, author, version, description",
+    "commenti e descrizioni in italiano",
+    "nessun print(), nessuna chiamata di rete, nessuna chiave scritta nel sorgente",
+    "firme non modificabili"
+  ],
+  "test_di_accettazione": "python -m pytest tests/test_openwebui_filter.py"
+}
