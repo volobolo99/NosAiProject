@@ -24,13 +24,20 @@ import threading
 import time
 import urllib.error
 import urllib.request
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 try:  # avviato come script, la via normale (Ispettore.cmd)
     from chat_page import CHAT_PAGE
+    from console_page import CONSOLE_PAGE
+    from runner import Runner, catalogue
+    from sessions import SessionBoard
 except ImportError:  # importato come modulo del pacchetto
     from .chat_page import CHAT_PAGE
+    from .console_page import CONSOLE_PAGE
+    from .runner import Runner, catalogue
+    from .sessions import SessionBoard
 
 PORT = int(os.environ.get("NOSAI_INSPECTOR_PORT", "8787"))
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -59,6 +66,12 @@ MAX_EVENTS = 200
 # per campo. Sessanta bastano a coprire una giornata di deleghe senza che lo
 # snapshot iniziale diventi un trasferimento da decine di megabyte.
 MAX_CHATS = 60
+SESSION_POLL_SECONDS = 2.0
+
+# Le POST della console portano questo, generato a ogni avvio e messo nella
+# pagina: senza, un'altra pagina aperta nel browser potrebbe far partire un
+# agente su questa macchina.
+CONSOLE_TOKEN = uuid.uuid4().hex
 
 
 def _get_json(url: str, timeout: float):
@@ -112,6 +125,62 @@ def _agent(agent_id: str, name: str, host: str, models=None, polled: bool = True
     }
 
 
+# L'orchestratore ha cambiato forma agli eventi il 2026-09-09: `worker` al posto
+# di `agent`, `timestamp` al posto di `at`, `status` al posto di `ok`, e nessun
+# conteggio di token. La console legge entrambe le forme, cosi' una riscrittura
+# dell'orchestratore non spegne il flusso.
+_WORKER_TO_AGENT = {
+    "ollama-local": "local",
+    "openrouter-qwen": "colab",
+    "deepseek-official": "deepseek",
+}
+
+
+def _normalise_event(event: dict) -> dict:
+    if "agent" in event and "phase" in event:
+        return event
+    worker = event.get("worker") or ""
+    agent = _WORKER_TO_AGENT.get(worker)
+    if agent is None:
+        agent = "deepseek" if "deepseek" in worker else "local" if "ollama" in worker else "colab"
+    return {
+        "id": event.get("id", ""),
+        "at": event.get("timestamp") or event.get("at") or time.time(),
+        "agent": agent,
+        "agentName": worker or agent,
+        "model": event.get("model", ""),
+        "op": "delega MCP",
+        "phase": "end",
+        "ok": event.get("status") == "success",
+        # Questa forma non riporta i token: dichiararli zero sarebbe un numero
+        # inventato, quindi restano assenti e la pagina mostra le lunghezze.
+        "durationMs": int(float(event.get("duration_sec") or 0) * 1000),
+        "promptChars": event.get("prompt_len"),
+        "responseChars": event.get("response_len"),
+        "error": "" if event.get("status") == "success" else str(event.get("status") or ""),
+    }
+
+
+def _normalise_chat(chat: dict) -> dict:
+    """Files an MCP delegation under the same agent the console commands.
+
+    The orchestrator names its workers after the endpoint (`ollama-local`), the
+    console names them after the model the operator picks (`local-7b`). Without
+    this the two halves of the same worker's history sit in different threads.
+    """
+    agent = chat.get("agent") or ""
+    model = chat.get("model") or ""
+    if agent in ("ollama-local", "local"):
+        chat["agent"] = "local-worker" if model.startswith("qwen-worker") else "local-7b"
+    elif agent in ("deepseek-official", "deepseek"):
+        chat["agent"] = "deepseek-reasoner" if "reasoner" in model else "deepseek-chat"
+    elif agent == "openrouter-qwen" or (agent == "colab" and model.startswith("qwen/")):
+        chat["agent"] = "openrouter-32b"
+    # Il vecchio canale Colab resta com'e': non ha piu' una scheda, e attribuire
+    # le sue chiamate a OpenRouter direbbe il falso su chi ha fatto il lavoro.
+    return chat
+
+
 class State:
     """What every subscriber sees, guarded by one lock."""
 
@@ -129,6 +198,7 @@ class State:
         self.agents["colab"]["endpoint"] = None
         self.events: list[dict] = []
         self.chats: list[dict] = []
+        self.sessions: list[dict] = []
 
     def subscribe(self) -> queue.Queue:
         channel: queue.Queue = queue.Queue(maxsize=64)
@@ -163,7 +233,19 @@ class State:
             snapshot = dict(agent)
         self._publish({"kind": "agent", "agent": snapshot})
 
+    def publish(self, message: dict) -> None:
+        """Anything outside this class that has news for the viewers."""
+        self._publish(message)
+
+    def set_sessions(self, sessions: list[dict]) -> None:
+        with self._lock:
+            if sessions == self.sessions:
+                return
+            self.sessions = sessions
+        self._publish({"kind": "sessions", "sessions": sessions})
+
     def add_event(self, event: dict) -> None:
+        event = _normalise_event(event)
         snapshot = None
         with self._lock:
             self.events.append(event)
@@ -193,6 +275,7 @@ class State:
 
     def add_chat(self, chat: dict) -> None:
         """One finished exchange, text included, straight to whoever is watching."""
+        chat = _normalise_chat(chat)
         with self._lock:
             self.chats.append(chat)
             del self.chats[:-MAX_CHATS]
@@ -205,11 +288,43 @@ class State:
                 "agents": [dict(a) for a in self.agents.values()],
                 "events": list(self.events),
                 "chats": list(self.chats),
+                "sessions": list(self.sessions),
+                "workers": catalogue(),
+                "jobs": RUNNER.running() if RUNNER is not None else [],
+                "cwd": str(REPO_ROOT),
                 "serverTime": time.time(),
             }
 
 
 STATE = State()
+
+
+def _persist_chat(record: dict) -> None:
+    """A finished console exchange goes to the same log the tailer follows.
+
+    Only there: the tailer picks it up within half a second and publishes it, so
+    the record reaches the viewers by one road, never two.
+    """
+    try:
+        CHAT_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_LOG.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
+
+RUNNER = Runner(STATE.publish, _persist_chat)
+BOARD = SessionBoard(CLAUDE_SESSIONS)
+
+
+def poll_sessions() -> None:
+    """Every Claude Code session on this machine, and what it is doing."""
+    while True:
+        try:
+            STATE.set_sessions(BOARD.poll())
+        except OSError:
+            pass
+        time.sleep(SESSION_POLL_SECONDS)
 
 
 def poll_local() -> None:
@@ -582,12 +697,53 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_json(STATE.snapshot())
         elif self.path.startswith("/api/chats"):
             self._serve_json({"chats": STATE.snapshot()["chats"]})
+        elif self.path.startswith("/api/agents"):
+            self._serve_json({"workers": catalogue(),
+                              "sessions": STATE.snapshot()["sessions"]})
+        elif self.path.startswith("/flusso"):
+            self._serve_page(PAGE)
         elif self.path.startswith("/chat"):
             self._serve_page(CHAT_PAGE)
-        elif self.path in ("/", "/index.html"):
-            self._serve_page(PAGE)
+        elif self.path in ("/", "/index.html", "/console"):
+            self._serve_page(CONSOLE_PAGE.replace("__CONSOLE_TOKEN__", CONSOLE_TOKEN))
         else:
             self.send_error(404)
+
+    def do_POST(self) -> None:  # noqa: N802 - name fixed by BaseHTTPRequestHandler
+        if not self._authorised():
+            self._serve_json({"error": "richiesta non autorizzata: token assente"}, 403)
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            payload = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+        except (ValueError, json.JSONDecodeError) as error:
+            self._serve_json({"error": "corpo non leggibile: " + str(error)}, 400)
+            return
+        if self.path.startswith("/api/send"):
+            prompt = (payload.get("prompt") or "").strip()
+            agent = payload.get("agent") or ""
+            if not prompt:
+                self._serve_json({"error": "prompt vuoto"}, 400)
+                return
+            result = RUNNER.start(agent, prompt, payload.get("options") or {})
+            self._serve_json(result, 400 if result.get("error") else 200)
+        elif self.path.startswith("/api/stop"):
+            self._serve_json(RUNNER.stop(payload.get("jobId") or ""))
+        else:
+            self.send_error(404)
+
+    def _authorised(self) -> bool:
+        """The token from the page, plus a same-origin check.
+
+        The server listens on the loopback address only, but a page open in the
+        same browser can still post to it: without these two the console would
+        be an open door onto this machine.
+        """
+        origin = self.headers.get("Origin")
+        if origin and not (origin.startswith("http://127.0.0.1")
+                           or origin.startswith("http://localhost")):
+            return False
+        return self.headers.get("X-Console-Token") == CONSOLE_TOKEN
 
     def _serve_page(self, page: str) -> None:
         body = page.encode("utf-8")
@@ -597,9 +753,9 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _serve_json(self, payload: dict) -> None:
+    def _serve_json(self, payload: dict, status: int = 200) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -634,11 +790,13 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     EVENT_LOG.parent.mkdir(parents=True, exist_ok=True)
-    for worker in (poll_local, poll_colab, poll_claude, tail_events, tail_chats):
+    for worker in (poll_local, poll_colab, poll_claude, poll_sessions,
+                   tail_events, tail_chats):
         threading.Thread(target=worker, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     server.daemon_threads = True
-    print("NosAi Traffic Inspector: http://localhost:" + str(PORT))
+    print("Console degli agenti:   http://localhost:" + str(PORT))
+    print("Flusso e stato worker:  http://localhost:" + str(PORT) + "/flusso")
     print("Chat dei worker:        http://localhost:" + str(PORT) + "/chat")
     print("Eventi seguiti da: " + str(EVENT_LOG))
     print("Chat seguite da:   " + str(CHAT_LOG))
