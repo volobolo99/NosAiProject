@@ -134,6 +134,15 @@ def validate_python_skeleton(content: str, task: dict):
             if not only_stub:
                 implemented.append(node.name)
 
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    defined.add(target.id)
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name):
+                defined.add(node.target.id)
+
     if implemented:
         errors.append(
             "Scheletro con logica implementata in: " + ", ".join(sorted(set(implemented)))
