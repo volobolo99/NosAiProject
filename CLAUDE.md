@@ -269,8 +269,12 @@ costo/complessità — un agente costa più di una `Edit` su tre righe.
 **Divieto di scrittura bulk.** Claude non spende i propri token per classi
 banali, boilerplate o suite di test estese: quella stesura si delega.
 Restano di Claude, perché sono piccoli e devono esistere prima del resto:
-i contratti A1, gli algoritmi puri A3, l'audit indipendente A5 e
-l'integrazione A6 (`docs/agents/AGENT_WORK_PROTOCOL.md`). Il punto 1 e
+la *forma* dei contratti A1 — quali campi esistono, di che tipo, e
+che cosa significa il caso non osservato — gli algoritmi puri A3, l'audit
+indipendente A5 e l'integrazione A6 (`docs/agents/AGENT_WORK_PROTOCOL.md`).
+La *stesura* di quei contratti va al `contrattista`: decidere che `ByPlayer`
+è un `WorldFact<bool>` e non un `bool` vale l'intero contratto, digitare il
+record no. Il punto 1 e
 `docs/agents/DEEPSEEK_TASKS.md` § *Ruolo di DeepSeek* restano veri:
 Claude programma, su compiti piccoli; il carico pesante va ai worker.
 
@@ -355,7 +359,9 @@ pytest 8.4.2 è installato e i test sono stati modificati il 2026-09-07.
 l'incarico e lo delega), `verificatore` (compila ed esegue le suite),
 `revisore` (rivede un diff contro i criteri), `diagnosta` (causa radice di
 un rosso), `esploratore` (fatti come file:riga), `archivista` (documenti di
-stato), `integratore` (commit disgiunti e allineamento a GitHub).
+stato), `integratore` (commit disgiunti e allineamento a GitHub),
+`contrattista` (stende contratti e tipi pubblici da una forma già decisa e li
+fa compilare; non decide la forma e non tocca i test).
 
 ## 21. Task atomici e token economy
 
