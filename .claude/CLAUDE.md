@@ -257,9 +257,14 @@ Queste non sono opinioni: sono i risultati misurati nella sessione che ha introd
   instradava su Ollama anche il codice semplice e i test la accettavano, perché nessun test
   verificava l'aderenza a `COST_POLICY.md`. Quando un modello sbaglia, prima si aggiunge il test poi
   si richiede la correzione.
-- **Credenziali cloud non valide al 2026-09-09.** `DEEPSEEK_API_KEY` risponde "Authentication
-  Fails" e `OPENROUTER_API_KEY` risponde "User not found": finché non sono rinnovate, DeepSeek,
-  Qwen3 e Gemini non sono raggiungibili e la catena lavora solo in locale, con i limiti qui sopra.
+- **Un 401 non dice da solo che la chiave è scaduta.** Al 2026-09-09 `OPENROUTER_API_KEY`
+  sembrava revocata perché le completions rispondevano "User not found", ma era una chiave di
+  *provisioning* (`is_provisioning_key: true`): gestisce le altre chiavi e non fa inferenza,
+  mentre l'account ha credito. La diagnosi si fa con `python scripts/check_credentials.py`, che
+  interroga gli endpoint di stato invece di dedurre l'esito da una chiamata di inferenza, e il
+  recupero con `python scripts/provision_openrouter_key.py`. `DEEPSEEK_API_KEY` è invece davvero
+  rifiutata e va rigenerata sul portale DeepSeek, poi impostata con `setx` in un terminale nuovo.
+  Dopo ogni rotazione si riavvia Claude Code: il server MCP legge le credenziali all'avvio.
 
 ## 15. ONESTÀ DEI RISULTATI
 
