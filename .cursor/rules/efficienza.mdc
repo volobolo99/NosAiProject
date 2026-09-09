@@ -22,6 +22,5 @@ alwaysApply: true
 - Al termine riporta: modifiche, test ed esiti, problemi residui.
   Sii sintetico senza omettere informazioni necessarie.
 - Termina quando i criteri di accettazione sono soddisfatti.
-  Registra i miglioramenti facoltativi senza implementarli.---
-alwaysApply: true
----
+  Registra i miglioramenti facoltativi senza implementarli.
+
