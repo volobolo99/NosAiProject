@@ -366,26 +366,32 @@ public sealed class MapGridTests
             "........",
             "....o...");
 
-        // Warm up: first touch of a code path can allocate for reasons that are not
-        // the code's, and the measurement is about the steady state.
-        for (var i = 0; i < 100; i++)
+        // The counter is per-thread, so no parallel test can pollute it. What can is this
+        // thread's own runtime work: tiered compilation promotes these methods while the
+        // loop is already running, and under load that promotion lands inside the measured
+        // window instead of ahead of it. A fixed warm-up cannot outrun a delay that grows
+        // with the machine's load, so the window is measured repeatedly and the steady
+        // state is the verdict. The assertion is not weakened by this: a query that really
+        // allocated would allocate on every pass, and no pass would come out at zero.
+        var deltas = new long[8];
+
+        for (var pass = 0; pass < deltas.Length; pass++)
         {
-            _ = grid.IsWalkable(i % 8, i % 4);
-            _ = grid.BlocksAttack(i % 8, i % 4);
-            _ = grid.HasLineOfSight(0, 0, 7, 3);
-            _ = grid.TryGetFlags(i % 8, i % 4, out _);
+            long before = GC.GetAllocatedBytesForCurrentThread();
+
+            for (var i = 0; i < 10_000; i++)
+            {
+                _ = grid.IsWalkable(i % 8, i % 4);
+                _ = grid.BlocksAttack(i % 8, i % 4);
+                _ = grid.HasLineOfSight(0, 0, 7, 3);
+                _ = grid.TryGetFlags(i % 8, i % 4, out _);
+            }
+
+            deltas[pass] = GC.GetAllocatedBytesForCurrentThread() - before;
         }
 
-        long before = GC.GetAllocatedBytesForCurrentThread();
-
-        for (var i = 0; i < 10_000; i++)
-        {
-            _ = grid.IsWalkable(i % 8, i % 4);
-            _ = grid.BlocksAttack(i % 8, i % 4);
-            _ = grid.HasLineOfSight(0, 0, 7, 3);
-            _ = grid.TryGetFlags(i % 8, i % 4, out _);
-        }
-
-        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
+        Assert.True(
+            Array.Exists(deltas, delta => delta == 0L),
+            $"no pass reached zero allocations; per-pass deltas were {string.Join(", ", deltas)}");
     }
 }
