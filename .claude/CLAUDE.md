@@ -38,7 +38,7 @@ Prima di creare qualsiasi modulo (.py o .cpp), formula un contratto compatto in 
 
 - Salva il codice ottenuto su disco.
 
-### FASE 4: PRE-FLIGHT CHECK (GEMINI 2.0 FLASH)
+### FASE 4: PRE-FLIGHT CHECK (GEMINI 2.5 FLASH LITE)
 
 - Invoca `preflight_contract_check` confrontando il contratto con il file generato.
 

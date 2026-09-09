@@ -2,6 +2,8 @@ import os
 import json
 import re
 import requests
+import threading
+from datetime import date
 from dotenv import load_dotenv
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
@@ -18,7 +20,7 @@ OLLAMA_URL = os.getenv("OLLAMA_LOCAL_URL", "http://localhost:11434/api/generate"
 ROSTER = {
     "worker": "qwen/qwen3-coder-30b-a3b-instruct",
     "auditor": "deepseek/deepseek-r1",
-    "preflight": "google/gemini-2.0-flash-001",
+    "preflight": "google/gemini-2.5-flash-lite",
     "local_scaffold": "qwen2.5-coder:7b"
 }
 
@@ -119,6 +121,91 @@ def local_update_documentation(doc_payload_json: str) -> str:
     r = requests.post(OLLAMA_URL, json=payload, timeout=120)
     r.raise_for_status()
     return r.json().get("response", "")
+
+# =====================================================================
+# REGISTRO DI STATO DEI CONTRATTI
+# =====================================================================
+
+VALID_STATES = ["DRAFT", "SKELETON_OK", "INFILLED", "PREFLIGHT_OK", "VERIFIED", "ASAN_VERIFIED", "TEST_VERIFIED", "MERGED", "BLOCKED", "DROPPED"]
+DONE_STATES = ["VERIFIED", "ASAN_VERIFIED", "TEST_VERIFIED", "MERGED"]
+
+
+@mcp.tool()
+def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
+    """
+    Aggiorna lo stato di un contratto in contracts/ledger.json, ricalcola la
+    percentuale del suo Gate e rigenera docs/MASTER_ROADMAP.md in background
+    con il 7B locale. Nessuna chiamata a pagamento.
+    """
+    if new_state not in VALID_STATES:
+        return f"ERROR: stato non valido '{new_state}'. Ammessi: {', '.join(VALID_STATES)}"
+
+    ledger_path = PROJECT_ROOT / "contracts" / "ledger.json"
+    try:
+        with open(ledger_path, "r", encoding="utf-8") as f:
+            ledger = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return "ERROR: ledger mancante o corrotto"
+
+    gate_number = None
+    contract = None
+    owning_gate = None
+    for gate in ledger["gates"]:
+        for c in gate["contracts"]:
+            if c["cid"] == contract_id:
+                contract = c
+                owning_gate = gate
+                gate_number = gate["gate"]
+                break
+        if contract:
+            break
+
+    if contract is None:
+        return f"ERROR: contratto '{contract_id}' assente dal ledger"
+
+    contract["status"] = new_state
+    contract["updated"] = date.today().isoformat()
+    if metrics:
+        contract["metrics"] = metrics
+
+    done_count = sum(1 for c in owning_gate["contracts"] if c["status"] in DONE_STATES)
+    owning_gate["completion_pct"] = round(100 * done_count / len(owning_gate["contracts"]))
+
+    tmp_path = ledger_path.with_suffix(".json.tmp")
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(ledger, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_path, ledger_path)
+    except Exception:
+        if tmp_path.exists():
+            tmp_path.unlink()
+        return "ERROR: impossibile aggiornare il ledger"
+
+    def regenerate_roadmap():
+        try:
+            prompt = (
+                "Sei un Technical Writer. Traduci questo registro di contratti in una "
+                "roadmap Markdown con una sezione per Gate, la percentuale di ogni Gate "
+                "e una checklist dei contratti. Nessuna prosa introduttiva.\n\n"
+                f"{json.dumps(ledger, ensure_ascii=False)}"
+            )
+            response = requests.post(
+                OLLAMA_URL,
+                json={"model": ROSTER["local_scaffold"], "prompt": prompt, "stream": False},
+                timeout=180
+            )
+            response.raise_for_status()
+            content = response.json().get("response", "")
+            if content:
+                with open(PROJECT_ROOT / "docs" / "MASTER_ROADMAP.md", "w", encoding="utf-8") as f:
+                    f.write(content)
+        except Exception:
+            pass
+
+    threading.Thread(target=regenerate_roadmap, daemon=True).start()
+
+    pct = owning_gate["completion_pct"]
+    return f"[CID: {contract_id}] [STATE: {new_state}] gate {gate_number} -> {pct}% | roadmap in rigenerazione locale"
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

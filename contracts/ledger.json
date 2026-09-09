@@ -1,0 +1,316 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-09-09",
+  "vocabulary": "docs/PROTOCOL_TOKENS.md",
+  "note_di_lettura": "status riflette il codice presente su main al 2026-09-09, verificato per grep. Un contratto MERGED ha file e test sul disco; verification.last_result dice se il collaudo e' stato eseguito in questa sessione o no. struct_size null significa layout non ancora fissato, mai zero.",
+  "stack": {
+    "managed": "C#/.NET 8 — 564 sorgenti in src/, 377 test in tests/",
+    "python": "nosai/ — 78 moduli, 32 file di test",
+    "native": "assente: nessun .cpp/.hpp di progetto, nessun harness ASan"
+  },
+  "gates": [
+    {
+      "gate": 0,
+      "title": "Ambiente, test harness e bridge nativo",
+      "completion_pct": 40,
+      "contracts": [
+        {
+          "cid": "C-001",
+          "title": "Build e suite .NET riproducibili",
+          "target_file": "scripts/build.ps1",
+          "signature": "dotnet build NosAi.sln -c Release",
+          "struct_size": null,
+          "test_file": "scripts/test.ps1",
+          "status": "MERGED",
+          "invariants": ["DETERMINISTIC"],
+          "verification": { "command": "dotnet build NosAi.sln -c Release", "last_result": "not_run_this_session" }
+        },
+        {
+          "cid": "C-002",
+          "title": "Suite Python e CI",
+          "target_file": "pyproject.toml",
+          "signature": "python -m pytest tests/",
+          "struct_size": null,
+          "test_file": "tests/",
+          "status": "MERGED",
+          "invariants": ["DETERMINISTIC"],
+          "verification": { "command": "python -m pytest tests/", "last_result": "not_run_this_session" }
+        },
+        {
+          "cid": "C-003",
+          "title": "Harness AddressSanitizer",
+          "target_file": "scripts/run_asan_pipeline.py",
+          "signature": "def run_asan_pipeline(target: str, timeout_s: int = 300) -> AsanReport",
+          "struct_size": null,
+          "test_file": "tests/test_asan_pipeline.py",
+          "status": "DRAFT",
+          "invariants": ["NO_PARTIAL_STATE", "DETERMINISTIC"],
+          "blocker": "Il file non esiste. La FASE 5 di .claude/CLAUDE.md lo invoca: finche' manca, il collaudo dinamico non ha su cosa girare.",
+          "note": "Ha senso solo se il progetto acquisisce codice nativo; oggi non ne ha."
+        },
+        {
+          "cid": "C-004",
+          "title": "Gatekeeper dei test Python",
+          "target_file": "scripts/gatekeeper.py",
+          "signature": "def gatekeeper(paths: list[str]) -> GateResult",
+          "struct_size": null,
+          "test_file": "tests/test_gatekeeper.py",
+          "status": "DRAFT",
+          "invariants": ["FAIL_CLOSED", "DETERMINISTIC"],
+          "blocker": "Il file non esiste ed e' invocato dalla FASE 5."
+        },
+        {
+          "cid": "C-005",
+          "title": "Bridge ctypes verso il modulo nativo",
+          "target_file": "nosai/bridge/native.py",
+          "signature": "def load_native(path: str | None = None) -> NativeHandle",
+          "struct_size": null,
+          "test_file": "tests/test_native_bridge.py",
+          "status": "DRAFT",
+          "invariants": ["BOUNDS_CHECKED", "NO_PARTIAL_STATE"],
+          "blocker": "Nessun modulo nativo da caricare. ctypes compare oggi solo in nosai/storage/volume.py, per API Windows."
+        }
+      ]
+    },
+    {
+      "gate": 1,
+      "title": "Intercettazione pacchetti, hook e parsing opcode",
+      "completion_pct": 70,
+      "contracts": [
+        {
+          "cid": "C-101",
+          "sid": "S-PKT-01",
+          "title": "Sorgente di pacchetti astratta",
+          "target_file": "src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs",
+          "signature": "bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/LiveIntegration/Capture",
+          "status": "MERGED",
+          "invariants": ["THREAD_SAFE", "UNKNOWN_PRESERVED"],
+          "note": "CapturedPacket e' un readonly record struct (DateTime TimestampUtc, ReadOnlyMemory<byte> Raw) a IPacketSource.cs:12; la dimensione dipende dal runtime, non e' un layout fissato."
+        },
+        {
+          "cid": "C-102",
+          "title": "Cattura live via WinDivert",
+          "target_file": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+          "signature": "static WinDivertPacketSource? TryOpen(IPAddress serverAddress, int serverPort, out string? failureReason)",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/CaptureEngineTests.cs",
+          "status": "MERGED",
+          "invariants": ["THREAD_SAFE", "FAIL_CLOSED"],
+          "note": "Coda a capacita' fissa QueueCapacity = 4096 (riga 51); i drop sono contati in Dropped (riga 89)."
+        },
+        {
+          "cid": "C-103",
+          "title": "Motore di cattura del traffico di gioco",
+          "target_file": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+          "signature": "vedi il file: superficie pubblica gia' in uso dai test",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/CaptureEngineTests.cs",
+          "status": "MERGED",
+          "invariants": ["THREAD_SAFE", "NO_PARTIAL_STATE"],
+          "verification": { "command": "dotnet test tests/NosAi.Runtime.Tests --filter \"FullyQualifiedName~CaptureEngine\"", "last_result": "not_run_this_session" }
+        },
+        {
+          "cid": "C-104",
+          "title": "Parsing e registro degli opcode",
+          "target_file": "src/NosAi.Protocol/WireProtocol.cs",
+          "signature": "da confermare sul file prima di modificarlo",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/OutEntityRecordedCaptureTests.cs",
+          "status": "MERGED",
+          "invariants": ["BOUNDS_CHECKED", "UNKNOWN_PRESERVED"],
+          "note": "33 sorgenti toccano gli opcode. Il lavoro residuo e' la copertura degli opcode ancora Unknown, non l'infrastruttura."
+        },
+        {
+          "cid": "C-105",
+          "sid": "S-HOOK-01",
+          "title": "Hook di memoria o DLL nel client",
+          "target_file": "da definire",
+          "signature": "da definire",
+          "struct_size": null,
+          "test_file": "da definire",
+          "status": "DRAFT",
+          "invariants": ["BOUNDS_CHECKED", "THREAD_SAFE", "FAIL_CLOSED"],
+          "blocker": "Solo 8 sorgenti citano 'hook' e nessuno realizza un hook di memoria o DLL. Serve decidere se questa strada si apre davvero: cambia il confine tecnico del prodotto."
+        },
+        {
+          "cid": "C-106",
+          "title": "Replay deterministico di una cattura",
+          "target_file": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+          "signature": "da confermare sul file",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/DecideReplayAsOfCaptureTests.cs",
+          "status": "MERGED",
+          "invariants": ["DETERMINISTIC", "UNKNOWN_PRESERVED"]
+        }
+      ]
+    },
+    {
+      "gate": 2,
+      "title": "Dispatcher, correlazione entita' e sincronizzazione Python",
+      "completion_pct": 60,
+      "contracts": [
+        {
+          "cid": "C-201",
+          "sid": "S-EVT-01",
+          "title": "Dispatcher thread-safe degli eventi",
+          "target_file": "da confermare fra i 16 sorgenti che citano dispatch",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "da confermare",
+          "status": "MERGED",
+          "invariants": ["THREAD_SAFE", "ZERO_ALLOC_LOOP", "NO_PARTIAL_STATE"],
+          "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice."
+        },
+        {
+          "cid": "C-202",
+          "sid": "S-ENT-01",
+          "title": "Correlazione degli identificativi di entita'",
+          "target_file": "src/NosAi.Core/WorldModel/",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Core.Tests/",
+          "status": "MERGED",
+          "invariants": ["UNKNOWN_PRESERVED", "DETERMINISTIC"],
+          "note": "58 sorgenti toccano l'identita' delle entita': e' l'area piu' coperta del Gate."
+        },
+        {
+          "cid": "C-203",
+          "title": "Fusione delle osservazioni nel World Model",
+          "target_file": "src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs",
+          "signature": "da confermare sul file",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/",
+          "status": "MERGED",
+          "invariants": ["UNKNOWN_PRESERVED", "ZERO_ALLOC_LOOP"]
+        },
+        {
+          "cid": "C-204",
+          "title": "Sincronizzazione fra runtime C# e nosai/ Python",
+          "target_file": "da definire",
+          "signature": "da definire",
+          "struct_size": null,
+          "test_file": "da definire",
+          "status": "DRAFT",
+          "invariants": ["NO_PARTIAL_STATE", "UNKNOWN_PRESERVED"],
+          "blocker": "Non esiste un canale dichiarato fra i due stack. Prima di scriverlo serve decidere quale dei due possiede lo stato: vedi la domanda aperta in fondo al file."
+        }
+      ]
+    },
+    {
+      "gate": 3,
+      "title": "Decisione autonoma e recupero",
+      "completion_pct": 55,
+      "contracts": [
+        {
+          "cid": "C-301",
+          "title": "Pianificazione gerarchica HTN",
+          "target_file": "da confermare fra i 4 sorgenti che citano HTN",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "da confermare",
+          "status": "MERGED",
+          "invariants": ["DETERMINISTIC"],
+          "note": "ADR-0028 discute se il livello HTN/GOAP resta o si rimuove: leggerlo prima di estendere."
+        },
+        {
+          "cid": "C-302",
+          "title": "Pianificazione GOAP",
+          "target_file": "da confermare fra i 5 sorgenti che citano GOAP",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "da confermare",
+          "status": "MERGED",
+          "invariants": ["DETERMINISTIC"]
+        },
+        {
+          "cid": "C-303",
+          "title": "Orchestratore strategico",
+          "target_file": "da confermare fra i 30 sorgenti che citano Orchestrator",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "tests/test_orchestrator.py",
+          "status": "MERGED",
+          "invariants": ["FAIL_CLOSED", "DETERMINISTIC"]
+        },
+        {
+          "cid": "C-304",
+          "sid": "S-FSM-01",
+          "title": "Macchina a stati finiti esplicita",
+          "target_file": "da definire",
+          "signature": "da definire",
+          "struct_size": null,
+          "test_file": "da definire",
+          "status": "DRAFT",
+          "invariants": ["DETERMINISTIC", "NO_PARTIAL_STATE"],
+          "blocker": "Zero sorgenti contengono FSM o StateMachine. La decisione oggi passa da Planner (51 sorgenti) e Orchestrator (30): introdurre una FSM accanto a questi duplicherebbe l'autorita' di decisione. Serve dire se sostituisce o affianca."
+        },
+        {
+          "cid": "C-305",
+          "title": "Recupero dopo disconnessione",
+          "target_file": "da confermare fra i 44 sorgenti che citano recovery o reconnect",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "da confermare",
+          "status": "MERGED",
+          "invariants": ["FAIL_CLOSED", "NO_PARTIAL_STATE"]
+        }
+      ]
+    },
+    {
+      "gate": 4,
+      "title": "Hardening, fuzzing e rilascio",
+      "completion_pct": 25,
+      "contracts": [
+        {
+          "cid": "C-401",
+          "title": "Cifratura di sessione e autenticazione",
+          "target_file": "src/NosAi.Protocol/SessionCipher.cs",
+          "signature": "da confermare sul file",
+          "struct_size": null,
+          "test_file": "tests/test_session_cipher.py",
+          "status": "MERGED",
+          "invariants": ["FAIL_CLOSED", "NO_PARTIAL_STATE"]
+        },
+        {
+          "cid": "C-402",
+          "title": "Fuzzing sui pacchetti corrotti",
+          "target_file": "da definire",
+          "signature": "da definire",
+          "struct_size": null,
+          "test_file": "da definire",
+          "status": "DRAFT",
+          "invariants": ["BOUNDS_CHECKED", "NO_PARTIAL_STATE"],
+          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104."
+        },
+        {
+          "cid": "C-403",
+          "title": "Superficie di sicurezza del runtime",
+          "target_file": "src/NosAi.Security/",
+          "signature": "da confermare",
+          "struct_size": null,
+          "test_file": "tests/test_crypto_auth.py",
+          "status": "MERGED",
+          "invariants": ["FAIL_CLOSED"]
+        },
+        {
+          "cid": "C-404",
+          "title": "Procedura di rilascio verificata",
+          "target_file": "docs/BUILD_TEST_RELEASE.md",
+          "signature": "n/a",
+          "struct_size": null,
+          "test_file": "scripts/validate.ps1",
+          "status": "DRAFT",
+          "invariants": ["DETERMINISTIC"],
+          "blocker": "La procedura esiste come documento; manca l'esecuzione verificata end-to-end che la chiuda."
+        }
+      ]
+    }
+  ],
+  "domande_aperte": [
+    "C-003/C-004/C-005: la FASE 5 del protocollo presuppone codice nativo e ASan, che il progetto non ha. O si apre un ramo nativo, o quei tre contratti restano DRAFT per sempre e la FASE 5 va riscritta sugli stack reali (dotnet test, pytest).",
+    "C-204: quale stack possiede lo stato di gioco, il runtime C# o nosai/ Python. Finche' non e' deciso, il canale fra i due non si puo' progettare.",
+    "C-304: una FSM esplicita sostituisce Planner/Orchestrator o li affianca. Affiancarli senza dirlo creerebbe due autorita' di decisione."
+  ]
+}
