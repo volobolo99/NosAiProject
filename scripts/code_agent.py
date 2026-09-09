@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -52,6 +53,8 @@ GROQ_PREFISSO = "groq:"
 PRICES = json.loads((ROOT / "scripts" / "model_prices.json").read_text(encoding="utf-8"))["models"]
 LEDGER = ROOT / "data" / "ai_task_ledger.jsonl"
 MAX_ATTEMPTS = 3
+# Quante volte si aspetta il Retry-After prima di arrendersi su una quota.
+ATTESE_QUOTA = 2
 
 TIER_MODEL = {
     "local": "qwen2.5-coder:7b",
@@ -133,12 +136,23 @@ def call_model(model: str, prompt: str, system_prompt: str, max_tokens: int = 81
         # l'elenco dei guasti e' quello gia' misurato dal banco in free_chain.
         corpo["provider"] = {"ignore": list(free_chain.PROVIDER_GUASTI)}
 
-    response = requests.post(
-        url,
-        headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
-        json=corpo,
-        timeout=900,
-    )
+    # Una quota esaurita non e' un guasto: Groq rigenera i token in una quindicina
+    # di secondi, quindi conviene aspettare invece di buttare via l'incarico.
+    for tentativo in range(ATTESE_QUOTA + 1):
+        response = requests.post(
+            url,
+            headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+            json=corpo,
+            timeout=900,
+        )
+        if response.status_code != 429:
+            break
+        if tentativo == ATTESE_QUOTA:
+            raise RuntimeError(
+                "{}: quota esaurita, 429 dopo {} attese".format(model, ATTESE_QUOTA)
+            )
+        time.sleep(float(response.headers.get("retry-after", 20)))
+
     response.raise_for_status()
     payload = response.json()
     text = payload["choices"][0]["message"]["content"] or ""
@@ -151,6 +165,20 @@ def call_model(model: str, prompt: str, system_prompt: str, max_tokens: int = 81
             )
         )
     return text, payload.get("usage", {})
+
+
+def budget_token(model: str) -> int:
+    """Tetto di token in uscita, per fornitore.
+
+    DeepSeek ragiona prima di rispondere e serve un budget piu' largo del solo
+    output. Groq applica un limite di 6000 token al minuto e rifiuta in partenza
+    una richiesta il cui max_tokens, sommato al prompt, lo supererebbe.
+    """
+    if model.startswith(GROQ_PREFISSO):
+        return 3500
+    if model.startswith("deepseek"):
+        return 16000
+    return 8192
 
 
 def cost_of(model: str, usage: dict) -> float:
@@ -327,8 +355,7 @@ def run(task: dict, do_preflight: bool) -> dict:
             prompt += "\n".join("- " + e for e in errors)
             prompt += "\n\nCodice rifiutato:\n" + code
 
-        # DeepSeek ragiona prima di rispondere: serve un budget piu' largo del solo output.
-        budget = 16000 if model.startswith("deepseek") else 8192
+        budget = budget_token(model)
         testo, usage = call_model(model, prompt, SYSTEM_PROMPT, max_tokens=budget)
         chiamate += 1
         costo += cost_of(model, usage)

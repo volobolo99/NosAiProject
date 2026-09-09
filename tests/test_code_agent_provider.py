@@ -137,3 +137,62 @@ def test_groq_senza_chiave_lo_dice_chiaramente(monkeypatch):
     with pytest.raises(RuntimeError) as errore:
         code_agent.call_model("groq:openai/gpt-oss-120b", "prompt", "sistema")
     assert "GROQ_API_KEY" in str(errore.value)
+
+
+def test_il_budget_di_groq_sta_dentro_la_quota_al_minuto():
+    """Groq rifiuta in partenza una richiesta che da sola supera i 6000 token
+    al minuto: max_tokens va tenuto sotto quella soglia, prompt compreso."""
+    assert code_agent.budget_token("groq:openai/gpt-oss-120b") <= 3500
+    assert code_agent.budget_token("qwen/qwen3-coder-30b-a3b-instruct") == 8192
+    assert code_agent.budget_token("deepseek-v4-flash") == 16000
+
+
+# ------------------------------------------------------------ la quota
+
+
+def test_il_429_viene_atteso_e_la_chiamata_ritentata(monkeypatch):
+    """Groq rigenera i token in una quindicina di secondi: aspettare e' molto
+    meglio che dichiarare fallito un incarico gia' pagato in contesto."""
+    class Rifiuto:
+        status_code = 429
+        headers = {"retry-after": "3"}
+
+        def raise_for_status(self):
+            raise RuntimeError("429 Client Error: Too Many Requests")
+
+        def json(self):
+            return {}
+
+    risposte = [Rifiuto(), Risposta(BUONA)]
+    dormite = []
+
+    def finta_post(url, headers=None, json=None, timeout=None):
+        return risposte.pop(0)
+
+    monkeypatch.setattr(code_agent.requests, "post", finta_post)
+    monkeypatch.setattr(code_agent.time, "sleep", lambda s: dormite.append(s))
+    monkeypatch.setattr(code_agent, "GROQ_KEY", "chiave-groq")
+
+    testo, _ = code_agent.call_model("groq:openai/gpt-oss-120b", "prompt", "sistema")
+    assert testo == "codice"
+    assert dormite == [3.0], "doveva attendere i secondi indicati da Retry-After"
+
+
+def test_il_429_ostinato_alla_fine_si_arrende(monkeypatch):
+    class Rifiuto:
+        status_code = 429
+        headers = {"retry-after": "1"}
+
+        def raise_for_status(self):
+            raise RuntimeError("429 Client Error: Too Many Requests")
+
+        def json(self):
+            return {}
+
+    monkeypatch.setattr(code_agent.requests, "post", lambda *a, **k: Rifiuto())
+    monkeypatch.setattr(code_agent.time, "sleep", lambda s: None)
+    monkeypatch.setattr(code_agent, "GROQ_KEY", "chiave-groq")
+
+    with pytest.raises(RuntimeError) as errore:
+        code_agent.call_model("groq:openai/gpt-oss-120b", "prompt", "sistema")
+    assert "429" in str(errore.value) or "quota" in str(errore.value).lower()

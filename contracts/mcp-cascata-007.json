@@ -1,0 +1,70 @@
+{
+  "cid": "C-007-MCP-CASCATA",
+  "title": "I tool cloud del server MCP passano dai gratuiti prima di spendere",
+  "target_file": "scripts/mcp_server.py",
+  "test_file": "tests/test_mcp_cascata.py",
+  "scopo": "Cablare free_first nei tool cloud dell'orchestratore: ogni chiamata prova prima i modelli gratuiti, ne accetta il risultato solo se supera un giudizio automatico, e ricade sul modello a pagamento quando nessun gratuito passa o il budget di tempo si esaurisce. Il servizio non si interrompe mai.",
+  "principio": "La qualita' e' il vincolo duro e non e' negoziabile: un gratuito entra in produzione solo se supera lo stesso giudizio che si applicherebbe al pagato. Il tempo e' negoziabile quando il risparmio lo giustifica. Il costo non e' mai una ragione per accettare un risultato peggiore.",
+  "ordine_dei_fornitori": [
+    "groq: misurato piu' veloce dei modelli a pagamento del roster, quindi va provato per primo",
+    "openrouter gratuiti: piu' lenti ma numerosi, seconda fascia",
+    "il modello a pagamento del ruolo: rete di sicurezza finale, sempre tentata"
+  ],
+  "politiche_per_tool": {
+    "cloud_infill_implementation": {
+      "cascata": true,
+      "pagato": "qwen/qwen3-coder-30b-a3b-instruct",
+      "budget_secondi": 90,
+      "giudizio": [
+        "il codice estratto deve essere Python sintatticamente valido",
+        "nessun segnaposto TODO, FIXME, XXX",
+        "nessun corpo lasciato a raise NotImplementedError",
+        "le firme presenti nello scheletro ricevuto devono comparire tutte nel codice prodotto, invariate"
+      ],
+      "motivo": "l'infilling e' il passo dove il gratuito rende di piu': la latenza a pagamento e' gia' alta e il giudizio automatico e' severo e verificabile"
+    },
+    "preflight_contract_check": {
+      "cascata": true,
+      "pagato": "google/gemini-2.5-flash-lite",
+      "budget_secondi": 15,
+      "giudizio": [
+        "la risposta non e' vuota",
+        "o inizia con APPROVED, oppure elenca almeno un problema: una risposta evasiva che non decide viene rifiutata"
+      ],
+      "motivo": "i quattro modelli Groq promossi hanno superato il banco del giudice, cioe' bocciano il codice difettoso e approvano quello conforme; il banco e' la garanzia che la qualita' del verdetto non cala",
+      "avvertenza": "un giudice compiacente e' peggio di nessun giudice: nessun modello entra in questa cascata senza aver superato il banco B"
+    },
+    "deep_reasoner_solve_crash": {
+      "cascata": false,
+      "pagato": "deepseek-v4-flash",
+      "motivo": "e' l'unico passo il cui esito non e' verificabile da un giudizio automatico: una diagnosi sbagliata ma plausibile passerebbe ogni controllo strutturale e porterebbe a una correzione errata. Si invoca solo dopo un fallimento e al massimo tre volte, quindi il risparmio possibile e' minimo e il rischio alto. Resta a pagamento finche' non esiste un banco che sappia misurare la qualita' di una diagnosi."
+    },
+    "local_generate_skeleton": {
+      "cascata": false,
+      "motivo": "gia' a costo zero sul modello locale Ollama"
+    },
+    "local_update_documentation": {
+      "cascata": false,
+      "motivo": "gia' a costo zero sul modello locale Ollama"
+    }
+  },
+  "vincoli": [
+    "il registro Pausa e' unico per processo e sopravvive alle singole chiamate, cosi' una quota esaurita non si ripaga ogni volta",
+    "una risposta 429 diventa free_first.LimiteRaggiunto con i secondi di Retry-After, mai un'eccezione generica",
+    "DeepSeek continua a non passare da OpenRouter: il lucchetto resta",
+    "i modelli Groq si indirizzano con il prefisso groq: e non ricevono mai le preferenze di provider di OpenRouter",
+    "ogni chiamata registra in data/ai_task_ledger.jsonl quale modello ha servito, se era gratuito, i secondi e il costo stimato"
+  ],
+  "invarianti": [
+    "nessun tool cloud puo' restituire un testo gratuito che non abbia superato il proprio giudizio",
+    "se tutti i gratuiti falliscono il tool risponde comunque, usando il modello a pagamento",
+    "se anche il pagato fallisce il tool restituisce un errore che elenca ogni modello interpellato",
+    "i tool locali non cambiano comportamento"
+  ],
+  "status": "DRAFT",
+  "due_protocolli": {
+    "problema": "OpenRouter accetta un gruppo di modelli e sceglie da solo il primo che risponde; Groq espone un'API compatibile OpenAI che serve un modello per chiamata. free_first divide i modelli in gruppi da tre senza sapere di che fornitore siano, quindi un gruppo puo' risultare misto.",
+    "soluzione": "la funzione chiama_gruppo passata a free_first.esegui smista da sola: prova i modelli con prefisso groq: uno per uno nell'ordine del gruppo, e i restanti li manda a OpenRouter in un colpo solo come gruppo. Restituisce il primo successo; se nessuno risponde solleva, e la cascata prosegue col gruppo dopo.",
+    "conseguenza": "nessun vincolo sull'ordine dei modelli nel roster: un gruppo misto funziona lo stesso."
+  }
+}

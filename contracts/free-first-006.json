@@ -1,0 +1,87 @@
+{
+  "cid": "C-006-FREE-FIRST",
+  "title": "Cascata gratuita con giudizio di qualita e ricaduta garantita sul pagato",
+  "target_file": "scripts/free_first.py",
+  "test_file": "tests/test_free_first.py",
+  "scopo": "Provare sempre prima i modelli gratuiti, accettarne il risultato solo se supera il giudizio di qualita fornito dal chiamante, e ricadere sul modello a pagamento quando la cascata gratuita non produce un risultato accettabile o esaurisce il budget di tempo. Il servizio non si interrompe mai: ogni fallimento gratuito e' assorbito e si prosegue.",
+  "vincoli": [
+    "modulo puro: nessuna chiamata di rete, nessuna lettura di variabili d'ambiente",
+    "le chiamate ai modelli arrivano come callable iniettati dal chiamante",
+    "l'orologio e' iniettabile, cosi' il budget e' verificabile senza attese reali",
+    "nessuna dipendenza oltre la libreria standard e scripts/free_chain.py",
+    "un'eccezione sollevata da un modello gratuito non deve mai propagarsi al chiamante",
+    "l'import di free_chain deve reggere entrambi i modi di caricare il modulo: con scripts/ nel sys.path (import free_chain) e come scripts.free_first (from scripts import free_chain). Il blocco try/except in testa al file non va rimosso."
+  ],
+  "firme": [
+    "def budget_residuo(iniziato: float, budget: float, adesso: float) -> float",
+    "def esegui(chiama_gruppo: Callable[[Sequence[str]], Tuple[str, str]], chiama_pagato: Callable[[], Tuple[str, str]], giudizio: Callable[[str], List[str]], modelli: Optional[Sequence[str]] = None, budget_secondi: float = BUDGET_PREDEFINITO, orologio: Callable[[], float] = time.monotonic, pausa: Optional[Pausa] = None) -> Esito"
+  ],
+  "dataclass": {
+    "Tentativo": [
+      "modello: str",
+      "gratuito: bool",
+      "secondi: float",
+      "accettato: bool",
+      "motivo: str"
+    ],
+    "Esito": [
+      "testo: str",
+      "modello: str",
+      "gratuito: bool",
+      "accettato: bool",
+      "secondi: float",
+      "tentativi: List[Tentativo]"
+    ]
+  },
+  "costanti": {
+    "BUDGET_PREDEFINITO": 120.0,
+    "PAUSA_PREDEFINITA": 60.0
+  },
+  "invarianti": [
+    "i gruppi gratuiti si provano nell'ordine restituito da free_chain.gruppi, che e' l'ordine di velocita' crescente",
+    "un risultato gratuito e' restituito solo se giudizio(testo) e' una lista vuota",
+    "se giudizio boccia il testo, la cascata prosegue con il gruppo successivo",
+    "prima di ogni gruppo gratuito si verifica il budget: se e' esaurito la cascata gratuita si ferma e si passa al pagato",
+    "il budget non si applica mai alla chiamata a pagamento: e' la rete di sicurezza e va sempre tentata",
+    "se nessun gratuito e' accettato si chiama il pagato e si restituisce il suo risultato, con accettato che riflette il giudizio sul testo del pagato",
+    "se la chiamata a pagamento solleva un'eccezione, esegui solleva RuntimeError con il registro di tutti i tentativi",
+    "Esito.tentativi elenca ogni modello interpellato in ordine cronologico, gratuiti e pagato",
+    "budget_secondi minore o uguale a zero salta del tutto la cascata gratuita e va diritto al pagato",
+    "un elenco di modelli gratuiti vuoto porta diritto al pagato senza errori",
+    "un gruppo che solleva LimiteRaggiunto mette in pausa tutti i modelli di quel gruppo per i secondi indicati, poi la cascata prosegue con il gruppo successivo",
+    "i modelli in pausa sono esclusi dai gruppi prima di comporli, non dopo",
+    "la pausa non e' mai una ragione per fallire: se tutti i gratuiti sono in pausa si va diritto al pagato",
+    "il registro Pausa e' riutilizzabile fra chiamate successive, cosi' una quota esaurita non si ripaga a ogni invocazione",
+    "quando chiama_gruppo solleva un'eccezione non si conosce quale modello del gruppo abbia risposto: il Tentativo registra come modello il PRIMO modello del gruppo, mai una parola generica come 'gruppo'",
+    "quando il budget si esaurisce si registra comunque un Tentativo non accettato il cui motivo contiene la parola 'budget'",
+    "si registra un solo Tentativo per gruppo interpellato, non uno per ciascun modello del gruppo: e' OpenRouter a scegliere dentro il gruppo"
+  ],
+  "postcondizioni": [
+    "Esito.gratuito e' True solo quando il testo restituito proviene da un modello gratuito accettato",
+    "Esito.secondi misura il tempo totale trascorso dall'inizio di esegui",
+    "ogni Tentativo non accettato porta in motivo la ragione: eccezione, giudizio negativo o budget esaurito"
+  ],
+  "status": "DRAFT",
+  "ricerca": {
+    "fonti": [
+      "arxiv.org/abs/2305.05176 (FrugalGPT: cascata chiusa da un verificatore, non dalla presenza di una risposta)",
+      "openrouter.ai/docs/guides/features/zero-completion-insurance (le risposte vuote o in errore non sono fatturate)",
+      "openrouter.ai/docs/api-reference/limits (modelli :free 20 richieste al minuto; 1000 al giorno sopra i 10 crediti lifetime)",
+      "openrouter.ai/docs/features/provider-routing (max_price, sort, allow_fallbacks, ignore)"
+    ],
+    "conseguenze": [
+      "tentare un gratuito non costa denaro: costa solo tempo, quindi il budget da sorvegliare e' temporale",
+      "un 429 non e' un guasto del modello ma una quota: il modello va messo in pausa, non scartato per sempre",
+      "l'account e' sopra la soglia dei 10 crediti (is_free_tier false): il tetto e' 1000 richieste al giorno"
+    ]
+  },
+  "classi": {
+    "LimiteRaggiunto": "eccezione RuntimeError con attributo attendi: float, sollevata dal chiamante quando il provider risponde 429; porta i secondi indicati da Retry-After",
+    "Pausa": "registro dei modelli temporaneamente esclusi. Metodi: attiva(modello: str, secondi: float, adesso: float) -> None; attivo(modello: str, adesso: float) -> bool; filtra(modelli: Sequence[str], adesso: float) -> List[str]"
+  },
+  "api_free_chain": [
+    "free_chain.free_models(escludi_lenti: bool = True) -> List[str]",
+    "free_chain.gruppi(modelli: Sequence[str], dimensione: int = 3) -> List[List[str]]",
+    "free_chain.GRUPPO_MAX == 3"
+  ]
+}

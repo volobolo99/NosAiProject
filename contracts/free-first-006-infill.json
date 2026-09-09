@@ -1,0 +1,77 @@
+{
+  "cid": "C-006-FREE-FIRST",
+  "target_file": "scripts/free_first.py",
+  "scopo": "Provare sempre prima i modelli gratuiti, accettarne il risultato solo se supera il giudizio di qualita fornito dal chiamante, e ricadere sul modello a pagamento quando la cascata gratuita non produce un risultato accettabile o esaurisce il budget di tempo. Il servizio non si interrompe mai: ogni fallimento gratuito e' assorbito e si prosegue.",
+  "vincoli": [
+    "modulo puro: nessuna chiamata di rete, nessuna lettura di variabili d'ambiente",
+    "le chiamate ai modelli arrivano come callable iniettati dal chiamante",
+    "l'orologio e' iniettabile, cosi' il budget e' verificabile senza attese reali",
+    "nessuna dipendenza oltre la libreria standard e scripts/free_chain.py",
+    "un'eccezione sollevata da un modello gratuito non deve mai propagarsi al chiamante",
+    "l'import di free_chain deve reggere entrambi i modi di caricare il modulo: con scripts/ nel sys.path (import free_chain) e come scripts.free_first (from scripts import free_chain). Il blocco try/except in testa al file non va rimosso."
+  ],
+  "firme": [
+    "def budget_residuo(iniziato: float, budget: float, adesso: float) -> float",
+    "def esegui(chiama_gruppo: Callable[[Sequence[str]], Tuple[str, str]], chiama_pagato: Callable[[], Tuple[str, str]], giudizio: Callable[[str], List[str]], modelli: Optional[Sequence[str]] = None, budget_secondi: float = BUDGET_PREDEFINITO, orologio: Callable[[], float] = time.monotonic, pausa: Optional[Pausa] = None) -> Esito"
+  ],
+  "dataclass": {
+    "Tentativo": [
+      "modello: str",
+      "gratuito: bool",
+      "secondi: float",
+      "accettato: bool",
+      "motivo: str"
+    ],
+    "Esito": [
+      "testo: str",
+      "modello: str",
+      "gratuito: bool",
+      "accettato: bool",
+      "secondi: float",
+      "tentativi: List[Tentativo]"
+    ]
+  },
+  "costanti": {
+    "BUDGET_PREDEFINITO": 120.0,
+    "PAUSA_PREDEFINITA": 60.0
+  },
+  "classi": {
+    "LimiteRaggiunto": "eccezione RuntimeError con attributo attendi: float, sollevata dal chiamante quando il provider risponde 429; porta i secondi indicati da Retry-After",
+    "Pausa": "registro dei modelli temporaneamente esclusi. Metodi: attiva(modello: str, secondi: float, adesso: float) -> None; attivo(modello: str, adesso: float) -> bool; filtra(modelli: Sequence[str], adesso: float) -> List[str]"
+  },
+  "invarianti": [
+    "i gruppi gratuiti si provano nell'ordine restituito da free_chain.gruppi, che e' l'ordine di velocita' crescente",
+    "un risultato gratuito e' restituito solo se giudizio(testo) e' una lista vuota",
+    "se giudizio boccia il testo, la cascata prosegue con il gruppo successivo",
+    "prima di ogni gruppo gratuito si verifica il budget: se e' esaurito la cascata gratuita si ferma e si passa al pagato",
+    "il budget non si applica mai alla chiamata a pagamento: e' la rete di sicurezza e va sempre tentata",
+    "se nessun gratuito e' accettato si chiama il pagato e si restituisce il suo risultato, con accettato che riflette il giudizio sul testo del pagato",
+    "se la chiamata a pagamento solleva un'eccezione, esegui solleva RuntimeError con il registro di tutti i tentativi",
+    "Esito.tentativi elenca ogni modello interpellato in ordine cronologico, gratuiti e pagato",
+    "budget_secondi minore o uguale a zero salta del tutto la cascata gratuita e va diritto al pagato",
+    "un elenco di modelli gratuiti vuoto porta diritto al pagato senza errori",
+    "un gruppo che solleva LimiteRaggiunto mette in pausa tutti i modelli di quel gruppo per i secondi indicati, poi la cascata prosegue con il gruppo successivo",
+    "i modelli in pausa sono esclusi dai gruppi prima di comporli, non dopo",
+    "la pausa non e' mai una ragione per fallire: se tutti i gratuiti sono in pausa si va diritto al pagato",
+    "il registro Pausa e' riutilizzabile fra chiamate successive, cosi' una quota esaurita non si ripaga a ogni invocazione",
+    "quando chiama_gruppo solleva un'eccezione non si conosce quale modello del gruppo abbia risposto: il Tentativo registra come modello il PRIMO modello del gruppo, mai una parola generica come 'gruppo'",
+    "quando il budget si esaurisce si registra comunque un Tentativo non accettato il cui motivo contiene la parola 'budget'",
+    "si registra un solo Tentativo per gruppo interpellato, non uno per ciascun modello del gruppo: e' OpenRouter a scegliere dentro il gruppo"
+  ],
+  "postcondizioni": [
+    "Esito.gratuito e' True solo quando il testo restituito proviene da un modello gratuito accettato",
+    "Esito.secondi misura il tempo totale trascorso dall'inizio di esegui",
+    "ogni Tentativo non accettato porta in motivo la ragione: eccezione, giudizio negativo o budget esaurito"
+  ],
+  "api_free_chain": [
+    "free_chain.free_models(escludi_lenti: bool = True) -> List[str]",
+    "free_chain.gruppi(modelli: Sequence[str], dimensione: int = 3) -> List[List[str]]",
+    "free_chain.GRUPPO_MAX == 3"
+  ],
+  "formati_obbligatori": {
+    "Tentativo.motivo quando il gruppo solleva": "la stringa deve contenere il testo dell'eccezione. Esempio: chiama_gruppo solleva ConnectionError('il provider non risponde') -> motivo = \"eccezione: il provider non risponde\"",
+    "Tentativo.motivo quando il giudizio boccia": "deve elencare i difetti restituiti dal giudizio. Esempio: giudizio -> ['robaccia'] -> motivo = \"giudizio: robaccia\"",
+    "Tentativo quando il budget e' esaurito": "prima di saltare la cascata si aggiunge un Tentativo con accettato=False e motivo che CONTIENE la parola 'budget'. Esempio: motivo = \"budget esaurito: nessun altro gratuito\". Senza questo Tentativo il registro non spiega perche' si e' speso.",
+    "RuntimeError quando fallisce anche il pagato": "il messaggio deve elencare OGNI tentativo con il suo modello e il suo motivo, e poi la ragione del pagato. Esempio con gratuiti m1 e m4 muti: \"Nessun modello ha risposto.\n- m1: eccezione: non risponde\n- m4: eccezione: non risponde\n- pagato: anche il pagato non risponde\". Un messaggio che riporta solo l'errore del pagato NON basta: chi legge deve sapere che anche m1 e m4 sono stati provati."
+  }
+}
