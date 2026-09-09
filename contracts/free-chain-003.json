@@ -1,0 +1,43 @@
+{
+  "contract_id": "free-chain-003",
+  "file": "scripts/free_chain.py",
+  "scopo": "Catena di riserva gratuita: elenca i modelli a costo zero gia' validati dal banco e ritenta la chiamata sui successivi quando quello scelto fallisce.",
+  "costanti": {
+    "FREE_ROSTER_PATH": "Path(__file__).resolve().parent / 'free_roster.json': percorso ancorato al file, mai relativo alla cartella di lavoro",
+    "LENTO_SECONDI": "200"
+  },
+  "funzioni": {
+    "free_models": {
+      "firma": "def free_models(escludi_lenti: bool = True) -> List[str]",
+      "comportamento": "legge il JSON in FREE_ROSTER_PATH e restituisce il campo id delle voci della chiave 'validati', ordinate per 'sec_medi' crescente",
+      "escludi_lenti": "quando vale True scarta le voci con sec_medi maggiore o uguale a LENTO_SECONDI",
+      "errori": "se il file manca o non e' JSON valido restituisce una lista vuota, senza sollevare"
+    },
+    "call_with_fallback": {
+      "firma": "def call_with_fallback(chiamata: Callable[[str], str], modelli: Sequence[str]) -> Tuple[str, str]",
+      "comportamento": "prova i modelli nell'ordine ricevuto chiamando chiamata(modello); al primo esito utile restituisce (testo, identificativo del modello che lo ha prodotto)",
+      "cosa_conta_come_fallimento": [
+        "qualunque eccezione sollevata da chiamata",
+        "un testo vuoto o composto di soli spazi: un provider puo' rispondere 200 con contenuto nullo, e quel nulla non e' un risultato"
+      ],
+      "dopo_un_fallimento": "si passa al modello successivo senza propagare l'eccezione",
+      "tutti_falliti": "solleva RuntimeError il cui messaggio elenca ogni modello provato con il motivo del fallimento",
+      "lista_vuota": "solleva RuntimeError",
+      "efficienza": "quando un modello riesce, i successivi non vengono chiamati"
+    }
+  },
+  "dipendenze": [
+    "json",
+    "pathlib",
+    "typing"
+  ],
+  "vincoli": [
+    "solo libreria standard",
+    "firme e annotazioni non modificabili",
+    "nessuna chiamata di rete dentro questo modulo: la chiamata arriva come parametro",
+    "nessun print()",
+    "docstring di modulo iniziale in italiano che spiega a cosa serve la catena",
+    "ogni messaggio di errore e ogni commento sono in italiano: il progetto e in italiano"
+  ],
+  "test_di_accettazione": "python -m pytest tests/test_free_chain.py"
+}
