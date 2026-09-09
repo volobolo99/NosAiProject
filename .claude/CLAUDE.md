@@ -225,7 +225,43 @@ Per ogni task si registrano modello, costo stimato, numero di chiamate e risulta
 
 ---
 
-## 13. ONESTÀ DEI RISULTATI
+## 13. STRUMENTI DELLA CATENA
+
+| Strumento | Fase | Cosa fa |
+|---|---|---|
+| `scripts/doc_agent.py` | 2 | Incarico JSON → modello locale → documento o scheletro validato su disco. A Claude torna il solo JSON di stato. |
+| `scripts/code_agent.py` | 3 e 4 | Scheletro + contratto → modello di codice → implementazione. Rifiuta firme alterate, campi cambiati, corpi ancora vuoti e segnaposto; esegue i test indicati e ripristina lo scheletro se falliscono. Registra il costo reale della chiamata. |
+| `scripts/model_prices.json` | — | Listino verificato dei modelli: unica fonte delle classi di costo. |
+| `scripts/mcp_server.py` | 1-5 | Tool MCP dell'orchestratore. |
+
+Un incarico passa sempre i fatti verificati al modello: nessuno di questi modelli può cercarli da
+solo e, se non li riceve, li inventa.
+
+## 14. EVIDENZE OPERATIVE (2026-09-09)
+
+Queste non sono opinioni: sono i risultati misurati nella sessione che ha introdotto la catena.
+
+- **Il modello locale regge documenti e scheletri, non il codice con vincoli fini.** Su 29 incarichi
+  documentali ha prodotto 26 documenti validi al primo o secondo tentativo. Sull'implementazione di
+  tre moduli ha completato solo il più meccanico, e ha fallito nove tentativi sugli altri due
+  riscrivendo le annotazioni di tipo e ignorando la politica di routing. Per il codice si sale di
+  modello invece di insistere.
+- **La validazione automatica coglie la struttura, non la verità.** Documenti approvati con
+  confidence 1.0 contenevano attribuzioni sbagliate e una riga di tabella mancante. Il controllo di
+  merito su ciò che decide il comportamento del sistema resta a Claude.
+- **I test li definisce Claude.** Quelli generati dal modello locale invocavano funzioni con la
+  firma sbagliata e inventavano uno schema al posto di quello del repository: sarebbero passati
+  validando il nulla. Il test è il criterio di accettazione, quindi appartiene a chi risponde del
+  contratto.
+- **Un difetto non coperto da un test non esiste per la catena.** La prima tabella di routing
+  instradava su Ollama anche il codice semplice e i test la accettavano, perché nessun test
+  verificava l'aderenza a `COST_POLICY.md`. Quando un modello sbaglia, prima si aggiunge il test poi
+  si richiede la correzione.
+- **Credenziali cloud non valide al 2026-09-09.** `DEEPSEEK_API_KEY` risponde "Authentication
+  Fails" e `OPENROUTER_API_KEY` risponde "User not found": finché non sono rinnovate, DeepSeek,
+  Qwen3 e Gemini non sono raggiungibili e la catena lavora solo in locale, con i limiti qui sopra.
+
+## 15. ONESTÀ DEI RISULTATI
 
 Non si dichiara mai un lavoro perfetto o garantito al 100%. Si dichiara quali controlli sono stati
 eseguiti, quali sono passati e quali rischi restano aperti. La presenza di codice o documentazione

@@ -19,3 +19,10 @@ Do not publish sensitive vulnerability details in a public issue. Use the projec
 ## Verification
 
 Security-sensitive changes require negative tests and must be reviewed against the applicable ADRs before release.
+
+## Related documents
+
+- `docs/SICUREZZA.md` — security model for the product domain, in Italian.
+- `docs/adr/` — accepted decisions on trust boundaries, key custody and the authorisation path.
+- `docs/CRITTOGRAFIA_NOISE_E_CHIAVI_EFFIMERE.md` — session cryptography and ephemeral keys.
+- `.claude/CLAUDE.md` — agent operating rules, including who may review security-sensitive changes.

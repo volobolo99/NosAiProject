@@ -1,7 +1,7 @@
 {
   "contract_id": "ORCH-001",
   "version": "1.0",
-  "state": "SKELETON_OK",
+  "state": "TEST_VERIFIED",
   "author": "Claude (Orchestrator/CTO)",
   "date": "2026-09-09",
   "purpose": "Infrastruttura di orchestrazione multi-modello: instradare un task al modello meno costoso capace di completarlo, registrare il consumo di ogni chiamata e validare i messaggi scambiati fra agenti.",
@@ -116,6 +116,13 @@
       "date": "2026-09-09",
       "by": "qwen2.5-coder:7b",
       "evidence": "firme, enumerazioni e campi verificati per introspezione; corpi non implementati"
+    },
+    {
+      "state": "TEST_VERIFIED",
+      "date": "2026-09-09",
+      "by": "Claude + qwen2.5-coder:7b",
+      "evidence": "tests/test_orchestration.py: 24 test verdi, 2 saltati per non applicabilita'",
+      "attribuzione": "ledger.py implementato dal modello locale e poi corretto da Claude in revisione (encoding esplicito, creazione della directory padre, righe JSON valide ma non conformi saltate invece di sollevare). routing.py e messages.py scritti da Claude dopo nove tentativi falliti del modello locale. I test sono di Claude: quelli generati dal locale erano difettosi e sono stati scartati."
     }
   ]
 }

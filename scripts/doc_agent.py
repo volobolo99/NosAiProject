@@ -172,6 +172,23 @@ def validate(content: str, task: dict):
     elif fmt == "python":
         format_valid, python_errors = validate_python_skeleton(content, task)
         errors.extend(python_errors)
+    elif fmt == "python_test":
+        # Il codice di test contiene logica: si controllano sintassi e simboli richiesti.
+        import ast as _ast
+
+        try:
+            albero = _ast.parse(content)
+            definiti = {
+                n.name
+                for n in _ast.walk(albero)
+                if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef))
+            }
+            assenti = [s for s in task.get("required_symbols", []) if s not in definiti]
+            if assenti:
+                errors.append("Test richiesti assenti: " + ", ".join(assenti))
+        except SyntaxError as exc:
+            format_valid = False
+            errors.append("Sintassi Python non valida alla riga {}: {}".format(exc.lineno, exc.msg))
     elif not content.lstrip().startswith("#"):
         format_valid = False
         errors.append("Il Markdown non inizia con un'intestazione di primo livello.")

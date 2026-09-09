@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "verified_on": "2026-09-09",
+  "unit": "USD per token",
+  "sources": {
+    "openrouter": "https://openrouter.ai/api/v1/models (letto direttamente dall'API il 2026-09-09)",
+    "deepseek": "https://deepseek.ai/pricing e https://benchlm.ai/deepseek/api-pricing (consultati il 2026-09-09)"
+  },
+  "note": "DeepSeek V4 bilancia due fasce: picco 01:00-04:00 e 06:00-10:00 UTC, fuori picco meta' prezzo. Qui e' registrata la fascia di picco, che e' la stima prudente. Il cache-hit in ingresso su Flash scende a 0.000000007 USD per token.",
+  "models": {
+    "qwen2.5-coder:7b": {
+      "access": "Ollama locale",
+      "input": 0.0,
+      "output": 0.0,
+      "cost_class": "zero"
+    },
+    "deepseek-v4-flash": {
+      "access": "API nativa DeepSeek",
+      "input": 0.00000022,
+      "output": 0.00000066,
+      "input_off_peak": 0.00000011,
+      "output_off_peak": 0.00000033,
+      "cost_class": "low"
+    },
+    "qwen/qwen3-coder-30b-a3b-instruct": {
+      "access": "OpenRouter",
+      "input": 0.00000007,
+      "output": 0.00000028,
+      "cost_class": "low"
+    },
+    "google/gemini-2.5-flash-lite": {
+      "access": "OpenRouter",
+      "input": 0.0000001,
+      "output": 0.0000004,
+      "cost_class": "low"
+    },
+    "claude": {
+      "access": "Sessione Claude",
+      "input": null,
+      "output": null,
+      "cost_class": "max",
+      "note": "Non fatturato per token dal progetto: e' la sessione dell'operatore. Resta la risorsa piu' cara e va usata solo per architettura, decisioni critiche e revisione del codice critico."
+    }
+  }
+}

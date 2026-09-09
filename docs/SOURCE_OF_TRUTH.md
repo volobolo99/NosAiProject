@@ -16,6 +16,19 @@ This file defines which project documents are authoritative. When documents disa
 6. `.claude/CLAUDE.md` — agent development rules: the mandatory 5-phase production protocol.
 7. `third_party/README.md`, `third_party/manifests/*`, `third_party/provenance/*` — external-source provenance and reuse rules.
 
+## Root front-door documents
+
+The Markdown files at the repository root — `PROJECT.md`, `REQUIREMENTS.md`, `ARCHITECTURE.md`,
+`ROADMAP.md`, `DECISIONS.md`, `TASKS.md`, `TEST_PLAN.md`, `CHANGELOG.md` — are entry points, not
+sources of truth. Each one points at the canonical document listed above and must never restate or
+contradict it. When content changes, change the canonical document; the front door only changes when
+the pointer itself is wrong.
+
+Two root documents are canonical for their own subject because nothing else covers it:
+`AGENTS.md` (development roles and the model assigned to each) and `COST_POLICY.md` (model routing
+and cost policy). Verified model prices live in `scripts/model_prices.json`, which is the single
+source for cost classes.
+
 ## Development-support documents
 
 - `docs/agents/EXECUTION_QUEUE.md` — work queue: what the next step is.

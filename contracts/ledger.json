@@ -399,6 +399,30 @@
           "blocker": "La procedura esiste come documento; manca l'esecuzione verificata end-to-end che la chiuda."
         }
       ]
+    },
+    {
+      "gate": 9,
+      "title": "Tooling di orchestrazione multi-modello (non e' un gate di prodotto)",
+      "completion_pct": 100,
+      "contracts": [
+        {
+          "cid": "ORCH-001",
+          "title": "Routing per costo, registro dei consumi, messaggi fra agenti",
+          "target_file": "nosai/orchestration/routing.py",
+          "signature": "route_task(kind: TaskKind) -> ModelRoute",
+          "struct_size": null,
+          "test_file": "tests/test_orchestration.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-09",
+          "invariants": [
+            "DETERMINISTIC"
+          ],
+          "verification": {
+            "command": "python -m pytest tests/test_orchestration.py -q",
+            "last_result": "verde in questa sessione"
+          }
+        }
+      ]
     }
   ],
   "domande_aperte": [
