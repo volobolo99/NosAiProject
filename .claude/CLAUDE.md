@@ -52,4 +52,4 @@ Prima di creare qualsiasi modulo (.py o .cpp), formula un contratto compatto in 
 
 - **Se 100% Verde:** Invoca `local_update_documentation` per aggiornare la roadmap a costo zero, poi esegui il commit Git.
 
-- **Se Fallisce:** Invia lo stack trace e il codice a `deep_reasoner_solve_crash` (DeepSeek-R1). Limite massimo: 3 tentativi di autoriparazione, poi rollback obbligatorio.
+- **Se Fallisce:** Invia lo stack trace e il codice a `deep_reasoner_solve_crash` (DeepSeek V4 Flash, API nativa). Limite massimo: 3 tentativi di autoriparazione, poi rollback obbligatorio.

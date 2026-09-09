@@ -17,14 +17,24 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = os.getenv("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
 OLLAMA_URL = os.getenv("OLLAMA_LOCAL_URL", "http://localhost:11434/api/generate")
 
+# DeepSeek si chiama sulla sua API nativa, dove sta il credito dell'operatore.
+# La chiave si legge dall'ambiente, mai dal sorgente.
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_URL = os.getenv("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
+
 ROSTER = {
     "worker": "qwen/qwen3-coder-30b-a3b-instruct",
-    "auditor": "deepseek/deepseek-r1",
+    "auditor": "deepseek-v4-flash",
     "preflight": "google/gemini-2.5-flash-lite",
     "local_scaffold": "qwen2.5-coder:7b"
 }
 
 def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:
+    if "deepseek" in model_id.lower():
+        raise ValueError(
+            f"DeepSeek non passa da OpenRouter: '{model_id}' va chiamato con call_deepseek "
+            "sull'API nativa. Nessun instradamento alternativo."
+        )
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
@@ -43,6 +53,40 @@ def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature:
     r = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=120)
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"]
+
+def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:
+    if not DEEPSEEK_API_KEY:
+        raise RuntimeError(
+            "DEEPSEEK_API_KEY non impostata: definirla come variabile d'ambiente, "
+            "mai nel sorgente."
+        )
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model_id,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False
+    }
+    r = requests.post(DEEPSEEK_URL, headers=headers, json=payload, timeout=180)
+    r.raise_for_status()
+    message = r.json()["choices"][0]["message"]
+    content = message.get("content") or ""
+    if not content.strip():
+        # I modelli di ragionamento spendono il budget di max_tokens in
+        # reasoning_content prima di scrivere content: un budget stretto
+        # lascia content vuoto. Meglio fallire che restituire il nulla.
+        raise RuntimeError(
+            f"{model_id} non ha prodotto contenuto: max_tokens={max_tokens} "
+            "probabilmente esaurito dal ragionamento. Alzare il budget."
+        )
+    return content
 
 # =====================================================================
 # STRUMENTI PER LA CATENA DI MONTAGGIO A ZERO DIFETTI
@@ -106,7 +150,7 @@ def deep_reasoner_solve_crash(error_context_json: str) -> str:
         "Sei il Principal Systems & Memory Security Engineer. Analizza il crash nativo o la violazione di invarianti. "
         "Identifica l'errore logico o di puntatore e fornisci la correzione chirurgica in C++ o Python."
     )
-    return call_openrouter(ROSTER["auditor"], error_context_json, sys_prompt, temperature=0.6, max_tokens=12000)
+    return call_deepseek(ROSTER["auditor"], error_context_json, sys_prompt, temperature=0.6, max_tokens=12000)
 
 @mcp.tool()
 def local_update_documentation(doc_payload_json: str) -> str:

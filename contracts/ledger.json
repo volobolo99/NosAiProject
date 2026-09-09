@@ -12,7 +12,7 @@
     {
       "gate": 0,
       "title": "Ambiente, test harness e bridge nativo",
-      "completion_pct": 40,
+      "completion_pct": 50,
       "contracts": [
         {
           "cid": "C-001",
@@ -22,8 +22,13 @@
           "struct_size": null,
           "test_file": "scripts/test.ps1",
           "status": "MERGED",
-          "invariants": ["DETERMINISTIC"],
-          "verification": { "command": "dotnet build NosAi.sln -c Release", "last_result": "not_run_this_session" }
+          "invariants": [
+            "DETERMINISTIC"
+          ],
+          "verification": {
+            "command": "dotnet build NosAi.sln -c Release",
+            "last_result": "not_run_this_session"
+          }
         },
         {
           "cid": "C-002",
@@ -33,8 +38,13 @@
           "struct_size": null,
           "test_file": "tests/",
           "status": "MERGED",
-          "invariants": ["DETERMINISTIC"],
-          "verification": { "command": "python -m pytest tests/", "last_result": "not_run_this_session" }
+          "invariants": [
+            "DETERMINISTIC"
+          ],
+          "verification": {
+            "command": "python -m pytest tests/",
+            "last_result": "not_run_this_session"
+          }
         },
         {
           "cid": "C-003",
@@ -44,7 +54,10 @@
           "struct_size": null,
           "test_file": "tests/test_asan_pipeline.py",
           "status": "DRAFT",
-          "invariants": ["NO_PARTIAL_STATE", "DETERMINISTIC"],
+          "invariants": [
+            "NO_PARTIAL_STATE",
+            "DETERMINISTIC"
+          ],
           "blocker": "Il file non esiste. La FASE 5 di .claude/CLAUDE.md lo invoca: finche' manca, il collaudo dinamico non ha su cosa girare.",
           "note": "Ha senso solo se il progetto acquisisce codice nativo; oggi non ne ha."
         },
@@ -56,7 +69,10 @@
           "struct_size": null,
           "test_file": "tests/test_gatekeeper.py",
           "status": "DRAFT",
-          "invariants": ["FAIL_CLOSED", "DETERMINISTIC"],
+          "invariants": [
+            "FAIL_CLOSED",
+            "DETERMINISTIC"
+          ],
           "blocker": "Il file non esiste ed e' invocato dalla FASE 5."
         },
         {
@@ -67,8 +83,27 @@
           "struct_size": null,
           "test_file": "tests/test_native_bridge.py",
           "status": "DRAFT",
-          "invariants": ["BOUNDS_CHECKED", "NO_PARTIAL_STATE"],
+          "invariants": [
+            "BOUNDS_CHECKED",
+            "NO_PARTIAL_STATE"
+          ],
           "blocker": "Nessun modulo nativo da caricare. ctypes compare oggi solo in nosai/storage/volume.py, per API Windows."
+        },
+        {
+          "cid": "C-006",
+          "title": "Instradamento dei modelli: DeepSeek nativo, mai da OpenRouter",
+          "target_file": "scripts/mcp_server.py",
+          "signature": "def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str",
+          "struct_size": null,
+          "test_file": "tests/test_model_routing.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-09",
+          "metrics": "10 test verdi; chiamata reale a deepseek-v4-flash riuscita",
+          "invariants": [
+            "FAIL_CLOSED",
+            "NO_PARTIAL_STATE"
+          ],
+          "note": "call_openrouter solleva ValueError su qualunque model_id contenente 'deepseek': la regola e' imposta dal codice, non dalla disciplina. deepseek-v4-flash e' un modello di ragionamento e spende max_tokens in reasoning_content prima di content, quindi un content vuoto solleva un errore invece di tornare stringa vuota."
         }
       ]
     },
@@ -86,7 +121,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/LiveIntegration/Capture",
           "status": "MERGED",
-          "invariants": ["THREAD_SAFE", "UNKNOWN_PRESERVED"],
+          "invariants": [
+            "THREAD_SAFE",
+            "UNKNOWN_PRESERVED"
+          ],
           "note": "CapturedPacket e' un readonly record struct (DateTime TimestampUtc, ReadOnlyMemory<byte> Raw) a IPacketSource.cs:12; la dimensione dipende dal runtime, non e' un layout fissato."
         },
         {
@@ -97,7 +135,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/CaptureEngineTests.cs",
           "status": "MERGED",
-          "invariants": ["THREAD_SAFE", "FAIL_CLOSED"],
+          "invariants": [
+            "THREAD_SAFE",
+            "FAIL_CLOSED"
+          ],
           "note": "Coda a capacita' fissa QueueCapacity = 4096 (riga 51); i drop sono contati in Dropped (riga 89)."
         },
         {
@@ -108,8 +149,14 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/CaptureEngineTests.cs",
           "status": "MERGED",
-          "invariants": ["THREAD_SAFE", "NO_PARTIAL_STATE"],
-          "verification": { "command": "dotnet test tests/NosAi.Runtime.Tests --filter \"FullyQualifiedName~CaptureEngine\"", "last_result": "not_run_this_session" }
+          "invariants": [
+            "THREAD_SAFE",
+            "NO_PARTIAL_STATE"
+          ],
+          "verification": {
+            "command": "dotnet test tests/NosAi.Runtime.Tests --filter \"FullyQualifiedName~CaptureEngine\"",
+            "last_result": "not_run_this_session"
+          }
         },
         {
           "cid": "C-104",
@@ -119,7 +166,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/OutEntityRecordedCaptureTests.cs",
           "status": "MERGED",
-          "invariants": ["BOUNDS_CHECKED", "UNKNOWN_PRESERVED"],
+          "invariants": [
+            "BOUNDS_CHECKED",
+            "UNKNOWN_PRESERVED"
+          ],
           "note": "33 sorgenti toccano gli opcode. Il lavoro residuo e' la copertura degli opcode ancora Unknown, non l'infrastruttura."
         },
         {
@@ -131,7 +181,11 @@
           "struct_size": null,
           "test_file": "da definire",
           "status": "DRAFT",
-          "invariants": ["BOUNDS_CHECKED", "THREAD_SAFE", "FAIL_CLOSED"],
+          "invariants": [
+            "BOUNDS_CHECKED",
+            "THREAD_SAFE",
+            "FAIL_CLOSED"
+          ],
           "blocker": "Solo 8 sorgenti citano 'hook' e nessuno realizza un hook di memoria o DLL. Serve decidere se questa strada si apre davvero: cambia il confine tecnico del prodotto."
         },
         {
@@ -142,7 +196,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/DecideReplayAsOfCaptureTests.cs",
           "status": "MERGED",
-          "invariants": ["DETERMINISTIC", "UNKNOWN_PRESERVED"]
+          "invariants": [
+            "DETERMINISTIC",
+            "UNKNOWN_PRESERVED"
+          ]
         }
       ]
     },
@@ -160,7 +217,11 @@
           "struct_size": null,
           "test_file": "da confermare",
           "status": "MERGED",
-          "invariants": ["THREAD_SAFE", "ZERO_ALLOC_LOOP", "NO_PARTIAL_STATE"],
+          "invariants": [
+            "THREAD_SAFE",
+            "ZERO_ALLOC_LOOP",
+            "NO_PARTIAL_STATE"
+          ],
           "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice."
         },
         {
@@ -172,7 +233,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Core.Tests/",
           "status": "MERGED",
-          "invariants": ["UNKNOWN_PRESERVED", "DETERMINISTIC"],
+          "invariants": [
+            "UNKNOWN_PRESERVED",
+            "DETERMINISTIC"
+          ],
           "note": "58 sorgenti toccano l'identita' delle entita': e' l'area piu' coperta del Gate."
         },
         {
@@ -183,7 +247,10 @@
           "struct_size": null,
           "test_file": "tests/NosAi.Runtime.Tests/",
           "status": "MERGED",
-          "invariants": ["UNKNOWN_PRESERVED", "ZERO_ALLOC_LOOP"]
+          "invariants": [
+            "UNKNOWN_PRESERVED",
+            "ZERO_ALLOC_LOOP"
+          ]
         },
         {
           "cid": "C-204",
@@ -193,7 +260,10 @@
           "struct_size": null,
           "test_file": "da definire",
           "status": "DRAFT",
-          "invariants": ["NO_PARTIAL_STATE", "UNKNOWN_PRESERVED"],
+          "invariants": [
+            "NO_PARTIAL_STATE",
+            "UNKNOWN_PRESERVED"
+          ],
           "blocker": "Non esiste un canale dichiarato fra i due stack. Prima di scriverlo serve decidere quale dei due possiede lo stato: vedi la domanda aperta in fondo al file."
         }
       ]
@@ -211,7 +281,9 @@
           "struct_size": null,
           "test_file": "da confermare",
           "status": "MERGED",
-          "invariants": ["DETERMINISTIC"],
+          "invariants": [
+            "DETERMINISTIC"
+          ],
           "note": "ADR-0028 discute se il livello HTN/GOAP resta o si rimuove: leggerlo prima di estendere."
         },
         {
@@ -222,7 +294,9 @@
           "struct_size": null,
           "test_file": "da confermare",
           "status": "MERGED",
-          "invariants": ["DETERMINISTIC"]
+          "invariants": [
+            "DETERMINISTIC"
+          ]
         },
         {
           "cid": "C-303",
@@ -232,7 +306,10 @@
           "struct_size": null,
           "test_file": "tests/test_orchestrator.py",
           "status": "MERGED",
-          "invariants": ["FAIL_CLOSED", "DETERMINISTIC"]
+          "invariants": [
+            "FAIL_CLOSED",
+            "DETERMINISTIC"
+          ]
         },
         {
           "cid": "C-304",
@@ -243,7 +320,10 @@
           "struct_size": null,
           "test_file": "da definire",
           "status": "DRAFT",
-          "invariants": ["DETERMINISTIC", "NO_PARTIAL_STATE"],
+          "invariants": [
+            "DETERMINISTIC",
+            "NO_PARTIAL_STATE"
+          ],
           "blocker": "Zero sorgenti contengono FSM o StateMachine. La decisione oggi passa da Planner (51 sorgenti) e Orchestrator (30): introdurre una FSM accanto a questi duplicherebbe l'autorita' di decisione. Serve dire se sostituisce o affianca."
         },
         {
@@ -254,7 +334,10 @@
           "struct_size": null,
           "test_file": "da confermare",
           "status": "MERGED",
-          "invariants": ["FAIL_CLOSED", "NO_PARTIAL_STATE"]
+          "invariants": [
+            "FAIL_CLOSED",
+            "NO_PARTIAL_STATE"
+          ]
         }
       ]
     },
@@ -271,7 +354,10 @@
           "struct_size": null,
           "test_file": "tests/test_session_cipher.py",
           "status": "MERGED",
-          "invariants": ["FAIL_CLOSED", "NO_PARTIAL_STATE"]
+          "invariants": [
+            "FAIL_CLOSED",
+            "NO_PARTIAL_STATE"
+          ]
         },
         {
           "cid": "C-402",
@@ -281,7 +367,10 @@
           "struct_size": null,
           "test_file": "da definire",
           "status": "DRAFT",
-          "invariants": ["BOUNDS_CHECKED", "NO_PARTIAL_STATE"],
+          "invariants": [
+            "BOUNDS_CHECKED",
+            "NO_PARTIAL_STATE"
+          ],
           "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104."
         },
         {
@@ -292,7 +381,9 @@
           "struct_size": null,
           "test_file": "tests/test_crypto_auth.py",
           "status": "MERGED",
-          "invariants": ["FAIL_CLOSED"]
+          "invariants": [
+            "FAIL_CLOSED"
+          ]
         },
         {
           "cid": "C-404",
@@ -302,7 +393,9 @@
           "struct_size": null,
           "test_file": "scripts/validate.ps1",
           "status": "DRAFT",
-          "invariants": ["DETERMINISTIC"],
+          "invariants": [
+            "DETERMINISTIC"
+          ],
           "blocker": "La procedura esiste come documento; manca l'esecuzione verificata end-to-end che la chiuda."
         }
       ]

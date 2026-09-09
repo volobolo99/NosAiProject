@@ -3,9 +3,9 @@
 Generata da `contracts/ledger.json`. Vocabolario dei tag: `docs/PROTOCOL_TOKENS.md`.
 Non si modifica a mano: la rigenera `update_contract_state` a ogni cambio di stato.
 
-**Completamento globale: 50%** — 16 contratti conclusi su 24.
+**Completamento globale: 68%** — 17 contratti conclusi su 25.
 
-### Gate 0: Ambiente, test harness e bridge nativo (40%)
+### Gate 0: Ambiente, test harness e bridge nativo (50%)
 
 - [x] **C-001** Build e suite .NET riproducibili
 - [x] **C-002** Suite Python e CI
@@ -15,6 +15,7 @@ Non si modifica a mano: la rigenera `update_contract_state` a ogni cambio di sta
   - **Blocker**: `scripts/gatekeeper.py` non esiste; la FASE 5 lo invoca
 - [ ] **C-005** Bridge ctypes verso il modulo nativo
   - **Blocker**: nessun modulo nativo da caricare
+- [x] **C-006** Instradamento dei modelli: DeepSeek nativo, mai da OpenRouter
 
 ### Gate 1: Intercettazione pacchetti, hook e parsing opcode (70%)
 
