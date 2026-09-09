@@ -335,6 +335,15 @@ a servire quelli precedenti (`ask_local_qwen`, `ask_deepseek_reasoner`,
 su Colab non esiste più nel sorgente. `.mcp.json` registra il solo server
 `orchestrator`.
 
+**Le sessioni Claude aperte non sono worker.** `ListAgents` elenca accanto ai
+subagenti anche le altre sessioni Claude Code sulla macchina
+(`nosaiproject-04`, `nosaiproject-df`, ...). Sono utili per coordinarsi, ma
+girano sullo stesso modello e sullo stesso budget settimanale dell'utente:
+delegare a loro non risparmia nulla, sposta il consumo di finestra. Il 2026-09-09
+ho mandato due incarichi li' credendo di alleggerire il budget e ho dovuto
+ritirarli. Il lavoro che deve costare poco va ai subagenti su Haiku o Sonnet,
+oppure ai worker MCP, che stanno fuori dal pool Claude.
+
 **Vincoli sui worker.** Zero prosa: nessuna introduzione, nessun
 convenevole, nessuna spiegazione accademica — pseudocodice denso, formule,
 interfacce. La chiave API si legge da `DEEPSEEK_API_KEY` nell'ambiente del
