@@ -104,3 +104,16 @@ public sealed record Drop(
     ItemId Item,
     WorldFact<WorldPosition> Position,
     WorldFact<int> Quantity);
+
+/// <summary>A drop observed leaving the world, and who took it.</summary>
+/// <param name="Drop">The item that was taken, identified as the drop it was.</param>
+/// <param name="ByPlayer">
+/// True when the taker was the controlled character, false when it was somebody else, and
+/// Unknown while the wire has named a taker the client cannot yet resolve to an identity.
+/// Unknown is not false: a drop taken by an unidentified player is not a drop the character
+/// failed to take, and a planner reading the two as the same would retry a pickup that had
+/// already succeeded.
+/// </param>
+public sealed record DropClaim(
+    EntityId Drop,
+    WorldFact<bool> ByPlayer);

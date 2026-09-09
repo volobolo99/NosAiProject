@@ -28,6 +28,20 @@ public sealed record WorldModelSnapshot(
     EquatableArray<Goal> ActiveGoals)
 {
     /// <summary>
+    /// The most recent drop observed being taken, with whether the controlled character is
+    /// the one who took it. This is the observation that closes an executed pickup: on its
+    /// own, a drop's disappearance from the ground cannot be told apart from somebody else
+    /// having claimed it first.
+    /// </summary>
+    /// <remarks>
+    /// Unknown until a pickup is observed, stamped at <see cref="DateTime.UnixEpoch"/> so
+    /// that two snapshots which never saw one stay equal to each other. Nobody having
+    /// picked anything up is not the same fact as nobody having watched.
+    /// </remarks>
+    public WorldFact<DropClaim> LastDropClaim { get; init; }
+        = WorldFact<DropClaim>.Unknown("no_pickup_observed_yet", DateTime.UnixEpoch);
+
+    /// <summary>
     /// A snapshot with an explicitly Unknown player/map and empty
     /// collections, used before the first successful fusion cycle -- never
     /// replaced by a snapshot fabricating a plausible player/map/entity

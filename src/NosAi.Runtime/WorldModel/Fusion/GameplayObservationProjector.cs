@@ -177,7 +177,44 @@ public static class GameplayObservationProjector
             drops,
             EquatableArray<Quest>.Empty,
             EquatableArray<WorldAction>.Empty,
-            EquatableArray<Goal>.Empty);
+            EquatableArray<Goal>.Empty)
+        {
+            LastDropClaim = ProjectDropClaim(observation.LastPickup, nowUtc),
+        };
+    }
+
+    /// <summary>
+    /// Carries the most recent <c>get</c> into the World Model as the claim on a drop.
+    /// </summary>
+    /// <remarks>
+    /// The decoder states the taker as a nullable flag, and the null case is the one that
+    /// matters: the wire says a player took the item without saying which player, until
+    /// <c>cond</c> has named the controlled character. That case becomes an Unknown fact,
+    /// never a false one, so a caller cannot read "somebody else took it" out of "we do not
+    /// yet know who did". The drop id is formed exactly as the ground-item projection forms
+    /// it, so the claim names a drop the snapshot can actually be joined against.
+    /// </remarks>
+    internal static WorldFact<DropClaim> ProjectDropClaim(
+        RuntimeContracts.ClassifiedValue<NosAi.Runtime.Perception.Network.ItemPickup> pickup,
+        DateTime nowUtc)
+    {
+        if (!pickup.HasValue)
+        {
+            return WorldFact<DropClaim>.Unknown(
+                pickup.FailureReason ?? "no_pickup_observed_yet", nowUtc);
+        }
+
+        NosAi.Runtime.Perception.Network.ItemPickup taken = pickup.Value;
+
+        WorldFact<bool> byPlayer = taken.ByPlayer.HasValue
+            ? ClassifiedValueBridge.WithSource(taken.Source, taken.ByPlayer.Value, taken.ObservedAtUtc)
+            : WorldFact<bool>.Unknown("taker_identity_not_resolved", taken.ObservedAtUtc);
+
+        var claim = new DropClaim(
+            new EntityId($"drop-{taken.DropId.ToString(CultureInfo.InvariantCulture)}"),
+            byPlayer);
+
+        return ClassifiedValueBridge.WithSource(taken.Source, claim, taken.ObservedAtUtc);
     }
 
     /// <summary>
