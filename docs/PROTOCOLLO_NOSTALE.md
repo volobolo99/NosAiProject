@@ -360,6 +360,118 @@ Quindi: il legame **id → argomento → catalogo** è chiuso; il legame
 
 ---
 
+## `qsti`, `qstlist`, `script`, `qr`, `npc_req`, `rest` — sei opcode di missione, mai letti
+
+**Fonte:** `data/messaggi.noscap`, riletta il 2026-09-09 con
+
+```
+dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll \
+  --wire-inspect data/messaggi.noscap --timeline qsti,qstlist,script,qr,npc_req,rest --max 100
+```
+
+(il default e' `--max 20`: senza l'opzione la timeline si ferma a `#11096`,
+prima delle ultime righe di `script` riportate sotto).
+
+Personaggio controllato in questa cattura: id `3548294`, letto da
+`cond 1 3548294 0 0 11` — lo stesso id che compare in `sayi`, `get` e `ivn`
+nella sezione `sayi` sopra, che viene dalla stessa cattura.
+
+Nessuno dei sei opcode e' letto da `NosTaleWorldProtocolDecoder.cs`: grep
+con confini di parola dei sei nomi su quel file, 2026-09-09, trova solo la
+parola inglese «rest» dentro due commenti (`and the rest ignored`, `rest of
+this class`), zero corrispondenze di opcode. Nessuno dei sei era finora in
+questo documento.
+
+Le righe:
+
+```
+#2983  19:07:58.489  npc_req 2 3102 9714
+#4712  19:08:12.088  qsti 5.1997.1997.19.0.0.1.0.0.0.0.0.0.0.0.0
+#4715  19:08:12.088  qstlist            (senza campi)
+#4717  19:08:12.188  script 1 30
+#4718  19:08:12.387  qstlist 5.1500.1500.1.0.5.0.0.0.0.0.0.0.0.0.1
+#4719  19:08:12.387  script 1 40
+#6165  19:08:23.889  qsti 5.1500.1500.1.1.5.0.0.0.0.0.0.0.0.0.0
+#6990  19:08:30.888  qsti 5.1500.1500.1.2.5.0.0.0.0.0.0.0.0.0.0
+#7467  19:08:34.988  qsti 5.1500.1500.1.3.5.0.0.0.0.0.0.0.0.0.0
+#8065  19:08:40.490  qsti 5.1500.1500.1.4.5.0.0.0.0.0.0.0.0.0.0
+#8817  19:08:46.188  qsti 5.1500.1500.1.5.5.1.0.0.0.0.0.0.0.0.0
+#8819  19:08:46.388  script 1 50
+#9671  19:08:53.487  script 1 51
+#9773  19:08:53.687  script 1 52
+#11084 19:09:05.087  qr 8 13 1 0 0 0 0 0 0 0 0 0 1500
+#11085 19:09:05.087  qstlist            (senza campi)
+#11092 19:09:05.287  script 1 53
+#11096 19:09:05.487  script 1 55
+#11327 19:09:07.588  script 1 60
+#11781 19:09:10.688  script 1 70
+```
+
+Fuori da questa finestra, due occorrenze di `rest`, identiche fra loro:
+`rest 1 8292772 0` alle 19:08:16.888 e alle 19:08:44.389.
+
+### `qsti` / `qstlist` — avanzamento di missione, nel gruppo puntato
+
+`qsti` e la forma non vuota di `qstlist` portano lo stesso gruppo puntato a
+sedici posizioni. Sui sei campioni della missione 1500 (`#4718, #6165,
+#6990, #7467, #8065, #8817`), il quinto valore del gruppo sale
+`0, 1, 2, 3, 4, 5` mentre il sesto resta fermo a `5`; nell'istante in cui il
+quinto raggiunge il sesto (`#8817`), il settimo passa da `0` a `1`.
+
+| Posizione | Osservato | Lettura |
+|---|---|---|
+| 1 | sempre `5`, sui sei campioni della missione 1500 e sull'unico della 1997 | **unknown** — costante non spiegata |
+| 2 | `1997` sul campione della missione 1997, `1500` sugli altri sei | **probable** — identificativo della missione |
+| 3 | uguale alla posizione 2 su ogni campione | **probable** — ripetuto |
+| 4 | `19` sul campione della 1997, `1` su tutti i sei della 1500 | **unknown** |
+| 5 | `0, 1, 2, 3, 4, 5` sui sei campioni della 1500, in quest'ordine temporale | **probable** — avanzamento corrente |
+| 6 | resta `5` sugli stessi sei campioni | **probable** — soglia da raggiungere |
+| 7 | `0` finché la posizione 5 è sotto la posizione 6, `1` non appena la raggiunge | **probable** — completato (0/1) |
+| 8 e successive | sempre `0` su tutti i campioni osservati | **unknown** |
+
+`qstlist` senza campi (`#4715, #11085`) e `qstlist` con lo stesso gruppo
+puntato di `qsti` (`#4718`, e `#12035` fuori dalla finestra sopra) sono la
+stessa forma sotto due nomi di opcode diversi; perché il server scelga
+l'uno o l'altro non è stabilito.
+
+### `qr` — chiude la missione, id compreso
+
+`qr 8 13 1 0 0 0 0 0 0 0 0 0 1500`: tredici campi dopo l'opcode, tutti
+costanti sull'unica occorrenza della cattura. L'ultimo campo vale `1500`,
+lo stesso identificativo che `qsti` porta nelle posizioni 2 e 3, e arriva
+diciannove secondi dopo che quella missione ha raggiunto il completamento
+(`#8817`, 19:08:46.188 → `#11084`, 19:09:05.087). I dodici campi restanti:
+**unknown**.
+
+### `script 1 N` — sale, ma non lega a una missione precisa
+
+`N` sale `30, 40, 50, 51, 52, 53, 55, 60, 70` nella finestra qui sopra; il
+primo campo resta sempre `1`. Alcuni scatti cadono nello stesso secondo di
+un `qsti`/`qstlist` (`#4717` e `#4718`, entrambi 19:08:12; `#8817` e
+`#8819`, 200 ms di differenza), ma nella cattura non c'è nessun campo
+condiviso, nessun id di missione dentro `script`, che leghi esplicitamente
+i due opcode: la vicinanza temporale è osservata, il legame no. **Unknown.**
+
+### `npc_req` — unica occorrenza
+
+`npc_req 2 3102 9714`: un solo campione in tutta la cattura. **Unknown.**
+
+### `rest` — non è il personaggio controllato
+
+`rest 1 8292772 0`, due occorrenze, entrambe con lo stesso id `8292772`.
+Quell'id **non è** il personaggio controllato in questa cattura (`3548294`,
+da `cond`). `rest` quindi non conferma una fermata del personaggio giocato:
+riguarda un'altra entità — la deduzione naturale dal nome dell'opcode
+sarebbe il contrario, e la cattura la smentisce.
+
+### Stato nel decoder
+
+Zero di questi sei opcode compaiono in `NosTaleWorldProtocolDecoder.cs`.
+Non contribuiscono ad alcuna `EntitySighting`, `DecodedObservations` o
+snapshot pubblicato oggi.
+
+---
+
 ## `in` — an entity enters view
 
 ```
@@ -427,9 +539,39 @@ posizioni osservate — quindi una lettura corrotta — ma `11` senza scala non 
 converte in una distanza per unità di tempo, e sceglierne una a caso
 trasformerebbe un controllo di plausibilità in una sorgente di falsi allarmi.
 
-Per determinarla basta una cattura sola: il personaggio cammina fra due punti
-noti, `cond` dichiara la velocità, `mv` dà posizioni e istanti, e il rapporto
-fra distanza percorsa e tempo trascorso dà la scala.
+Il metodo che questo documento indicava fino al 2026-09-09 — «il personaggio
+cammina fra due punti noti, `cond` dichiara la velocità, `mv` dà posizioni e
+istanti» — **non funziona così**: il server non manda `mv` per il personaggio
+controllato. Misurato sulla cattura `data/messaggi.noscap`, dove `cond` dà
+l'id proprio `3548294`, le righe `mv` che lo nominano sono **zero** su 20.876.
+Il proprio movimento viaggia client→server ed è cifrato (`--world-replay`
+conta 170 frame illeggibili in quella direzione). La velocità propria dichiarata
+da `cond` non ha quindi, nella stessa cattura, un percorso proprio con cui
+confrontarla.
+
+La scala si misura invece sugli **altri** giocatori, che il server annuncia con
+`mv` completo di posizione, istante e campo velocità — l'unità sul filo è la
+stessa. Metodo, riproducibile: si raggruppano i `mv` per entità, si tengono i
+tratti in cui il campo velocità resta costante e i campioni distano meno di due
+secondi, si somma la distanza fra campioni consecutivi e la si divide per la
+durata del tratto.
+
+Applicato il 2026-09-09 a `data/messaggi.noscap`:
+
+| tipo | velocità dichiarata | tratti | mediana celle/s |
+|---|---|---|---|
+| 1 (giocatore) | 12 | 6 | 4,79 |
+| 2 | 5 / 7 / 10 | 209 / 6 / 9 | 1,28 / 1,25 / 1,19 |
+| 3 (mostro) | 4 / 5 | 732 / 736 | 1,30 / 1,27 |
+
+Per i tipi 2 e 3 la misura è indipendente dal valore dichiarato: quelle entità
+si fermano di continuo e le pause dominano la media, quindi non servono allo
+scopo. Resta il solo giocatore osservato in movimento continuo: velocità 12 →
+4,79 celle/s, rapporto 0,399. **Un punto solo non è una scala**: non distingue
+una proporzione da una relazione con offset, e per questo l'unità resta
+`Unknown`. Serve un secondo valore di velocità su un'entità di tipo 1 in
+movimento continuo — nelle altre catture del repository non ce ne sono tratti
+abbastanza lunghi.
 
 Da non confondere con la velocità istantanea: quella di `cond` è una
 statistica del personaggio, e per questo il commento di
