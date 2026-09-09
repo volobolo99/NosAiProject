@@ -335,6 +335,26 @@ a servire quelli precedenti (`ask_local_qwen`, `ask_deepseek_reasoner`,
 su Colab non esiste più nel sorgente. `.mcp.json` registra il solo server
 `orchestrator`.
 
+**Modello di ogni subagente, dal 2026-09-09.** La stesura del codice va ai
+worker in API, non ai subagenti Claude: questi orchestrano, ispezionano e
+decidono.
+
+| Subagente | Modello | Strumenti dell'orchestratore |
+|---|---|---|
+| `esploratore` | Haiku | — |
+| `verificatore` | Haiku | `run_dotnet_tests` |
+| `capocantiere` | Sonnet | `delegate_to_qwen_coder`, `delegate_to_local_7b`, `delegate_to_deepseek`, `run_dotnet_tests` |
+| `contrattista` | Sonnet | — |
+| `revisore` | Sonnet | — |
+| `archivista` | Sonnet | — |
+| `integratore` | Sonnet | — |
+| `diagnosta` | Sonnet | `delegate_to_deepseek` |
+
+`capocantiere` era su Opus e scriveva l'incarico per un tool `mcp__deepseek__`
+che non esiste piu'; `diagnosta` era su Opus senza alcun worker, quindi
+ragionava da solo sul modello caro. Ora il primo delega la stesura e il secondo
+manda a `deepseek-reasoner` il ragionamento pesante.
+
 **Le sessioni Claude aperte non sono worker.** `ListAgents` elenca accanto ai
 subagenti anche le altre sessioni Claude Code sulla macchina
 (`nosaiproject-04`, `nosaiproject-df`, ...). Sono utili per coordinarsi, ma
