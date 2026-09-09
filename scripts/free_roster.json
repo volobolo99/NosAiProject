@@ -1,24 +1,80 @@
 {
   "schema_version": "1.0",
-  "misurato_il": "2026-09-09T15:56Z",
-  "come": "reports/free-models-benchmark.md; giudice: validate_implementation di scripts/code_agent.py piu' i test di comportamento",
-  "regola": "elenco dei modelli a costo zero che hanno superato ogni controllo dei due banchi. I modelli a pagamento del roster restano i predefiniti e non sono sostituiti da questo file.",
+  "misurato_il": "2026-09-09T17:51Z",
+  "come": "reports/free-models-benchmark.md; giudice: validate_implementation di scripts/code_agent.py piu' i test di comportamento; banco multi-fornitore del 2026-09-09: infilling giudicato da validate_implementation piu' un test funzionale eseguito, preflight che deve bocciare codice difettoso e approvare codice conforme",
+  "regola": "elenco dei modelli a costo zero che hanno superato ogni controllo dei banchi. L'identificativo porta il prefisso del fornitore quando non e' OpenRouter: groq: per api.groq.com, nvidia: per integrate.api.nvidia.com. I modelli a pagamento del roster restano i predefiniti e non sono sostituiti da questo file.",
   "scartati": {
     "liquid/lfm-2.5-2.6b:free": "0/16 e 3/14: non regge il contratto",
     "thinkingmachines/inkling:free": "403: accessibile solo dalle agentic harness",
     "thinkingmachines/inkling-small:free": "403: accessibile solo dalle agentic harness",
     "google/gemma-4-31b-it:free": "429 ripetuti anche a richiesta singola",
     "poolside/laguna-xs-2.1:free": "429 ripetuti anche a richiesta singola",
-    "google/gemma-4-26b-a4b-it:free": "429 sul banco A: qualita' non verificabile"
+    "google/gemma-4-26b-a4b-it:free": "429 sul banco A: qualita' non verificabile",
+    "groq:qwen/qwen3.6-27b": "banco A: validate: Sintassi non valida alla riga 3: unexpected indent; banco B: RuntimeError: 429 quota: attendere 50s",
+    "groq:groq/compound": "banco B: conforme: SBAGLIATO, difettoso: giusto",
+    "groq:allam-2-7b": "banco A: validate: Sintassi non valida alla riga 61: unmatched ')'",
+    "nvidia:deepseek-ai/deepseek-v4-flash-0731": "banco B: HTTPError: 529 Server Error: status code 529 for url: https://integrate.api.nvidia.com/v1/",
+    "nvidia:mistralai/codestral-22b-instruct-v0.1": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
+    "nvidia:nvidia/llama-3.1-nemotron-70b-instruct": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
+    "nvidia:nvidia/nemotron-3-super-120b-a12b": "banco B: HTTPError: 503 Server Error: Service Unavailable for url: https://integrate.api.nvidia.com",
+    "nvidia:nvidia/nemotron-nano-3-30b-a3b": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
+    "nvidia:meta/codellama-70b": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
+    "nvidia:ibm/granite-34b-code-instruct": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
+    "nvidia:mistralai/mistral-large-2-instruct": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c"
   },
   "validati": [
+    {
+      "id": "groq:qwen/qwen3.8-27b",
+      "fornitore": "groq",
+      "sec_medi": 0.7,
+      "sec_infill": 0.8,
+      "sec_preflight": 0.53,
+      "banco_a": true,
+      "banco_b": true,
+      "visione": false,
+      "note": "codice conforme e test verde | conforme: giusto, difettoso: giusto"
+    },
+    {
+      "id": "groq:openai/gpt-oss-20b",
+      "fornitore": "groq",
+      "sec_medi": 1.5,
+      "sec_infill": 1.7,
+      "sec_preflight": 1.39,
+      "banco_a": true,
+      "banco_b": true,
+      "visione": false,
+      "note": "codice conforme e test verde | conforme: giusto, difettoso: giusto"
+    },
+    {
+      "id": "groq:openai/gpt-oss-120b",
+      "fornitore": "groq",
+      "sec_medi": 1.7,
+      "sec_infill": 2.25,
+      "sec_preflight": 1.22,
+      "banco_a": true,
+      "banco_b": true,
+      "visione": false,
+      "note": "codice conforme e test verde | conforme: giusto, difettoso: giusto"
+    },
+    {
+      "id": "groq:groq/compound-mini",
+      "fornitore": "groq",
+      "sec_medi": 3.1,
+      "sec_infill": 3.49,
+      "sec_preflight": 2.68,
+      "banco_a": true,
+      "banco_b": true,
+      "visione": false,
+      "note": "codice conforme e test verde | conforme: giusto, difettoso: giusto"
+    },
     {
       "id": "nex-agi/nex-n2.5-mini:free",
       "sec_medi": 8,
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": ""
+      "note": "",
+      "fornitore": "openrouter"
     },
     {
       "id": "openrouter/free",
@@ -26,7 +82,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "2/2",
-      "note": "router: il modello effettivo varia a ogni chiamata"
+      "note": "router: il modello effettivo varia a ogni chiamata",
+      "fornitore": "openrouter"
     },
     {
       "id": "dots-studio/dots-3-note-preview:free",
@@ -34,7 +91,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "2/2",
-      "note": ""
+      "note": "",
+      "fornitore": "openrouter"
     },
     {
       "id": "nvidia/nemotron-3-super-120b-a12b:free",
@@ -42,7 +100,19 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": "ragiona prima di rispondere: servono almeno 1200 token di budget"
+      "note": "ragiona prima di rispondere: servono almeno 1200 token di budget",
+      "fornitore": "openrouter"
+    },
+    {
+      "id": "nvidia:openai/gpt-oss-20b",
+      "fornitore": "nvidia",
+      "sec_medi": 23.2,
+      "sec_infill": 26.84,
+      "sec_preflight": 19.64,
+      "banco_a": true,
+      "banco_b": true,
+      "visione": false,
+      "note": "codice conforme e test verde | conforme: giusto, difettoso: giusto"
     },
     {
       "id": "cohere/north-mini-code:free",
@@ -50,7 +120,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": ""
+      "note": "",
+      "fornitore": "openrouter"
     },
     {
       "id": "poolside/laguna-s-2.1:free",
@@ -58,7 +129,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": "risposte 429 frequenti: usare solo con nuovo tentativo"
+      "note": "risposte 429 frequenti: usare solo con nuovo tentativo",
+      "fornitore": "openrouter"
     },
     {
       "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
@@ -66,7 +138,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "2/2",
-      "note": ""
+      "note": "",
+      "fornitore": "openrouter"
     },
     {
       "id": "nex-agi/nex-n2.5-pro:free",
@@ -74,7 +147,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "2/2",
-      "note": ""
+      "note": "",
+      "fornitore": "openrouter"
     },
     {
       "id": "nvidia/nemotron-3.5-lightning:free",
@@ -82,7 +156,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": "troppo lento per l'interattivo: solo lavori in differita"
+      "note": "troppo lento per l'interattivo: solo lavori in differita",
+      "fornitore": "openrouter"
     },
     {
       "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -90,7 +165,8 @@
       "banco_a": "16/16",
       "banco_b": "14/14",
       "visione": "non provato",
-      "note": "troppo lento per l'interattivo: solo lavori in differita"
+      "note": "troppo lento per l'interattivo: solo lavori in differita",
+      "fornitore": "openrouter"
     }
   ]
 }

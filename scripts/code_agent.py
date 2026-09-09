@@ -31,6 +31,11 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+try:  # eseguito come scripts/code_agent.py oppure importato come scripts.code_agent
+    import free_chain
+except ModuleNotFoundError:  # pragma: no cover
+    from scripts import free_chain
+
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
@@ -38,6 +43,11 @@ OPENROUTER_URL = os.getenv("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 DEEPSEEK_URL = os.getenv("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+# Groq serve modelli gratuiti su hardware LPU: il banco lo ha misurato piu' veloce
+# dei modelli a pagamento del roster. Si indirizza con il prefisso "groq:".
+GROQ_URL = os.getenv("GROQ_URL", "https://api.groq.com/openai/v1/chat/completions")
+GROQ_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_PREFISSO = "groq:"
 
 PRICES = json.loads((ROOT / "scripts" / "model_prices.json").read_text(encoding="utf-8"))["models"]
 LEDGER = ROOT / "data" / "ai_task_ledger.jsonl"
@@ -45,6 +55,9 @@ MAX_ATTEMPTS = 3
 
 TIER_MODEL = {
     "local": "qwen2.5-coder:7b",
+    # Gratuito e piu' veloce dei modelli a pagamento: misurato dal banco su Groq.
+    "gratis": "groq:openai/gpt-oss-120b",
+    "gratis_rapido": "groq:qwen/qwen3.8-27b",
     "simple": "deepseek-v4-flash",
     "complex": "qwen/qwen3-coder-30b-a3b-instruct",
 }
@@ -89,7 +102,13 @@ def call_model(model: str, prompt: str, system_prompt: str, max_tokens: int = 81
             "completion_tokens": body.get("eval_count", 0),
         }
 
-    if model.startswith("deepseek"):
+    if model.startswith(GROQ_PREFISSO):
+        if not GROQ_KEY:
+            raise RuntimeError("GROQ_API_KEY non impostata")
+        # Il prefisso indirizza il fornitore e non fa parte dell'identificativo.
+        model = model[len(GROQ_PREFISSO):]
+        url, key = GROQ_URL, GROQ_KEY
+    elif model.startswith("deepseek"):
         if not DEEPSEEK_KEY:
             raise RuntimeError("DEEPSEEK_API_KEY non impostata")
         url, key = DEEPSEEK_URL, DEEPSEEK_KEY
@@ -100,28 +119,35 @@ def call_model(model: str, prompt: str, system_prompt: str, max_tokens: int = 81
             raise RuntimeError("OPENROUTER_API_KEY non impostata")
         url, key = OPENROUTER_URL, OPENROUTER_KEY
 
+    corpo = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.1,
+        "max_tokens": max_tokens,
+    }
+    if url == OPENROUTER_URL:
+        # Un provider che risponde 200 con il contenuto vuoto ferma la catena:
+        # l'elenco dei guasti e' quello gia' misurato dal banco in free_chain.
+        corpo["provider"] = {"ignore": list(free_chain.PROVIDER_GUASTI)}
+
     response = requests.post(
         url,
         headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
-        json={
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-            "temperature": 0.1,
-            "max_tokens": max_tokens,
-        },
+        json=corpo,
         timeout=900,
     )
     response.raise_for_status()
     payload = response.json()
     text = payload["choices"][0]["message"]["content"] or ""
     if not text.strip():
-        # I modelli di ragionamento spendono il budget nel pensiero e restituiscono vuoto.
+        # Un contenuto vuoto e' quasi sempre il provider che tace, non il budget
+        # esaurito dal ragionamento: la diagnosi deve dire quale dei due.
         raise RuntimeError(
-            "{} non ha prodotto contenuto: max_tokens={} esaurito nel ragionamento".format(
-                model, max_tokens
+            "{} non ha prodotto contenuto (provider: {}, max_tokens={})".format(
+                model, payload.get("provider", "sconosciuto"), max_tokens
             )
         )
     return text, payload.get("usage", {})

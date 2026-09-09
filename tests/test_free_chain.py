@@ -229,3 +229,28 @@ def test_cascata_esaurita_solleva_ed_elenca():
 def test_cascata_senza_modelli_solleva():
     with pytest.raises(RuntimeError):
         free_chain.chiama_a_gruppi(lambda c: {}, [{"role": "user", "content": "c"}], modelli=[])
+
+
+def test_free_models_filtra_per_fornitore(tmp_path, monkeypatch):
+    """Il roster e' multi-fornitore: free_chain parla solo con OpenRouter."""
+    f = tmp_path / "roster.json"
+    f.write_text(json.dumps({"validati": [
+        {"id": "groq:qualcosa", "fornitore": "groq", "sec_medi": 1},
+        {"id": "alfa:free", "fornitore": "openrouter", "sec_medi": 5},
+        {"id": "nvidia:altro", "fornitore": "nvidia", "sec_medi": 2},
+        {"id": "beta:free", "fornitore": "openrouter", "sec_medi": 9},
+    ]}), encoding="utf-8")
+    monkeypatch.setattr(free_chain, "FREE_ROSTER_PATH", f)
+    assert free_chain.free_models() == ["alfa:free", "beta:free"]
+    assert free_chain.free_models(fornitore="groq") == ["groq:qualcosa"]
+    assert free_chain.free_models(fornitore=None) == [
+        "groq:qualcosa", "nvidia:altro", "alfa:free", "beta:free"
+    ]
+
+
+def test_voce_senza_fornitore_conta_come_openrouter(tmp_path, monkeypatch):
+    """Le voci storiche non portano il campo: erano tutte di OpenRouter."""
+    f = tmp_path / "roster.json"
+    f.write_text(json.dumps({"validati": [{"id": "storico:free", "sec_medi": 3}]}), encoding="utf-8")
+    monkeypatch.setattr(free_chain, "FREE_ROSTER_PATH", f)
+    assert free_chain.free_models() == ["storico:free"]

@@ -10,12 +10,16 @@ FREE_ROSTER_PATH = Path(__file__).resolve().parent / 'free_roster.json'
 LENTO_SECONDI = 200
 GRUPPO_MAX = 3
 PROVIDER_GUASTI = ['Novita']
+# Il roster elenca piu' fornitori: questo modulo parla solo con OpenRouter.
+FORNITORE_PREDEFINITO = 'openrouter'
 
 
-def free_models(escludi_lenti: bool = True) -> List[str]:
+def free_models(escludi_lenti: bool = True, fornitore: Optional[str] = FORNITORE_PREDEFINITO) -> List[str]:
     """
     Legge il file JSON indicato da FREE_ROSTER_PATH e restituisce gli identificativi nella chiave validati, ordinati per sec_medi crescente.
     Se escludi_lenti è True, scarta i modelli con sec_medi maggiore o uguale a LENTO_SECONDI.
+    Il roster è multi-fornitore: fornitore seleziona una sola provenienza, None le restituisce tutte.
+    Le voci storiche senza il campo contano come OpenRouter, che era l'unico fornitore.
     """
     try:
         with FREE_ROSTER_PATH.open('r', encoding='utf-8') as f:
@@ -37,6 +41,12 @@ def free_models(escludi_lenti: bool = True) -> List[str]:
 
     if escludi_lenti:
         sorted_entries = [e for e in sorted_entries if get_sec_medi(e) < LENTO_SECONDI]
+
+    if fornitore is not None:
+        sorted_entries = [
+            e for e in sorted_entries
+            if e.get('fornitore', FORNITORE_PREDEFINITO) == fornitore
+        ]
 
     ids = [e.get('id') for e in sorted_entries if 'id' in e]
     return ids
