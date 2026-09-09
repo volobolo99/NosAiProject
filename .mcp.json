@@ -2,7 +2,12 @@
   "mcpServers": {
     "orchestrator": {
       "command": "python",
-      "args": ["orchestrator_mcp.py"]
+      "args": [
+        "scripts/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
     }
   }
 }

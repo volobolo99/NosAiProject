@@ -20,7 +20,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 | `scripts/` | `build/test/validate` in PowerShell e bash |
 | `tools/` | `NosAi.Analyzers`, `find-vitals.ps1`, `windivert`, `deepseek-mcp` (server MCP locale: Claude delega a DeepSeek senza copia-incolla) |
 | `data/` | configurazioni, chiavi (`guard_public_key.pem`, `runtime_identity.dpapi`), catture `.noscap`, evidenze test |
-| Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `CLAUDE.md` |
+| Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `.claude/CLAUDE.md` |
 
 ---
 
@@ -317,7 +317,7 @@ Dopo il taglio R4 restano i pacchetti in `docs/INVENTARIO_PYTHON.md` che non son
 
 **Ordine dei lavori**: `PIANO_CAPACITA.md` — quale capacità si costruisce, in che ordine, e chi la fa · `PIANO_DI_RIORDINO.md` — quale disordine si toglie, senza aggiungere capacità
 
-**Processo**: `BUILD_TEST_RELEASE.md`, `TESTING.md`, `TEST_RIMANDATI.md`, `RELEASE_CHECKLIST.md`, `GIT_WORKFLOW.md`, `CONTRIBUTING.md`, `SESSIONI_CURSOR.md`, `AGENT_EXECUTION_CHECKLIST.md`, `AGENT_DEVELOPMENT_ENVIRONMENT.md`, `INVENTARIO_PYTHON.md`
+**Processo**: `BUILD_TEST_RELEASE.md`, `TESTING.md`, `TEST_RIMANDATI.md`, `RELEASE_CHECKLIST.md`, `GIT_WORKFLOW.md`, `CONTRIBUTING.md`, `SESSIONI_CURSOR.md`, `INVENTARIO_PYTHON.md`
 
 **Stato e audit**: `STATO_IMPLEMENTAZIONE.md`, `AUDIT_TECNICO.md`, `AUDIT_SOTTOSISTEMI_2026-08-30.md`, `NOSAI_BASELINE_AUDIT_2026-08-30.md`, `CHANGELOG.md`, `ROADMAP.md`, `ROADMAP_ESECUTIVA.md`, `PIANO_OPERATIVO.md`
 

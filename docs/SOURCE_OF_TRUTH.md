@@ -13,20 +13,13 @@ This file defines which project documents are authoritative. When documents disa
 3. `docs/NOSAI_ARCHITECTURE_BASELINE.md` — layer boundaries, trust boundaries and architectural invariants.
 4. `docs/UNPRIVILEGED_DEMO_SPEC.md` — reproducibility and permitted observation/control boundary.
 5. `docs/adr/*.md` — accepted architectural decisions; later accepted ADRs override earlier decisions where explicitly stated.
-6. `CLAUDE.md` and `.cursor/rules/*.mdc` — agent development rules.
+6. `.claude/CLAUDE.md` — agent development rules: the mandatory 5-phase production protocol.
 7. `third_party/README.md`, `third_party/manifests/*`, `third_party/provenance/*` — external-source provenance and reuse rules.
 
 ## Development-support documents
 
-- `docs/agents/AGENT_WORK_PROTOCOL.md` — mandatory multi-agent execution contract.
-- `docs/agents/AGENT_EXECUTION_MATRIX.md` — ownership and synchronization rules.
-- `docs/agents/FILE_OWNERSHIP_MATRIX.md` — exclusive file ownership and conflict rules.
-- `docs/agents/DEVELOPMENT_MASTER_PLAN.md` — phase/agent development topology.
-- `docs/agents/COMMAND_INDEX.md` — operator index for Cursor/Claude command files.
-- `docs/agents/PHASE_EXECUTION_TEMPLATE.md` — mandatory phase/handoff template.
-- `docs/agents/REPOSITORY_STABILIZATION_PROTOCOL.md` — stabilization and no-deletion protocol.
-- `docs/agents/REPOSITORY_STATE_TEMPLATE.md` — evidence/state record template.
-- `docs/agents/phases/` — one executable command document per agent and phase.
+- `docs/agents/EXECUTION_QUEUE.md` — work queue: what the next step is.
+- `docs/agents/phases/` — per-phase status records of work already delivered.
 - `docs/BUILD_TEST_RELEASE.md` — reproducible build/test/release procedure.
 - `docs/GIT_WORKFLOW.md` — Git workflow.
 - `docs/TESTING.md` — testing strategy.

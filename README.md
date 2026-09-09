@@ -35,8 +35,7 @@ Nessun LLM, planner, modello ML o euristica ha autorità diretta di esecuzione.
 
 ## Supporto allo sviluppo
 
-- `CLAUDE.md` — istruzioni per Claude Code.
-- `.cursor/rules/` — regole Cursor.
+- `.claude/CLAUDE.md` — istruzioni per Claude Code: il protocollo di produzione in 5 fasi.
 - `docs/BUILD_TEST_RELEASE.md` — build/test/release.
 - `docs/TESTING.md` — strategia di test.
 - `docs/GIT_WORKFLOW.md` — workflow Git.

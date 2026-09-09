@@ -78,8 +78,10 @@ tools/windivert/*
 tools/windivert/probe/bin/
 tools/windivert/probe/obj/
 
-# Worktree e stato degli agenti (contiene copie complete del repository)
-.claude/
+# Worktree e stato degli agenti (contiene copie complete del repository).
+# Eccezione: CLAUDE.md e la fonte di verita delle regole operative e va versionato.
+.claude/*
+!.claude/CLAUDE.md
 
 # WinDivert: i binari sono versionati di proposito, con LICENSE e VERSION accanto,
 # perche' ogni macchina compili senza scaricarli a mano. third_party/windivert/README.md
@@ -99,3 +101,6 @@ tools/deepseek-mcp/logs/
 # Il diario delle attivita' degli agenti (logact.md, radice) e' evidenza locale
 # in tempo reale, non sorgente: ogni delega vi appende le proprie righe.
 logact.md
+
+# Chiavi API locali, mai nel repository
+.env
