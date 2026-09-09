@@ -1,0 +1,121 @@
+{
+  "contract_id": "ORCH-001",
+  "version": "1.0",
+  "state": "SKELETON_OK",
+  "author": "Claude (Orchestrator/CTO)",
+  "date": "2026-09-09",
+  "purpose": "Infrastruttura di orchestrazione multi-modello: instradare un task al modello meno costoso capace di completarlo, registrare il consumo di ogni chiamata e validare i messaggi scambiati fra agenti.",
+  "rationale": "Le regole operative impongono routing per costo, registro dei consumi per task e messaggi strutturati fra agenti. Nessuno dei tre esiste nel repository: data/ai_task_ledger.jsonl e' oggi scritto solo da scripts/doc_agent.py e nessun modulo applica la tabella di routing.",
+  "non_goals": [
+    "Non chiama i modelli: l'esecuzione resta ai tool MCP in scripts/mcp_server.py",
+    "Non tocca il percorso di verita' o di controllo del gioco",
+    "Non sostituisce contracts/ledger.json, che traccia lo stato dei contratti e non i consumi"
+  ],
+  "targets": [
+    {
+      "file": "nosai/orchestration/__init__.py",
+      "exports": [
+        "TaskKind",
+        "ModelId",
+        "ModelRoute",
+        "route_task",
+        "TaskRecord",
+        "CostLedger",
+        "AgentMessage"
+      ]
+    },
+    {
+      "file": "nosai/orchestration/routing.py",
+      "symbols": {
+        "TaskKind": "Enum di stringhe: DOCUMENTATION, SKELETON, SIMPLE_CODE, REPETITIVE_TEST, INITIAL_DEBUG, LOG_ANALYSIS, COMPLEX_CODE, MODULE_INTEGRATION, HARD_DEBUG, STRUCTURAL_REFACTOR, VISION, FAST_CLASSIFICATION, ARCHITECTURE, CRITICAL_REVIEW",
+        "ModelId": "Enum di stringhe: LOCAL_QWEN25_CODER_7B, DEEPSEEK_V4_FLASH, QWEN3_CODER_30B, GEMINI_25_FLASH_LITE, CLAUDE",
+        "CostClass": "Enum di stringhe: ZERO, LOW, MEDIUM, MAX",
+        "ModelRoute": "dataclass congelata con campi model: ModelId, access: str, cost_class: CostClass, rationale: str",
+        "ROUTING_TABLE": "dict[TaskKind, ModelRoute] popolato in fase di infilling secondo COST_POLICY.md",
+        "route_task": "def route_task(kind: TaskKind) -> ModelRoute",
+        "escalate": "def escalate(kind: TaskKind, reason: str) -> ModelRoute"
+      },
+      "preconditions": [
+        "route_task riceve un TaskKind valido, altrimenti solleva KeyError",
+        "escalate riceve una motivazione non vuota"
+      ],
+      "postconditions": [
+        "route_task e' una funzione pura e deterministica: stesso TaskKind, stessa ModelRoute",
+        "escalate non scende mai di classe di costo rispetto alla rotta base dello stesso TaskKind",
+        "escalate da CLAUDE solleva ValueError: sopra Claude non c'e' escalation"
+      ]
+    },
+    {
+      "file": "nosai/orchestration/ledger.py",
+      "symbols": {
+        "TaskRecord": "dataclass congelata con campi task_id: str, model: str, calls: int, estimated_cost_usd: float, status: str, file: str, words: int",
+        "CostLedger": "classe con __init__(self, path: Path), append(self, record: TaskRecord) -> None, read_all(self) -> list[TaskRecord], summary_by_model(self) -> dict[str, dict[str, float]], total_estimated_cost(self) -> float"
+      },
+      "preconditions": [
+        "path punta a un file JSON Lines, creato con la directory padre se assente",
+        "calls e' maggiore o uguale a 1 e estimated_cost_usd e' maggiore o uguale a 0"
+      ],
+      "postconditions": [
+        "append aggiunge esattamente una riga JSON e non riscrive le righe esistenti",
+        "ogni riga scritta e' conforme a schemas/task_record.schema.json",
+        "read_all su file assente restituisce lista vuota e non solleva",
+        "una riga malformata viene saltata da read_all senza interrompere la lettura",
+        "summary_by_model restituisce per ogni modello: calls, tasks, estimated_cost_usd"
+      ]
+    },
+    {
+      "file": "nosai/orchestration/messages.py",
+      "symbols": {
+        "AgentMessage": "dataclass con campi task_id: str, objective: str, input: str, expected_output: str, files: list[str], dependencies: list[str], risks: list[str], required_tests: list[str], status: str, model: str, summary: str, confidence: float, piu' i metodi to_dict(self) -> dict e from_dict(cls, payload: dict) -> AgentMessage come classmethod",
+        "validate_message": "def validate_message(payload: dict) -> list[str]"
+      },
+      "preconditions": [
+        "validate_message riceve un dizionario gia' deserializzato"
+      ],
+      "postconditions": [
+        "validate_message restituisce lista vuota quando il messaggio e' conforme a schemas/agent_message.schema.json",
+        "validate_message restituisce i messaggi di errore in ordine deterministico e non solleva eccezioni",
+        "from_dict su payload non conforme solleva ValueError con l'elenco dei difetti",
+        "to_dict e from_dict sono inversi: from_dict(m.to_dict()) uguale a m"
+      ]
+    }
+  ],
+  "memory_constraints": [
+    "Puro Python, nessuna struttura nativa, nessun allineamento byte da rispettare",
+    "read_all legge il registro riga per riga senza caricare l'intero file in memoria"
+  ],
+  "dependencies": {
+    "stdlib": [
+      "dataclasses",
+      "enum",
+      "json",
+      "pathlib",
+      "typing"
+    ],
+    "third_party": [
+      "jsonschema 4.26.0"
+    ]
+  },
+  "tests_required": [
+    "route_task copre tutti i valori di TaskKind senza KeyError",
+    "escalate non abbassa la classe di costo e solleva ValueError partendo da CLAUDE",
+    "append e read_all su file temporaneo: la riga riletta e' uguale a quella scritta",
+    "read_all salta una riga malformata e restituisce le altre",
+    "ogni riga prodotta valida contro schemas/task_record.schema.json",
+    "validate_message accetta un messaggio conforme e rifiuta uno privo di un campo obbligatorio"
+  ],
+  "phase_2_note": "Lo scheletro e' generato dal modello locale qwen2.5-coder:7b. I corpi restano NotImplementedError finche' la Fase 3 non li riempie.",
+  "state_history": [
+    {
+      "state": "DRAFT",
+      "date": "2026-09-09",
+      "by": "Claude"
+    },
+    {
+      "state": "SKELETON_OK",
+      "date": "2026-09-09",
+      "by": "qwen2.5-coder:7b",
+      "evidence": "firme, enumerazioni e campi verificati per introspezione; corpi non implementati"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/agent_message.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Identificatore univoco del task"
+    },
+    "objective": {
+      "type": "string",
+      "description": "Obiettivo del task in una riga"
+    },
+    "input": {
+      "type": "string",
+      "description": "Dati e contesto forniti all'agente"
+    },
+    "expected_output": {
+      "type": "string",
+      "description": "Risultato atteso"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Percorsi dei file coinvolti"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Identificatori dei task da cui dipende"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Rischi noti"
+    },
+    "required_tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Test richiesti prima di dichiarare il task concluso"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "done", "blocked"],
+      "description": "Stato del task"
+    },
+    "model": {
+      "type": "string",
+      "enum": ["claude", "qwen2.5-coder:7b", "deepseek-v4-flash", "qwen3-coder-30b", "gemini-2.5-flash-lite"],
+      "description": "Modello utilizzato"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Riepilogo breve del risultato"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Livello di confidenza del risultato"
+    }
+  },
+  "required": [
+    "task_id",
+    "objective",
+    "input",
+    "expected_output",
+    "files",
+    "dependencies",
+    "risks",
+    "required_tests",
+    "status",
+    "model",
+    "summary",
+    "confidence"
+  ]
+}

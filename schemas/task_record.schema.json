@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/task_record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Identificatore del task"
+    },
+    "model": {
+      "type": "string",
+      "description": "Identificatore del modello che ha eseguito il task"
+    },
+    "calls": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Numero di chiamate effettuate al modello"
+    },
+    "estimated_cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Costo stimato in dollari; vale 0 per il modello locale"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "needs_revision", "blocked"],
+      "description": "Stato del task"
+    },
+    "file": {
+      "type": "string",
+      "description": "Percorso del file prodotto o modificato"
+    },
+    "words": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Numero di parole prodotte"
+    }
+  },
+  "required": [
+    "task_id",
+    "model",
+    "calls",
+    "estimated_cost_usd",
+    "status",
+    "file",
+    "words"
+  ]
+}

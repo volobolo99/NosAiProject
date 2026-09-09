@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/local_result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["completed", "needs_revision", "blocked"]
+    },
+    "file": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "requirements_satisfied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format_valid": {
+          "type": "boolean"
+        },
+        "references_valid": {
+          "type": "boolean"
+        },
+        "placeholders_resolved": {
+          "type": "boolean"
+        },
+        "requirements_covered": {
+          "type": "boolean"
+        },
+        "contradictions_found": {
+          "type": "boolean"
+        }
+      },
+      "required": ["format_valid", "references_valid", "placeholders_resolved", "requirements_covered", "contradictions_found"]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": ["status", "file", "purpose", "requirements_satisfied", "warnings", "missing_items", "checks", "confidence"]
+}
