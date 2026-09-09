@@ -293,6 +293,13 @@ public static class GameplayObservationProjector
     /// Turns an observed worn set into the World Model's equipment fact, keeping "never read"
     /// distinct from "read and wearing nothing".
     /// </summary>
+    /// <summary>
+    /// Reason recorded when the reading came from <c>eq</c>: its slots are numbered by
+    /// equipment-panel position, a different space than <see cref="EquipmentSlot"/> (which is
+    /// the item-slot space <c>equip</c> uses), so projecting it would silently mislabel items.
+    /// </summary>
+    public const string EqPanelSlotSpaceNotMappedReason = "eq_panel_slot_space_not_mapped";
+
     /// <remarks>
     /// The wire numbers the worn slots positionally, so an index is read as the matching
     /// <see cref="EquipmentSlot"/> member. The two are not the same size — <c>eq</c> carries
@@ -302,12 +309,18 @@ public static class GameplayObservationProjector
     /// document confirms. An index the enum does not define therefore produces no item at all
     /// instead of a guessed slot, and T-05 on a live session is what would turn the mapping
     /// from plausible into observed.
+    ///
+    /// This mapping only ever applies to an <c>equip</c> reading. <c>eq</c> numbers its slots by
+    /// equipment-panel position, not by <see cref="EquipmentSlot"/>'s item-slot space, so a
+    /// reading whose opcode is <c>Eq</c> is projected as Unknown instead: the same index means a
+    /// different slot depending on which packet carried it, and a real capture showed the same
+    /// item (vnum 221) as <c>eq 0</c> and <c>equip 2</c> at once.
     /// </remarks>
-    /// <param name="observed">The worn set as published by the gameplay observation.</param>
+    /// <param name="observed">The worn set as published by the gameplay observation, with the opcode whose slot numbering it uses.</param>
     /// <param name="nowUtc">Instant stamped on the Unknown fact when nothing was published.</param>
-    /// <returns>The equipment fact, Unknown when the set was never published.</returns>
+    /// <returns>The equipment fact, Unknown when the set was never published or when it used the unmapped <c>eq</c> slot space.</returns>
     public static WorldFact<EquatableArray<EquipmentItem>> ProjectEquipment(
-        RuntimeContracts.ClassifiedValue<IReadOnlyList<NosAi.Runtime.Perception.Network.WornEquipmentSlot>> observed,
+        RuntimeContracts.ClassifiedValue<NosAi.Runtime.Perception.Network.WornEquipmentReading> observed,
         DateTime nowUtc)
     {
         if (!observed.HasValue)
@@ -316,9 +329,15 @@ public static class GameplayObservationProjector
                 observed.FailureReason ?? EquipmentNeverReadReason, nowUtc);
         }
 
+        if (observed.Value.Opcode == NosAi.Runtime.Perception.Network.EquipmentWireOpcode.Eq)
+        {
+            return WorldFact<EquatableArray<EquipmentItem>>.Unknown(
+                EqPanelSlotSpaceNotMappedReason, observed.ObservedAtUtc);
+        }
+
         return ClassifiedValueBridge.WithSource(
             observed.Source,
-            EquatableArray<EquipmentItem>.From(observed.Value
+            EquatableArray<EquipmentItem>.From(observed.Value.Slots
                 .Where(worn => Enum.IsDefined(typeof(EquipmentSlot), worn.Slot))
                 .Select(worn => new EquipmentItem(
                     new ItemId(worn.Vnum.ToString(CultureInfo.InvariantCulture)),

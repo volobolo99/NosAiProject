@@ -193,8 +193,8 @@ public sealed record GameplayObservation(
     /// decoder already drops the wire's <c>-1</c> placeholders, so an empty list here means
     /// "read, nothing worn", never "unread".
     /// </remarks>
-    public ClassifiedValue<IReadOnlyList<WornEquipmentSlot>> Equipment { get; init; }
-        = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(NotPublishedReason);
+    public ClassifiedValue<WornEquipmentReading> Equipment { get; init; }
+        = ClassifiedValue<WornEquipmentReading>.Unknown(NotPublishedReason);
 
     /// <summary>
     /// The most recent level and experience reported by <c>lev</c>.
@@ -244,7 +244,7 @@ public sealed record GameplayObservation(
             SelectedTarget = ClassifiedValue<TargetedEntity>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             SkillsReady = ClassifiedValue<IReadOnlyList<SkillReady>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             Inventory = ClassifiedValue<IReadOnlyList<InventorySlotReading>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
-            Equipment = ClassifiedValue<IReadOnlyList<WornEquipmentSlot>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
+            Equipment = ClassifiedValue<WornEquipmentReading>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             Progression = ClassifiedValue<PlayerProgression>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             LastPickup = ClassifiedValue<ItemPickup>.Unknown(reason, observedAtUtc: resolvedAtUtc),
             GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Unknown(reason, observedAtUtc: resolvedAtUtc),
@@ -526,6 +526,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
     private bool _groundItemEverSeen;
     private readonly Dictionary<int, Retained<WornEquipmentSlot>> _equipment = new();
     private bool _equipmentEverSeen;
+    private EquipmentWireOpcode? _equipmentOpcode;
     private Retained<PlayerProgression>? _progression;
 
     /// <inheritdoc />
@@ -815,6 +816,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         {
             _equipment[slot.Slot] = new Retained<WornEquipmentSlot>(slot, report.Source, now, Fresh: true);
         }
+        _equipmentOpcode = worn.Opcode;
 
         _equipmentEverSeen = true;
     }
@@ -904,9 +906,7 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
         Inventory = PublishList(
             _inventory.Values.OrderBy(r => r.Value.InventoryKind).ThenBy(r => r.Value.Slot),
             "no_inventory_slot_observed"),
-        Equipment = PublishList(
-            _equipment.Values.OrderBy(r => r.Value.Slot),
-            _equipmentEverSeen ? "no_equipment_retained" : "no_equipment_observed_yet"),
+        Equipment = PublishEquipment(),
         Progression = _progression is { } progress
             ? Classify(progress.Value, progress.Fresh ? progress.Source : Remembered(progress.Source), progress.StatedAtUtc)
             : ClassifiedValue<PlayerProgression>.Unknown("no_progression_observed"),
@@ -917,6 +917,28 @@ public sealed class NetworkGameplayProvider : IGameplayProvider
             _groundItems.Values.OrderBy(r => r.Value.DropId),
             _groundItemEverSeen ? "no_ground_item_retained" : "no_ground_item_observed_yet"),
     };
+
+    /// <summary>
+    /// The retained worn set as one classified reading, opcode included: the
+    /// weakest member's provenance, with remembered members counted as CACHED,
+    /// and the newest statement as the instant. Mirrors <see cref="PublishList{T}"/>
+    /// but wraps the slots together with the opcode they were numbered under,
+    /// since a slot list without its opcode cannot be projected correctly.
+    /// </summary>
+    private ClassifiedValue<WornEquipmentReading> PublishEquipment()
+    {
+        List<Retained<WornEquipmentSlot>> members = _equipment.Values.OrderBy(r => r.Value.Slot).ToList();
+        if (members.Count == 0)
+        {
+            return ClassifiedValue<WornEquipmentReading>.Unknown(
+                _equipmentEverSeen ? "no_equipment_retained" : "no_equipment_observed_yet");
+        }
+
+        DataSourceKind source = Weakest(members.Select(m => m.Fresh ? m.Source : Remembered(m.Source)));
+        DateTime newest = members.Max(m => m.StatedAtUtc);
+        var reading = new WornEquipmentReading(members.Select(m => m.Value).ToList(), _equipmentOpcode!.Value);
+        return Classify(reading, source, newest);
+    }
 
     private ClassifiedValue<IReadOnlyList<SelectableEntity>> PublishEntities()
     {

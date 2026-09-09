@@ -460,6 +460,18 @@ public sealed record WornEquipment(
     ImmutableArray<WornEquipmentSlot> Slots,
     EquipmentWireOpcode Opcode);
 
+/// <summary>An equipment reading, kept together with the opcode whose slot
+/// numbering it uses.</summary>
+/// <remarks>
+/// The two opcodes number slots in different spaces, so a list of slots
+/// without its opcode cannot be projected: the same index means a different
+/// slot depending on which packet carried it. Splitting the two apart is
+/// how the same item ended up as Weapon in one reading and Hat in the next.
+/// </remarks>
+public sealed record WornEquipmentReading(
+    IReadOnlyList<WornEquipmentSlot> Slots,
+    EquipmentWireOpcode Opcode);
+
 /// <summary>The observations decoded from one packet.</summary>
 /// <param name="PlayerAttackedAtUtc">
 /// When this packet showed the player attacking, or null when it did not. The
