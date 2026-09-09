@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "orchestrator": {
-      "command": "python",
+      "command": "C:/Users/volob/AppData/Local/Python/bin/python.exe",
       "args": [
         "scripts/mcp_server.py"
       ],
