@@ -21,7 +21,8 @@
     "nvidia:meta/codellama-70b": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
     "nvidia:ibm/granite-34b-code-instruct": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
     "nvidia:mistralai/mistral-large-2-instruct": "banco A: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c; banco B: HTTPError: 404 Client Error: Not Found for url: https://integrate.api.nvidia.com/v1/chat/c",
-    "pollinations:openai-fast": "402 Payment Required su text.pollinations.ai/openai e sull'endpoint GET, con avviso di dismissione dell'API legacy per le chiavi autenticate (rimanda a enter.pollinations.ai). La chiave e' riconosciuta - senza di essa la stessa chiamata da' 502 - ma il tier non copre l'inferenza testuale. Da riprovare solo se si migra al nuovo endpoint."
+    "pollinations:openai-fast": "402 Payment Required su text.pollinations.ai/openai e sull'endpoint GET, con avviso di dismissione dell'API legacy per le chiavi autenticate (rimanda a enter.pollinations.ai). La chiave e' riconosciuta - senza di essa la stessa chiamata da' 502 - ma il tier non copre l'inferenza testuale. Da riprovare solo se si migra al nuovo endpoint.",
+    "freellmapi (router)": "non e' un fornitore ma un router self-hosted da eseguire su localhost:3001. Il dominio api.freellmapi.co risponde 404 su ogni percorso di inferenza provato. Soprattutto non aggiunge quota: mette dietro un solo endpoint le free tier che il progetto usa gia' in diretta (Groq, OpenRouter, NVIDIA), quindi aggiungerebbe un processo locale e un punto di rottura senza offrire un modello nuovo."
   },
   "validati": [
     {
