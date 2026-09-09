@@ -83,12 +83,32 @@ def main() -> int:
         return 1
     print("Chiave di inferenza creata:", abbrevia(nuova))
 
+    # La variabile d'ambiente di Windows vince sul file: nessuno degli script del
+    # progetto usa override=True. La chiave va quindi impostata dove viene letta
+    # per prima, altrimenti resterebbe invisibile.
+    import subprocess
+
+    esito = subprocess.run(
+        ["setx", "OPENROUTER_API_KEY", nuova], capture_output=True, text=True, shell=True
+    )
+    if esito.returncode != 0:
+        print("setx non riuscito:", (esito.stderr or esito.stdout).strip()[:200])
+        print("Impostala a mano con: setx OPENROUTER_API_KEY \"<chiave>\"")
+        return 1
+    os.environ["OPENROUTER_API_KEY"] = nuova
+    print("Chiave registrata in HKCU\\Environment (vale dal prossimo terminale)")
+
+    # Nel file resta solo la provisioning, sotto il suo nome: niente doppia fonte
+    # per la stessa variabile.
     testo = ENV.read_text(encoding="utf-8")
-    righe = [r for r in testo.splitlines() if not r.startswith(("OPENROUTER_API_KEY=", "OPENROUTER_PROVISIONING_KEY="))]
+    righe = [
+        r
+        for r in testo.splitlines()
+        if not r.startswith(("OPENROUTER_API_KEY=", "OPENROUTER_PROVISIONING_KEY="))
+    ]
     righe.append("OPENROUTER_PROVISIONING_KEY=" + provisioning)
-    righe.append("OPENROUTER_API_KEY=" + nuova)
     ENV.write_text("\n".join(righe) + "\n", encoding="utf-8")
-    print(".env aggiornato: OPENROUTER_API_KEY e' ora la chiave di inferenza")
+    print(".env ripulito: contiene la sola chiave di provisioning, sotto il suo nome")
 
     prova = requests.post(
         BASE + "/chat/completions",

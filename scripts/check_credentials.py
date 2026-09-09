@@ -19,7 +19,8 @@ import requests
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT / ".env")
+ENV_FILE = ROOT / ".env"
+load_dotenv(ENV_FILE)
 
 TIMEOUT = 20
 
@@ -106,7 +107,38 @@ def controlla_deepseek() -> tuple[bool, str]:
     return True, "valida"
 
 
+def conflitti_di_definizione() -> list[str]:
+    """Se una chiave e' definita sia nell'ambiente di Windows sia in .env con
+    valori diversi, vince l'ambiente: nessuno script del progetto usa
+    override=True. E' la causa piu' insidiosa di 'ho aggiornato la chiave e non
+    cambia niente'."""
+    avvisi = []
+    if not ENV_FILE.exists():
+        return avvisi
+
+    dal_file = {}
+    for riga in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        if "=" in riga and not riga.lstrip().startswith("#"):
+            nome, _, valore = riga.partition("=")
+            dal_file[nome.strip()] = valore.strip()
+
+    for nome in ("OPENROUTER_API_KEY", "DEEPSEEK_API_KEY"):
+        nel_registro = os.environ.get(nome, "")
+        nel_file = dal_file.get(nome, "")
+        if nel_registro and nel_file and nel_registro != nel_file:
+            avvisi.append(
+                "{} e' definita sia nell'ambiente sia in .env con valori diversi: vince "
+                "l'ambiente, la riga nel file viene ignorata. Aggiornala con "
+                'setx {} "<chiave>" oppure togli la riga dal file.'.format(nome, nome)
+            )
+    return avvisi
+
+
 def main() -> int:
+    for avviso in conflitti_di_definizione():
+        print("ATTENZIONE:", avviso)
+        print()
+
     print("Chiavi lette:")
     print("  OPENROUTER_API_KEY :", mostra("openrouter", os.getenv("OPENROUTER_API_KEY", "")), "(da .env)")
     print("  DEEPSEEK_API_KEY   :", mostra("deepseek", os.getenv("DEEPSEEK_API_KEY", "")), "(da HKCU\\Environment)")

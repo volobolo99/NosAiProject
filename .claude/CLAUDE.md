@@ -257,14 +257,19 @@ Queste non sono opinioni: sono i risultati misurati nella sessione che ha introd
   instradava su Ollama anche il codice semplice e i test la accettavano, perché nessun test
   verificava l'aderenza a `COST_POLICY.md`. Quando un modello sbaglia, prima si aggiunge il test poi
   si richiede la correzione.
-- **Un 401 non dice da solo che la chiave è scaduta.** Al 2026-09-09 `OPENROUTER_API_KEY`
-  sembrava revocata perché le completions rispondevano "User not found", ma era una chiave di
-  *provisioning* (`is_provisioning_key: true`): gestisce le altre chiavi e non fa inferenza,
-  mentre l'account ha credito. La diagnosi si fa con `python scripts/check_credentials.py`, che
-  interroga gli endpoint di stato invece di dedurre l'esito da una chiamata di inferenza, e il
-  recupero con `python scripts/provision_openrouter_key.py`. `DEEPSEEK_API_KEY` è invece davvero
-  rifiutata e va rigenerata sul portale DeepSeek, poi impostata con `setx` in un terminale nuovo.
-  Dopo ogni rotazione si riavvia Claude Code: il server MCP legge le credenziali all'avvio.
+- **Le chiavi vivono nell'ambiente utente, non nel file: l'ambiente vince.** Nessuno script del
+  progetto chiama `load_dotenv` con `override=True`, quindi una variabile presente in
+  `HKCU\Environment` rende inerte la riga corrispondente in `.env`. Al 2026-09-09
+  `OPENROUTER_API_KEY` sembrava revocata perché le completions rispondevano "User not found": in
+  `HKCU\Environment` c'era una chiave di *provisioning* (`is_provisioning_key: true`), che gestisce
+  le altre chiavi e non fa inferenza, e oscurava la chiave di inferenza valida già presente in
+  `.env`. Nessuna chiave era scaduta e l'account aveva credito. Una chiave si aggiorna con `setx` e
+  vale dal terminale successivo; la provisioning si conserva in `OPENROUTER_PROVISIONING_KEY`.
+- **Un 401 sulle completions non basta a diagnosticare una credenziale.** Si usa
+  `python scripts/check_credentials.py`, che interroga gli endpoint di stato, distingue chiave
+  assente, invalida e senza credito, e segnala quando la stessa variabile è definita due volte con
+  valori diversi. `scripts/provision_openrouter_key.py` crea una chiave di inferenza quando manca
+  davvero. Dopo ogni rotazione si riavvia Claude Code: il server MCP legge le credenziali all'avvio.
 
 ## 15. ONESTÀ DEI RISULTATI
 
