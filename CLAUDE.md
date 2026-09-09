@@ -421,6 +421,17 @@ stato), `integratore` (commit disgiunti e allineamento a GitHub).
 4. **Un fallito non è una regressione finché non ha un nome.** Si
    confrontano i nomi dei falliti, mai i totali, e un fallito da carico si
    rilancia isolato prima di chiamarlo regressione.
+10. **Un test di misura non si iscrive fra i flaky: si riscrive.** I quattro
+   del punto 9 guidano socket reali contro scadenze vere, e li' l'ambiente è
+   il bersaglio. Un test che misura allocazioni no:
+   `MapGridTests.QueryingAllocatesNothing` contava con
+   `GC.GetAllocatedBytesForCurrentThread()`, che è per-thread e nessun test
+   parallelo può sporcare, e cadeva lo stesso perché la compilazione a livelli
+   promuoveva i metodi *dentro* la finestra misurata. Un riscaldamento a
+   iterazioni fisse non batte un ritardo che cresce col carico: si misura la
+   finestra più volte e si pretende che una passata sia esattamente zero.
+   L'asserzione non si indebolisce — codice che alloca davvero alloca a ogni
+   passata.
 
 ## 23. `logact.md` — registro obbligatorio
 
