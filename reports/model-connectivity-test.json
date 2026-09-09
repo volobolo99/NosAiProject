@@ -1,14 +1,19 @@
 {
-  "schema_version": "1.0",
-  "generato_il": "2026-09-09T13:51:52Z",
+  "schema_version": "1.1",
+  "generato_il": "2026-09-09T14:16:06Z",
   "host": "Windows 11, RTX 5060, Ollama 0.33.3",
   "prompt_di_prova": "Rispondi esclusivamente con JSON valido: {\"status\":\"ok\",\"model_role\":\"test\",\"message\":\"API funzionante\"}",
   "regole": [
     "una sola chiamata di completions per modello",
     "nessuna chiave, header o token di autenticazione riportato",
-    "nessuna configurazione modificata"
+    "credenziali lette da HKCU\\Environment e, in mancanza, da .env"
   ],
   "prezzi_da": "scripts/model_prices.json (verificato 2026-09-09)",
+  "credenziali": {
+    "OPENROUTER_API_KEY": "rimossa dall'ambiente utente; vale quella di inferenza in .env (is_provisioning_key false)",
+    "OPENROUTER_PROVISIONING_KEY": "presente nell'ambiente utente, ma contiene una copia della chiave di inferenza (is_provisioning_key false): la chiave di provisioning non e' piu' memorizzata sul computer",
+    "DEEPSEEK_API_KEY": "ruotata; saldo 1.75 USD, is_available true"
+  },
   "risultati": [
     {
       "provider": "Ollama locale",
@@ -16,7 +21,7 @@
       "configurato": true,
       "raggiungibile": true,
       "risposta_valida": true,
-      "latenza_ms": 8600.8,
+      "latenza_ms": 12582.0,
       "token_in": 67,
       "token_out": 28,
       "costo_usd": 0.0,
@@ -25,7 +30,7 @@
       "stato": "READY",
       "errore": null,
       "diagnosi": {
-        "connect_ms": 2046.0,
+        "connect_ms": 2021.7,
         "endpoint": "http://localhost:11434/api/generate",
         "modelli_installati": [
           "qwen-worker:latest",
@@ -46,8 +51,8 @@
           "model_role": "test",
           "message": "API funzionante"
         },
-        "total_duration_ms": 6571.9,
-        "eval_duration_ms": 589.7,
+        "total_duration_ms": 10549.3,
+        "eval_duration_ms": 590.0,
         "token_al_secondo": 47.5
       },
       "stato_con_configurazione_attiva": "READY"
@@ -58,7 +63,7 @@
       "configurato": true,
       "raggiungibile": true,
       "risposta_valida": true,
-      "latenza_ms": 9672.3,
+      "latenza_ms": 10580.1,
       "token_in": 67,
       "token_out": 28,
       "costo_usd": 0.0,
@@ -82,20 +87,41 @@
       "modello": "deepseek-v4-flash",
       "configurato": true,
       "raggiungibile": true,
-      "risposta_valida": false,
-      "latenza_ms": 333.0,
-      "token_in": null,
-      "token_out": null,
-      "costo_usd": 0.0,
-      "http": 401,
-      "modello_dichiarato": null,
-      "stato": "AUTH_ERROR",
-      "errore": "HTTP 401: {\"error\":{\"message\":\"Authentication Fails, Your api key: [mascherata dal provider] is invalid\",\"type\":\"authentication_error\",\"param\":null,\"code\":\"invalid_request_error\"}}",
+      "risposta_valida": true,
+      "latenza_ms": 2135.1,
+      "token_in": 158,
+      "token_out": 173,
+      "costo_usd": 0.00014894,
+      "http": 200,
+      "modello_dichiarato": "deepseek-v4-flash",
+      "stato": "READY",
+      "errore": null,
       "diagnosi": {
-        "connect_ms": 56.2,
-        "endpoint": "https://api.deepseek.com/chat/completions"
+        "connect_ms": 56.6,
+        "endpoint": "https://api.deepseek.com/chat/completions",
+        "json_restituito": {
+          "status": "ok",
+          "model_role": "test",
+          "message": "API funzionante"
+        },
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 158,
+          "completion_tokens": 173,
+          "total_tokens": 331,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 155
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 158
+        },
+        "ha_reasoning_content": true,
+        "lunghezza_reasoning_char": 673
       },
-      "stato_con_configurazione_attiva": "AUTH_ERROR"
+      "stato_con_configurazione_attiva": "READY"
     },
     {
       "provider": "OpenRouter",
@@ -103,16 +129,16 @@
       "configurato": true,
       "raggiungibile": true,
       "risposta_valida": true,
-      "latenza_ms": 2634.5,
+      "latenza_ms": 2271.3,
       "token_in": 67,
       "token_out": 27,
       "costo_usd": 1.225e-05,
       "http": 200,
       "modello_dichiarato": "qwen/qwen3-coder-30b-a3b-instruct",
-      "stato": "READY_WITH_WARNINGS",
+      "stato": "READY",
       "errore": null,
       "diagnosi": {
-        "connect_ms": 29.6,
+        "connect_ms": 14.2,
         "endpoint": "https://openrouter.ai/api/v1/chat/completions",
         "json_restituito": {
           "status": "ok",
@@ -145,9 +171,7 @@
         },
         "costo_dichiarato_provider_usd": 1.225e-05
       },
-      "nota_credenziale": "misurato con la chiave di inferenza presente in .env; a runtime la variabile d'ambiente OPENROUTER_API_KEY (chiave di provisioning) la oscura e produce 401",
-      "stato_con_chiave_di_inferenza": "READY",
-      "stato_con_configurazione_attiva": "AUTH_ERROR"
+      "stato_con_configurazione_attiva": "READY"
     },
     {
       "provider": "OpenRouter",
@@ -155,16 +179,16 @@
       "configurato": true,
       "raggiungibile": true,
       "risposta_valida": true,
-      "latenza_ms": 532.1,
+      "latenza_ms": 616.1,
       "token_in": 52,
       "token_out": 31,
       "costo_usd": 1.76e-05,
       "http": 200,
       "modello_dichiarato": "google/gemini-2.5-flash-lite",
-      "stato": "READY_WITH_WARNINGS",
+      "stato": "READY",
       "errore": null,
       "diagnosi": {
-        "connect_ms": 21.0,
+        "connect_ms": 23.7,
         "endpoint": "https://openrouter.ai/api/v1/chat/completions",
         "json_restituito": {
           "status": "ok",
@@ -197,9 +221,7 @@
         },
         "costo_dichiarato_provider_usd": 1.76e-05
       },
-      "nota_credenziale": "misurato con la chiave di inferenza presente in .env; a runtime la variabile d'ambiente OPENROUTER_API_KEY (chiave di provisioning) la oscura e produce 401",
-      "stato_con_chiave_di_inferenza": "READY",
-      "stato_con_configurazione_attiva": "AUTH_ERROR"
+      "stato_con_configurazione_attiva": "READY"
     },
     {
       "provider": "OpenRouter",
@@ -207,16 +229,16 @@
       "configurato": true,
       "raggiungibile": true,
       "risposta_valida": true,
-      "latenza_ms": 3705.0,
+      "latenza_ms": 3800.1,
       "token_in": 67,
-      "token_out": 165,
+      "token_out": 126,
       "costo_usd": null,
       "http": 200,
       "modello_dichiarato": "qwen/qwen3-32b",
-      "stato": "READY_WITH_WARNINGS",
+      "stato": "READY",
       "errore": null,
       "diagnosi": {
-        "connect_ms": 43.5,
+        "connect_ms": 15.4,
         "endpoint": "https://openrouter.ai/api/v1/chat/completions",
         "json_restituito": {
           "status": "ok",
@@ -226,9 +248,9 @@
         "finish_reason": "stop",
         "usage": {
           "prompt_tokens": 67,
-          "completion_tokens": 165,
-          "total_tokens": 232,
-          "cost": 5.156e-05,
+          "completion_tokens": 126,
+          "total_tokens": 193,
+          "cost": 4.064e-05,
           "is_byok": false,
           "prompt_tokens_details": {
             "cached_tokens": 0,
@@ -237,23 +259,21 @@
             "video_tokens": 0
           },
           "cost_details": {
-            "upstream_inference_cost": 5.156e-05,
+            "upstream_inference_cost": 4.064e-05,
             "upstream_inference_prompt_cost": 5.36e-06,
-            "upstream_inference_completions_cost": 4.62e-05
+            "upstream_inference_completions_cost": 3.528e-05
           },
           "completion_tokens_details": {
-            "reasoning_tokens": 158,
+            "reasoning_tokens": 107,
             "image_tokens": 0,
             "audio_tokens": 0
           }
         },
         "ha_reasoning_content": true,
-        "lunghezza_reasoning_char": 628,
-        "costo_dichiarato_provider_usd": 5.156e-05
+        "lunghezza_reasoning_char": 423,
+        "costo_dichiarato_provider_usd": 4.064e-05
       },
-      "stato_con_chiave_di_inferenza": "READY",
-      "stato_con_configurazione_attiva": "AUTH_ERROR"
+      "stato_con_configurazione_attiva": "READY"
     }
-  ],
-  "nota_classificazione": "I modelli OpenRouter rispondono correttamente, ma con la variabile d'ambiente attualmente attiva ogni chiamata riceve 401: sono classificati READY_WITH_WARNINGS finche' la variabile non viene corretta."
+  ]
 }
