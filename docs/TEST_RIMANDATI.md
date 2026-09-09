@@ -27,12 +27,29 @@ chiudere insieme:
   dà l'unità;
 - **gli opcode delle missioni** — mai osservati perché ogni cattura esistente
   comincia a client già in gioco: aprire il diario missioni durante la
-  registrazione li mette nel file.
+  registrazione li mette nel file;
+- **gli opcode di `Stop`, `Interact` e `UseItem`** — delle sette azioni di
+  `CharacterActionKind` (`CharacterControlContracts.cs:5-11`), quattro sono
+  verificate all'`Execute → Verify` del flusso canonico: `Move` da
+  `MovementVerificationProjector`, chiamato da `ScoutCommand.cs`;
+  `BasicAttack`/`UseSkill` da `CombatVerificationProjector`, chiamato da
+  `EngageCommand.cs` e `RecoverCommand.cs`; `Pickup` dal decoder che produce
+  `ItemPickup` (`NosTaleWorldProtocolDecoder.cs:131`), proiettato su
+  `WorldModelSnapshot.LastDropClaim`. Per `Stop`, `Interact` e `UseItem`
+  nessun opcode noto le conferma: il decoder non ha un case per loro fra
+  `NosTaleWorldProtocolDecoder.cs:116-136` e `docs/PROTOCOLLO_NOSTALE.md` non
+  ne elenca alcuno — l'assenza nel documento prova solo che nessuno le ha
+  ancora osservate, non che il server non le mandi. Fermare il personaggio,
+  usare un oggetto dall'inventario e interagire con un NPC durante la stessa
+  registrazione mette a referto la risposta del server, se distinguibile: se
+  non risponde nulla, l'assenza diventa un fatto misurato invece che una
+  lacuna del campione.
 
 Perché rendano tutto questo, la sessione va giocata facendo quelle cose:
 indossare e togliere un pezzo, camminare in linea retta fra due punti
-riconoscibili, aprire il diario delle missioni. Restano gesti di gioco
-normale, non una procedura di collaudo.
+riconoscibili, aprire il diario delle missioni, fermare il personaggio,
+usare un oggetto dall'inventario, interagire con un NPC. Restano gesti di
+gioco normale, non una procedura di collaudo.
 
 | ID | Cosa | Cosa fare | Aperto |
 |---|---|---|---|
