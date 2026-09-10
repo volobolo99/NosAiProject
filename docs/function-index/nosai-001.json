@@ -1,0 +1,83 @@
+[
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def snapshot(self) -> tuple[TelemetryMetrics, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 37,
+    "kind": "function_definition",
+    "name": "export_jsonl",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def export_jsonl(self, file_path: str | Path) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 59,
+    "kind": "function_definition",
+    "name": "calculate_average_mastery_score",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def calculate_average_mastery_score(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "calculate_mastery",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def calculate_mastery(xp: float, efficiency: float, safety: float, resources: float, objective: float) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/testing/evidence.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "emit",
+    "scope": "",
+    "signature": "def emit(key: str, value: Any, source: str = LIVE, note: Optional[str] = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/testing/evidence.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "live",
+    "scope": "",
+    "signature": "def live(key: str, value: Any, note: Optional[str] = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/testing/evidence.py",
+    "line": 54,
+    "kind": "function_definition",
+    "name": "derived",
+    "scope": "",
+    "signature": "def derived(key: str, value: Any, note: Optional[str] = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/testing/evidence.py",
+    "line": 59,
+    "kind": "function_definition",
+    "name": "simulated",
+    "scope": "",
+    "signature": "def simulated(key: str, value: Any, note: Optional[str] = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/testing/evidence.py",
+    "line": 64,
+    "kind": "function_definition",
+    "name": "unknown",
+    "scope": "",
+    "signature": "def unknown(key: str, reason: str) -> None:",
+    "category": "project"
+  }
+]
