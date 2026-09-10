@@ -13,8 +13,6 @@ from .config import load_config
 from .contracts import ActivationRequest
 from .contracts import SimulationRequest
 from .simulation import run_simulation
-from .director import McpDirector, ChangeProposal
-from .auditor import McpAuditor
 from .chief import McpChief
 from .policy import McpPolicy, PolicyViolation
 from .router import ModelRouter
@@ -30,8 +28,6 @@ class McpDashboardService:
         self._chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=self.router.role_bindings)
         self.audit = AuditLog(config["audit_path"])
         self._secret_path = config["secret_path"]
-        self._director = McpDirector("data/mcp/proposals")
-        self._auditor = McpAuditor()
 
     def role_bindings(self) -> list[dict[str, Any]]:
         registry = self.router.role_bindings
