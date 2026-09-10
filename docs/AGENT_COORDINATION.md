@@ -28,7 +28,7 @@ Un modello non può risolvere un conflitto inventando una scelta: deve aprire un
 | Documentation agent | indice, report, changelog, ledger e mappe | documentazione assegnata | no |
 | Integrator | verifica diff, test aggregati, aggiornamento ledger e merge | sì sui file di integrazione | sì dopo tutti i gate |
 
-Il Direttore MCP può proporre modifiche al proprio server, ma non può modificare o disattivare policy, audit, test di sicurezza, contratti di governance o meccanismi di rollback. Il **MCP Chief** espone controlli su richiesta e binding staged. La supervisione persistente è progettata in LAB-03 e non è certificata dal solo health endpoint. Non ha autorità di esecuzione di gioco, override o esportazione segreti; l’Auditor indipendente mantiene veto e rollback.
+Il Direttore MCP può proporre modifiche al proprio server, ma non può modificare o disattivare policy, audit, test di sicurezza, contratti di governance o meccanismi di rollback. Il **MCP Chief** espone controlli su richiesta, binding staged ed evidenze firmate. La supervisione persistente è progettata in LAB-03 e non è certificata dal solo health endpoint. Non ha autorità di esecuzione di gioco, override o esportazione segreti; l’Auditor indipendente mantiene veto e rollback.
 
 ## 3. Pacchetto minimo di un incarico
 
@@ -170,5 +170,7 @@ Un task è chiuso solo quando:
 
 Entrata per coordinatore e worker: [AI_PROGRAMMING_GUIDE.md](mcp/AI_PROGRAMMING_GUIDE.md).
 I pacchetti LAB estendono questo protocollo con ownership, dipendenze e criteri mirati.
-La roadmap futura prevede rilasci nel mandato senza conferme ripetute; il runtime
-attuale non va considerato dotato di tale autorità prima della chiusura di LAB-01..06.
+LAB-01 (evidenze) e LAB-02 (stato transazionale) sono presenti, ma non autorizzano
+rilasci autonomi. La roadmap futura prevede rilasci nel mandato senza conferme
+ripetute; il runtime non va considerato dotato di tale autorità prima della chiusura
+di LAB-03..LAB-07.
