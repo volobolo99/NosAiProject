@@ -47,6 +47,7 @@ Il Direttore MCP può proporre modifiche soltanto in aree non protette. L’Audi
 ## Avvio locale
 
 ```powershell
+python -m pip install -e ".[mcp]"
 python scripts/mcp_hub_server.py
 python scripts/mcp_dashboard_server.py
 ```
