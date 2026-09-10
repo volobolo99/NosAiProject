@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_learning_candidate.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "topic": {"type": "string", "minLength": 1},
+    "payload": {"type": "object"},
+    "source": {"type": "string", "minLength": 1},
+    "evidence_count": {"type": "integer", "minimum": 0}
+  },
+  "required": ["topic", "payload", "source", "evidence_count"]
+}
+
