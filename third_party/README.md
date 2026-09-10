@@ -10,7 +10,7 @@ Ridurre il costo cognitivo e i token spesi da Cursor/Claude: invece di cercare o
 
 I file copiati qui **non diventano automaticamente parte del runtime NosAi**. Sono materiale di riferimento o candidati al riuso. Prima di integrare codice nel prodotto è obbligatorio verificare:
 
-1. ompatibilità;
+1. compatibilità;
 2. commit/versione esatta della sorgente;
 3. provenienza/autore;
 4. modifiche necessarie per l'architettura NosAi;
@@ -31,7 +31,7 @@ Prima di cercare materiale esterno:
 1. leggere `third_party/README.md`;
 2. cercare in `third_party/manifests/`;
 3. cercare in `third_party/sources/`;
-5. usare fonti esterne solo se il materiale locale non è sufficiente o deve essere aggiornato.
+4. usare fonti esterne solo se il materiale locale non è sufficiente o deve essere aggiornato.
 
 ## Stato iniziale
 
