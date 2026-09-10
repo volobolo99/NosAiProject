@@ -11,9 +11,11 @@ dependencies = ["cryptography>=43"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+mcp = ["mcp>=1.0"]
 
 [project.scripts]
 nosai-dashboard = "nosai.dashboard.server:serve"
+nosai-mcp-dashboard = "nosai.mcp.dashboard:serve"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -25,3 +27,4 @@ include = ["nosai*"]
 [tool.setuptools.package-data]
 # The nosai-dashboard entry point serves these from the installed package.
 "nosai.dashboard" = ["static/*"]
+"nosai.mcp" = ["static/*"]
