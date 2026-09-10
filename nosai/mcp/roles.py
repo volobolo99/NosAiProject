@@ -47,6 +47,14 @@ DEFAULT_EMPLOYEE_ROLES = (
         ("policy_override", "secret_export", "direct_game_execution"),
     ),
     EmployeeRole(
+        "employee.mcp_chief", "MCP Chief",
+        "continuous health, optimization and lifecycle governance of MCP services",
+        ("health monitoring", "configuration review", "improvement discovery", "promotion and rollback"),
+        "claude", ("qwen3-coder-30b", "deepseek-v4-flash"),
+        ("mcp_governance", "health", "optimization", "audit_coordination"),
+        ("direct_game_execution", "policy_override", "audit_override", "secret_export", "privileged_state"),
+    ),
+    EmployeeRole(
         "employee.product_manager", "Product Manager",
         "product requirements and release scope",
         ("requirements", "roadmap", "acceptance criteria"),
