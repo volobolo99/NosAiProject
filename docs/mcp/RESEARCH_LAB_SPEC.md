@@ -34,6 +34,10 @@ Il Chief non può riscrivere valutatore, policy, autorizzazioni o test protetti.
 Le operazioni reversibili nel mandato preapprovato non richiedono conferme ripetute.
 Il runtime attuale continua a richiedere confirmation=operator: la nuova autonomia
 non è attiva finché servizio di rilascio e prove indipendenti non sono implementati.
+LAB-01 è ora implementato per i binding: i record `EvidenceAuthority` sono firmati,
+freschi e digest-bound; il registro rifiuta booleani, firme alterate, esecutori duplicati
+e auto-valutazioni dell'autore candidato. LAB-02 ha introdotto `McpStateStore` SQLite;
+la migrazione JSON crea un backup e il file JSON rimane solo un export compatibile.
 
 ## Laboratorio: responsabilità attivabili
 - Research Scout: fonti, data, versione, licenza, pertinenza e dipendenze.
