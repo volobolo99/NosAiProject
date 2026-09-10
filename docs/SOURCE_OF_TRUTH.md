@@ -15,14 +15,15 @@ This file defines which project documents are authoritative. When documents disa
 5. `docs/adr/*.md` — accepted architectural decisions; later accepted ADRs override earlier decisions where explicitly stated.
 6. `.claude/CLAUDE.md` — agent development rules: the mandatory 5-phase production protocol.
 7. `third_party/README.md`, `third_party/manifests/*`, `third_party/provenance/*` — external-source provenance and reuse rules.
-8. `docs/mcp/README.md`, `docs/mcp/CHIEF_RUNBOOK.md`, `docs/mcp/DEVELOPMENT_CONTRACTS.md`, `contracts/mcp-hub-001.json` — MCP Hub behavior, Chief operations, contracts and boundaries.
+8. `docs/mcp/README.md`, `docs/mcp/CHIEF_RUNBOOK.md`, `docs/mcp/DEVELOPMENT_CONTRACTS.md`, `docs/mcp/RESEARCH_LAB_SPEC.md`, `contracts/mcp-hub-001.json` — MCP Hub behavior, Chief operations, research lab, contracts and boundaries.
 9. `contracts/ledger.json` and `docs/CONTRACT_MAP.md` — authoritative contract status, files, tests, blockers and open questions.
 10. `docs/SYSTEM_MAP.md` — authoritative module boundaries and communication paths.
 11. `docs/AGENT_COORDINATION.md` — authoritative multi-agent task packet, ownership, handoff and audit protocol.
 12. `docs/mcp/ROLE_CATALOG.md` and `schemas/mcp_employee_role.schema.json` — stable employee identities, model bindings, capabilities and forbidden actions.
 13. `docs/FUNCTION_INDEX.md`, `docs/FUNCTION_INDEX.json` and `docs/CONTRACT_SIGNATURE_TASKS.md` — generated function navigation, coverage limits and unresolved contract signatures.
-14. `docs/REMAINING_WORK.md` — prioritized work still required, with acceptance evidence.
-15. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
+14. `scripts/verify_mcp_contracts.py` — structural verifier for ledger, schemas, source/test links and signature status.
+15. `docs/REMAINING_WORK.md` — prioritized work still required, with acceptance evidence.
+16. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
 
 ## Root front-door documents
 
