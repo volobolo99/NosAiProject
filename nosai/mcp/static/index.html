@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NosAi MCP Control Panel</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;background:#10131a;color:#eef2ff}
+    section{background:#1a2030;border:1px solid #313b55;border-radius:12px;padding:1rem;margin:1rem 0}
+    button{padding:.6rem 1rem;border:0;border-radius:8px;background:#5b8cff;color:#fff;cursor:pointer}
+    button.off{background:#4b5563}.ok{color:#65e6a6}.warn{color:#ffd166}pre{white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <h1>NosAi MCP</h1>
+  <p>Controllo locale del gateway MCP. La rete è disattivata all'avvio.</p>
+  <section><h2>Stato</h2><p id="status">Caricamento…</p><button id="toggle">Attiva MCP Rete</button></section>
+  <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
+  <section><h2>Chiavi API</h2><p>Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p><pre id="secrets"></pre></section>
+  <script>
+    async function refresh(){
+      const s=await (await fetch('/api/mcp/status')).json();
+      document.querySelector('#status').innerHTML=`Modalità: <b>${s.mode}</b> — rete: <b>${s.network_enabled?'attiva':'disattiva'}</b>`;
+      document.querySelector('#toggle').textContent=s.network_enabled?'Disattiva MCP Rete':'Attiva MCP Rete';
+      document.querySelector('#toggle').className=s.network_enabled?'off':'';
+      document.querySelector('#providers').textContent=JSON.stringify(s.providers,null,2);
+      const k=await (await fetch('/api/mcp/secrets')).json(); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
+    }
+    document.querySelector('#toggle').onclick=async()=>{const s=await (await fetch('/api/mcp/status')).json(); await fetch('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
+    refresh();
+  </script>
+</body>
+</html>
+
+
