@@ -16,19 +16,55 @@
   <p>Controllo locale del gateway MCP. La rete è disattivata all'avvio.</p>
   <section><h2>Stato</h2><p id="status">Caricamento…</p><button id="toggle">Attiva MCP Rete</button></section>
   <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
+  <section><h2>Dipendenti e binding dinamici</h2>
+    <p>Una proposta entra prima in shadow. La promozione richiede test, shadow e audit indipendenti già registrati; il pannello non può inventare questi risultati.</p>
+    <div id="roles"></div><pre id="role-proposals"></pre>
+  </section>
   <section><h2>Chiavi API</h2><p>Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p><pre id="secrets"></pre></section>
   <section><h2>Simulazione deterministica</h2><button id="simulate">Esegui scenario di prova</button><pre id="simulation"></pre></section>
   <script>
+    async function json(url, options){return (await fetch(url,options)).json()}
+    async function refreshRoles(){
+      const data=await json('/api/mcp/roles');
+      const bindings=(await json('/api/mcp/role-bindings')).bindings||[];
+      const proposals=(await json('/api/mcp/role-proposals')).proposals||[];
+      const byId=Object.fromEntries(bindings.map(x=>[x.employee_id,x]));
+      document.querySelector('#roles').innerHTML=(data.roles||[]).map(role=>{
+        const b=byId[role.employee_id]||role;
+        return `<div class="role" style="border-top:1px solid #313b55;padding:.7rem 0">
+          <b>${role.display_name}</b> — ${role.purpose}<br>
+          <small>${role.employee_id} · capacità: ${role.capabilities.join(', ')}</small><br>
+          <label>Primario <input data-primary="${role.employee_id}" value="${b.primary_model}"></label>
+          <label>Fallback <input data-fallback="${role.employee_id}" value="${(b.fallback_models||[]).join(',')}"></label>
+          <button onclick="proposeRole('${role.employee_id}')">Proponi binding</button>
+          <button class="off" onclick="rollbackRole('${role.employee_id}')">Rollback</button>
+        </div>`;
+      }).join('');
+      document.querySelector('#role-proposals').textContent=JSON.stringify(proposals,null,2);
+    }
+    async function proposeRole(employeeId){
+      const primary=document.querySelector(`[data-primary="${employeeId}"]`).value;
+      const fallback=document.querySelector(`[data-fallback="${employeeId}"]`).value.split(',').map(x=>x.trim()).filter(Boolean);
+      const r=await json('/api/mcp/role-bindings/propose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,primary_model:primary,fallback_models:fallback})});
+      document.querySelector('#role-proposals').textContent=JSON.stringify(r,null,2); refreshRoles();
+    }
+    async function rollbackRole(employeeId){
+      const confirmation=prompt('Scrivi operator per confermare il rollback:','');
+      if(confirmation!=='operator') return;
+      const r=await json('/api/mcp/role-bindings/rollback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,confirmation})});
+      document.querySelector('#role-proposals').textContent=JSON.stringify(r,null,2); refreshRoles();
+    }
     async function refresh(){
-      const s=await (await fetch('/api/mcp/status')).json();
+      const s=await json('/api/mcp/status');
       document.querySelector('#status').innerHTML=`Modalità: <b>${s.mode}</b> — rete: <b>${s.network_enabled?'attiva':'disattiva'}</b>`;
       document.querySelector('#toggle').textContent=s.network_enabled?'Disattiva MCP Rete':'Attiva MCP Rete';
       document.querySelector('#toggle').className=s.network_enabled?'off':'';
       document.querySelector('#providers').textContent=JSON.stringify(s.providers,null,2);
-      const k=await (await fetch('/api/mcp/secrets')).json(); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
+      const k=await json('/api/mcp/secrets'); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
+      await refreshRoles();
     }
-    document.querySelector('#toggle').onclick=async()=>{const s=await (await fetch('/api/mcp/status')).json(); await fetch('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
-    document.querySelector('#simulate').onclick=async()=>{const r=await (await fetch('/api/mcp/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario_id:'combat/basic',seed:1,horizon_ticks:20,actions:[{kind:'observe'}]})})).json(); document.querySelector('#simulation').textContent=JSON.stringify(r,null,2)};
+    document.querySelector('#toggle').onclick=async()=>{const s=await json('/api/mcp/status'); await json('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
+    document.querySelector('#simulate').onclick=async()=>{const r=await json('/api/mcp/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario_id:'combat/basic',seed:1,horizon_ticks:20,actions:[{kind:'observe'}]})}); document.querySelector('#simulation').textContent=JSON.stringify(r,null,2)};
     refresh();
   </script>
 </body>
