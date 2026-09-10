@@ -358,3 +358,15 @@ Dopo il taglio R4 restano i pacchetti in `docs/INVENTARIO_PYTHON.md` che non son
 | Nodo Guard mobile | `NosAi.GuardClient/GuardAiClient.cs`, `NosAi.GuardAi.App/GuardConnectionService.cs` |
 | Dashboard e pannello operatore | `Runtime/Gate1/Gate1BootstrapHost.cs`, `NosAi.ControlPanel/MainWindow.xaml.cs` |
 | Suite di certificazione | `Runtime/Testing/TestSuiteRunner.cs`, `GateCertificationRunner.cs`, `Gate1/Gate1TestRunner.cs` |
+
+
+## MCP Hub (aggiunto 2026-09-10)
+
+- `nosai/mcp/server.py` — tool/resource MCP e routing governato.
+- `nosai/mcp/policy.py` — rete off di default, conferma operatore, rifiuto privilegi/secret export.
+- `nosai/mcp/inference.py` — gateway Ollama/Groq/OpenRouter dietro policy e secret store.
+- `nosai/mcp/simulation.py` — simulazione deterministica senza side effect.
+- `nosai/mcp/learning.py` — candidate → validate → offline skill.
+- `nosai/mcp/director.py`, `auditor.py`, `roles.py` — governance e verifica ruoli.
+- `nosai/mcp/dashboard.py` + `static/index.html` — pannello locale dedicato.
+- Contratti/schemi: `contracts/mcp-hub-001.json`, `schemas/mcp_*.schema.json`.
