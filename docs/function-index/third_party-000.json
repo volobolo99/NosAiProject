@@ -1,0 +1,2090 @@
+[
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Notify",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public async Task Notify<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : IEventNotification",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "RegisterPreprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task RegisterPreprocessorAsync<T>(IEventPreprocessor preprocessor) where T : IEventNotification",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "RegisterPreprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task RegisterPreprocessorAsync(IEventPreprocessor preprocessor, Type type)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "UnregisterPreprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task UnregisterPreprocessorAsync<T>(IEventPreprocessor preprocessor) where T : IEventNotification",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "UnregisterPreprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task UnregisterPreprocessorAsync(IEventPreprocessor preprocessor, Type type)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "RegisterPostProcessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task RegisterPostProcessorAsync(IEventPostProcessor postProcessor, Type type)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "RegisterPostProcessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task RegisterPostProcessorAsync<T>(IEventPostProcessor postProcessor) where T : IEventNotification",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "UnregisterPostprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task UnregisterPostprocessorAsync<T>(IEventPostProcessor preprocessor) where T : IEventNotification",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "UnregisterPostprocessorAsync",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "public Task UnregisterPostprocessorAsync(IEventPostProcessor postProcessor, Type type)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "CanSendEvent",
+    "scope": "ChickenAPI.Core.Events.BasicEventPipelineAsync",
+    "signature": "private async Task<bool> CanSendEvent(IEventNotification e, Type type, CancellationToken cancellationToken)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 19,
+    "kind": "constructor_declaration",
+    "name": "KeyboardSimulator",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public KeyboardSimulator(IInputSimulator inputSimulator)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 26,
+    "kind": "constructor_declaration",
+    "name": "KeyboardSimulator",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "internal KeyboardSimulator(IInputSimulator inputSimulator, IInputMessageDispatcher messageDispatcher)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "get",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "ModifiersDown",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "private void ModifiersDown(InputBuilder builder, IEnumerable<VirtualKeyCode> modifierKeyCodes)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "ModifiersUp",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "private void ModifiersUp(InputBuilder builder, IEnumerable<VirtualKeyCode> modifierKeyCodes)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "KeysPress",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "private void KeysPress(InputBuilder builder, IEnumerable<VirtualKeyCode> keyCodes)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "SendSimulatedInput",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "private void SendSimulatedInput(INPUT[] inputList)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "KeyDown",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator KeyDown(VirtualKeyCode keyCode)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "KeyUp",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator KeyUp(VirtualKeyCode keyCode)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator KeyPress(VirtualKeyCode keyCode)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator KeyPress(params VirtualKeyCode[] keyCodes)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "ModifiedKeyStroke",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator ModifiedKeyStroke(IEnumerable<VirtualKeyCode> modifierKeyCodes, IEnumerable<VirtualKeyCode> keyCodes)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "TextEntry",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator TextEntry(string text)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "Sleep",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator Sleep(int millisecondsTimeout)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "Sleep",
+    "scope": "WindowsInput.KeyboardSimulator",
+    "signature": "public IKeyboardSimulator Sleep(TimeSpan timeout)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "GetSettings",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "List<ReGoapState<T, W>> GetSettings(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void Run(IReGoapAction<T, W> previousAction, IReGoapAction<T, W> nextAction, ReGoapState<T, W> settings, ReGoapState<T, W> goalState, Action<IReGoapAction<T, W>> done, Action<IReGoapAction<T, W>> fail);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "PlanEnter",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void PlanEnter(IReGoapAction<T, W> previousAction, IReGoapAction<T, W> nextAction, ReGoapState<T, W> settings, ReGoapState<T, W> goalState);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "PlanExit",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void PlanExit(IReGoapAction<T, W> previousAction, IReGoapAction<T, W> nextAction, ReGoapState<T, W> settings, ReGoapState<T, W> goalState);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "Exit",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void Exit(IReGoapAction<T, W> nextAction);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "GetName",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "string GetName();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "IsActive",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "bool IsActive();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "IsInterruptable",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "bool IsInterruptable();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "AskForInterruption",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void AskForInterruption();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "GetPreconditions",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "ReGoapState<T, W> GetPreconditions(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "GetEffects",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "ReGoapState<T, W> GetEffects(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "CheckProceduralCondition",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "bool CheckProceduralCondition(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "GetCost",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "float GetCost(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Precalculations",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "void Precalculations(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "ToString",
+    "scope": "ReGoap.Core.IReGoapAction",
+    "signature": "string ToString(GoapActionStackData<T, W> stackData);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "GetMemory",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "IReGoapMemory<T, W> GetMemory();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "GetCurrentGoal",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "IReGoapGoal<T, W> GetCurrentGoal();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "WarnPossibleGoal",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "void WarnPossibleGoal(IReGoapGoal<T, W> goal);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "IsActive",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "bool IsActive();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "GetStartingPlan",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "List<ReGoapActionState<T, W>> GetStartingPlan();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "GetPlanValue",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "W GetPlanValue(T key);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "SetPlanValue",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "void SetPlanValue(T key, W value);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "HasPlanValue",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "bool HasPlanValue(T target);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "GetGoalsSet",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "List<IReGoapGoal<T, W>> GetGoalsSet();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "GetActionsSet",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "List<IReGoapAction<T, W>> GetActionsSet();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "InstantiateNewState",
+    "scope": "ReGoap.Core.IReGoapAgent",
+    "signature": "ReGoapState<T, W> InstantiateNewState();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "void Run(Action<IReGoapGoal<T, W>> callback);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "GetPlan",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "Queue<ReGoapActionState<T, W>> GetPlan();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "GetName",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "string GetName();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Precalculations",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "void Precalculations(IGoapPlanner<T, W> goapPlanner);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "IsGoalPossible",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "bool IsGoalPossible();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "GetGoalState",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "ReGoapState<T, W> GetGoalState();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "GetPriority",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "float GetPriority();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "SetPlan",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "void SetPlan(Queue<ReGoapActionState<T, W>> path);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "GetErrorDelay",
+    "scope": "ReGoap.Core.IReGoapGoal",
+    "signature": "float GetErrorDelay();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapMemory.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "GetWorldState",
+    "scope": "ReGoap.Core.IReGoapMemory",
+    "signature": "ReGoapState<T, W> GetWorldState();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapSensor.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Init",
+    "scope": "ReGoap.Core.IReGoapSensor",
+    "signature": "void Init(IReGoapMemory<T, W> memory);",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapSensor.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "GetMemory",
+    "scope": "ReGoap.Core.IReGoapSensor",
+    "signature": "IReGoapMemory<T, W> GetMemory();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapSensor.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "UpdateSensor",
+    "scope": "ReGoap.Core.IReGoapSensor",
+    "signature": "void UpdateSensor();",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 21,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 22,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 24,
+    "kind": "constructor_declaration",
+    "name": "ReGoapCondition",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "private ReGoapCondition(ReGoapConditionOperator op, object value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "Equal",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static ReGoapCondition Equal(object value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "NotEqual",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static ReGoapCondition NotEqual(object value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "GreaterOrEqual",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static ReGoapCondition GreaterOrEqual(object value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "LessOrEqual",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static ReGoapCondition LessOrEqual(object value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "IsSatisfiedBy",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public bool IsSatisfiedBy(object candidate)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "IsMatch",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static bool IsMatch(object required, object candidate)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "AreCompatible",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public static bool AreCompatible(object left, object right)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "IsSatisfiedByRaw",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "private bool IsSatisfiedByRaw(object candidate)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "IsCompatibleWith",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "private bool IsCompatibleWith(ReGoapCondition other)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 97,
+    "kind": "method_declaration",
+    "name": "Compare",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "private static bool Compare(object left, object right, out int result)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "ToString",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public override string ToString()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "Equals",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public bool Equals(ReGoapCondition other)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "Equals",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public override bool Equals(object obj)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "GetHashCode",
+    "scope": "ReGoap.Core.ReGoapCondition",
+    "signature": "public override int GetHashCode()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 27,
+    "kind": "constructor_declaration",
+    "name": "ReGoapNode",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private ReGoapNode()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "Init",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private void Init(IGoapPlanner<T, W> planner, ReGoapState<T, W> newGoal, ReGoapNode<T, W> parent, IReGoapAction<T, W> action, ReGoapState<T, W> settings)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "Warmup",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public static void Warmup(int count)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "Recycle",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public void Recycle()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "Instantiate",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public static ReGoapNode<T, W> Instantiate(IGoapPlanner<T, W> planner, ReGoapState<T, W> newGoal, ReGoapNode<T, W> parent, IReGoapAction<T, W> action, ReGoapState<T, W> actionSettings)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "GetPathCost",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public float GetPathCost()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 158,
+    "kind": "method_declaration",
+    "name": "GetHeuristicCost",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public float GetHeuristicCost()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "GetState",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public ReGoapState<T, W> GetState()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 174,
+    "kind": "method_declaration",
+    "name": "Expand",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public List<INode<ReGoapState<T, W>>> Expand()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 215,
+    "kind": "method_declaration",
+    "name": "GetAction",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private IReGoapAction<T, W> GetAction()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 223,
+    "kind": "method_declaration",
+    "name": "CalculatePath",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public Queue<ReGoapActionState<T, W>> CalculatePath()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 233,
+    "kind": "method_declaration",
+    "name": "CalculatePath",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public void CalculatePath(ref Queue<ReGoapActionState<T, W>> result)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 246,
+    "kind": "method_declaration",
+    "name": "CompareTo",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public int CompareTo(INode<ReGoapState<T, W>> other)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 254,
+    "kind": "method_declaration",
+    "name": "GetCost",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public float GetCost()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "GetParent",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public INode<ReGoapState<T, W>> GetParent()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 270,
+    "kind": "method_declaration",
+    "name": "IsGoal",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "public bool IsGoal(ReGoapState<T, W> goal)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 275,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 275,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 276,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 276,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 277,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 277,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 279,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 280,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 280,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 281,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 281,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 282,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+    "line": 282,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReGoap.Planner.ReGoapNode",
+    "signature": "private set;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 25,
+    "kind": "constructor_declaration",
+    "name": "ReGoapPlanner",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public ReGoapPlanner(ReGoapPlannerSettings settings = null)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "Plan",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public IReGoapGoal<T, W> Plan(IReGoapAgent<T, W> agent, IReGoapGoal<T, W> blacklistGoal = null, Queue<ReGoapActionState<T, W>> currentPlan = null, Action<IReGoapGoal<T, W>> callback = null)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 53,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "(x, y) =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "SelectNextGoal",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "private IReGoapGoal<T, W> SelectNextGoal(List<IReGoapGoal<T, W>> possibleGoals)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 185,
+    "kind": "method_declaration",
+    "name": "GetCurrentGoal",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public IReGoapGoal<T, W> GetCurrentGoal()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 193,
+    "kind": "method_declaration",
+    "name": "GetCurrentAgent",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public IReGoapAgent<T, W> GetCurrentAgent()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "IsPlanning",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public bool IsPlanning()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "GetSettings",
+    "scope": "ReGoap.Planner.ReGoapPlanner",
+    "signature": "public ReGoapPlannerSettings GetSettings()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/noscore/reference/WalkPacketHandler.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "ExecuteAsync",
+    "scope": "NosCore.PacketHandlers.Movement.WalkPacketHandler",
+    "signature": "public override async Task ExecuteAsync(WalkPacket walkPacket, ClientSession session)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+    "line": 32,
+    "kind": "constructor_declaration",
+    "name": "LoginPacketHandler",
+    "scope": "OpenNos.Handler.LoginPacketHandler",
+    "signature": "public LoginPacketHandler(ClientSession session)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "BuildServersPacket",
+    "scope": "OpenNos.Handler.LoginPacketHandler",
+    "signature": "public string BuildServersPacket(long accountId, int sessionId)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "VerifyLogin",
+    "scope": "OpenNos.Handler.LoginPacketHandler",
+    "signature": "public void VerifyLogin(LoginPacket loginPacket)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+    "line": 64,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OpenNos.Handler.LoginPacketHandler",
+    "signature": "s =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+    "line": 70,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OpenNos.Handler.LoginPacketHandler",
+    "signature": "s =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 24,
+    "kind": "constructor_declaration",
+    "name": "BaseDomainBuilder",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public BaseDomainBuilder(string domainName, IFactory factory)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 36,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "get",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "CompoundTask",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB CompoundTask<P>(string name) where P : ICompoundTask, new()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "CompoundTask",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB CompoundTask<P>(string name, P task) where P : ICompoundTask",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "PrimitiveTask",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB PrimitiveTask<P>(string name) where P : IPrimitiveTask, new()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "PausePlanTask",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "protected DB PausePlanTask()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "Sequence",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Sequence(string name)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 177,
+    "kind": "method_declaration",
+    "name": "Select",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Select(string name)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "Action",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Action(string name)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 202,
+    "kind": "method_declaration",
+    "name": "Condition",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Condition(string name, Func<T, bool> condition)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "ExecutingCondition",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB ExecutingCondition(string name, Func<T, bool> condition)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 238,
+    "kind": "method_declaration",
+    "name": "Do",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Do(Func<T, TaskStatus> action, Func<T, TaskStatus> start = null, Action<T> forceStopAction = null)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "Effect",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Effect(string name, EffectType effectType, Action<T, EffectType> action)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 283,
+    "kind": "method_declaration",
+    "name": "End",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB End()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 294,
+    "kind": "method_declaration",
+    "name": "Splice",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Splice(Domain<T> domain)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 316,
+    "kind": "method_declaration",
+    "name": "Slot",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB Slot(int slotId)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 345,
+    "kind": "method_declaration",
+    "name": "PausePlan",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public DB PausePlan()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+    "line": 354,
+    "kind": "method_declaration",
+    "name": "Build",
+    "scope": "FluidHTN.BaseDomainBuilder",
+    "signature": "public Domain<T> Build()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 15,
+    "kind": "constructor_declaration",
+    "name": "Domain",
+    "scope": "FluidHTN.Domain",
+    "signature": "public Domain(string name)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 21,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FluidHTN.Domain",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Add",
+    "scope": "FluidHTN.Domain",
+    "signature": "public void Add(ICompoundTask parent, ITask subtask)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Add",
+    "scope": "FluidHTN.Domain",
+    "signature": "public void Add(ICompoundTask parent, Slot slot)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "FindPlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "public DecompositionStatus FindPlan(T ctx, out Queue<ITask> plan)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 134,
+    "kind": "method_declaration",
+    "name": "OnReplanDuringPartialPlanning",
+    "scope": "FluidHTN.Domain",
+    "signature": "private DecompositionStatus OnReplanDuringPartialPlanning(T ctx, ref Queue<ITask> plan, DecompositionStatus status)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 158,
+    "kind": "method_declaration",
+    "name": "CacheLastPartialPlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "private Queue<PartialPlanEntry> CacheLastPartialPlan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "RestoreLastPartialPlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "private void RestoreLastPartialPlan(T ctx, Queue<PartialPlanEntry> lastPartialPlanQueue, DecompositionStatus status)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 206,
+    "kind": "method_declaration",
+    "name": "ClearMethodTraversalRecord",
+    "scope": "FluidHTN.Domain",
+    "signature": "private void ClearMethodTraversalRecord(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 221,
+    "kind": "method_declaration",
+    "name": "HasDecompositionFailed",
+    "scope": "FluidHTN.Domain",
+    "signature": "private bool HasDecompositionFailed(DecompositionStatus status)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "HasDecompositionSucceeded",
+    "scope": "FluidHTN.Domain",
+    "signature": "private bool HasDecompositionSucceeded(DecompositionStatus status)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 246,
+    "kind": "method_declaration",
+    "name": "OnPausedPartialPlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "private DecompositionStatus OnPausedPartialPlan(T ctx, ref Queue<ITask> plan, DecompositionStatus status)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 290,
+    "kind": "method_declaration",
+    "name": "EnqueueToExistingPlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "private void EnqueueToExistingPlan(ref Queue<ITask> plan, Queue<ITask> subPlan)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 305,
+    "kind": "method_declaration",
+    "name": "HasFoundSamePlan",
+    "scope": "FluidHTN.Domain",
+    "signature": "private bool HasFoundSamePlan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "ApplyPermanentWorldStateStackChanges",
+    "scope": "FluidHTN.Domain",
+    "signature": "private void ApplyPermanentWorldStateStackChanges(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 350,
+    "kind": "method_declaration",
+    "name": "ClearWorldStateStackChanges",
+    "scope": "FluidHTN.Domain",
+    "signature": "private void ClearWorldStateStackChanges(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 368,
+    "kind": "method_declaration",
+    "name": "TrySetSlotDomain",
+    "scope": "FluidHTN.Domain",
+    "signature": "public bool TrySetSlotDomain(int slotId, Domain<T> subDomain)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+    "line": 383,
+    "kind": "method_declaration",
+    "name": "ClearSlot",
+    "scope": "FluidHTN.Domain",
+    "signature": "public void ClearSlot(int slotId)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/DomainBuilder.cs",
+    "line": 16,
+    "kind": "constructor_declaration",
+    "name": "DomainBuilder",
+    "scope": "FluidHTN.DomainBuilder",
+    "signature": "public DomainBuilder(string domainName) : base(domainName, new DefaultFactory())",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/DomainBuilder.cs",
+    "line": 20,
+    "kind": "constructor_declaration",
+    "name": "DomainBuilder",
+    "scope": "FluidHTN.DomainBuilder",
+    "signature": "public DomainBuilder(string domainName, IFactory factory) : base(domainName, factory)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "Tick",
+    "scope": "FluidHTN.Planner",
+    "signature": "public void Tick(Domain<T> domain, T ctx, bool allowImmediateReplanAndExecute = true)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "ShouldFindNewPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool ShouldFindNewPlan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "TryFindNewPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool TryFindNewPlan(Domain<T> domain, T ctx, out DecompositionStatus decompositionStatus)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "PrepareDirtyWorldStateForReplan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private Queue<PartialPlanEntry> PrepareDirtyWorldStateForReplan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "CacheLastPartialPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private Queue<PartialPlanEntry> CacheLastPartialPlan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "RestoreLastPartialPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void RestoreLastPartialPlan(T ctx, Queue<PartialPlanEntry> lastPartialPlanQueue)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 170,
+    "kind": "method_declaration",
+    "name": "HasFoundNewPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool HasFoundNewPlan(DecompositionStatus decompositionStatus)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 176,
+    "kind": "method_declaration",
+    "name": "OnFoundNewPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void OnFoundNewPlan(T ctx, Queue<ITask> newPlan)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 211,
+    "kind": "method_declaration",
+    "name": "CopyMtrToLastMtr",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void CopyMtrToLastMtr(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 237,
+    "kind": "method_declaration",
+    "name": "RestoreLastMethodTraversalRecord",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void RestoreLastMethodTraversalRecord(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 266,
+    "kind": "method_declaration",
+    "name": "CanSelectNextTaskInPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool CanSelectNextTaskInPlan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 277,
+    "kind": "method_declaration",
+    "name": "SelectNextTaskInPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool SelectNextTaskInPlan(Domain<T> domain, T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 298,
+    "kind": "method_declaration",
+    "name": "TryStartPrimitiveTaskOperator",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool TryStartPrimitiveTaskOperator(Domain<T> domain, T ctx, IPrimitiveTask task, bool allowImmediateReplanAndExecute)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 341,
+    "kind": "method_declaration",
+    "name": "TryTickPrimitiveTaskOperator",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool TryTickPrimitiveTaskOperator(Domain<T> domain, T ctx, IPrimitiveTask task, bool allowImmediateReplanAndExecute)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 383,
+    "kind": "method_declaration",
+    "name": "IsConditionsValid",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool IsConditionsValid(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 408,
+    "kind": "method_declaration",
+    "name": "IsExecutingConditionsValid",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool IsExecutingConditionsValid(Domain<T> domain, T ctx, IPrimitiveTask task, bool allowImmediateReplanAndExecute)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 436,
+    "kind": "method_declaration",
+    "name": "AbortTask",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void AbortTask(T ctx, IPrimitiveTask task)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 449,
+    "kind": "method_declaration",
+    "name": "OnOperatorFinishedSuccessfully",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void OnOperatorFinishedSuccessfully(Domain<T> domain, T ctx, IPrimitiveTask task, bool allowImmediateReplanAndExecute)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 487,
+    "kind": "method_declaration",
+    "name": "FailEntirePlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void FailEntirePlan(Domain<T> domain, T ctx, IPrimitiveTask task, bool allowImmediateReplanAndExecute)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 504,
+    "kind": "method_declaration",
+    "name": "ClearPlanForReplan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private void ClearPlanForReplan(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 527,
+    "kind": "method_declaration",
+    "name": "HasFailedToFindPlan",
+    "scope": "FluidHTN.Planner",
+    "signature": "private bool HasFailedToFindPlan(bool isTryingToReplacePlan, DecompositionStatus decompositionStatus, T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+    "line": 536,
+    "kind": "method_declaration",
+    "name": "Reset",
+    "scope": "FluidHTN.Planner",
+    "signature": "public void Reset(T ctx)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.cpp",
+    "line": 24,
+    "kind": "function_declarator",
+    "name": "CaptureSnapshot::TakeAsync",
+    "scope": "",
+    "signature": "CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.cpp",
+    "line": 44,
+    "kind": "function_declarator",
+    "name": "captureEvent",
+    "scope": "",
+    "signature": "captureEvent(wil::EventOptions::ManualReset)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.cpp",
+    "line": 46,
+    "kind": "lambda_expression",
+    "name": "(auto& framePool, auto&)",
+    "scope": "",
+    "signature": "[&frame, captureEvent](auto& framePool, auto&) =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.h",
+    "line": 7,
+    "kind": "function_declarator",
+    "name": "TakeAsync",
+    "scope": "",
+    "signature": "TakeAsync( winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice const& device, winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item, winrt::Windows::Graphics::DirectX::DirectXPixelFormat const& format = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.h",
+    "line": 13,
+    "kind": "function_declarator",
+    "name": "CaptureSnapshot",
+    "scope": "",
+    "signature": "CaptureSnapshot()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 22,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::SimpleCapture",
+    "scope": "",
+    "signature": "SimpleCapture::SimpleCapture( winrt::IDirect3DDevice const& device, std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 52,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::StartCapture",
+    "scope": "",
+    "signature": "SimpleCapture::StartCapture()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 58,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::CreateSurface",
+    "scope": "",
+    "signature": "SimpleCapture::CreateSurface(winrt::Compositor const& compositor)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 64,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::VisualizeDirtyRegions",
+    "scope": "",
+    "signature": "SimpleCapture::VisualizeDirtyRegions(bool value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 73,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::Close",
+    "scope": "",
+    "signature": "SimpleCapture::Close()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 88,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::ResizeSwapChain",
+    "scope": "",
+    "signature": "SimpleCapture::ResizeSwapChain()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 96,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::TryResizeSwapChain",
+    "scope": "",
+    "signature": "SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 110,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::TryUpdatePixelFormat",
+    "scope": "",
+    "signature": "SimpleCapture::TryUpdatePixelFormat()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 126,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::GetColorSpaceFromPixelFormat",
+    "scope": "",
+    "signature": "SimpleCapture::GetColorSpaceFromPixelFormat(DXGI_FORMAT format)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+    "line": 140,
+    "kind": "function_declarator",
+    "name": "SimpleCapture::OnFrameArrived",
+    "scope": "",
+    "signature": "SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 7,
+    "kind": "function_declarator",
+    "name": "SimpleCapture",
+    "scope": "",
+    "signature": "SimpleCapture( winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice const& device, std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer, winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& item, winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 12,
+    "kind": "function_declarator",
+    "name": "~SimpleCapture",
+    "scope": "",
+    "signature": "~SimpleCapture()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 14,
+    "kind": "function_declarator",
+    "name": "StartCapture",
+    "scope": "",
+    "signature": "StartCapture()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 15,
+    "kind": "function_declarator",
+    "name": "CreateSurface",
+    "scope": "",
+    "signature": "CreateSurface( winrt::Windows::UI::Composition::Compositor const& compositor)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 18,
+    "kind": "function_declarator",
+    "name": "IsCursorEnabled",
+    "scope": "",
+    "signature": "IsCursorEnabled()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 19,
+    "kind": "function_declarator",
+    "name": "IsCursorEnabled",
+    "scope": "",
+    "signature": "IsCursorEnabled(bool value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 20,
+    "kind": "function_declarator",
+    "name": "IsBorderRequired",
+    "scope": "",
+    "signature": "IsBorderRequired()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 21,
+    "kind": "function_declarator",
+    "name": "IsBorderRequired",
+    "scope": "",
+    "signature": "IsBorderRequired(bool value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 22,
+    "kind": "function_declarator",
+    "name": "IncludeSecondaryWindows",
+    "scope": "",
+    "signature": "IncludeSecondaryWindows()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 23,
+    "kind": "function_declarator",
+    "name": "IncludeSecondaryWindows",
+    "scope": "",
+    "signature": "IncludeSecondaryWindows(bool value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 24,
+    "kind": "function_declarator",
+    "name": "DirtyRegionMode",
+    "scope": "",
+    "signature": "DirtyRegionMode()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 25,
+    "kind": "function_declarator",
+    "name": "DirtyRegionMode",
+    "scope": "",
+    "signature": "DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 26,
+    "kind": "function_declarator",
+    "name": "CaptureItem",
+    "scope": "",
+    "signature": "CaptureItem()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 28,
+    "kind": "function_declarator",
+    "name": "SetPixelFormat",
+    "scope": "",
+    "signature": "SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 35,
+    "kind": "function_declarator",
+    "name": "VisualizeDirtyRegions",
+    "scope": "",
+    "signature": "VisualizeDirtyRegions()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 36,
+    "kind": "function_declarator",
+    "name": "VisualizeDirtyRegions",
+    "scope": "",
+    "signature": "VisualizeDirtyRegions(bool value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 38,
+    "kind": "function_declarator",
+    "name": "MinUpdateInterval",
+    "scope": "",
+    "signature": "MinUpdateInterval()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 39,
+    "kind": "function_declarator",
+    "name": "MinUpdateInterval",
+    "scope": "",
+    "signature": "MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 41,
+    "kind": "function_declarator",
+    "name": "Close",
+    "scope": "",
+    "signature": "Close()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 44,
+    "kind": "function_declarator",
+    "name": "OnFrameArrived",
+    "scope": "",
+    "signature": "OnFrameArrived( winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool const& sender, winrt::Windows::Foundation::IInspectable const& args)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 48,
+    "kind": "function_declarator",
+    "name": "CheckClosed",
+    "scope": "",
+    "signature": "CheckClosed()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 56,
+    "kind": "function_declarator",
+    "name": "ResizeSwapChain",
+    "scope": "",
+    "signature": "ResizeSwapChain()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 57,
+    "kind": "function_declarator",
+    "name": "TryResizeSwapChain",
+    "scope": "",
+    "signature": "TryResizeSwapChain(winrt::Windows::Graphics::Capture::Direct3D11CaptureFrame const& frame)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 58,
+    "kind": "function_declarator",
+    "name": "TryUpdatePixelFormat",
+    "scope": "",
+    "signature": "TryUpdatePixelFormat()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+    "line": 59,
+    "kind": "function_declarator",
+    "name": "GetColorSpaceFromPixelFormat",
+    "scope": "",
+    "signature": "GetColorSpaceFromPixelFormat(DXGI_FORMAT format)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "InitializePlugins",
+    "scope": "World.WorldServer",
+    "signature": "private static bool InitializePlugins()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 59,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "World.WorldServer",
+    "signature": "s =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "InitializeConfigs",
+    "scope": "World.WorldServer",
+    "signature": "private static void InitializeConfigs()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "InitializeLogger",
+    "scope": "World.WorldServer",
+    "signature": "private static void InitializeLogger()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "EnablePlugins",
+    "scope": "World.WorldServer",
+    "signature": "private static void EnablePlugins(PluginEnableTime enableTime)",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 117,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "World.WorldServer",
+    "signature": "s =>",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 123,
+    "kind": "method_declaration",
+    "name": "Main",
+    "scope": "World.WorldServer",
+    "signature": "private static void Main()",
+    "category": "third_party"
+  },
+  {
+    "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+    "line": 128,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "World.WorldServer",
+    "signature": "_ =>",
+    "category": "third_party"
+  }
+]
