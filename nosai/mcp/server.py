@@ -9,6 +9,7 @@ from .config import load_config
 from .contracts import ActivationRequest, SimulationRequest, ToolRisk
 from .learning import LearningFactory
 from .auditor import McpAuditor
+from .chief import McpChief
 from .director import McpDirector
 from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 from .policy import McpPolicy
@@ -32,6 +33,7 @@ def create_server(config_path: Path | str | None = None):
         # Configuration cannot silently enable network mode; only the operator action can.
         config["network_enabled"] = False
     router = ModelRouter.from_config(config, policy)
+    chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=router.role_bindings)
     audit = AuditLog(config["audit_path"])
     learning = LearningFactory(config["learning_path"])
     try:
@@ -113,7 +115,7 @@ def create_server(config_path: Path | str | None = None):
     def mcp_role_propose_binding(employee_id: str, primary_model: str, fallback_models_json: str = "[]") -> str:
         if router.role_bindings is None:
             raise RuntimeError("role binding registry is not configured")
-        proposal = router.role_bindings.propose(employee_id, primary_model, json.loads(fallback_models_json))
+        proposal = chief.bindings.propose(employee_id, primary_model, json.loads(fallback_models_json))
         audit.append("role_binding_proposed", {"proposal_id": proposal["proposal_id"], "employee_id": employee_id})
         return json.dumps(proposal, ensure_ascii=False)
 
@@ -121,7 +123,7 @@ def create_server(config_path: Path | str | None = None):
     def mcp_role_promote_binding(proposal_id: str, checks_json: str, confirmation: str = "") -> str:
         if router.role_bindings is None:
             raise RuntimeError("role binding registry is not configured")
-        result = router.role_bindings.promote(proposal_id, json.loads(checks_json), confirmation)
+        result = chief.promote_binding(proposal_id, json.loads(checks_json), confirmation)
         audit.append("role_binding_promoted", {"proposal_id": proposal_id, "employee_id": result["employee_id"], "version": result["version"]})
         return json.dumps(result, ensure_ascii=False)
 
@@ -129,9 +131,22 @@ def create_server(config_path: Path | str | None = None):
     def mcp_role_rollback_binding(employee_id: str, confirmation: str = "") -> str:
         if router.role_bindings is None:
             raise RuntimeError("role binding registry is not configured")
-        result = router.role_bindings.rollback(employee_id, confirmation)
+        result = chief.rollback_binding(employee_id, confirmation)
         audit.append("role_binding_rolled_back", {"employee_id": employee_id, "version": result["version"]})
         return json.dumps(result, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_chief_health() -> str:
+        """Return the MCP Chief health report and immutable authority boundaries."""
+        result = chief.health_check()
+        audit.append("chief_health_checked", {"status": result["status"], "failed_checks": result["failed_checks"]})
+        return json.dumps(result, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_chief_recommendations() -> str:
+        """Return actionable recommendations without mutating the runtime."""
+        result = chief.health_check()
+        return json.dumps({"schema_version": "mcp.chief.recommendations.v1", "recommendations": result["recommendations"]}, ensure_ascii=False)
 
     @server.tool()
     def mcp_verify_roles() -> str:
