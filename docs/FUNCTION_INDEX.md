@@ -1,5 +1,5 @@
 # Indice delle funzioni NosAiProject
-Snapshot: 3e4a8c42d75a73ccf5c6b739705e6293b059827e.
+Snapshot: historical manifest; regenerate from the exact target commit before relying on counts.
 Manifest: [FUNCTION_INDEX.json](FUNCTION_INDEX.json).
 Audit: [DOCUMENTATION_ALIGNMENT_AUDIT.md](DOCUMENTATION_ALIGNMENT_AUDIT.md).
 
@@ -22,7 +22,7 @@ tree-sitter-powershell==0.26.4.
 La versione 0.26.0 di tree-sitter ha prodotto un crash durante questa scansione;
 0.25.2 ha completato la scansione.
 
-python scripts/build_function_index.py CHECKOUT COMMIT OUTPUT_DIRECTORY
+python scripts/build_function_index.py CHECKOUT COMMIT OUTPUT_DIRECTORY --strict
 
 Il generatore legge i file Git tracciati e produce un JSON monolitico con copertura
 e funzioni. Per consultazione su GitHub, suddividere functions per radice e blocchi
