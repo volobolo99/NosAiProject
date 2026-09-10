@@ -67,8 +67,20 @@ class McpChief:
                 catalog = self.router.catalog()
                 enabled = [item for item in catalog if item.get("enabled")]
                 checks["provider_catalog"] = {"ok": bool(enabled), "enabled": len(enabled), "total": len(catalog)}
+                enabled_ids = {str(item.get("provider_id")) for item in enabled}
+                operational_ids = self.health.operational_provider_ids()
+                checks["provider_health"] = {
+                    "ok": bool(enabled_ids & operational_ids),
+                    "enabled": sorted(enabled_ids),
+                    "operational": sorted(enabled_ids & operational_ids),
+                    "states": {
+                        provider_id: self.health.status(f"provider:{provider_id}:operational")
+                        for provider_id in sorted(enabled_ids)
+                    },
+                }
             except (AttributeError, OSError, ValueError) as exc:
                 checks["provider_catalog"] = {"ok": False, "errors": [str(exc)]}
+                checks["provider_health"] = {"ok": False, "errors": [str(exc)]}
         checks["policy_boundaries"] = {
             "ok": all(
                 not self.authority[key]
@@ -109,6 +121,8 @@ class McpChief:
             recommendations.append("restore the evidence store before promoting bindings")
         if not checks.get("provider_catalog", {}).get("ok", True):
             recommendations.append("restore or qualify at least one enabled provider before online inference")
+        if not checks.get("provider_health", {}).get("ok", True):
+            recommendations.append("record a fresh operational health observation for at least one enabled provider")
         if not checks.get("policy_boundaries", {}).get("ok", False):
             recommendations.append("suspend MCP and restore immutable policy boundaries")
         if not recommendations:
@@ -161,3 +175,4 @@ class McpChief:
 
     def rollback_binding(self, employee_id: str, confirmation: str) -> dict[str, Any]:
         return self.bindings.rollback(employee_id, confirmation)
+
