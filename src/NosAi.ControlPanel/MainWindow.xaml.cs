@@ -122,6 +122,24 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnOpenMcpPanel(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "http://127.0.0.1:8770/",
+                UseShellExecute = true
+            });
+            Status("Pannello MCP aperto su http://127.0.0.1:8770/");
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Apertura pannello MCP fallita.", ex);
+            Status("Pannello MCP non disponibile: avvia scripts/mcp_dashboard_server.py.");
+        }
+    }
+
     private async void OnStartRuntime(object sender, RoutedEventArgs e) => await StartRuntimeAsync();
 
     private async void OnStopRuntime(object sender, RoutedEventArgs e)
