@@ -1,7 +1,7 @@
 # INDICE DI ROUTING — NosAiProject
 
 Mappa file → responsabilità → tipi pubblici. Serve a individuare il file esatto senza esplorare il repo. Per ownership e regole di archiviazione consultare `docs/REPOSITORY_ORDER.md`.
-Generato il 2026-09-02 da scansione diretta di `C:\Users\volob\Desktop\NosAiProject`.
+Generato il 2026-09-10 dal tree GitHub del ramo `main`.
 Notazione: `percorso (righe) — responsabilità. Tipi: ...`
 
 Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serve rigenerarlo per modifiche interne ai metodi.
