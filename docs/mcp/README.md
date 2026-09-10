@@ -33,6 +33,19 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 - `docs/mcp/ROLE_CATALOG.md` + `schemas/mcp_employee_role.schema.json` — identità, specializzazioni, modelli primari/fallback e divieti.
 - `nosai/mcp/dashboard.py` — API e pannello locale dedicato.
 
+## Binding dinamico dei dipendenti
+
+Il pannello espone il catalogo e il ciclo controllato:
+
+- `GET /api/mcp/roles` — ruoli e specializzazioni;
+- `GET /api/mcp/role-bindings` — binding attivi versionati;
+- `GET /api/mcp/role-proposals` — proposte in shadow;
+- `POST /api/mcp/role-bindings/propose` — crea una proposta senza cambiare il runtime;
+- `POST /api/mcp/role-bindings/promote` — promuove solo con conferma dell’operatore e `tests_passed`, `shadow_passed`, `audit_approved`;
+- `POST /api/mcp/role-bindings/rollback` — ripristina il binding precedente.
+
+Le scritture sono atomiche su `data/mcp/role_bindings.json`. Il router usa il binding promosso quando l’inferenza specifica `role_id`; se nessun modello qualificato del binding è disponibile, fallisce in modo esplicito invece di scegliere silenziosamente un modello diverso.
+
 ## Flusso online→offline
 
 1. Il pannello abilita MCP Rete.
