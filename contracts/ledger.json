@@ -317,7 +317,7 @@
           "target_file": "src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs",
           "signature": "WorldModelSnapshot RunOnce(Gate1CanonicalSnapshot snapshot, DateTime nowUtc)",
           "struct_size": null,
-          "test_file": "tests/NosAi.Runtime.Tests/WorldModelFusionLoopTests.cs",
+          "test_file": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
           "status": "MERGED",
           "invariants": [
             "UNKNOWN_PRESERVED",
