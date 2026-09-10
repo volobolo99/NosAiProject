@@ -11,6 +11,8 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 | apprendimento offline | `nosai/mcp/learning.py` | `schemas/mcp_learning_candidate.schema.json`, `tests/test_mcp_hub_learning.py` |
 | chiavi API | `nosai/mcp/secrets.py`, `nosai/mcp/dashboard.py` | nessun plaintext; test cifratura |
 | audit | `nosai/mcp/audit.py` | payload sempre redatto |
+| Direttore/Auditor | `nosai/mcp/director.py`, `nosai/mcp/auditor.py` | `tests/test_mcp_hub_governance.py` |
+| ruoli | `nosai/mcp/roles.py` | `RoleArchitect.verify()` |
 | pannello | `nosai/mcp/static/index.html`, `scripts/mcp_dashboard_server.py` | API `/api/mcp/*` |
 
 ## Regole per i modelli programmatori
@@ -20,5 +22,4 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 3. Non aggiungere endpoint che restituiscono segreti, token o stato privilegiato.
 4. Ogni modifica deve avere test negativo e test di determinismo quando applicabile.
 5. Aggiornare il contratto solo con una nuova versione e una nota di migrazione.
-
 
