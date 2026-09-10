@@ -1,0 +1,193 @@
+{
+  "contract_id": "mcp-research-lab-001",
+  "version": "1.0.0",
+  "status": "DRAFT",
+  "design_approved": true,
+  "implementation_verified": false,
+  "spec": "docs/mcp/RESEARCH_LAB_SPEC.md",
+  "scope": [
+    "chief_authority",
+    "role_evolution",
+    "binding_evolution",
+    "multiagent_workers",
+    "research",
+    "experiments",
+    "offline_consolidation"
+  ],
+  "envelopes": {
+    "ChangeRequest": [
+      "change_id",
+      "kind",
+      "target_id",
+      "expected_revision",
+      "candidate_digest",
+      "mandate_id",
+      "rollback_ref"
+    ],
+    "EvidenceRecord": [
+      "evidence_id",
+      "candidate_digest",
+      "test_version",
+      "dataset_digest",
+      "executor_id",
+      "environment_digest",
+      "artifact_digest",
+      "result",
+      "observed_at"
+    ],
+    "Experiment": [
+      "experiment_id",
+      "hypothesis",
+      "baseline_digest",
+      "candidate_digest",
+      "metrics",
+      "dataset_split",
+      "resource_policy",
+      "state"
+    ],
+    "WorkerLease": [
+      "task_id",
+      "worker_id",
+      "role_revision",
+      "binding_revision",
+      "expires_at",
+      "fencing_token"
+    ],
+    "ReleaseDecision": [
+      "decision_id",
+      "candidate_digest",
+      "evidence_ids",
+      "mandate_id",
+      "expected_revision",
+      "rollback_ref"
+    ]
+  },
+  "work_packages": [
+    {
+      "id": "LAB-01",
+      "depends_on": [],
+      "objective": "Close caller-asserted audit promotion gap with authenticated evidence authority",
+      "files": [
+        "nosai/mcp/bindings.py",
+        "nosai/mcp/chief.py",
+        "nosai/mcp/dashboard.py",
+        "nosai/mcp/server.py"
+      ],
+      "acceptance": [
+        "forged/missing/stale evidence rejected",
+        "candidate digest mismatch rejected",
+        "evaluator cannot be candidate author"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-02",
+      "depends_on": [
+        "LAB-01"
+      ],
+      "objective": "Transactional shared state and JSON migration",
+      "files": [
+        "nosai/mcp/bindings.py",
+        "nosai/mcp/router.py"
+      ],
+      "acceptance": [
+        "two processes observe same revision",
+        "stale write rejected",
+        "rollback survives restart",
+        "crash does not partially promote"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-03",
+      "depends_on": [
+        "LAB-02"
+      ],
+      "objective": "Persistent scheduler and independent health supervisor",
+      "files": [
+        "nosai/mcp/chief.py"
+      ],
+      "acceptance": [
+        "restart resumes checkpoint",
+        "expired lease fenced",
+        "offline mode makes no remote calls",
+        "missing observation stays UNKNOWN"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-04",
+      "depends_on": [
+        "LAB-02"
+      ],
+      "objective": "Versioned roles, bindings and pooled workers",
+      "files": [
+        "nosai/mcp/roles.py",
+        "nosai/mcp/router.py"
+      ],
+      "acceptance": [
+        "role retirement preserves memory",
+        "inflight task retains binding",
+        "shared provider concurrency respected",
+        "delegation cycles stop"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-05",
+      "depends_on": [
+        "LAB-01",
+        "LAB-03",
+        "LAB-04"
+      ],
+      "objective": "Research experiments and independent evaluation",
+      "files": [
+        "nosai/mcp/chief.py",
+        "nosai/mcp/learning.py"
+      ],
+      "acceptance": [
+        "held-out evaluation separate from optimization",
+        "failed experiment retained",
+        "resources yield to gameplay",
+        "offline skill needs validated evidence"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-06",
+      "depends_on": [
+        "LAB-05"
+      ],
+      "objective": "Mandate-based releases and reversible retirement",
+      "files": [
+        "nosai/mcp/chief.py",
+        "nosai/mcp/server.py"
+      ],
+      "acceptance": [
+        "within-mandate release needs no repeated confirmation",
+        "out-of-mandate operation rejected",
+        "dependent tools block retirement",
+        "canary regression triggers compatible rollback"
+      ],
+      "status": "PLANNED"
+    },
+    {
+      "id": "LAB-07",
+      "depends_on": [
+        "LAB-06"
+      ],
+      "objective": "Control panel and end-to-end certification",
+      "files": [
+        "nosai/mcp/dashboard.py",
+        "nosai/mcp/static/index.html"
+      ],
+      "acceptance": [
+        "real metrics with provenance",
+        "pause/cancel survive restart",
+        "all service integrations exercised",
+        "CI and Windows replay evidence recorded"
+      ],
+      "status": "PLANNED"
+    }
+  ]
+}
