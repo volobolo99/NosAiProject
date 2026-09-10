@@ -1,0 +1,4502 @@
+[
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 303,
+    "kind": "method_declaration",
+    "name": "Survivors",
+    "scope": "PlayerVitalsOracle",
+    "signature": "public static List<PlayerVitalsHit> Survivors( IReadOnlyList<PlayerVitalsHit> before, IReadOnlyList<PlayerVitalsHit> after)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 368,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "PlayerVitalsReading",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 406,
+    "kind": "method_declaration",
+    "name": "ClampWindow",
+    "scope": "PlayerVitalsScan",
+    "signature": "public static int ClampWindow(int requestedBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 416,
+    "kind": "method_declaration",
+    "name": "LastStartOffset",
+    "scope": "PlayerVitalsScan",
+    "signature": "public static int LastStartOffset(int windowLength)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 419,
+    "kind": "method_declaration",
+    "name": "Collect",
+    "scope": "PlayerVitalsScan",
+    "signature": "public static void Collect( ReadOnlySpan<byte> window, MapIdAnchorKind anchor, List<PlayerVitalsHit> into)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "VitalsPairHit",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "MovedDuringScanReason",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static string? MovedDuringScanReason( int? hpAfterScan, int? mpAfterScan, uint hpSearched, uint mpSearched)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "KeepAdjacent",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static List<VitalsPairHit> KeepAdjacent( IReadOnlyList<IntPtr> candidates, Func<IntPtr, uint?> readWord, uint max, uint current)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "Confirm",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static List<VitalsPairHit> Confirm( IReadOnlyList<VitalsPairHit> previous, Func<IntPtr, uint?> readWord, uint max, uint current)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "CanConfirm",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static bool CanConfirm(uint before, uint after)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 174,
+    "kind": "method_declaration",
+    "name": "Verdict",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static string? Verdict(IReadOnlyList<VitalsPairHit> survivors, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "UnchangedReason",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "public static string? UnchangedReason(uint before, uint after, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static int Run(string? endpoint, int seconds = 20)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 315,
+    "kind": "method_declaration",
+    "name": "Word",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "private static Func<IntPtr, uint?> Word(ClientMemorySession session)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 315,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "address =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 321,
+    "kind": "method_declaration",
+    "name": "Search",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static List<VitalsPairHit> Search( ClientMemorySession session, Func<IntPtr, uint?> read, uint max, uint current, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 336,
+    "kind": "method_declaration",
+    "name": "Settle",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "private static VitalsPairHit? Settle( Func<IntPtr, uint?> read, IReadOnlyList<VitalsPairHit> candidates, uint before, uint after, uint max, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+    "line": 364,
+    "kind": "method_declaration",
+    "name": "TryListen",
+    "scope": "PlayerVitalsCalibrator",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryListen( IPAddress address, int port, long characterId, int seconds, int round, out WirePlayerVitals vitals, out WirePlayerVitals earliest, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PlayerVitalsProbe",
+    "signature": "public static int Run( string? capturePath = null, int watchSeconds = 0, int windowBytes = PlayerVitalsScan.DefaultWindowBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "FormatRow",
+    "scope": "PlayerVitalsProbe",
+    "signature": "internal static string FormatRow(in PlayerVitalsHit hit, WirePlayerVitals? wire, string vs)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "PrintEstablished",
+    "scope": "PlayerVitalsProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static void PrintEstablished(ClientMemorySession session, WirePlayerVitals? wire)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "PrintTable",
+    "scope": "PlayerVitalsProbe",
+    "signature": "private static void PrintTable(IReadOnlyList<PlayerVitalsHit> hits, WirePlayerVitals? wire)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "LoadWire",
+    "scope": "PlayerVitalsProbe",
+    "signature": "private static WirePlayerVitals? LoadWire(string? capturePath, long playerId, out string source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "Pad",
+    "scope": "PlayerVitalsProbe",
+    "signature": "private static string Pad(string text, int width)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "PointerAnchor",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 91,
+    "kind": "method_declaration",
+    "name": "Classify",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static AnchorKind Classify( IntPtr holder, IntPtr moduleBase, long moduleSize, IntPtr playerManager, IntPtr playerObject, int baseWindow)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "Within",
+    "scope": "PointerAnchorHunter",
+    "signature": "private static bool Within(long at, IntPtr baseAddress, int window)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "OffsetFor",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static long OffsetFor( AnchorKind kind, IntPtr holder, IntPtr moduleBase, IntPtr playerManager, IntPtr playerObject)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "Best",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static PointerAnchor? Best(IReadOnlyList<PointerAnchor> anchors)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Verdict",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static string? Verdict(IReadOnlyList<PointerAnchor> anchors)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "Anchor",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static List<PointerAnchor> Anchor( IReadOnlyList<(IntPtr Holder, IntPtr Points)> holders, IntPtr target, IntPtr moduleBase, long moduleSize, IntPtr playerManager, IntPtr playerObject, int baseWindow)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "FindPointersInto",
+    "scope": "PointerAnchorHunter",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static List<(IntPtr Holder, IntPtr Points)> FindPointersInto( ProcessMemoryReader reader, IntPtr target, int span, out bool truncated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 273,
+    "kind": "method_declaration",
+    "name": "FindPointersIntoAny",
+    "scope": "PointerAnchorHunter",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static Dictionary<long, List<(IntPtr Holder, IntPtr Points)>> FindPointersIntoAny( ProcessMemoryReader reader, IReadOnlyList<IntPtr> targets, int span)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 281,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PointerAnchorHunter",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 281,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PointerAnchorHunter",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 340,
+    "kind": "method_declaration",
+    "name": "IndexOfFirstAtLeast",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static int IndexOfFirstAtLeast(long[] sorted, long value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 366,
+    "kind": "method_declaration",
+    "name": "TryFollow",
+    "scope": "PointerAnchorHunter",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static bool TryFollow( ProcessMemoryReader reader, in PointerAnchor anchor, IntPtr moduleBase, IntPtr playerManager, IntPtr playerObject, out IntPtr reached, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 418,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "PointerAnchorHunter",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static int Report(ClientMemorySession session, IntPtr target, int span, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 477,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PointerAnchorHunter",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static int Run(string? addressText, int span = DefaultSpan)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+    "line": 504,
+    "kind": "method_declaration",
+    "name": "TryParseAddress",
+    "scope": "PointerAnchorHunter",
+    "signature": "public static bool TryParseAddress(string? text, out IntPtr address)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PositionAwareGameplayProvider.cs",
+    "line": 47,
+    "kind": "constructor_declaration",
+    "name": "PositionAwareGameplayProvider",
+    "scope": "PositionAwareGameplayProvider",
+    "signature": "public PositionAwareGameplayProvider(IGameplayProvider inner, IPlayerPositionProvider position)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PositionAwareGameplayProvider.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "PositionAwareGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Live",
+    "scope": "MemoryReadResult",
+    "signature": "public static MemoryReadResult Live(byte[] bytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "MemoryReadResult",
+    "signature": "public static MemoryReadResult Unknown(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 64,
+    "kind": "constructor_declaration",
+    "name": "ProcessMemoryReader",
+    "scope": "ProcessMemoryReader",
+    "signature": "private ProcessMemoryReader(IntPtr handle, int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 70,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProcessMemoryReader",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "ProcessMemoryReader",
+    "signature": "public static ProcessMemoryReader? TryOpen( int processId, SecurityPrincipal principal, out string? failureReason, IRuntimeAuthorizationPolicy? authorization = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ProcessMemoryReader",
+    "signature": "public MemoryReadResult Read(IntPtr address, int length)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "ReadValidatedInt32",
+    "scope": "ProcessMemoryReader",
+    "signature": "public ClassifiedValue<int?> ReadValidatedInt32(IntPtr address, Func<int, bool> isPlausible, DateTime observedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "EnumerateRegions",
+    "scope": "ProcessMemoryReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] public IEnumerable<MemoryRegion> EnumerateRegions()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "IsReadable",
+    "scope": "ProcessMemoryReader",
+    "signature": "private static bool IsReadable(uint protect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 236,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ProcessMemoryReader",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 245,
+    "kind": "method_declaration",
+    "name": "OpenProcess",
+    "scope": "ProcessMemoryReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"kernel32.dll\", SetLastError = true)] private static extern IntPtr OpenProcess(int desiredAccess, bool inheritHandle, int processId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 249,
+    "kind": "method_declaration",
+    "name": "ReadProcessMemoryNative",
+    "scope": "ProcessMemoryReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"kernel32.dll\", SetLastError = true, EntryPoint = \"ReadProcessMemory\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool ReadProcessMemoryNative( IntPtr process, IntPtr address, [Out] byte[] buffer, int size, out IntPtr bytesRead);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 255,
+    "kind": "method_declaration",
+    "name": "CloseHandle",
+    "scope": "ProcessMemoryReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"kernel32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool CloseHandle(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+    "line": 282,
+    "kind": "method_declaration",
+    "name": "VirtualQueryEx",
+    "scope": "ProcessMemoryReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"kernel32.dll\", SetLastError = true)] private static extern int VirtualQueryEx( IntPtr process, IntPtr address, out MemoryBasicInformation buffer, int length);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "FindWindow",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Unicode)] private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "GetWindowThreadProcessId",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\")] private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "IsWindow",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindow(IntPtr hWnd);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "IsWindowVisible",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindowVisible(IntPtr hWnd);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "GetWindowTextLength",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Unicode)] private static extern int GetWindowTextLength(IntPtr hWnd);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "GetWindowText",
+    "scope": "RealClientConnector",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true, CharSet = CharSet.Unicode)] private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 99,
+    "kind": "constructor_declaration",
+    "name": "RealClientConnector",
+    "scope": "RealClientConnector",
+    "signature": "public RealClientConnector( GuardAiNetworkChannel networkChannel, string? clientProcessNames = null, string? windowTitle = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "RealClientConnector",
+    "signature": "public ClientBaselineSnapshot Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "AttachedProcessHasExited",
+    "scope": "RealClientConnector",
+    "signature": "private bool AttachedProcessHasExited()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "VerifyAndAttachClient",
+    "scope": "RealClientConnector",
+    "signature": "public bool VerifyAndAttachClient()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 287,
+    "kind": "method_declaration",
+    "name": "CaptureBaselineSnapshot",
+    "scope": "RealClientConnector",
+    "signature": "public ClientBaselineSnapshot CaptureBaselineSnapshot()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 358,
+    "kind": "method_declaration",
+    "name": "StartRealNetworkTransportAsync",
+    "scope": "RealClientConnector",
+    "signature": "public Task StartRealNetworkTransportAsync(CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 368,
+    "kind": "method_declaration",
+    "name": "GetNetworkSnapshot",
+    "scope": "RealClientConnector",
+    "signature": "public Gate1ConnectionSnapshot GetNetworkSnapshot()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 374,
+    "kind": "method_declaration",
+    "name": "LogAttachmentSuccess",
+    "scope": "RealClientConnector",
+    "signature": "private void LogAttachmentSuccess(string processName, int processId, IntPtr windowHandle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 392,
+    "kind": "method_declaration",
+    "name": "ReportStateChange",
+    "scope": "RealClientConnector",
+    "signature": "private void ReportStateChange(string? state, string message)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 400,
+    "kind": "method_declaration",
+    "name": "IsLiveWindow",
+    "scope": "RealClientConnector",
+    "signature": "private static bool IsLiveWindow(IntPtr hwnd)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 414,
+    "kind": "method_declaration",
+    "name": "TryReadProcessName",
+    "scope": "RealClientConnector",
+    "signature": "private string? TryReadProcessName()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 428,
+    "kind": "method_declaration",
+    "name": "TryReadProcessResponding",
+    "scope": "RealClientConnector",
+    "signature": "private bool? TryReadProcessResponding(out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 454,
+    "kind": "method_declaration",
+    "name": "TryReadWindowVisible",
+    "scope": "RealClientConnector",
+    "signature": "private static bool? TryReadWindowVisible(IntPtr hwnd)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 468,
+    "kind": "method_declaration",
+    "name": "TryReadWindowTitle",
+    "scope": "RealClientConnector",
+    "signature": "private static string? TryReadWindowTitle(IntPtr hwnd, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 512,
+    "kind": "method_declaration",
+    "name": "DetachCurrentProcess",
+    "scope": "RealClientConnector",
+    "signature": "private void DetachCurrentProcess()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 519,
+    "kind": "method_declaration",
+    "name": "ThrowIfDisposed",
+    "scope": "RealClientConnector",
+    "signature": "private void ThrowIfDisposed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+    "line": 524,
+    "kind": "method_declaration",
+    "name": "DisposeAsync",
+    "scope": "RealClientConnector",
+    "signature": "public async ValueTask DisposeAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetAwareGameplayProvider.cs",
+    "line": 52,
+    "kind": "constructor_declaration",
+    "name": "TargetAwareGameplayProvider",
+    "scope": "TargetAwareGameplayProvider",
+    "signature": "public TargetAwareGameplayProvider( IGameplayProvider inner, ITargetFrameSource screen, TargetRoiCalibration calibration, IPlayerAttackObserver? wire = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetAwareGameplayProvider.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "TargetAwareGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetAwareGameplayProvider.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ITargetFrameSource",
+    "signature": "TargetFrameObservation Read();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "TryGet",
+    "scope": "WireEntityNameTable",
+    "signature": "public bool TryGet(long entityId, out WireEntityName entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "Compare",
+    "scope": "WireEntityNameTable",
+    "signature": "public static string Compare(in EntityNameCandidate memory, WireEntityName? wire)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "FromCapture",
+    "scope": "WireEntityNameTable",
+    "signature": "public static WireEntityNameTable FromCapture(string path, GameReferenceDatabase? catalog)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 80,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireEntityNameTable",
+    "signature": "frame =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "TryParsePacket",
+    "scope": "WireEntityNameTable",
+    "signature": "public static bool TryParsePacket(string text, GameReferenceDatabase? catalog, out WireEntityName entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 118,
+    "kind": "method_declaration",
+    "name": "TryParseEnter",
+    "scope": "WireEntityNameTable",
+    "signature": "private static bool TryParseEnter( string[] fields, GameReferenceDatabase? catalog, out WireEntityName entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 154,
+    "kind": "method_declaration",
+    "name": "TryParseDrop",
+    "scope": "WireEntityNameTable",
+    "signature": "private static bool TryParseDrop( string[] fields, GameReferenceDatabase? catalog, out WireEntityName entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "ResolveVnum",
+    "scope": "WireEntityNameTable",
+    "signature": "private static string? ResolveVnum(string kind, int vnum, GameReferenceDatabase? catalog)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "Compare",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "public static string Compare(in PlayerVitalsCandidate memory, WirePlayerVitals? wire)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "FromCapture",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "public static WirePlayerVitals? FromCapture(string path, long? playerId, bool firstInsteadOfLast = false)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 102,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "frame =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "TryParsePacket",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "public static bool TryParsePacket(string text, long? playerId, out WirePlayerVitals entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 141,
+    "kind": "method_declaration",
+    "name": "TryParseStat",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "private static bool TryParseStat(string[] fields, out WirePlayerVitals entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 163,
+    "kind": "method_declaration",
+    "name": "TryParseOther",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "private static bool TryParseOther(string[] fields, long? playerId, out WirePlayerVitals entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "TryParseEnter",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "private static bool TryParseEnter(string[] fields, long? playerId, out WirePlayerVitals entry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "TryInt",
+    "scope": "WirePlayerVitalsParser",
+    "signature": "private static bool TryInt(string text, out int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+    "line": 60,
+    "kind": "constructor_declaration",
+    "name": "ActuationAuthority",
+    "scope": "ActuationAuthority",
+    "signature": "private ActuationAuthority(SafetyToken? token, string? command)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Planned",
+    "scope": "ActuationAuthority",
+    "signature": "public static ActuationAuthority Planned(SafetyToken token)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "Commanded",
+    "scope": "ActuationAuthority",
+    "signature": "public static ActuationAuthority Commanded(string operatorCommand)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "ActuationAuthority",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "IsUsable",
+    "scope": "ActuationAuthority",
+    "signature": "public bool IsUsable(DateTime nowUtc, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 46,
+    "kind": "constructor_declaration",
+    "name": "ActuationScope",
+    "scope": "ActuationScope",
+    "signature": "internal ActuationScope(GatedInputBackend gate, CommitRequest request, ActuationAuthority authority)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 54,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ActuationScope",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 65,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ActuationScope",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 70,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ActuationScope",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ActuationScope",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ActuationScope",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 79,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ActuationScope",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "TryEnter",
+    "scope": "ActuationScope",
+    "signature": "internal bool TryEnter(out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "RecordKey",
+    "scope": "ActuationScope",
+    "signature": "internal void RecordKey(ushort virtualKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "RecordButton",
+    "scope": "ActuationScope",
+    "signature": "internal void RecordButton(MouseButton button)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "Forget",
+    "scope": "ActuationScope",
+    "signature": "internal void Forget(HeldInput input)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "Abort",
+    "scope": "ActuationScope",
+    "signature": "public void Abort(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ActuationScope",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "ReleaseEverything",
+    "scope": "ActuationScope",
+    "signature": "private void ReleaseEverything()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+    "line": 175,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "ActuationScope",
+    "signature": "internal string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "ForegroundWindow",
+    "scope": "ICommitEnvironment",
+    "signature": "IntPtr ForegroundWindow();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "RootWindowFromPoint",
+    "scope": "ICommitEnvironment",
+    "signature": "IntPtr RootWindowFromPoint(int screenX, int screenY);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "IsCloaked",
+    "scope": "ICommitEnvironment",
+    "signature": "bool? IsCloaked(IntPtr window);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "ReadEpoch",
+    "scope": "ICommitEnvironment",
+    "signature": "GeometryEpoch ReadEpoch(IntPtr window);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 156,
+    "kind": "constructor_declaration",
+    "name": "CommitPointValidator",
+    "scope": "CommitPointValidator",
+    "signature": "public CommitPointValidator( ICommitEnvironment environment, IHumanInputMonitor humanInput, TimeSpan? courtesyWindow = null, TimeSpan? maxEmissionLatency = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 169,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 172,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 175,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 175,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CommitPointValidator",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 178,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 178,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CommitPointValidator",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 185,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 185,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CommitPointValidator",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 188,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 188,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CommitPointValidator",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 199,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CommitPointValidator",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 199,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CommitPointValidator",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 204,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "CommitPointValidator",
+    "signature": "public CommitDecision Validate(in CommitRequest request)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 237,
+    "kind": "method_declaration",
+    "name": "MayEmit",
+    "scope": "CommitPointValidator",
+    "signature": "public bool MayEmit(in CommitDecision decision, out string? refusalReason, out TimeSpan latency)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 268,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "CommitPointValidator",
+    "signature": "private string? Evaluate(in CommitRequest request)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 319,
+    "kind": "method_declaration",
+    "name": "ForegroundWindow",
+    "scope": "Win32CommitEnvironment",
+    "signature": "public IntPtr ForegroundWindow()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 322,
+    "kind": "method_declaration",
+    "name": "RootWindowFromPoint",
+    "scope": "Win32CommitEnvironment",
+    "signature": "public IntPtr RootWindowFromPoint(int screenX, int screenY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 331,
+    "kind": "method_declaration",
+    "name": "IsCloaked",
+    "scope": "Win32CommitEnvironment",
+    "signature": "public bool? IsCloaked(IntPtr window)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 351,
+    "kind": "method_declaration",
+    "name": "ReadEpoch",
+    "scope": "Win32CommitEnvironment",
+    "signature": "public GeometryEpoch ReadEpoch(IntPtr window)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 359,
+    "kind": "method_declaration",
+    "name": "GetForegroundWindow",
+    "scope": "Win32CommitEnvironment",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] private static partial nint GetForegroundWindow();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 363,
+    "kind": "method_declaration",
+    "name": "WindowFromPoint",
+    "scope": "Win32CommitEnvironment",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] private static partial nint WindowFromPoint(Point point);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 367,
+    "kind": "method_declaration",
+    "name": "GetAncestor",
+    "scope": "Win32CommitEnvironment",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] private static partial nint GetAncestor(nint window, uint flags);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+    "line": 371,
+    "kind": "method_declaration",
+    "name": "DwmGetWindowAttribute",
+    "scope": "Win32CommitEnvironment",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"dwmapi.dll\")] private static partial int DwmGetWindowAttribute(nint window, int attribute, out int value, int size);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 103,
+    "kind": "constructor_declaration",
+    "name": "GatedInputBackend",
+    "scope": "GatedInputBackend",
+    "signature": "public GatedInputBackend(IInputBackend inner, RuntimeSafetyPolicy policy) : this(inner, () => policy)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 104,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GatedInputBackend",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 113,
+    "kind": "constructor_declaration",
+    "name": "GatedInputBackend",
+    "scope": "GatedInputBackend",
+    "signature": "public GatedInputBackend(IInputBackend inner, Func<RuntimeSafetyPolicy> policySource) : this(inner, policySource, null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 124,
+    "kind": "constructor_declaration",
+    "name": "GatedInputBackend",
+    "scope": "GatedInputBackend",
+    "signature": "public GatedInputBackend( IInputBackend inner, Func<RuntimeSafetyPolicy> policySource, CommitPointValidator? commitPoint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 140,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GatedInputBackend",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "TryBeginActuation",
+    "scope": "GatedInputBackend",
+    "signature": "public bool TryBeginActuation( in CommitRequest request, in ActuationAuthority authority, out ActuationScope? scope, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "AbortOpenScope",
+    "scope": "GatedInputBackend",
+    "signature": "public bool AbortOpenScope(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "CloseScope",
+    "scope": "GatedInputBackend",
+    "signature": "internal void CloseScope(ActuationScope scope)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 251,
+    "kind": "method_declaration",
+    "name": "ReleaseHeld",
+    "scope": "GatedInputBackend",
+    "signature": "internal void ReleaseHeld(HeldInput input)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 265,
+    "kind": "method_declaration",
+    "name": "Allowed",
+    "scope": "GatedInputBackend",
+    "signature": "private bool Allowed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 279,
+    "kind": "method_declaration",
+    "name": "Refuse",
+    "scope": "GatedInputBackend",
+    "signature": "private void Refuse(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 288,
+    "kind": "method_declaration",
+    "name": "MayMove",
+    "scope": "GatedInputBackend",
+    "signature": "private bool MayMove(out ActuationScope? scope)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 325,
+    "kind": "method_declaration",
+    "name": "MayCommit",
+    "scope": "GatedInputBackend",
+    "signature": "private bool MayCommit(out ActuationScope? scope)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 354,
+    "kind": "method_declaration",
+    "name": "TryGetCursorPosition",
+    "scope": "GatedInputBackend",
+    "signature": "public bool TryGetCursorPosition(out int x, out int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 358,
+    "kind": "method_declaration",
+    "name": "MoveRelative",
+    "scope": "GatedInputBackend",
+    "signature": "public bool MoveRelative(int dx, int dy)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 360,
+    "kind": "method_declaration",
+    "name": "MoveAbsolute",
+    "scope": "GatedInputBackend",
+    "signature": "public bool MoveAbsolute(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 362,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "GatedInputBackend",
+    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 380,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "GatedInputBackend",
+    "signature": "public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 404,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "GatedInputBackend",
+    "signature": "public bool ScrollWheel(int detents)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 422,
+    "kind": "constructor_declaration",
+    "name": "RecordingInputBackend",
+    "scope": "RecordingInputBackend",
+    "signature": "public RecordingInputBackend(int cursorX = 0, int cursorY = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 428,
+    "kind": "method_declaration",
+    "name": "TryGetCursorPosition",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool TryGetCursorPosition(out int x, out int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 435,
+    "kind": "method_declaration",
+    "name": "MoveRelative",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool MoveRelative(int dx, int dy)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 443,
+    "kind": "method_declaration",
+    "name": "MoveAbsolute",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool MoveAbsolute(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 451,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 457,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 464,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool ScrollWheel(int detents)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 470,
+    "kind": "method_declaration",
+    "name": "ReleaseMouseButton",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool ReleaseMouseButton(MouseButton button)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+    "line": 476,
+    "kind": "method_declaration",
+    "name": "ReleaseKey",
+    "scope": "RecordingInputBackend",
+    "signature": "public bool ReleaseKey(ushort virtualKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 16,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IHumanInputMonitor",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 28,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IHumanInputMonitor",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 31,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IHumanInputMonitor",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IHumanInputMonitor",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 108,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "HumanInputMonitor",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 134,
+    "kind": "method_declaration",
+    "name": "TryStart",
+    "scope": "HumanInputMonitor",
+    "signature": "public bool TryStart(out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 155,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "HumanInputMonitor",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "PumpWindows",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] private void PumpWindows(ManualResetEventSlim ready, ref string? installFailure)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 215,
+    "kind": "method_declaration",
+    "name": "OnMouse",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] private IntPtr OnMouse(int code, IntPtr wParam, IntPtr lParam)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "OnKeyboard",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] private IntPtr OnKeyboard(int code, IntPtr wParam, IntPtr lParam)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "Record",
+    "scope": "HumanInputMonitor",
+    "signature": "private void Record(bool injected)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 251,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "HumanInputMonitor",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 269,
+    "kind": "method_declaration",
+    "name": "StopWindows",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] private void StopWindows()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "SetWindowsHookExW",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\", SetLastError = true, EntryPoint = \"SetWindowsHookExW\")] private static partial nint SetWindowsHookExW(int idHook, nint callback, nint module, uint threadId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 333,
+    "kind": "method_declaration",
+    "name": "UnhookWindowsHookEx",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool UnhookWindowsHookEx(nint hook);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 338,
+    "kind": "method_declaration",
+    "name": "CallNextHookEx",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] private static partial nint CallNextHookEx(nint hook, int code, nint wParam, nint lParam);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 342,
+    "kind": "method_declaration",
+    "name": "GetMessageW",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\", EntryPoint = \"GetMessageW\")] private static partial int GetMessageW(out Msg message, nint window, uint filterMin, uint filterMax);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 346,
+    "kind": "method_declaration",
+    "name": "TranslateMessage",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool TranslateMessage(ref Msg message);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 351,
+    "kind": "method_declaration",
+    "name": "DispatchMessageW",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\", EntryPoint = \"DispatchMessageW\")] private static partial nint DispatchMessageW(ref Msg message);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 355,
+    "kind": "method_declaration",
+    "name": "PostThreadMessageW",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\", EntryPoint = \"PostThreadMessageW\")] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool PostThreadMessageW(uint threadId, uint message, nint wParam, nint lParam);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 360,
+    "kind": "method_declaration",
+    "name": "GetCurrentThreadId",
+    "scope": "HumanInputMonitor",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"kernel32.dll\")] private static partial uint GetCurrentThreadId();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+    "line": 373,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NotWatchingHumanInput",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "InputAuthorityProbe",
+    "signature": "public static int Run(int watchRepeats = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "InputAuthorityProbe",
+    "signature": "public static InputAuthorityReading Observe( SessionActuationAuthority authority, string? windowDescription = null, TimeProvider? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "Format",
+    "scope": "InputAuthorityProbe",
+    "signature": "public static string Format(in InputAuthorityReading reading)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "FormatWindow",
+    "scope": "InputAuthorityProbe",
+    "signature": "public static string FormatWindow(int processId, IntPtr handle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "RunWindows",
+    "scope": "InputAuthorityProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(int watchRepeats)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "TryFindWindow",
+    "scope": "InputAuthorityProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "RunAllTestsAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "public static async Task<bool> RunAllTestsAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool Run(string name, Func<bool> check)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "RunAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> RunAsync(string name, Func<Task<bool>> check)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool Report(string name, bool passed, string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "TestGateRefusesWhenDisabled",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestGateRefusesWhenDisabled()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "TestGateAdmitsWhenEnabled",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestGateAdmitsWhenEnabled()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "TestGateFollowsLivePolicy",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestGateFollowsLivePolicy()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 125,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputControlTestRunner",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 135,
+    "kind": "method_declaration",
+    "name": "TestCursorReadIsNotGated",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestCursorReadIsNotGated()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "TestCompositionRootIsGated",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestCompositionRootIsGated()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "TestFunctionKeysResolve",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestFunctionKeysResolve()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 173,
+    "kind": "method_declaration",
+    "name": "TestModifierChordsResolve",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestModifierChordsResolve()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 185,
+    "kind": "method_declaration",
+    "name": "TestExtendedKeysResolve",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestExtendedKeysResolve()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 200,
+    "kind": "method_declaration",
+    "name": "TestUnknownKeyIsRefused",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestUnknownKeyIsRefused()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "TestBareModifierIsNotAChord",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestBareModifierIsNotAChord() // \"CTRL+CTRL\" leads with a modifier but targets one too: refused, because // only a real key may be the chord's target.",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 216,
+    "kind": "method_declaration",
+    "name": "TestBezierPlanEndpoints",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestBezierPlanEndpoints()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 224,
+    "kind": "method_declaration",
+    "name": "TestBezierPlanDeterminism",
+    "scope": "InputControlTestRunner",
+    "signature": "private static bool TestBezierPlanDeterminism()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 232,
+    "kind": "method_declaration",
+    "name": "TestMoveUsesRealCursorAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestMoveUsesRealCursorAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 253,
+    "kind": "method_declaration",
+    "name": "TestKeyPressEmitsResolvedCodeAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestKeyPressEmitsResolvedCodeAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 263,
+    "kind": "method_declaration",
+    "name": "TestAdapterButtonMappingAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestAdapterButtonMappingAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 281,
+    "kind": "method_declaration",
+    "name": "TestAdapterBlockedByPolicyAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestAdapterBlockedByPolicyAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 298,
+    "kind": "method_declaration",
+    "name": "TestAdapterNeedsHealthyClientAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestAdapterNeedsHealthyClientAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 316,
+    "kind": "method_declaration",
+    "name": "TestOperatingTierCeilingAsync",
+    "scope": "InputControlTestRunner",
+    "signature": "private static async Task<bool> TestOperatingTierCeilingAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 334,
+    "kind": "method_declaration",
+    "name": "BuildAdapter",
+    "scope": "InputControlTestRunner",
+    "signature": "private static NosAi.Runtime.Adapters.NosTaleGameAdapter BuildAdapter( RecordingInputBackend recorder, RuntimeSafetyPolicy policy, NosAi.Runtime.Contracts.TrustTier operatingTier = NosAi.Runtime.Contracts.TrustTier.Tier3_AutonomousRestricted)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+    "line": 344,
+    "kind": "method_declaration",
+    "name": "NoDelay",
+    "scope": "InputControlTestRunner",
+    "signature": "private static Task NoDelay(int _, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "SetWindowsHookExW",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true)] private static extern IntPtr SetWindowsHookExW(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "UnhookWindowsHookEx",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool UnhookWindowsHookEx(IntPtr hhk);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "CallNextHookEx",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\")] private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "GetMessageW",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\")] private static extern int GetMessageW(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "PostThreadMessageW",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool PostThreadMessageW(uint idThread, uint msg, IntPtr wParam, IntPtr lParam);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "GetCurrentThreadId",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"kernel32.dll\")] private static extern uint GetCurrentThreadId();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "GetSystemMetrics",
+    "scope": "InputEnvironmentProbe",
+    "signature": "[DllImport(\"user32.dll\")] private static extern int GetSystemMetrics(int index);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "InputEnvironmentProbe",
+    "signature": "public static InputProbeResult Run(IInputBackend backend)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "ProbeMouse",
+    "scope": "InputEnvironmentProbe",
+    "signature": "private static bool ProbeMouse(IInputBackend backend, out int verified, out int maxError, out string? failure)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "ProbeKeyboard",
+    "scope": "InputEnvironmentProbe",
+    "signature": "private static bool ProbeKeyboard(IInputBackend backend, out string? failure)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 209,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputEnvironmentProbe",
+    "signature": "(nCode, wParam, lParam) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 227,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputEnvironmentProbe",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+    "line": 296,
+    "kind": "method_declaration",
+    "name": "RunConsoleProbe",
+    "scope": "InputEnvironmentProbe",
+    "signature": "public static int RunConsoleProbe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "InputGuardsProbe",
+    "signature": "public static int Run(int watchSeconds = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "InputGuardsProbe",
+    "signature": "public static InputGuardReading Observe( ICommitEnvironment environment, IHumanInputMonitor human, in CommitRequest request, TimeSpan? courtesyWindow = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "Format",
+    "scope": "InputGuardsProbe",
+    "signature": "public static string Format(in InputGuardReading reading)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "RunWindows",
+    "scope": "InputGuardsProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(int watchSeconds)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 199,
+    "kind": "method_declaration",
+    "name": "FormatKnown",
+    "scope": "InputGuardsProbe",
+    "signature": "private static string FormatKnown(string state, in GeometryEpoch epoch)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "FormatHandle",
+    "scope": "InputGuardsProbe",
+    "signature": "private static string FormatHandle(string label, IntPtr handle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "FormatHuman",
+    "scope": "InputGuardsProbe",
+    "signature": "private static string FormatHuman(IHumanInputMonitor human, TimeSpan? idle, TimeSpan courtesy)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+    "line": 225,
+    "kind": "method_declaration",
+    "name": "TryFindWindow",
+    "scope": "InputGuardsProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(out ClientWindow window, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 39,
+    "kind": "constructor_declaration",
+    "name": "KeybindMap",
+    "scope": "KeybindMap",
+    "signature": "private KeybindMap(IReadOnlyDictionary<string, Keybind> binds)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 43,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindMap",
+    "signature": "key =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 47,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "KeybindMap",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 50,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "KeybindMap",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "TryLoad",
+    "scope": "KeybindMap",
+    "signature": "public static bool TryLoad(string path, out KeybindMap map, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "TryGet",
+    "scope": "KeybindMap",
+    "signature": "public bool TryGet(string intent, out Keybind bind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "TryParse",
+    "scope": "KeybindMap",
+    "signature": "private static bool TryParse(string json, out KeybindMap map, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "TryRejectDuplicateIntents",
+    "scope": "KeybindMap",
+    "signature": "private static bool TryRejectDuplicateIntents(string json, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "TryReadBind",
+    "scope": "KeybindMap",
+    "signature": "private static bool TryReadBind(JsonElement node, out Keybind bind, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindsCheck.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "KeybindsCheck",
+    "signature": "public static int Run(string? path = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindsCheck.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "ResolvePath",
+    "scope": "KeybindsCheck",
+    "signature": "public static string ResolvePath()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindsCheck.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Inspect",
+    "scope": "KeybindsCheck",
+    "signature": "public static KeybindsCheckReport Inspect(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/KeybindsCheck.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "Format",
+    "scope": "KeybindsCheck",
+    "signature": "public static string Format(in KeybindsCheckReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 38,
+    "kind": "constructor_declaration",
+    "name": "IntegrityLevel",
+    "scope": "IntegrityLevel",
+    "signature": "private IntegrityLevel(bool known, uint rid)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "FromRid",
+    "scope": "IntegrityLevel",
+    "signature": "public static IntegrityLevel FromRid(uint rid)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "ToString",
+    "scope": "IntegrityLevel",
+    "signature": "public override string ToString()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "IProcessIntegrityReader",
+    "signature": "IntegrityLevel Read(int processId, out string? failureReason);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 285,
+    "kind": "constructor_declaration",
+    "name": "SessionActuationAuthority",
+    "scope": "SessionActuationAuthority",
+    "signature": "public SessionActuationAuthority( IProcessIntegrityReader integrity, ICommitEnvironment environment, GatedInputBackend input, Func<bool> liveInputArmed, TimeProvider? clock = null, TimeSpan? validity = null, int tolerancePixels = DefaultTolerancePixels)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 305,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "SessionActuationAuthority",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 308,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "SessionActuationAuthority",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 313,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "SessionActuationAuthority",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 317,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "SessionActuationAuthority",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 317,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "SessionActuationAuthority",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "BeginSession",
+    "scope": "SessionActuationAuthority",
+    "signature": "public void BeginSession(IntPtr window, int clientProcessId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 348,
+    "kind": "method_declaration",
+    "name": "NoteForegroundRestored",
+    "scope": "SessionActuationAuthority",
+    "signature": "public void NoteForegroundRestored()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 365,
+    "kind": "method_declaration",
+    "name": "Reset",
+    "scope": "SessionActuationAuthority",
+    "signature": "public void Reset(string operatorReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 383,
+    "kind": "method_declaration",
+    "name": "CurrentRefusal",
+    "scope": "SessionActuationAuthority",
+    "signature": "public string? CurrentRefusal()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 436,
+    "kind": "method_declaration",
+    "name": "EnsureVerified",
+    "scope": "SessionActuationAuthority",
+    "signature": "public string? EnsureVerified()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 461,
+    "kind": "method_declaration",
+    "name": "Verify",
+    "scope": "SessionActuationAuthority",
+    "signature": "public SessionAuthorityVerdict Verify()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 482,
+    "kind": "method_declaration",
+    "name": "Store",
+    "scope": "SessionActuationAuthority",
+    "signature": "private SessionAuthorityVerdict Store(SessionAuthorityVerdict verdict)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 496,
+    "kind": "method_declaration",
+    "name": "Probe",
+    "scope": "SessionActuationAuthority",
+    "signature": "private SessionAuthorityVerdict Probe(IntPtr window, int clientProcessId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 593,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "SessionActuationAuthority",
+    "signature": "private int Observe(int targetX, int targetY, out int landedX, out int landedY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 627,
+    "kind": "method_declaration",
+    "name": "TryChooseProbePoint",
+    "scope": "SessionActuationAuthority",
+    "signature": "private static bool TryChooseProbePoint( in PixelRect client, int cursorX, int cursorY, out int targetX, out int targetY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 663,
+    "kind": "method_declaration",
+    "name": "Refuse",
+    "scope": "SessionActuationAuthority",
+    "signature": "private SessionAuthorityVerdict Refuse( IntPtr window, int clientProcessId, string reason, bool terminal, IntegrityLevel runtime = default, IntegrityLevel client = default, int pointerError = -1)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 707,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "public IntegrityLevel Read(int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 718,
+    "kind": "method_declaration",
+    "name": "ReadWindows",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static IntegrityLevel ReadWindows(int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 800,
+    "kind": "method_declaration",
+    "name": "OpenProcess",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"kernel32.dll\", SetLastError = true)] private static partial nint OpenProcess(int desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, int processId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 804,
+    "kind": "method_declaration",
+    "name": "CloseHandle",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"kernel32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool CloseHandle(nint handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 809,
+    "kind": "method_declaration",
+    "name": "OpenProcessToken",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"advapi32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool OpenProcessToken(nint process, int desiredAccess, out nint token);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 814,
+    "kind": "method_declaration",
+    "name": "GetTokenInformation",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"advapi32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static partial bool GetTokenInformation(nint token, int informationClass, nint information, int length, out int returnLength);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 819,
+    "kind": "method_declaration",
+    "name": "GetSidSubAuthorityCount",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"advapi32.dll\")] private static partial nint GetSidSubAuthorityCount(nint sid);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+    "line": 823,
+    "kind": "method_declaration",
+    "name": "GetSidSubAuthority",
+    "scope": "Win32ProcessIntegrityReader",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"advapi32.dll\")] private static partial nint GetSidSubAuthority(nint sid, uint index);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/VirtualKeys.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "Simple",
+    "scope": "KeyChord",
+    "signature": "public static KeyChord Simple(ushort virtualKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/VirtualKeys.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "TryResolve",
+    "scope": "VirtualKeys",
+    "signature": "public static bool TryResolve(string? name, out KeyChord chord)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/VirtualKeys.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "TryResolveSingle",
+    "scope": "VirtualKeys",
+    "signature": "private static bool TryResolveSingle(string token, out ushort virtualKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "ReleaseMouseButton",
+    "scope": "IInputReleaseBackend",
+    "signature": "bool ReleaseMouseButton(MouseButton button);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "ReleaseKey",
+    "scope": "IInputReleaseBackend",
+    "signature": "bool ReleaseKey(ushort virtualKey);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 62,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IInputBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "TryGetCursorPosition",
+    "scope": "IInputBackend",
+    "signature": "bool TryGetCursorPosition(out int x, out int y);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "MoveRelative",
+    "scope": "IInputBackend",
+    "signature": "bool MoveRelative(int dx, int dy);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "MoveAbsolute",
+    "scope": "IInputBackend",
+    "signature": "bool MoveAbsolute(int x, int y);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "IInputBackend",
+    "signature": "bool Click(MouseButton button, int delayBetweenDownUpMs = 45);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "IInputBackend",
+    "signature": "bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "IInputBackend",
+    "signature": "bool ScrollWheel(int detents);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 98,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Win32InputBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 98,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "Win32InputBackend",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "SendInput",
+    "scope": "Win32InputBackend",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true)] private static extern uint SendInput(uint nInputs, INPUT[] inputs, int cbSize);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "GetCursorPos",
+    "scope": "Win32InputBackend",
+    "signature": "[DllImport(\"user32.dll\", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetCursorPos(out POINT point);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "GetSystemMetrics",
+    "scope": "Win32InputBackend",
+    "signature": "[DllImport(\"user32.dll\")] private static extern int GetSystemMetrics(int index);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "TryGetCursorPosition",
+    "scope": "Win32InputBackend",
+    "signature": "public bool TryGetCursorPosition(out int x, out int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "MoveRelative",
+    "scope": "Win32InputBackend",
+    "signature": "public bool MoveRelative(int dx, int dy)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 162,
+    "kind": "method_declaration",
+    "name": "MoveAbsolute",
+    "scope": "Win32InputBackend",
+    "signature": "public bool MoveAbsolute(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 203,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "Win32InputBackend",
+    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "Win32InputBackend",
+    "signature": "public bool ScrollWheel(int detents)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 229,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "Win32InputBackend",
+    "signature": "public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 255,
+    "kind": "method_declaration",
+    "name": "ReleaseMouseButton",
+    "scope": "Win32InputBackend",
+    "signature": "public bool ReleaseMouseButton(MouseButton button)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 269,
+    "kind": "method_declaration",
+    "name": "ReleaseKey",
+    "scope": "Win32InputBackend",
+    "signature": "public bool ReleaseKey(ushort virtualKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 271,
+    "kind": "method_declaration",
+    "name": "Mouse",
+    "scope": "Win32InputBackend",
+    "signature": "private static INPUT Mouse(int dx, int dy, uint flags)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 277,
+    "kind": "method_declaration",
+    "name": "Key",
+    "scope": "Win32InputBackend",
+    "signature": "private static INPUT Key(ushort virtualKey, uint flags)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+    "line": 283,
+    "kind": "method_declaration",
+    "name": "Send",
+    "scope": "Win32InputBackend",
+    "signature": "private static bool Send(INPUT input)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "RegisterStation",
+    "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
+    "signature": "public void RegisterStation(MinilandStationState station)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "TickUpdate",
+    "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
+    "signature": "public void TickUpdate(TimeSpan elapsed)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "GetReadyStations",
+    "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
+    "signature": "public List<MinilandStationState> GetReadyStations()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 41,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "TryHarvestStation",
+    "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
+    "signature": "public bool TryHarvestStation(int stationInstanceId, out MinilandStationState? harvestedStation, out string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "SimulateMinigamePlay",
+    "scope": "NosAi.Miniland.Production.DeterministicMinigameSolver",
+    "signature": "public MinigameExecutionResult SimulateMinigamePlay(MinigameKind kind, int buildingLevel)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 77,
+    "kind": "constructor_declaration",
+    "name": "MinilandAutomationMasterEngine",
+    "scope": "NosAi.Miniland.Production.MinilandAutomationMasterEngine",
+    "signature": "public MinilandAutomationMasterEngine()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "InitializeDefaultStations",
+    "scope": "NosAi.Miniland.Production.MinilandAutomationMasterEngine",
+    "signature": "private void InitializeDefaultStations()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "RunAllTestsAsync",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "public static async Task<bool> RunAllTestsAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "RunTest",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool RunTest(string name, Func<bool> testFunc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool Report(string name, bool passed, string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "TestStationReadinessDetection",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestStationReadinessDetection()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "TestStationHarvestAndResetCooldown",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestStationHarvestAndResetCooldown()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "TestMinigameArcherySimulation",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestMinigameArcherySimulation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "TestMinigameFishingSimulation",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestMinigameFishingSimulation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "TestSchedulerTickProgression",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestSchedulerTickProgression()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "TestMinilandSecurityInvariant",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestMinilandSecurityInvariant()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/BinaryMapGridLoader.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "TryLoad",
+    "scope": "BinaryMapGridLoader",
+    "signature": "public bool TryLoad(int mapId, ReadOnlySpan<byte> fileBytes, out MapGrid grid, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "ExecuteOneRound",
+    "scope": "CollectCommand",
+    "signature": "public static (WalkRun Walk, WorldFact<int> Before, WorldFact<int> After) ExecuteOneRound( MapPoint destination, MapPoint origin, ItemId item, in MapGrid grid, OccupancyView view, PathWalkController controller, StepGuardChain chain, SingleStepExecutor executor, in ActuationAuthority authority, Func<PositionReading?> readPosition, GameplayObservation before, GameplayObservation after, EntityId playerId, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 165,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "CollectCommand",
+    "signature": "public static int Run(int x, int y, string vnum, int? requiredCount, int rounds = 1)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 191,
+    "kind": "method_declaration",
+    "name": "RunWindows",
+    "scope": "CollectCommand",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(int x, int y, string vnum, int? requiredCount, int rounds)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "RunWindowsCore",
+    "scope": "CollectCommand",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindowsCore( int x, int y, string vnum, int? requiredCount, int rounds, RuntimeComponents components, GatedInputBackend gated, ClientWindow window, int processId, ClientMemorySession session, LiveObservationGateway gateway)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 283,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 284,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 287,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 290,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 291,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 294,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 329,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CollectCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 349,
+    "kind": "method_declaration",
+    "name": "PrintVerdict",
+    "scope": "CollectCommand",
+    "signature": "private static void PrintVerdict(ItemId item, WorldFact<int> before, WorldFact<int> after, int? requiredCount)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+    "line": 376,
+    "kind": "method_declaration",
+    "name": "TryFindWindow",
+    "scope": "CollectCommand",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/IMapGridLoader.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "TryLoad",
+    "scope": "IMapGridLoader",
+    "signature": "bool TryLoad(int mapId, ReadOnlySpan<byte> fileBytes, out MapGrid grid, out string? failureReason);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 105,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGrid",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 108,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGrid",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 111,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGrid",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 127,
+    "kind": "constructor_declaration",
+    "name": "MapGrid",
+    "scope": "MapGrid",
+    "signature": "public MapGrid(int mapId, int width, int height, byte[] cells)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 173,
+    "kind": "method_declaration",
+    "name": "Contains",
+    "scope": "MapGrid",
+    "signature": "[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool Contains(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "RawAt",
+    "scope": "MapGrid",
+    "signature": "[MethodImpl(MethodImplOptions.AggressiveInlining)] public byte RawAt(int x, int y, byte fallback = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 197,
+    "kind": "method_declaration",
+    "name": "TryGetFlags",
+    "scope": "MapGrid",
+    "signature": "public bool TryGetFlags(int x, int y, out MapCellFlags flags)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 215,
+    "kind": "method_declaration",
+    "name": "IsWalkable",
+    "scope": "MapGrid",
+    "signature": "[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool IsWalkable(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 223,
+    "kind": "method_declaration",
+    "name": "BlocksAttack",
+    "scope": "MapGrid",
+    "signature": "[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool BlocksAttack(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 233,
+    "kind": "method_declaration",
+    "name": "IsRaidConstrained",
+    "scope": "MapGrid",
+    "signature": "public bool IsRaidConstrained(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "IsAggroDisabled",
+    "scope": "MapGrid",
+    "signature": "public bool IsAggroDisabled(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 249,
+    "kind": "method_declaration",
+    "name": "IsPvpDisabled",
+    "scope": "MapGrid",
+    "signature": "public bool IsPvpDisabled(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 278,
+    "kind": "method_declaration",
+    "name": "HasLineOfSight",
+    "scope": "MapGrid",
+    "signature": "public bool HasLineOfSight(int fromX, int fromY, int toX, int toY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 324,
+    "kind": "method_declaration",
+    "name": "HasLineOfSight",
+    "scope": "MapGrid",
+    "signature": "public bool HasLineOfSight(GridPoint from, GridPoint to)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 328,
+    "kind": "method_declaration",
+    "name": "IsWalkable",
+    "scope": "MapGrid",
+    "signature": "public bool IsWalkable(GridPoint point)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 331,
+    "kind": "method_declaration",
+    "name": "BlocksAttack",
+    "scope": "MapGrid",
+    "signature": "public bool BlocksAttack(GridPoint point)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+    "line": 344,
+    "kind": "method_declaration",
+    "name": "CellUnchecked",
+    "scope": "MapGrid",
+    "signature": "[MethodImpl(MethodImplOptions.AggressiveInlining)] private byte CellUnchecked(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridCheck.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Inspect",
+    "scope": "MapGridCheck",
+    "signature": "public static int Inspect(string mapsDirectory, int mapId, int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridCheck.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "MapGridCheck",
+    "signature": "public static int Run(string? mapsDirectory = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridCheck.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "MapGridCheck",
+    "signature": "public static string Describe(MapGrid grid, int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridCheck.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "FormatByte",
+    "scope": "MapGridCheck",
+    "signature": "private static string FormatByte(byte value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Contains",
+    "scope": "MapGridSize",
+    "signature": "public bool Contains(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "TryResolveDedicatedMapsDirectory",
+    "scope": "MapGridExtractor",
+    "signature": "public static bool TryResolveDedicatedMapsDirectory(out string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "Extract",
+    "scope": "MapGridExtractor",
+    "signature": "public static MapGridExtractReport Extract(string clientDataDirectory, string outputDirectory)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 181,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapGridExtractor",
+    "signature": "static (a, b) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 193,
+    "kind": "method_declaration",
+    "name": "TryLoadCatalog",
+    "scope": "MapGridExtractor",
+    "signature": "public static bool TryLoadCatalog( string mapsDirectory, out IReadOnlyList<MapGridSize> maps, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 249,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapGridExtractor",
+    "signature": "static (a, b) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 255,
+    "kind": "method_declaration",
+    "name": "TryInfo",
+    "scope": "MapGridExtractor",
+    "signature": "public static bool TryInfo( string mapsDirectory, int mapId, out MapGrid grid, out string? fileHash, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 290,
+    "kind": "method_declaration",
+    "name": "RunExtract",
+    "scope": "MapGridExtractor",
+    "signature": "public static int RunExtract(string? clientDataDirectory = null, string? outputDirectory = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 323,
+    "kind": "method_declaration",
+    "name": "RunInfo",
+    "scope": "MapGridExtractor",
+    "signature": "public static int RunInfo(int mapId, string? mapsDirectory = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 364,
+    "kind": "method_declaration",
+    "name": "TryFingerprintClient",
+    "scope": "MapGridExtractor",
+    "signature": "public static bool TryFingerprintClient( string clientDataDirectory, out string? fingerprint, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 410,
+    "kind": "method_declaration",
+    "name": "TryDecodeGrid",
+    "scope": "MapGridExtractor",
+    "signature": "internal static bool TryDecodeGrid( IMapGridLoader loader, int mapId, ReadOnlySpan<byte> payload, out MapGrid grid, out byte[] fileBytes, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 449,
+    "kind": "method_declaration",
+    "name": "TryInflate",
+    "scope": "MapGridExtractor",
+    "signature": "private static bool TryInflate(ReadOnlySpan<byte> payload, out byte[] inflated, out string? failure)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 490,
+    "kind": "method_declaration",
+    "name": "TryMapId",
+    "scope": "MapGridExtractor",
+    "signature": "private static bool TryMapId(NosArchiveEntry entry, out int mapId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 509,
+    "kind": "method_declaration",
+    "name": "Fingerprint",
+    "scope": "MapGridExtractor",
+    "signature": "private static string Fingerprint(string clientDataDirectory, string[] archives)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+    "line": 529,
+    "kind": "method_declaration",
+    "name": "WriteManifest",
+    "scope": "MapGridExtractor",
+    "signature": "private static void WriteManifest( string outputDirectory, string fingerprint, IReadOnlyList<MapGridExtractedFile> written)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 76,
+    "kind": "constructor_declaration",
+    "name": "MapGridSetIdentity",
+    "scope": "MapGridSetIdentity",
+    "signature": "private MapGridSetIdentity(string setHash, ImmutableArray<MapGridFile> files, string clientFingerprint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 84,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGridSetIdentity",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 87,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGridSetIdentity",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 98,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapGridSetIdentity",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "Compute",
+    "scope": "MapGridSetIdentity",
+    "signature": "public static MapGridSetIdentity Compute(IEnumerable<MapGridFile> files, string clientFingerprint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 130,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapGridSetIdentity",
+    "signature": "static (a, b) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 163,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapGridSetIdentity",
+    "signature": "f =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "HashFile",
+    "scope": "MapGridSetIdentity",
+    "signature": "public static string HashFile(ReadOnlySpan<byte> fileBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "MayLoad",
+    "scope": "MapGridSetIdentity",
+    "signature": "public static bool MayLoad( MapGridSetIdentity? recorded, MapGridSetIdentity? current, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "Hash",
+    "scope": "MapGridSetIdentity",
+    "signature": "private static string Hash(byte[] bytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "Short",
+    "scope": "MapGridSetIdentity",
+    "signature": "private static string Short(string hash)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+    "line": 225,
+    "kind": "method_declaration",
+    "name": "IsHex",
+    "scope": "MapGridSetIdentity",
+    "signature": "private static bool IsHex(string value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "MapIdHit",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "NameOf",
+    "scope": "MapIdAnchors",
+    "signature": "public static string NameOf(MapIdAnchorKind anchor)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "Parse",
+    "scope": "MapIdAnchors",
+    "signature": "public static MapIdAnchorKind? Parse(string text)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "Anchor",
+    "scope": "MapIdAnchors",
+    "signature": "public MapIdHit Anchor(long address, int mapId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "TryResolve",
+    "scope": "MapIdAnchors",
+    "signature": "public bool TryResolve(MapIdHit hit, out long address)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "Distance",
+    "scope": "MapIdAnchors",
+    "signature": "private static long Distance(long baseAddress, long address)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 206,
+    "kind": "method_declaration",
+    "name": "PlausibleIds",
+    "scope": "MapIdFinder",
+    "signature": "public static HashSet<int> PlausibleIds(IReadOnlyList<MapGridSize> maps, int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "Narrow",
+    "scope": "MapIdFinder",
+    "signature": "public static List<MapIdHit> Narrow( IReadOnlyList<MapIdHit> previous, IReadOnlySet<int> plausible, MapIdAnchors anchors, Func<long, int?> read, bool requireChanged)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 260,
+    "kind": "method_declaration",
+    "name": "Proven",
+    "scope": "MapIdFinder",
+    "signature": "public static bool Proven(IReadOnlyList<MapIdHit> hits, int passes, int restarts)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 276,
+    "kind": "method_declaration",
+    "name": "Carry",
+    "scope": "MapIdFinder",
+    "signature": "public static List<MapIdHit> Carry(MapIdCandidates previous, int processId, out string note)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 314,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "MapIdFinder",
+    "signature": "public static int Run(string? mapsDirectory = null, string? candidatePath = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 414,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapIdFinder",
+    "signature": "address =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 467,
+    "kind": "method_declaration",
+    "name": "Advice",
+    "scope": "MapIdFinder",
+    "signature": "internal static string Advice(int count, int durable, int passes, int restarts, bool truncated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 483,
+    "kind": "method_declaration",
+    "name": "Scan",
+    "scope": "MapIdFinder",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static List<MapIdHit> Scan( ProcessMemoryReader reader, IReadOnlySet<int> plausible, MapIdAnchors anchors, out int regions, out long bytes, out bool truncated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 542,
+    "kind": "method_declaration",
+    "name": "InMainModule",
+    "scope": "MapIdFinder",
+    "signature": "internal static bool InMainModule(MemoryRegion region, in MapIdAnchors anchors)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 552,
+    "kind": "method_declaration",
+    "name": "ReadInt32",
+    "scope": "MapIdFinder",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int? ReadInt32(ProcessMemoryReader reader, long address)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 560,
+    "kind": "method_declaration",
+    "name": "TryLoadCandidates",
+    "scope": "MapIdFinder",
+    "signature": "internal static bool TryLoadCandidates(string path, out MapIdCandidates? candidates)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 596,
+    "kind": "method_declaration",
+    "name": "ReadHeader",
+    "scope": "MapIdFinder",
+    "signature": "private static void ReadHeader( string line, ref int passes, ref int restarts, ref int processId, ref int playerX, ref int playerY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 629,
+    "kind": "method_declaration",
+    "name": "TryInt",
+    "scope": "MapIdFinder",
+    "signature": "private static void TryInt(string text, ref int target)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 635,
+    "kind": "method_declaration",
+    "name": "TryParseHit",
+    "scope": "MapIdFinder",
+    "signature": "private static bool TryParseHit(string line, out MapIdHit hit)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 667,
+    "kind": "method_declaration",
+    "name": "FormatCandidates",
+    "scope": "MapIdFinder",
+    "signature": "internal static string FormatCandidates( IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 689,
+    "kind": "method_declaration",
+    "name": "SaveCandidates",
+    "scope": "MapIdFinder",
+    "signature": "private static void SaveCandidates( string path, IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "NotAttempted",
+    "scope": "MovementVerification",
+    "signature": "public static MovementVerification NotAttempted(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 153,
+    "kind": "constructor_declaration",
+    "name": "MovementVerifier",
+    "scope": "MovementVerifier",
+    "signature": "public MovementVerifier( TimeSpan? window = null, TimeSpan? tolerance = null, TimeSpan? pollInterval = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 190,
+    "kind": "method_declaration",
+    "name": "Verify",
+    "scope": "MovementVerifier",
+    "signature": "public MovementVerification Verify( MapPoint from, MapPoint to, DateTime emittedAtUtc, Func<PositionReading?> readPosition, CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 259,
+    "kind": "method_declaration",
+    "name": "Result",
+    "scope": "MovementVerifier",
+    "signature": "private static MovementVerification Result( MovementOutcome outcome, string? detail, MapPoint? observed, long started, int accepted)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
+    "line": 155,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "OccupancyFreshness",
+    "signature": "public static OccupancyVerdict Evaluate( MapPoint destination, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "Refuse",
+    "scope": "OccupancyFreshness",
+    "signature": "private static OccupancyVerdict Refuse(string reason, DynamicOccupancy occupancy, TimeSpan? age)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "Admit",
+    "scope": "PathRevalidation",
+    "signature": "public static PathAdmission Admit(in MapGrid grid, IReadOnlyList<MapPoint> path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "Revalidate",
+    "scope": "PathRevalidation",
+    "signature": "public static SegmentRevalidation Revalidate( in MapGrid grid, MapPoint from, MapPoint to, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "IsAdjacent",
+    "scope": "PathRevalidation",
+    "signature": "public static bool IsAdjacent(MapPoint a, MapPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 258,
+    "kind": "method_declaration",
+    "name": "ToCells",
+    "scope": "PathRevalidation",
+    "signature": "public static IReadOnlyList<MapPoint> ToCells(ImmutableArray<GridPoint> waypoints)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 121,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReplanPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 191,
+    "kind": "constructor_declaration",
+    "name": "PathWalkController",
+    "scope": "PathWalkController",
+    "signature": "public PathWalkController(ReplanPolicy? policy = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 209,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 209,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 215,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 215,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 218,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 218,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 228,
+    "kind": "method_declaration",
+    "name": "TryStart",
+    "scope": "PathWalkController",
+    "signature": "public bool TryStart( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 276,
+    "kind": "method_declaration",
+    "name": "Next",
+    "scope": "PathWalkController",
+    "signature": "public WalkDecision Next( in MapGrid grid, MapPoint observedPosition, in OccupancyView view, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 341,
+    "kind": "method_declaration",
+    "name": "NoteStepOutcome",
+    "scope": "PathWalkController",
+    "signature": "public void NoteStepOutcome(in MovementVerification verification)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 395,
+    "kind": "method_declaration",
+    "name": "TryAdoptReplan",
+    "scope": "PathWalkController",
+    "signature": "public bool TryAdoptReplan( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 436,
+    "kind": "method_declaration",
+    "name": "Cancel",
+    "scope": "PathWalkController",
+    "signature": "public void Cancel()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 443,
+    "kind": "method_declaration",
+    "name": "Replan",
+    "scope": "PathWalkController",
+    "signature": "private WalkDecision Replan(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 479,
+    "kind": "method_declaration",
+    "name": "Resynchronise",
+    "scope": "PathWalkController",
+    "signature": "private void Resynchronise(MapPoint observed)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 498,
+    "kind": "method_declaration",
+    "name": "NoteProgress",
+    "scope": "PathWalkController",
+    "signature": "private void NoteProgress(MapPoint observed)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 508,
+    "kind": "method_declaration",
+    "name": "Distance",
+    "scope": "PathWalkController",
+    "signature": "private static int Distance(MapPoint a, MapPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "DistanceTo",
+    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
+    "signature": "public double DistanceTo(GridPoint other)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "ManhattanDistanceTo",
+    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
+    "signature": "public int ManhattanDistanceTo(GridPoint other)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "ToString",
+    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
+    "signature": "public override string ToString()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 113,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 114,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 115,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 116,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 126,
+    "kind": "constructor_declaration",
+    "name": "MapGridData",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public MapGridData(int mapId, string mapName, int width, int height, TileType initialTile = TileType.Unobserved)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 144,
+    "kind": "method_declaration",
+    "name": "CreateFullyWalkable",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public static MapGridData CreateFullyWalkable(int mapId, string mapName, int width, int height)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 150,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "IsWithinBounds",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public bool IsWithinBounds(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 164,
+    "kind": "method_declaration",
+    "name": "GetTileType",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public TileType GetTileType(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 170,
+    "kind": "method_declaration",
+    "name": "SetTileType",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public void SetTileType(int x, int y, TileType type)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 178,
+    "kind": "method_declaration",
+    "name": "IsWalkable",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public bool IsWalkable(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "ClearHazardOverlay",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public void ClearHazardOverlay()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "ApplyHazard",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public void ApplyHazard(DynamicHazardZone hazard)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "GetTraversalCost",
+    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
+    "signature": "public float GetTraversalCost(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "FindPath",
+    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
+    "signature": "public CalculatedPathResult FindPath( MapGridData map, GridPoint start, GridPoint target, bool allowDiagonal = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 313,
+    "kind": "method_declaration",
+    "name": "Heuristic",
+    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
+    "signature": "private static float Heuristic(GridPoint a, GridPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 320,
+    "kind": "method_declaration",
+    "name": "ReconstructPath",
+    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
+    "signature": "private static ImmutableArray<GridPoint> ReconstructPath(Dictionary<GridPoint, GridPoint> cameFrom, GridPoint current)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 339,
+    "kind": "method_declaration",
+    "name": "SmoothPath",
+    "scope": "NosAi.Navigation.Pathfinding.PathSmoother",
+    "signature": "public ImmutableArray<GridPoint> SmoothPath(MapGridData map, ImmutableArray<GridPoint> rawPath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 366,
+    "kind": "method_declaration",
+    "name": "HasLineOfSight",
+    "scope": "NosAi.Navigation.Pathfinding.PathSmoother",
+    "signature": "public bool HasLineOfSight(MapGridData map, GridPoint start, GridPoint end)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 416,
+    "kind": "constructor_declaration",
+    "name": "WorldMapPortalRouter",
+    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
+    "signature": "public WorldMapPortalRouter()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 421,
+    "kind": "method_declaration",
+    "name": "InitializeStandardNosTaleWorldGraph",
+    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
+    "signature": "private void InitializeStandardNosTaleWorldGraph()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 435,
+    "kind": "method_declaration",
+    "name": "AddBidirectionalPortal",
+    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
+    "signature": "public void AddBidirectionalPortal(string id, int map1, GridPoint pos1, int map2, GridPoint pos2, string targetName)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 441,
+    "kind": "method_declaration",
+    "name": "PlanMultiMapRoute",
+    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
+    "signature": "public List<MultiMapTransitLeg>? PlanMultiMapRoute(int startMapId, int destinationMapId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 462,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 524,
+    "kind": "constructor_declaration",
+    "name": "NavigationExecutionController",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
+    "signature": "public NavigationExecutionController()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 530,
+    "kind": "method_declaration",
+    "name": "StartNavigation",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
+    "signature": "public bool StartNavigation(MapGridData map, GridPoint start, GridPoint destination, bool applySmoothing = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 548,
+    "kind": "method_declaration",
+    "name": "UpdateNavigationTick",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
+    "signature": "public GridPoint? UpdateNavigationTick(GridPoint currentActualPosition, MapGridData map, GridPoint finalDestination)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 583,
+    "kind": "method_declaration",
+    "name": "CancelNavigation",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
+    "signature": "public void CancelNavigation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 597,
+    "kind": "method_declaration",
+    "name": "RunAllTestsAsync",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "public static async Task<bool> RunAllTestsAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 621,
+    "kind": "method_declaration",
+    "name": "RunTest",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool RunTest(string testName, Func<bool> testFunc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 636,
+    "kind": "method_declaration",
+    "name": "PrintResult",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static void PrintResult(string name, bool passed, string? error = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 653,
+    "kind": "method_declaration",
+    "name": "TestUnobservedTerrainIsNotWalkable",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestUnobservedTerrainIsNotWalkable()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 676,
+    "kind": "method_declaration",
+    "name": "TestBudgetExhaustionIsDistinctFromUnreachable",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestBudgetExhaustionIsDistinctFromUnreachable()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 691,
+    "kind": "method_declaration",
+    "name": "TestDiagonalDoesNotCutCorners",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestDiagonalDoesNotCutCorners()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 713,
+    "kind": "method_declaration",
+    "name": "TestAStarObstacleAvoidance",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestAStarObstacleAvoidance()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 722,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 723,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 728,
+    "kind": "method_declaration",
+    "name": "TestDynamicHazardAvoidance",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestDynamicHazardAvoidance()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 740,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 744,
+    "kind": "method_declaration",
+    "name": "TestPathSmoothingReduction",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestPathSmoothingReduction()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 756,
+    "kind": "method_declaration",
+    "name": "TestMultiMapPortalRouting",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestMultiMapPortalRouting()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 770,
+    "kind": "method_declaration",
+    "name": "TestStuckDetectionAndReroute",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestStuckDetectionAndReroute()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 786,
+    "kind": "method_declaration",
+    "name": "TestNavigationSecurityInvariant",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "private static bool TestNavigationSecurityInvariant()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 789,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 791,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+    "line": 791,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/RouteProbe.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "RouteProbe",
+    "signature": "public static int Run(int destinationMapId, float destinationX, float destinationY)",
+    "category": "project"
+  }
+]
