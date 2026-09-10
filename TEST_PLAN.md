@@ -4,7 +4,7 @@
 Il documento canonico per la strategia di test è `docs/TESTING.md`.
 
 ## Cosa esiste oggi
-Nel repository ci sono 407 file di test C# in `tests/` e 34 test Python. Gli script di build, test e validazione sono presenti in `scripts/` nelle versioni PowerShell e bash.
+Il repository contiene test C# e Python; i conteggi correnti sono generati in `docs/REPOSITORY_INVENTORY_2026-09-10.json`. Gli script di build, test e validazione sono presenti in `scripts/` nelle versioni PowerShell e bash.
 
 ## Livelli di verifica
 - **Present**: Codice presente con build e test verdi.
