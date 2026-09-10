@@ -69,8 +69,10 @@ Se l’evidenza dipende da un client Windows, provider online, GPU o hardware no
 
 Fonte: docs/mcp/RESEARCH_LAB_SPEC.md; contratto: contracts/mcp-research-lab-001.json.
 LAB-01..LAB-07 sono PLANNED, non implementati da questa importazione.
-Priorità iniziale: sostituire i booleani di audit forniti dal chiamante con evidenze
-verificate, quindi risolvere concorrenza e persistenza. R-208 è coperto da LAB-03.
+Priorità iniziale completata per i primi due pacchetti: le promozioni usano evidenze
+firmate e il registro usa `data/mcp/state.sqlite3` con migrazione JSON, revisioni,
+idempotenza e lease. Restano LAB-03..LAB-07: supervisione end-to-end, worker pool,
+esperimenti, rilasci a mandato e certificazione del pannello. R-208 è coperto da LAB-03.
 Il laboratorio non è attivo finché prove e integrazione end-to-end non sono completate.
 
 ## Indice funzioni e audit verificato
