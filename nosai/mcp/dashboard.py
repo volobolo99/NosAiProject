@@ -18,6 +18,7 @@ from .auditor import McpAuditor
 from .policy import McpPolicy, PolicyViolation
 from .router import ModelRouter
 from .secrets import SecretStore
+from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 
 
 class McpDashboardService:
@@ -29,6 +30,30 @@ class McpDashboardService:
         self._secret_path = config["secret_path"]
         self._director = McpDirector("data/mcp/proposals")
         self._auditor = McpAuditor()
+
+    def employee_roles(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "employee_id": role.employee_id,
+                "display_name": role.display_name,
+                "purpose": role.purpose,
+                "responsibilities": list(role.responsibilities),
+                "primary_model": role.primary_model,
+                "fallback_models": list(role.fallback_models),
+                "capabilities": list(role.capabilities),
+                "forbidden": list(role.forbidden),
+                "approval_required": role.approval_required,
+            }
+            for role in DEFAULT_EMPLOYEE_ROLES
+        ]
+
+    def verify_employee_roles(self) -> dict[str, Any]:
+        errors = RoleArchitect.verify_employee_catalog(DEFAULT_EMPLOYEE_ROLES)
+        return {
+            "valid": not errors,
+            "errors": errors,
+            "count": len(DEFAULT_EMPLOYEE_ROLES),
+        }
 
     def status(self) -> dict[str, Any]:
         return {
@@ -96,6 +121,12 @@ def make_handler(service: McpDashboardService):
                 return
             if path == "/api/mcp/providers":
                 self._json(200, {"providers": service.router.catalog()})
+                return
+            if path == "/api/mcp/roles":
+                self._json(200, {"roles": service.employee_roles()})
+                return
+            if path == "/api/mcp/roles/verify":
+                self._json(200, service.verify_employee_roles())
                 return
             if path == "/api/mcp/secrets":
                 try:
