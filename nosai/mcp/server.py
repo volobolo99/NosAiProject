@@ -71,7 +71,7 @@ def create_server(config_path: Path | str | None = None):
     @server.tool()
     def mcp_infer(prompt: str, capability: str = "", role_id: str = "") -> str:
         result = inference.infer(prompt, capability or None, role_id=role_id or None)
-        audit.append("inference_completed", {"capability": capability, "provider": router.choose(capability or None).provider_id})
+        audit.append("inference_completed", {"capability": capability, "role_id": role_id or None, "provider": router.choose(capability or None, role_id or None).provider_id})
         return json.dumps(result, ensure_ascii=False)
 
     @server.tool()
