@@ -23,7 +23,7 @@ Il MCP Chief mantiene l’Hub MCP disponibile, coerente e utile al motore princi
 
 ## Ciclo del watchdog
 
-1. Chiamare `mcp_chief_health` o `GET /api/mcp/chief`.
+1. Chiamare `mcp_chief_health` o `GET /api/mcp/chief`; il report controlla anche il catalogo dei provider quando il router è collegato.
 2. Se `status=degraded`, bloccare promozioni e seguire le raccomandazioni.
 3. Per un miglioramento: creare una proposta con file e contratto interessati.
 4. Eseguire test deterministici e shadow mode con il binding candidato.
