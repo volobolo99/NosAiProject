@@ -169,6 +169,17 @@ def create_server(config_path: Path | str | None = None):
         return json.dumps(result, ensure_ascii=False)
 
     @server.tool()
+    def mcp_chief_observe_health(
+        name: str,
+        status: str,
+        details_json: str = "{}",
+        ttl_s: int = 60,
+    ) -> str:
+        observation = chief.observe_health(name, status, json.loads(details_json), ttl_s=ttl_s)
+        audit.append("chief_health_observed", {"name": observation["name"], "status": observation["status"]})
+        return json.dumps(observation, ensure_ascii=False)
+
+    @server.tool()
     def mcp_chief_recommendations() -> str:
         """Return actionable recommendations without mutating the runtime."""
         result = chief.health_check()
