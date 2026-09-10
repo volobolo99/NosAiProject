@@ -15,6 +15,7 @@ from .contracts import SimulationRequest
 from .simulation import run_simulation
 from .director import McpDirector, ChangeProposal
 from .auditor import McpAuditor
+from .chief import McpChief
 from .policy import McpPolicy, PolicyViolation
 from .router import ModelRouter
 from .secrets import SecretStore
@@ -26,6 +27,7 @@ class McpDashboardService:
         config = load_config(config_path)
         self.policy = McpPolicy()
         self.router = ModelRouter.from_config(config, self.policy)
+        self._chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=self.router.role_bindings)
         self.audit = AuditLog(config["audit_path"])
         self._secret_path = config["secret_path"]
         self._director = McpDirector("data/mcp/proposals")
@@ -43,7 +45,7 @@ class McpDashboardService:
         registry = self.router.role_bindings
         if registry is None:
             raise RuntimeError("role binding registry is not configured")
-        proposal = registry.propose(
+        proposal = self._chief.bindings.propose(
             str(body.get("employee_id", "")),
             str(body.get("primary_model", "")),
             list(body.get("fallback_models", [])),
@@ -55,7 +57,7 @@ class McpDashboardService:
         registry = self.router.role_bindings
         if registry is None:
             raise RuntimeError("role binding registry is not configured")
-        result = registry.promote(
+        result = self._chief.promote_binding(
             str(body.get("proposal_id", "")),
             dict(body.get("checks", {})),
             str(body.get("confirmation", "")),
@@ -67,7 +69,7 @@ class McpDashboardService:
         registry = self.router.role_bindings
         if registry is None:
             raise RuntimeError("role binding registry is not configured")
-        result = registry.rollback(str(body.get("employee_id", "")), str(body.get("confirmation", "")))
+        result = self._chief.rollback_binding(str(body.get("employee_id", "")), str(body.get("confirmation", "")))
         self.audit.append("dashboard_role_binding_rolled_back", {"employee_id": result["employee_id"], "version": result["version"]})
         return result
 
@@ -94,6 +96,12 @@ class McpDashboardService:
             "errors": errors,
             "count": len(DEFAULT_EMPLOYEE_ROLES),
         }
+
+    def chief_health(self) -> dict[str, Any]:
+        """Run a read-only health tick for the MCP Chief watchdog."""
+        result = self._chief.health_check()
+        self.audit.append("dashboard_chief_health_checked", {"status": result["status"], "failed_checks": result["failed_checks"]})
+        return result
 
     def status(self) -> dict[str, Any]:
         return {
@@ -158,6 +166,9 @@ def make_handler(service: McpDashboardService):
             path = urlparse(self.path).path
             if path == "/api/mcp/status":
                 self._json(200, service.status())
+                return
+            if path == "/api/mcp/chief":
+                self._json(200, service.chief_health())
                 return
             if path == "/api/mcp/providers":
                 self._json(200, {"providers": service.router.catalog()})
