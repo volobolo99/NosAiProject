@@ -13,7 +13,18 @@ from pathlib import Path
 from typing import Any, Mapping
 
 _DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
-_FORBIDDEN_KEYS = {"api_key", "apikey", "credential", "password", "secret", "token"}
+_FORBIDDEN_KEYS = {
+    "api_key",
+    "apikey",
+    "credential",
+    "password",
+    "secret",
+    "token",
+    "access_token",
+    "refresh_token",
+    "authorization",
+    "private_key",
+}
 _PASS_STATUSES = {"ok", "pass", "passed", "success", "verified"}
 _DEFAULT_TTL_S = 3600
 
@@ -163,8 +174,13 @@ class EvidenceAuthority:
             raise ValueError("evidence result is too large")
         def visit(node: Any) -> None:
             if isinstance(node, Mapping):
-                lowered = {str(key).lower() for key in node}
-                if lowered & _FORBIDDEN_KEYS:
+                lowered = {str(key).lower().strip() for key in node}
+                forbidden = {
+                    key
+                    for key in lowered
+                    if key in _FORBIDDEN_KEYS or key.endswith("_token") or key.endswith("_secret")
+                }
+                if forbidden:
                     raise ValueError("evidence result cannot contain secret-like fields")
                 for child in node.values():
                     visit(child)
