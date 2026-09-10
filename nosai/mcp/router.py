@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Iterable
 
 from .contracts import ProviderConfig, RouteDecision
@@ -19,7 +20,7 @@ class ModelRouter:
     def from_config(cls, config: dict, policy: McpPolicy) -> "ModelRouter":
         providers = [ProviderConfig(**item) for item in config.get("providers", [])]
         binding_path = config.get("role_bindings_path", "data/mcp/role_bindings.json")
-        state_path = config.get("state_path") or str(__import__("pathlib").Path(binding_path).with_suffix(".sqlite3"))
+        state_path = config.get("state_path") or str(Path(binding_path).with_suffix(".sqlite3"))
         bindings = RoleBindingRegistry(binding_path, state_store=McpStateStore(state_path))
         return cls(policy=policy, providers=providers, role_bindings=bindings)
 
@@ -70,5 +71,6 @@ class ModelRouter:
             reason="lowest qualified tier under current policy",
             network_used=selected.network_required,
         )
+
 
 
