@@ -86,14 +86,14 @@ Il repository contiene due server e non devono essere trattati come duplicati eq
 
 Finché non viene accettato un ADR di consolidamento, gli agenti devono usare l’entrypoint richiesto dal contratto del task e non spostare tool da un server all’altro. Questa separazione è una decisione di routing, non una prova che entrambi offrano la stessa superficie.
 
-## 5. Stato dei confini da non confondere
+## 6. Stato dei confini da non confondere
 
 - Il runtime C# possiede oggi il percorso live e la Safety authority.
 - Il package Python `nosai/` contiene runtime/tooling e MCP; il contratto di proprietà dello stato fra C# e Python è ancora aperto nel ledger come **C-204**.
 - `GuardClient` e `GuardAi.App` restano nel tree per compatibilità/storico, ma la baseline corrente non li considera necessari al percorso PC-first; non introdurre nuove dipendenze mobile senza ADR.
 - `tools/deepseek-mcp` è un server di sviluppo distinto dal MCP Hub operativo.
 
-## 6. Contratti e stato
+## 7. Contratti e stato
 
 La lista completa dei CID, file, test, stato, blocker e domande aperte è in `docs/CONTRACT_MAP.md`, derivata da `contracts/ledger.json`.
 
@@ -105,7 +105,7 @@ I contratti aperti che influenzano la progettazione sono almeno:
 - contratti nativi/ASan se il progetto acquisirà davvero codice C/C++ (**C-003–C-005**);
 - eventuale hook memoria/DLL, che richiede una decisione di confine (**C-105**).
 
-## 7. Procedura di ricerca rapida per un agente
+## 8. Procedura di ricerca rapida per un agente
 
 1. Aprire `docs/SOURCE_OF_TRUTH.md`.
 2. Cercare il CID in `docs/CONTRACT_MAP.md`.
@@ -125,7 +125,7 @@ python -m pytest -q tests
 dotnet build src/NosAi.Runtime/NosAi.Runtime.csproj -c Release
 ```
 
-## 8. Definizione di “funzionante”
+## 9. Definizione di “funzionante”
 
 La presenza di file non equivale a funzionalità verificata. Un modulo è pronto soltanto quando:
 
