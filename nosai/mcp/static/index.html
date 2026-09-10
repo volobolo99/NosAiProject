@@ -15,6 +15,7 @@
   <h1>NosAi MCP</h1>
   <p>Controllo locale del gateway MCP. La rete è disattivata all'avvio.</p>
   <section><h2>Stato</h2><p id="status">Caricamento…</p><button id="toggle">Attiva MCP Rete</button></section>
+  <section><h2>MCP Chief</h2><p>Supervisione continua e read-only dello stato dell’Hub. Le raccomandazioni non modificano nulla senza il ciclo di audit e conferma.</p><pre id="chief-health">Caricamento…</pre></section>
   <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
   <section><h2>Dipendenti e binding dinamici</h2>
     <p>Una proposta entra prima in shadow. La promozione richiede test, shadow e audit indipendenti già registrati; il pannello non può inventare questi risultati.</p>
@@ -60,6 +61,7 @@
       document.querySelector('#toggle').textContent=s.network_enabled?'Disattiva MCP Rete':'Attiva MCP Rete';
       document.querySelector('#toggle').className=s.network_enabled?'off':'';
       document.querySelector('#providers').textContent=JSON.stringify(s.providers,null,2);
+      const chief=await json('/api/mcp/chief'); document.querySelector('#chief-health').textContent=JSON.stringify(chief,null,2);
       const k=await json('/api/mcp/secrets'); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
       await refreshRoles();
     }
