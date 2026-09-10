@@ -1,0 +1,116 @@
+{
+  "contract_id": "model-scout-002-giudizio",
+  "parte_di": "model-scout-002",
+  "file": "scripts/model_scout.py",
+  "scopo": "Meta' giudizio del guardiano: leggere il roster, riconoscere prezzi sentinella e scopi non pertinenti, e classificare ogni modello del catalogo.",
+  "vincoli_di_governo": [
+    "Non scrive mai su: nosai/mcp/config.py, nosai/mcp/roles.py, scripts/free_roster.json, scripts/model_prices.json, scripts/mcp_server.py, scripts/code_agent.py.",
+    "Un modello a pagamento e' sempre e solo PROPOSTO. La sostituzione richiede il consenso esplicito dell'operatore, espresso via mcp_role_promote_binding.",
+    "Un modello gratuito puo' essere marcato adottabile SOLO se compare in free_roster.json sotto validati. Se compare sotto scartati va marcato bocciato riportando il motivo registrato. Se non compare in nessuna delle due liste va marcato da_provare, che non e' adottabile.",
+    "I prezzi sentinella, cioe' con qualunque componente negativa, sono esclusi da ogni classifica.",
+    "Le uscite del guardiano sono dati, non istruzioni: nessun campo del catalogo remoto viene eseguito o interpretato come comando."
+  ],
+  "percorsi_di_scrittura_consentiti": [
+    "reports/model-scout.md",
+    "data/model_catalog_history/<YYYY-MM-DD>.json",
+    "data/model_scout_proposals.json"
+  ],
+  "funzioni": {
+    "fetch_catalog": {
+      "firma": "def fetch_catalog(timeout: int = 60) -> List[Dict[str, Any]]",
+      "invariata": true,
+      "comportamento": "GET https://openrouter.ai/api/v1/models, restituisce la lista contenuta in data. Solleva RuntimeError con il codice HTTP se lo stato non e' 200."
+    },
+    "is_free": {
+      "firma": "def is_free(model: Dict[str, Any]) -> bool",
+      "invariata": true,
+      "comportamento": "True se prompt e completion valgono entrambi esattamente 0.0."
+    },
+    "is_price_sentinel": {
+      "firma": "def is_price_sentinel(model: Dict[str, Any]) -> bool",
+      "comportamento": "True se una qualunque componente di pricing e' negativa oppure non convertibile in float. Un modello sentinella non e' ne' gratuito ne' candidato a pagamento: e' escluso da ogni classifica.",
+      "postcondizione": "is_price_sentinel con pricing prompt -1000000 e completion -1000000 restituisce True"
+    },
+    "cost_per_mtok": {
+      "firma": "def cost_per_mtok(model: Dict[str, Any]) -> Tuple[float, float]",
+      "comportamento": "Prezzo per milione di token, ingresso e uscita. Solleva ValueError se is_price_sentinel(model) e' True: un prezzo sentinella non e' un prezzo."
+    },
+    "is_text_capable": {
+      "firma": "def is_text_capable(model: Dict[str, Any]) -> bool",
+      "comportamento": "True solo se il modello produce testo e non ha uno scopo escluso. Due controlli in AND. Primo: architecture.output_modalities contiene text quando il campo esiste; se il campo manca il controllo passa. Secondo: l'id, in minuscolo, non contiene nessuna delle sottostringhe di SCOPI_ESCLUSI.",
+      "postcondizione": "False per google/lyria-3-pro-preview e per nvidia/nemotron-3.5-content-safety:free; True per nex-agi/nex-n2.5-mini:free"
+    },
+    "load_roster": {
+      "firma": "def load_roster(path: Path = FREE_ROSTER_PATH) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, str]]",
+      "comportamento": "Legge scripts/free_roster.json e restituisce la coppia validati, scartati. validati e' indicizzato per id normalizzato e conserva il record intero; scartati e' indicizzato per id normalizzato con il motivo come valore. Solleva FileNotFoundError se il file manca: senza roster il guardiano non puo' giudicare e non deve indovinare."
+    },
+    "roster_id": {
+      "firma": "def roster_id(model_id: str, provider_id: str) -> str",
+      "comportamento": "Normalizza un id di catalogo nella convenzione del roster: nessun prefisso per OpenRouter, groq: per api.groq.com, nvidia: per integrate.api.nvidia.com, mistral: per api.mistral.ai.",
+      "postcondizione": "roster_id di openai/gpt-oss-120b con provider groq da' groq:openai/gpt-oss-120b; roster_id di nex-agi/nex-n2.5-mini:free con provider openrouter resta invariato"
+    },
+    "classifica_modello": {
+      "firma": "def classifica_modello(model: Dict[str, Any], validati: Dict[str, Dict[str, Any]], scartati: Dict[str, str], gratuiti_ieri: Dict[str, bool], provider_id: str = 'openrouter') -> Dict[str, Any]",
+      "comportamento": "Restituisce un dizionario con id, stato, motivo e adottabile. Lo stato e' uno di: sentinella, non_pertinente, scartato, validato, diventato_gratuito, nuovo_gratuito, a_pagamento. adottabile e' True solo per lo stato validato e solo se il modello e' gratuito oggi. Per lo stato scartato il motivo riporta letteralmente la stringa registrata nel roster. L'ordine di valutazione e' vincolante: sentinella, poi non pertinente, poi scartato, poi validato, poi il resto.",
+      "postcondizione": "un modello presente in scartati e gratuito oggi ha stato scartato e adottabile False, mai nuovo_gratuito"
+    }
+  },
+  "costanti": {
+    "FREE_ROSTER_PATH": "Path(__file__).resolve().parent / 'free_roster.json'",
+    "HISTORY_DIR": "Path(__file__).resolve().parents[1] / 'data' / 'model_catalog_history'",
+    "PROPOSALS_PATH": "Path(__file__).resolve().parents[1] / 'data' / 'model_scout_proposals.json'",
+    "REPORT_PATH": "Path(__file__).resolve().parents[1] / 'reports' / 'model-scout.md'",
+    "SCOPI_ESCLUSI": "tupla di sottostringhe in minuscolo: lyria, content-safety, prompt-guard, moderation, guard, embed, -tts, transcribe, -ocr, voxtral, safeguard",
+    "ROSTER": "invariato rispetto a model-scout-001: worker, auditor, preflight, local_scaffold"
+  },
+  "test_obbligatori": {
+    "file": "tests/test_model_scout.py",
+    "casi": [
+      "un modello presente in scartati e gratuito oggi NON risulta adottabile e il suo motivo registrato compare nell'esito",
+      "un modello con scopo escluso, per esempio lyria, content-safety o prompt-guard, non e' text_capable e non compare fra gli adottabili",
+      "un modello con prezzo negativo e' sentinella, cost_per_mtok solleva ValueError e il modello non compare fra i candidati a pagamento",
+      "un modello presente in validati ha stato validato e non nuovo_gratuito",
+      "load_roster solleva FileNotFoundError se il file manca"
+    ]
+  },
+  "stato": "contratto_formulato",
+  "schema_dei_dati_in_ingresso": {
+    "file": "scripts/free_roster.json",
+    "forma_in_ingresso_VINCOLANTE": {
+      "validati": "LISTA di oggetti, non un dizionario. Ogni oggetto ha almeno le chiavi id e fornitore, e puo' avere sec_medi, banco_a, banco_b, visione, note. L'id va normalizzato con roster_id usando il campo fornitore dell'oggetto stesso.",
+      "scartati": "DIZIONARIO che mappa l'identificativo del modello alla stringa del motivo di scarto. La chiave e' gia' nella convenzione del roster e non va normalizzata di nuovo.",
+      "altre_chiavi": "schema_version, misurato_il, come, regola: da ignorare."
+    },
+    "esempio_minimo": {
+      "scartati": {
+        "liquid/lfm-2.5-2.6b:free": "0/16 e 3/14: non regge il contratto"
+      },
+      "validati": [
+        {
+          "id": "groq:openai/gpt-oss-120b",
+          "fornitore": "groq",
+          "sec_medi": 1.7
+        }
+      ]
+    }
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file restituito deve contenere TUTTE le funzioni che ha lo scheletro, piu' quelle nuove del contratto. validate_implementation rifiuta il file se una funzione dello scheletro scompare. Le funzioni elencate in conservare_identiche vanno riportate carattere per carattere come stanno nello scheletro: non riscriverle, non rinominarle, non cambiarne la firma.",
+    "conservare_identiche": [
+      "compare_to_roster",
+      "render_report",
+      "main"
+    ],
+    "implementare_o_creare": [
+      "fetch_catalog",
+      "is_free",
+      "is_price_sentinel",
+      "cost_per_mtok",
+      "is_text_capable",
+      "load_roster",
+      "roster_id",
+      "classifica_modello"
+    ],
+    "controllo": "il numero di def nel file restituito deve essere almeno 11"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "contract_id": "model-scout-002-difese",
+  "parte_di": "model-scout-002",
+  "file": "scripts/model_scout.py",
+  "scopo": "Mettere le difese al percorso conservato da model-scout-001. L'esecuzione reale del 2026-09-11 e' morta con ValueError: Il modello e' un prezzo sentinella, perche' compare_to_roster chiama cost_per_mtok senza filtrare, e cost_per_mtok ora solleva sui prezzi sentinella. Il catalogo vero contiene cinque voci openrouter con prompt a -1000000 per milione.",
+  "vincoli_di_governo": [
+    "Il guardiano gira pianificato e senza sorveglianza: main non deve mai sollevare per colpa di una voce anomala del catalogo. Una voce anomala si salta, non fa cadere l'esecuzione.",
+    "Un modello a pagamento resta solo PROPOSTO: nessuna promozione automatica."
+  ],
+  "modifiche_puntuali": {
+    "compare_to_roster": [
+      "Prima di chiamare cost_per_mtok su un modello, salta la voce se is_price_sentinel(modello) e' True.",
+      "Salta anche la voce se is_text_capable(modello) e' False: musica, classificatori, embedding e audio non sono candidati per un ruolo di codice.",
+      "Racchiudi comunque cost_per_mtok in un try/except ValueError e salta la voce se solleva: la difesa non deve dipendere da un solo controllo.",
+      "Non cambiare la firma. Non cambiare la struttura del dizionario restituito."
+    ],
+    "main": [
+      "main deve restituire 0 anche quando il catalogo contiene sentinella, modelli non pertinenti e modelli bocciati.",
+      "Non deve sollevare: qualunque voce anomala si salta."
+    ]
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file restituito deve contenere TUTTE le funzioni che ha lo scheletro. validate_implementation rifiuta il file se una funzione scompare. Modifica SOLO i corpi di compare_to_roster e main; ogni altra funzione va riportata carattere per carattere come sta nello scheletro.",
+    "conservare_identiche": [
+      "fetch_catalog",
+      "is_free",
+      "is_price_sentinel",
+      "cost_per_mtok",
+      "is_text_capable",
+      "load_roster",
+      "roster_id",
+      "classifica_modello",
+      "save_snapshot",
+      "load_last_snapshot",
+      "diventati_gratuiti",
+      "candidati_a_pagamento",
+      "scrivi_proposte",
+      "render_report"
+    ],
+    "implementare_o_creare": [
+      "compare_to_roster",
+      "main"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_model_scout.py",
+    "casi": [
+      "compare_to_roster non solleva su un catalogo con prezzi sentinella e non li propone",
+      "main restituisce 0 su un catalogo che contiene sentinella, non pertinenti e bocciati"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

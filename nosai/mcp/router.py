@@ -43,8 +43,9 @@ class ModelRouter:
             preferred = [binding["primary_model"], *binding["fallback_models"]]
             for model_id in preferred:
                 selected = next((item for item in self.providers
-                    if item.model_id == model_id
+                    if (item.model_id == model_id or model_id in item.aliases)
                     and item.enabled
+                    and item.routable
                     and (capability is None or not item.capabilities or capability in item.capabilities)
                     and (not item.network_required or self.policy.network_enabled)), None)
                 if selected is not None:
@@ -59,6 +60,7 @@ class ModelRouter:
         candidates: Iterable[ProviderConfig] = (
             item for item in sorted(self.providers, key=lambda provider: provider.tier)
             if item.enabled
+            and item.routable
             and (capability is None or not item.capabilities or capability in item.capabilities)
             and (not item.network_required or self.policy.network_enabled)
         )
@@ -71,6 +73,3 @@ class ModelRouter:
             reason="lowest qualified tier under current policy",
             network_used=selected.network_required,
         )
-
-
-

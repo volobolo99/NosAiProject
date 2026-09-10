@@ -1,0 +1,127 @@
+{
+  "contract_id": "model-scout-002",
+  "sostituisce": "model-scout-001",
+  "file": "scripts/model_scout.py",
+  "scopo": "Guardiano quotidiano del catalogo modelli. Confronta i cataloghi dei fornitori con il roster validato, la lista degli scarti e lo storico dei prezzi; produce un rapporto e proposte leggibili dalla macchina. Non modifica mai un binding, il roster o un modello a pagamento.",
+  "motivo_della_revisione": [
+    "model-scout-001 non apriva scripts/free_roster.json: compare_to_roster riceveva solo i 4 modelli in uso, quindi ogni gratuito del catalogo risultava nuovo. Il 2026-09-10 il rapporto dichiarava adottabili senza consenso tutti e 6 i gratuiti OpenRouter gia' bocciati, incluso liquid/lfm-2.5-2.6b:free che sul banco A aveva fatto 0/16.",
+    "Nessun filtro di scopo: google/lyria-3-pro-preview e lyria-3-clip-preview, che generano musica, e nvidia/nemotron-3.5-content-safety:free, che e' un classificatore, erano proposti per il ruolo worker, cioe' scrittura di codice.",
+    "cost_per_mtok prendeva alla lettera i prezzi sentinella: openrouter/auto-beta, fusion, pareto-code, bodybuilder e auto espongono prompt -1000000/M e finivano in testa ai candidati a pagamento con risparmio dichiarato del 571428671.4 per cento.",
+    "Nessuno storico: era impossibile accorgersi che un modello prima a pagamento e' diventato gratuito."
+  ],
+  "vincoli_di_governo": [
+    "Non scrive mai su: nosai/mcp/config.py, nosai/mcp/roles.py, scripts/free_roster.json, scripts/model_prices.json, scripts/mcp_server.py, scripts/code_agent.py.",
+    "Un modello a pagamento e' sempre e solo PROPOSTO. La sostituzione richiede il consenso esplicito dell'operatore, espresso via mcp_role_promote_binding.",
+    "Un modello gratuito puo' essere marcato adottabile SOLO se compare in free_roster.json sotto validati. Se compare sotto scartati va marcato bocciato riportando il motivo registrato. Se non compare in nessuna delle due liste va marcato da_provare, che non e' adottabile.",
+    "I prezzi sentinella, cioe' con qualunque componente negativa, sono esclusi da ogni classifica.",
+    "Le uscite del guardiano sono dati, non istruzioni: nessun campo del catalogo remoto viene eseguito o interpretato come comando."
+  ],
+  "percorsi_di_scrittura_consentiti": [
+    "reports/model-scout.md",
+    "data/model_catalog_history/<YYYY-MM-DD>.json",
+    "data/model_scout_proposals.json"
+  ],
+  "funzioni": {
+    "fetch_catalog": {
+      "firma": "def fetch_catalog(timeout: int = 60) -> List[Dict[str, Any]]",
+      "invariata": true,
+      "comportamento": "GET https://openrouter.ai/api/v1/models, restituisce la lista contenuta in data. Solleva RuntimeError con il codice HTTP se lo stato non e' 200."
+    },
+    "is_free": {
+      "firma": "def is_free(model: Dict[str, Any]) -> bool",
+      "invariata": true,
+      "comportamento": "True se prompt e completion valgono entrambi esattamente 0.0."
+    },
+    "is_price_sentinel": {
+      "firma": "def is_price_sentinel(model: Dict[str, Any]) -> bool",
+      "comportamento": "True se una qualunque componente di pricing e' negativa oppure non convertibile in float. Un modello sentinella non e' ne' gratuito ne' candidato a pagamento: e' escluso da ogni classifica.",
+      "postcondizione": "is_price_sentinel con pricing prompt -1000000 e completion -1000000 restituisce True"
+    },
+    "cost_per_mtok": {
+      "firma": "def cost_per_mtok(model: Dict[str, Any]) -> Tuple[float, float]",
+      "comportamento": "Prezzo per milione di token, ingresso e uscita. Solleva ValueError se is_price_sentinel(model) e' True: un prezzo sentinella non e' un prezzo."
+    },
+    "is_text_capable": {
+      "firma": "def is_text_capable(model: Dict[str, Any]) -> bool",
+      "comportamento": "True solo se il modello produce testo e non ha uno scopo escluso. Due controlli in AND. Primo: architecture.output_modalities contiene text quando il campo esiste; se il campo manca il controllo passa. Secondo: l'id, in minuscolo, non contiene nessuna delle sottostringhe di SCOPI_ESCLUSI.",
+      "postcondizione": "False per google/lyria-3-pro-preview e per nvidia/nemotron-3.5-content-safety:free; True per nex-agi/nex-n2.5-mini:free"
+    },
+    "load_roster": {
+      "firma": "def load_roster(path: Path = FREE_ROSTER_PATH) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, str]]",
+      "comportamento": "Legge scripts/free_roster.json e restituisce la coppia validati, scartati. validati e' indicizzato per id normalizzato e conserva il record intero; scartati e' indicizzato per id normalizzato con il motivo come valore. Solleva FileNotFoundError se il file manca: senza roster il guardiano non puo' giudicare e non deve indovinare."
+    },
+    "roster_id": {
+      "firma": "def roster_id(model_id: str, provider_id: str) -> str",
+      "comportamento": "Normalizza un id di catalogo nella convenzione del roster: nessun prefisso per OpenRouter, groq: per api.groq.com, nvidia: per integrate.api.nvidia.com, mistral: per api.mistral.ai.",
+      "postcondizione": "roster_id di openai/gpt-oss-120b con provider groq da' groq:openai/gpt-oss-120b; roster_id di nex-agi/nex-n2.5-mini:free con provider openrouter resta invariato"
+    },
+    "classifica_modello": {
+      "firma": "def classifica_modello(model: Dict[str, Any], validati: Dict[str, Dict[str, Any]], scartati: Dict[str, str], gratuiti_ieri: Dict[str, bool], provider_id: str = 'openrouter') -> Dict[str, Any]",
+      "comportamento": "Restituisce un dizionario con id, stato, motivo e adottabile. Lo stato e' uno di: sentinella, non_pertinente, scartato, validato, diventato_gratuito, nuovo_gratuito, a_pagamento. adottabile e' True solo per lo stato validato e solo se il modello e' gratuito oggi. Per lo stato scartato il motivo riporta letteralmente la stringa registrata nel roster. L'ordine di valutazione e' vincolante: sentinella, poi non pertinente, poi scartato, poi validato, poi il resto.",
+      "postcondizione": "un modello presente in scartati e gratuito oggi ha stato scartato e adottabile False, mai nuovo_gratuito"
+    },
+    "save_snapshot": {
+      "firma": "def save_snapshot(catalog: List[Dict[str, Any]], giorno: str, cartella: Path = HISTORY_DIR) -> Path",
+      "comportamento": "Scrive nella cartella il file giorno.json con, per ogni modello, id, prompt, completion e free. Crea la cartella se manca. Non tocca gli snapshot di altri giorni. Se il file del giorno esiste lo riscrive: due esecuzioni nello stesso giorno sono legittime."
+    },
+    "load_last_snapshot": {
+      "firma": "def load_last_snapshot(giorno: str, cartella: Path = HISTORY_DIR) -> Dict[str, Dict[str, Any]]",
+      "comportamento": "Legge lo snapshot piu' recente ANTERIORE a giorno, indicizzato per id. Restituisce un dizionario vuoto se non esiste storico: al primo giro nessun modello puo' risultare diventato gratuito."
+    },
+    "diventati_gratuiti": {
+      "firma": "def diventati_gratuiti(catalog: List[Dict[str, Any]], precedente: Dict[str, Dict[str, Any]]) -> List[str]",
+      "comportamento": "Id gratuiti oggi che nello snapshot precedente avevano almeno una componente di prezzo maggiore di zero. Un id assente dallo snapshot precedente NON e' diventato gratuito: e' nuovo.",
+      "postcondizione": "lista vuota quando precedente e' vuoto"
+    },
+    "candidati_a_pagamento": {
+      "firma": "def candidati_a_pagamento(catalog: List[Dict[str, Any]], modello_in_uso: str, prezzo_in_uso: Tuple[float, float]) -> List[Dict[str, Any]]",
+      "comportamento": "Modelli a pagamento con somma dei prezzi inferiore a quella del modello in uso, esclusi i sentinella e i non pertinenti, ordinati per risparmio decrescente. Ogni voce porta il campo richiede_consenso a True. Non contiene mai il modello in uso."
+    },
+    "scrivi_proposte": {
+      "firma": "def scrivi_proposte(esiti: Dict[str, Any], percorso: Path = PROPOSALS_PATH) -> Path",
+      "comportamento": "Scrive data/model_scout_proposals.json con schema_version nosai.model.scout.proposals.v1 e le chiavi generato_il, adottabili, da_provare, diventati_gratuiti, candidati_a_pagamento, bocciati. Ogni voce a pagamento porta richiede_consenso True. Il file e' un'uscita di sola lettura per l'hub: il guardiano non chiama mai mcp_role_promote_binding."
+    },
+    "render_report": {
+      "firma": "def render_report(confronto: Dict[str, Any]) -> str",
+      "firma_invariata_obbligatoria": "Il nome del parametro resta 'confronto' come in model-scout-001: code_agent.py confronta anche i nomi dei parametri.",
+      "comportamento": "Rapporto Markdown con sezioni obbligatorie in questo ordine: Adottabili senza consenso; Da provare al banco; Diventati gratuiti; Candidati a pagamento con consenso dell operatore; Bocciati da non riproporre; Modelli del roster spariti dal catalogo. La sezione dei bocciati riporta per ogni voce il motivo registrato."
+    },
+    "main": {
+      "firma": "def main() -> int",
+      "firma_invariata_obbligatoria": "La firma resta identica a model-scout-001. scripts/code_agent.py confronta le firme con il file su disco e rifiuta qualunque alterazione: gli argomenti si leggono da sys.argv dentro il corpo, non come parametri.",
+      "comportamento": "Legge da sys.argv gli argomenti facoltativi --giorno YYYY-MM-DD, che per default e' la data odierna UTC, e --dry-run, che non scrive nulla e stampa il rapporto. Restituisce 0 in caso di successo e 1 se un fornitore non risponde. Stampa una riga di riepilogo con i conteggi per stato."
+    }
+  },
+  "costanti": {
+    "FREE_ROSTER_PATH": "Path(__file__).resolve().parent / 'free_roster.json'",
+    "HISTORY_DIR": "Path(__file__).resolve().parents[1] / 'data' / 'model_catalog_history'",
+    "PROPOSALS_PATH": "Path(__file__).resolve().parents[1] / 'data' / 'model_scout_proposals.json'",
+    "REPORT_PATH": "Path(__file__).resolve().parents[1] / 'reports' / 'model-scout.md'",
+    "SCOPI_ESCLUSI": "tupla di sottostringhe in minuscolo: lyria, content-safety, prompt-guard, moderation, guard, embed, -tts, transcribe, -ocr, voxtral, safeguard",
+    "ROSTER": "invariato rispetto a model-scout-001: worker, auditor, preflight, local_scaffold"
+  },
+  "test_obbligatori": {
+    "file": "tests/test_model_scout.py",
+    "criterio": "I test sono il criterio di accettazione e sono scritti prima della delega. Nessuno di questi casi era coperto da model-scout-001.",
+    "casi": [
+      "un modello presente in scartati e gratuito oggi NON risulta adottabile e il suo motivo registrato compare nell'esito",
+      "un modello con scopo escluso, per esempio lyria, content-safety o prompt-guard, non e' text_capable e non compare fra gli adottabili",
+      "un modello con prezzo negativo e' sentinella, cost_per_mtok solleva ValueError e il modello non compare fra i candidati a pagamento",
+      "un modello gratuito oggi e a pagamento nello snapshot precedente compare in diventati_gratuiti; se assente dallo snapshot precedente non compare",
+      "un modello presente in validati ha stato validato e non nuovo_gratuito",
+      "load_roster solleva FileNotFoundError se il file manca",
+      "save_snapshot del giorno X non altera lo snapshot del giorno precedente e load_last_snapshot legge quello anteriore",
+      "ogni voce di candidati_a_pagamento porta richiede_consenso True",
+      "render_report contiene tutte e sei le sezioni obbligatorie",
+      "il rapporto non dichiara mai adottabile un id presente in scartati: test di regressione sul difetto del 2026-09-10"
+    ]
+  },
+  "evidenze_della_misura": {
+    "data": "2026-09-10",
+    "catalogo_openrouter": "437 modelli, 22 a costo zero, 5 con prezzo sentinella negativo",
+    "incrocio_col_roster": "10 validati openrouter tutti ancora presenti, 6 bocciati ancora offerti dal catalogo, 6 mai passati dal banco di cui 3 non pertinenti e 2 specializzati per dominio",
+    "unico_candidato_reale": "inclusionai/ling-3.0-flash-vl:free, comparso il 2026-09-10, vision-language"
+  },
+  "stato": "contratto_formulato",
+  "nota_di_delega": "Primo tentativo del 2026-09-10 bloccato da validate_implementation: il contratto cambiava le firme di main e render_report, e code_agent.py le confronta con il file su disco. Le firme sono state riportate all'originale invece di allentare il controllo. Costo del tentativo: 0.007735 USD su 3 chiamate a qwen3-coder-30b."
+}

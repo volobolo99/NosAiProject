@@ -1,0 +1,425 @@
+{
+  "contract_id": "model-catalog-002",
+  "file": "nosai/mcp/config.py",
+  "file_secondari": [
+    "nosai/mcp/contracts.py",
+    "config/mcp.default.json",
+    "nosai/mcp/router.py",
+    "nosai/mcp/roles.py"
+  ],
+  "scopo": "Sostituire il catalogo fornitori di tre voci con il catalogo pieno dei modelli misurati, in modo che ogni dipendente risolva su un modello reale e adeguato alla propria capacita'. Aggiungere il dipendente guardiano del catalogo.",
+  "difetto_misurato_il_2026_09_10": {
+    "come": "ModelRouter.from_config(load_config(), McpPolicy(mode=OFFLINE, network_enabled=True)) e choose(role_id=...) per tutti e 15 i DEFAULT_EMPLOYEE_ROLES",
+    "risultato": "2 dipendenti su 15 risolvono sul primario, 12 sollevano RuntimeError 'no qualified provider is available for role binding', 1 ripiega sul modello sbagliato",
+    "caso_peggiore": "employee.perception ha primario gemini-2.5-flash-lite, che non e' in catalogo, e ripiega sul fallback qwen2.5-coder:7b: un modello di solo testo incaricato di leggere lo schermo di gioco",
+    "causa": "router.py cerca item.model_id == model_id fra le voci del catalogo, ma i binding citano i nomi logici claude, deepseek-v4-flash, gemini-2.5-flash-lite e qwen3-coder-30b, che il catalogo di tre voci non contiene"
+  },
+  "vincoli_di_governo": [
+    "Nessun modello a pagamento viene aggiunto, rimosso o promosso a primario di un dipendente senza il consenso esplicito dell'operatore. Questo contratto porta i modelli a pagamento in catalogo come rete di sicurezza al tier piu' alto, conservando i primari attuali: non cambia nessun primario.",
+    "Un modello entra in catalogo solo con l'evidenza della misura: campo bench compilato e campo misurato_il. Un modello mai passato dal banco non e' catalogo, e' candidato, e vive in data/model_scout_proposals.json.",
+    "La cascata sale di tier: prima il locale, poi i gratuiti rapidi, poi i gratuiti lenti, e i modelli a pagamento solo per ultimi. Il risparmio e' una conseguenza dell'ordine, non di una sostituzione.",
+    "Un modello senza la capacita' richiesta non puo' essere scelto per quel ruolo, nemmeno come ripiego. Meglio sollevare che consegnare un modello cieco al Perception Agent."
+  ],
+  "modifiche": {
+    "nosai/mcp/config.py": {
+      "cosa": "DEFAULT_CONFIG['providers'] passa da 3 a 17 voci. Ogni voce acquisisce i campi aliases, cost_class, capabilities, sec_medi, bench, misurato_il, routable e quota.",
+      "schema_voce": {
+        "provider_id": "chiave di instradamento, deve esistere nella mappa endpoint di inference.py oppure avere routable false",
+        "model_id": "identificativo esatto da mandare sul filo al fornitore",
+        "aliases": "lista di nomi logici con cui i binding possono citare questo modello; il router deve accettare model_id oppure un alias",
+        "tier": "0 locale, 1 gratuito rapido, 2 gratuito ordinario, 3 gratuito in differita, 4 a pagamento, 5 sessione non instradabile",
+        "cost_class": "local | free | paid | session",
+        "network_required": "bool",
+        "capabilities": "lista fra: coding, tactical, documentation, scaffold, offline, vision, general, fallback, architecture, review",
+        "sec_medi": "latenza media misurata in secondi, oppure null se non misurata",
+        "bench": "a+b | vision | a+b,vision | non_instradabile",
+        "misurato_il": "data ISO della misura",
+        "routable": "bool: false per il tier 5, che esiste solo perche' i binding risolvano",
+        "quota": "stringa descrittiva del tetto noto, oppure null"
+      },
+      "voci_richieste": [
+        {
+          "provider_id": "ollama-local",
+          "model_id": "qwen2.5-coder:7b",
+          "aliases": [],
+          "tier": 0,
+          "cost_class": "local",
+          "network_required": false,
+          "capabilities": [
+            "documentation",
+            "scaffold",
+            "offline"
+          ],
+          "sec_medi": 14,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "nessun tetto: gira in locale"
+        },
+        {
+          "provider_id": "groq-free",
+          "model_id": "qwen/qwen3.8-27b",
+          "aliases": [
+            "qwen3.8-27b"
+          ],
+          "tier": 1,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "tactical"
+          ],
+          "sec_medi": 0.7,
+          "bench": "a+b",
+          "misurato_il": "2026-09-10",
+          "routable": true,
+          "quota": "tier gratuito Groq"
+        },
+        {
+          "provider_id": "groq-free",
+          "model_id": "openai/gpt-oss-120b",
+          "aliases": [
+            "gpt-oss-120b"
+          ],
+          "tier": 1,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "tactical",
+            "review"
+          ],
+          "sec_medi": 1.7,
+          "bench": "a+b",
+          "misurato_il": "2026-09-10",
+          "routable": true,
+          "quota": "tier gratuito Groq; servono almeno 300 token di budget, spende i primi in ragionamento"
+        },
+        {
+          "provider_id": "groq-free",
+          "model_id": "openai/gpt-oss-20b",
+          "aliases": [
+            "gpt-oss-20b"
+          ],
+          "tier": 1,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "tactical"
+          ],
+          "sec_medi": 1.5,
+          "bench": "a+b",
+          "misurato_il": "2026-09-10",
+          "routable": true,
+          "quota": "tier gratuito Groq; servono almeno 300 token di budget"
+        },
+        {
+          "provider_id": "groq-free",
+          "model_id": "groq/compound-mini",
+          "aliases": [
+            "compound-mini"
+          ],
+          "tier": 1,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "general"
+          ],
+          "sec_medi": 3.1,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "tier gratuito Groq"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nex-agi/nex-n2.5-mini:free",
+          "aliases": [
+            "nex-n2.5-mini"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "general"
+          ],
+          "sec_medi": 8,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 richieste al minuto, 1000 al giorno"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "dots-studio/dots-3-note-preview:free",
+          "aliases": [
+            "dots-3-note-preview"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "vision",
+            "general"
+          ],
+          "sec_medi": 13,
+          "bench": "a+b,vision",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 richieste al minuto, 1000 al giorno"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          "aliases": [
+            "nemotron-3-nano-omni"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "vision",
+            "coding"
+          ],
+          "sec_medi": 3.9,
+          "bench": "a+b,vision",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 richieste al minuto, 1000 al giorno; 3.9 s sulla visione, 53 s sul codice"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+          "aliases": [
+            "nemotron-3-super-120b"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "general"
+          ],
+          "sec_medi": 22,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 al minuto, 1000 al giorno; servono almeno 1200 token di budget"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "cohere/north-mini-code:free",
+          "aliases": [
+            "north-mini-code"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding"
+          ],
+          "sec_medi": 27,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 richieste al minuto, 1000 al giorno"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nex-agi/nex-n2.5-pro:free",
+          "aliases": [
+            "nex-n2.5-pro"
+          ],
+          "tier": 2,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "vision",
+            "general"
+          ],
+          "sec_medi": 61,
+          "bench": "a+b,vision",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "20 richieste al minuto, 1000 al giorno"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nvidia/nemotron-3.5-lightning:free",
+          "aliases": [
+            "nemotron-3.5-lightning"
+          ],
+          "tier": 3,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding"
+          ],
+          "sec_medi": 229,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "solo lavori in differita: troppo lento per l'interattivo"
+        },
+        {
+          "provider_id": "openrouter-free",
+          "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "aliases": [
+            "nemotron-3-ultra-550b"
+          ],
+          "tier": 3,
+          "cost_class": "free",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "architecture"
+          ],
+          "sec_medi": 422,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "solo lavori in differita"
+        },
+        {
+          "provider_id": "openrouter-paid",
+          "model_id": "qwen/qwen3-coder-30b-a3b-instruct",
+          "aliases": [
+            "qwen3-coder-30b"
+          ],
+          "tier": 4,
+          "cost_class": "paid",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "tactical",
+            "review",
+            "architecture"
+          ],
+          "sec_medi": 20,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "a pagamento: prompt 0.07 e completion 0.28 per milione di token"
+        },
+        {
+          "provider_id": "deepseek-native",
+          "model_id": "deepseek-v4-flash",
+          "aliases": [],
+          "tier": 4,
+          "cost_class": "paid",
+          "network_required": true,
+          "capabilities": [
+            "coding",
+            "general",
+            "review"
+          ],
+          "sec_medi": 148,
+          "bench": "a+b",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "solo api.deepseek.com: passarlo da OpenRouter e' vietato"
+        },
+        {
+          "provider_id": "openrouter-paid",
+          "model_id": "google/gemini-2.5-flash-lite",
+          "aliases": [
+            "gemini-2.5-flash-lite"
+          ],
+          "tier": 4,
+          "cost_class": "paid",
+          "network_required": true,
+          "capabilities": [
+            "vision",
+            "general"
+          ],
+          "sec_medi": 2.0,
+          "bench": "vision",
+          "misurato_il": "2026-09-09",
+          "routable": true,
+          "quota": "a pagamento, costo minimo del roster"
+        },
+        {
+          "provider_id": "claude-session",
+          "model_id": "claude",
+          "aliases": [],
+          "tier": 5,
+          "cost_class": "session",
+          "network_required": false,
+          "capabilities": [
+            "architecture",
+            "review",
+            "coordination",
+            "routing"
+          ],
+          "sec_medi": null,
+          "bench": "non_instradabile",
+          "misurato_il": "2026-09-10",
+          "routable": false,
+          "quota": "non chiamabile dal gateway: Claude agisce nella sessione, non come fornitore"
+        }
+      ]
+    },
+    "nosai/mcp/router.py": {
+      "cosa": "Tre modifiche minime, nessuna firma pubblica alterata.",
+      "punti": [
+        "La risoluzione di un binding accetta model_id oppure un elemento di aliases. Oggi confronta solo model_id, ed e' la causa dei 12 RuntimeError.",
+        "Una voce con routable false non viene mai scelta dal gateway: se il primario di un binding e' non instradabile si passa al fallback successivo. Serve per claude, che agisce nella sessione.",
+        "Nel percorso del binding la capacita' richiesta e' vincolante come nel percorso senza ruolo: un candidato che non la possiede viene scartato anche se e' il primario. Se nessun candidato la possiede si solleva, senza consegnare un modello inadeguato."
+      ]
+    },
+    "nosai/mcp/roles.py": {
+      "cosa": "Aggiungere un dipendente e correggere le capacita' del Perception Agent.",
+      "punti": [
+        "Nuovo EmployeeRole employee.model_scout, display_name 'Model Scout', scopo 'sorveglianza quotidiana del catalogo modelli e dei prezzi'. responsibilities: rilevare gratuiti nuovi, rilevare modelli diventati gratuiti, proporre modelli a pagamento con miglior rapporto qualita' prezzo, segnalare i modelli del roster spariti dal catalogo. primary_model 'gpt-oss-20b', fallback_models ('nex-n2.5-mini', 'qwen2.5-coder:7b'): il lavoro e' diff di cataloghi e classificazione, non ragionamento architetturale, quindi va al tier gratuito piu' economico capace. capabilities ('catalog_watch', 'classification', 'documentation'). forbidden ('binding_promotion', 'paid_model_adoption', 'policy_override', 'secret_export'): il guardiano propone e non promuove mai. approval_required True.",
+        "employee.perception deve dichiarare la capacita' vision fra le proprie capabilities, altrimenti il router non ha modo di escludere un modello di solo testo."
+      ]
+    },
+    "nosai/mcp/contracts.py": {
+      "cosa": "ProviderConfig acquisisce i campi nuovi, tutti con valore predefinito e dopo quelli esistenti.",
+      "campi": {
+        "aliases": "tuple[str, ...] = ()",
+        "cost_class": "str = 'free'",
+        "sec_medi": "float | None = None",
+        "bench": "str = ''",
+        "misurato_il": "str = ''",
+        "routable": "bool = True",
+        "quota": "str = ''"
+      }
+    },
+    "config/mcp.default.json": {
+      "cosa": "La chiave providers riceve le stesse 17 voci di DEFAULT_CONFIG, identiche campo per campo.",
+      "test": "un test deve confrontare le due liste e fallire se divergono"
+    }
+  },
+  "test_obbligatori": {
+    "file": "tests/test_mcp_hub_catalog.py",
+    "criterio": "Test scritti prima della delega. Il caso centrale e' la regressione sui 12 dipendenti senza modello.",
+    "casi": [
+      "ogni dipendente di DEFAULT_EMPLOYEE_ROLES risolve senza eccezione: nessun RuntimeError su choose(role_id=...)",
+      "ogni dipendente il cui primario e' instradabile risolve esattamente su quel primario, non su un ripiego",
+      "employee.perception risolve su un modello che dichiara la capacita' vision",
+      "nessun dipendente risolve su una voce con routable false",
+      "employee.orchestrator_cto, il cui primario e' claude e quindi non instradabile, risolve sul primo fallback instradabile",
+      "un binding che cita un alias risolve sulla voce che lo dichiara",
+      "ogni voce del catalogo con cost_class diverso da session ha bench e misurato_il non vuoti",
+      "il catalogo e' ordinato in modo che ogni voce paid abbia tier maggiore di ogni voce free",
+      "esiste employee.model_scout e i suoi forbidden contengono binding_promotion e paid_model_adoption",
+      "i primari a pagamento presenti prima della modifica sono ancora i primari dopo la modifica: nessuna sostituzione silenziosa",
+      "DEFAULT_CONFIG['providers'] e la chiave providers di config/mcp.default.json sono identiche",
+      "ogni voce del catalogo dichiara capabilities non vuoto, altrimenti il filtro di capacita' del router e' aggirabile"
+    ]
+  },
+  "stato": "contratto_formulato",
+  "vincoli_di_struttura_verificati_il_2026_09_10": [
+    "Il catalogo vivo e' config/mcp.default.json: load_config() ha come percorso predefinito quel file, e merged.update(loaded) fa vincere la chiave providers del file su DEFAULT_CONFIG. Le due liste vanno tenute identiche, altrimenti il comportamento cambia a seconda che il file esista.",
+    "router.from_config costruisce ProviderConfig(**item): ogni campo nuovo della voce di catalogo deve essere dichiarato nella dataclass ProviderConfig di nosai/mcp/contracts.py con un valore predefinito, altrimenti la lettura della configurazione solleva TypeError.",
+    "ProviderConfig e' una dataclass frozen: i campi nuovi vanno aggiunti dopo quelli esistenti e tutti con valore predefinito, per non rompere le costruzioni posizionali gia' presenti nei test.",
+    "router.choose applica gia' il filtro di capacita' nel percorso del binding (riga 44), ma solo con la clausola 'not item.capabilities': una voce con capabilities vuoto passa qualunque filtro. Ogni voce del catalogo pieno deve quindi dichiarare capabilities non vuoto, altrimenti il filtro resta aggirabile.",
+    "inference.py mappa a endpoint solo groq-free e openrouter-free. Le voci con provider_id openrouter-paid, deepseek-native e claude-session non sono chiamabili finche' la mappa non e' estesa: openrouter-paid e deepseek-native restano in catalogo come rete di sicurezza dichiarata e la loro chiamata effettiva e' fuori dal perimetro di questo contratto, da tracciare in un contratto successivo."
+  ]
+}

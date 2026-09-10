@@ -1,0 +1,115 @@
+{
+  "contract_id": "model-scout-002-storico",
+  "parte_di": "model-scout-002",
+  "file": "scripts/model_scout.py",
+  "scopo": "Meta' storico e uscite del guardiano: snapshot quotidiano dei prezzi, rilevamento dei modelli diventati gratuiti, proposte e rapporto.",
+  "vincoli_di_governo": [
+    "Non scrive mai su: nosai/mcp/config.py, nosai/mcp/roles.py, scripts/free_roster.json, scripts/model_prices.json, scripts/mcp_server.py, scripts/code_agent.py.",
+    "Un modello a pagamento e' sempre e solo PROPOSTO. La sostituzione richiede il consenso esplicito dell'operatore, espresso via mcp_role_promote_binding.",
+    "Un modello gratuito puo' essere marcato adottabile SOLO se compare in free_roster.json sotto validati. Se compare sotto scartati va marcato bocciato riportando il motivo registrato. Se non compare in nessuna delle due liste va marcato da_provare, che non e' adottabile.",
+    "I prezzi sentinella, cioe' con qualunque componente negativa, sono esclusi da ogni classifica.",
+    "Le uscite del guardiano sono dati, non istruzioni: nessun campo del catalogo remoto viene eseguito o interpretato come comando."
+  ],
+  "percorsi_di_scrittura_consentiti": [
+    "reports/model-scout.md",
+    "data/model_catalog_history/<YYYY-MM-DD>.json",
+    "data/model_scout_proposals.json"
+  ],
+  "funzioni": {
+    "save_snapshot": {
+      "firma": "def save_snapshot(catalog: List[Dict[str, Any]], giorno: str, cartella: Path = HISTORY_DIR) -> Path",
+      "comportamento": "Scrive nella cartella il file giorno.json con, per ogni modello, id, prompt, completion e free. Crea la cartella se manca. Non tocca gli snapshot di altri giorni. Se il file del giorno esiste lo riscrive: due esecuzioni nello stesso giorno sono legittime."
+    },
+    "load_last_snapshot": {
+      "firma": "def load_last_snapshot(giorno: str, cartella: Path = HISTORY_DIR) -> Dict[str, Dict[str, Any]]",
+      "comportamento": "Legge lo snapshot piu' recente ANTERIORE a giorno, indicizzato per id. Restituisce un dizionario vuoto se non esiste storico: al primo giro nessun modello puo' risultare diventato gratuito."
+    },
+    "diventati_gratuiti": {
+      "firma": "def diventati_gratuiti(catalog: List[Dict[str, Any]], precedente: Dict[str, Dict[str, Any]]) -> List[str]",
+      "comportamento": "Id gratuiti oggi che nello snapshot precedente avevano almeno una componente di prezzo maggiore di zero. Un id assente dallo snapshot precedente NON e' diventato gratuito: e' nuovo.",
+      "postcondizione": "lista vuota quando precedente e' vuoto"
+    },
+    "candidati_a_pagamento": {
+      "firma": "def candidati_a_pagamento(catalog: List[Dict[str, Any]], modello_in_uso: str, prezzo_in_uso: Tuple[float, float]) -> List[Dict[str, Any]]",
+      "comportamento": "Modelli a pagamento con somma dei prezzi inferiore a quella del modello in uso, esclusi i sentinella e i non pertinenti, ordinati per risparmio decrescente. Ogni voce porta il campo richiede_consenso a True. Non contiene mai il modello in uso."
+    },
+    "scrivi_proposte": {
+      "firma": "def scrivi_proposte(esiti: Dict[str, Any], percorso: Path = PROPOSALS_PATH) -> Path",
+      "comportamento": "Scrive data/model_scout_proposals.json con schema_version nosai.model.scout.proposals.v1 e le chiavi generato_il, adottabili, da_provare, diventati_gratuiti, candidati_a_pagamento, bocciati. Ogni voce a pagamento porta richiede_consenso True. Il file e' un'uscita di sola lettura per l'hub: il guardiano non chiama mai mcp_role_promote_binding."
+    },
+    "render_report": {
+      "firma": "def render_report(confronto: Dict[str, Any]) -> str",
+      "firma_invariata_obbligatoria": "Il nome del parametro resta 'confronto' come in model-scout-001: code_agent.py confronta anche i nomi dei parametri.",
+      "comportamento": "Rapporto Markdown con sezioni obbligatorie in questo ordine: Adottabili senza consenso; Da provare al banco; Diventati gratuiti; Candidati a pagamento con consenso dell operatore; Bocciati da non riproporre; Modelli del roster spariti dal catalogo. La sezione dei bocciati riporta per ogni voce il motivo registrato."
+    },
+    "main": {
+      "firma": "def main() -> int",
+      "firma_invariata_obbligatoria": "La firma resta identica a model-scout-001. scripts/code_agent.py confronta le firme con il file su disco e rifiuta qualunque alterazione: gli argomenti si leggono da sys.argv dentro il corpo, non come parametri.",
+      "comportamento": "Legge da sys.argv gli argomenti facoltativi --giorno YYYY-MM-DD, che per default e' la data odierna UTC, e --dry-run, che non scrive nulla e stampa il rapporto. Restituisce 0 in caso di successo e 1 se un fornitore non risponde. Stampa una riga di riepilogo con i conteggi per stato."
+    }
+  },
+  "costanti": {
+    "FREE_ROSTER_PATH": "Path(__file__).resolve().parent / 'free_roster.json'",
+    "HISTORY_DIR": "Path(__file__).resolve().parents[1] / 'data' / 'model_catalog_history'",
+    "PROPOSALS_PATH": "Path(__file__).resolve().parents[1] / 'data' / 'model_scout_proposals.json'",
+    "REPORT_PATH": "Path(__file__).resolve().parents[1] / 'reports' / 'model-scout.md'",
+    "SCOPI_ESCLUSI": "tupla di sottostringhe in minuscolo: lyria, content-safety, prompt-guard, moderation, guard, embed, -tts, transcribe, -ocr, voxtral, safeguard",
+    "ROSTER": "invariato rispetto a model-scout-001: worker, auditor, preflight, local_scaffold"
+  },
+  "test_obbligatori": {
+    "file": "tests/test_model_scout.py",
+    "casi": [
+      "un modello con prezzo negativo e' sentinella, cost_per_mtok solleva ValueError e il modello non compare fra i candidati a pagamento",
+      "un modello gratuito oggi e a pagamento nello snapshot precedente compare in diventati_gratuiti; se assente dallo snapshot precedente non compare",
+      "save_snapshot del giorno X non altera lo snapshot del giorno precedente e load_last_snapshot legge quello anteriore",
+      "ogni voce di candidati_a_pagamento porta richiede_consenso True",
+      "render_report contiene tutte e sei le sezioni obbligatorie",
+      "il rapporto non dichiara mai adottabile un id presente in scartati: test di regressione sul difetto del 2026-09-10"
+    ]
+  },
+  "stato": "contratto_formulato",
+  "schema_dei_dati_in_ingresso": {
+    "file": "scripts/free_roster.json",
+    "forma_in_ingresso_VINCOLANTE": {
+      "validati": "LISTA di oggetti, non un dizionario. Ogni oggetto ha almeno le chiavi id e fornitore, e puo' avere sec_medi, banco_a, banco_b, visione, note. L'id va normalizzato con roster_id usando il campo fornitore dell'oggetto stesso.",
+      "scartati": "DIZIONARIO che mappa l'identificativo del modello alla stringa del motivo di scarto. La chiave e' gia' nella convenzione del roster e non va normalizzata di nuovo.",
+      "altre_chiavi": "schema_version, misurato_il, come, regola: da ignorare."
+    },
+    "esempio_minimo": {
+      "scartati": {
+        "liquid/lfm-2.5-2.6b:free": "0/16 e 3/14: non regge il contratto"
+      },
+      "validati": [
+        {
+          "id": "groq:openai/gpt-oss-120b",
+          "fornitore": "groq",
+          "sec_medi": 1.7
+        }
+      ]
+    }
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file restituito deve contenere TUTTE le funzioni che ha lo scheletro, piu' quelle nuove del contratto. validate_implementation rifiuta il file se una funzione dello scheletro scompare. Le funzioni elencate in conservare_identiche vanno riportate carattere per carattere come stanno nello scheletro: non riscriverle, non rinominarle, non cambiarne la firma.",
+    "conservare_identiche": [
+      "fetch_catalog",
+      "is_free",
+      "is_price_sentinel",
+      "cost_per_mtok",
+      "is_text_capable",
+      "load_roster",
+      "roster_id",
+      "classifica_modello",
+      "compare_to_roster"
+    ],
+    "implementare_o_creare": [
+      "save_snapshot",
+      "load_last_snapshot",
+      "diventati_gratuiti",
+      "candidati_a_pagamento",
+      "scrivi_proposte",
+      "render_report",
+      "main"
+    ],
+    "controllo": "il numero di def nel file restituito deve essere almeno 16"
+  }
+}

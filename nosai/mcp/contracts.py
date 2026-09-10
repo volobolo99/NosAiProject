@@ -67,6 +67,13 @@ class ProviderConfig:
     enabled: bool = True
     network_required: bool = False
     capabilities: tuple[str, ...] = ()
+    aliases: tuple[str, ...] = ()
+    cost_class: str = "free"
+    sec_medi: float | None = None
+    bench: str = ""
+    misurato_il: str = ""
+    routable: bool = True
+    quota: str = ""
 
 
 @dataclass(frozen=True)

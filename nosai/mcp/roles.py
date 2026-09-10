@@ -158,6 +158,20 @@ DEFAULT_EMPLOYEE_ROLES = (
         ("documentation", "indexing", "provenance"),
         ("code_execution", "secret_export"),
     ),
+    EmployeeRole(
+        "employee.model_scout", "Model Scout",
+        "sorveglianza quotidiana del catalogo modelli e dei prezzi",
+        (
+            "rilevare gratuiti nuovi",
+            "rilevare modelli diventati gratuiti",
+            "proporre modelli a pagamento con miglior rapporto qualita' prezzo",
+            "segnalare i modelli del roster spariti dal catalogo",
+        ),
+        "gpt-oss-20b", ("nex-n2.5-mini", "qwen2.5-coder:7b"),
+        ("catalog_watch", "classification", "documentation"),
+        ("binding_promotion", "paid_model_adoption", "policy_override", "secret_export"),
+        True,
+    ),
 )
 
 
