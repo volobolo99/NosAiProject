@@ -20,6 +20,7 @@ Un modello non può risolvere un conflitto inventando una scelta: deve aprire un
 | Ruolo | Compito | Può modificare codice | Può promuovere su `main` |
 |---|---|---:|---:|
 | Direttore/CTO | scomposizione, dipendenze, routing, decisioni e integrazione | solo secondo le regole di `.claude/CLAUDE.md` | no, richiede gate |
+| MCP Chief | watchdog salute/configurazione MCP, proposte di miglioramento, binding e rollback | solo aree non protette tramite proposta | no; promozione richiede test, shadow, audit e conferma operatore |
 | Contract agent | firme, tipi, invarianti, schema e test contract | sì nel proprio perimetro | no |
 | Coding agent | implementazione dei corpi e test del task assegnato | sì solo nei file assegnati | no |
 | Testing agent | test, riproduzione, classificazione dei fallimenti | test e fixture assegnati | no |
@@ -27,7 +28,7 @@ Un modello non può risolvere un conflitto inventando una scelta: deve aprire un
 | Documentation agent | indice, report, changelog, ledger e mappe | documentazione assegnata | no |
 | Integrator | verifica diff, test aggregati, aggiornamento ledger e merge | sì sui file di integrazione | sì dopo tutti i gate |
 
-Il Direttore MCP può proporre modifiche al proprio server, ma non può modificare o disattivare policy, audit, test di sicurezza, contratti di governance o meccanismi di rollback.
+Il Direttore MCP può proporre modifiche al proprio server, ma non può modificare o disattivare policy, audit, test di sicurezza, contratti di governance o meccanismi di rollback. Il **MCP Chief** è il watchdog permanente: esegue health check a ogni ciclo del servizio/pannello, raccoglie raccomandazioni e governa i binding in modalità staged. Non ha autorità di esecuzione di gioco, override o esportazione segreti; l’Auditor indipendente mantiene veto e rollback.
 
 ## 3. Pacchetto minimo di un incarico
 
@@ -145,11 +146,11 @@ Ordine di lettura per un nuovo task:
 
 `SOURCE_OF_TRUTH → CONTRACT_MAP → SYSTEM_MAP → EXECUTION_QUEUE → file/test → ADR`.
 
-## 9. Stato dell’automazione
+## 9. Supervisione continua del MCP Chief\n\nIl Chief espone `mcp_chief_health` e gli endpoint dashboard `/api/mcp/chief`. Il controllo è read-only e può essere eseguito periodicamente dal processo operativo o da un monitor esterno. Le modifiche passano sempre da proposta → shadow/test → audit indipendente → conferma operatore → promozione atomica. Se un controllo fallisce, il Chief raccomanda sospensione o rollback; non può auto-rimuovere i propri guardrail.\n\n## 10. Stato dell’automazione
 
 Il repository contiene il protocollo MCP per proposta, audit e rollback e la coda documentale per il coordinamento. La distribuzione completamente autonoma di task verso provider esterni resta una capacità da verificare in ambiente operativo: la documentazione non la considera già funzionante solo perché esistono `director.py` o gli schemi.
 
-## 10. Definition of Done del coordinamento
+## 11. Definition of Done del coordinamento
 
 Un task è chiuso solo quando:
 
