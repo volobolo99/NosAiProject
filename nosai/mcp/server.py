@@ -10,7 +10,7 @@ from .contracts import ActivationRequest, SimulationRequest, ToolRisk
 from .learning import LearningFactory
 from .auditor import McpAuditor
 from .director import McpDirector
-from .roles import RoleArchitect
+from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 from .policy import McpPolicy
 from .router import ModelRouter
 from .inference import InferenceGateway
@@ -106,7 +106,9 @@ def create_server(config_path: Path | str | None = None):
     @server.tool()
     def mcp_verify_roles() -> str:
         errors = RoleArchitect().verify()
-        return json.dumps({"valid": not errors, "errors": errors}, ensure_ascii=False)
+        employee_errors = RoleArchitect.verify_employee_catalog(DEFAULT_EMPLOYEE_ROLES)
+        all_errors = errors + employee_errors
+        return json.dumps({"valid": not all_errors, "errors": all_errors, "employee_count": len(DEFAULT_EMPLOYEE_ROLES)}, ensure_ascii=False)
 
     @server.resource("nosai://mcp/policy")
     def mcp_policy_resource() -> str:
