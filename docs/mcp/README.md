@@ -45,6 +45,15 @@ Le credenziali sono gestite dal pannello ma non vengono mai mostrate integralmen
 
 Il Direttore MCP può proporre modifiche soltanto in aree non protette. L’Auditor controlla test, compatibilità dei contratti e invarianti Safety; un controllo mancante produce veto e rollback richiesto.
 
+## Relazione con l’orchestratore storico
+
+`scripts/mcp_hub_server.py` è l’entrypoint canonico del MCP Hub operativo descritto da
+`contracts/mcp-hub-001.json`. `scripts/mcp_server.py` resta il server storico della
+catena skeleton/infill/preflight/debug. I due entrypoint non sono intercambiabili: un
+task deve indicare quale contratto usa. La cascata free-first del server storico è
+ancora tracciata da `contracts/free-first-006.json` e `contracts/mcp-cascata-007.json`
+e non va considerata completa finché `scripts/free_first.py` non supera i test dedicati.
+
 ## Avvio locale
 
 ```powershell
