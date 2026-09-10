@@ -75,6 +75,17 @@ L’elenco di classi e firme pubbliche è mantenuto in `docs/INDICE_REPO.md`; pr
 - `roles.py`: verifica copertura dei ruoli.
 - `server.py` e dashboard: espongono tools/resources senza autorità di esecuzione.
 
+## 5. MCP: due entrypoint con responsabilità diverse
+
+Il repository contiene due server e non devono essere trattati come duplicati equivalenti:
+
+| Entry point | Ruolo | Stato/uso |
+|---|---|---|
+| `scripts/mcp_hub_server.py` + `nosai/mcp/` | MCP Hub operativo: policy, provider, simulazione, learning, secret store, audit, Director/Auditor e dashboard | entrypoint canonico documentato in `docs/mcp/README.md` |
+| `scripts/mcp_server.py` | orchestratore storico per la catena skeleton → infill → preflight → debug → documentazione | compatibilità e tooling esistente; la sua cascata free-first è ancora legata a `C-006/C-007` |
+
+Finché non viene accettato un ADR di consolidamento, gli agenti devono usare l’entrypoint richiesto dal contratto del task e non spostare tool da un server all’altro. Questa separazione è una decisione di routing, non una prova che entrambi offrano la stessa superficie.
+
 ## 5. Stato dei confini da non confondere
 
 - Il runtime C# possiede oggi il percorso live e la Safety authority.
