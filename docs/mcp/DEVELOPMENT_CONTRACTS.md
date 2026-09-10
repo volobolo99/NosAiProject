@@ -15,3 +15,9 @@ Ogni nuovo tool deve dichiarare: input JSON versionato, output JSON versionato, 
 Una modifica che fallisce un test deterministico, produce dati non provenienti da fonti osservabili o tenta di accedere a stato privilegiato viene rifiutata e registrata nell’audit.
 
 
+
+## MCP Chief
+
+Il Chief è un supervisore di governance: health check, raccomandazioni, proposte e gestione staged dei binding. Non possiede autorità di esecuzione, policy override, audit override, secret export o stato privilegiato. Ogni promozione richiede controlli indipendenti (`tests_passed`, `shadow_passed`, `audit_approved`) e conferma esplicita `operator`; il registro è persistito atomicamente e supporta rollback versionato.
+
+Contratto operativo: `contracts/mcp-hub-001.json` v1.1.0. Runbook: `docs/mcp/CHIEF_RUNBOOK.md`.
