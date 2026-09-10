@@ -44,7 +44,7 @@ namespace OpenNos.Handler
             }
 
             Logger.Log.Error("Could not retrieve Worldserver groups. Please make sure they've already been registered.");
-            _session.SendPacket($"fail {string.Format(Language.Instance.GetMessageFromKey(\"MAINTENANCE\"), DateTime.Now)}");
+            _session.SendPacket($"fail {string.Format(Language.Instance.GetMessageFromKey("MAINTENANCE"), DateTime.Now)}");
             return null;
         }
 
