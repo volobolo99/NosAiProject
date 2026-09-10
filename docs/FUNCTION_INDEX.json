@@ -1,0 +1,6720 @@
+{
+  "schema_version": "nosai.function_index.v1",
+  "source_revision": "3e4a8c42d75a73ccf5c6b739705e6293b059827e",
+  "coverage": [
+    {
+      "path": "nosai/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/ai/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/ai/rule_based.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/bringup/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/bringup/guard_server.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/bringup/protocol.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/contracts.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/coordinated_action_manager.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/data_classification.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/orchestrator.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/safety.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/simulation.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/simulation_policy.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/tactical_ranking.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/core/world_model.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/dashboard/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/dashboard/server.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/dashboard/static/app.js",
+      "language": "javascript",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/dashboard/static/index.html",
+      "language": "javascript",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/guard/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/guard/protocol.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/guard/runtime.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/audit.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/auditor.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/bindings.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/chief.py",
+      "language": "python",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/config.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/contracts.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/dashboard.py",
+      "language": "python",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/director.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/inference.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/learning.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/policy.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/roles.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/router.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/secrets.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/server.py",
+      "language": "python",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/simulation.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/mcp/static/index.html",
+      "language": "javascript",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/miniland/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/miniland/automation.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/crypto_auth.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/session_auth.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/session_cipher.py",
+      "language": "python",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/session_transcript.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/network/wire_protocol.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/orchestration/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/orchestration/ledger.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/orchestration/messages.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/orchestration/routing.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/party/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/party/partner.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/party/pet.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/persistence/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/persistence/sqlite_logger.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/phone/onboarding_engine.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/phone/provisioning.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/adaptive_throttling.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/agent_loop.py",
+      "language": "python",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/closed_loop.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/context_slimming.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/contracts.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/engine.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/evaluation.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/events.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/hardware.py",
+      "language": "python",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/hardware_watchdog.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/integration.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/memory.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/orchestrator_bridge.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/policy.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/provider_router.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/recovery.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/resources.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/session.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/session_protocol.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/state.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/timeouts.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/tools.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/trust.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/runtime/watchdog.py",
+      "language": "python",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/storage/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/storage/health.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/storage/paths.py",
+      "language": "python",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/storage/sqlite_policy.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/storage/volume.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/action_model.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/combat_engine.py",
+      "language": "python",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/play_ai.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/scheduling.py",
+      "language": "python",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/search.py",
+      "language": "python",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/stochastic.py",
+      "language": "python",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/tactical/threat.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/telemetry/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/telemetry/advanced.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/testing/__init__.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "nosai/testing/evidence.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/build.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/build.sh",
+      "language": "bash",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/check_credentials.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/code_agent.py",
+      "language": "python",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/common.ps1",
+      "language": "powershell",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/create-desktop-shortcut.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/doc_agent.py",
+      "language": "python",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/free_chain.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/free_first.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/mcp_dashboard_server.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/mcp_hub_server.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/mcp_server.py",
+      "language": "python",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/model_scout.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/provision_openrouter_key.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/test.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/test.sh",
+      "language": "bash",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/validate.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/validate.sh",
+      "language": "bash",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "scripts/windows/nosai_bootstrap.ps1",
+      "language": "powershell",
+      "functions": 1,
+      "parse_errors": 1
+    },
+    {
+      "path": "scripts/windows/start_control_panel.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/DirectEngineAdapter.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineActionRequest.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineActionResult.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineCapability.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineClientProfile.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineProfileResolver.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineRefusal.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineResolvedProfile.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineSignature.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineSignatureMatcher.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/EngineStateResult.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/IDirectEngineAdapter.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/IEngineAuthorizationGate.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/IEngineProfileResolver.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/DirectEngine/NosTaleLegacyProfile.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/IGameProcessAdapter.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/ProcessAttachOptions.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Adapter/Win32ProcessAdapter.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/App.xaml.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/AttachedSnapshot.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/AutoSetup.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CatalogueNames.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ChannelView.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CognitiveObservabilityRegistry.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CognitiveObservabilityUsings.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CognitiveRuntimeTraceBridge.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/CombatInspect.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/DecisionInspect.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ElevationInspect.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/EquipWireInspect.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/EventLogInspect.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/GameplayWireReader.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/HudCropStore.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/InventoryPanelInspect.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/KeybindsInspect.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/LocalPortProbe.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+      "language": "c_sharp",
+      "functions": 96,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/MapGridManifest.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/MapInspect.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/MapWorldReader.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/NetworkInspect.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ObserveGameDetector.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/OperatorHealth.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/OperatorLogFile.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/OperatorSettings.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ResilienceInspect.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/RuntimeDllLocator.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/RuntimeSession.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ScreenCalibrationInspect.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/SecurityInspect.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/SnapshotView.cs",
+      "language": "c_sharp",
+      "functions": 58,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/StartupRoundClient.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/SuiteCatalog.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/SurroundingsInspect.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/TargetInspect.cs",
+      "language": "c_sharp",
+      "functions": 31,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/ToolRunner.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/UiLogger.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/UnequipInspect.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/WireMessageInspect.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.ControlPanel/WorkspaceLocator.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/CharacterControl/CharacterActionPlanner.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/CharacterControl/CharacterControlContracts.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/CharacterControl/FailClosedCharacterActionGuard.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Cognitive/CognitiveObservabilityContracts.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Cognitive/CognitiveObservabilityHub.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Cognitive/CognitiveObservabilityRegistry.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Game/GameFunctionCatalog.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/HardwareCapabilitySnapshot.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/HardwareClassification.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/IHardwareCapabilityProvider.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/InferenceResourceBudget.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/InferenceTier.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Hardware/InferenceTierFeasibility.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/IMonotonicClock.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/IPipelineStage.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Knowledge/AdaptiveKnowledgeIngestionEngine.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Knowledge/KnowledgeIngestionContracts.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Knowledge/KnowledgeLifecycleProjection.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Knowledge/KnowledgeStrategyBridge.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Memory/ActionOutcomeLedger.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Memory/AdaptiveKnowledgeContracts.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Memory/FileSystemAdaptiveKnowledgeStore.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Memory/InMemoryStore.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Memory/MemoryTypes.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Navigation/DeterministicGridNavigationPlanner.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Navigation/NavigationContracts.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Navigation/NavigationEvidenceEvaluator.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Navigation/NavigationObservation.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/PipelineStage.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/PlannerWorldState.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/DeadlinePlanner.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/DeterministicRoutine.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/Goap/DeterministicGoapPlanner.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/Goap/GoapAction.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/IOrchestrator.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/IPlanner.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/LexicographicOrchestrator.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/PlanStep.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/PlannerGoalId.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Planning/PlannerGoalStack.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Progression/KnowledgeMissionStrategyAdapter.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Progression/MissionOutcomeLearning.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Progression/MissionStrategyContracts.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Progression/OutcomeLedger.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Safety/RetryBudgetContracts.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/BoundedTierQueue.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/InferenceBudgetScheduler.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/InferenceJob.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/LowestCostJobSelector.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/ResourceBudgetLedger.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/ResourceCost.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Scheduling/Tier3AsyncExecutor.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/StageResult.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Statistics/DeterministicStatistics.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Statistics/LinearStatePredictor.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Statistics/StatisticsContracts.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/Testing/PracticalTestContracts.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Certification/CertificationContracts.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Combat/CombatContracts.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Combat/CombatExecutionContracts.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Exploration/MovementExecutionContracts.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Exploration/MultiMapRoutePlanner.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Identifiers.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/InventoryContracts.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Loadout/LoadoutContracts.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Loadout/LoadoutPlanner.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/MapModel.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/PlanningContracts.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/QuestContracts.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Quests/QuestGraphBuilder.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Quests/QuestGraphContracts.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Quests/QuestGraphPlanner.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Reconstruction/MapObservationBatch.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Reconstruction/MapReconstructionFusion.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Reconstruction/PortalCrossingDetector.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/ResourceContracts.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/SpatialContracts.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/StatusEffectContracts.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Strategy/CombatRecencyTracker.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Strategy/StrategyContracts.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Temporal/TemporalBelief.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/WorldActionProjector.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/WorldModelClassification.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Core/WorldModel/WorldModelSnapshot.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/App.xaml.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/AppShell.xaml.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/DeviceIdentity.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/GuardConnectionService.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/KeystoreDeviceSigner.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/MainPage.xaml.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/MauiProgram.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/Platforms/Android/MainActivity.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/Platforms/Android/MainApplication.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/RuntimePin.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardAi.App/TransportPreference.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardClient/DeviceSigner.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardClient/GuardAiClient.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardClient/GuardReconnectPolicy.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardClient/GuardSnapshotView.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.GuardClient/RuntimeDiscovery.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Host/DashboardHub.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Host/NosAiHost.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Host/Program.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Protocol/DiscoveryProtocol.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Protocol/SessionCipher.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Protocol/SessionTranscript.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Protocol/WireProtocol.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/DecisionActuationPolicy.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/DecisionEngineTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 40,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/GameplayVitalsAdapter.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/UtilityDecisionContracts.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/UtilityDecisionEngine.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/Decision/UtilityRuleProvider.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Adapters/IGameAdapter.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Adapters/NosTaleGameAdapter.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Autonomy/CatalogueClassifier.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Autonomy/GoalStack.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Autonomy/TargetEstablishment.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+      "language": "c_sharp",
+      "functions": 42,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Configuration/RuntimeEnvironmentValidator.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Configuration/RuntimeResult.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/ActionCandidate.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/CandidateAction.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/DataClassification.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/MapPoint.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/PredictedOutcome.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/RuntimeMode.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Contracts/TrustTier.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+      "language": "c_sharp",
+      "functions": 42,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomyTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/CardReferenceDecoder.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/ClientDirectoryScanner.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/GameReferenceDatabase.cs",
+      "language": "c_sharp",
+      "functions": 38,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/GameReferenceLocator.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/ItemCatalogue.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/ItemReferenceDecoder.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/MonsterCatalogue.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/MonsterReferenceDecoder.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/NosArchive.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/NosDataTable.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/ReferenceImporter.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/SkillCatalogue.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/GameData/SkillReferenceDecoder.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/DiscoveryResponder.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1BootstrapHost.cs",
+      "language": "c_sharp",
+      "functions": 59,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1CanonicalSnapshot.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1NavigationView.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1ObservationChannel.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1Runtime.cs",
+      "language": "c_sharp",
+      "functions": 50,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/Gate1TestRunner.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2IntegratedEngine.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2Runtime.cs",
+      "language": "c_sharp",
+      "functions": 53,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2SessionStore.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2Sqlite.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2TestRunnerChecks.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate2/Gate2WorldModel.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3Effector.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3Observation.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3ReplayProbe.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3Runtime.cs",
+      "language": "c_sharp",
+      "functions": 81,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/Gate3WorldState.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/InputActionEffector.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/ObservedActionDurations.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate3/PostConditions.cs",
+      "language": "c_sharp",
+      "functions": 45,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate4/Gate4Runtime.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate4/Gate4TestRunner.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate5/Gate5Integration.cs",
+      "language": "c_sharp",
+      "functions": 35,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate5/Gate5Runtime.cs",
+      "language": "c_sharp",
+      "functions": 52,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+      "language": "c_sharp",
+      "functions": 40,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Guard/GuardAi.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/AutoSetManager.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/HardwareAutoSettings.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/HardwareProfilePaths.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/HardwareProfileStore.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+      "language": "c_sharp",
+      "functions": 39,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Humanizer/HumanizerContracts.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpSegment.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+      "language": "c_sharp",
+      "functions": 41,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/EntityName.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/EntityNameProbe.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+      "language": "c_sharp",
+      "functions": 87,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsProbe.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PointerAnchorHunter.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/PositionAwareGameplayProvider.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/ProcessMemoryReader.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/RealClientConnector.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/TargetAwareGameplayProvider.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/WireEntityNameTable.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LiveIntegration/WirePlayerVitals.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/ActuationAuthority.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/ActuationScope.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/CommitPointValidator.cs",
+      "language": "c_sharp",
+      "functions": 28,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/GatedInputBackend.cs",
+      "language": "c_sharp",
+      "functions": 28,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/HumanInputMonitor.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/InputAuthorityProbe.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/InputControlTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/InputEnvironmentProbe.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/InputGuardsProbe.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/KeybindMap.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/KeybindsCheck.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/NosTaleDefaultKeyCatalog.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/SessionActuationAuthority.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/VirtualKeys.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/LowLevel/Win32InputBackend.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/BinaryMapGridLoader.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/CollectCommand.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/IMapGridLoader.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MapGrid.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MapGridCheck.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MapGridExtractor.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MapGridSetIdentity.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
+      "language": "c_sharp",
+      "functions": 49,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/RouteProbe.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/ScoutCommand.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/SingleStepCommand.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/SingleStepExecutor.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/SkillCooldownFinder.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/SkillCooldownProbe.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/SkillCooldownSweep.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/StaticGeometryLayer.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/StepGuardChain.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/TargetChainProbe.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/TargetIdFinder.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Navigation/WalkCommand.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Network/Gateway/ControlPanelGatewayEngine.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/CaptureClock.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/ClientUpdateCommand.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/CognitiveObservabilityBridge.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/CognitiveObservabilityRegistry.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/CognitiveRuntimeTraceBridge.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/DecideReplayCommand.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/HaltDiagnosticsDumper.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/LearningReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/ModuleReachability.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/MonsterReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/OperatorApiSnapshot.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/OutcomeReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/PipelineStageBoard.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/ReferenceInfoCommand.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/RuntimeLogger.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/SkillReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/WireInspectCommand.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Observability/WorldReplayCommand.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Operator/HaltCli.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Operator/OperatorMenu.cs",
+      "language": "c_sharp",
+      "functions": 50,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Orchestration/RuntimeComposition.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/CalibratedScreenProjection.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/CaptureFreshnessPolicy.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DialogWindowReader.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DialogWindowStateComposer.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 2
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudBarFillReader.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudGlyphExtractor.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudGlyphTraining.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationContracts.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+      "language": "c_sharp",
+      "functions": 64,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/ScopedGameTrafficFilter.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/Network/SyntheticProtocolDecoder.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/NullPerceptionProvider.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/PerceptionContracts.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+      "language": "c_sharp",
+      "functions": 44,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenDialogWindowSource.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+      "language": "c_sharp",
+      "functions": 39,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/TargetRoiCalibration.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/TargetStateComposer.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Perception/VisualObservation.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "language": "c_sharp",
+      "functions": 103,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
+      "language": "c_sharp",
+      "functions": 38,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/ActionIntentDigest.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/ActionTokenIssuer.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/CapabilityAuthorizationGate.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/GuardPolicyEngine.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/ImmediateHalt.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/LiveInputAuthorization.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/RecoveryController.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/RuntimeSafetyController.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/RuntimeSafetyPolicy.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Safety/TrustBoundary.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/EphemeralSession.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/EphemeralSessionTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/ExecutionIntegrity.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/IPacketManipulator.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/NoiseProtocol.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/NoiseProtocolChecks.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Security/RuntimeAuthorization.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Storage/Infrastructure/StorageInfrastructure.cs",
+      "language": "c_sharp",
+      "functions": 39,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/AutoplayCommand.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/ClickTargetExecutor.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/CombatReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/LiveCombatObserver.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/LoadoutReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/RecoverCommand.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/Simulation.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/TacticalPlanner.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/TacticalRanking.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/CertificationReportBuilder.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/CertificationReportCommand.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/DeferredEvidence.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/LivePracticalTestService.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/ScenarioStageTestRunner.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/StartupRound.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/StartupRoundReport.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/TestConsoleHtml.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/TestConsoleService.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/TestEvidence.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/TestEvidenceProtocol.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/Testing/TestSuiteRunner.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/ActionOutcomeRecorder.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/ClassifiedValueBridge.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/CombatVerificationProjector.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/FactFusion.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/GameplayObservationProjector.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/MapGridObservationProjector.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/MapReconstructionSource.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/MovementVerificationProjector.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/VisualObservationFusion.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Runtime/WorldModel/WorldState.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/CapabilityScope.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/CapabilityToken.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/CapabilityValidator.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/FrameCodec.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/FrameOpCode.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/LengthPrefixedRecord.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/NoiseSession.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/NosFrameHeader.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Security/SequenceGuard.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/ActionOutcomeLedgerStore.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/IEventJournal.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/MapModelStore.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/PredictionCalibrationStore.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/SqliteEventJournal.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/SqliteJournalOptions.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "src/NosAi.Storage/VolumeLocator.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/CognitiveDecisionDisplayTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/HardwareProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/LocalPortProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 50,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/ObserveGameDetectorTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/OperatorSettingsTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/UnequipInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/AdaptiveKnowledgeIngestionEngineTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/CognitiveObservabilityTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeStrategyBridgeTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/MapModelStoreSimulatedSourceAndBoundaryConfidenceTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Navigation/NavigationObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/NosAiHostTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Planning/DeterministicPlanningTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Planning/PlanningSafetyTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Planning/RecoveryAndEvaluationTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Progression/KnowledgeMissionStrategyAdapterTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Progression/MissionStrategyOptimizerTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/QuiescedMachineFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/ResourceCostTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Statistics/DeterministicStatisticsTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 34,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 28,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/MapModelTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/PlanningContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/QuestContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/QuestGraphBuilderTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/QuestProgressVerdictTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Quests/QuestGraphContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Quests/QuestGraphPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Reconstruction/MapObservationBatchTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Reconstruction/MapReconstructionFusionTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Reconstruction/PortalCrossingDetectorTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/ResourceContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/ResourceCustomKindAmbiguityTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/ResourceFractionTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/SpatialContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/StatusEffectContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/CombatRecencyTrackerTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/ProgressionUrgencyTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyContractsTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Temporal/MobHostilityCarryForwardTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Temporal/TemporalBeliefBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Temporal/TemporalBeliefTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/WorldActionProjectorTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/WorldFactBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/WorldFactTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Core.Tests/WorldModel/WorldModelSnapshotTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ActionIntentDigestTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ActionTargetTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ActuationRefusalCoverageTests.cs",
+      "language": "c_sharp",
+      "functions": 53,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+      "language": "c_sharp",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/AutoplayRecoveryDispatchTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/BinaryMapGridLoaderTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/BystanderTargetingTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CalibrationPersistenceTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CaptureAnalyzerTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CaptureEngineTests.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CaptureFreshnessPolicyTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CaptureHealthTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CatalogueClassifierTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CataloguedOpcodeTests.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CertificationReportBuilderTests.cs",
+      "language": "c_sharp",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ClickTargetCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ClickTargetExecutorTests.cs",
+      "language": "c_sharp",
+      "functions": 35,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ClientNetworkObserverTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ClientUpdateCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ClientWindowDpiProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CognitiveObservabilityBridgeTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CollectCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CombatReportCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CommitPointTests.cs",
+      "language": "c_sharp",
+      "functions": 58,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/CommittedScreenCalibrationTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ConsoleCaptureCollection.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DecideReplayAsOfCaptureTests.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DecideReplayCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DecisionEngineTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DetectionBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DirectEngine/EngineProfileResolverTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DiscoveryTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/DuplicateTypeNameTests.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 43,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EntityLevelFromStTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EntityNameTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EntityPipeTests.cs",
+      "language": "c_sharp",
+      "functions": 47,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EntitySightingAbsoluteVitalsTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EventLogDiagnosticsTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EventLogReplayTests.cs",
+      "language": "c_sharp",
+      "functions": 41,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Evidence.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/CardReferenceDecoderTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/CliStringReferenceTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/ClientDirectoryScannerTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/ClientInventoryTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/ClientUpdateRealClientTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/ItemCatalogueTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/ItemReferenceDecoderTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/MonsterReferenceDecoderTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/SkillCatalogueTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/SkillReferenceDecoderRealClientTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameData/SkillReferenceDecoderTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameReferenceDatabaseTests.cs",
+      "language": "c_sharp",
+      "functions": 33,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameTextReadbackTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameplayChainTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameplayFreshnessTests.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameplayProviderTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GameplayWireContractTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate1NavigationViewTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate1ObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate1Tests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate2Tests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3CalibrationPersistenceTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3DecisionLoopTests.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3LearningWiringTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3LoopCalibrationLifecycleTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3PartialObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate3Tests.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate4Tests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate5Tests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Gate6Tests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GeometryEpochTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GoalAndReactionTests.cs",
+      "language": "c_sharp",
+      "functions": 46,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GuardAdmissionTests.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GuardAiClientTests.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GuardAppLogicTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/GuardNegativeTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/HaltCliTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/HaltDiagnosticsTests.cs",
+      "language": "c_sharp",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Hardware/Gate/HardwareInferenceCapabilityGateTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Hardware/Gate/RuntimeHardwareCapabilityProviderTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Hardware/VramDetectionTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/HeartbeatPayloadTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/HudBarOnRealClientTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/HudGlyphAtlasTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/IconItemVnumRecordedCaptureTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/IconItemVnumTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ImmediateHaltTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+      "language": "c_sharp",
+      "functions": 56,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InputAuthoritySurfaceTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InputBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InputControlTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InputGuardsProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 28,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InventoryPanelCalibrationProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/InventoryPanelRoiCalibrationTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ItemCatalogueRefusalTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/KeybindMapTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/KeybindsCheckTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LearningReportTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveIntegration/Capture/BroadWirePreludeTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs",
+      "language": "c_sharp",
+      "functions": 34,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveIntegration/PreLoginCaptureSessionTests.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveObservationGatewayTests.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveObservationScopeTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LiveWireMonitorTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/LoadoutReportCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapGridCheckTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapGridExtractorTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapGridLoaderContractTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapGridSetIdentityTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapGridTests.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MapIdFinderTests.cs",
+      "language": "c_sharp",
+      "functions": 35,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MasterHostTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MemoryGameplayProviderTests.cs",
+      "language": "c_sharp",
+      "functions": 40,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MemoryScannerTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MemoryTargetProviderTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+      "language": "c_sharp",
+      "functions": 34,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NetworkObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NetworkWorldStateObserverTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NetworkWorldStateTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NoSingleRemoteConnectionFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NonWindowsFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NosArchiveTests.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NosTaleClientFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NosTaleDefaultKeyCatalogTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NosTaleWorldDecoderTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/NosTaleWorldObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 33,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ObservationPollBudgetTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ObservedActionDurationsTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OnnxObjectDetectorTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OperatorApiSnapshotTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OperatorMenuTests.cs",
+      "language": "c_sharp",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OperatorMenuWireEntriesTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OutEntityLeftTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OutEntityRecordedCaptureTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/OutcomeReportTests.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PacketParsingTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PathWalkTests.cs",
+      "language": "c_sharp",
+      "functions": 42,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Perception/OpportunisticBarProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Perception/ScreenVitalsCaptureTests.cs",
+      "language": "c_sharp",
+      "functions": 46,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PlayerIdentityFromWireTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PlayerVitalsCalibratorTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PlayerVitalsChainTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PlayerVitalsTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PlayerVitalsWindowTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PointerAnchorHunterTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+      "language": "c_sharp",
+      "functions": 50,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PostConditionWiringTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/PredictionLedgerTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ProcessMemoryReaderTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ProgressionFromLevTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ProtocolMapFramerTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ReassembledObservationSourceTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RecordedCaptureContractTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RecordedCaptureFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RecoverCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 37,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ReferenceCatalogCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ReferenceCoverageTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RoiClientAreaTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RuntimeAuthorizationTests.cs",
+      "language": "c_sharp",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RuntimeEnvironmentTests.cs",
+      "language": "c_sharp",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RuntimeIdentityTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RuntimeLoggerTests.cs",
+      "language": "c_sharp",
+      "functions": 31,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/RuntimeSafetyControllerTests.cs",
+      "language": "c_sharp",
+      "functions": 33,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScenarioOnRecordedBytesTests.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SceneOperandPlausibilityTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScopedLiveCaptureBackendTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 40,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenProjectionRegimeTests.cs",
+      "language": "c_sharp",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 44,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenSampleCoachTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenSampleRegimeTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/ScreenTargetFrameSourceTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SessionAuthorityTests.cs",
+      "language": "c_sharp",
+      "functions": 66,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SessionCipherTests.cs",
+      "language": "c_sharp",
+      "functions": 31,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SessionTranscriptTests.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SimulationCostTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SingleStepCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 56,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCatalogueRefusalTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCooldownFinderTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCooldownProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCooldownSweepTests.cs",
+      "language": "c_sharp",
+      "functions": 33,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCooldownTrackerTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillCostAgainstCatalogueTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillReportCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SkillWireMeasureTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SqlitePolicyParityTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/StaticGeometryLayerTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/StepGuardTests.cs",
+      "language": "c_sharp",
+      "functions": 68,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SubsystemSuiteTests.Extra.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/SubsystemSuiteTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetAwareGameplayProviderTests.cs",
+      "language": "c_sharp",
+      "functions": 20,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetChainProbeTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetFrameReaderTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetIdFinderTests.cs",
+      "language": "c_sharp",
+      "functions": 28,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetRoiCalibrationTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetSelectorTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetStateComposerTests.cs",
+      "language": "c_sharp",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TargetVitalsFromSuTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/TcpReassemblyTests.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Testing/DeferredEvidenceTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/Testing/StartupRoundTests.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/UnequipCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/UnequipExecutorTests.cs",
+      "language": "c_sharp",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/UnobservedBreakdownTests.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/VisualObservationBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/VisualObservationTests.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WalkCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 68,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WinDivertFlagTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WindowsOnlyFactAttribute.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WireInspectFieldsTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WireInspectTests.cs",
+      "language": "c_sharp",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WireInspectTimelineTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WireProtocolCrossStackTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WireRecorderTests.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldChannelReplayTests.cs",
+      "language": "c_sharp",
+      "functions": 12,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/ActionOutcomeRecorderTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/ClassifiedValueBridgeEquivalenceTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/CombatVerificationProjectorTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/DropClaimProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/EquipmentProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/FactFusionBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/FactFusionTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/GameplayObservationEntityProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 48,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/GameplayObservationProjectorBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/GameplayObservationProjectorTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MapGridObservationProjectorTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MapReconstructionFusionAtGridScaleTests.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MapReconstructionSourceExceptionSafetyTests.cs",
+      "language": "c_sharp",
+      "functions": 16,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MapReconstructionSourceMapIdParsingTests.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MapReconstructionSourceTests.cs",
+      "language": "c_sharp",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MovementVerificationProjectorTests.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/MultimodalPipelineDeterminismTests.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/ProgressionProjectionTests.cs",
+      "language": "c_sharp",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/VisualObservationFusionBoundaryTests.cs",
+      "language": "c_sharp",
+      "functions": 19,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/VisualObservationFusionTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopEntityWiringTests.cs",
+      "language": "c_sharp",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+      "language": "c_sharp",
+      "functions": 38,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+      "language": "c_sharp",
+      "functions": 39,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+      "language": "c_sharp",
+      "functions": 43,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+      "language": "c_sharp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/network/test_wire_protocol.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/network/test_worldstate_delta.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/storage/test_paths.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/storage/test_sqlite_policy.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_adaptive_throttling.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_advanced_telemetry.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_agent_runtime.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_agent_runtime_expansion.py",
+      "language": "python",
+      "functions": 24,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_ap00_hardware_boundary_audit.py",
+      "language": "python",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_bringup_protocol.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_code_agent_provider.py",
+      "language": "python",
+      "functions": 23,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_contract_ledger.py",
+      "language": "python",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_coordinated_action_manager.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_core_safety.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_crypto_auth.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_dashboard_runtime_link.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_doc_agent_skeleton.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_free_chain.py",
+      "language": "python",
+      "functions": 34,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_free_first.py",
+      "language": "python",
+      "functions": 47,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_gate1_classification.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_guard_protocol.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_hardware_profiling.py",
+      "language": "python",
+      "functions": 26,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_cascata.py",
+      "language": "python",
+      "functions": 32,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_chief.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_audit.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_contracts.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_governance.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_inference.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_learning.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_policy.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_secrets.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_hub_server.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_role_bindings.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_mcp_roles.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_miniland.py",
+      "language": "python",
+      "functions": 5,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_model_routing.py",
+      "language": "python",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_model_scout.py",
+      "language": "python",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_openwebui_filter.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_orchestration.py",
+      "language": "python",
+      "functions": 27,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_orchestrator.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_orchestrator_party.py",
+      "language": "python",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_orchestrator_ranking.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_party.py",
+      "language": "python",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_runtime_optimizations.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_session_cipher.py",
+      "language": "python",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_simulation.py",
+      "language": "python",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_stochastic_combat_engine.py",
+      "language": "python",
+      "functions": 21,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_tactical_scheduling.py",
+      "language": "python",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_tactical_search.py",
+      "language": "python",
+      "functions": 13,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_tactical_simulation_ranking.py",
+      "language": "python",
+      "functions": 7,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_tactical_stochastic.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_tactical_threat.py",
+      "language": "python",
+      "functions": 14,
+      "parse_errors": 0
+    },
+    {
+      "path": "tests/test_world_model_party.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/chickenapi/reference/BasicEventPipelineAsync.cs",
+      "language": "c_sharp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/inputsimulator/reference/KeyboardSimulator.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAction.cs",
+      "language": "c_sharp",
+      "functions": 15,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapAgent.cs",
+      "language": "c_sharp",
+      "functions": 11,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapGoal.cs",
+      "language": "c_sharp",
+      "functions": 9,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapMemory.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/IReGoapSensor.cs",
+      "language": "c_sharp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapCondition.cs",
+      "language": "c_sharp",
+      "functions": 17,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapNode.cs",
+      "language": "c_sharp",
+      "functions": 29,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlanner.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/luxkun/ReGoap/reference/ReGoapPlannerSettings.cs",
+      "language": "c_sharp",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/noscore/reference/WalkPacketHandler.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/opennos/reference/LoginPacketHandler.cs",
+      "language": "c_sharp",
+      "functions": 5,
+      "parse_errors": 1
+    },
+    {
+      "path": "third_party/sources/ptrefall/FluidHTN/reference/BaseDomainBuilder.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/ptrefall/FluidHTN/reference/Domain.cs",
+      "language": "c_sharp",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/ptrefall/FluidHTN/reference/DomainBuilder.cs",
+      "language": "c_sharp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/ptrefall/FluidHTN/reference/Planner.cs",
+      "language": "c_sharp",
+      "functions": 22,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.cpp",
+      "language": "cpp",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.h",
+      "language": "cpp",
+      "functions": 2,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
+      "language": "cpp",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
+      "language": "cpp",
+      "functions": 25,
+      "parse_errors": 0
+    },
+    {
+      "path": "third_party/sources/saltyemu/reference/WorldServer.cs",
+      "language": "c_sharp",
+      "functions": 8,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+      "language": "c_sharp",
+      "functions": 6,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/find-vitals.ps1",
+      "language": "powershell",
+      "functions": 1,
+      "parse_errors": 1
+    },
+    {
+      "path": "tools/open-webui/nosai_free_router.py",
+      "language": "python",
+      "functions": 4,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/scraping/nosapki_scraper.py",
+      "language": "python",
+      "functions": 30,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/chat_page.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/console_page.py",
+      "language": "python",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/hook_event.py",
+      "language": "python",
+      "functions": 3,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/runner.py",
+      "language": "python",
+      "functions": 18,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/server.py",
+      "language": "python",
+      "functions": 33,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/traffic_inspector/sessions.py",
+      "language": "python",
+      "functions": 10,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/windivert/install-and-capture.ps1",
+      "language": "powershell",
+      "functions": 0,
+      "parse_errors": 0
+    },
+    {
+      "path": "tools/windivert/probe/Program.cs",
+      "language": "c_sharp",
+      "functions": 1,
+      "parse_errors": 0
+    }
+  ],
+  "limitations": [
+    "Static syntax index, not call graph; generated/runtime functions absent.",
+    "C++ headers parsed as C++; preprocessor variants not expanded.",
+    "HTML inline scripts only; external scripts indexed separately.",
+    "Accessor and anonymous entries may lack a semantic name.",
+    "Files with parse errors require review; completeness not certified."
+  ],
+  "shards": [
+    {
+      "path": "docs/function-index/nosai-000.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/nosai-001.json",
+      "count": 9
+    },
+    {
+      "path": "docs/function-index/scripts-000.json",
+      "count": 60
+    },
+    {
+      "path": "docs/function-index/src-000.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-001.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-002.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-003.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-004.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-005.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-006.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-007.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-008.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-009.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/src-010.json",
+      "count": 333
+    },
+    {
+      "path": "docs/function-index/tests-000.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-001.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-002.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-003.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-004.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-005.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-006.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-007.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-008.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-009.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-010.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-011.json",
+      "count": 500
+    },
+    {
+      "path": "docs/function-index/tests-012.json",
+      "count": 359
+    },
+    {
+      "path": "docs/function-index/third_party-000.json",
+      "count": 232
+    },
+    {
+      "path": "docs/function-index/tools-000.json",
+      "count": 106
+    }
+  ],
+  "function_count": 12599
+}
