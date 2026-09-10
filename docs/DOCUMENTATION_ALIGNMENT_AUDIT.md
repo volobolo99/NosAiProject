@@ -1,24 +1,24 @@
 # Audit documentale e firme contrattuali
-Snapshot analizzato: 3e4a8c42d75a73ccf5c6b739705e6293b059827e. Non è un audit di esecuzione runtime.
+Snapshot storico: 3e4a8c42d75a73ccf5c6b739705e6293b059827e. Riconciliazione aggiornata: 2026-09-10; non è un audit di esecuzione runtime.
 
-## Disallineamenti verificati
-1. ROADMAP_ESECUTIVA usa AP-01 World Model, AP-02 Perception, AP-03 mappe;
+## Disallineamenti e stato della correzione
+1. **Risolto:** ROADMAP_ESECUTIVA usa AP-01 World Model, AP-02 Perception, AP-03 mappe;
    CONTRACT_MAP associa vecchi gate AP-01 cattura, AP-02 dispatcher, AP-03 decisione.
-   Identificare i contratti tramite CID; non fare join sul numero AP.
-2. CONTRACT_MAP ha colonne Contratto/Stato ma le righe mettono MERGED/DRAFT nella
+   CONTRACT_MAP e ledger ora usano `product_phases`; gli agenti devono identificare i contratti tramite CID.
+2. **Risolto:** CONTRACT_MAP ha colonne Contratto/Stato ma le righe mettono MERGED/DRAFT nella
    colonna Contratto e il titolo nella colonna Stato. Il ledger JSON è leggibile.
-3. EXECUTION_QUEUE include istruzioni storiche per Claude che implementa A1/A3,
+3. **Risolto nella documentazione di ingresso:** EXECUTION_QUEUE include istruzioni storiche per Claude che implementa A1/A3,
    mentre .claude/CLAUDE.md descrive Claude come coordinatore che non implementa.
    Risolvere precedenza delle istruzioni applicabili prima di assegnare lavoro.
-4. ROADMAP_ESECUTIVA indica ASUS Nitro V16 e SSD esterno 2 TB. La specifica hardware
+4. **Risolto:** ROADMAP_ESECUTIVA e profilo hardware indicano Acer Nitro V16 AI e SSD esterno a capacità rilevata; Ryzen 7 260 è registrato come baseline confermata. La specifica hardware
    fornita dall'operatore in conversazione è Acer Nitro V16 AI, Ryzen 7 260, RTX 5060,
    RAM 16 GB e SSD 1024 GB. Non convertire il profilo documentale in valori rilevati:
    riconciliare hardware tramite AutoSet e decisione canonica.
-5. SYSTEM_MAP conserva sequenze letterali backslash-n nelle voci Python.
-6. Le precedenti descrizioni di watchdog permanente, audit indipendente e rollback
+5. **Risolto:** SYSTEM_MAP non contiene più sequenze letterali backslash-n nelle voci Python.
+6. **Risolto nella documentazione:** le descrizioni di watchdog permanente, audit indipendente e rollback
    non sono certificate dai soli cataloghi, flag booleani o endpoint su richiesta.
    RESEARCH_LAB_SPEC e LAB-01..07 distinguono correttamente progettato da verificato.
-7. Gli inventari con conteggi manuali non seguono automaticamente i nuovi commit.
+7. **Risolto per lo snapshot corrente:** l’inventario ora riporta la revisione Git e 1.533 file; la rigenerazione automatica resta consigliata.
    Usare un tree Git fissato, come FUNCTION_INDEX.json, per contare i sorgenti.
 
 ## Sedici contratti senza firma precisa nel ledger
@@ -62,3 +62,10 @@ Sono incluse definizioni private, test, sorgenti esterni, lambda e accessori.
 Non è un call graph né include funzioni generate a runtime o varianti del preprocessore.
 La copertura completa dei file non garantisce riconoscimento di ogni costrutto linguistico.
 Nessun contratto è promosso a VERIFIED con questo audit.
+
+## Esito
+
+La documentazione è stata riallineata e il profilo Acer è stato registrato.
+Le firme contrattuali non sono state inventate: restano task espliciti in
+CONTRACT_SIGNATURE_TASKS.md. L’indice delle funzioni è stato rigenerato sullo snapshot
+Git e include la copertura dichiarata; non certifica compilazione o comportamento.
