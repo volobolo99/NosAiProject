@@ -31,6 +31,46 @@ class McpDashboardService:
         self._director = McpDirector("data/mcp/proposals")
         self._auditor = McpAuditor()
 
+    def role_bindings(self) -> list[dict[str, Any]]:
+        registry = self.router.role_bindings
+        return registry.list() if registry is not None else []
+
+    def role_proposals(self) -> list[dict[str, Any]]:
+        registry = self.router.role_bindings
+        return registry.proposals() if registry is not None else []
+
+    def propose_role_binding(self, body: dict[str, Any]) -> dict[str, Any]:
+        registry = self.router.role_bindings
+        if registry is None:
+            raise RuntimeError("role binding registry is not configured")
+        proposal = registry.propose(
+            str(body.get("employee_id", "")),
+            str(body.get("primary_model", "")),
+            list(body.get("fallback_models", [])),
+        )
+        self.audit.append("dashboard_role_binding_proposed", {"proposal_id": proposal["proposal_id"], "employee_id": proposal["employee_id"]})
+        return proposal
+
+    def promote_role_binding(self, body: dict[str, Any]) -> dict[str, Any]:
+        registry = self.router.role_bindings
+        if registry is None:
+            raise RuntimeError("role binding registry is not configured")
+        result = registry.promote(
+            str(body.get("proposal_id", "")),
+            dict(body.get("checks", {})),
+            str(body.get("confirmation", "")),
+        )
+        self.audit.append("dashboard_role_binding_promoted", {"proposal_id": result.get("proposal_id"), "employee_id": result["employee_id"], "version": result["version"]})
+        return result
+
+    def rollback_role_binding(self, body: dict[str, Any]) -> dict[str, Any]:
+        registry = self.router.role_bindings
+        if registry is None:
+            raise RuntimeError("role binding registry is not configured")
+        result = registry.rollback(str(body.get("employee_id", "")), str(body.get("confirmation", "")))
+        self.audit.append("dashboard_role_binding_rolled_back", {"employee_id": result["employee_id"], "version": result["version"]})
+        return result
+
     def employee_roles(self) -> list[dict[str, Any]]:
         return [
             {
@@ -128,6 +168,12 @@ def make_handler(service: McpDashboardService):
             if path == "/api/mcp/roles/verify":
                 self._json(200, service.verify_employee_roles())
                 return
+            if path == "/api/mcp/role-bindings":
+                self._json(200, {"bindings": service.role_bindings()})
+                return
+            if path == "/api/mcp/role-proposals":
+                self._json(200, {"proposals": service.role_proposals()})
+                return
             if path == "/api/mcp/secrets":
                 try:
                     self._json(200, {"secrets": service.secret_metadata()})
@@ -176,6 +222,24 @@ def make_handler(service: McpDashboardService):
                 try:
                     self._json(200, service.propose_change(body))
                 except (PermissionError, ValueError) as exc:
+                    self._json(403, {"error": str(exc)})
+                return
+            if path == "/api/mcp/role-bindings/propose":
+                try:
+                    self._json(200, service.propose_role_binding(body))
+                except (KeyError, PermissionError, ValueError, TypeError) as exc:
+                    self._json(400, {"error": str(exc)})
+                return
+            if path == "/api/mcp/role-bindings/promote":
+                try:
+                    self._json(200, service.promote_role_binding(body))
+                except (KeyError, PermissionError, ValueError, TypeError) as exc:
+                    self._json(403, {"error": str(exc)})
+                return
+            if path == "/api/mcp/role-bindings/rollback":
+                try:
+                    self._json(200, service.rollback_role_binding(body))
+                except (KeyError, PermissionError, ValueError, TypeError) as exc:
                     self._json(403, {"error": str(exc)})
                 return
             if path == "/api/mcp/audit-change":
