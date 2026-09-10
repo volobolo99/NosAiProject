@@ -138,13 +138,12 @@ class McpDashboardService:
         return result
 
     def propose_change(self, body: dict[str, Any]) -> dict[str, Any]:
-        proposal = self._director.propose(str(body.get("component", "")), str(body.get("summary", "")), list(body.get("files", [])))
-        return {"proposal_id": proposal.proposal_id, "component": proposal.component, "summary": proposal.summary, "files": list(proposal.files), "status": proposal.status}
+        proposal = self._chief.propose_improvement(str(body.get("component", "")), str(body.get("summary", "")), list(body.get("files", [])))
+        return {"proposal_id": proposal["proposal_id"], "component": proposal["component"], "summary": proposal["summary"], "files": list(proposal["files"]), "status": proposal["status"]}
 
     def audit_change(self, body: dict[str, Any]) -> dict[str, Any]:
-        proposal = ChangeProposal(**body["proposal"])
-        verdict = self._auditor.review(proposal, dict(body.get("checks", {})))
-        return asdict(verdict)
+        verdict = self._chief.audit_proposal(body["proposal"], dict(body.get("checks", {})))
+        return verdict
 
 
 def make_handler(service: McpDashboardService):
