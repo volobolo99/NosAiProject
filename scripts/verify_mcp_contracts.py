@@ -42,12 +42,20 @@ def _is_concrete_path(value: str) -> bool:
     return bool(_PATH_LIKE.fullmatch(value))
 
 
-def _check_contract_file(root: Path, value: str, field: str, cid: str, errors: list[str]) -> None:
+def _check_contract_file(
+    root: Path,
+    value: str,
+    field: str,
+    cid: str,
+    errors: list[str],
+    *,
+    allow_missing: bool = False,
+) -> None:
     for item in _paths(value):
         if not _is_concrete_path(item):
             continue
         candidate = root / item
-        if not candidate.exists():
+        if not candidate.exists() and not allow_missing:
             errors.append(f"{cid}: {field} does not exist: {item}")
 
 
@@ -81,8 +89,18 @@ def verify(root: Path | str) -> dict[str, Any]:
                 if cid in contract_ids:
                     errors.append(f"duplicate contract id: {cid}")
                 contract_ids.append(cid)
+                # A blocked DRAFT may intentionally point at a future file;
+                # every merged/tested contract must resolve all concrete paths.
+                allow_missing = str(contract.get("status", "")).upper() == "DRAFT" and bool(contract.get("blocker"))
                 for field in ("target_file", "test_file"):
-                    _check_contract_file(root, str(contract.get(field, "")), field, cid, errors)
+                    _check_contract_file(
+                        root,
+                        str(contract.get(field, "")),
+                        field,
+                        cid,
+                        errors,
+                        allow_missing=allow_missing,
+                    )
                 signature = str(contract.get("signature", ""))
                 signature_status = str(contract.get("signature_status", "")).upper()
                 if signature_status == "RESOLVED":
