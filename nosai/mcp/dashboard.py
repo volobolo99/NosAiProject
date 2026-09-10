@@ -126,6 +126,17 @@ class McpDashboardService:
         self.audit.append("dashboard_chief_health_checked", {"status": result["status"], "failed_checks": result["failed_checks"]})
         return result
 
+    def observe_health(self, body: dict[str, Any]) -> dict[str, Any]:
+        result = self._chief.observe_health(
+            str(body.get("name", "")),
+            str(body.get("status", "")),
+            dict(body.get("details", {})),
+            observed_at=body.get("observed_at"),
+            ttl_s=body.get("ttl_s"),
+        )
+        self.audit.append("dashboard_health_observed", {"name": result["name"], "status": result["status"]})
+        return result
+
     def status(self) -> dict[str, Any]:
         return {
             "schema_version": "mcp.dashboard.status.v1",
@@ -191,6 +202,9 @@ def make_handler(service: McpDashboardService):
                 return
             if path == "/api/mcp/chief":
                 self._json(200, service.chief_health())
+                return
+            if path == "/api/mcp/health":
+                self._json(200, {"health": service._chief.health.snapshot()})
                 return
             if path == "/api/mcp/providers":
                 self._json(200, {"providers": service.router.catalog()})
@@ -287,6 +301,12 @@ def make_handler(service: McpDashboardService):
             if path == "/api/mcp/audit-change":
                 try:
                     self._json(200, service.audit_change(body))
+                except (KeyError, TypeError, ValueError) as exc:
+                    self._json(400, {"error": str(exc)})
+                return
+            if path == "/api/mcp/health/observe":
+                try:
+                    self._json(200, service.observe_health(body))
                 except (KeyError, TypeError, ValueError) as exc:
                     self._json(400, {"error": str(exc)})
                 return
