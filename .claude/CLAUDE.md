@@ -223,6 +223,36 @@ duplicati. Parallelizza solo task indipendenti.
 Per ogni task si registrano modello, costo stimato, numero di chiamate e risultato in
 `data/ai_task_ledger.jsonl`. La tabella completa dei costi sta in `COST_POLICY.md`.
 
+### 12.1 Regola del consenso sui costi (asimmetrica)
+
+La regola non è "non toccare i binding". È: **serve il consenso dell'operatore solo per
+attivare una spesa.** Nelle altre direzioni si agisce senza chiedere.
+
+| Sostituzione | Consenso |
+|---|---|
+| gratuito → gratuito | **non serve** |
+| a pagamento → gratuito | **non serve** |
+| gratuito → a pagamento | **serve**, esplicito |
+| locale → a pagamento | **serve**, esplicito |
+| aggiungere un modello a pagamento a un binding dove non c'era | **serve**, esplicito |
+
+Conservare un modello a pagamento già attivo come ripiego non è un'attivazione: il ripiego
+esisteva già e non introduce spesa nuova. Anzi, mettere un gratuito davanti a un pagato è la
+forma corretta della sostituzione consentita, perché la spesa scatta solo quando il tetto
+gratuito di 20 richieste al minuto e 1000 al giorno si esaurisce.
+
+Una sostituzione verso il gratuito, pur essendo permessa senza chiedere, resta soggetta alle
+altre regole: **il modello gratuito deve figurare fra i `validati` di
+`scripts/free_roster.json`**, con la capacità richiesta dal ruolo. La libertà riguarda il
+costo, non la qualità: un gratuito mai passato dal banco non entra in un binding, e non
+diventa adottabile perché costa zero.
+
+Il vincolo è verificato da `test_il_pagato_si_attiva_solo_col_consenso` in
+`tests/test_mcp_hub_catalog.py`, che è direzionale: l'insieme dei dipendenti su modello a
+pagamento può solo **restringersi**, mai allargarsi, e non può comparire un modello a
+pagamento che non fosse già in uso. Quel test si aggiorna solo dopo un consenso esplicito
+dell'operatore, mai per farlo passare.
+
 ---
 
 ## 13. STRUMENTI DELLA CATENA

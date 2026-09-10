@@ -1,0 +1,150 @@
+{
+  "contract_id": "model-bindings-003",
+  "file": "nosai/mcp/roles.py",
+  "scopo": "Portare i gratuiti validati davanti ai modelli a pagamento nei binding dei dipendenti, conservando il pagato come ripiego. Free-first: la spesa diventa l'ultima risorsa invece della prima.",
+  "autorizzazione": "Regola asimmetrica chiarita dall'operatore il 2026-09-11 e scritta in .claude/CLAUDE.md sezione 12.1: sostituire un gratuito con un gratuito, o un pagato con un gratuito, NON richiede consenso. Richiede consenso solo ATTIVARE una spesa. Questo contratto fa solo sostituzioni pagato->gratuito e non attiva nessun modello a pagamento nuovo: gli stessi tre pagati di prima restano, come ripiego.",
+  "difetto_misurato_il_2026_09_11": "13 dipendenti su 16 risolvevano su un modello a pagamento alla PRIMA chiamata, pur esistendo per la loro capacita' un gratuito che ha superato entrambi i banchi. Il pagato veniva pagato sempre, non solo a quota esaurita.",
+  "vincoli_di_governo": [
+    "Nessun modello a pagamento NUOVO entra in un binding. I pagati ammessi sono solo i tre gia' in uso: qwen3-coder-30b, deepseek-v4-flash, gemini-2.5-flash-lite.",
+    "Nessun dipendente perde il proprio ripiego a pagamento: togliere la rete fermerebbe la catena al primo 429.",
+    "Ogni gratuito messo in un binding figura fra i validati di scripts/free_roster.json. La liberta' riguarda il costo, non la qualita'.",
+    "La capacita' non degrada: employee.perception resta su un modello che dichiara vision.",
+    "claude resta primario dove lo era: non e' instradabile dal gateway, quindi il primo ripiego e' cio' che viene davvero chiamato, e deve essere gratuito."
+  ],
+  "tabella_dei_binding": {
+    "employee.orchestrator_cto": {
+      "primary_model": "claude",
+      "fallback_models": [
+        "gpt-oss-120b",
+        "qwen3-coder-30b"
+      ]
+    },
+    "employee.mcp_chief": {
+      "primary_model": "claude",
+      "fallback_models": [
+        "gpt-oss-120b",
+        "qwen3-coder-30b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.product_manager": {
+      "primary_model": "qwen2.5-coder:7b",
+      "fallback_models": [
+        "claude"
+      ]
+    },
+    "employee.game_ai_architect": {
+      "primary_model": "claude",
+      "fallback_models": [
+        "gpt-oss-120b",
+        "qwen3-coder-30b"
+      ]
+    },
+    "employee.perception": {
+      "primary_model": "nemotron-3-nano-omni",
+      "fallback_models": [
+        "dots-3-note-preview",
+        "gemini-2.5-flash-lite"
+      ]
+    },
+    "employee.world_model": {
+      "primary_model": "gpt-oss-120b",
+      "fallback_models": [
+        "qwen3-coder-30b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.planning": {
+      "primary_model": "gpt-oss-120b",
+      "fallback_models": [
+        "qwen3-coder-30b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.decision": {
+      "primary_model": "gpt-oss-120b",
+      "fallback_models": [
+        "qwen3.8-27b",
+        "qwen3-coder-30b"
+      ]
+    },
+    "employee.action": {
+      "primary_model": "qwen3.8-27b",
+      "fallback_models": [
+        "gpt-oss-20b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.memory": {
+      "primary_model": "qwen3.8-27b",
+      "fallback_models": [
+        "gpt-oss-20b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.coding": {
+      "primary_model": "gpt-oss-120b",
+      "fallback_models": [
+        "qwen3-coder-30b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.testing": {
+      "primary_model": "qwen3.8-27b",
+      "fallback_models": [
+        "gpt-oss-20b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.security": {
+      "primary_model": "claude",
+      "fallback_models": [
+        "gpt-oss-120b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.reviewer": {
+      "primary_model": "claude",
+      "fallback_models": [
+        "gpt-oss-120b",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.documentation": {
+      "primary_model": "qwen2.5-coder:7b",
+      "fallback_models": [
+        "nex-n2.5-mini",
+        "deepseek-v4-flash"
+      ]
+    },
+    "employee.model_scout": {
+      "primary_model": "gpt-oss-20b",
+      "fallback_models": [
+        "nex-n2.5-mini",
+        "qwen2.5-coder:7b"
+      ]
+    }
+  },
+  "motivazione_delle_scelte": {
+    "gpt-oss-120b": "Groq, 1.7 s misurati, banco A 16/16 e banco B 14/14. Sostituisce qwen3-coder-30b, che costa e sta a 20 s.",
+    "qwen3.8-27b": "Groq, 0.7 s misurati, banco A e B pieni. Sostituisce deepseek-v4-flash, che costa e sta a 148 s.",
+    "gpt-oss-20b": "Groq, 1.5 s, banco A e B pieni. Ripiego su un modello diverso dello stesso fornitore.",
+    "nemotron-3-nano-omni": "3.9 s sui ritagli reali del Perception Agent, HP 7305 e MP 1420 letti correttamente. Sostituisce gemini-2.5-flash-lite, che costa e sta a 2.0 s.",
+    "nex-n2.5-mini": "OpenRouter, 8 s, banco A e B pieni. Ripiego su un fornitore diverso da Groq, per non dipendere da una sola chiave."
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Modifica SOLO i campi primary_model e fallback_models dei sedici EmployeeRole, secondo tabella_dei_binding. Non toccare employee_id, display_name, purpose, responsibilities, capabilities, forbidden e approval_required di nessuno. Non aggiungere ne' rimuovere dipendenti: DEFAULT_EMPLOYEE_ROLES deve contenere esattamente sedici voci, nello stesso ordine. Non toccare RoleDefinition ne' DEFAULT_ROLES.",
+    "conteggio_atteso": 16
+  },
+  "test_obbligatori": {
+    "file": "tests/test_mcp_hub_catalog.py",
+    "casi": [
+      "nessun dipendente risolve su una voce con cost_class paid alla prima scelta",
+      "ogni dipendente che citava un pagato lo cita ancora come ripiego",
+      "employee.perception risolve su un modello che dichiara vision",
+      "ogni gratuito nei binding figura fra i validati del roster e nessuno fra gli scartati",
+      "l'insieme dei dipendenti su primario a pagamento si e' ristretto, e nessun pagato nuovo e' comparso"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

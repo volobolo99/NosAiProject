@@ -237,20 +237,120 @@ def test_il_guardiano_non_costa(router):
 
 # --- lucchetto sul consenso -----------------------------------------------------
 
-def test_nessun_primario_a_pagamento_cambia_senza_consenso():
-    """Questo test fallisce a ogni sostituzione di un modello a pagamento.
+# Fotografia al 2026-09-11, prima di portare i gratuiti nei binding.
+# Serve come TETTO, non come uguaglianza: vedi la regola asimmetrica.
+PRIMARIO_A_PAGAMENTO_MAX = {
+    "employee.action", "employee.coding", "employee.decision", "employee.memory",
+    "employee.perception", "employee.planning", "employee.testing", "employee.world_model",
+}
+CITA_UN_PAGATO_MAX = {
+    "employee.action", "employee.coding", "employee.decision", "employee.documentation",
+    "employee.game_ai_architect", "employee.mcp_chief", "employee.memory",
+    "employee.orchestrator_cto", "employee.perception", "employee.planning",
+    "employee.reviewer", "employee.security", "employee.testing", "employee.world_model",
+}
+PAGATI_IN_USO_MAX = {"deepseek-v4-flash", "gemini-2.5-flash-lite", "qwen3-coder-30b"}
 
-    Va aggiornato SOLO dopo un consenso esplicito dell'operatore, mai per farlo
-    passare. Se fallisce senza che tu abbia autorizzato un cambio, il cambio e'
-    arrivato da un automatismo e va annullato.
+
+def _pagato(model_id: str) -> bool:
+    return model_id in MODELLI_A_PAGAMENTO
+
+
+def test_il_pagato_si_attiva_solo_col_consenso():
+    """Regola asimmetrica, chiarita dall'operatore il 2026-09-11.
+
+    Il consenso serve solo per ATTIVARE una spesa. Quindi questo test e'
+    direzionale, non un congelamento: l'insieme dei dipendenti su modello a
+    pagamento puo' solo restringersi, e non puo' comparire un modello a
+    pagamento che non fosse gia' in uso.
+
+    Sostituire un gratuito con un altro gratuito, o un pagato con un gratuito,
+    e' permesso e non fa fallire nulla. Va aggiornato SOLO dopo un consenso
+    esplicito dell'operatore, mai per farlo passare.
     """
-    attuali = {e.employee_id: e.primary_model for e in DEFAULT_EMPLOYEE_ROLES}
-    for employee_id, atteso in PRIMARI_ATTESI.items():
-        assert attuali.get(employee_id) == atteso, (
-            f"{employee_id} aveva primario {atteso} e ora ha {attuali.get(employee_id)}")
-    a_pagamento_prima = {k for k, v in PRIMARI_ATTESI.items() if v in MODELLI_A_PAGAMENTO}
-    a_pagamento_ora = {k for k, v in attuali.items() if v in MODELLI_A_PAGAMENTO}
-    assert a_pagamento_ora == a_pagamento_prima, (
-        f"l'insieme dei dipendenti su modello a pagamento e' cambiato: "
-        f"aggiunti {sorted(a_pagamento_ora - a_pagamento_prima)}, "
-        f"rimossi {sorted(a_pagamento_prima - a_pagamento_ora)}")
+    prim = {e.employee_id for e in DEFAULT_EMPLOYEE_ROLES if _pagato(e.primary_model)}
+    cita = {e.employee_id for e in DEFAULT_EMPLOYEE_ROLES
+            if {e.primary_model, *e.fallback_models} & MODELLI_A_PAGAMENTO}
+    ids = set()
+    for e in DEFAULT_EMPLOYEE_ROLES:
+        ids |= {e.primary_model, *e.fallback_models} & MODELLI_A_PAGAMENTO
+
+    assert prim <= PRIMARIO_A_PAGAMENTO_MAX, (
+        "spesa attivata senza consenso: questi dipendenti hanno ora un primario a "
+        f"pagamento e prima no: {sorted(prim - PRIMARIO_A_PAGAMENTO_MAX)}")
+    assert cita <= CITA_UN_PAGATO_MAX, (
+        "spesa attivata senza consenso: questi dipendenti citano ora un modello a "
+        f"pagamento e prima no: {sorted(cita - CITA_UN_PAGATO_MAX)}")
+    assert ids <= PAGATI_IN_USO_MAX, (
+        f"modello a pagamento nuovo attivato senza consenso: {sorted(ids - PAGATI_IN_USO_MAX)}")
+
+
+def test_ogni_dipendente_prova_prima_il_gratuito(router):
+    """Free-first: la spesa e' l'ultima risorsa, non la prima.
+
+    Chi ha un primario a pagamento lo paga a ogni chiamata. Con il gratuito
+    davanti, il pagato scatta solo quando il tetto di 20 richieste al minuto e
+    1000 al giorno si esaurisce.
+    """
+    paganti = []
+    for e in DEFAULT_EMPLOYEE_ROLES:
+        deciso = router.choose(role_id=e.employee_id)
+        voce = _per_modello(router, deciso.model_id)
+        if voce is not None and voce.cost_class == "paid":
+            paganti.append((e.employee_id, deciso.model_id))
+    assert paganti == [], (
+        "questi dipendenti spendono alla prima chiamata, pur esistendo un "
+        f"gratuito validato per la loro capacita': {paganti}")
+
+
+def test_il_pagato_resta_come_rete(router):
+    """Il gratuito davanti non deve buttare via la rete di sicurezza.
+
+    Chi citava un pagato deve continuare a citarlo: togliere la rete
+    significherebbe fermare la catena al primo 429.
+    """
+    for e in DEFAULT_EMPLOYEE_ROLES:
+        if e.employee_id not in CITA_UN_PAGATO_MAX:
+            continue
+        tutti = {e.primary_model, *e.fallback_models}
+        assert tutti & MODELLI_A_PAGAMENTO, (
+            f"{e.employee_id} ha perso il ripiego a pagamento: al primo 429 si ferma")
+
+
+def test_perception_resta_su_un_modello_che_vede(router):
+    """La sostituzione verso il gratuito non deve degradare la capacita'."""
+    deciso = router.choose(role_id="employee.perception")
+    voce = _per_modello(router, deciso.model_id)
+    assert voce is not None and "vision" in voce.capabilities, (
+        f"employee.perception risolve su {deciso.model_id}, che non vede")
+
+
+def test_un_gratuito_nel_binding_e_sempre_validato_dal_banco():
+    """La libertà riguarda il costo, non la qualità.
+
+    Un gratuito puo' sostituire un pagato senza chiedere, ma solo se e' passato
+    dal banco: un modello mai misurato non entra in un binding perche' costa zero.
+    """
+    import json as _json
+    roster = _json.loads((RADICE / "scripts" / "free_roster.json").read_text(encoding="utf-8"))
+    validati = set()
+    for v in roster["validati"]:
+        mid = v["id"]
+        validati.add(mid)
+        validati.add(mid.split(":", 1)[1] if mid.startswith(("groq:", "nvidia:", "mistral:")) else mid)
+    scartati = set(roster["scartati"])
+    # I nomi logici del catalogo vanno ricondotti all'id del roster.
+    per_alias = {}
+    for voce in DEFAULT_CONFIG["providers"]:
+        for nome in [voce["model_id"], *voce.get("aliases", [])]:
+            per_alias[nome] = voce
+    for e in DEFAULT_EMPLOYEE_ROLES:
+        for nome in (e.primary_model, *e.fallback_models):
+            voce = per_alias.get(nome)
+            if voce is None or voce.get("cost_class") != "free":
+                continue
+            mid = voce["model_id"]
+            assert mid not in scartati, f"{e.employee_id} usa {mid}, bocciato dal banco"
+            assert mid in validati or mid.split("/")[-1] in validati, (
+                f"{e.employee_id} usa il gratuito {mid}, che non figura fra i validati "
+                f"di free_roster.json")
