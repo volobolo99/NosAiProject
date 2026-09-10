@@ -46,6 +46,8 @@ Il pannello espone il catalogo e il ciclo controllato:
 
 Le scritture sono atomiche su `data/mcp/role_bindings.json`. Il router usa il binding promosso quando l’inferenza specifica `role_id`; se nessun modello qualificato del binding è disponibile, fallisce in modo esplicito invece di scegliere silenziosamente un modello diverso.
 
+Il **MCP Chief** è il supervisore permanente dell’Hub. `mcp_chief_health` e `GET /api/mcp/chief` eseguono un controllo read-only su catalogo ruoli, registro binding, archivio proposte e confini di policy; `mcp_chief_recommendations` restituisce le azioni suggerite. Il Chief può proporre configurazioni e governare promozione/rollback, ma non può eseguire azioni di gioco, modificare i guardrail, sostituire l’Auditor o esportare segreti. La promozione è valida solo con test indipendenti, shadow mode, audit approvato e conferma esplicita dell’operatore.
+
 ## Flusso online→offline
 
 1. Il pannello abilita MCP Rete.
