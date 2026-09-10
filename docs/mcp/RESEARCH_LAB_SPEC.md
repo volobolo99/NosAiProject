@@ -1,8 +1,8 @@
 # MCP Chief e NosAi Research Lab
-Stato: specifica approvata dall'operatore; implementazione estesa da realizzare.
-Versione specifica: 1.0.0. Versione prodotto invariata.
+Stato: specifica approvata dall'operatore; LAB-01 e LAB-02 implementati su `main`, LAB-03..LAB-07 pianificati.
+Versione specifica: 1.1.0. Versione prodotto invariata.
 Contratto: contracts/mcp-research-lab-001.json.
-Questa specifica governa l'evoluzione futura. Non certifica il runtime esistente.
+Questa specifica governa l'evoluzione futura. Le API presenti non certificano ancora il runtime end-to-end.
 
 ## Obiettivo
 Migliorare il motore principale e tutte le funzioni NosAi: percezione, world model,
@@ -134,4 +134,6 @@ Seguire contracts/mcp-research-lab-001.json in ordine LAB-01..LAB-07.
 File esistenti da integrare: nosai/mcp/chief.py, bindings.py, router.py, server.py,
 dashboard.py, roles.py, learning.py e static/index.html.
 Il contratto mcp-hub-001 resta quello del runtime; questo contratto estende la
-progettazione senza dichiarare implementate API future.
+progettazione senza dichiarare implementate API future. Prima di attivare
+LAB-03..LAB-07 eseguire `python scripts/verify_mcp_contracts.py --strict` e registrare
+le prove in EvidenceAuthority.
