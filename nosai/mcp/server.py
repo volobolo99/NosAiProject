@@ -13,6 +13,8 @@ from .director import McpDirector
 from .roles import RoleArchitect
 from .policy import McpPolicy
 from .router import ModelRouter
+from .inference import InferenceGateway
+from .secrets import SecretStore
 from .simulation import run_simulation
 
 try:
@@ -32,6 +34,13 @@ def create_server(config_path: Path | str | None = None):
     router = ModelRouter.from_config(config, policy)
     audit = AuditLog(config["audit_path"])
     learning = LearningFactory(config["learning_path"])
+    try:
+        secret_store = SecretStore(config["secret_path"])
+    except RuntimeError:
+        # Offline MCP remains usable without provider credentials. Network inference
+        # fails closed until the operator configures the encrypted store.
+        secret_store = None
+    inference = InferenceGateway(router, secret_store)
     director = McpDirector("data/mcp/proposals")
     auditor = McpAuditor()
     server = FastMCP("nosai-mcp-hub")
@@ -56,6 +65,12 @@ def create_server(config_path: Path | str | None = None):
         decision = router.choose(capability or None)
         audit.append("provider_selected", {"provider_id": decision.provider_id, "model_id": decision.model_id, "network_used": decision.network_used})
         return json.dumps(decision.__dict__, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_infer(prompt: str, capability: str = "") -> str:
+        result = inference.infer(prompt, capability or None)
+        audit.append("inference_completed", {"capability": capability, "provider": router.choose(capability or None).provider_id})
+        return json.dumps(result, ensure_ascii=False)
 
     @server.tool()
     def mcp_run_simulation(request_json: str) -> str:
