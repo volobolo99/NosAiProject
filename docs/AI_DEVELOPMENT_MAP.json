@@ -1,0 +1,179 @@
+{
+  "schema_version": "nosai.ai_development_map.v1",
+  "purpose": "navigation_only",
+  "status_source": "docs/agents/EXECUTION_QUEUE.md",
+  "contract_source": "contracts/ledger.json",
+  "entry": "docs/AI_PROGRAMMING_GUIDE.md",
+  "phases": [
+    {
+      "phase": "AP-00",
+      "topic": "Hardware, AutoSet, budget, bootstrap",
+      "search_root": "src/NosAi.Runtime/Gate1/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-00",
+      "acceptance_focus": "profilo riproducibile, budget e fallback",
+      "mcp_integration": "LAB-01/02: fondazioni isolate, dopo baseline CI"
+    },
+    {
+      "phase": "AP-01",
+      "topic": "World Model e fusione",
+      "search_root": "src/NosAi.Runtime/WorldModel/Fusion/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-01",
+      "acceptance_focus": "provenienza, freshness, UNKNOWN, proprietà stato C-204",
+      "mcp_integration": "definire snapshot MCP; niente seconda verità"
+    },
+    {
+      "phase": "AP-02",
+      "topic": "Perception e cattura",
+      "search_root": "src/NosAi.Runtime/Perception/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-02",
+      "acceptance_focus": "sensori reali e replay con code limitate",
+      "mcp_integration": "LAB-03/04: supervisore e worker dopo stato/budget"
+    },
+    {
+      "phase": "AP-03",
+      "topic": "Ricostruzione mappe",
+      "search_root": "src/NosAi.Core/WorldModel/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-03",
+      "acceptance_focus": "persistenza incrementale e revisione mappa",
+      "mcp_integration": "ricerca genera candidati, non mappe vere"
+    },
+    {
+      "phase": "AP-04",
+      "topic": "Navigazione ed esplorazione",
+      "search_root": "src/NosAi.Runtime/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-04",
+      "acceptance_focus": "stuck detection, ostacoli e replanning",
+      "mcp_integration": "valutare percorsi su replay"
+    },
+    {
+      "phase": "AP-05",
+      "topic": "Combattimento e simulazione",
+      "search_root": "src/NosAi.Runtime/Gate3/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-05",
+      "acceptance_focus": "danni/cooldown reali, ranking e verifica",
+      "mcp_integration": "LAB-05: esperimenti solo dopo baseline simulatore"
+    },
+    {
+      "phase": "AP-06",
+      "topic": "Quest e obiettivi",
+      "search_root": "src/NosAi.Runtime/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-06",
+      "acceptance_focus": "quest graph e verifiche multi-step",
+      "mcp_integration": "laboratorio confronta strategie con obiettivi osservabili"
+    },
+    {
+      "phase": "AP-07",
+      "topic": "Inventario, build, equipaggiamento",
+      "search_root": "src/NosAi.Runtime/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-07",
+      "acceptance_focus": "pre/postcondizioni e costo risorse",
+      "mcp_integration": "esperimenti di build; contratti dedicati per pet/partner"
+    },
+    {
+      "phase": "AP-08",
+      "topic": "Autonomia e pianificazione",
+      "search_root": "src/NosAi.Runtime/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-08",
+      "acceptance_focus": "unica catena Guard/Trust/Safety e recovery",
+      "mcp_integration": "servizi MCP asincroni non bloccano il loop locale"
+    },
+    {
+      "phase": "AP-09",
+      "topic": "Memoria, apprendimento e replay",
+      "search_root": "src/NosAi.Storage/",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-09",
+      "acceptance_focus": "persistenza, revoca e consolidamento offline",
+      "mcp_integration": "completare LAB-05; LAB-06 release; LAB-07 pannello"
+    },
+    {
+      "phase": "AP-10",
+      "topic": "Certificazione completa",
+      "search_root": "docs/BUILD_TEST_RELEASE.md",
+      "read": [
+        "docs/ROADMAP_ESECUTIVA.md",
+        "docs/SYSTEM_MAP.md"
+      ],
+      "queue_query": "AP-10",
+      "acceptance_focus": "Windows end-to-end e regressioni offline/online",
+      "mcp_integration": "certificare LAB-07 prima di dichiarare MCP operativo"
+    }
+  ],
+  "cross_cutting": {
+    "mcp": {
+      "guide": "docs/mcp/AI_PROGRAMMING_GUIDE.md",
+      "contract": "contracts/mcp-research-lab-001.json",
+      "start": "AP-00 after build/test baseline",
+      "runtime_gate": "C-204 and World Model contract",
+      "certify_before": "AP-10"
+    },
+    "security": {
+      "search_roots": [
+        "src/NosAi.Security/",
+        "src/NosAi.Protocol/"
+      ],
+      "read": [
+        "docs/SYSTEM_MAP.md"
+      ]
+    },
+    "control_panel": {
+      "search_roots": [
+        "src/NosAi.ControlPanel/",
+        "src/NosAi.Host/",
+        "nosai/mcp/dashboard.py"
+      ]
+    },
+    "guardai": {
+      "read": [
+        "docs/NOSAI_ARCHITECTURE_BASELINE.md",
+        "docs/INDICE_REPO.md"
+      ],
+      "gate": "resolve mobile scope/ADR before adding dependencies"
+    },
+    "third_party": {
+      "read": [
+        "third_party/README.md"
+      ],
+      "gate": "verify provenance, license and pinned source before reuse"
+    }
+  }
+}
