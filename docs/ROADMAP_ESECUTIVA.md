@@ -170,3 +170,13 @@ Ogni fase richiede build Release senza warning, unit/integration tests, test neg
 Il sottosistema `nosai/mcp/` sostiene tutte le fasi AP-00–AP-10 senza diventare autorità di esecuzione. Il pannello MCP è locale e separato; MCP Rete resta spento al primo avvio e si abilita solo con conferma dell'operatore. Il routing usa provider locali/free-first, la simulazione è deterministica e l'apprendimento online produce soltanto candidati sottoposti a evidenza, audit e validazione prima dell'esportazione offline.
 
 Riferimenti operativi: `docs/mcp/AGENT_QUICK_INDEX.md`, `docs/mcp/CONTROL_PANEL.md`, `contracts/mcp-hub-001.json`.
+
+## 11. Percorso per agenti e gate di integrazione MCP
+
+Entrata: [AI_PROGRAMMING_GUIDE.md](AI_PROGRAMMING_GUIDE.md).
+Sequenza: [AI_PROJECT_STEPS.md](AI_PROJECT_STEPS.md).
+Aprire [la guida MCP](mcp/AI_PROGRAMMING_GUIDE.md) in AP-00 dopo baseline build/test
+per LAB-01/02 isolati; collegare il runtime solo dopo contratti World Model e C-204.
+LAB-03/04 seguono stato e budget; LAB-05 usa simulatori/replay AP-05 e memoria AP-09.
+Completare LAB-06/07 prima della certificazione MCP in AP-10. Questa mappatura
+non modifica gli stati della coda né dichiara chiuse le dipendenze.
