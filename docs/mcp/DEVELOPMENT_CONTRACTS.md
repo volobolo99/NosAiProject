@@ -14,6 +14,10 @@ Ogni nuovo tool deve dichiarare: input JSON versionato, output JSON versionato, 
 
 Una modifica che fallisce un test deterministico, produce dati non provenienti da fonti osservabili o tenta di accedere a stato privilegiato viene rifiutata e registrata nell’audit.
 
+## Evidenze di promozione
+
+Il tool `mcp_record_evidence` registra soltanto digest e stato, firma il record con la chiave locale dell'autorità e assegna una scadenza. `mcp_role_promote_binding` riceve `evidence_ids` con le chiavi `tests`, `shadow` e `audit`; ogni record deve avere firma valida, digest candidato uguale, risultato `pass|ok|verified`, essere fresco e provenire da un esecutore distinto dall'autore candidato e dagli altri due esecutori. Il vecchio formato di booleani (`tests_passed`, `shadow_passed`, `audit_approved`) è rifiutato. I record non contengono chiavi API, token o credenziali.
+
 
 
 ## MCP Chief
