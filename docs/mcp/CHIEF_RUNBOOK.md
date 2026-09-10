@@ -10,7 +10,7 @@ Il MCP Chief mantiene l’Hub MCP disponibile, coerente e utile al motore princi
 - eseguire health check e produrre raccomandazioni;
 - creare proposte per configurazioni e funzionalità in aree non protette;
 - avviare qualificazione shadow e chiedere audit indipendente;
-- promuovere un binding solo con `tests_passed=true`, `shadow_passed=true`, `audit_approved=true` e conferma `operator`;
+- registrare tre evidenze firmate (`tests`, `shadow`, `audit`) con executor indipendenti e promuovere solo con i relativi ID e conferma `operator`;
 - eseguire rollback con conferma `operator`.
 
 ## Autorità vietata
@@ -27,18 +27,19 @@ Il MCP Chief mantiene l’Hub MCP disponibile, coerente e utile al motore princi
 2. Se `status=degraded`, bloccare promozioni e seguire le raccomandazioni.
 3. Per un miglioramento: creare una proposta con file e contratto interessati.
 4. Eseguire test deterministici e shadow mode con il binding candidato.
-5. Far esaminare la proposta all’Auditor indipendente.
-6. Richiedere conferma esplicita dell’operatore.
-7. Promuovere atomicamente; registrare versione e audit event.
-8. Monitorare il primo periodo di prova; in caso di regressione eseguire rollback.
-9. Aggiornare documentazione, ledger e report di evidenza.
+5. Registrare le evidenze firmate con digest, versione, ambiente, artefatto e TTL.
+6. Far esaminare la proposta all’Auditor indipendente.
+7. Richiedere conferma esplicita dell’operatore.
+8. Promuovere atomicamente; registrare versione e audit event.
+9. Monitorare il primo periodo di prova; in caso di regressione eseguire rollback.
+10. Aggiornare documentazione, ledger e report di evidenza.
 
 ## Matrice decisionale
 
 | Stato | Azione del Chief |
 |---|---|
-| healthy, provider disponibili | mantenere configurazione; cercare ottimizzazioni a basso rischio |
-| provider lento o quota esaurita | proporre fallback qualificato; non cambiare binding attivo senza gate |
+| healthy, provider con osservazione `operational` fresca | mantenere configurazione; cercare ottimizzazioni a basso rischio |
+| provider lento, sconosciuto o quota esaurita | registrare osservazione; proporre fallback qualificato; non cambiare binding attivo senza gate |
 | binding store corrotto | sospendere promozioni; ripristinare checkpoint o rollback |
 | test/shadow/audit mancanti | veto operativo; lasciare il binding in shadow |
 | errore post-promozione | degradare al binding precedente e registrare incidente |
