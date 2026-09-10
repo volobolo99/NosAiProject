@@ -1,0 +1,3233 @@
+[
+  {
+    "path": "tests/test_dashboard_runtime_link.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "test_busy_dashboard_port_is_reported_not_shared",
+    "scope": "",
+    "signature": "def test_busy_dashboard_port_is_reported_not_shared(): # Two dashboards on one port would split requests between them and neither # would look wrong enough to notice, so the second bind must fail loudly.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 35,
+    "kind": "function_definition",
+    "name": "test_le_costanti_di_modulo_contano_come_simboli",
+    "scope": "",
+    "signature": "def test_le_costanti_di_modulo_contano_come_simboli():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "test_riconosce_anche_funzioni_e_classi",
+    "scope": "",
+    "signature": "def test_riconosce_anche_funzioni_e_classi():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "test_un_simbolo_davvero_assente_viene_segnalato",
+    "scope": "",
+    "signature": "def test_un_simbolo_davvero_assente_viene_segnalato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 57,
+    "kind": "function_definition",
+    "name": "test_lo_scheletro_con_logica_resta_rifiutato",
+    "scope": "",
+    "signature": "def test_lo_scheletro_con_logica_resta_rifiutato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 67,
+    "kind": "function_definition",
+    "name": "test_i_segnaposto_restano_vietati",
+    "scope": "",
+    "signature": "def test_i_segnaposto_restano_vietati():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_skeleton.py",
+    "line": 75,
+    "kind": "function_definition",
+    "name": "test_un_testo_pulito_non_viene_segnalato",
+    "scope": "",
+    "signature": "def test_un_testo_pulito_non_viene_segnalato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 19,
+    "kind": "function_definition",
+    "name": "test_percorso_ancorato_al_file",
+    "scope": "",
+    "signature": "def test_percorso_ancorato_al_file():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_free_models_ordina_per_latenza",
+    "scope": "",
+    "signature": "def test_free_models_ordina_per_latenza(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 37,
+    "kind": "function_definition",
+    "name": "test_free_models_scarta_i_lenti",
+    "scope": "",
+    "signature": "def test_free_models_scarta_i_lenti(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "test_free_models_file_mancante",
+    "scope": "",
+    "signature": "def test_free_models_file_mancante(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 55,
+    "kind": "function_definition",
+    "name": "test_roster_reale_del_progetto",
+    "scope": "",
+    "signature": "def test_roster_reale_del_progetto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 61,
+    "kind": "function_definition",
+    "name": "test_primo_modello_riuscito_ferma_la_catena",
+    "scope": "",
+    "signature": "def test_primo_modello_riuscito_ferma_la_catena():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 64,
+    "kind": "function_definition",
+    "name": "chiamata",
+    "scope": "test_primo_modello_riuscito_ferma_la_catena",
+    "signature": "def chiamata(modello):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 73,
+    "kind": "function_definition",
+    "name": "test_eccezione_passa_al_successivo",
+    "scope": "",
+    "signature": "def test_eccezione_passa_al_successivo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 74,
+    "kind": "function_definition",
+    "name": "chiamata",
+    "scope": "test_eccezione_passa_al_successivo",
+    "signature": "def chiamata(modello):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 84,
+    "kind": "function_definition",
+    "name": "test_risposta_vuota_conta_come_fallimento",
+    "scope": "",
+    "signature": "def test_risposta_vuota_conta_come_fallimento():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "chiamata",
+    "scope": "test_risposta_vuota_conta_come_fallimento",
+    "signature": "def chiamata(modello):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 93,
+    "kind": "function_definition",
+    "name": "test_tutti_falliti_solleva_ed_elenca",
+    "scope": "",
+    "signature": "def test_tutti_falliti_solleva_ed_elenca():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 94,
+    "kind": "function_definition",
+    "name": "chiamata",
+    "scope": "test_tutti_falliti_solleva_ed_elenca",
+    "signature": "def chiamata(modello):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 103,
+    "kind": "function_definition",
+    "name": "test_lista_vuota_solleva",
+    "scope": "",
+    "signature": "def test_lista_vuota_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 111,
+    "kind": "function_definition",
+    "name": "test_gruppi_rispetta_il_limite_di_piattaforma",
+    "scope": "",
+    "signature": "def test_gruppi_rispetta_il_limite_di_piattaforma():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 118,
+    "kind": "function_definition",
+    "name": "test_gruppi_casi_limite",
+    "scope": "",
+    "signature": "def test_gruppi_casi_limite():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 125,
+    "kind": "function_definition",
+    "name": "test_il_lucchetto_e_attivo_per_difetto",
+    "scope": "",
+    "signature": "def test_il_lucchetto_e_attivo_per_difetto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 133,
+    "kind": "function_definition",
+    "name": "test_senza_lucchetto_niente_max_price",
+    "scope": "",
+    "signature": "def test_senza_lucchetto_niente_max_price():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 141,
+    "kind": "function_definition",
+    "name": "test_corpo_rifiuta_gruppi_impossibili",
+    "scope": "",
+    "signature": "def test_corpo_rifiuta_gruppi_impossibili():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 148,
+    "kind": "function_definition",
+    "name": "test_testo_utile_legge_modello_e_contenuto",
+    "scope": "",
+    "signature": "def test_testo_utile_legge_modello_e_contenuto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 153,
+    "kind": "function_definition",
+    "name": "test_testo_utile_rifiuta_il_duecento_vuoto",
+    "scope": "",
+    "signature": "def test_testo_utile_rifiuta_il_duecento_vuoto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 160,
+    "kind": "function_definition",
+    "name": "test_testo_utile_rifiuta_risposta_malformata",
+    "scope": "",
+    "signature": "def test_testo_utile_rifiuta_risposta_malformata():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 165,
+    "kind": "function_definition",
+    "name": "test_il_corpo_non_espone_la_costante_globale",
+    "scope": "",
+    "signature": "def test_il_corpo_non_espone_la_costante_globale():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 174,
+    "kind": "function_definition",
+    "name": "test_cascata_si_ferma_al_primo_gruppo_utile",
+    "scope": "",
+    "signature": "def test_cascata_si_ferma_al_primo_gruppo_utile():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 177,
+    "kind": "function_definition",
+    "name": "post",
+    "scope": "test_cascata_si_ferma_al_primo_gruppo_utile",
+    "signature": "def post(corpo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 189,
+    "kind": "function_definition",
+    "name": "test_cascata_supera_il_gruppo_che_risponde_vuoto",
+    "scope": "",
+    "signature": "def test_cascata_supera_il_gruppo_che_risponde_vuoto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 190,
+    "kind": "function_definition",
+    "name": "post",
+    "scope": "test_cascata_supera_il_gruppo_che_risponde_vuoto",
+    "signature": "def post(corpo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 201,
+    "kind": "function_definition",
+    "name": "test_cascata_supera_il_gruppo_che_solleva",
+    "scope": "",
+    "signature": "def test_cascata_supera_il_gruppo_che_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 202,
+    "kind": "function_definition",
+    "name": "post",
+    "scope": "test_cascata_supera_il_gruppo_che_solleva",
+    "signature": "def post(corpo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 213,
+    "kind": "function_definition",
+    "name": "test_cascata_esaurita_solleva_ed_elenca",
+    "scope": "",
+    "signature": "def test_cascata_esaurita_solleva_ed_elenca():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 214,
+    "kind": "function_definition",
+    "name": "post",
+    "scope": "test_cascata_esaurita_solleva_ed_elenca",
+    "signature": "def post(corpo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 229,
+    "kind": "function_definition",
+    "name": "test_cascata_senza_modelli_solleva",
+    "scope": "",
+    "signature": "def test_cascata_senza_modelli_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 234,
+    "kind": "function_definition",
+    "name": "test_free_models_filtra_per_fornitore",
+    "scope": "",
+    "signature": "def test_free_models_filtra_per_fornitore(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_chain.py",
+    "line": 251,
+    "kind": "function_definition",
+    "name": "test_voce_senza_fornitore_conta_come_openrouter",
+    "scope": "",
+    "signature": "def test_voce_senza_fornitore_conta_come_openrouter(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Orologio",
+    "signature": "def __init__(self, adesso: float = 0.0) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 29,
+    "kind": "function_definition",
+    "name": "__call__",
+    "scope": "Orologio",
+    "signature": "def __call__(self) -> float:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 32,
+    "kind": "function_definition",
+    "name": "avanza",
+    "scope": "Orologio",
+    "signature": "def avanza(self, secondi: float) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "promosso",
+    "scope": "",
+    "signature": "def promosso(_testo: str) -> list:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "bocciato",
+    "scope": "",
+    "signature": "def bocciato(_testo: str) -> list:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "pagato_ok",
+    "scope": "",
+    "signature": "def pagato_ok():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 51,
+    "kind": "function_definition",
+    "name": "test_budget_residuo_scala_col_tempo",
+    "scope": "",
+    "signature": "def test_budget_residuo_scala_col_tempo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "test_budget_residuo_non_va_sotto_zero",
+    "scope": "",
+    "signature": "def test_budget_residuo_non_va_sotto_zero():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 63,
+    "kind": "function_definition",
+    "name": "test_pausa_esclude_finche_dura_e_poi_riammette",
+    "scope": "",
+    "signature": "def test_pausa_esclude_finche_dura_e_poi_riammette():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 72,
+    "kind": "function_definition",
+    "name": "test_pausa_filtra_conserva_ordine",
+    "scope": "",
+    "signature": "def test_pausa_filtra_conserva_ordine():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 82,
+    "kind": "function_definition",
+    "name": "test_il_primo_gratuito_promosso_vince_e_non_si_spende",
+    "scope": "",
+    "signature": "def test_il_primo_gratuito_promosso_vince_e_non_si_spende():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_primo_gratuito_promosso_vince_e_non_si_spende",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 88,
+    "kind": "function_definition",
+    "name": "pagato",
+    "scope": "test_il_primo_gratuito_promosso_vince_e_non_si_spende",
+    "signature": "def pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 101,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_negativo_fa_proseguire_al_gruppo_successivo",
+    "scope": "",
+    "signature": "def test_il_giudizio_negativo_fa_proseguire_al_gruppo_successivo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_giudizio_negativo_fa_proseguire_al_gruppo_successivo",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 108,
+    "kind": "function_definition",
+    "name": "giudizio",
+    "scope": "test_il_giudizio_negativo_fa_proseguire_al_gruppo_successivo",
+    "signature": "def giudizio(testo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 119,
+    "kind": "function_definition",
+    "name": "test_un_gratuito_bocciato_non_viene_mai_restituito",
+    "scope": "",
+    "signature": "def test_un_gratuito_bocciato_non_viene_mai_restituito():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_un_gratuito_bocciato_non_viene_mai_restituito",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 134,
+    "kind": "function_definition",
+    "name": "test_l_eccezione_di_un_gratuito_non_arriva_al_chiamante",
+    "scope": "",
+    "signature": "def test_l_eccezione_di_un_gratuito_non_arriva_al_chiamante():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 135,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_l_eccezione_di_un_gratuito_non_arriva_al_chiamante",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 147,
+    "kind": "function_definition",
+    "name": "test_tutti_i_gratuiti_rotti_si_ricade_sul_pagato",
+    "scope": "",
+    "signature": "def test_tutti_i_gratuiti_rotti_si_ricade_sul_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 148,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_tutti_i_gratuiti_rotti_si_ricade_sul_pagato",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 157,
+    "kind": "function_definition",
+    "name": "test_elenco_di_gratuiti_vuoto_va_diritto_al_pagato",
+    "scope": "",
+    "signature": "def test_elenco_di_gratuiti_vuoto_va_diritto_al_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 158,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_elenco_di_gratuiti_vuoto_va_diritto_al_pagato",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 166,
+    "kind": "function_definition",
+    "name": "test_se_anche_il_pagato_fallisce_l_errore_porta_il_registro",
+    "scope": "",
+    "signature": "def test_se_anche_il_pagato_fallisce_l_errore_porta_il_registro():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 167,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_se_anche_il_pagato_fallisce_l_errore_porta_il_registro",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 170,
+    "kind": "function_definition",
+    "name": "pagato",
+    "scope": "test_se_anche_il_pagato_fallisce_l_errore_porta_il_registro",
+    "signature": "def pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 183,
+    "kind": "function_definition",
+    "name": "test_il_budget_esaurito_ferma_la_cascata_e_si_spende",
+    "scope": "",
+    "signature": "def test_il_budget_esaurito_ferma_la_cascata_e_si_spende():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 186,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_budget_esaurito_ferma_la_cascata_e_si_spende",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 198,
+    "kind": "function_definition",
+    "name": "test_budget_a_zero_salta_del_tutto_i_gratuiti",
+    "scope": "",
+    "signature": "def test_budget_a_zero_salta_del_tutto_i_gratuiti():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 199,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_budget_a_zero_salta_del_tutto_i_gratuiti",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 208,
+    "kind": "function_definition",
+    "name": "test_il_budget_non_si_applica_al_pagato",
+    "scope": "",
+    "signature": "def test_il_budget_non_si_applica_al_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 212,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_budget_non_si_applica_al_pagato",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 226,
+    "kind": "function_definition",
+    "name": "test_il_429_mette_in_pausa_il_gruppo_e_la_cascata_prosegue",
+    "scope": "",
+    "signature": "def test_il_429_mette_in_pausa_il_gruppo_e_la_cascata_prosegue():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 229,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_429_mette_in_pausa_il_gruppo_e_la_cascata_prosegue",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 244,
+    "kind": "function_definition",
+    "name": "test_i_modelli_in_pausa_sono_esclusi_prima_di_comporre_i_gruppi",
+    "scope": "",
+    "signature": "def test_i_modelli_in_pausa_sono_esclusi_prima_di_comporre_i_gruppi():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 250,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_i_modelli_in_pausa_sono_esclusi_prima_di_comporre_i_gruppi",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 261,
+    "kind": "function_definition",
+    "name": "test_tutti_in_pausa_si_va_diritto_al_pagato",
+    "scope": "",
+    "signature": "def test_tutti_in_pausa_si_va_diritto_al_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 266,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_tutti_in_pausa_si_va_diritto_al_pagato",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 275,
+    "kind": "function_definition",
+    "name": "test_la_pausa_sopravvive_fra_due_invocazioni",
+    "scope": "",
+    "signature": "def test_la_pausa_sopravvive_fra_due_invocazioni():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 279,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_la_pausa_sopravvive_fra_due_invocazioni",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 296,
+    "kind": "function_definition",
+    "name": "test_il_registro_elenca_ogni_modello_in_ordine",
+    "scope": "",
+    "signature": "def test_il_registro_elenca_ogni_modello_in_ordine():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 297,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_il_registro_elenca_ogni_modello_in_ordine",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 305,
+    "kind": "function_definition",
+    "name": "test_accettato_riflette_il_giudizio_anche_sul_pagato",
+    "scope": "",
+    "signature": "def test_accettato_riflette_il_giudizio_anche_sul_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 306,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_accettato_riflette_il_giudizio_anche_sul_pagato",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 315,
+    "kind": "function_definition",
+    "name": "test_i_secondi_misurano_il_tempo_totale",
+    "scope": "",
+    "signature": "def test_i_secondi_misurano_il_tempo_totale():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_free_first.py",
+    "line": 318,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "test_i_secondi_misurano_il_tempo_totale",
+    "signature": "def chiama_gruppo(gruppo):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "test_unknown_is_not_zero",
+    "scope": "",
+    "signature": "def test_unknown_is_not_zero():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_dashboard_does_not_invent_runtime_when_disconnected",
+    "scope": "",
+    "signature": "def test_dashboard_does_not_invent_runtime_when_disconnected(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "test_classified_local_pc_does_not_fake_ram_or_gpu",
+    "scope": "",
+    "signature": "def test_classified_local_pc_does_not_fake_ram_or_gpu(monkeypatch): # Force the optional psutil/pynvml probes off regardless of what happens # to be installed in the environment running this test, so the assertion # below is about \"no probe available\" rather than this machine's specific # hardware. See tests/test_hardware_profiling.py for the fuller matrix # covering both the absent- and present-dependency cases, negative/absurd # readings, and the pynvml-installed-but-driverless case.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 45,
+    "kind": "function_definition",
+    "name": "test_unsupported_contract_version_is_not_treated_as_live",
+    "scope": "",
+    "signature": "def test_unsupported_contract_version_is_not_treated_as_live(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 57,
+    "kind": "function_definition",
+    "name": "test_matching_contract_version_is_accepted",
+    "scope": "",
+    "signature": "def test_matching_contract_version_is_accepted(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 67,
+    "kind": "function_definition",
+    "name": "test_unknown_classified_fields_must_not_publish_a_value",
+    "scope": "",
+    "signature": "def test_unknown_classified_fields_must_not_publish_a_value():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 90,
+    "kind": "function_definition",
+    "name": "test_dashboard_rejects_unknown_fields_that_publish_a_value",
+    "scope": "",
+    "signature": "def test_dashboard_rejects_unknown_fields_that_publish_a_value():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 103,
+    "kind": "function_definition",
+    "name": "test_simulated_is_never_labelled_live",
+    "scope": "",
+    "signature": "def test_simulated_is_never_labelled_live():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 110,
+    "kind": "function_definition",
+    "name": "test_cached_keeps_its_original_observation_time",
+    "scope": "",
+    "signature": "def test_cached_keeps_its_original_observation_time():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 117,
+    "kind": "function_definition",
+    "name": "test_observed_none_is_distinguishable_from_never_observed",
+    "scope": "",
+    "signature": "def test_observed_none_is_distinguishable_from_never_observed(): # An observed value that happens to be None still counts as observed; only # has_observed_value separates it from a reading that never happened.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_gate1_classification.py",
+    "line": 128,
+    "kind": "function_definition",
+    "name": "test_wire_timestamp_matches_the_csharp_representation",
+    "scope": "",
+    "signature": "def test_wire_timestamp_matches_the_csharp_representation(): # Seven fractional digits plus a literal Z, as emitted by the C# side.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_guard_protocol.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_hello_contract",
+    "scope": "",
+    "signature": "def test_hello_contract():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_guard_protocol.py",
+    "line": 11,
+    "kind": "function_definition",
+    "name": "test_heartbeat_contract",
+    "scope": "",
+    "signature": "def test_heartbeat_contract():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 28,
+    "kind": "function_definition",
+    "name": "_fake_psutil",
+    "scope": "",
+    "signature": "def _fake_psutil(total_bytes: int, available_bytes: int, cpu_temp_c: float | None = 55.0):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "_fake_pynvml",
+    "scope": "",
+    "signature": "def _fake_pynvml( *, name: object = \"NVIDIA GeForce RTX 5060 Laptop GPU\", total_bytes: int = 8192 * 1024 * 1024, used_bytes: int = 1024 * 1024 * 1024, count: int = 1, gpu_temp_c: float = 61.0, init_raises: Exception | None = None, count_raises: Exception | None = None, ):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "nvml_init",
+    "scope": "_fake_pynvml",
+    "signature": "def nvml_init():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "device_count",
+    "scope": "_fake_pynvml",
+    "signature": "def device_count():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 68,
+    "kind": "function_definition",
+    "name": "_no_optional_deps",
+    "scope": "",
+    "signature": "def _no_optional_deps(monkeypatch: pytest.MonkeyPatch) -> None: # sys.modules[name] = None forces `import name` to raise ImportError, # regardless of whether the package happens to be installed in the # environment actually running this test suite.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 76,
+    "kind": "function_definition",
+    "name": "_with_deps",
+    "scope": "",
+    "signature": "def _with_deps(monkeypatch: pytest.MonkeyPatch, psutil_mod=None, pynvml_mod=None) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 84,
+    "kind": "function_definition",
+    "name": "test_all_optional_fields_unknown_without_psutil_or_pynvml",
+    "scope": "",
+    "signature": "def test_all_optional_fields_unknown_without_psutil_or_pynvml(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 103,
+    "kind": "function_definition",
+    "name": "test_ram_unknown_reason_is_explicit_when_psutil_missing",
+    "scope": "",
+    "signature": "def test_ram_unknown_reason_is_explicit_when_psutil_missing(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 109,
+    "kind": "function_definition",
+    "name": "test_gpu_unknown_reason_is_explicit_when_pynvml_missing",
+    "scope": "",
+    "signature": "def test_gpu_unknown_reason_is_explicit_when_pynvml_missing(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 119,
+    "kind": "function_definition",
+    "name": "test_ram_is_live_and_converted_to_mb_when_psutil_available",
+    "scope": "",
+    "signature": "def test_ram_is_live_and_converted_to_mb_when_psutil_available(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 132,
+    "kind": "function_definition",
+    "name": "test_cpu_temperature_is_live_when_psutil_reports_a_sensor",
+    "scope": "",
+    "signature": "def test_cpu_temperature_is_live_when_psutil_reports_a_sensor(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 142,
+    "kind": "function_definition",
+    "name": "test_gpu_name_and_vram_are_live_when_pynvml_reports_a_device",
+    "scope": "",
+    "signature": "def test_gpu_name_and_vram_are_live_when_pynvml_reports_a_device(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 167,
+    "kind": "function_definition",
+    "name": "test_gpu_name_decodes_bytes_returned_by_older_pynvml_bindings",
+    "scope": "",
+    "signature": "def test_gpu_name_decodes_bytes_returned_by_older_pynvml_bindings(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 180,
+    "kind": "function_definition",
+    "name": "test_non_positive_total_ram_is_unknown_not_clamped",
+    "scope": "",
+    "signature": "def test_non_positive_total_ram_is_unknown_not_clamped(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 191,
+    "kind": "function_definition",
+    "name": "test_negative_available_ram_is_unknown_while_total_stays_live",
+    "scope": "",
+    "signature": "def test_negative_available_ram_is_unknown_while_total_stays_live(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 203,
+    "kind": "function_definition",
+    "name": "test_non_positive_vram_total_is_unknown_not_clamped",
+    "scope": "",
+    "signature": "def test_non_positive_vram_total_is_unknown_not_clamped(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 214,
+    "kind": "function_definition",
+    "name": "test_negative_used_vram_is_unknown_while_total_stays_live",
+    "scope": "",
+    "signature": "def test_negative_used_vram_is_unknown_while_total_stays_live(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 229,
+    "kind": "function_definition",
+    "name": "test_gpu_unknown_when_no_nvidia_device_is_present",
+    "scope": "",
+    "signature": "def test_gpu_unknown_when_no_nvidia_device_is_present(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 239,
+    "kind": "function_definition",
+    "name": "test_gpu_unknown_when_pynvml_installed_but_driver_unavailable",
+    "scope": "",
+    "signature": "def test_gpu_unknown_when_pynvml_installed_but_driver_unavailable(monkeypatch): # Regression test: pynvml.NVMLError is not a RuntimeError/OSError # subclass. Before the fix this raised unhandled out of # classified_local_pc() whenever pynvml was importable but no NVIDIA # driver/library was actually present (a real, reproducible case).",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 254,
+    "kind": "function_definition",
+    "name": "test_psutil_nvml_probe_survives_nvml_error_on_init",
+    "scope": "",
+    "signature": "def test_psutil_nvml_probe_survives_nvml_error_on_init(monkeypatch): # Direct regression test against the shared probe consumed by # NOSAIHardwareWatchdog.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 269,
+    "kind": "function_definition",
+    "name": "test_gpu_unknown_when_device_count_lookup_fails",
+    "scope": "",
+    "signature": "def test_gpu_unknown_when_device_count_lookup_fails(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 282,
+    "kind": "function_definition",
+    "name": "test_storage_is_live_from_shutil_disk_usage",
+    "scope": "",
+    "signature": "def test_storage_is_live_from_shutil_disk_usage(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 298,
+    "kind": "function_definition",
+    "name": "test_storage_unknown_when_disk_usage_raises",
+    "scope": "",
+    "signature": "def test_storage_unknown_when_disk_usage_raises(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 301,
+    "kind": "function_definition",
+    "name": "_raise",
+    "scope": "test_storage_unknown_when_disk_usage_raises",
+    "signature": "def _raise(_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 312,
+    "kind": "function_definition",
+    "name": "test_storage_unknown_when_disk_usage_reports_non_positive_total",
+    "scope": "",
+    "signature": "def test_storage_unknown_when_disk_usage_reports_non_positive_total(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_hardware_profiling.py",
+    "line": 330,
+    "kind": "function_definition",
+    "name": "test_snapshot_is_serializable_wire_shaped_dict_regardless_of_deps",
+    "scope": "",
+    "signature": "def test_snapshot_is_serializable_wire_shaped_dict_regardless_of_deps(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "test_i_gratuiti_piu_veloci_vengono_provati_per_primi",
+    "scope": "",
+    "signature": "def test_i_gratuiti_piu_veloci_vengono_provati_per_primi():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 52,
+    "kind": "function_definition",
+    "name": "test_il_roster_gratuito_non_contiene_modelli_a_pagamento",
+    "scope": "",
+    "signature": "def test_il_roster_gratuito_non_contiene_modelli_a_pagamento():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 61,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_boccia_i_corpi_non_implementati",
+    "scope": "",
+    "signature": "def test_il_giudizio_boccia_i_corpi_non_implementati():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 67,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_boccia_i_segnaposto",
+    "scope": "",
+    "signature": "def test_il_giudizio_boccia_i_segnaposto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 82,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_boccia_una_firma_alterata",
+    "scope": "",
+    "signature": "def test_il_giudizio_boccia_una_firma_alterata():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 97,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_boccia_la_sintassi_rotta",
+    "scope": "",
+    "signature": "def test_il_giudizio_boccia_la_sintassi_rotta():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 102,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_promuove_l_implementazione_conforme",
+    "scope": "",
+    "signature": "def test_il_giudizio_promuove_l_implementazione_conforme():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 119,
+    "kind": "function_definition",
+    "name": "test_il_giudizio_regge_un_ingresso_che_non_e_python",
+    "scope": "",
+    "signature": "def test_il_giudizio_regge_un_ingresso_che_non_e_python():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 130,
+    "kind": "function_definition",
+    "name": "test_il_preflight_rifiuta_una_risposta_vuota",
+    "scope": "",
+    "signature": "def test_il_preflight_rifiuta_una_risposta_vuota():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 134,
+    "kind": "function_definition",
+    "name": "test_il_preflight_rifiuta_chi_non_decide",
+    "scope": "",
+    "signature": "def test_il_preflight_rifiuta_chi_non_decide():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "test_il_preflight_accetta_l_approvazione",
+    "scope": "",
+    "signature": "def test_il_preflight_accetta_l_approvazione():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 143,
+    "kind": "function_definition",
+    "name": "test_il_preflight_accetta_un_elenco_di_difetti",
+    "scope": "",
+    "signature": "def test_il_preflight_accetta_un_elenco_di_difetti():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 151,
+    "kind": "function_definition",
+    "name": "test_i_groq_si_provano_uno_per_uno_e_gli_altri_in_blocco",
+    "scope": "",
+    "signature": "def test_i_groq_si_provano_uno_per_uno_e_gli_altri_in_blocco(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 155,
+    "kind": "function_definition",
+    "name": "finto_groq",
+    "scope": "test_i_groq_si_provano_uno_per_uno_e_gli_altri_in_blocco",
+    "signature": "def finto_groq(modello, messaggi, max_tokens, temperatura):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 159,
+    "kind": "function_definition",
+    "name": "finto_openrouter",
+    "scope": "test_i_groq_si_provano_uno_per_uno_e_gli_altri_in_blocco",
+    "signature": "def finto_openrouter(gruppo, messaggi, max_tokens, temperatura):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 173,
+    "kind": "function_definition",
+    "name": "test_il_primo_groq_che_risponde_ferma_il_gruppo",
+    "scope": "",
+    "signature": "def test_il_primo_groq_che_risponde_ferma_il_gruppo(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 176,
+    "kind": "function_definition",
+    "name": "finto_groq",
+    "scope": "test_il_primo_groq_che_risponde_ferma_il_gruppo",
+    "signature": "def finto_groq(modello, messaggi, max_tokens, temperatura):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 180,
+    "kind": "function_definition",
+    "name": "finto_openrouter",
+    "scope": "test_il_primo_groq_che_risponde_ferma_il_gruppo",
+    "signature": "def finto_openrouter(gruppo, messaggi, max_tokens, temperatura):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 191,
+    "kind": "function_definition",
+    "name": "test_un_gruppo_tutto_muto_solleva",
+    "scope": "",
+    "signature": "def test_un_gruppo_tutto_muto_solleva(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 203,
+    "kind": "function_definition",
+    "name": "test_il_429_diventa_limite_raggiunto_con_i_secondi_indicati",
+    "scope": "",
+    "signature": "def test_il_429_diventa_limite_raggiunto_con_i_secondi_indicati():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 209,
+    "kind": "function_definition",
+    "name": "json",
+    "scope": "test_il_429_diventa_limite_raggiunto_con_i_secondi_indicati.Risposta",
+    "signature": "def json(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 217,
+    "kind": "function_definition",
+    "name": "test_senza_retry_after_si_usa_la_pausa_predefinita",
+    "scope": "",
+    "signature": "def test_senza_retry_after_si_usa_la_pausa_predefinita():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 223,
+    "kind": "function_definition",
+    "name": "json",
+    "scope": "test_senza_retry_after_si_usa_la_pausa_predefinita.Risposta",
+    "signature": "def json(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 231,
+    "kind": "function_definition",
+    "name": "test_una_risposta_buona_non_solleva",
+    "scope": "",
+    "signature": "def test_una_risposta_buona_non_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 237,
+    "kind": "function_definition",
+    "name": "json",
+    "scope": "test_una_risposta_buona_non_solleva.Risposta",
+    "signature": "def json(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 243,
+    "kind": "function_definition",
+    "name": "test_il_registro_delle_pause_e_unico_per_processo",
+    "scope": "",
+    "signature": "def test_il_registro_delle_pause_e_unico_per_processo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 251,
+    "kind": "function_definition",
+    "name": "test_l_infilling_e_il_preflight_passano_dalla_cascata",
+    "scope": "",
+    "signature": "def test_l_infilling_e_il_preflight_passano_dalla_cascata():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 256,
+    "kind": "function_definition",
+    "name": "test_il_ragionatore_profondo_resta_a_pagamento",
+    "scope": "",
+    "signature": "def test_il_ragionatore_profondo_resta_a_pagamento():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 262,
+    "kind": "function_definition",
+    "name": "test_ogni_politica_con_cascata_dichiara_budget_e_pagato",
+    "scope": "",
+    "signature": "def test_ogni_politica_con_cascata_dichiara_budget_e_pagato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 269,
+    "kind": "function_definition",
+    "name": "test_il_preflight_ha_un_budget_piu_stretto_dell_infilling",
+    "scope": "",
+    "signature": "def test_il_preflight_ha_un_budget_piu_stretto_dell_infilling():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 279,
+    "kind": "function_definition",
+    "name": "test_deepseek_resta_fuori_da_openrouter",
+    "scope": "",
+    "signature": "def test_deepseek_resta_fuori_da_openrouter():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_cascata.py",
+    "line": 284,
+    "kind": "function_definition",
+    "name": "test_nessun_modello_groq_finisce_su_openrouter",
+    "scope": "",
+    "signature": "def test_nessun_modello_groq_finisce_su_openrouter(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_chief.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_chief_health_report_is_structured_and_fail_closed",
+    "scope": "",
+    "signature": "def test_chief_health_report_is_structured_and_fail_closed(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_chief.py",
+    "line": 13,
+    "kind": "function_definition",
+    "name": "test_chief_can_only_stage_unprotected_changes",
+    "scope": "",
+    "signature": "def test_chief_can_only_stage_unprotected_changes(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_chief.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_chief_requires_audited_checks_before_promoting_binding",
+    "scope": "",
+    "signature": "def test_chief_requires_audited_checks_before_promoting_binding(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_audit.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_audit_redacts_token_like_values",
+    "scope": "",
+    "signature": "def test_audit_redacts_token_like_values(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_contracts.py",
+    "line": 10,
+    "kind": "function_definition",
+    "name": "test_activation_request_defaults_network_off",
+    "scope": "",
+    "signature": "def test_activation_request_defaults_network_off():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_contracts.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_simulation_request_round_trips_without_unknown_fields",
+    "scope": "",
+    "signature": "def test_simulation_request_round_trips_without_unknown_fields():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_governance.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_director_cannot_target_protected_paths",
+    "scope": "",
+    "signature": "def test_director_cannot_target_protected_paths(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_governance.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "test_auditor_vetoes_missing_safety_check",
+    "scope": "",
+    "signature": "def test_auditor_vetoes_missing_safety_check(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_governance.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "test_role_architect_requires_director_and_auditor",
+    "scope": "",
+    "signature": "def test_role_architect_requires_director_and_auditor():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_inference.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_inference_cannot_call_network_provider_when_offline",
+    "scope": "",
+    "signature": "def test_inference_cannot_call_network_provider_when_offline():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_learning.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_learning_candidate_requires_observed_evidence_before_promotion",
+    "scope": "",
+    "signature": "def test_learning_candidate_requires_observed_evidence_before_promotion(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_learning.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_validated_candidate_is_exported_as_offline_skill",
+    "scope": "",
+    "signature": "def test_validated_candidate_is_exported_as_offline_skill(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_policy.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "test_network_is_disabled_by_default",
+    "scope": "",
+    "signature": "def test_network_is_disabled_by_default():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_policy.py",
+    "line": 11,
+    "kind": "function_definition",
+    "name": "test_network_activation_requires_operator_confirmation",
+    "scope": "",
+    "signature": "def test_network_activation_requires_operator_confirmation():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_policy.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "test_privileged_and_secret_export_tools_are_always_denied",
+    "scope": "",
+    "signature": "def test_privileged_and_secret_export_tools_are_always_denied():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_secrets.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_secret_store_returns_metadata_not_plaintext",
+    "scope": "",
+    "signature": "def test_secret_store_returns_metadata_not_plaintext(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_hub_server.py",
+    "line": 8,
+    "kind": "function_definition",
+    "name": "test_config_cannot_enable_network_without_operator_action",
+    "scope": "",
+    "signature": "def test_config_cannot_enable_network_without_operator_action(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_role_bindings.py",
+    "line": 7,
+    "kind": "function_definition",
+    "name": "test_proposal_is_shadow_and_does_not_change_active_binding",
+    "scope": "",
+    "signature": "def test_proposal_is_shadow_and_does_not_change_active_binding(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_role_bindings.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "test_promotion_requires_operator_and_all_independent_checks",
+    "scope": "",
+    "signature": "def test_promotion_requires_operator_and_all_independent_checks(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_role_bindings.py",
+    "line": 32,
+    "kind": "function_definition",
+    "name": "test_rollback_restores_previous_binding",
+    "scope": "",
+    "signature": "def test_rollback_restores_previous_binding(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_role_bindings.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "test_role_router_prefers_promoted_binding",
+    "scope": "",
+    "signature": "def test_role_router_prefers_promoted_binding(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_roles.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_employee_catalog_has_unique_stable_roles_and_bindings",
+    "scope": "",
+    "signature": "def test_employee_catalog_has_unique_stable_roles_and_bindings():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_mcp_roles.py",
+    "line": 10,
+    "kind": "function_definition",
+    "name": "test_governance_roles_remain_valid",
+    "scope": "",
+    "signature": "def test_governance_roles_remain_valid():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_miniland.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "FakeAdapter",
+    "signature": "def __init__(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_miniland.py",
+    "line": 8,
+    "kind": "function_definition",
+    "name": "send_command",
+    "scope": "FakeAdapter",
+    "signature": "def send_command(self, command):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_miniland.py",
+    "line": 12,
+    "kind": "function_definition",
+    "name": "read_result",
+    "scope": "FakeAdapter",
+    "signature": "def read_result(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_miniland.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "test_fishing_cycle_uses_adapter_only",
+    "scope": "",
+    "signature": "def test_fishing_cycle_uses_adapter_only():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_miniland.py",
+    "line": 24,
+    "kind": "function_definition",
+    "name": "test_command_requires_started_runtime",
+    "scope": "",
+    "signature": "def test_command_requires_started_runtime():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "FakeResponse",
+    "signature": "def __init__(self, payload):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "raise_for_status",
+    "scope": "FakeResponse",
+    "signature": "def raise_for_status(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 24,
+    "kind": "function_definition",
+    "name": "json",
+    "scope": "FakeResponse",
+    "signature": "def json(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 32,
+    "kind": "function_definition",
+    "name": "test_openrouter_rifiuta_qualunque_modello_deepseek",
+    "scope": "",
+    "signature": "def test_openrouter_rifiuta_qualunque_modello_deepseek(model_id, monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "esplodi",
+    "scope": "test_openrouter_rifiuta_qualunque_modello_deepseek",
+    "signature": "def esplodi(*a, **k):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "test_openrouter_lascia_passare_gli_altri_modelli",
+    "scope": "",
+    "signature": "def test_openrouter_lascia_passare_gli_altri_modelli(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 45,
+    "kind": "function_definition",
+    "name": "finta_post",
+    "scope": "test_openrouter_lascia_passare_gli_altri_modelli",
+    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "test_call_deepseek_va_sull_endpoint_nativo",
+    "scope": "",
+    "signature": "def test_call_deepseek_va_sull_endpoint_nativo(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 59,
+    "kind": "function_definition",
+    "name": "finta_post",
+    "scope": "test_call_deepseek_va_sull_endpoint_nativo",
+    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 74,
+    "kind": "function_definition",
+    "name": "test_call_deepseek_senza_chiave_fallisce_chiuso",
+    "scope": "",
+    "signature": "def test_call_deepseek_senza_chiave_fallisce_chiuso(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "esplodi",
+    "scope": "test_call_deepseek_senza_chiave_fallisce_chiuso",
+    "signature": "def esplodi(*a, **k):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 86,
+    "kind": "function_definition",
+    "name": "test_auditor_e_un_modello_nativo_non_un_percorso_openrouter",
+    "scope": "",
+    "signature": "def test_auditor_e_un_modello_nativo_non_un_percorso_openrouter():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 95,
+    "kind": "function_definition",
+    "name": "test_nessun_modello_deepseek_resta_nel_roster_openrouter",
+    "scope": "",
+    "signature": "def test_nessun_modello_deepseek_resta_nel_roster_openrouter():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 101,
+    "kind": "function_definition",
+    "name": "test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce",
+    "scope": "",
+    "signature": "def test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_routing.py",
+    "line": 105,
+    "kind": "function_definition",
+    "name": "finta_post",
+    "scope": "test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce",
+    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "_modello",
+    "scope": "",
+    "signature": "def _modello(mid, prompt, completion, ctx=100000):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "test_fetch_catalog_restituisce_data",
+    "scope": "",
+    "signature": "def test_fetch_catalog_restituisce_data():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "test_fetch_catalog_errore_http",
+    "scope": "",
+    "signature": "def test_fetch_catalog_errore_http():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_is_free",
+    "scope": "",
+    "signature": "def test_is_free():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "test_cost_per_mtok",
+    "scope": "",
+    "signature": "def test_cost_per_mtok():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "test_compare_segnala_gratuiti_e_piu_economici",
+    "scope": "",
+    "signature": "def test_compare_segnala_gratuiti_e_piu_economici():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 68,
+    "kind": "function_definition",
+    "name": "test_compare_rileva_modello_sparito",
+    "scope": "",
+    "signature": "def test_compare_rileva_modello_sparito():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_model_scout.py",
+    "line": 74,
+    "kind": "function_definition",
+    "name": "test_render_report_dichiara_il_consenso",
+    "scope": "",
+    "signature": "def test_render_report_dichiara_il_consenso():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "esegui",
+    "scope": "",
+    "signature": "def esegui(coro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "filtro",
+    "scope": "",
+    "signature": "def filtro():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "test_riconosce_i_gratuiti",
+    "scope": "",
+    "signature": "def test_riconosce_i_gratuiti(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_gratuito_riceve_lucchetto_e_cascata",
+    "scope": "",
+    "signature": "def test_gratuito_riceve_lucchetto_e_cascata(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "test_il_pagamento_non_viene_mai_bloccato",
+    "scope": "",
+    "signature": "def test_il_pagamento_non_viene_mai_bloccato(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "test_valvola_spenta_non_tocca_nulla",
+    "scope": "",
+    "signature": "def test_valvola_spenta_non_tocca_nulla(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 63,
+    "kind": "function_definition",
+    "name": "test_i_messaggi_restano_intatti",
+    "scope": "",
+    "signature": "def test_i_messaggi_restano_intatti(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "test_modello_mancante_non_rompe",
+    "scope": "",
+    "signature": "def test_modello_mancante_non_rompe(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 76,
+    "kind": "function_definition",
+    "name": "test_outlet_non_altera_la_risposta",
+    "scope": "",
+    "signature": "def test_outlet_non_altera_la_risposta(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_openwebui_filter.py",
+    "line": 81,
+    "kind": "function_definition",
+    "name": "test_il_lucchetto_si_puo_disattivare",
+    "scope": "",
+    "signature": "def test_il_lucchetto_si_puo_disattivare(filtro):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 31,
+    "kind": "function_definition",
+    "name": "record_di_prova",
+    "scope": "",
+    "signature": "def record_di_prova(task_id: str = \"T-1\", calls: int = 1, costo: float = 0.0) -> TaskRecord:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 43,
+    "kind": "function_definition",
+    "name": "messaggio_di_prova",
+    "scope": "",
+    "signature": "def messaggio_di_prova() -> AgentMessage:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 64,
+    "kind": "function_definition",
+    "name": "test_route_task_copre_tutti_i_kind",
+    "scope": "",
+    "signature": "def test_route_task_copre_tutti_i_kind(kind):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 72,
+    "kind": "function_definition",
+    "name": "test_route_task_deterministica",
+    "scope": "",
+    "signature": "def test_route_task_deterministica(kind):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "test_escalate_non_abbassa_il_costo",
+    "scope": "",
+    "signature": "def test_escalate_non_abbassa_il_costo(kind):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "test_routing_rispetta_la_politica",
+    "scope": "",
+    "signature": "def test_routing_rispetta_la_politica(kind, atteso):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 111,
+    "kind": "function_definition",
+    "name": "test_classi_di_costo_coerenti_col_listino",
+    "scope": "",
+    "signature": "def test_classi_di_costo_coerenti_col_listino(kind):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 120,
+    "kind": "function_definition",
+    "name": "test_escalate_da_claude_solleva",
+    "scope": "",
+    "signature": "def test_escalate_da_claude_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 131,
+    "kind": "function_definition",
+    "name": "test_append_e_read_all",
+    "scope": "",
+    "signature": "def test_append_e_read_all(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 138,
+    "kind": "function_definition",
+    "name": "test_append_non_riscrive_le_righe_esistenti",
+    "scope": "",
+    "signature": "def test_append_non_riscrive_le_righe_esistenti(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 145,
+    "kind": "function_definition",
+    "name": "test_read_all_su_file_assente",
+    "scope": "",
+    "signature": "def test_read_all_su_file_assente(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 149,
+    "kind": "function_definition",
+    "name": "test_read_all_salta_riga_malformata",
+    "scope": "",
+    "signature": "def test_read_all_salta_riga_malformata(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 178,
+    "kind": "function_definition",
+    "name": "test_read_all_salta_riga_con_campi_errati",
+    "scope": "",
+    "signature": "def test_read_all_salta_riga_con_campi_errati(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 202,
+    "kind": "function_definition",
+    "name": "test_append_crea_la_directory_padre",
+    "scope": "",
+    "signature": "def test_append_crea_la_directory_padre(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 209,
+    "kind": "function_definition",
+    "name": "test_append_conserva_i_caratteri_accentati",
+    "scope": "",
+    "signature": "def test_append_conserva_i_caratteri_accentati(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 228,
+    "kind": "function_definition",
+    "name": "test_append_rifiuta_record_non_valido",
+    "scope": "",
+    "signature": "def test_append_rifiuta_record_non_valido(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 236,
+    "kind": "function_definition",
+    "name": "test_riga_conforme_allo_schema",
+    "scope": "",
+    "signature": "def test_riga_conforme_allo_schema(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 246,
+    "kind": "function_definition",
+    "name": "test_summary_by_model",
+    "scope": "",
+    "signature": "def test_summary_by_model(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 258,
+    "kind": "function_definition",
+    "name": "test_total_estimated_cost",
+    "scope": "",
+    "signature": "def test_total_estimated_cost(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 268,
+    "kind": "function_definition",
+    "name": "test_validate_message_accetta_messaggio_conforme",
+    "scope": "",
+    "signature": "def test_validate_message_accetta_messaggio_conforme():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 272,
+    "kind": "function_definition",
+    "name": "test_validate_message_rifiuta_campo_mancante",
+    "scope": "",
+    "signature": "def test_validate_message_rifiuta_campo_mancante():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 280,
+    "kind": "function_definition",
+    "name": "test_validate_message_non_solleva_su_payload_assurdo",
+    "scope": "",
+    "signature": "def test_validate_message_non_solleva_su_payload_assurdo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 285,
+    "kind": "function_definition",
+    "name": "test_validate_message_rifiuta_stato_non_ammesso",
+    "scope": "",
+    "signature": "def test_validate_message_rifiuta_stato_non_ammesso():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 291,
+    "kind": "function_definition",
+    "name": "test_validate_message_rifiuta_confidence_fuori_scala",
+    "scope": "",
+    "signature": "def test_validate_message_rifiuta_confidence_fuori_scala():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 297,
+    "kind": "function_definition",
+    "name": "test_to_dict_e_from_dict_sono_inversi",
+    "scope": "",
+    "signature": "def test_to_dict_e_from_dict_sono_inversi():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 302,
+    "kind": "function_definition",
+    "name": "test_from_dict_su_payload_non_conforme_solleva",
+    "scope": "",
+    "signature": "def test_from_dict_su_payload_non_conforme_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestration.py",
+    "line": 309,
+    "kind": "function_definition",
+    "name": "test_messaggio_conforme_allo_schema_del_repo",
+    "scope": "",
+    "signature": "def test_messaggio_conforme_allo_schema_del_repo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_orchestrator_approves_safe_rule_decision",
+    "scope": "",
+    "signature": "def test_orchestrator_approves_safe_rule_decision():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator.py",
+    "line": 14,
+    "kind": "function_definition",
+    "name": "test_orchestrator_blocks_unsafe_provider_output",
+    "scope": "",
+    "signature": "def test_orchestrator_blocks_unsafe_provider_output():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "decide",
+    "scope": "test_orchestrator_blocks_unsafe_provider_output.UnsafeProvider",
+    "signature": "def decide(self, world_state, goal):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator_party.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "test_orchestrator_integrates_party_candidates_after_safety",
+    "scope": "",
+    "signature": "def test_orchestrator_integrates_party_candidates_after_safety():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator_party.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "test_orchestrator_preserves_safety_on_blocked_primary_action",
+    "scope": "",
+    "signature": "def test_orchestrator_preserves_safety_on_blocked_primary_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_orchestrator_ranking.py",
+    "line": 10,
+    "kind": "function_definition",
+    "name": "test_orchestrator_ranks_party_candidates",
+    "scope": "",
+    "signature": "def test_orchestrator_ranks_party_candidates():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 7,
+    "kind": "function_definition",
+    "name": "test_partner_affinity_and_relationship_tier",
+    "scope": "",
+    "signature": "def test_partner_affinity_and_relationship_tier():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 13,
+    "kind": "function_definition",
+    "name": "test_partner_tactical_thresholds",
+    "scope": "",
+    "signature": "def test_partner_tactical_thresholds():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "test_partner_sp_skill_cooldown",
+    "scope": "",
+    "signature": "def test_partner_sp_skill_cooldown():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 31,
+    "kind": "function_definition",
+    "name": "test_partner_memory_consolidation_and_decay",
+    "scope": "",
+    "signature": "def test_partner_memory_consolidation_and_decay():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 41,
+    "kind": "function_definition",
+    "name": "test_consolidated_memory_leaves_short_term_store",
+    "scope": "",
+    "signature": "def test_consolidated_memory_leaves_short_term_store():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_party.py",
+    "line": 48,
+    "kind": "function_definition",
+    "name": "test_pet_is_independent_from_partner",
+    "scope": "",
+    "signature": "def test_pet_is_independent_from_partner():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_runtime_optimizations.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Probe",
+    "signature": "def __init__(self, telemetry):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_runtime_optimizations.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "read",
+    "scope": "Probe",
+    "signature": "def read(self):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_runtime_optimizations.py",
+    "line": 8,
+    "kind": "function_definition",
+    "name": "test_context_slimming_is_bounded_and_structured",
+    "scope": "",
+    "signature": "def test_context_slimming_is_bounded_and_structured():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_runtime_optimizations.py",
+    "line": 14,
+    "kind": "function_definition",
+    "name": "test_watchdog_trips_on_thermal_limit",
+    "scope": "",
+    "signature": "def test_watchdog_trips_on_thermal_limit():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "_fixed_keys",
+    "scope": "",
+    "signature": "def _fixed_keys():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "_fixed_material",
+    "scope": "",
+    "signature": "def _fixed_material():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 64,
+    "kind": "function_definition",
+    "name": "test_the_fixed_keys_encode_to_the_pinned_public_points",
+    "scope": "",
+    "signature": "def test_the_fixed_keys_encode_to_the_pinned_public_points():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "test_both_sides_derive_the_same_pinned_material",
+    "scope": "",
+    "signature": "def test_both_sides_derive_the_same_pinned_material():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 84,
+    "kind": "function_definition",
+    "name": "test_a_different_binding_derives_different_keys",
+    "scope": "",
+    "signature": "def test_a_different_binding_derives_different_keys(): # The binding is the HKDF salt, so a peer that saw a different handshake ends # up unable to decrypt rather than quietly agreeing on a key.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "test_the_golden_frame_is_byte_for_byte_reproducible",
+    "scope": "",
+    "signature": "def test_the_golden_frame_is_byte_for_byte_reproducible():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 102,
+    "kind": "function_definition",
+    "name": "test_the_runtime_opens_what_the_phone_sealed",
+    "scope": "",
+    "signature": "def test_the_runtime_opens_what_the_phone_sealed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 110,
+    "kind": "function_definition",
+    "name": "test_the_directions_do_not_share_a_key",
+    "scope": "",
+    "signature": "def test_the_directions_do_not_share_a_key(): # With one shared key a frame captured in one direction would decrypt when # replayed down the other.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 123,
+    "kind": "function_definition",
+    "name": "test_a_tampered_header_fails_the_tag",
+    "scope": "",
+    "signature": "def test_a_tampered_header_fails_the_tag(): # The header is readable but authenticated: rewriting the type or the sequence # number must not go unnoticed.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "test_a_tampered_ciphertext_fails_the_tag",
+    "scope": "",
+    "signature": "def test_a_tampered_ciphertext_fails_the_tag():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 149,
+    "kind": "function_definition",
+    "name": "test_the_nonce_advances_and_is_never_reused",
+    "scope": "",
+    "signature": "def test_the_nonce_advances_and_is_never_reused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 161,
+    "kind": "function_definition",
+    "name": "test_an_out_of_order_nonce_is_refused",
+    "scope": "",
+    "signature": "def test_an_out_of_order_nonce_is_refused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "test_a_short_payload_is_refused",
+    "scope": "",
+    "signature": "def test_a_short_payload_is_refused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 182,
+    "kind": "function_definition",
+    "name": "test_an_invalid_peer_point_is_refused",
+    "scope": "",
+    "signature": "def test_an_invalid_peer_point_is_refused(): # An unchecked point would let a peer steer the agreement.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 192,
+    "kind": "function_definition",
+    "name": "test_only_handshake_messages_may_travel_in_clear",
+    "scope": "",
+    "signature": "def test_only_handshake_messages_may_travel_in_clear():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_simulation.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "test_simulation_is_deterministic_and_fail_closed",
+    "scope": "",
+    "signature": "def test_simulation_is_deterministic_and_fail_closed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 12,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 37,
+    "kind": "function_definition",
+    "name": "_engine",
+    "scope": "",
+    "signature": "def _engine(book: ActionBook | None = None, ready: bool = True) -> StochasticCombatEngine:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "_world",
+    "scope": "",
+    "signature": "def _world(**overrides) -> WorldState:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 55,
+    "kind": "function_definition",
+    "name": "test_the_proposal_is_accepted_by_the_safety_gate",
+    "scope": "",
+    "signature": "def test_the_proposal_is_accepted_by_the_safety_gate():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 71,
+    "kind": "function_definition",
+    "name": "test_survival_preempts_a_winning_attack",
+    "scope": "",
+    "signature": "def test_survival_preempts_a_winning_attack():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 87,
+    "kind": "function_definition",
+    "name": "test_a_moderate_drain_proposes_the_recovery_action",
+    "scope": "",
+    "signature": "def test_a_moderate_drain_proposes_the_recovery_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 97,
+    "kind": "function_definition",
+    "name": "test_unknown_readiness_withholds_offence_but_not_recovery",
+    "scope": "",
+    "signature": "def test_unknown_readiness_withholds_offence_but_not_recovery():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 113,
+    "kind": "function_definition",
+    "name": "test_a_cooling_action_is_withheld_from_the_search",
+    "scope": "",
+    "signature": "def test_a_cooling_action_is_withheld_from_the_search():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_a_cast_that_will_be_interrupted_is_withheld",
+    "scope": "",
+    "signature": "def test_a_cast_that_will_be_interrupted_is_withheld():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "test_retargeting_is_a_recommendation_and_never_an_action",
+    "scope": "",
+    "signature": "def test_retargeting_is_a_recommendation_and_never_an_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 160,
+    "kind": "function_definition",
+    "name": "test_no_retarget_is_reported_when_the_observed_target_already_leads",
+    "scope": "",
+    "signature": "def test_no_retarget_is_reported_when_the_observed_target_already_leads():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "test_no_observed_target_yields_noop",
+    "scope": "",
+    "signature": "def test_no_observed_target_yields_noop():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 183,
+    "kind": "function_definition",
+    "name": "test_an_unreadable_mp_bar_withholds_costed_actions",
+    "scope": "",
+    "signature": "def test_an_unreadable_mp_bar_withholds_costed_actions():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 194,
+    "kind": "function_definition",
+    "name": "test_an_unreadable_target_hp_withholds_the_kill_bonus",
+    "scope": "",
+    "signature": "def test_an_unreadable_target_hp_withholds_the_kill_bonus():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 201,
+    "kind": "function_definition",
+    "name": "test_decide_refuses_to_answer_for_a_tick_it_never_evaluated",
+    "scope": "",
+    "signature": "def test_decide_refuses_to_answer_for_a_tick_it_never_evaluated():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 211,
+    "kind": "function_definition",
+    "name": "test_re_evaluating_one_instant_does_not_bias_the_trend",
+    "scope": "",
+    "signature": "def test_re_evaluating_one_instant_does_not_bias_the_trend():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 220,
+    "kind": "function_definition",
+    "name": "test_the_frame_is_reproducible_for_a_tick",
+    "scope": "",
+    "signature": "def test_the_frame_is_reproducible_for_a_tick():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 230,
+    "kind": "function_definition",
+    "name": "test_learning_changes_what_the_engine_reaches_for",
+    "scope": "",
+    "signature": "def test_learning_changes_what_the_engine_reaches_for():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 260,
+    "kind": "function_definition",
+    "name": "test_confidence_is_a_bounded_share_of_the_search_budget",
+    "scope": "",
+    "signature": "def test_confidence_is_a_bounded_share_of_the_search_budget():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 266,
+    "kind": "function_definition",
+    "name": "test_the_risk_term_is_reported_as_unknown_before_a_trend_exists",
+    "scope": "",
+    "signature": "def test_the_risk_term_is_reported_as_unknown_before_a_trend_exists():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 278,
+    "kind": "function_definition",
+    "name": "test_an_unknown_recovery_action_is_rejected_at_construction",
+    "scope": "",
+    "signature": "def test_an_unknown_recovery_action_is_rejected_at_construction():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "test_readiness_is_unknown_before_any_execution_or_observation",
+    "scope": "",
+    "signature": "def test_readiness_is_unknown_before_any_execution_or_observation():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 53,
+    "kind": "function_definition",
+    "name": "test_shadow_clock_predicts_the_cooldown_after_an_execution",
+    "scope": "",
+    "signature": "def test_shadow_clock_predicts_the_cooldown_after_an_execution():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "test_prediction_degrades_to_cached_past_the_confirmation_horizon",
+    "scope": "",
+    "signature": "def test_prediction_degrades_to_cached_past_the_confirmation_horizon():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "test_observed_ready_snaps_the_clock_and_reports_drift",
+    "scope": "",
+    "signature": "def test_observed_ready_snaps_the_clock_and_reports_drift():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "test_observed_cooling_past_prediction_leaves_the_remainder_unknown",
+    "scope": "",
+    "signature": "def test_observed_cooling_past_prediction_leaves_the_remainder_unknown():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 114,
+    "kind": "function_definition",
+    "name": "test_instant_action_has_no_interrupt_window",
+    "scope": "",
+    "signature": "def test_instant_action_has_no_interrupt_window():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_independent_transitions_compose_multiplicatively",
+    "scope": "",
+    "signature": "def test_independent_transitions_compose_multiplicatively():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 138,
+    "kind": "function_definition",
+    "name": "test_wasting_the_cooldown_can_drive_the_expected_yield_negative",
+    "scope": "",
+    "signature": "def test_wasting_the_cooldown_can_drive_the_expected_yield_negative():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 154,
+    "kind": "function_definition",
+    "name": "test_animation_cancel_is_free_while_a_cast_cancel_must_beat_the_residual",
+    "scope": "",
+    "signature": "def test_animation_cancel_is_free_while_a_cast_cancel_must_beat_the_residual():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 178,
+    "kind": "function_definition",
+    "name": "test_survival_forces_a_cast_cancel_regardless_of_value",
+    "scope": "",
+    "signature": "def test_survival_forces_a_cast_cancel_regardless_of_value():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "_stun_book",
+    "scope": "",
+    "signature": "def _stun_book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 41,
+    "kind": "function_definition",
+    "name": "_root",
+    "scope": "",
+    "signature": "def _root(**overrides) -> CombatSimState:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "_search",
+    "scope": "",
+    "signature": "def _search(book: ActionBook, **config) -> MonteCarloCombatSearch:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 53,
+    "kind": "function_definition",
+    "name": "test_search_is_reproducible_for_a_fixed_seed",
+    "scope": "",
+    "signature": "def test_search_is_reproducible_for_a_fixed_seed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "test_search_prefers_the_higher_damage_action",
+    "scope": "",
+    "signature": "def test_search_prefers_the_higher_damage_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "test_restriction_withholds_an_action_from_the_root",
+    "scope": "",
+    "signature": "def test_restriction_withholds_an_action_from_the_root():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 88,
+    "kind": "function_definition",
+    "name": "test_the_search_avoids_a_line_that_kills_the_character",
+    "scope": "",
+    "signature": "def test_the_search_avoids_a_line_that_kills_the_character():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 108,
+    "kind": "function_definition",
+    "name": "test_incoming_damage_is_integrated_only_over_the_seconds_the_stun_covers",
+    "scope": "",
+    "signature": "def test_incoming_damage_is_integrated_only_over_the_seconds_the_stun_covers():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 130,
+    "kind": "function_definition",
+    "name": "test_waiting_is_the_fallback_when_nothing_is_off_cooldown",
+    "scope": "",
+    "signature": "def test_waiting_is_the_fallback_when_nothing_is_off_cooldown():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 144,
+    "kind": "function_definition",
+    "name": "test_a_root_with_nothing_committable_proposes_no_action",
+    "scope": "",
+    "signature": "def test_a_root_with_nothing_committable_proposes_no_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 152,
+    "kind": "function_definition",
+    "name": "test_an_unaffordable_action_is_not_legal",
+    "scope": "",
+    "signature": "def test_an_unaffordable_action_is_not_legal():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 165,
+    "kind": "function_definition",
+    "name": "test_the_simulator_does_not_mutate_its_input_state",
+    "scope": "",
+    "signature": "def test_the_simulator_does_not_mutate_its_input_state():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_lookahead_contributes_to_ranking",
+    "scope": "",
+    "signature": "def test_lookahead_contributes_to_ranking():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_low_hp_recovery_forecast_is_prioritized",
+    "scope": "",
+    "signature": "def test_low_hp_recovery_forecast_is_prioritized():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 27,
+    "kind": "function_definition",
+    "name": "test_attack_forecast_tolerates_unknown_target_hp",
+    "scope": "",
+    "signature": "def test_attack_forecast_tolerates_unknown_target_hp():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "test_unknown_max_hp_does_not_fabricate_a_survival_score",
+    "scope": "",
+    "signature": "def test_unknown_max_hp_does_not_fabricate_a_survival_score():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "test_unknown_max_hp_still_ranks_recovery_over_combat",
+    "scope": "",
+    "signature": "def test_unknown_max_hp_still_ranks_recovery_over_combat():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "test_known_healthy_hp_does_not_preempt_combat",
+    "scope": "",
+    "signature": "def test_known_healthy_hp_does_not_preempt_combat():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "test_critical_hp_outranks_combat_regardless_of_score",
+    "scope": "",
+    "signature": "def test_critical_hp_outranks_combat_regardless_of_score():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_unobserved_pair_reports_the_claim_and_declares_it_unmeasured",
+    "scope": "",
+    "signature": "def test_unobserved_pair_reports_the_claim_and_declares_it_unmeasured():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "test_resists_pull_the_posterior_below_the_claim",
+    "scope": "",
+    "signature": "def test_resists_pull_the_posterior_below_the_claim():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 52,
+    "kind": "function_definition",
+    "name": "test_evidence_moves_the_posterior_toward_what_was_measured",
+    "scope": "",
+    "signature": "def test_evidence_moves_the_posterior_toward_what_was_measured():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 59,
+    "kind": "function_definition",
+    "name": "test_forgetting_bounds_the_effective_sample_size",
+    "scope": "",
+    "signature": "def test_forgetting_bounds_the_effective_sample_size():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 80,
+    "kind": "function_definition",
+    "name": "test_target_classes_do_not_share_evidence",
+    "scope": "",
+    "signature": "def test_target_classes_do_not_share_evidence():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 95,
+    "kind": "function_definition",
+    "name": "test_an_unclassified_target_is_its_own_bucket",
+    "scope": "",
+    "signature": "def test_an_unclassified_target_is_its_own_bucket():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "test_variance_shrinks_as_evidence_accumulates",
+    "scope": "",
+    "signature": "def test_variance_shrinks_as_evidence_accumulates():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 116,
+    "kind": "function_definition",
+    "name": "test_susceptibility_is_none_when_nothing_in_the_book_carries_an_effect",
+    "scope": "",
+    "signature": "def test_susceptibility_is_none_when_nothing_in_the_book_carries_an_effect():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 126,
+    "kind": "function_definition",
+    "name": "test_learning_about_an_effectless_action_is_rejected",
+    "scope": "",
+    "signature": "def test_learning_about_an_effectless_action_is_rejected():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "_falling",
+    "scope": "",
+    "signature": "def _falling(monitor: BurstMonitor, samples: tuple[tuple[float, float], ...]) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "test_priority_renormalises_over_the_observed_terms",
+    "scope": "",
+    "signature": "def test_priority_renormalises_over_the_observed_terms():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_an_entity_with_no_observable_term_is_ranked_last_but_kept",
+    "scope": "",
+    "signature": "def test_an_entity_with_no_observable_term_is_ranked_last_but_kept():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "test_a_weakened_nearby_target_outranks_a_healthy_distant_one",
+    "scope": "",
+    "signature": "def test_a_weakened_nearby_target_outranks_a_healthy_distant_one():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 65,
+    "kind": "function_definition",
+    "name": "test_velocity_needs_two_samples_at_distinct_timestamps",
+    "scope": "",
+    "signature": "def test_velocity_needs_two_samples_at_distinct_timestamps():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 78,
+    "kind": "function_definition",
+    "name": "test_least_squares_recovers_the_drain_rate",
+    "scope": "",
+    "signature": "def test_least_squares_recovers_the_drain_rate():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 88,
+    "kind": "function_definition",
+    "name": "test_burst_disengages_while_hp_is_still_above_the_static_floor",
+    "scope": "",
+    "signature": "def test_burst_disengages_while_hp_is_still_above_the_static_floor():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "test_a_moderate_drain_recovers_rather_than_disengaging",
+    "scope": "",
+    "signature": "def test_a_moderate_drain_recovers_rather_than_disengaging():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 116,
+    "kind": "function_definition",
+    "name": "test_a_healthy_character_under_the_same_drain_keeps_fighting",
+    "scope": "",
+    "signature": "def test_a_healthy_character_under_the_same_drain_keeps_fighting():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_a_slow_bleed_still_hits_the_absolute_floor",
+    "scope": "",
+    "signature": "def test_a_slow_bleed_still_hits_the_absolute_floor():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 138,
+    "kind": "function_definition",
+    "name": "test_unknown_hp_ratio_fails_closed_to_recovery",
+    "scope": "",
+    "signature": "def test_unknown_hp_ratio_fails_closed_to_recovery():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 153,
+    "kind": "function_definition",
+    "name": "test_unreadable_frames_are_dropped_rather_than_carried_forward",
+    "scope": "",
+    "signature": "def test_unreadable_frames_are_dropped_rather_than_carried_forward():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 168,
+    "kind": "function_definition",
+    "name": "test_samples_older_than_the_window_stop_counting",
+    "scope": "",
+    "signature": "def test_samples_older_than_the_window_stop_counting():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 174,
+    "kind": "function_definition",
+    "name": "test_escape_budget_may_not_exceed_the_recovery_budget",
+    "scope": "",
+    "signature": "def test_escape_budget_may_not_exceed_the_recovery_budget():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 7,
+    "kind": "function_definition",
+    "name": "make_world",
+    "scope": "",
+    "signature": "def make_world(target_id=\"enemy-1\"):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 15,
+    "kind": "function_definition",
+    "name": "test_world_model_ticks_party_entities",
+    "scope": "",
+    "signature": "def test_world_model_ticks_party_entities():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "test_coordinated_manager_proposes_party_actions",
+    "scope": "",
+    "signature": "def test_coordinated_manager_proposes_party_actions():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 35,
+    "kind": "function_definition",
+    "name": "test_coordinated_manager_keeps_party_logic_observation_only",
+    "scope": "",
+    "signature": "def test_coordinated_manager_keeps_party_logic_observation_only():",
+    "category": "test"
+  }
+]
