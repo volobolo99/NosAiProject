@@ -43,7 +43,14 @@ def test_stale_stage_is_rejected_without_partial_write(tmp_path):
 
 def test_promotion_is_atomic_and_idempotent(tmp_path):
     store = McpStateStore(tmp_path / "state.sqlite3")
-    staged = store.stage_binding(_proposal(), expected_revision=0)
+
+    class Employee:
+        employee_id = "employee.coding"
+        primary_model = "model-old"
+        fallback_models = ()
+    
+    store.ensure_default_bindings([Employee()])
+    staged = store.stage_binding(_proposal(), expected_revision=store.snapshot()["revision"])
     promoted = store.promote_binding(
         "proposal-1",
         {"tests": "e1", "shadow": "e2", "audit": "e3"},
