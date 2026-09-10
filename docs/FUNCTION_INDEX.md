@@ -9,9 +9,9 @@ Audit: [DOCUMENTATION_ALIGNMENT_AUDIT.md](DOCUMENTATION_ALIGNMENT_AUDIT.md).
 3. Cercare name/scope; signature mostra la dichiarazione sintattica.
 4. Aprire path e line alla source_revision indicata. Le righe non valgono per altri commit.
 
-12.599 voci, 1.098 file, 29 shard. Inclusi test e codice esterno separati da category.
-Quattro file richiedono revisione parser: elencati in coverage e nell'audit.
-Non usare questo indice come prova di funzionamento o come call graph.
+Il manifest contiene coverage per file, diagnostica parser con riga/colonna/excerpt,
+versione delle grammar e voci ordinate per path/line. Inclusi test e codice esterno
+separati da category. Non usare questo indice come prova di funzionamento o come call graph.
 
 ## Rigenerazione
 Installare in ambiente di tooling dedicato:
@@ -28,6 +28,8 @@ Il generatore legge i file Git tracciati e produce un JSON monolitico con copert
 e funzioni. Per consultazione su GitHub, suddividere functions per radice e blocchi
 da 500 voci, mantenendo source_revision e coverage nel manifest.
 Il checkout deve essere pulito e corrispondere al COMMIT fornito; la revisione
-non viene risolta o verificata automaticamente dal generatore.
+non viene risolta o verificata automaticamente dal generatore. `--strict` è
+obbligatorio in CI; `--exclude GLOB` va usato soltanto per esclusioni motivate
+e resta registrato nel manifest.
 Estensioni: py, cs, js, html (script inline), cpp, h, sh, ps1.
 Aggiungere parser e test di copertura quando entrano altri linguaggi.
