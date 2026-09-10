@@ -22,6 +22,7 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 - `nosai/mcp/contracts.py` — contratti tipizzati e versionabili.
 - `nosai/mcp/policy.py` — invarianti immutabili e autorizzazione strumenti.
 - `nosai/mcp/router.py` — routing local/free-first con capability e policy.
+- `nosai/mcp/inference.py` — gateway di inferenza compatibile Ollama/OpenAI; chiamate remote solo in modalità rete.
 - `nosai/mcp/simulation.py` — simulazioni pure e riproducibili.
 - `nosai/mcp/learning.py` — candidate → validate → offline skill.
 - `nosai/mcp/secrets.py` — cifratura locale Fernet; nessun ritorno plaintext.
