@@ -12,6 +12,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "learning_path": "data/mcp/learning",
     "secret_path": "data/mcp/secrets.enc.json",
     "role_bindings_path": "data/mcp/role_bindings.json",
+    "state_path": "data/mcp/state.sqlite3",
     "providers": [
         {"provider_id": "ollama-local", "model_id": "qwen2.5-coder:7b", "tier": 0, "network_required": False},
         {"provider_id": "groq-free", "model_id": "qwen/qwen3-32b", "tier": 1, "network_required": True},
