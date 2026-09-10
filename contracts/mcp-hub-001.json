@@ -11,7 +11,7 @@
     "MCP never has direct execution authority; local Guard/Safety remains final",
     "simulation and learning persistence are side-effect free with respect to the game client",
     "role bindings are staged and persisted atomically before promotion",
-    "binding promotion requires operator confirmation plus independent tests, shadow and audit checks",
+    "binding promotion requires operator confirmation plus signed, fresh, independent tests, shadow and audit evidence",
     "MCP Chief may monitor and propose improvements but cannot override policy, audit, tests, secrets or Safety"
   ],
   "tools": [
@@ -27,6 +27,7 @@
     "mcp_audit_change",
     "mcp_verify_roles",
     "mcp_role_catalog",
+    "mcp_record_evidence",
     "mcp_role_propose_binding",
     "mcp_role_promote_binding",
     "mcp_role_rollback_binding",
@@ -44,6 +45,7 @@
     "candidate without observed evidence cannot become offline skill",
     "Chief health reports every protected boundary and fails closed when a binding store is invalid",
     "role binding proposal does not change active routing",
-    "promotion and rollback are versioned and auditable"
+    "promotion and rollback are versioned and auditable",
+    "forged, stale or candidate-mismatched evidence is rejected"
   ]
 }
