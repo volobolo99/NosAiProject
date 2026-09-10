@@ -33,6 +33,29 @@ class McpDashboardService:
         registry = self.router.role_bindings
         return registry.list() if registry is not None else []
 
+    def evidence_records(self) -> list[dict[str, Any]]:
+        return self._chief.evidence.list()
+
+    def record_evidence(self, body: dict[str, Any]) -> dict[str, Any]:
+        record = self._chief.record_evidence(
+            str(body.get("candidate_digest", "")),
+            str(body.get("evidence_kind", "")),
+            str(body.get("executor_id", "")),
+            dict(body.get("result", {})),
+            signer_id=str(body.get("signer_id", "mcp-evidence-authority")),
+            observed_at=body.get("observed_at"),
+            ttl_s=body.get("ttl_s"),
+            test_version=str(body.get("test_version", "mcp-promotion-v1")),
+            dataset_digest=body.get("dataset_digest"),
+            environment_digest=body.get("environment_digest"),
+            artifact_digest=body.get("artifact_digest"),
+        )
+        self.audit.append(
+            "dashboard_evidence_recorded",
+            {"evidence_id": record["evidence_id"], "evidence_kind": record["evidence_kind"], "executor_id": record["executor_id"]},
+        )
+        return record
+
     def role_proposals(self) -> list[dict[str, Any]]:
         registry = self.router.role_bindings
         return registry.proposals() if registry is not None else []
@@ -45,6 +68,7 @@ class McpDashboardService:
             str(body.get("employee_id", "")),
             str(body.get("primary_model", "")),
             list(body.get("fallback_models", [])),
+            author_id=str(body.get("author_id", "operator")),
         )
         self.audit.append("dashboard_role_binding_proposed", {"proposal_id": proposal["proposal_id"], "employee_id": proposal["employee_id"]})
         return proposal
@@ -53,9 +77,12 @@ class McpDashboardService:
         registry = self.router.role_bindings
         if registry is None:
             raise RuntimeError("role binding registry is not configured")
+        evidence_ids = body.get("evidence_ids")
+        if evidence_ids is None:
+            raise ValueError("evidence_ids is required; caller-provided checks are not accepted")
         result = self._chief.promote_binding(
             str(body.get("proposal_id", "")),
-            dict(body.get("checks", {})),
+            dict(evidence_ids),
             str(body.get("confirmation", "")),
         )
         self.audit.append("dashboard_role_binding_promoted", {"proposal_id": result.get("proposal_id"), "employee_id": result["employee_id"], "version": result["version"]})
@@ -180,6 +207,9 @@ def make_handler(service: McpDashboardService):
             if path == "/api/mcp/role-proposals":
                 self._json(200, {"proposals": service.role_proposals()})
                 return
+            if path == "/api/mcp/evidence":
+                self._json(200, {"evidence": service.evidence_records()})
+                return
             if path == "/api/mcp/secrets":
                 try:
                     self._json(200, {"secrets": service.secret_metadata()})
@@ -233,6 +263,12 @@ def make_handler(service: McpDashboardService):
             if path == "/api/mcp/role-bindings/propose":
                 try:
                     self._json(200, service.propose_role_binding(body))
+                except (KeyError, PermissionError, ValueError, TypeError) as exc:
+                    self._json(400, {"error": str(exc)})
+                return
+            if path == "/api/mcp/evidence":
+                try:
+                    self._json(200, service.record_evidence(body))
                 except (KeyError, PermissionError, ValueError, TypeError) as exc:
                     self._json(400, {"error": str(exc)})
                 return
