@@ -1,7 +1,7 @@
 # NosAiProject — Source of Truth
 
-**Version:** 2.2  
-**Date:** 2026-09-05  
+**Version:** 2.3  
+**Date:** 2026-09-10  
 **Status:** ACTIVE
 
 This file defines which project documents are authoritative. When documents disagree, stop and resolve the conflict with an ADR.
@@ -16,7 +16,11 @@ This file defines which project documents are authoritative. When documents disa
 6. `.claude/CLAUDE.md` — agent development rules: the mandatory 5-phase production protocol.
 7. `third_party/README.md`, `third_party/manifests/*`, `third_party/provenance/*` — external-source provenance and reuse rules.
 8. `docs/mcp/README.md`, `docs/mcp/DEVELOPMENT_CONTRACTS.md`, `contracts/mcp-hub-001.json` — MCP Hub behavior, contracts and boundaries.
-9. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
+9. `contracts/ledger.json` and `docs/CONTRACT_MAP.md` — authoritative contract status, files, tests, blockers and open questions.
+10. `docs/SYSTEM_MAP.md` — authoritative module boundaries and communication paths.
+11. `docs/AGENT_COORDINATION.md` — authoritative multi-agent task packet, ownership, handoff and audit protocol.
+12. `docs/REMAINING_WORK.md` — prioritized work still required, with acceptance evidence.
+13. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
 
 ## Root front-door documents
 
