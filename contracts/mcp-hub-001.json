@@ -18,7 +18,10 @@
     "mcp_choose_provider",
     "mcp_run_simulation",
     "mcp_learning_candidate",
-    "mcp_validate_learning"
+    "mcp_validate_learning",
+    "mcp_propose_change",
+    "mcp_audit_change",
+    "mcp_verify_roles"
   ],
   "resources": ["nosai://mcp/policy"],
   "acceptance_tests": [
