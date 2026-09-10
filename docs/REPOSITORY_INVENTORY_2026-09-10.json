@@ -3,14 +3,14 @@
   "generated_at": "2026-09-10T00:00:00Z",
   "branch": "main",
   "repository": "volobolo99/NosAiProject",
-  "file_count": 1473,
+  "file_count": 1477,
   "top_level_counts": {
     ".claude": 1,
     ".cursor": 8,
     ".github": 5,
     "contracts": 9,
     "data": 12,
-    "docs": 204,
+    "docs": 208,
     "nosai": 101,
     "prompts": 3,
     "reports": 4,
@@ -27,7 +27,11 @@
     "mcp_server": "scripts/mcp_hub_server.py",
     "mcp_dashboard": "scripts/mcp_dashboard_server.py",
     "roadmap": "docs/ROADMAP_ESECUTIVA.md",
-    "source_of_truth": "docs/SOURCE_OF_TRUTH.md"
+    "source_of_truth": "docs/SOURCE_OF_TRUTH.md",
+    "contract_map": "docs/CONTRACT_MAP.md",
+    "system_map": "docs/SYSTEM_MAP.md",
+    "agent_coordination": "docs/AGENT_COORDINATION.md",
+    "remaining_work": "docs/REMAINING_WORK.md"
   },
   "intentional_archives": [
     "docs/agents/phases/ARCHIVE",
