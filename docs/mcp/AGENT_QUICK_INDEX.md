@@ -13,7 +13,7 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 | chiavi API | `nosai/mcp/secrets.py`, `nosai/mcp/dashboard.py` | nessun plaintext; test cifratura |
 | audit | `nosai/mcp/audit.py` | payload sempre redatto |
 | Direttore/Auditor | `nosai/mcp/director.py`, `nosai/mcp/auditor.py` | `tests/test_mcp_hub_governance.py` |
-| ruoli | `nosai/mcp/roles.py` | `RoleArchitect.verify()` |
+| ruoli e dipendenti | `nosai/mcp/roles.py`, `docs/mcp/ROLE_CATALOG.md` | `RoleArchitect.verify()`, `verify_employee_catalog()` |
 | pannello | `nosai/mcp/static/index.html`, `scripts/mcp_dashboard_server.py` | API `/api/mcp/*` |
 
 ## Regole per i modelli programmatori
