@@ -1,5 +1,8 @@
 # Piano di riordino — quattro voci, nessuna riscrittura
 
+> **Nota 2026-09-10:** questo piano storico resta conservato per la motivazione delle decisioni già prese. Le regole operative correnti di ordine, archiviazione e rimozione sono in `docs/REPOSITORY_ORDER.md`; non eseguire automaticamente i passi storici qui descritti.
+
+
 **Versione:** 1.0
 **Data:** 2 settembre 2026
 **Ruolo:** operativo, subordinato a `PIANO_CAPACITA.md`. Quello dice *quale capacità*
