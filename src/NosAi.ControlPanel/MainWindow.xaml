@@ -95,6 +95,7 @@
       <DockPanel Margin="0,0,0,16">
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
           <Button Style="{StaticResource GhostButton}" Content="Apri cartella exe" Click="OnOpenExeFolder" Margin="0,0,8,0"/>
+          <Button x:Name="OpenMcpPanelButton" Style="{StaticResource GhostButton}" Content="MCP Hub" Click="OnOpenMcpPanel" Margin="0,0,8,0"/>
           <Button Style="{StaticResource LiveButton}" Content="Avvia runtime" Click="OnStartRuntime" Margin="0,0,8,0"/>
           <Button Style="{StaticResource GhostButton}" Content="Ricollega" Click="OnReconnect" Margin="0,0,8,0"/>
           <Button x:Name="StopButton" Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopRuntime" Margin="0,0,8,0"/>
