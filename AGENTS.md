@@ -9,6 +9,9 @@ Questa tabella descrive i ruoli di sviluppo all'interno del progetto NosAi, indi
 | Ruolo | Modello | Responsabilità |
 |-------|---------|----------------|
 | Orchestrator/CTO | Claude | Architettura, suddivisione del lavoro, routing, approvazione finale |
+| MCP Chief | Claude | Salute e configurazione dell’MCP, proposte di ottimizzazione, binding, promozioni evidence-gated e rollback |
+| MCP Auditor | Claude (binding indipendente) | Veto, verifica delle evidenze, regressioni e invarianti; non modificabile dal Chief |
+| Research Lab Coordinator | Qwen3 Coder 30B | Ipotesi, esperimenti, benchmark e curatela online→offline senza autorità di rilascio |
 | Product Manager | qwen2.5-coder:7b locale con approvazione di Claude | Stesura e aggiornamento dei documenti di prodotto |
 | Game AI Architect | Claude | Confini fra livelli cognitivi e invarianti architetturali |
 | Perception Agent | Gemini 2.5 Flash Lite per l'analisi visiva, Qwen3 Coder 30B per il codice del dominio | Lettura dello schermo e classificazione delle osservazioni |
@@ -27,6 +30,7 @@ Questa tabella descrive i ruoli di sviluppo all'interno del progetto NosAi, indi
 
 - Ogni agente riceve un messaggio strutturato conforme a `schemas/agent_message.schema.json` e non una conversazione completa.
 - Nessun agente può dichiarare completato un task senza che i controlli automatici siano passati.
+- Le promozioni di binding richiedono evidenze firmate, fresche e indipendenti; un booleano nel payload non è una prova.
 - Nessun agente può introdurre segnaposto, stub o implementazioni finte.
 - Nessun comando di fase autorizza la cancellazione di file di progetto esistenti.
 - Agenti diversi lavorano in parallelo solo su insiemi di file disgiunti.
