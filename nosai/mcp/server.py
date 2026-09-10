@@ -31,7 +31,7 @@ def create_server(config_path: Path | str | None = None):
         # Configuration cannot silently enable network mode; only the operator action can.
         config["network_enabled"] = False
     router = ModelRouter.from_config(config, policy)
-    chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=router.role_bindings)
+    chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=router.role_bindings, router=router)
     audit = AuditLog(config["audit_path"])
     learning = LearningFactory(config["learning_path"])
     try:
