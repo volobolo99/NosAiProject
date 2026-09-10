@@ -23,6 +23,8 @@ jobs:
         # Inventory and marks: docs/INVENTARIO_PYTHON.md. COPERTO packages were
         # removed; compileall must still succeed on what is left.
         run: python -m compileall -q nosai
+      - name: Verify MCP contracts and documentation links
+        run: python scripts/verify_mcp_contracts.py --strict
       - name: Run remaining Python tests
         run: python -m pytest -q tests
 
