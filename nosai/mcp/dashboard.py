@@ -11,6 +11,10 @@ from urllib.parse import urlparse
 from .audit import AuditLog
 from .config import load_config
 from .contracts import ActivationRequest
+from .contracts import SimulationRequest
+from .simulation import run_simulation
+from .director import McpDirector, ChangeProposal
+from .auditor import McpAuditor
 from .policy import McpPolicy, PolicyViolation
 from .router import ModelRouter
 from .secrets import SecretStore
@@ -23,6 +27,8 @@ class McpDashboardService:
         self.router = ModelRouter.from_config(config, self.policy)
         self.audit = AuditLog(config["audit_path"])
         self._secret_path = config["secret_path"]
+        self._director = McpDirector("data/mcp/proposals")
+        self._auditor = McpAuditor()
 
     def status(self) -> dict[str, Any]:
         return {
@@ -52,6 +58,20 @@ class McpDashboardService:
     def delete_secret(self, provider_id: str) -> dict[str, Any]:
         store = SecretStore(self._secret_path)
         return {"provider_id": provider_id, "deleted": store.delete(provider_id)}
+
+    def simulate(self, body: dict[str, Any]) -> dict[str, Any]:
+        result = run_simulation(SimulationRequest.from_mapping(body))
+        self.audit.append("dashboard_simulation", {"scenario_id": result["scenario_id"], "seed": result["seed"]})
+        return result
+
+    def propose_change(self, body: dict[str, Any]) -> dict[str, Any]:
+        proposal = self._director.propose(str(body.get("component", "")), str(body.get("summary", "")), list(body.get("files", [])))
+        return {"proposal_id": proposal.proposal_id, "component": proposal.component, "summary": proposal.summary, "files": list(proposal.files), "status": proposal.status}
+
+    def audit_change(self, body: dict[str, Any]) -> dict[str, Any]:
+        proposal = ChangeProposal(**body["proposal"])
+        verdict = self._auditor.review(proposal, dict(body.get("checks", {})))
+        return asdict(verdict)
 
 
 def make_handler(service: McpDashboardService):
@@ -83,6 +103,13 @@ def make_handler(service: McpDashboardService):
                 except RuntimeError as exc:
                     self._json(503, {"error": str(exc)})
                 return
+            if path == "/api/mcp/audit":
+                if not self._audit_path().is_file():
+                    self._json(200, {"events": []})
+                else:
+                    lines = self._audit_path().read_text(encoding="utf-8").splitlines()[-100:]
+                    self._json(200, {"events": [json.loads(line) for line in lines]})
+                return
             target = static_root / ("index.html" if path in ("", "/") else path.lstrip("/"))
             if static_root not in target.resolve().parents or not target.is_file():
                 self._json(404, {"error": "not_found"})
@@ -108,6 +135,24 @@ def make_handler(service: McpDashboardService):
                 except (PolicyViolation, ValueError) as exc:
                     self._json(403, {"error": str(exc)})
                 return
+            if path == "/api/mcp/simulate":
+                try:
+                    self._json(200, service.simulate(body))
+                except (ValueError, TypeError) as exc:
+                    self._json(400, {"error": str(exc)})
+                return
+            if path == "/api/mcp/proposals":
+                try:
+                    self._json(200, service.propose_change(body))
+                except (PermissionError, ValueError) as exc:
+                    self._json(403, {"error": str(exc)})
+                return
+            if path == "/api/mcp/audit-change":
+                try:
+                    self._json(200, service.audit_change(body))
+                except (KeyError, TypeError, ValueError) as exc:
+                    self._json(400, {"error": str(exc)})
+                return
             if path == "/api/mcp/secrets":
                 try:
                     self._json(200, service.upsert_secret(str(body.get("provider_id", "")), str(body.get("value", ""))))
@@ -127,6 +172,9 @@ def make_handler(service: McpDashboardService):
             except RuntimeError as exc:
                 self._json(503, {"error": str(exc)})
 
+        def _audit_path(self) -> Path:
+            return service.audit.path
+
         def log_message(self, fmt: str, *args: Any) -> None:
             print(f"[mcp-dashboard] {self.address_string()} - {fmt % args}")
 
@@ -145,5 +193,4 @@ def serve(host: str | None = None, port: int | None = None, config_path: Path | 
     finally:
         server.server_close()
     return 0
-
 
