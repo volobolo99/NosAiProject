@@ -16,10 +16,10 @@ class InferenceGateway:
     router: ModelRouter
     secrets: SecretStore | None
 
-    def infer(self, prompt: str, capability: str | None = None, timeout: float = 30.0) -> dict:
+    def infer(self, prompt: str, capability: str | None = None, timeout: float = 30.0, role_id: str | None = None) -> dict:
         if not prompt.strip():
             raise ValueError("prompt is required")
-        decision: RouteDecision = self.router.choose(capability)
+        decision: RouteDecision = self.router.choose(capability, role_id=role_id)
         if decision.provider_id == "ollama-local":
             endpoint = os.getenv("NOSAI_OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
             payload = {"model": decision.model_id, "prompt": prompt, "stream": False}
