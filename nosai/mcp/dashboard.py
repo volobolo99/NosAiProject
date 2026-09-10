@@ -25,7 +25,7 @@ class McpDashboardService:
         config = load_config(config_path)
         self.policy = McpPolicy()
         self.router = ModelRouter.from_config(config, self.policy)
-        self._chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=self.router.role_bindings)
+        self._chief = McpChief(Path(config.get("role_bindings_path", "data/mcp/role_bindings.json")).parent, bindings=self.router.role_bindings, router=self.router)
         self.audit = AuditLog(config["audit_path"])
         self._secret_path = config["secret_path"]
 
