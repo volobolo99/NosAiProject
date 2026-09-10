@@ -31,6 +31,7 @@
 | R-203 | Decidere l’eventuale hook memoria/DLL | C-105 | contratto, limiti e test; nessuna implementazione implicita |
 | R-204 | Aggiungere fuzzing ai parser di input | C-402 | corpus, harness, esecuzione riproducibile e report |
 | R-205 | Completare la cascata free-first del MCP | `scripts/free_first.py`, docs/mcp | test provider, fallback, quote, timeout e funzionamento reale |
+| R-206 | Consolidare o formalizzare i due entrypoint MCP | `scripts/mcp_server.py` vs `scripts/mcp_hub_server.py` | ADR di consolidamento oppure compatibilità documentata e testata |
 
 ## Ordine consigliato
 
