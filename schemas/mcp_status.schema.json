@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_status.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "mcp.status.v1"},
+    "mode": {"enum": ["offline", "network"]},
+    "network_enabled": {"type": "boolean"},
+    "providers": {"type": "array"}
+  },
+  "required": ["schema_version", "mode", "network_enabled", "providers"]
+}
+
