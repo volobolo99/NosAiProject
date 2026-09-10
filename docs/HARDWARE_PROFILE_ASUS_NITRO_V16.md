@@ -1,12 +1,15 @@
-# NosAiProject — Hardware Profile: ASUS Nitro V16
+# NosAiProject — Hardware Profile: Acer Nitro V16 AI
 
 **Version:** 1.0
 **Date:** 2026-09-05
 **Status:** CANONICAL HARDWARE TARGET
 
+The filename is retained for compatibility with existing links; ASUS in the filename is historical, not the hardware vendor.
+Operator-confirmed baseline: Acer Nitro V16 AI with external SSD. SSD capacity, GPU memory and power limits must be measured; historical 2 TB and 8 GB assumptions are not certification evidence.
+
 ## 1. Target machine
 
-NosAiProject must be optimized first for the developer's ASUS Nitro V16 laptop.
+NosAiProject must be optimized first for the developer's Acer Nitro V16 AI laptop.
 
 Known baseline:
 
@@ -15,7 +18,7 @@ Known baseline:
 | System RAM | 16 GB DDR5 |
 | GPU | NVIDIA GeForce RTX 5060 Laptop GPU, 8 GB class |
 | CPU | AMD Ryzen, exact SKU detected at runtime |
-| Project storage | Dedicated external SSD, 2 TB |
+| Project storage | Dedicated external SSD; capacity detected at runtime |
 | OS | Windows desktop |
 | External automation devices | None required; mouse and keyboard permitted but optional |
 
@@ -23,7 +26,7 @@ The exact laptop SKU and CPU must be discovered by the Hardware Profiler. Do not
 
 ## 2. Design consequences
 
-The machine is capable of meaningful local AI acceleration, but 16 GB system RAM and 8 GB GPU memory require explicit resource governance.
+The machine is capable of meaningful local AI acceleration, but 16 GB system RAM and the measured GPU memory require explicit resource governance.
 
 The RTX 5060 Laptop GPU is a Blackwell GPU with 8 GB GDDR7 and 3328 CUDA cores; NVIDIA documents laptop implementations across a 45–100 W GPU subsystem range. Therefore NosAi must detect the actual device, driver and power/thermal state rather than assuming desktop-class performance.
 
@@ -62,7 +65,7 @@ Background work must yield under CPU/GPU/RAM/thermal pressure.
 
 ## 4. VRAM policy
 
-With an 8 GB GPU ceiling:
+Using the measured GPU memory ceiling:
 
 1. never assume enough VRAM for multiple large models;
 2. prefer one resident primary vision model;
@@ -99,7 +102,7 @@ Do not keep full-resolution frame histories in RAM.
 
 ## 6. SSD policy
 
-The dedicated 2 TB external SSD is the canonical NosAiProject storage location.
+The dedicated external SSD is the canonical NosAiProject storage location.
 
 Suggested layout:
 
