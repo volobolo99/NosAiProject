@@ -1,0 +1,956 @@
+[
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 35,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "get;",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Initialize",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "public override void Initialize(AnalysisContext context)",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "AnalyzeDeclaredType",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "private static void AnalyzeDeclaredType(SymbolAnalysisContext context)",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "AnalyzeReference",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "private static void AnalyzeReference(SyntaxNodeAnalysisContext context)",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "ResolveTypeLikeSymbol",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "private static ISymbol? ResolveTypeLikeSymbol(SemanticModel semanticModel, SimpleNameSyntax name, System.Threading.CancellationToken ct)",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/NosAi.Analyzers/NoMockOnCriticalPathAnalyzer.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "FindBannedSubstring",
+    "scope": "NoMockOnCriticalPathAnalyzer",
+    "signature": "private static string? FindBannedSubstring(string identifier)",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/find-vitals.ps1",
+    "line": 59,
+    "kind": "function_statement",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "function Invoke-Probe { param([string[]] $ProbeArgs) Push-Location $repo try { & dotnet $dll @ProbeArgs 2>&1 | ForEach-Object { $_ } } finally { Pop-Location } }",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/open-webui/nosai_free_router.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Filter",
+    "signature": "def __init__(self) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/open-webui/nosai_free_router.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "e_gratuito",
+    "scope": "Filter",
+    "signature": "def e_gratuito(self, modello: str) -> bool:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/open-webui/nosai_free_router.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "inlet",
+    "scope": "Filter",
+    "signature": "async def inlet(self, body: dict, __user__: Optional[dict] = None) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/open-webui/nosai_free_router.py",
+    "line": 29,
+    "kind": "function_definition",
+    "name": "outlet",
+    "scope": "Filter",
+    "signature": "async def outlet(self, body: dict, __user__: Optional[dict] = None) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 114,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Fetcher",
+    "signature": "def __init__( self, user_agent: str, rate_min: float, rate_max: float, timeout: float, max_retries: int = 3, ) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 136,
+    "kind": "function_definition",
+    "name": "_sleep",
+    "scope": "Fetcher",
+    "signature": "def _sleep(self) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "_request",
+    "scope": "Fetcher",
+    "signature": "def _request(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 165,
+    "kind": "function_definition",
+    "name": "get",
+    "scope": "Fetcher",
+    "signature": "def get(self, url: str, **kwargs) -> Optional[requests.Response]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 168,
+    "kind": "function_definition",
+    "name": "post",
+    "scope": "Fetcher",
+    "signature": "def post(self, url: str, **kwargs) -> Optional[requests.Response]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 171,
+    "kind": "function_definition",
+    "name": "get_soup",
+    "scope": "Fetcher",
+    "signature": "def get_soup(self, url: str, **kwargs) -> Optional[BeautifulSoup]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 177,
+    "kind": "function_definition",
+    "name": "xsrf_token",
+    "scope": "Fetcher",
+    "signature": "def xsrf_token(self) -> Optional[str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 189,
+    "kind": "function_definition",
+    "name": "parse_int",
+    "scope": "",
+    "signature": "def parse_int(text: Any) -> Optional[int]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 206,
+    "kind": "function_definition",
+    "name": "text_or_none",
+    "scope": "",
+    "signature": "def text_or_none(el) -> Optional[str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 210,
+    "kind": "function_definition",
+    "name": "clean_html_artifact_name",
+    "scope": "",
+    "signature": "def clean_html_artifact_name(text: Optional[str]) -> Optional[str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 220,
+    "kind": "function_definition",
+    "name": "clean",
+    "scope": "",
+    "signature": "def clean(url: Optional[str]) -> Optional[str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 229,
+    "kind": "function_definition",
+    "name": "discover_categories",
+    "scope": "",
+    "signature": "def discover_categories(nav_soup: BeautifulSoup, section: str) -> \"dict[str, str]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 250,
+    "kind": "function_definition",
+    "name": "discover_quest_categories",
+    "scope": "",
+    "signature": "def discover_quest_categories(quests_soup: BeautifulSoup) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 279,
+    "kind": "function_definition",
+    "name": "parse_item_box_list",
+    "scope": "",
+    "signature": "def parse_item_box_list(soup: BeautifulSoup, id_prefix: str) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 299,
+    "kind": "function_definition",
+    "name": "parse_monster_box_list",
+    "scope": "",
+    "signature": "def parse_monster_box_list(soup: BeautifulSoup, id_prefix: str) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 329,
+    "kind": "function_definition",
+    "name": "parse_maps_list",
+    "scope": "",
+    "signature": "def parse_maps_list(soup: BeautifulSoup) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 342,
+    "kind": "function_definition",
+    "name": "scrape_paginated_list",
+    "scope": "",
+    "signature": "def scrape_paginated_list( fetcher: Fetcher, url_template: str, parse_fn, max_pages: int, section_label: str, errors: list, max_consecutive_failures: int = 4, ) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 403,
+    "kind": "function_definition",
+    "name": "parse_item_detail",
+    "scope": "",
+    "signature": "def parse_item_detail(soup: BeautifulSoup) -> Optional[dict[str, Any]]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 408,
+    "kind": "function_definition",
+    "name": "text_of",
+    "scope": "parse_item_detail",
+    "signature": "def text_of(selector: str) -> Optional[str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 456,
+    "kind": "function_definition",
+    "name": "_section_pairs",
+    "scope": "",
+    "signature": "def _section_pairs(container) -> \"list[tuple[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 468,
+    "kind": "function_definition",
+    "name": "parse_monster_detail",
+    "scope": "",
+    "signature": "def parse_monster_detail(soup: BeautifulSoup) -> Optional[dict[str, Any]]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 484,
+    "kind": "function_definition",
+    "name": "section_raw",
+    "scope": "parse_monster_detail",
+    "signature": "def section_raw(name: str) -> dict[str, str]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 580,
+    "kind": "function_definition",
+    "name": "parse_map_detail",
+    "scope": "",
+    "signature": "def parse_map_detail(soup: BeautifulSoup) -> Optional[dict[str, Any]]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 607,
+    "kind": "function_definition",
+    "name": "entity_list",
+    "scope": "parse_map_detail",
+    "signature": "def entity_list(section_title: str) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 638,
+    "kind": "function_definition",
+    "name": "parse_quest_category_html",
+    "scope": "",
+    "signature": "def parse_quest_category_html(html: str) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 679,
+    "kind": "function_definition",
+    "name": "extract_exp_curves",
+    "scope": "",
+    "signature": "def extract_exp_curves(quests_page_html: str) -> \"dict[str, Any]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 698,
+    "kind": "function_definition",
+    "name": "run_list_section_with_retry",
+    "scope": "",
+    "signature": "def run_list_section_with_retry( fetcher: Fetcher, url_template: str, parse_fn, max_pages: int, section_label: str, errors: list, ) -> \"list[dict[str, Any]]\":",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 721,
+    "kind": "function_definition",
+    "name": "evenly_spaced_sample",
+    "scope": "",
+    "signature": "def evenly_spaced_sample(items: list, k: int) -> list:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 739,
+    "kind": "function_definition",
+    "name": "write_json",
+    "scope": "",
+    "signature": "def write_json(out_dir: str, filename: str, data: Any) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/scraping/nosapki_scraper.py",
+    "line": 748,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main() -> int:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/hook_event.py",
+    "line": 27,
+    "kind": "function_definition",
+    "name": "call_id",
+    "scope": "",
+    "signature": "def call_id(payload: dict) -> str:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/hook_event.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "succeeded",
+    "scope": "",
+    "signature": "def succeeded(payload: dict) -> bool:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/hook_event.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main() -> int:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "api_key",
+    "scope": "",
+    "signature": "def api_key(name: str) -> str:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 43,
+    "kind": "function_definition",
+    "name": "catalogue",
+    "scope": "",
+    "signature": "def catalogue() -> list[dict]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 94,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Job",
+    "signature": "def __init__(self, agent: str, agent_name: str, model: str, prompt: str, session_id: str = \"\") -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 112,
+    "kind": "function_definition",
+    "name": "record",
+    "scope": "Job",
+    "signature": "def record(self) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Runner",
+    "signature": "def __init__(self, publish, on_finished) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 145,
+    "kind": "function_definition",
+    "name": "start",
+    "scope": "Runner",
+    "signature": "def start(self, agent_id: str, prompt: str, options: dict) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 177,
+    "kind": "function_definition",
+    "name": "stop",
+    "scope": "Runner",
+    "signature": "def stop(self, job_id: str) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 190,
+    "kind": "function_definition",
+    "name": "running",
+    "scope": "Runner",
+    "signature": "def running(self) -> list[dict]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 196,
+    "kind": "function_definition",
+    "name": "_state",
+    "scope": "Runner",
+    "signature": "def _state(self, job: Job) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 207,
+    "kind": "function_definition",
+    "name": "_chunk",
+    "scope": "Runner",
+    "signature": "def _chunk(self, job: Job, text: str, channel: str = \"text\") -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 217,
+    "kind": "function_definition",
+    "name": "_guard",
+    "scope": "Runner",
+    "signature": "def _guard(self, target, job: Job, options: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 236,
+    "kind": "function_definition",
+    "name": "_post",
+    "scope": "Runner",
+    "signature": "def _post(self, url: str, payload: dict, headers: dict):",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 244,
+    "kind": "function_definition",
+    "name": "_run_ollama",
+    "scope": "Runner",
+    "signature": "def _run_ollama(self, job: Job, options: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 283,
+    "kind": "function_definition",
+    "name": "_run_openai_style",
+    "scope": "Runner",
+    "signature": "def _run_openai_style(self, job: Job, url: str, headers: dict, payload: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 328,
+    "kind": "function_definition",
+    "name": "_run_deepseek",
+    "scope": "Runner",
+    "signature": "def _run_deepseek(self, job: Job, options: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 339,
+    "kind": "function_definition",
+    "name": "_run_openrouter",
+    "scope": "Runner",
+    "signature": "def _run_openrouter(self, job: Job, options: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 350,
+    "kind": "function_definition",
+    "name": "_run_claude",
+    "scope": "Runner",
+    "signature": "def _run_claude(self, job: Job, options: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/runner.py",
+    "line": 398,
+    "kind": "function_definition",
+    "name": "_absorb_claude",
+    "scope": "Runner",
+    "signature": "def _absorb_claude(self, job: Job, row: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "_get_json",
+    "scope": "",
+    "signature": "def _get_json(url: str, timeout: float):",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 91,
+    "kind": "function_definition",
+    "name": "_get_text",
+    "scope": "",
+    "signature": "def _get_text(url: str, timeout: float):",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "_agent",
+    "scope": "",
+    "signature": "def _agent(agent_id: str, name: str, host: str, models=None, polled: bool = True) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "_normalise_event",
+    "scope": "",
+    "signature": "def _normalise_event(event: dict) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 164,
+    "kind": "function_definition",
+    "name": "_normalise_chat",
+    "scope": "",
+    "signature": "def _normalise_chat(chat: dict) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 187,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "State",
+    "signature": "def __init__(self) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 203,
+    "kind": "function_definition",
+    "name": "subscribe",
+    "scope": "State",
+    "signature": "def subscribe(self) -> queue.Queue:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 209,
+    "kind": "function_definition",
+    "name": "unsubscribe",
+    "scope": "State",
+    "signature": "def unsubscribe(self, channel: queue.Queue) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 214,
+    "kind": "function_definition",
+    "name": "_publish",
+    "scope": "State",
+    "signature": "def _publish(self, message: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 226,
+    "kind": "function_definition",
+    "name": "update_agent",
+    "scope": "State",
+    "signature": "def update_agent(self, agent_id: str, **fields) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 236,
+    "kind": "function_definition",
+    "name": "publish",
+    "scope": "State",
+    "signature": "def publish(self, message: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 240,
+    "kind": "function_definition",
+    "name": "set_sessions",
+    "scope": "State",
+    "signature": "def set_sessions(self, sessions: list[dict]) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 247,
+    "kind": "function_definition",
+    "name": "add_event",
+    "scope": "State",
+    "signature": "def add_event(self, event: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 276,
+    "kind": "function_definition",
+    "name": "add_chat",
+    "scope": "State",
+    "signature": "def add_chat(self, chat: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 284,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "State",
+    "signature": "def snapshot(self) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 302,
+    "kind": "function_definition",
+    "name": "_persist_chat",
+    "scope": "",
+    "signature": "def _persist_chat(record: dict) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 320,
+    "kind": "function_definition",
+    "name": "poll_sessions",
+    "scope": "",
+    "signature": "def poll_sessions() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 330,
+    "kind": "function_definition",
+    "name": "poll_local",
+    "scope": "",
+    "signature": "def poll_local() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 359,
+    "kind": "function_definition",
+    "name": "resolve_colab_endpoint",
+    "scope": "",
+    "signature": "def resolve_colab_endpoint():",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 371,
+    "kind": "function_definition",
+    "name": "poll_colab",
+    "scope": "",
+    "signature": "def poll_colab() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 418,
+    "kind": "function_definition",
+    "name": "poll_claude",
+    "scope": "",
+    "signature": "def poll_claude() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 462,
+    "kind": "function_definition",
+    "name": "_tail",
+    "scope": "",
+    "signature": "def _tail(path: Path, consume) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 491,
+    "kind": "function_definition",
+    "name": "tail_events",
+    "scope": "",
+    "signature": "def tail_events() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 495,
+    "kind": "function_definition",
+    "name": "tail_chats",
+    "scope": "",
+    "signature": "def tail_chats() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 690,
+    "kind": "function_definition",
+    "name": "log_message",
+    "scope": "Handler",
+    "signature": "def log_message(self, *_args) -> None: # the page is the log",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 693,
+    "kind": "function_definition",
+    "name": "do_GET",
+    "scope": "Handler",
+    "signature": "def do_GET(self) -> None: # noqa: N802 - name fixed by BaseHTTPRequestHandler",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 712,
+    "kind": "function_definition",
+    "name": "do_POST",
+    "scope": "Handler",
+    "signature": "def do_POST(self) -> None: # noqa: N802 - name fixed by BaseHTTPRequestHandler",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 735,
+    "kind": "function_definition",
+    "name": "_authorised",
+    "scope": "Handler",
+    "signature": "def _authorised(self) -> bool:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 748,
+    "kind": "function_definition",
+    "name": "_serve_page",
+    "scope": "Handler",
+    "signature": "def _serve_page(self, page: str) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 756,
+    "kind": "function_definition",
+    "name": "_serve_json",
+    "scope": "Handler",
+    "signature": "def _serve_json(self, payload: dict, status: int = 200) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 764,
+    "kind": "function_definition",
+    "name": "_serve_events",
+    "scope": "Handler",
+    "signature": "def _serve_events(self) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 786,
+    "kind": "function_definition",
+    "name": "_send_sse",
+    "scope": "Handler",
+    "signature": "def _send_sse(self, payload: str) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/server.py",
+    "line": 791,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main() -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 34,
+    "kind": "function_definition",
+    "name": "_text_of",
+    "scope": "",
+    "signature": "def _text_of(content) -> str:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "_describe_tool",
+    "scope": "",
+    "signature": "def _describe_tool(name: str, args: dict) -> str:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 69,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Transcript",
+    "signature": "def __init__(self, path: Path) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 93,
+    "kind": "function_definition",
+    "name": "_seed",
+    "scope": "Transcript",
+    "signature": "def _seed(self, size: int) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 100,
+    "kind": "function_definition",
+    "name": "poll",
+    "scope": "Transcript",
+    "signature": "def poll(self) -> bool:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 136,
+    "kind": "function_definition",
+    "name": "_absorb",
+    "scope": "Transcript",
+    "signature": "def _absorb(self, row: dict) -> bool:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 204,
+    "kind": "function_definition",
+    "name": "state",
+    "scope": "Transcript",
+    "signature": "def state(self, now: float) -> dict:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 233,
+    "kind": "function_definition",
+    "name": "_mtime",
+    "scope": "Transcript",
+    "signature": "def _mtime(self) -> float:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 243,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "SessionBoard",
+    "signature": "def __init__(self, folder: Path) -> None:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/traffic_inspector/sessions.py",
+    "line": 247,
+    "kind": "function_definition",
+    "name": "poll",
+    "scope": "SessionBoard",
+    "signature": "def poll(self) -> list[dict]:",
+    "category": "third_party"
+  },
+  {
+    "path": "tools/windivert/probe/Program.cs",
+    "line": 120,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "frame =>",
+    "category": "third_party"
+  }
+]
