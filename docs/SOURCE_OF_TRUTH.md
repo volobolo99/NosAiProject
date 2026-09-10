@@ -15,6 +15,7 @@ This file defines which project documents are authoritative. When documents disa
 5. `docs/adr/*.md` — accepted architectural decisions; later accepted ADRs override earlier decisions where explicitly stated.
 6. `.claude/CLAUDE.md` — agent development rules: the mandatory 5-phase production protocol.
 7. `third_party/README.md`, `third_party/manifests/*`, `third_party/provenance/*` — external-source provenance and reuse rules.
+8. `docs/mcp/README.md`, `docs/mcp/DEVELOPMENT_CONTRACTS.md`, `contracts/mcp-hub-001.json` — MCP Hub behavior, contracts and boundaries.
 
 ## Root front-door documents
 
