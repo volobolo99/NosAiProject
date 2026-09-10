@@ -3,23 +3,24 @@
   "generated_at": "2026-09-10T00:00:00Z",
   "branch": "main",
   "repository": "volobolo99/NosAiProject",
-  "file_count": 1487,
+  "file_count": 1533,
   "top_level_counts": {
     ".claude": 1,
     ".cursor": 8,
     ".github": 5,
-    "contracts": 9,
+    "contracts": 10,
     "data": 12,
-    "docs": 211,
+    "docs": 254,
     "nosai": 103,
     "prompts": 3,
     "reports": 4,
     "schemas": 13,
-    "scripts": 22,
+    "scripts": 23,
     "src": 533,
     "tests": 448,
     "third_party": 46,
-    "tools": 44
+    "tools": 44,
+    "root_files": 24
   },
   "canonical_entrypoints": {
     "python_package": "nosai",
@@ -33,7 +34,9 @@
     "agent_coordination": "docs/AGENT_COORDINATION.md",
     "role_catalog": "docs/mcp/ROLE_CATALOG.md",
     "remaining_work": "docs/REMAINING_WORK.md",
-    "mcp_chief": "nosai/mcp/chief.py"
+    "mcp_chief": "nosai/mcp/chief.py",
+    "function_index": "docs/FUNCTION_INDEX.json",
+    "ai_programming_guide": "docs/AI_PROGRAMMING_GUIDE.md"
   },
   "intentional_archives": [
     "docs/agents/phases/ARCHIVE",
@@ -43,5 +46,6 @@
     "files_deleted": 0,
     "reason": "No file was proven unused without also being historical evidence, a referenced contract, or a build/runtime input.",
     "next_review": "2026-10-10"
-  }
+  },
+  "source_tree_revision": "4a45ee734dc948d700bb46018e5ad50f3334a345"
 }
