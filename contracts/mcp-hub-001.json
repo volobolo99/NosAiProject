@@ -1,0 +1,32 @@
+{
+  "contract_id": "mcp-hub-001",
+  "version": "1.0.0",
+  "status": "DRAFT",
+  "purpose": "Governed MCP Hub for NosAi local-first assistance and online-to-offline learning",
+  "invariants": [
+    "network_enabled defaults to false",
+    "only explicit operator confirmation may enable network mode",
+    "no tool may expose privileged game/admin/database state",
+    "secret values are encrypted at rest and never returned by dashboard or model tools",
+    "MCP never has direct execution authority; local Guard/Safety remains final",
+    "simulation and learning persistence are side-effect free with respect to the game client"
+  ],
+  "tools": [
+    "mcp_status",
+    "mcp_activate_network",
+    "mcp_provider_catalog",
+    "mcp_choose_provider",
+    "mcp_run_simulation",
+    "mcp_learning_candidate",
+    "mcp_validate_learning"
+  ],
+  "resources": ["nosai://mcp/policy"],
+  "acceptance_tests": [
+    "offline default is observable",
+    "non-operator activation is rejected",
+    "privileged and secret-export risks are denied",
+    "deterministic simulation returns identical output for identical request",
+    "candidate without observed evidence cannot become offline skill"
+  ]
+}
+
