@@ -29,7 +29,8 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 - `nosai/mcp/audit.py` — JSONL con redazione automatica.
 - `nosai/mcp/server.py` — tool/resource MCP.
 - `nosai/mcp/director.py` + `nosai/mcp/auditor.py` — proposta, veto e rollback esterno.
-- `nosai/mcp/roles.py` — ruoli MCP e verifica di copertura.
+- `nosai/mcp/roles.py` — ruoli MCP, catalogo dipendenti e verifica di copertura (`DEFAULT_EMPLOYEE_ROLES`).
+- `docs/mcp/ROLE_CATALOG.md` + `schemas/mcp_employee_role.schema.json` — identità, specializzazioni, modelli primari/fallback e divieti.
 - `nosai/mcp/dashboard.py` — API e pannello locale dedicato.
 
 ## Flusso online→offline
