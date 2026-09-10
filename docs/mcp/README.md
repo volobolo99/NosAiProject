@@ -1,6 +1,6 @@
 # NosAi MCP Hub
 
-Versione del contratto: `mcp-hub-001@1.0.0`  
+Versione del contratto: `mcp-hub-001@1.1.0`  
 Entry point: `scripts/mcp_hub_server.py`  
 Pannello dedicato: `scripts/mcp_dashboard_server.py`
 
@@ -80,3 +80,12 @@ python scripts/mcp_dashboard_server.py
 
 Il pannello ascolta su `127.0.0.1:8770`. L’MCP usa stdio tramite `.mcp.json`.
 
+
+## Evoluzione approvata: Chief e Research Lab
+
+Specifiche: [RESEARCH_LAB_SPEC.md](RESEARCH_LAB_SPEC.md).
+Contratto e sequenza per gli agenti: [mcp-research-lab-001](../../contracts/mcp-research-lab-001.json).
+Stato: progettazione importata, implementazione estesa PLANNED.
+I controlli attuali del catalogo non certificano disponibilità reale o supervisione continua.
+I booleani di promozione forniti dal chiamante non costituiscono audit indipendente:
+LAB-01 deve chiudere questa lacuna prima di abilitare rilasci autonomi.
