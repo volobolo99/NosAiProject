@@ -23,7 +23,6 @@ def _record(authority, *, kind="tests", executor="worker.tests", observed_at=Non
 def test_signed_evidence_round_trip_and_tamper_detection(tmp_path):
     authority = EvidenceAuthority(tmp_path / "evidence")
     record = _record(authority)
-
     assert authority.verify(record)[0] is True
     tampered = dict(record)
     tampered["result"] = {"status": "fail"}
@@ -46,7 +45,6 @@ def test_stale_evidence_is_rejected(tmp_path):
         observed_at=old,
         ttl_s=60,
     )
-
     assert authority.verify(record)[0] is False
     assert authority.verify(record)[1] == "stale evidence"
 
@@ -63,4 +61,14 @@ def test_candidate_digest_mismatch_is_rejected(tmp_path):
 def test_secret_like_result_fields_are_rejected(tmp_path):
     authority = EvidenceAuthority(tmp_path / "evidence")
     with pytest.raises(ValueError, match="secret-like"):
-        _record(authority)["result"] = {"token": "never"}
+        authority.record(
+            "sha256:" + "a" * 64,
+            "test-v1",
+            "sha256:" + "b" * 64,
+            "worker.tests",
+            "sha256:" + "c" * 64,
+            "sha256:" + "d" * 64,
+            {"status": "pass", "token": "never"},
+            "signer.tests",
+            evidence_kind="tests",
+        )
