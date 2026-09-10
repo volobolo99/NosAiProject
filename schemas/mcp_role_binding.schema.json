@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_role_binding.schema.json",
+  "title": "NosAi MCP role binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["employee_id", "primary_model", "fallback_models", "version", "state"],
+  "properties": {
+    "employee_id": {"type": "string", "pattern": "^employee\\.[a-z0-9_]+$"},
+    "primary_model": {"type": "string", "minLength": 1},
+    "fallback_models": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "version": {"type": "integer", "minimum": 1},
+    "state": {"enum": ["active", "proposed", "rolled_back"]}
+  }
+}
