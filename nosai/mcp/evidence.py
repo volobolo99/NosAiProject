@@ -161,9 +161,18 @@ class EvidenceAuthority:
         encoded = json.dumps(value, ensure_ascii=False, sort_keys=True)
         if len(encoded) > 16_384:
             raise ValueError("evidence result is too large")
-        lowered = {str(key).lower() for key in value}
-        if lowered & _FORBIDDEN_KEYS:
-            raise ValueError("evidence result cannot contain secret-like fields")
+        def visit(node: Any) -> None:
+            if isinstance(node, Mapping):
+                lowered = {str(key).lower() for key in node}
+                if lowered & _FORBIDDEN_KEYS:
+                    raise ValueError("evidence result cannot contain secret-like fields")
+                for child in node.values():
+                    visit(child)
+            elif isinstance(node, (list, tuple)):
+                for child in node:
+                    visit(child)
+
+        visit(value)
         json.loads(encoded)
         return json.loads(encoded)
 
@@ -210,3 +219,4 @@ class EvidenceAuthority:
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=timezone.utc)
         return parsed.astimezone(timezone.utc)
+
