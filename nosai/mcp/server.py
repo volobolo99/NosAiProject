@@ -8,6 +8,9 @@ from .audit import AuditLog
 from .config import load_config
 from .contracts import ActivationRequest, SimulationRequest, ToolRisk
 from .learning import LearningFactory
+from .auditor import McpAuditor
+from .director import McpDirector
+from .roles import RoleArchitect
 from .policy import McpPolicy
 from .router import ModelRouter
 from .simulation import run_simulation
@@ -29,6 +32,8 @@ def create_server(config_path: Path | str | None = None):
     router = ModelRouter.from_config(config, policy)
     audit = AuditLog(config["audit_path"])
     learning = LearningFactory(config["learning_path"])
+    director = McpDirector("data/mcp/proposals")
+    auditor = McpAuditor()
     server = FastMCP("nosai-mcp-hub")
 
     @server.tool()
@@ -69,6 +74,25 @@ def create_server(config_path: Path | str | None = None):
         result = learning.validate_candidate(candidate_id)
         return json.dumps({"candidate_id": result.candidate_id, "status": result.status.value, "reason": result.reason}, ensure_ascii=False)
 
+    @server.tool()
+    def mcp_propose_change(component: str, summary: str, files_json: str) -> str:
+        proposal = director.propose(component, summary, json.loads(files_json))
+        audit.append("change_proposed", {"proposal_id": proposal.proposal_id, "component": component, "files": list(proposal.files)})
+        return json.dumps({"proposal_id": proposal.proposal_id, "status": proposal.status, "files": list(proposal.files)}, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_audit_change(proposal_json: str, checks_json: str) -> str:
+        from .director import ChangeProposal
+        proposal = ChangeProposal(**json.loads(proposal_json))
+        verdict = auditor.review(proposal, json.loads(checks_json))
+        audit.append("change_audited", {"proposal_id": verdict.proposal_id, "approved": verdict.approved, "rollback_required": verdict.rollback_required})
+        return json.dumps({"proposal_id": verdict.proposal_id, "approved": verdict.approved, "reason": verdict.reason, "rollback_required": verdict.rollback_required}, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_verify_roles() -> str:
+        errors = RoleArchitect().verify()
+        return json.dumps({"valid": not errors, "errors": errors}, ensure_ascii=False)
+
     @server.resource("nosai://mcp/policy")
     def mcp_policy_resource() -> str:
         return json.dumps({"network_default": False, "privileged_tools": "denied", "secret_export": "denied", "execution_authority": "local-safety-gate"}, ensure_ascii=False)
@@ -78,5 +102,4 @@ def create_server(config_path: Path | str | None = None):
 
 def run(config_path: Path | str | None = None) -> None:
     create_server(config_path).run(transport="stdio")
-
 
