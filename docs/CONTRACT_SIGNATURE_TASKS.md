@@ -9,9 +9,9 @@ scelto arbitrariamente.
 | CID | Firma canonica | Sorgente | Prova da eseguire |
 |---|---|---|---|
 | C-103 | `GameTrafficCaptureEngine(IPacketSource, Func<StreamDirection, IGameStreamFramer>? = null); Run(CancellationToken = default, TimeSpan? = null); Pump(CapturedPacket); Snapshot()` | `src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs` | `tests/NosAi.Runtime.Tests/CaptureEngineTests.cs` |
-| C-104 | `bool WireHeader.TryRead(ReadOnlySpan<byte>, out WireHeader, out string?)` | `src/NosAi.Protocol/WireProtocol.cs` | `tests/NosAi.Runtime.Tests/HeartbeatPayloadTests.cs`, `DiscoveryTests.cs` |
+| C-104 | `bool WireHeader.TryRead(ReadOnlySpan<byte>, out WireHeader, out string?)` | `src/NosAi.Protocol/WireProtocol.cs` | `tests/NosAi.Runtime.Tests/HeartbeatPayloadTests.cs`, `tests/NosAi.Runtime.Tests/DiscoveryTests.cs` |
 | C-106 | `long CaptureFile.Record(IPacketSource, string, CancellationToken = default, TimeSpan? = null); CaptureFileSource Open(string)` | `src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs` | `tests/NosAi.Runtime.Tests/DecideReplayAsOfCaptureTests.cs` |
-| C-203 | `WorldModelSnapshot RunOnce(Gate1CanonicalSnapshot, DateTime)` | `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs` | `tests/NosAi.Runtime.Tests/` |
+| C-203 | `WorldModelSnapshot RunOnce(Gate1CanonicalSnapshot, DateTime)` | `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs` | `tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs` |
 | C-401 | `SessionCipher.ForRuntime(ReadOnlySpan<byte>); ForPhone(ReadOnlySpan<byte>); SealFrameInto(Span<byte>, WireMessageType, uint, ReadOnlySpan<byte>); TryOpenFrame(ReadOnlySpan<byte>, ReadOnlySpan<byte>, out byte[], out string?)` | `src/NosAi.Protocol/SessionCipher.cs` | `tests/NosAi.Runtime.Tests/SessionCipherTests.cs`, `tests/test_session_cipher.py` |
 
 Queste firme sono state estratte dal sorgente canonico e dai consumatori presenti.
@@ -39,10 +39,9 @@ C-404 è una procedura di rilascio con firma n/a, non una funzione mancante.
 
 ## Criterio di chiusura
 
-Una voce passa a `RESOLVED` solo quando la firma è confrontata con sorgente e
-consumatori, il contratto è versionato, i test sono eseguiti e la prova è registrata.
-Una voce passa a `VERIFIED` solo con evidenza dell'ambiente richiesto; nessuna
-promozione automatica da `MERGED` a `VERIFIED`.
+Una voce passa a `RESOLVED` quando la firma è confrontata con sorgente e consumatori
+e il contratto è versionato. L'esecuzione dei test e la prova firmata restano prerequisiti
+separati per passare a `VERIFIED`; nessuna promozione automatica da `MERGED` a `VERIFIED`.
 
 Usare `docs/FUNCTION_INDEX.md` per localizzare candidati e
 `docs/CONTRACT_MAP.md` per lo stato sintetico.
