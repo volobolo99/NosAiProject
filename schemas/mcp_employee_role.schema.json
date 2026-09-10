@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_employee_role.schema.json",
+  "title": "NosAi MCP employee role",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "employee_id",
+    "display_name",
+    "purpose",
+    "responsibilities",
+    "primary_model",
+    "fallback_models",
+    "capabilities",
+    "forbidden",
+    "approval_required"
+  ],
+  "properties": {
+    "employee_id": {"type": "string", "pattern": "^employee\\.[a-z0-9_]+$"},
+    "display_name": {"type": "string", "minLength": 1},
+    "purpose": {"type": "string", "minLength": 1},
+    "responsibilities": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "primary_model": {"type": "string", "minLength": 1},
+    "fallback_models": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "capabilities": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "forbidden": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "approval_required": {"type": "boolean"}
+  }
+}
