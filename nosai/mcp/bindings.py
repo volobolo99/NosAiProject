@@ -12,6 +12,7 @@ from typing import Iterable
 
 from .evidence import EvidenceAuthority
 from .roles import DEFAULT_EMPLOYEE_ROLES, EmployeeRole
+from .state import McpStateStore
 
 
 def binding_candidate_digest(primary_model: str, fallback_models: Iterable[str]) -> str:
@@ -37,7 +38,7 @@ class RoleBinding:
 
 
 class RoleBindingRegistry:
-    """Persistent binding registry with signed-evidence promotion and rollback."""
+    """SQLite-backed binding registry with signed-evidence promotion and rollback."""
 
     REQUIRED_EVIDENCE = ("tests", "shadow", "audit")
 
@@ -46,83 +47,33 @@ class RoleBindingRegistry:
         path: Path | str,
         employees: Iterable[EmployeeRole] = DEFAULT_EMPLOYEE_ROLES,
         evidence_authority: EvidenceAuthority | None = None,
+        state_store: McpStateStore | None = None,
     ):
         self.path = Path(path)
         self._lock = threading.RLock()
         self._employees = {employee.employee_id: employee for employee in employees}
         self.evidence = evidence_authority or EvidenceAuthority(self.path.parent / "evidence")
-        self._bindings: dict[str, RoleBinding] = {}
-        self._proposals: dict[str, dict] = {}
-        self._load()
-
-    def _load(self) -> None:
-        with self._lock:
-            if self.path.is_file():
-                payload = json.loads(self.path.read_text(encoding="utf-8"))
-                if not isinstance(payload, dict):
-                    raise ValueError("role binding store must be a JSON object")
-                for employee_id, raw in payload.get("bindings", {}).items():
-                    if employee_id in self._employees:
-                        primary = str(raw["primary_model"])
-                        fallbacks = tuple(str(model) for model in raw.get("fallback_models", ()))
-                        self._bindings[employee_id] = RoleBinding(
-                            employee_id=employee_id,
-                            primary_model=primary,
-                            fallback_models=fallbacks,
-                            state="active",
-                            version=int(raw.get("version", 1)),
-                            proposal_id=raw.get("proposal_id"),
-                            updated_at=str(raw.get("updated_at", "")),
-                            candidate_digest=str(raw.get("candidate_digest", binding_candidate_digest(primary, fallbacks))),
-                            author_id=str(raw.get("author_id", "")),
-                        )
-                loaded_proposals = payload.get("proposals", {})
-                if not isinstance(loaded_proposals, dict):
-                    raise ValueError("role binding proposals must be a JSON object")
-                self._proposals = {str(key): dict(value) for key, value in loaded_proposals.items()}
-            for employee in self._employees.values():
-                self._bindings.setdefault(
-                    employee.employee_id,
-                    RoleBinding(
-                        employee_id=employee.employee_id,
-                        primary_model=employee.primary_model,
-                        fallback_models=employee.fallback_models,
-                        updated_at="default",
-                        candidate_digest=binding_candidate_digest(employee.primary_model, employee.fallback_models),
-                        author_id="default",
-                    ),
-                )
-
-    def _persist(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {
-            "schema_version": "mcp.role_bindings.v2",
-            "bindings": {key: asdict(value) for key, value in self._bindings.items()},
-            "proposals": self._proposals,
-        }
-        temporary = self.path.with_name(self.path.name + ".tmp")
-        temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
-        os.replace(temporary, self.path)
+        state_path = self.path.with_suffix(".sqlite3")
+        self.state = state_store or McpStateStore(state_path)
+        self.state.migrate_json(self.path)
+        self.state.ensure_default_bindings(self._employees.values())
 
     def get(self, employee_id: str) -> dict:
         with self._lock:
             self._require_employee(employee_id)
-            return asdict(self._bindings[employee_id])
+            return self.state.get_binding(employee_id)
 
     def list(self) -> list[dict]:
         with self._lock:
-            return [asdict(self._bindings[key]) for key in sorted(self._bindings)]
+            return self.state.list_bindings()
 
     def proposals(self) -> list[dict]:
         with self._lock:
-            return [dict(self._proposals[key]) for key in sorted(self._proposals)]
+            return self.state.list_proposals()
 
     def get_proposal(self, proposal_id: str) -> dict:
         with self._lock:
-            proposal = self._proposals.get(str(proposal_id))
-            if proposal is None:
-                raise KeyError("unknown binding proposal")
-            return dict(proposal)
+            return self.state.get_proposal(proposal_id)
 
     def propose(
         self,
@@ -142,9 +93,8 @@ class RoleBindingRegistry:
                 raise ValueError("primary_model must not appear in fallback_models")
             if not str(author_id).strip():
                 raise ValueError("author_id is required")
-            proposal_id = uuid.uuid4().hex
             proposal = {
-                "proposal_id": proposal_id,
+                "proposal_id": uuid.uuid4().hex,
                 "employee_id": employee_id,
                 "primary_model": primary,
                 "fallback_models": list(fallbacks),
@@ -153,9 +103,9 @@ class RoleBindingRegistry:
                 "state": "shadow",
                 "created_at": self._now(),
             }
-            self._proposals[proposal_id] = proposal
-            self._persist()
-            return dict(proposal)
+            staged = self.state.stage_binding(proposal, expected_revision=self.state.snapshot()["revision"])
+            self._sync_legacy_json()
+            return {key: value for key, value in staged.items() if key != "revision"}
 
     def promote(self, proposal_id: str, evidence_ids: dict[str, str], confirmation: str) -> dict:
         with self._lock:
@@ -163,9 +113,7 @@ class RoleBindingRegistry:
                 raise PermissionError("binding promotion requires explicit operator confirmation")
             if not isinstance(evidence_ids, dict):
                 raise TypeError("promotion requires evidence_ids mapping")
-            proposal = self._proposals.get(str(proposal_id))
-            if proposal is None:
-                raise KeyError("unknown binding proposal")
+            proposal = self.state.get_proposal(str(proposal_id))
             missing = [kind for kind in self.REQUIRED_EVIDENCE if not str(evidence_ids.get(kind, "")).strip()]
             if missing:
                 raise ValueError("promotion evidence missing: " + ", ".join(missing))
@@ -186,53 +134,45 @@ class RoleBindingRegistry:
                 if executor in executors:
                     raise ValueError("promotion evidence executors must be independent")
                 executors.add(executor)
-            employee_id = str(proposal["employee_id"])
-            previous = self._bindings[employee_id]
-            active = RoleBinding(
-                employee_id=employee_id,
-                primary_model=str(proposal["primary_model"]),
-                fallback_models=tuple(proposal["fallback_models"]),
-                state="active",
-                version=previous.version + 1,
-                proposal_id=str(proposal_id),
-                updated_at=self._now(),
-                candidate_digest=str(proposal["candidate_digest"]),
-                author_id=str(proposal.get("author_id", "")),
+            fingerprint = hashlib.sha256(
+                json.dumps(evidence_ids, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            result = self.state.promote_binding(
+                str(proposal_id),
+                evidence_ids,
+                expected_revision=self.state.snapshot()["revision"],
+                idempotency_key=f"promote:{proposal_id}:{fingerprint}",
             )
-            self._bindings[employee_id] = active
-            proposal["state"] = "promoted"
-            proposal["promoted_at"] = active.updated_at
-            proposal["previous"] = asdict(previous)
-            proposal["evidence_ids"] = dict(evidence_ids)
-            self._persist()
-            return asdict(active)
+            self._sync_legacy_json()
+            return result
 
     def rollback(self, employee_id: str, confirmation: str) -> dict:
         with self._lock:
             if confirmation != "operator":
                 raise PermissionError("binding rollback requires explicit operator confirmation")
             self._require_employee(employee_id)
-            current = self._bindings[employee_id]
-            proposal_id = current.proposal_id
-            proposal = self._proposals.get(proposal_id or "")
-            previous = proposal.get("previous") if proposal else None
-            if not previous:
-                raise ValueError("no previous binding is available for rollback")
-            restored = RoleBinding(
-                employee_id=employee_id,
-                primary_model=previous["primary_model"],
-                fallback_models=tuple(previous.get("fallback_models", ())),
-                state="active",
-                version=current.version + 1,
-                updated_at=self._now(),
-                candidate_digest=str(previous.get("candidate_digest", binding_candidate_digest(previous["primary_model"], previous.get("fallback_models", ())))),
-                author_id=str(previous.get("author_id", "")),
+            current = self.state.get_binding(employee_id)
+            result = self.state.rollback_binding(
+                employee_id,
+                expected_revision=self.state.snapshot()["revision"],
+                idempotency_key=f"rollback:{employee_id}:{current['version']}",
             )
-            self._bindings[employee_id] = restored
-            proposal["state"] = "rolled_back"
-            proposal["rolled_back_at"] = restored.updated_at
-            self._persist()
-            return asdict(restored)
+            self._sync_legacy_json()
+            return result
+
+    def _sync_legacy_json(self) -> None:
+        """Keep the old JSON path as an export, never as the concurrency authority."""
+        snapshot = self.state.snapshot()
+        payload = {
+            "schema_version": "mcp.role_bindings.v2",
+            "state_revision": snapshot["revision"],
+            "bindings": {item["employee_id"]: item for item in snapshot["bindings"]},
+            "proposals": {item["proposal_id"]: item for item in snapshot["proposals"]},
+        }
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_name(self.path.name + ".tmp")
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+        os.replace(temporary, self.path)
 
     def _require_employee(self, employee_id: str) -> None:
         if employee_id not in self._employees:
