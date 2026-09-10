@@ -5,75 +5,108 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NosAi MCP Control Panel</title>
   <style>
-    body{font-family:system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;background:#10131a;color:#eef2ff}
+    :root{color-scheme:dark} body{font-family:system-ui,sans-serif;max-width:980px;margin:2rem auto;padding:0 1rem;background:#10131a;color:#eef2ff}
     section{background:#1a2030;border:1px solid #313b55;border-radius:12px;padding:1rem;margin:1rem 0}
-    button{padding:.6rem 1rem;border:0;border-radius:8px;background:#5b8cff;color:#fff;cursor:pointer}
-    button.off{background:#4b5563}.ok{color:#65e6a6}.warn{color:#ffd166}pre{white-space:pre-wrap}
+    button{padding:.55rem .9rem;border:0;border-radius:8px;background:#5b8cff;color:#fff;cursor:pointer;margin:.25rem}
+    button.off{background:#4b5563}.ok{color:#65e6a6}.warn{color:#ffd166}pre{white-space:pre-wrap;overflow:auto}
+    input{background:#0f1420;color:#eef2ff;border:1px solid #46516d;border-radius:6px;padding:.45rem;margin:.25rem}
+    .row{border-top:1px solid #313b55;padding:.7rem 0}.muted{color:#aab4ca;font-size:.9rem}
   </style>
 </head>
 <body>
   <h1>NosAi MCP</h1>
-  <p>Controllo locale del gateway MCP. La rete è disattivata all'avvio.</p>
-  <section><h2>Stato</h2><p id="status">Caricamento…</p><button id="toggle">Attiva MCP Rete</button></section>
-  <section><h2>MCP Chief</h2><p>Supervisione continua e read-only dello stato dell’Hub. Le raccomandazioni non modificano nulla senza il ciclo di audit e conferma.</p><pre id="chief-health">Caricamento…</pre></section>
+  <p>Controllo locale del gateway MCP. La rete è disattivata all'avvio; il pulsante abilita solo provider configurati e osservati.</p>
+  <section><h2>Stato e attivazione</h2><p id="status">Caricamento…</p><p id="activation-summary" class="muted"></p><button id="toggle">Attiva MCP Rete</button></section>
+  <section><h2>MCP Chief</h2><p class="muted">Supervisione read-only, raccomandazioni e confini di autorità. Le osservazioni scadute diventano UNKNOWN.</p><pre id="chief-health">Caricamento…</pre></section>
   <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
   <section><h2>Dipendenti e binding dinamici</h2>
-    <p>Una proposta entra prima in shadow. La promozione richiede tre evidenze firmate, fresche e indipendenti già registrate; il pannello non può inventare questi risultati.</p>
+    <p class="muted">Una proposta entra in shadow. La promozione richiede tre evidenze firmate, fresche e indipendenti; il pannello non può inventare risultati.</p>
     <div id="roles"></div><pre id="role-proposals"></pre>
   </section>
   <section><h2>Evidenze di promozione</h2>
-    <p>Vengono mostrati solo digest, stato, esecutore e scadenza. Chiavi API, token e credenziali non entrano mai nel pannello.</p>
+    <p class="muted">Sono mostrati solo digest, stato, esecutore e scadenza. Nessuna chiave, token o credenziale viene mostrata.</p>
     <pre id="evidence"></pre>
   </section>
-  <section><h2>Chiavi API</h2><p>Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p><pre id="secrets"></pre></section>
+  <section><h2>Chiavi API</h2>
+    <p class="muted">Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p>
+    <label>Provider <input id="secret-provider" autocomplete="off" placeholder="groq-free"></label>
+    <label>Chiave <input id="secret-value" type="password" autocomplete="new-password" spellcheck="false"></label>
+    <button id="save-secret">Salva/aggiorna</button>
+    <span id="secret-message" class="warn"></span>
+    <pre id="secrets"></pre>
+  </section>
   <section><h2>Simulazione deterministica</h2><button id="simulate">Esegui scenario di prova</button><pre id="simulation"></pre></section>
   <script>
-    async function json(url, options){return (await fetch(url,options)).json()}
+    async function json(url, options){const response=await fetch(url,options); return response.json();}
+    function el(tag, text){const node=document.createElement(tag); if(text!==undefined) node.textContent=text; return node;}
+    async function refreshSecrets(){
+      const box=document.querySelector('#secrets'); box.textContent='';
+      const data=await json('/api/mcp/secrets');
+      if(data.error){box.textContent=data.error; return;}
+      const items=data.secrets||[];
+      if(!items.length){box.textContent='Nessuna chiave configurata.'; return;}
+      for(const item of items){
+        const row=el('div',item.provider_id+' · fingerprint '+(item.fingerprint||'n/a')+' · aggiornato '+(item.updated_at||'n/a')+' ');
+        const button=el('button','Elimina'); button.className='off'; button.onclick=()=>deleteSecret(item.provider_id);
+        row.appendChild(button); box.appendChild(row);
+      }
+    }
+    async function deleteSecret(providerId){
+      if(!confirm('Eliminare la chiave cifrata di '+providerId+'?')) return;
+      const result=await json('/api/mcp/secrets?provider_id='+encodeURIComponent(providerId),{method:'DELETE'});
+      document.querySelector('#secret-message').textContent=result.deleted?'Chiave eliminata.':'Provider non presente.';
+      refreshSecrets();
+    }
+    document.querySelector('#save-secret').onclick=async()=>{
+      const provider=document.querySelector('#secret-provider').value.trim();
+      const value=document.querySelector('#secret-value').value;
+      if(!provider||!value){document.querySelector('#secret-message').textContent='Provider e chiave sono obbligatori.';return;}
+      const result=await json('/api/mcp/secrets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider_id:provider,value})});
+      document.querySelector('#secret-value').value='';
+      document.querySelector('#secret-message').textContent=result.error||'Chiave cifrata e aggiornata; il valore non viene conservato nel pannello.';
+      refreshSecrets();
+    };
     async function refreshRoles(){
-      const data=await json('/api/mcp/roles');
-      const bindings=(await json('/api/mcp/role-bindings')).bindings||[];
-      const proposals=(await json('/api/mcp/role-proposals')).proposals||[];
-      const byId=Object.fromEntries(bindings.map(x=>[x.employee_id,x]));
-      document.querySelector('#roles').innerHTML=(data.roles||[]).map(role=>{
-        const b=byId[role.employee_id]||role;
-        return `<div class="role" style="border-top:1px solid #313b55;padding:.7rem 0">
-          <b>${role.display_name}</b> — ${role.purpose}<br>
-          <small>${role.employee_id} · capacità: ${role.capabilities.join(', ')}</small><br>
-          <label>Primario <input data-primary="${role.employee_id}" value="${b.primary_model}"></label>
-          <label>Fallback <input data-fallback="${role.employee_id}" value="${(b.fallback_models||[]).join(',')}"></label>
-          <button onclick="proposeRole('${role.employee_id}')">Proponi binding</button>
-          <button class="off" onclick="rollbackRole('${role.employee_id}')">Rollback</button>
-        </div>`;
-      }).join('');
+      const data=await json('/api/mcp/roles'); const bindings=(await json('/api/mcp/role-bindings')).bindings||[];
+      const proposals=(await json('/api/mcp/role-proposals')).proposals||[]; const byId=Object.fromEntries(bindings.map(x=>[x.employee_id,x]));
+      const container=document.querySelector('#roles'); container.textContent='';
+      for(const role of (data.roles||[])){
+        const binding=byId[role.employee_id]||role; const row=el('div'); row.className='row';
+        row.appendChild(el('b',role.display_name+' — '+role.purpose)); row.appendChild(document.createElement('br'));
+        row.appendChild(el('small',role.employee_id+' · capacità: '+(role.capabilities||[]).join(', '))); row.appendChild(document.createElement('br'));
+        const primary=document.createElement('input'); primary.value=binding.primary_model; primary.dataset.primary=role.employee_id; primary.setAttribute('aria-label','Modello primario');
+        const fallback=document.createElement('input'); fallback.value=(binding.fallback_models||[]).join(','); fallback.dataset.fallback=role.employee_id; fallback.setAttribute('aria-label','Modelli fallback');
+        row.appendChild(el('span',' Primario ')); row.appendChild(primary); row.appendChild(el('span',' Fallback ')); row.appendChild(fallback);
+        const propose=el('button','Proponi binding'); propose.onclick=()=>proposeRole(role.employee_id); row.appendChild(propose);
+        const rollback=el('button','Rollback'); rollback.className='off'; rollback.onclick=()=>rollbackRole(role.employee_id); row.appendChild(rollback);
+        container.appendChild(row);
+      }
       document.querySelector('#role-proposals').textContent=JSON.stringify(proposals,null,2);
     }
     async function proposeRole(employeeId){
-      const primary=document.querySelector(`[data-primary="${employeeId}"]`).value;
-      const fallback=document.querySelector(`[data-fallback="${employeeId}"]`).value.split(',').map(x=>x.trim()).filter(Boolean);
-      const r=await json('/api/mcp/role-bindings/propose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,primary_model:primary,fallback_models:fallback})});
-      document.querySelector('#role-proposals').textContent=JSON.stringify(r,null,2); refreshRoles();
+      const primary=document.querySelector('[data-primary="'+employeeId+'"]').value;
+      const fallback=document.querySelector('[data-fallback="'+employeeId+'"]').value.split(',').map(x=>x.trim()).filter(Boolean);
+      const result=await json('/api/mcp/role-bindings/propose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,primary_model:primary,fallback_models:fallback,author_id:'operator'})});
+      document.querySelector('#role-proposals').textContent=JSON.stringify(result,null,2); refreshRoles();
     }
     async function rollbackRole(employeeId){
-      const confirmation=prompt('Scrivi operator per confermare il rollback:','');
-      if(confirmation!=='operator') return;
-      const r=await json('/api/mcp/role-bindings/rollback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,confirmation})});
-      document.querySelector('#role-proposals').textContent=JSON.stringify(r,null,2); refreshRoles();
+      const confirmation=prompt('Scrivi operator per confermare il rollback:',''); if(confirmation!=='operator') return;
+      const result=await json('/api/mcp/role-bindings/rollback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({employee_id:employeeId,confirmation})});
+      document.querySelector('#role-proposals').textContent=JSON.stringify(result,null,2); refreshRoles();
     }
     async function refresh(){
-      const s=await json('/api/mcp/status');
-      document.querySelector('#status').innerHTML=`Modalità: <b>${s.mode}</b> — rete: <b>${s.network_enabled?'attiva':'disattiva'}</b>`;
-      document.querySelector('#toggle').textContent=s.network_enabled?'Disattiva MCP Rete':'Attiva MCP Rete';
-      document.querySelector('#toggle').className=s.network_enabled?'off':'';
-      document.querySelector('#providers').textContent=JSON.stringify(s.providers,null,2);
+      const status=await json('/api/mcp/status');
+      document.querySelector('#status').innerHTML='Modalità: <b>'+status.mode+'</b> — rete: <b>'+ (status.network_enabled?'attiva':'disattiva')+'</b>';
+      document.querySelector('#activation-summary').textContent=status.network_enabled?'Provider online autorizzati dal router; le decisioni urgenti restano locali.':'Offline: simulazione, memoria e fallback locale; nessuna chiamata di rete.';
+      document.querySelector('#toggle').textContent=status.network_enabled?'Disattiva MCP Rete':'Attiva MCP Rete'; document.querySelector('#toggle').className=status.network_enabled?'off':'';
+      document.querySelector('#providers').textContent=JSON.stringify(status.providers,null,2);
       const chief=await json('/api/mcp/chief'); document.querySelector('#chief-health').textContent=JSON.stringify(chief,null,2);
-      const k=await json('/api/mcp/secrets'); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
       const evidence=await json('/api/mcp/evidence'); document.querySelector('#evidence').textContent=JSON.stringify(evidence,null,2);
-      await refreshRoles();
+      await refreshSecrets(); await refreshRoles();
     }
-    document.querySelector('#toggle').onclick=async()=>{const s=await json('/api/mcp/status'); await json('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
-    document.querySelector('#simulate').onclick=async()=>{const r=await json('/api/mcp/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario_id:'combat/basic',seed:1,horizon_ticks:20,actions:[{kind:'observe'}]})}); document.querySelector('#simulation').textContent=JSON.stringify(r,null,2)};
+    document.querySelector('#toggle').onclick=async()=>{const status=await json('/api/mcp/status'); await json('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!status.network_enabled,confirmation:'operator'})}); refresh();};
+    document.querySelector('#simulate').onclick=async()=>{const result=await json('/api/mcp/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario_id:'combat/basic',seed:1,horizon_ticks:20,actions:[{kind:'observe'}]})});document.querySelector('#simulation').textContent=JSON.stringify(result,null,2);};
     refresh();
   </script>
 </body>
 </html>
-
