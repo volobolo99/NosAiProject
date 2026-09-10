@@ -27,6 +27,9 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 - `nosai/mcp/learning.py` — candidate → validate → offline skill.
 - `nosai/mcp/secrets.py` — cifratura locale Fernet; nessun ritorno plaintext.
 - `nosai/mcp/audit.py` — JSONL con redazione automatica.
+- `nosai/mcp/state.py` — SQLite condiviso per revisioni, idempotenza, lease e osservazioni.
+- `nosai/mcp/evidence.py` — record firmati, con digest e TTL, per le promozioni.
+- `nosai/mcp/health.py` — supervisore di stato con `UNKNOWN` dopo la scadenza.
 - `nosai/mcp/server.py` — tool/resource MCP.
 - `nosai/mcp/director.py` + `nosai/mcp/auditor.py` — proposta, veto e rollback esterno.
 - `nosai/mcp/roles.py` — ruoli MCP, catalogo dipendenti e verifica di copertura (`DEFAULT_EMPLOYEE_ROLES`).
@@ -46,9 +49,9 @@ Il pannello espone il catalogo e il ciclo controllato:
 - `POST /api/mcp/role-bindings/promote` — promuove solo con conferma dell’operatore e `evidence_ids.tests`, `evidence_ids.shadow`, `evidence_ids.audit` indipendenti e verificabili;
 - `POST /api/mcp/role-bindings/rollback` — ripristina il binding precedente.
 
-Le scritture sono atomiche su `data/mcp/role_bindings.json`; la promozione verifica prima i record firmati nello store evidence. Il router usa il binding promosso quando l’inferenza specifica `role_id`; se nessun modello qualificato del binding è disponibile, fallisce in modo esplicito invece di scegliere silenziosamente un modello diverso.
+Lo stato canonico è `data/mcp/state.sqlite3`, con WAL, revisioni monotone, lease e idempotenza; `data/mcp/role_bindings.json` resta un export compatibile e viene salvato in backup durante la migrazione. La promozione verifica prima i record firmati nello store evidence. Il router usa il binding promosso quando l’inferenza specifica `role_id`; se nessun modello qualificato del binding è disponibile, fallisce in modo esplicito invece di scegliere silenziosamente un modello diverso.
 
-Il **MCP Chief** è il supervisore permanente dell’Hub. `mcp_chief_health` e `GET /api/mcp/chief` eseguono un controllo read-only su catalogo ruoli, registro binding, archivio proposte e confini di policy; `mcp_chief_recommendations` restituisce le azioni suggerite. Il Chief può proporre configurazioni e governare promozione/rollback, ma non può eseguire azioni di gioco, modificare i guardrail, sostituire l’Auditor o esportare segreti. La promozione è valida solo con test indipendenti, shadow mode, audit approvato e conferma esplicita dell’operatore.
+Il **MCP Chief** è il supervisore permanente dell’Hub. Il suo report distingue catalogo configurato da osservazioni reali del supervisore: `configured`, `reachable`, `authenticated`, `qualified`, `operational` e `UNKNOWN`. `mcp_chief_health` e `GET /api/mcp/chief` eseguono un controllo read-only su catalogo ruoli, registro binding, archivio proposte e confini di policy; `mcp_chief_recommendations` restituisce le azioni suggerite. Il Chief può proporre configurazioni e governare promozione/rollback, ma non può eseguire azioni di gioco, modificare i guardrail, sostituire l’Auditor o esportare segreti. La promozione è valida solo con test indipendenti, shadow mode, audit approvato e conferma esplicita dell’operatore.
 
 ## Flusso online→offline
 
