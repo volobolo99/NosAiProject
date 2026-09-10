@@ -16,6 +16,7 @@
     "mcp_activate_network",
     "mcp_provider_catalog",
     "mcp_choose_provider",
+    "mcp_infer",
     "mcp_run_simulation",
     "mcp_learning_candidate",
     "mcp_validate_learning",
