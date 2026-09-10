@@ -64,14 +64,16 @@ L’elenco di classi e firme pubbliche è mantenuto in `docs/INDICE_REPO.md`; pr
 
 - `nosai/mcp/contracts.py`: request/response versionate.
 - `policy.py`: rete esplicita, rifiuto privilegi e secret-export.
-- `router.py`: selezione per capability, costo, latenza, disponibilità e binding promosso per ruolo.\n- `chief.py`: watchdog MCP read-only, raccomandazioni, proposta e governance dei binding; non possiede autorità di esecuzione o override.\n- `bindings.py`: registro persistente e atomico dei binding, con shadow mode, qualificazione, promozione e rollback.
+- `router.py`: selezione per capability, costo, latenza, disponibilità e binding promosso per ruolo.
+- `chief.py`: watchdog MCP read-only, raccomandazioni, proposta e governance dei binding; non possiede autorità di esecuzione o override.
+- `bindings.py`: registro persistente e atomico dei binding, con shadow mode, qualificazione, promozione e rollback.
 - `inference.py`: gateway locale/online; online solo con MCP Rete attivo.
 - `simulation.py`: calcolo puro e riproducibile.
 - `learning.py`: candidate → validate → skill offline con evidenza.
 - `secrets.py`: cifratura locale; nessun plaintext restituito.
 - `audit.py`: audit JSONL redatto.
 - `director.py`: propone modifiche al MCP in aree consentite.
-- `auditor.py`: verifica indipendente, veto, sospensione e rollback.
+- `auditor.py`: valutazione dei controlli forniti; indipendenza delle evidenze, sospensione e rollback automatico richiedono i gate LAB, non sono provati dal solo modulo.
 - `roles.py`: verifica copertura dei ruoli.
 - `server.py` e dashboard: espongono tools/resources senza autorità di esecuzione.
 
@@ -136,3 +138,9 @@ La presenza di file non equivale a funzionalità verificata. Un modulo è pronto
 5. l’errore è fail-closed e conserva `UNKNOWN`;
 6. il risultato è registrato nel ledger;
 7. l’evidenza d’ambiente reale è presente quando richiesta dalla roadmap.
+
+## Stato delle descrizioni MCP
+
+Le voci sopra descrivono responsabilità. Health su richiesta non è un supervisore
+persistente; flag di audit forniti dal chiamante non sono evidenze indipendenti.
+Vedere mcp/RESEARCH_LAB_SPEC.md e CONTRACT_SIGNATURE_TASKS.md prima di estendere.
