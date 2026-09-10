@@ -185,7 +185,7 @@ class RoleArchitect:
         ids = [employee.employee_id for employee in employees]
         if len(ids) != len(set(ids)):
             errors.append("duplicate employee_id")
-        required = {"employee.orchestrator_cto", "employee.security", "employee.reviewer"}
+        required = {"employee.orchestrator_cto", "employee.mcp_chief", "employee.security", "employee.reviewer"}
         missing = sorted(required.difference(ids))
         if missing:
             errors.append("missing mandatory employees: " + ", ".join(missing))
