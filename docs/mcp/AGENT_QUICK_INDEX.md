@@ -13,7 +13,8 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 | chiavi API | `nosai/mcp/secrets.py`, `nosai/mcp/dashboard.py` | nessun plaintext; test cifratura |
 | audit | `nosai/mcp/audit.py` | payload sempre redatto |
 | Direttore/Auditor | `nosai/mcp/director.py`, `nosai/mcp/auditor.py` | `tests/test_mcp_hub_governance.py` |
-| MCP Chief/watchdog | `nosai/mcp/chief.py`, `nosai/mcp/bindings.py`, `docs/mcp/CHIEF_RUNBOOK.md` | `tests/test_mcp_chief.py`, `mcp_chief_health`, `/api/mcp/chief` |\n| ruoli e dipendenti | `nosai/mcp/roles.py`, `docs/mcp/ROLE_CATALOG.md` | `RoleArchitect.verify()`, `verify_employee_catalog()` |
+| MCP Chief/watchdog | `nosai/mcp/chief.py`, `nosai/mcp/bindings.py`, `docs/mcp/CHIEF_RUNBOOK.md` | `tests/test_mcp_chief.py`, `mcp_chief_health`, `/api/mcp/chief` |
+| ruoli e dipendenti | `nosai/mcp/roles.py`, `docs/mcp/ROLE_CATALOG.md` | `RoleArchitect.verify()`, `verify_employee_catalog()` |
 | pannello | `nosai/mcp/static/index.html`, `scripts/mcp_dashboard_server.py` | API `/api/mcp/*`, ruoli `/api/mcp/roles` e verifica `/api/mcp/roles/verify` |
 
 ## Regole per i modelli programmatori
@@ -24,3 +25,10 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 4. Ogni modifica deve avere test negativo e test di determinismo quando applicabile.
 5. Aggiornare il contratto solo con una nuova versione e una nota di migrazione.
 
+
+## Ricerca ed evoluzione
+
+Leggere RESEARCH_LAB_SPEC.md e contracts/mcp-research-lab-001.json.
+Usare il singolo pacchetto LAB interessato: contiene dipendenze, file e prove richieste.
+LAB-01 evidenze; LAB-02 stato; LAB-03 supervisore; LAB-04 ruoli/worker;
+LAB-05 esperimenti; LAB-06 rilasci; LAB-07 pannello e certificazione.
