@@ -50,6 +50,8 @@ class SecretStore:
         return SecretMetadata(provider_id, True, now, fingerprint)
 
     def delete(self, provider_id: str) -> bool:
+        if not str(provider_id).strip():
+            raise ValueError("provider_id is required")
         data = self._load()
         existed = provider_id in data
         data.pop(provider_id, None)
