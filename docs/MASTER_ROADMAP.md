@@ -3,7 +3,7 @@
 Generata da `contracts/ledger.json`. Vocabolario dei tag: `docs/PROTOCOL_TOKENS.md`.
 Non si modifica a mano: la rigenera `update_contract_state` a ogni cambio di stato.
 
-**Completamento globale: 68%** — 17 contratti conclusi su 25.
+**Conteggio ledger al 2026-09-09: 18 contratti chiusi su 26.** Per stato dettagliato consultare `docs/CONTRACT_MAP.md`; questa pagina resta una vista generata.
 
 ### Gate 0: Ambiente, test harness e bridge nativo (50%)
 
