@@ -84,4 +84,16 @@ def test_secret_like_result_fields_are_rejected(tmp_path):
             "signer.tests",
             evidence_kind="tests",
         )
+    with pytest.raises(ValueError, match="secret-like"):
+        authority.record(
+            "sha256:" + "a" * 64,
+            "test-v1",
+            "sha256:" + "b" * 64,
+            "worker.tests",
+            "sha256:" + "c" * 64,
+            "sha256:" + "d" * 64,
+            {"status": "pass", "access_token": "never"},
+            "signer.tests",
+            evidence_kind="tests",
+        )
 
