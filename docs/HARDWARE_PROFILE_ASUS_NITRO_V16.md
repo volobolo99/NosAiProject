@@ -17,7 +17,7 @@ Known baseline:
 |---|---|
 | System RAM | 16 GB DDR5 |
 | GPU | NVIDIA GeForce RTX 5060 Laptop GPU, 8 GB class |
-| CPU | AMD Ryzen, exact SKU detected at runtime |
+| CPU | AMD Ryzen 7 260 (operator-confirmed; recheck at runtime) |
 | Project storage | Dedicated external SSD; capacity detected at runtime |
 | OS | Windows desktop |
 | External automation devices | None required; mouse and keyboard permitted but optional |
