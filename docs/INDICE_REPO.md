@@ -16,6 +16,7 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 | `docs/CONTRACT_MAP.md` | CID, stato, file, test e blocker di ogni contratto |
 | `docs/SYSTEM_MAP.md` | moduli, confini e comunicazioni end-to-end |
 | `docs/AGENT_COORDINATION.md` | task packet, ownership, handoff, audit e rollback |
+| `docs/mcp/ROLE_CATALOG.md` | dipendenti, specializzazioni, modelli primari e fallback |
 | `docs/REMAINING_WORK.md` | attività residue ordinate per priorità ed evidenza |
 | `docs/agents/EXECUTION_QUEUE.md` | prossimo task operativo |
 
