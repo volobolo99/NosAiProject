@@ -1,0 +1,191 @@
+[
+  {
+    "task_id": "LAB-01",
+    "objective": "Close caller-asserted audit promotion gap with authenticated evidence authority",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-01; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/bindings.py",
+      "nosai/mcp/chief.py",
+      "nosai/mcp/dashboard.py",
+      "nosai/mcp/server.py"
+    ],
+    "dependencies": [],
+    "risks": [
+      "forged/missing/stale evidence rejected",
+      "candidate digest mismatch rejected",
+      "evaluator cannot be candidate author"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-02",
+    "objective": "Transactional shared state and JSON migration",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-02; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/bindings.py",
+      "nosai/mcp/router.py"
+    ],
+    "dependencies": [
+      "LAB-01"
+    ],
+    "risks": [
+      "two processes observe same revision",
+      "stale write rejected",
+      "rollback survives restart",
+      "crash does not partially promote"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-03",
+    "objective": "Persistent scheduler and independent health supervisor",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-03; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/chief.py"
+    ],
+    "dependencies": [
+      "LAB-02"
+    ],
+    "risks": [
+      "restart resumes checkpoint",
+      "expired lease fenced",
+      "offline mode makes no remote calls",
+      "missing observation stays UNKNOWN"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-04",
+    "objective": "Versioned roles, bindings and pooled workers",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-04; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/roles.py",
+      "nosai/mcp/router.py"
+    ],
+    "dependencies": [
+      "LAB-02"
+    ],
+    "risks": [
+      "role retirement preserves memory",
+      "inflight task retains binding",
+      "shared provider concurrency respected",
+      "delegation cycles stop"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-05",
+    "objective": "Research experiments and independent evaluation",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-05; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/chief.py",
+      "nosai/mcp/learning.py"
+    ],
+    "dependencies": [
+      "LAB-01",
+      "LAB-03",
+      "LAB-04"
+    ],
+    "risks": [
+      "held-out evaluation separate from optimization",
+      "failed experiment retained",
+      "resources yield to gameplay",
+      "offline skill needs validated evidence"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-06",
+    "objective": "Mandate-based releases and reversible retirement",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-06; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/chief.py",
+      "nosai/mcp/server.py"
+    ],
+    "dependencies": [
+      "LAB-05"
+    ],
+    "risks": [
+      "within-mandate release needs no repeated confirmation",
+      "out-of-mandate operation rejected",
+      "dependent tools block retirement",
+      "canary regression triggers compatible rollback"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  },
+  {
+    "task_id": "LAB-07",
+    "objective": "Control panel and end-to-end certification",
+    "input": "Contratto mcp-research-lab-001@1.0.0; docs/mcp/AI_WORK_PACKAGES.md sezione LAB-07; docs/mcp/AI_INTEGRATION_CONTRACTS.md. Il coordinatore registra commit corrente e firme concordate prima dell'invio.",
+    "expected_output": "Implementazione nel perimetro assegnato, test dei criteri di accettazione e report con commit, comandi ed esiti.",
+    "files": [
+      "nosai/mcp/dashboard.py",
+      "nosai/mcp/static/index.html"
+    ],
+    "dependencies": [
+      "LAB-06"
+    ],
+    "risks": [
+      "real metrics with provenance",
+      "pause/cancel survive restart",
+      "all service integrations exercised",
+      "CI and Windows replay evidence recorded"
+    ],
+    "required_tests": [
+      "python -m pytest -q tests/test_mcp_chief.py tests/test_mcp_role_bindings.py",
+      "Test di accettazione del pacchetto definiti in docs/mcp/AI_WORK_PACKAGES.md; assegnare i relativi file prima dell'esecuzione."
+    ],
+    "status": "pending",
+    "model": "qwen3-coder-30b",
+    "summary": "Pacchetto preparato; non eseguito.",
+    "confidence": 0
+  }
+]
