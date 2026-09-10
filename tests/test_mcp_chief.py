@@ -23,6 +23,18 @@ def test_chief_health_report_is_structured_and_fail_closed(tmp_path):
     assert report["status"] in {"healthy", "degraded"}
 
 
+def test_chief_does_not_claim_provider_operational_from_catalog_only(tmp_path):
+    class Router:
+        def catalog(self):
+            return [{"provider_id": "groq", "enabled": True}]
+
+    chief = McpChief(tmp_path, router=Router())
+    report = chief.health_check()
+    assert report["checks"]["provider_catalog"]["ok"] is True
+    assert report["checks"]["provider_health"]["ok"] is False
+    assert report["checks"]["provider_health"]["states"]["groq"] == "UNKNOWN"
+
+
 def test_chief_can_only_stage_unprotected_changes(tmp_path):
     chief = McpChief(tmp_path)
     proposal = chief.propose_improvement("router", "improve fallback ordering", ["nosai/mcp/router.py"])
@@ -50,3 +62,4 @@ def test_chief_requires_independent_evidence_before_promoting_binding(tmp_path):
         "operator",
     )
     assert result["state"] == "active"
+
