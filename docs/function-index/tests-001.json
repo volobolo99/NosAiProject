@@ -1,0 +1,4502 @@
+[
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "DeriveFrameSessionKeyBeforeHandshakeThrows",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void DeriveFrameSessionKeyBeforeHandshakeThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 166,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoiseSessionTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NosAiHostTests.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "NosAiHostTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NosAiHostTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "RunAsyncJournalsTheAttachOutcomeAndPublishesTelemetry",
+    "scope": "NosAiHostTests",
+    "signature": "[Fact] public async Task RunAsyncJournalsTheAttachOutcomeAndPublishesTelemetry()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NosAiHostTests.cs",
+    "line": 35,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAiHostTests",
+    "signature": "frame =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NosAiHostTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "SequentialRunsOnTheSameHostAppendSuccessiveJournalSequences",
+    "scope": "NosAiHostTests",
+    "signature": "[Fact] public async Task SequentialRunsOnTheSameHostAppendSuccessiveJournalSequences()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "ProducesSamePlanForSameInput",
+    "scope": "DeterministicGoapPlannerTests",
+    "signature": "[Fact] public void ProducesSamePlanForSameInput()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/DeterministicPlanningTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "PlanStepIsStableValue",
+    "scope": "DeterministicPlanningTests",
+    "signature": "[Fact] public void PlanStepIsStableValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/PlanningSafetyTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "UnknownGameplayProvenanceIsRejected",
+    "scope": "PlanningSafetyTests",
+    "signature": "[Fact] public void UnknownGameplayProvenanceIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/PlanningSafetyTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "RecoveryEventuallyFailsClosed",
+    "scope": "PlanningSafetyTests",
+    "signature": "[Fact] public void RecoveryEventuallyFailsClosed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/PlanningSafetyTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "NavigationFindsDeterministicPath",
+    "scope": "PlanningSafetyTests",
+    "signature": "[Fact] public void NavigationFindsDeterministicPath()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/RecoveryAndEvaluationTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "RecoveryIsFailClosedAfterRetryBudget",
+    "scope": "RecoveryAndEvaluationTests",
+    "signature": "[Fact] public void RecoveryIsFailClosedAfterRetryBudget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/RecoveryAndEvaluationTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "SafeStopSurvivesEnoughFailuresToWrapTheRetryCounter",
+    "scope": "RecoveryAndEvaluationTests",
+    "signature": "[Fact] public void SafeStopSurvivesEnoughFailuresToWrapTheRetryCounter()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/RecoveryAndEvaluationTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "OnlyAnExplicitRecoveryLiftsTheStop",
+    "scope": "RecoveryAndEvaluationTests",
+    "signature": "[Fact] public void OnlyAnExplicitRecoveryLiftsTheStop()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Planning/RecoveryAndEvaluationTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "ReasoningMemoryMayRecordUnknownButGameplayMemoryMayNot",
+    "scope": "RecoveryAndEvaluationTests",
+    "signature": "[Fact] public void ReasoningMemoryMayRecordUnknownButGameplayMemoryMayNot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "CatalogContainsExactlyTwentyOrderedTests",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "[Fact] public void CatalogContainsExactlyTwentyOrderedTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "i =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 15,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "test =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "FinalCertificationRequiresLiveClient",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "[Fact] public void FinalCertificationRequiresLiveClient()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 28,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PracticalTestCatalogTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "NoTestDefinitionCanUsePrivilegedServerStateAsPrecondition",
+    "scope": "PracticalTestCatalogTests",
+    "signature": "[Fact] public void NoTestDefinitionCanUsePrivilegedServerStateAsPrecondition()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 19,
+    "kind": "constructor_declaration",
+    "name": "PredictionCalibrationStoreTests",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "public PredictionCalibrationStoreTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Options",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "private static SqliteJournalOptions Options()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "Entry",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "private static CalibrationSnapshotEntry Entry(string context)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "private static CalibrationSnapshot Snapshot(params CalibrationSnapshotEntry[] entries)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "SaveThenLoad_RoundTripsEveryFieldUnchanged",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void SaveThenLoad_RoundTripsEveryFieldUnchanged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "SaveThenLoad_WithAwkwardContextKeys_ReturnsThemIdentical",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void SaveThenLoad_WithAwkwardContextKeys_ReturnsThemIdentical()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 72,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "e =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "Load_OnAnEmptyStore_ReturnsEmptyNeverThrows",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void Load_OnAnEmptyStore_ReturnsEmptyNeverThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "Save_ReplacesTheWholeContents_LeavingNoStaleContexts",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void Save_ReplacesTheWholeContents_LeavingNoStaleContexts()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/PredictionCalibrationStoreTests.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "OpeningTheStoreCreatesTheFile_SoAReaderMustCheckExistenceFirst",
+    "scope": "PredictionCalibrationStoreTests",
+    "signature": "[Fact] public void OpeningTheStoreCreatesTheFile_SoAReaderMustCheckExistenceFirst()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/KnowledgeMissionStrategyAdapterTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "GetCandidatesAsync_RequiresExplicitClientSafeExecutionEvidence",
+    "scope": "KnowledgeMissionStrategyAdapterTests",
+    "signature": "[Fact] public async Task GetCandidatesAsync_RequiresExplicitClientSafeExecutionEvidence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/KnowledgeMissionStrategyAdapterTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "GetCandidatesAsync_DoesNotMakeUnprovenKnowledgeExecutable",
+    "scope": "KnowledgeMissionStrategyAdapterTests",
+    "signature": "[Fact] public async Task GetCandidatesAsync_DoesNotMakeUnprovenKnowledgeExecutable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/KnowledgeMissionStrategyAdapterTests.cs",
+    "line": 76,
+    "kind": "constructor_declaration",
+    "name": "StubStrategyMemory",
+    "scope": "KnowledgeMissionStrategyAdapterTests.StubStrategyMemory",
+    "signature": "public StubStrategyMemory(params StrategyMemoryItem[] items)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/KnowledgeMissionStrategyAdapterTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "QueryAsync",
+    "scope": "KnowledgeMissionStrategyAdapterTests.StubStrategyMemory",
+    "signature": "public ValueTask<IReadOnlyList<StrategyMemoryItem>> QueryAsync( string objective, string? rulesetVersion = null, CancellationToken cancellationToken = default)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Ranker_UsesObservedDurationAndSuccessRate",
+    "scope": "MissionOutcomeLearningTests",
+    "signature": "[Fact] public async Task Ranker_UsesObservedDurationAndSuccessRate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Ranker_PreservesCandidate_WhenNoObservedOutcomeExists",
+    "scope": "MissionOutcomeLearningTests",
+    "signature": "[Fact] public async Task Ranker_PreservesCandidate_WhenNoObservedOutcomeExists()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "Ledger_RejectsInvalidMeasurements",
+    "scope": "MissionOutcomeLearningTests",
+    "signature": "[Fact] public async Task Ledger_RejectsInvalidMeasurements()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+    "line": 59,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MissionOutcomeLearningTests",
+    "signature": "async () =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionOutcomeLearningTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "MissionOutcomeLearningTests",
+    "signature": "private static MissionStrategyCandidate Candidate(string id, double executionSeconds, double successProbability)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionStrategyOptimizerTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "SelectBest_PrefersLowerExpectedTimeWhenOtherFactorsMatch",
+    "scope": "MissionStrategyOptimizerTests",
+    "signature": "[Fact] public void SelectBest_PrefersLowerExpectedTimeWhenOtherFactorsMatch()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionStrategyOptimizerTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "SelectBest_RejectsUnsafeOrIncompatibleCandidates",
+    "scope": "MissionStrategyOptimizerTests",
+    "signature": "[Fact] public void SelectBest_RejectsUnsafeOrIncompatibleCandidates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionStrategyOptimizerTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "OutcomeLedger_ReplacesDuplicateAndComputesSummary",
+    "scope": "MissionStrategyOptimizerTests",
+    "signature": "[Fact] public async Task OutcomeLedger_ReplacesDuplicateAndComputesSummary()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Progression/MissionStrategyOptimizerTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "MissionStrategyOptimizerTests",
+    "signature": "private static MissionStrategyCandidate Candidate( string id, string objectiveId, double executionSeconds, double successProbability, bool humanPlausible = true, bool permittedObservation = true, string ruleset = \"private-test-2026.09\")",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/QuiescedMachineFactAttribute.cs",
+    "line": 41,
+    "kind": "constructor_declaration",
+    "name": "QuiescedMachineFactAttribute",
+    "scope": "QuiescedMachineFactAttribute",
+    "signature": "public QuiescedMachineFactAttribute()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/QuiescedMachineFactAttribute.cs",
+    "line": 53,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "QuiescedMachineFactAttribute",
+    "signature": "get",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Job",
+    "scope": "BoundedTierQueueTests",
+    "signature": "private static InferenceJob Job(string id, InferenceTier tier)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "NewQueue",
+    "scope": "BoundedTierQueueTests",
+    "signature": "private static BoundedTierQueue NewQueue(int tier0 = 2, int tier1 = 2, int tier2 = 1, int tier3 = 1)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "EnqueueWithinCapacitySucceeds",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void EnqueueWithinCapacitySucceeds()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "JobBeyondCapacityIsRejectedExplicitlyNotSilentlyDropped",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void JobBeyondCapacityIsRejectedExplicitlyNotSilentlyDropped()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "TierCapacitiesAreIsolatedFromEachOther",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void TierCapacitiesAreIsolatedFromEachOther()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "TryEnqueueNeverThrowsWhenFullItReturnsAStructuredRejection",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void TryEnqueueNeverThrowsWhenFullItReturnsAStructuredRejection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "DequeueIsFifoPerTier",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void DequeueIsFifoPerTier()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "ConstructorRejectsNegativeCapacity",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void ConstructorRejectsNegativeCapacity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 89,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "BoundedTierQueueTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "ConstructorRejectsEmptyCapacityMap",
+    "scope": "BoundedTierQueueTests",
+    "signature": "[Fact] public void ConstructorRejectsEmptyCapacityMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/BoundedTierQueueTests.cs",
+    "line": 96,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "BoundedTierQueueTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "NewSingleUnitScheduler",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "private static InferenceBudgetScheduler NewSingleUnitScheduler(int queueCapacityPerTier)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "OneUnitJob",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "private static InferenceJob OneUnitJob(string id, long now)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 97,
+    "kind": "method_declaration",
+    "name": "RunConcurrently",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "private static void RunConcurrently(int threadCount, Action<int> body)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 103,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "ConcurrentTryAdmit_MustNeverAcceptMoreJobsThanTheLedgerCanActuallyReserve_KnownSchedulerDefect",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "[Fact] public void ConcurrentTryAdmit_MustNeverAcceptMoreJobsThanTheLedgerCanActuallyReserve_KnownSchedulerDefect()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 139,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "i =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 216,
+    "kind": "method_declaration",
+    "name": "LedgerAlone_NeverOvercommits_UnderHeavyConcurrentTryReserve",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "[Fact] public void LedgerAlone_NeverOvercommits_UnderHeavyConcurrentTryReserve()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 226,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "Queue_Alone_NeverExceedsCapacity_UnderHeavyConcurrentTryEnqueue",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "[Fact] public void Queue_Alone_NeverExceedsCapacity_UnderHeavyConcurrentTryEnqueue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerConcurrencyTests.cs",
+    "line": 258,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceBudgetSchedulerConcurrencyTests",
+    "signature": "i =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "NewScheduler",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "private static InferenceBudgetScheduler NewScheduler( long nowUnixMillis = 1_000_000, ResourceCost? capacity = null, int tier0 = 4, int tier1 = 4, int tier2 = 2, int tier3 = 1)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Job",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "private static InferenceJob Job( string id, InferenceTier tier, long now, ResourceCost cost, long durationMs = 10, FallbackStrategy? fallback = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "JobWithinBudgetAndCapacityIsAccepted",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void JobWithinBudgetAndCapacityIsAccepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "JobIsRejectedExplicitlyWhenQueueIsFullAndFallbackIsReject",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void JobIsRejectedExplicitlyWhenQueueIsFullAndFallbackIsReject()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "JobIsDegradedExplicitlyWhenQueueIsFullAndFallbackDegrades",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void JobIsDegradedExplicitlyWhenQueueIsFullAndFallbackDegrades()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "DegradationIsSingleHopSoASecondFailureIsAHardReject",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void DegradationIsSingleHopSoASecondFailureIsAHardReject()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "InsufficientLiveBudgetIsRejectedExplicitly",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void InsufficientLiveBudgetIsRejectedExplicitly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "DeadlineAlreadyUnreachableIsRejectedExplicitly",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void DeadlineAlreadyUnreachableIsRejectedExplicitly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "CompleteReleasesTheReservedCost",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void CompleteReleasesTheReservedCost()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "NullJobThrows",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "[Fact] public void NullJobThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceBudgetSchedulerTests.cs",
+    "line": 133,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceBudgetSchedulerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "ValidJob",
+    "scope": "InferenceJobValidationTests",
+    "signature": "private static InferenceJob ValidJob( string id = \"job-1\", InferenceTier tier = InferenceTier.Tier2GpuAcceleratedVision, long deadline = 1_000, long durationMs = 10, double minConfidence = 0.5, FallbackStrategy? fallback = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "ValidJobConstructsSuccessfully",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void ValidJobConstructsSuccessfully()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "EmptyOrWhitespaceIdThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Theory] [InlineData(\"\")] [InlineData(\" \")] public void EmptyOrWhitespaceIdThrows(string id)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 30,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "NonPositiveDeadlineThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void NonPositiveDeadlineThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 34,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "NegativeEstimatedDurationThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void NegativeEstimatedDurationThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 38,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "NegativeEstimatedCostComponentThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void NegativeEstimatedCostComponentThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 43,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "ConfidenceOutsideUnitIntervalThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Theory] [InlineData(-0.01)] [InlineData(1.01)] public void ConfidenceOutsideUnitIntervalThrows(double confidence)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 52,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "NullFallbackThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void NullFallbackThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 57,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "DegradeFallbackWithoutPlanThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void DegradeFallbackWithoutPlanThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 66,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "DegradeFallbackTargetingSameOrHigherTierThrows",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void DegradeFallbackTargetingSameOrHigherTierThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 75,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceJobValidationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "DegradeFallbackTargetingStrictlyCheaperTierIsAccepted",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void DegradeFallbackTargetingStrictlyCheaperTierIsAccepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "TryDegradeProducesSingleHopCandidateWithRejectFallback",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void TryDegradeProducesSingleHopCandidateWithRejectFallback()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceJobValidationTests.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "TryDegradeOnNonDegradeFallbackReturnsFalseAndOriginal",
+    "scope": "InferenceJobValidationTests",
+    "signature": "[Fact] public void TryDegradeOnNonDegradeFallbackReturnsFalseAndOriginal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 41,
+    "kind": "constructor_declaration",
+    "name": "InferenceSchedulingResourceBudgetBenchmarks",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "public InferenceSchedulingResourceBudgetBenchmarks(ITestOutputHelper output)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "AdmissionThroughput_UnderAFixedModestBudget",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "[Fact] public void AdmissionThroughput_UnderAFixedModestBudget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "Tier3AsyncExecutor_LatencyDistribution_ForWorkThatCompletesWithinItsDeadline",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "[Fact] public async Task Tier3AsyncExecutor_LatencyDistribution_ForWorkThatCompletesWithinItsDeadline()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 141,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 180,
+    "kind": "method_declaration",
+    "name": "Tier3AsyncExecutor_TimeoutReturnLatency_ForWorkThatNeverCompletesOnItsOwn",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "[Fact] public async Task Tier3AsyncExecutor_TimeoutReturnLatency_ForWorkThatNeverCompletesOnItsOwn()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 192,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/InferenceSchedulingResourceBudgetBenchmarks.cs",
+    "line": 212,
+    "kind": "method_declaration",
+    "name": "Percentile",
+    "scope": "InferenceSchedulingResourceBudgetBenchmarks",
+    "signature": "private static double Percentile(IReadOnlyList<double> sortedValues, double percentile)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "private static InferenceJob Candidate( string id, InferenceTier tier, ResourceCost cost, long deadline = Now + 500, long durationMs = 10, double minConfidence = 0.5, JobPriority priority = JobPriority.Normal)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "SelectsTheLowestTierAmongQualifyingCandidates",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void SelectsTheLowestTierAmongQualifyingCandidates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "WithinTheSameTierSelectsLowerTotalResourceCost",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void WithinTheSameTierSelectsLowerTotalResourceCost()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "CandidatesMissingTheDeadlineAreExcluded",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void CandidatesMissingTheDeadlineAreExcluded()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "CandidatesBelowRequiredConfidenceAreExcluded",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void CandidatesBelowRequiredConfidenceAreExcluded()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "CandidatesExceedingBudgetAreExcluded",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void CandidatesExceedingBudgetAreExcluded()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "NoQualifyingCandidateReturnsExplicitNonSelectionNotANullTreatedAsFine",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void NoQualifyingCandidateReturnsExplicitNonSelectionNotANullTreatedAsFine()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "EqualCostTiesFavorHigherPriority",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void EqualCostTiesFavorHigherPriority()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "SelectionIsDeterministicRegardlessOfInputOrder",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void SelectionIsDeterministicRegardlessOfInputOrder()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "RepeatedCallsWithIdenticalInputsProduceIdenticalOutput",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void RepeatedCallsWithIdenticalInputsProduceIdenticalOutput()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "RequiredConfidenceOutsideUnitIntervalThrows",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "[Fact] public void RequiredConfidenceOutsideUnitIntervalThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/LowestCostJobSelectorTests.cs",
+    "line": 145,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LowestCostJobSelectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+    "line": 6,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ManualMonotonicClock",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+    "line": 6,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ManualMonotonicClock",
+    "signature": "set;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+    "line": 7,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ManualMonotonicClock",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+    "line": 7,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ManualMonotonicClock",
+    "signature": "set;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ManualMonotonicClock.cs",
+    "line": 9,
+    "kind": "constructor_declaration",
+    "name": "ManualMonotonicClock",
+    "scope": "ManualMonotonicClock",
+    "signature": "public ManualMonotonicClock(long unixMillis = 1_000_000)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "AvailableEqualsCapacityBeforeAnyReservation",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void AvailableEqualsCapacityBeforeAnyReservation()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "TryReserveWithinHeadroomSucceedsAndReducesAvailable",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void TryReserveWithinHeadroomSucceedsAndReducesAvailable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "TryReserveBeyondHeadroomFailsWithoutMutatingState",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void TryReserveBeyondHeadroomFailsWithoutMutatingState()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "ReleaseRestoresHeadroom",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void ReleaseRestoresHeadroom()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "UnbalancedReleaseThrowsInsteadOfSilentlyClamping",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void UnbalancedReleaseThrowsInsteadOfSilentlyClamping()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 51,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "NegativeCapacityAtConstructionThrows",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void NegativeCapacityAtConstructionThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 57,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "NegativeReserveAmountThrows",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void NegativeReserveAmountThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 64,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "CapacityShrinkingBelowCommittedProducesNegativeAvailableRatherThanThrowing",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void CapacityShrinkingBelowCommittedProducesNegativeAvailableRatherThanThrowing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 83,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ResourceBudgetLedgerTests.RecordingBudgetSource",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 83,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ResourceBudgetLedgerTests.RecordingBudgetSource",
+    "signature": "set;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "RefreshCapacityFromSourcePullsLatestReading",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void RefreshCapacityFromSourcePullsLatestReading()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceBudgetLedgerTests.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "RefreshCapacityFromSourceIsNoOpWithoutASource",
+    "scope": "ResourceBudgetLedgerTests",
+    "signature": "[Fact] public void RefreshCapacityFromSourceIsNoOpWithoutASource()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceCostTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "IsWithinIsComponentWiseInclusive",
+    "scope": "ResourceCostTests",
+    "signature": "[Fact] public void IsWithinIsComponentWiseInclusive()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceCostTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "AddAndSubtractAreComponentWise",
+    "scope": "ResourceCostTests",
+    "signature": "[Fact] public void AddAndSubtractAreComponentWise()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceCostTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "SubtractCanGoNegativeToRepresentOverBudgetHeadroom",
+    "scope": "ResourceCostTests",
+    "signature": "[Fact] public void SubtractCanGoNegativeToRepresentOverBudgetHeadroom()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/ResourceCostTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "ZeroIsTheAdditiveIdentity",
+    "scope": "ResourceCostTests",
+    "signature": "[Fact] public void ZeroIsTheAdditiveIdentity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "ResourceCost_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void ResourceCost_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "ResourceCost_Zero_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void ResourceCost_Zero_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "FallbackStrategy_Reject_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void FallbackStrategy_Reject_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "FallbackStrategy_DegradeTo_RoundTripsThroughJson_IncludingTheNestedDegradationPlan",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void FallbackStrategy_DegradeTo_RoundTripsThroughJson_IncludingTheNestedDegradationPlan()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "InferenceJob_WithRejectFallback_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void InferenceJob_WithRejectFallback_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "InferenceJob_WithDegradeFallback_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void InferenceJob_WithDegradeFallback_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "InferenceJob_DeserializingAStructurallyInvalidPayload_ThrowsRatherThanProducingABrokenInstance",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void InferenceJob_DeserializingAStructurallyInvalidPayload_ThrowsRatherThanProducingABrokenInstance()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 149,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 152,
+    "kind": "method_declaration",
+    "name": "InferenceJob_DeserializingAnEmptyIdPayload_ThrowsRatherThanProducingABrokenInstance",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void InferenceJob_DeserializingAnEmptyIdPayload_ThrowsRatherThanProducingABrokenInstance()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 168,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/SchedulingContractSerializationTests.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "AdmissionResult_RoundTripsThroughJson",
+    "scope": "SchedulingContractSerializationTests",
+    "signature": "[Fact] public void AdmissionResult_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "Tier3Job",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "private static InferenceJob Tier3Job(long nowUnixMillis, long deadlineOffsetMs, long durationMs = 10)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "WorkCompletingBeforeDeadlineReturnsCompletedWithItsValue",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task WorkCompletingBeforeDeadlineReturnsCompletedWithItsValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 27,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "ASafetyEquivalentCallerIsNeverHeldPastTheJobsOwnDeadline",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task ASafetyEquivalentCallerIsNeverHeldPastTheJobsOwnDeadline()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "TimingOutRequestsRealCancellationOnTheUnderlyingWork",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task TimingOutRequestsRealCancellationOnTheUnderlyingWork()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 74,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 76,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "DeadlineAlreadyElapsedReturnsTimedOutWithoutInvokingWork",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task DeadlineAlreadyElapsedReturnsTimedOutWithoutInvokingWork()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 96,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "NonTier3JobIsRejectedByConstruction",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task NonTier3JobIsRejectedByConstruction()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 114,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 115,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 118,
+    "kind": "method_declaration",
+    "name": "CallerSuppliedCancellationEndsTheRacePromptly",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task CallerSuppliedCancellationEndsTheRacePromptly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 126,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "async ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 140,
+    "kind": "method_declaration",
+    "name": "WorkThatThrowsIsReportedAsFaultedNotSwallowed",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task WorkThatThrowsIsReportedAsFaultedNotSwallowed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 147,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 154,
+    "kind": "method_declaration",
+    "name": "NullJobThrows",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task NullJobThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 158,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 159,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "ct =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 162,
+    "kind": "method_declaration",
+    "name": "NullWorkThrows",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "[Fact] public async Task NullWorkThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Scheduling/Tier3AsyncExecutorTests.cs",
+    "line": 169,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Tier3AsyncExecutorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "TheMonotonicGuardRefusesAGap",
+    "scope": "SequenceGuardPolicyTests",
+    "signature": "[Fact] public void TheMonotonicGuardRefusesAGap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "TheMonotonicGuardRefusesAReplayWithItsOwnReason",
+    "scope": "SequenceGuardPolicyTests",
+    "signature": "[Fact] public void TheMonotonicGuardRefusesAReplayWithItsOwnReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "TheSlidingWindowGuardAcceptsAGapTheClientCannotProduce",
+    "scope": "SequenceGuardPolicyTests",
+    "signature": "[Fact] public void TheSlidingWindowGuardAcceptsAGapTheClientCannotProduce()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "BothRefuseTheSameSequenceTwice",
+    "scope": "SequenceGuardPolicyTests",
+    "signature": "[Fact] public void BothRefuseTheSameSequenceTwice()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "FirstSequenceIsAlwaysAccepted",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void FirstSequenceIsAlwaysAccepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "IncreasingSequencesAreAccepted",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void IncreasingSequencesAreAccepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "ExactReplayOfTheCurrentHighWaterMarkIsRejected",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void ExactReplayOfTheCurrentHighWaterMarkIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "ReplayOfAnOlderAlreadyAcceptedSequenceIsRejected",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void ReplayOfAnOlderAlreadyAcceptedSequenceIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "OutOfOrderSequenceWithinTheWindowIsAcceptedOnce",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void OutOfOrderSequenceWithinTheWindowIsAcceptedOnce()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "SequenceOlderThanTheWindowIsRejected",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void SequenceOlderThanTheWindowIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "LargeForwardJumpAgesOutEverySequenceItPasses",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void LargeForwardJumpAgesOutEverySequenceItPasses()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "EveryPositionInTheWindowIsIndividuallyTrackedAcrossWordBoundaries",
+    "scope": "SequenceGuardTests",
+    "signature": "[Fact] public void EveryPositionInTheWindowIsIndividuallyTrackedAcrossWordBoundaries()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "ConstructorRejectsWindowSizesThatAreNotAPositiveMultipleOf64",
+    "scope": "SequenceGuardTests",
+    "signature": "[Theory] [InlineData(0)] [InlineData(63)] [InlineData(65)] [InlineData(-64)] public void ConstructorRejectsWindowSizesThatAreNotAPositiveMultipleOf64(int windowBits)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SequenceGuardTests.cs",
+    "line": 113,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SequenceGuardTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 14,
+    "kind": "constructor_declaration",
+    "name": "SqliteEventJournalTests",
+    "scope": "SqliteEventJournalTests",
+    "signature": "public SqliteEventJournalTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "SqliteEventJournalTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "AppendedRecordsReplayInOrderWithMatchingContent",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task AppendedRecordsReplayInOrderWithMatchingContent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "VerifyChainSucceedsOnAnUntamperedJournal",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task VerifyChainSucceedsOnAnUntamperedJournal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "VerifyChainIsValidAcrossTenThousandRecords",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task VerifyChainIsValidAcrossTenThousandRecords()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 91,
+    "kind": "method_declaration",
+    "name": "VerifyChainDetectsATamperedRecordAtTheCorrectSequence",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task VerifyChainDetectsATamperedRecordAtTheCorrectSequence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "ReopeningTheSameDatabaseResumesTheSequenceAndPreservesTheChain",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task ReopeningTheSameDatabaseResumesTheSequenceAndPreservesTheChain()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "JournalAppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
+    "scope": "SqliteEventJournalTests",
+    "signature": "[Fact] public async Task JournalAppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "ReadPragma",
+    "scope": "SqliteEventJournalTests",
+    "signature": "private static string ReadPragma(SqliteConnection connection, string pragma)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/SqliteEventJournalTests.cs",
+    "line": 154,
+    "kind": "method_declaration",
+    "name": "TamperWithStoredPayload",
+    "scope": "SqliteEventJournalTests",
+    "signature": "private void TamperWithStoredPayload(long sequence)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Statistics/DeterministicStatisticsTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "MeanEstimator_IsStable",
+    "scope": "DeterministicStatisticsTests",
+    "signature": "[Fact] public void MeanEstimator_IsStable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Statistics/DeterministicStatisticsTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "LinearPredictor_ExtrapolatesObservedSlope",
+    "scope": "DeterministicStatisticsTests",
+    "signature": "[Fact] public void LinearPredictor_ExtrapolatesObservedSlope()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Statistics/DeterministicStatisticsTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "LinearPredictor_RejectsInsufficientSamples",
+    "scope": "DeterministicStatisticsTests",
+    "signature": "[Fact] public void LinearPredictor_RejectsInsufficientSamples()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "TransportLoopTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "HandshakeCapabilityHeartbeatsAndDisconnectAreJournaledOnRealTcp",
+    "scope": "TransportLoopTests",
+    "signature": "[Fact] public async Task HandshakeCapabilityHeartbeatsAndDisconnectAreJournaledOnRealTcp()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 43,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 49,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 55,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 56,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 57,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 58,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "AbruptTcpCloseIsJournaledAsNetworkFaultWithoutBreakingTheChain",
+    "scope": "TransportLoopTests",
+    "signature": "[Fact] public async Task AbruptTcpCloseIsJournaledAsNetworkFaultWithoutBreakingTheChain()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 78,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 82,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "ReplayedApplicationSequenceIsRejectedAndJournaled",
+    "scope": "TransportLoopTests",
+    "signature": "[Fact] public async Task ReplayedApplicationSequenceIsRejectedAndJournaled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 104,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 108,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 111,
+    "kind": "method_declaration",
+    "name": "ExpiredCapabilityTokenIsDeniedAndTheSessionEnds",
+    "scope": "TransportLoopTests",
+    "signature": "[Fact] public async Task ExpiredCapabilityTokenIsDeniedAndTheSessionEnds()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 128,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 132,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 135,
+    "kind": "method_declaration",
+    "name": "OneHundredLoopbackHandshakesStayUnderTheTwentyFiveMillisecondBudget",
+    "scope": "TransportLoopTests",
+    "signature": "[QuiescedMachineFact] [Trait(\"Category\", \"PerfBudget\")] public async Task OneHundredLoopbackHandshakesStayUnderTheTwentyFiveMillisecondBudget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 170,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "OneHundredLoopbackHandshakesAllCompleteAndLeaveTheChainIntact",
+    "scope": "TransportLoopTests",
+    "signature": "[Fact] public async Task OneHundredLoopbackHandshakesAllCompleteAndLeaveTheChainIntact()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 211,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TransportLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 223,
+    "kind": "method_declaration",
+    "name": "StartHost",
+    "scope": "TransportLoopTests",
+    "signature": "private NosAiHost StartHost()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 241,
+    "kind": "method_declaration",
+    "name": "IssueObserveToken",
+    "scope": "TransportLoopTests",
+    "signature": "private static CapabilityToken IssueObserveToken()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 247,
+    "kind": "method_declaration",
+    "name": "WaitForAsync",
+    "scope": "TransportLoopTests",
+    "signature": "private static async Task WaitForAsync(Func<bool> condition, CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 274,
+    "kind": "constructor_declaration",
+    "name": "Gate1LoopbackPeer",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "private Gate1LoopbackPeer(TcpClient client, NetworkStream stream, NoiseXxSession session)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 281,
+    "kind": "method_declaration",
+    "name": "ConnectAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public static async Task<Gate1LoopbackPeer> ConnectAsync(int port, CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 288,
+    "kind": "method_declaration",
+    "name": "HandshakeAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public async Task HandshakeAsync(CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 304,
+    "kind": "method_declaration",
+    "name": "PresentCapabilityAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public async Task<CapabilityVerdict> PresentCapabilityAsync(CapabilityToken token, CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 312,
+    "kind": "method_declaration",
+    "name": "SendHeartbeatAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public Task<uint> SendHeartbeatAsync(CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 314,
+    "kind": "method_declaration",
+    "name": "SendHeartbeatAtAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public async Task<uint> SendHeartbeatAtAsync(uint sequence, CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 320,
+    "kind": "method_declaration",
+    "name": "SendDisconnectAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public Task SendDisconnectAsync(CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 323,
+    "kind": "method_declaration",
+    "name": "Abort",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public void Abort()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "SendFrameAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "private async Task SendFrameAsync(FrameOpCode op, uint sequence, byte[] payload, CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 337,
+    "kind": "method_declaration",
+    "name": "ReadDecisionAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "private async Task<CapabilityVerdict> ReadDecisionAsync(CancellationToken ct)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 350,
+    "kind": "method_declaration",
+    "name": "TryReadDecision",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "private static bool TryReadDecision( byte[] plain, int plainLength, FrameTagCalculator tags, out CapabilityVerdict verdict, out FaultCode fault, out byte op, out uint seq)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/TransportLoopTests.cs",
+    "line": 370,
+    "kind": "method_declaration",
+    "name": "DisposeAsync",
+    "scope": "Gate1LoopbackPeer",
+    "signature": "public async ValueTask DisposeAsync()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "ResolvesARealAttachedVolumeByItsActualLabel",
+    "scope": "VolumeLocatorTests",
+    "signature": "[Fact] public void ResolvesARealAttachedVolumeByItsActualLabel()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 13,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "VolumeLocatorTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "ReturnsFalseForAVolumeLabelThatIsNotAttached",
+    "scope": "VolumeLocatorTests",
+    "signature": "[Fact] public void ReturnsFalseForAVolumeLabelThatIsNotAttached()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "ResolveDatabasePathThrowsRatherThanFallingBackToAnotherDrive",
+    "scope": "VolumeLocatorTests",
+    "signature": "[Fact] public void ResolveDatabasePathThrowsRatherThanFallingBackToAnotherDrive()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 35,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "VolumeLocatorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/VolumeLocatorTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "TryGetLabel",
+    "scope": "VolumeLocatorTests",
+    "signature": "private static string TryGetLabel(DriveInfo drive)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "AttachToANonExistentProcessFailsClosedWithoutThrowing",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "[Fact] public void AttachToANonExistentProcessFailsClosedWithoutThrowing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "ReadRegionBeforeAttachThrowsInsteadOfReturningAPlausibleValue",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "[Fact] public void ReadRegionBeforeAttachThrowsInsteadOfReturningAPlausibleValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 31,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "DisposeIsIdempotentAndSafeWithoutEverAttaching",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "[Fact] public void DisposeIsIdempotentAndSafeWithoutEverAttaching()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "UsingAnAdapterAfterDisposeThrows",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "[Fact] public void UsingAnAdapterAfterDisposeThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Win32ProcessAdapterTests.cs",
+    "line": 50,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Win32ProcessAdapterTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Verified_WithBlockers_Throws",
+    "scope": "CertificationStageResultTests",
+    "signature": "[Fact] public void Verified_WithBlockers_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CertificationStageResultTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Verified_WithNoBlockers_Constructs",
+    "scope": "CertificationStageResultTests",
+    "signature": "[Fact] public void Verified_WithNoBlockers_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "NonVerified_WithBlockers_Constructs",
+    "scope": "CertificationStageResultTests",
+    "signature": "[Fact] public void NonVerified_WithBlockers_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "EmptyEvidence_Throws",
+    "scope": "CertificationStageResultTests",
+    "signature": "[Fact] public void EmptyEvidence_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 41,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CertificationStageResultTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "BuildResult",
+    "scope": "CertificationReportTests",
+    "signature": "private static CertificationStageResult BuildResult(CertificationStage stage, VerificationLevel level)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "OverallLevel_NoStages_IsNull",
+    "scope": "CertificationReportTests",
+    "signature": "[Fact] public void OverallLevel_NoStages_IsNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "OverallLevel_IsTheWeakestStage",
+    "scope": "CertificationReportTests",
+    "signature": "[Fact] public void OverallLevel_IsTheWeakestStage()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "IsFullyCertified_FalseWhenFewerThanFourteenStages",
+    "scope": "CertificationReportTests",
+    "signature": "[Fact] public void IsFullyCertified_FalseWhenFewerThanFourteenStages()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "IsFullyCertified_FalseWhenAnyStageBelowVerified",
+    "scope": "CertificationReportTests",
+    "signature": "[Fact] public void IsFullyCertified_FalseWhenAnyStageBelowVerified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Certification/CertificationContractsTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "IsFullyCertified_TrueWhenAllFourteenStagesVerified",
+    "scope": "CertificationReportTests",
+    "signature": "[Fact] public void IsFullyCertified_TrueWhenAllFourteenStagesVerified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "BasicAttack_RequiresTarget",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void BasicAttack_RequiresTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 17,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "BasicAttack_WithTarget_Constructs",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void BasicAttack_WithTarget_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "BasicAttack_RejectsSkill",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void BasicAttack_RejectsSkill()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 32,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "UseSkill_RequiresSkill",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseSkill_RequiresSkill()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 39,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "UseSkill_TargetIsOptional_ForSelfOrAoeSkills",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseSkill_TargetIsOptional_ForSelfOrAoeSkills()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "UseSkill_WithTarget_Constructs",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseSkill_WithTarget_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "UseSkill_RejectsItem",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseSkill_RejectsItem()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 62,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "UseConsumable_RequiresItem",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseConsumable_RequiresItem()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 69,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "UseConsumable_RejectsTarget",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void UseConsumable_RejectsTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 75,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "Reposition_RequiresDestination",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void Reposition_RequiresDestination()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 82,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "Reposition_WithDestination_Constructs",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void Reposition_WithDestination_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "Flee_DestinationIsOptional",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void Flee_DestinationIsOptional()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "Flee_DestinationMayBeGiven",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void Flee_DestinationMayBeGiven()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Flee_RejectsTarget",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void Flee_RejectsTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 112,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "CombatActionCandidateTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "Allowed_HasNoViolations",
+    "scope": "CombatConstraintCheckTests",
+    "signature": "[Fact] public void Allowed_HasNoViolations()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "Violated_CarriesTheGivenReasons",
+    "scope": "CombatConstraintCheckTests",
+    "signature": "[Fact] public void Violated_CarriesTheGivenReasons()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "Violated_WithNoReasons_Throws",
+    "scope": "CombatConstraintCheckTests",
+    "signature": "[Fact] public void Violated_WithNoReasons_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 153,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatConstraintCheckTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "Unviable_HasNoSteps",
+    "scope": "ComboPlanTests",
+    "signature": "[Fact] public void Unviable_HasNoSteps()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Unviable_IsViableIsUnknown",
+    "scope": "ComboPlanTests",
+    "signature": "[Fact] public void Unviable_IsViableIsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 175,
+    "kind": "method_declaration",
+    "name": "Unviable_UsesTheGivenInstant_NeverWallClock",
+    "scope": "ComboPlanTests",
+    "signature": "[Fact] public void Unviable_UsesTheGivenInstant_NeverWallClock()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesStepsStructurally",
+    "scope": "ComboPlanTests",
+    "signature": "[Fact] public void RecordEquality_ComparesStepsStructurally()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "CombatSimulationResultTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 216,
+    "kind": "method_declaration",
+    "name": "PredictedPositionAfter_IsNullForNonPositionalActs",
+    "scope": "CombatSimulationResultTests",
+    "signature": "[Fact] public void PredictedPositionAfter_IsNullForNonPositionalActs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatContractsTests.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "PredictedPositionAfter_CanCarryAPositionForReposition",
+    "scope": "CombatSimulationResultTests",
+    "signature": "[Fact] public void PredictedPositionAfter_CanCarryAPositionForReposition()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "NotAttempted_ResultIsAborted",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_ResultIsAborted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "NotAttempted_BeforeAndAfterAreUnknown",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_BeforeAndAfterAreUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "NotAttempted_ResourceObservedIsNull",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_ResourceObservedIsNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "NotAttempted_DetailCarriesTheReason",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_DetailCarriesTheReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "NotAttempted_UsesTheGivenInstant_NeverWallClock",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_UsesTheGivenInstant_NeverWallClock()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "NotAttempted_ResourceCostConfirmedIsFalse",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_ResourceCostConfirmedIsFalse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "ResourceCostConfirmed_TrueOnlyForThatResult",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void ResourceCostConfirmed_TrueOnlyForThatResult()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "ResourceGainConfirmed_TrueOnlyForThatResult",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void ResourceGainConfirmed_TrueOnlyForThatResult()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "BasicAttack_HasNoObservableResource_ResourceObservedIsNull",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void BasicAttack_HasNoObservableResource_ResourceObservedIsNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatExecutionContractsTests.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "CombatExecutionEvidenceTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "AnUnknownPlayerPosition_IsBlindnessNotPeace",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AnUnknownPlayerPosition_IsBlindnessNotPeace()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "AHostileInReach_IsAnOpportunity",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AHostileInReach_IsAnOpportunity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "NoMobAtAll_IsNoViableTarget",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void NoMobAtAll_IsNoViableTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "AMobThatIsNotHostile_IsNoViableTarget",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AMobThatIsNotHostile_IsNoViableTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "AHostileTooFarAway_AsksToCloseTheDistance",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AHostileTooFarAway_AsksToCloseTheDistance()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "AReachableTargetWithUnreadSkills_IsNoUsableAction",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AReachableTargetWithUnreadSkills_IsNoUsableAction()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "PreyBeyondReach_ScoresHalfRatherThanNothing",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void PreyBeyondReach_ScoresHalfRatherThanNothing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "PreyInReach_ScoresFull",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void PreyInReach_ScoresFull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "AnUnknownPlayerPosition_ReportsNothingRatherThanNoUrgency",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "[Fact] public void AnUnknownPlayerPosition_ReportsNothingRatherThanNoUrgency()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "BuildPlayer",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "private static Player BuildPlayer( WorldPosition? position = null, EquatableArray<Skill>? skills = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatOpportunityVerdictTests.cs",
+    "line": 141,
+    "kind": "method_declaration",
+    "name": "BuildMob",
+    "scope": "CombatOpportunityVerdictTests",
+    "signature": "private static Mob BuildMob( string id = \"mob-1\", WorldPosition? position = null, bool? hostile = true, bool? alive = true)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "BuildPlayer",
+    "scope": "CombatPlannerTests",
+    "signature": "private static Player BuildPlayer( WorldPosition? position = null, EquatableArray<Skill>? skills = null, EquatableArray<Cooldown>? cooldowns = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "BuildMob",
+    "scope": "CombatPlannerTests",
+    "signature": "private static Mob BuildMob( string id = \"mob-1\", WorldPosition? position = null, bool? hostile = true, bool? alive = true)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "BuildSkill",
+    "scope": "CombatPlannerTests",
+    "signature": "private static Skill BuildSkill(string id = \"skill-1\", bool usable = true)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_UnknownPlayerPosition_ReturnsEmpty",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_UnknownPlayerPosition_ReturnsEmpty()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_MobInBasicAttackRange_ProducesBasicAttackCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_MobInBasicAttackRange_ProducesBasicAttackCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 70,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_MobOutOfAllRange_ProducesNoCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_MobOutOfAllRange_ProducesNoCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_NonHostileMob_ProducesNoCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_NonHostileMob_ProducesNoCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_DeadMob_ProducesNoCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_DeadMob_ProducesNoCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_UnknownHostility_ProducesNoCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_UnknownHostility_ProducesNoCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_ReadySkillWithMobInSkillRange_ProducesUseSkillCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_ReadySkillWithMobInSkillRange_ProducesUseSkillCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 126,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_SkillOnCooldown_ProducesNoUseSkillCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_SkillOnCooldown_ProducesNoUseSkillCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 142,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_UnusableSkill_ProducesNoUseSkillCandidate",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_UnusableSkill_ProducesNoUseSkillCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 154,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_NoUntargetedSelfCastCandidatesAreEverProduced",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_NoUntargetedSelfCastCandidatesAreEverProduced()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 170,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_ValidBasicAttack_IsAllowed",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_ValidBasicAttack_IsAllowed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 183,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_TargetOutOfRange_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_TargetOutOfRange_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 197,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_TargetNotFound_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_TargetNotFound_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_TargetNotHostile_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_TargetNotHostile_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_TargetDead_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_TargetDead_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 235,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_UnknownPlayerPosition_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_UnknownPlayerPosition_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_SkillOnCooldown_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_SkillOnCooldown_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 266,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_SkillNotFound_Violates",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_SkillNotFound_Violates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 291,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_SkillListNeverRead_SaysSo_NotSkillNotFound",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_SkillListNeverRead_SaysSo_NotSkillNotFound()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 315,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_CooldownListNeverRead_RefusesByName",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_CooldownListNeverRead_RefusesByName()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 340,
+    "kind": "method_declaration",
+    "name": "GenerateCandidates_CooldownListNeverRead_ProposesNoSkill",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void GenerateCandidates_CooldownListNeverRead_ProposesNoSkill()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 355,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatPlannerTests.cs",
+    "line": 358,
+    "kind": "method_declaration",
+    "name": "CheckHardConstraints_ValidUseSkill_IsAllowed",
+    "scope": "CombatPlannerTests",
+    "signature": "[Fact] public void CheckHardConstraints_ValidUseSkill_IsAllowed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "PlayerAt",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "private static Player PlayerAt(double x, double y, params Skill[] skills)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "MobAt",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "private static Mob MobAt(string id, double x, double y, bool? hostile = true, bool? alive = true)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "Mobs",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "private static EquatableArray<Mob> Mobs(params Mob[] mobs)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "SkillAt",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "private static CombatActionCandidate SkillAt(string targetId)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "AHostileAliveTargetInSkillRange_Passes",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void AHostileAliveTargetInSkillRange_Passes()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "TheSameCandidate_IsRefusedByTheFullCheck_ForTheSkillHalfAlone",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void TheSameCandidate_IsRefusedByTheFullCheck_ForTheSkillHalfAlone()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "AnUnknownTarget_IsNamed",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Theory] [InlineData(\"mob-2\", \"target_not_found\")] public void AnUnknownTarget_IsNamed(string targetId, string expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "AnUnestablishedHostility_IsNamed_AndIsNotReadAsFriendly",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void AnUnestablishedHostility_IsNamed_AndIsNotReadAsFriendly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "AnUnestablishedAliveness_IsNamed",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void AnUnestablishedAliveness_IsNamed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "ATargetBeyondSkillRange_IsNamed",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void ATargetBeyondSkillRange_IsNamed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "AnUnknownPlayerPosition_IsTheOnlyViolationReported",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void AnUnknownPlayerPosition_IsTheOnlyViolationReported()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 144,
+    "kind": "method_declaration",
+    "name": "EveryViolationItReports_IsAlsoReportedByTheFullCheck",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Theory] [InlineData(\"mob-2\", 3, true, true)] [InlineData(\"mob-1\", 100, true, true)] [InlineData(\"mob-1\", 3, false, true)] [InlineData(\"mob-1\", 3, true, false)] public void EveryViolationItReports_IsAlsoReportedByTheFullCheck( string targetId, double mobX, bool hostileKnown, bool aliveKnown)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 163,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "v =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "ABasicAttackCandidate_IsMeasuredAgainstTheBasicAttackRange",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void ABasicAttackCandidate_IsMeasuredAgainstTheBasicAttackRange()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 180,
+    "kind": "method_declaration",
+    "name": "NullArguments_AreRefusedAtTheBoundary",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "[Fact] public void NullArguments_AreRefusedAtTheBoundary()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 183,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Combat/CombatTargetConstraintTests.cs",
+    "line": 185,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatTargetConstraintTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "CombatantStatus_Empty_HasNoResourcesOrEffects",
+    "scope": "EntityContractsTests",
+    "signature": "[Fact] public void CombatantStatus_Empty_HasNoResourcesOrEffects()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "Mob_UnobservedFields_AreExplicitlyUnknown_NeverFriendlyByDefault",
+    "scope": "EntityContractsTests",
+    "signature": "[Fact] public void Mob_UnobservedFields_AreExplicitlyUnknown_NeverFriendlyByDefault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "TwoPlayersBuiltFromIdenticalInputs_AreEqual",
+    "scope": "EntityContractsTests",
+    "signature": "[Fact] public void TwoPlayersBuiltFromIdenticalInputs_AreEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+    "line": 35,
+    "kind": "local_function_statement",
+    "name": "Build",
+    "scope": "EntityContractsTests",
+    "signature": "Player Build()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EntityContractsTests.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "Drop_CarriesItemIdentityAndQuantity",
+    "scope": "EntityContractsTests",
+    "signature": "[Fact] public void Drop_CarriesItemIdentityAndQuantity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Empty_HasZeroCount_AndEqualsAnotherEmptyInstance",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void Empty_HasZeroCount_AndEqualsAnotherEmptyInstance()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "TwoArraysWithTheSameElementsInOrder_AreEqual_RegardlessOfUnderlyingArrayIdentity",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void TwoArraysWithTheSameElementsInOrder_AreEqual_RegardlessOfUnderlyingArrayIdentity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "DifferentOrder_IsNotEqual",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void DifferentOrder_IsNotEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "DifferentLength_IsNotEqual",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void DifferentLength_IsNotEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "Indexer_AndEnumeration_PreserveOrder",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void Indexer_AndEnumeration_PreserveOrder()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "From_ThrowsOnNullSource",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void From_ThrowsOnNullSource()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 57,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EquatableArrayTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/EquatableArrayTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "NestedRecordElements_UseStructuralEqualityToo",
+    "scope": "EquatableArrayTests",
+    "signature": "[Fact] public void NestedRecordElements_UseStructuralEqualityToo()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Empty_HasNoVisitedTiles",
+    "scope": "ExplorationFootprintTests",
+    "signature": "[Fact] public void Empty_HasNoVisitedTiles()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "Empty_FullyExploredIsUnknown_NeverFalseByDefault",
+    "scope": "ExplorationFootprintTests",
+    "signature": "[Fact] public void Empty_FullyExploredIsUnknown_NeverFalseByDefault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Empty_UsesTheGivenInstant_NeverWallClock",
+    "scope": "ExplorationFootprintTests",
+    "signature": "[Fact] public void Empty_UsesTheGivenInstant_NeverWallClock()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Empty_CalledTwiceWithSameInstant_ProducesEqualFootprints",
+    "scope": "ExplorationFootprintTests",
+    "signature": "[Fact] public void Empty_CalledTwiceWithSameInstant_ProducesEqualFootprints()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "FrontierCandidateTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "RecordEquality_DifferentCoordinate_NotEqual",
+    "scope": "FrontierCandidateTests",
+    "signature": "[Fact] public void RecordEquality_DifferentCoordinate_NotEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "Unreachable_HasNoWaypoints",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void Unreachable_HasNoWaypoints()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "Unreachable_IsReachableIsUnknown",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void Unreachable_IsReachableIsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "Unreachable_UsesTheGivenInstant_NeverWallClock",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void Unreachable_UsesTheGivenInstant_NeverWallClock()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "Waypoint_UsePortal_IsNullByDefault_ForSameMapWaypoints",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void Waypoint_UsePortal_IsNullByDefault_ForSameMapWaypoints()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "Waypoint_UsePortal_CanCarryAMapTransition",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void Waypoint_UsePortal_CanCarryAMapTransition()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationContractsTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesWaypointsStructurally",
+    "scope": "NavigationPlanTests",
+    "signature": "[Fact] public void RecordEquality_ComparesWaypointsStructurally()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "BuildMap",
+    "scope": "ExplorationPlannerTests",
+    "signature": "private static MapModel BuildMap(params (int Column, int Row, TileTraversability Traversability)[] tiles)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "BuildHostileMob",
+    "scope": "ExplorationPlannerTests",
+    "signature": "private static Mob BuildHostileMob(WorldPosition position)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_NewPosition_AddsItsTile",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_NewPosition_AddsItsTile()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_AlreadyVisitedTile_DoesNotDuplicate",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_AlreadyVisitedTile_DoesNotDuplicate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_UnknownPosition_LeavesVisitedTilesUnchanged",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_UnknownPosition_LeavesVisitedTilesUnchanged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_NoTilesInMap_FullyExploredIsUnknown",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_NoTilesInMap_FullyExploredIsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_UnvisitedWalkableTileRemains_FullyExploredIsFalse",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_UnvisitedWalkableTileRemains_FullyExploredIsFalse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_EveryWalkableTileVisited_FullyExploredIsTrue",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_EveryWalkableTileVisited_FullyExploredIsTrue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_NothingChanged_ReturnsSameInstance",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_NothingChanged_ReturnsSameInstance()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 137,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint_MapMismatch_Throws",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void UpdateFootprint_MapMismatch_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 151,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ExplorationPlannerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_ExcludesVisitedTiles",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_ExcludesVisitedTiles()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 173,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_ExcludesBlockedTiles",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_ExcludesBlockedTiles()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 185,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_NoTilesInMap_ReturnsEmpty",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_NoTilesInMap_ReturnsEmpty()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 197,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_InformationGain_CountsNearbyUnvisitedWalkableTiles",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_InformationGain_CountsNearbyUnvisitedWalkableTiles()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 209,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ExplorationPlannerTests",
+    "signature": "c =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_HostileMobNearby_ContributesRisk",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_HostileMobNearby_ContributesRisk()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_DeadMobNearby_ContributesNoRisk",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_DeadMobNearby_ContributesNoRisk()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 240,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_NoMissionFocus_MissionRelevanceIsZero",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_NoMissionFocus_MissionRelevanceIsZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 252,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_MissionFocusFar_MissionRelevanceIsNegative",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_MissionFocusFar_MissionRelevanceIsNegative()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 264,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates_MapMismatch_Throws",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildFrontierCandidates_MapMismatch_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 270,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ExplorationPlannerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 276,
+    "kind": "method_declaration",
+    "name": "SelectNextFrontier_EmptyList_ReturnsNull",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void SelectNextFrontier_EmptyList_ReturnsNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 284,
+    "kind": "method_declaration",
+    "name": "SelectNextFrontier_PicksHighestScoringCandidate",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void SelectNextFrontier_PicksHighestScoringCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 295,
+    "kind": "method_declaration",
+    "name": "SelectNextFrontier_TiedScores_PicksTheFirstOne",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void SelectNextFrontier_TiedScores_PicksTheFirstOne()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 306,
+    "kind": "method_declaration",
+    "name": "SelectNextFrontier_HighRiskWeight_PrefersTheSaferCandidate",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void SelectNextFrontier_HighRiskWeight_PrefersTheSaferCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 320,
+    "kind": "method_declaration",
+    "name": "BuildNavigationPlan_NoCandidate_ReturnsUnreachable",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildNavigationPlan_NoCandidate_ReturnsUnreachable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "BuildNavigationPlan_WithCandidate_ProducesSingleSameMapWaypoint",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildNavigationPlan_WithCandidate_ProducesSingleSameMapWaypoint()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 344,
+    "kind": "method_declaration",
+    "name": "BuildNavigationPlan_CandidateMapMismatch_Throws",
+    "scope": "ExplorationPlannerTests",
+    "signature": "[Fact] public void BuildNavigationPlan_CandidateMapMismatch_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationPlannerTests.cs",
+    "line": 349,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ExplorationPlannerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "AMapWithNoObservedTile_IsUnknownNotExplored",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AMapWithNoObservedTile_IsUnknownNotExplored()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "AnUnvisitedWalkableTile_IsAFrontier",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AnUnvisitedWalkableTile_IsAFrontier()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "EveryTileVisited_IsFullyExplored",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void EveryTileVisited_IsFullyExplored()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "UnvisitedButBlockedTiles_AreNotReachableRatherThanExplored",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void UnvisitedButBlockedTiles_AreNotReachableRatherThanExplored()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "AFootprintFromAnotherMap_IsRefused",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AFootprintFromAnotherMap_IsRefused()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 75,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ExplorationVerdictTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "AnUnsetFullyExploredFlag_DoesNotSilenceTheSignal",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AnUnsetFullyExploredFlag_DoesNotSilenceTheSignal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "AMapWhoseRemainderIsWall_ScoresZeroForItsOwnReason",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AMapWhoseRemainderIsWall_ScoresZeroForItsOwnReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "AMapWithNoObservedTile_ReportsNothingRatherThanNoUrgency",
+    "scope": "ExplorationVerdictTests",
+    "signature": "[Fact] public void AMapWithNoObservedTile_ReportsNothingRatherThanNoUrgency()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "Footprint",
+    "scope": "ExplorationVerdictTests",
+    "signature": "private static ExplorationFootprint Footprint(params TileCoordinate[] visited)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/ExplorationVerdictTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "BuildMap",
+    "scope": "ExplorationVerdictTests",
+    "signature": "private static MapModel BuildMap(params (int Column, int Row, TileTraversability Traversability)[] tiles)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "NotAttempted_ResultIsAborted",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_ResultIsAborted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "NotAttempted_ObservedIsUnknown",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_ObservedIsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "NotAttempted_DetailCarriesTheReason",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_DetailCarriesTheReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "NotAttempted_UsesTheGivenInstant_NeverWallClock",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_UsesTheGivenInstant_NeverWallClock()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "NotAttempted_SucceededIsFalse",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void NotAttempted_SucceededIsFalse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "Succeeded_TrueOnlyForSucceededResult",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void Succeeded_TrueOnlyForSucceededResult()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MovementExecutionContractsTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "MovementExecutionEvidenceTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "UsablePortal",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "private static Portal UsablePortal(string id, MapId sourceMap, WorldPosition sourcePosition, MapId destinationMap)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "MapWithPortals",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "private static MapModel MapWithPortals(MapId id, params Portal[] portals)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "SameStartAndDestinationMap_ReturnsASingleWaypointPlan_NoPortalNeeded",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void SameStartAndDestinationMap_ReturnsASingleWaypointPlan_NoPortalNeeded()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "OneKnownPortal_PlansADirectTwoWaypointRoute",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void OneKnownPortal_PlansADirectTwoWaypointRoute()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "TwoChainedPortals_PlansAThreeWaypointRouteThroughTheIntermediateMap",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void TwoChainedPortals_PlansAThreeWaypointRouteThroughTheIntermediateMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "NoPortalChainConnectsTheMaps_ReturnsUnreachable",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void NoPortalChainConnectsTheMaps_ReturnsUnreachable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "AnUnconfirmedActivePortal_IsNotUsedAsAnEdge",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void AnUnconfirmedActivePortal_IsNotUsedAsAnEdge()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "APortalWithNoConfirmedDestination_IsNotUsedAsAnEdge",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void APortalWithNoConfirmedDestination_IsNotUsedAsAnEdge()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "APortalIsNeverTreatedAsBidirectional_TheReturnTripNeedsItsOwnObservedPortal",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void APortalIsNeverTreatedAsBidirectional_TheReturnTripNeedsItsOwnObservedPortal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "WhenTwoRoutesExist_TheShorterHopCountWins",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void WhenTwoRoutesExist_TheShorterHopCountWins()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "ARouteThatWouldRevisitAMap_DoesNotLoopForever",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void ARouteThatWouldRevisitAMap_DoesNotLoopForever()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 217,
+    "kind": "method_declaration",
+    "name": "TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "EntityId_RejectsNullOrWhitespace",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void EntityId_RejectsNullOrWhitespace(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "EntityId_ToString_ReturnsTheValue",
+    "scope": "IdentifiersTests",
+    "signature": "[Fact] public void EntityId_ToString_ReturnsTheValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "EntityId_SameValue_AreEqual",
+    "scope": "IdentifiersTests",
+    "signature": "[Fact] public void EntityId_SameValue_AreEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "MapId_RejectsNullOrWhitespace",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void MapId_RejectsNullOrWhitespace(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 36,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "EveryOtherIdType_RejectsNullOrEmpty",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] public void EveryOtherIdType_RejectsNullOrEmpty(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 44,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 45,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 46,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 49,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 50,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Equip_RequiresItemAndSlot",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Equip_RequiresItemAndSlot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 15,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 16,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Equip_WithItemAndSlot_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Equip_WithItemAndSlot_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Unequip_RequiresSlotOnly",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Unequip_RequiresSlotOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 31,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 32,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "Unequip_WithSlot_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Unequip_WithSlot_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Upgrade_RequiresItemOnly",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Upgrade_RequiresItemOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Upgrade_WithItem_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Upgrade_WithItem_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "Allowed_HasNoViolations",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Allowed_HasNoViolations()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "Violated_CarriesTheGivenReasons",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Violated_CarriesTheGivenReasons()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "Violated_WithNoReasons_Throws",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Violated_WithNoReasons_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 98,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "LoadoutEvaluationTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "NoSlot",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "private static EquipmentSlot? NoSlot(ItemId item)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "NeitherSourceObserved_IsNotAFinishedAssessment",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void NeitherSourceObserved_IsNotAFinishedAssessment()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "AnEquippedItem_OffersAChange",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnEquippedItem_OffersAChange()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "BothSourcesReadAndEmpty_IsNothingToChange",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void BothSourcesReadAndEmpty_IsNothingToChange()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "UnreadEquipment_IsNamedRatherThanCalledSettled",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void UnreadEquipment_IsNamedRatherThanCalledSettled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "UnreadInventory_IsNamedRatherThanCalledSettled",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void UnreadInventory_IsNamedRatherThanCalledSettled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "NullResolver_Throws",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void NullResolver_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 72,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "GearNeverRead_ReportsNothingRatherThanNoUrgency",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void GearNeverRead_ReportsNothingRatherThanNoUrgency()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "APartialReading_KeepsTheGoalAliveWithoutPretendingItIsPressing",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void APartialReading_KeepsTheGoalAliveWithoutPretendingItIsPressing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "AvailableOptions_ScoreLowBecauseTheyAreNotRanked",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AvailableOptions_ScoreLowBecauseTheyAreNotRanked()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "AnItemFittingAFreeSlot_IsAProvableGain",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnItemFittingAFreeSlot_IsAProvableGain()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 123,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "AnItemFittingAnOccupiedSlot_IsNotAProvableGain",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnItemFittingAnOccupiedSlot_IsNotAProvableGain()",
+    "category": "test"
+  }
+]
