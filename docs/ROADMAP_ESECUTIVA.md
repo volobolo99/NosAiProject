@@ -3,7 +3,7 @@
 **Versione:** 2.2
 **Data:** 2026-09-05
 **Stato:** CANONICA
-**Target:** giocatore autonomo per ambiente privato/test riproducibile, ottimizzato per ASUS Nitro V16 + RTX 5060 Laptop 8 GB class + 16 GB DDR5 + SSD esterno 2 TB
+**Target:** giocatore autonomo per ambiente privato/test riproducibile, ottimizzato per Acer Nitro V16 AI + RTX 5060 Laptop 8 GB class + 16 GB DDR5 + SSD esterno (capacità rilevata)
 
 ## 1. Obiettivo
 
@@ -15,11 +15,11 @@ L'autonomia è operativa, non onniscienza: evidenza insufficiente o conflittuale
 
 ### Hardware target
 
-- ASUS Nitro V16;
+- Acer Nitro V16 AI;
 - AMD Ryzen, modello esatto rilevato a runtime;
 - 16 GB DDR5 RAM;
 - NVIDIA RTX 5060 Laptop GPU, 8 GB-class GDDR7;
-- SSD esterno dedicato da 2 TB per NosAiProject.
+- SSD esterno dedicato, capacità da rilevare per NosAiProject.
 
 Il runtime deve rilevare SKU, CPU, GPU, driver, TGP/power state, RAM disponibile, temperature, VRAM e modalità/velocità del collegamento SSD. Nessun valore hardware specifico deve essere hardcoded quando può variare tra configurazioni Nitro V16.
 
@@ -132,7 +132,7 @@ Ogni job dichiara CPU/GPU/VRAM/RAM/thermal/latency budget. Il runtime sceglie il
 
 ## 6. Storage policy
 
-SSD esterno 2 TB = storage canonico del progetto. Separare hot/warm/cold data; misurare throughput/latency reale del collegamento USB; retention bounded per replay/dataset/log; SQLite WAL/FULL per persistenza critica.
+SSD esterno (capacità rilevata) = storage canonico del progetto. Separare hot/warm/cold data; misurare throughput/latency reale del collegamento USB; retention bounded per replay/dataset/log; SQLite WAL/FULL per persistenza critica.
 
 ## 7. Quality gates
 
