@@ -1,0 +1,4502 @@
+[
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 20,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IHardwareProbeDiagnostics",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 27,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WindowsHardwareProbe",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 27,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "WindowsHardwareProbe",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "WindowsHardwareProbe",
+    "signature": "public HardwareFingerprint Detect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "ResolveVramMb",
+    "scope": "WindowsHardwareProbe",
+    "signature": "private long ResolveVramMb(long wmiVramMb, string gpuName)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "ChooseVramMb",
+    "scope": "WindowsHardwareProbe",
+    "signature": "public static long ChooseVramMb(long wmiVramMb, long registryVramMb)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "ReadRegistryVramMb",
+    "scope": "WindowsHardwareProbe",
+    "signature": "private long ReadRegistryVramMb(string gpuName)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "WindowsHardwareProbe",
+    "signature": "private string? Read(string className, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProfilePaths.cs",
+    "line": 5,
+    "kind": "method_declaration",
+    "name": "PlayAiDefaultProfile",
+    "scope": "HardwareProfilePaths",
+    "signature": "public static string PlayAiDefaultProfile()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProfilePaths.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "GuardAiDefaultProfile",
+    "scope": "HardwareProfilePaths",
+    "signature": "public static string GuardAiDefaultProfile(string appDataDirectory)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProfileStore.cs",
+    "line": 14,
+    "kind": "constructor_declaration",
+    "name": "HardwareProfileStore",
+    "scope": "HardwareProfileStore",
+    "signature": "public HardwareProfileStore(string path, HardwareAutoSettings autoSettings)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProfileStore.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "LoadOrCreate",
+    "scope": "HardwareProfileStore",
+    "signature": "public RuntimeSettings LoadOrCreate(HardwareFingerprint hardware)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProfileStore.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "ComputeFingerprint",
+    "scope": "HardwareProfileStore",
+    "signature": "public static string ComputeFingerprint(HardwareFingerprint h)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 16,
+    "kind": "constructor_declaration",
+    "name": "LiveHardwareTelemetry",
+    "scope": "LiveHardwareTelemetry",
+    "signature": "public LiveHardwareTelemetry(IHardwareProbe probe)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "LiveHardwareTelemetry",
+    "signature": "public ClassifiedHardwareSnapshot Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "BuildUnknown",
+    "scope": "LiveHardwareTelemetry",
+    "signature": "private static ClassifiedHardwareSnapshot BuildUnknown(DateTime now, ClassifiedValue<long> processRam, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "NonEmpty",
+    "scope": "LiveHardwareTelemetry",
+    "signature": "private static bool NonEmpty(string? value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "FallbackHardwareProbe",
+    "signature": "public HardwareFingerprint Detect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 131,
+    "kind": "constructor_declaration",
+    "name": "SafeHardwareProbe",
+    "scope": "SafeHardwareProbe",
+    "signature": "public SafeHardwareProbe(IHardwareProbe inner)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 137,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "SafeHardwareProbe",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 137,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "SafeHardwareProbe",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/LiveHardwareTelemetry.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "SafeHardwareProbe",
+    "signature": "public HardwareFingerprint Detect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 78,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Host.MasterTrustManager",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 80,
+    "kind": "constructor_declaration",
+    "name": "MasterTrustManager",
+    "scope": "NosAi.Host.MasterTrustManager",
+    "signature": "public MasterTrustManager(TrustTier initialTier = TrustTier.Tier2_SemiAutonomous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "CheckAuthorization",
+    "scope": "NosAi.Host.MasterTrustManager",
+    "signature": "public bool CheckAuthorization(TrustTier requiredTier)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "DowngradeTrust",
+    "scope": "NosAi.Host.MasterTrustManager",
+    "signature": "public void DowngradeTrust(TrustTier newTier)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "EmergencyHalt",
+    "scope": "NosAi.Host.MasterTrustManager",
+    "signature": "public void EmergencyHalt()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 112,
+    "kind": "constructor_declaration",
+    "name": "MasterSafetyGate",
+    "scope": "NosAi.Host.MasterSafetyGate",
+    "signature": "public MasterSafetyGate(MasterTrustManager trustManager)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 123,
+    "kind": "method_declaration",
+    "name": "TryAuthorizeAction",
+    "scope": "NosAi.Host.MasterSafetyGate",
+    "signature": "public bool TryAuthorizeAction(Guid actionId, TrustTier requiredTier, double? gpuTemp, out byte[]? tokenSignature, out string? rejectReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "VerifySafetyToken",
+    "scope": "NosAi.Host.MasterSafetyGate",
+    "signature": "public bool VerifySafetyToken(Guid actionId, ReadOnlySpan<byte> signature)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 170,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 170,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 172,
+    "kind": "constructor_declaration",
+    "name": "EmbeddedControlCenterServer",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "public EmbeddedControlCenterServer(int port, Func<MasterSystemTelemetry> telemetryProvider, Action<string> commandHandler)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 185,
+    "kind": "method_declaration",
+    "name": "TryStart",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "public bool TryStart(out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "Start",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "public void Start()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "ServerLoopAsync",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "private async Task ServerLoopAsync(CancellationToken token)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "ProcessRequest",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "private void ProcessRequest(HttpListenerContext context)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "GetEmbeddedDashboardHtml",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "private string GetEmbeddedDashboardHtml()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 344,
+    "kind": "method_declaration",
+    "name": "DisposeAsync",
+    "scope": "NosAi.Host.EmbeddedControlCenterServer",
+    "signature": "public ValueTask DisposeAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 387,
+    "kind": "constructor_declaration",
+    "name": "NosAiMasterRuntimeHost",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "public NosAiMasterRuntimeHost(int dashboardPort = DefaultDashboardPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 395,
+    "kind": "method_declaration",
+    "name": "StartHostAsync",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "public async Task StartHostAsync(CancellationToken token = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 413,
+    "kind": "method_declaration",
+    "name": "RunMainExecutiveLoopAsync",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "private async Task RunMainExecutiveLoopAsync(CancellationToken token)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 455,
+    "kind": "method_declaration",
+    "name": "CaptureCurrentTelemetry",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "public MasterSystemTelemetry CaptureCurrentTelemetry()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 485,
+    "kind": "method_declaration",
+    "name": "HandleOperatorCommand",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "private void HandleOperatorCommand(string command)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 495,
+    "kind": "method_declaration",
+    "name": "SetSimulatedGpuTemperature",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "public void SetSimulatedGpuTemperature(double temp)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 501,
+    "kind": "method_declaration",
+    "name": "DisposeAsync",
+    "scope": "NosAi.Host.NosAiMasterRuntimeHost",
+    "signature": "public async ValueTask DisposeAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 516,
+    "kind": "method_declaration",
+    "name": "RunAllTestsAsync",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "public static async Task<bool> RunAllTestsAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 554,
+    "kind": "method_declaration",
+    "name": "RunTest",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool RunTest(string testName, Func<bool> testFunc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 569,
+    "kind": "method_declaration",
+    "name": "RunTestAsync",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static async Task<bool> RunTestAsync(string testName, Func<Task<bool>> testFunc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 584,
+    "kind": "method_declaration",
+    "name": "PrintResult",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static void PrintResult(string name, bool passed, string? error = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 600,
+    "kind": "method_declaration",
+    "name": "TestHostBootstrappingAndTicksAsync",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static async Task<bool> TestHostBootstrappingAndTicksAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 609,
+    "kind": "method_declaration",
+    "name": "TestSafetyTokenSigningAndVerification",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool TestSafetyTokenSigningAndVerification()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 624,
+    "kind": "method_declaration",
+    "name": "TestThermalThrottlingTrigger",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool TestThermalThrottlingTrigger()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 634,
+    "kind": "method_declaration",
+    "name": "TestUnknownTemperatureIsNotAuthorized",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool TestUnknownTemperatureIsNotAuthorized()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 651,
+    "kind": "method_declaration",
+    "name": "TestDashboardEmergencyStopCommand",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool TestDashboardEmergencyStopCommand()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 659,
+    "kind": "method_declaration",
+    "name": "TestControlCenterRestEndpointAsync",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static async Task<bool> TestControlCenterRestEndpointAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 670,
+    "kind": "method_declaration",
+    "name": "TestHostSecurityInvariant",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "private static bool TestHostSecurityInvariant()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 673,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 675,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 675,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Host.MasterHostTestRunner",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Host/NosAiMasterRuntimeHost.cs",
+    "line": 686,
+    "kind": "method_declaration",
+    "name": "Main",
+    "scope": "NosAi.Host.Program",
+    "signature": "public static async Task<int> Main(string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 36,
+    "kind": "constructor_declaration",
+    "name": "DeterministicHumanizer",
+    "scope": "DeterministicHumanizer",
+    "signature": "public DeterministicHumanizer(IInputBackend? input = null, Func<int, CancellationToken, Task>? delay = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 40,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DeterministicHumanizer",
+    "signature": "(ms, ct) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "MoveMouseHumanlikeAsync",
+    "scope": "DeterministicHumanizer",
+    "signature": "public async Task MoveMouseHumanlikeAsync(ScreenPoint start, TargetDescriptor target, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "ClickTargetAsync",
+    "scope": "DeterministicHumanizer",
+    "signature": "public async Task ClickTargetAsync(TargetDescriptor target, MouseButton button, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "PressKeyHumanlikeAsync",
+    "scope": "DeterministicHumanizer",
+    "signature": "public async Task PressKeyHumanlikeAsync(string key, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/DeterministicHumanizer.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "BuildBezierPlan",
+    "scope": "DeterministicHumanizer",
+    "signature": "public static IReadOnlyList<ScreenPoint> BuildBezierPlan(ScreenPoint start, ScreenPoint target, int segments = 8)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/HumanizerContracts.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "MoveMouseHumanlikeAsync",
+    "scope": "IHumanizer",
+    "signature": "Task MoveMouseHumanlikeAsync(ScreenPoint start, TargetDescriptor target, CancellationToken cancellationToken);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/HumanizerContracts.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "ClickTargetAsync",
+    "scope": "IHumanizer",
+    "signature": "Task ClickTargetAsync(TargetDescriptor target, MouseButton button, CancellationToken cancellationToken);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Humanizer/HumanizerContracts.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "PressKeyHumanlikeAsync",
+    "scope": "IHumanizer",
+    "signature": "Task PressKeyHumanlikeAsync(string key, CancellationToken cancellationToken);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 106,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PredictionLedger",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "Predict",
+    "scope": "PredictionLedger",
+    "signature": "public Prediction Predict( string contextKey, string quantity, double expected, double tolerance, DateTime? atUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 137,
+    "kind": "method_declaration",
+    "name": "Record",
+    "scope": "PredictionLedger",
+    "signature": "public LearningOutcome Record(Observation observation)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 183,
+    "kind": "method_declaration",
+    "name": "CalibrationOf",
+    "scope": "PredictionLedger",
+    "signature": "public Calibration? CalibrationOf(string contextKey)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "Weakest",
+    "scope": "PredictionLedger",
+    "signature": "public IReadOnlyList<Calibration> Weakest(int limit = 10)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 213,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 214,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 215,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 216,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 234,
+    "kind": "method_declaration",
+    "name": "ExportCalibration",
+    "scope": "PredictionLedger",
+    "signature": "public CalibrationSnapshot ExportCalibration()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 240,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 277,
+    "kind": "method_declaration",
+    "name": "ImportCalibration",
+    "scope": "PredictionLedger",
+    "signature": "public void ImportCalibration(CalibrationSnapshot snapshot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 306,
+    "kind": "method_declaration",
+    "name": "Abandon",
+    "scope": "PredictionLedger",
+    "signature": "public bool Abandon(Guid predictionId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 333,
+    "kind": "method_declaration",
+    "name": "Expire",
+    "scope": "PredictionLedger",
+    "signature": "public int Expire(TimeSpan olderThan, DateTime? nowUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 338,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Learning/PredictionLedger.cs",
+    "line": 338,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PredictionLedger",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 114,
+    "kind": "constructor_declaration",
+    "name": "BroadWirePrelude",
+    "scope": "BroadWirePrelude",
+    "signature": "public BroadWirePrelude( IPacketSource? source = null, int capacityBytes = DefaultCapacityBytes, TimeSpan? window = null, Func<DateTime>? clock = null) : this(source, IntPtr.Zero, capacityBytes, window ?? TimeSpan.FromSeconds(DefaultWindowSeconds), clock ?? (static () => DateTime.UtcNow))",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 119,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "BroadWirePrelude",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 123,
+    "kind": "constructor_declaration",
+    "name": "BroadWirePrelude",
+    "scope": "BroadWirePrelude",
+    "signature": "private BroadWirePrelude(IPacketSource? source, IntPtr divertHandle, int capacityBytes, TimeSpan window, Func<DateTime> clock)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "BroadWirePrelude",
+    "signature": "public static BroadWirePrelude? TryOpen( out string? failureReason, int capacityBytes = DefaultCapacityBytes, TimeSpan? window = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 213,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "BroadWirePrelude",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 228,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BroadWirePrelude",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 240,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BroadWirePrelude",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 252,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BroadWirePrelude",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 264,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BroadWirePrelude",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 276,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BroadWirePrelude",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 314,
+    "kind": "method_declaration",
+    "name": "Accept",
+    "scope": "BroadWirePrelude",
+    "signature": "public void Accept(CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 389,
+    "kind": "method_declaration",
+    "name": "FocusOn",
+    "scope": "BroadWirePrelude",
+    "signature": "public PreludeSlice FocusOn(IPAddress serverAddress, int serverPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 436,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "BroadWirePrelude",
+    "signature": "public bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 471,
+    "kind": "method_declaration",
+    "name": "CompleteInput",
+    "scope": "BroadWirePrelude",
+    "signature": "public void CompleteInput()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 487,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "BroadWirePrelude",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 514,
+    "kind": "method_declaration",
+    "name": "CompleteAddingOnce",
+    "scope": "BroadWirePrelude",
+    "signature": "private void CompleteAddingOnce()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 539,
+    "kind": "method_declaration",
+    "name": "PumpLoop",
+    "scope": "BroadWirePrelude",
+    "signature": "private void PumpLoop()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 579,
+    "kind": "method_declaration",
+    "name": "RecvLoop",
+    "scope": "BroadWirePrelude",
+    "signature": "private void RecvLoop()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 608,
+    "kind": "method_declaration",
+    "name": "MatchesEndpoint",
+    "scope": "BroadWirePrelude",
+    "signature": "private static bool MatchesEndpoint(ParsedPacket parsed, IPAddress address, int port)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 619,
+    "kind": "method_declaration",
+    "name": "WinDivertOpen",
+    "scope": "BroadWirePrelude",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true, CharSet = CharSet.Ansi)] private static extern IntPtr WinDivertOpen(string filter, short layer, short priority, ulong flags);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 622,
+    "kind": "method_declaration",
+    "name": "WinDivertRecv",
+    "scope": "BroadWirePrelude",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true)] private static extern bool WinDivertRecv(IntPtr handle, byte[] packet, uint packetLen, out uint recvLen, byte[] address);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/BroadWirePrelude.cs",
+    "line": 625,
+    "kind": "method_declaration",
+    "name": "WinDivertClose",
+    "scope": "BroadWirePrelude",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true)] private static extern bool WinDivertClose(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "CaptureAnalysis",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "Append",
+    "scope": "CaptureAnalysis",
+    "signature": "private static void Append(StringBuilder sb, string label, DirectionAnalysis d)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "AnalyzeFile",
+    "scope": "CaptureAnalyzer",
+    "signature": "public static CaptureAnalysis AnalyzeFile(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "Analyze",
+    "scope": "CaptureAnalyzer",
+    "signature": "public static CaptureAnalysis Analyze(IPacketSource source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 120,
+    "kind": "constructor_declaration",
+    "name": "DirectionAccumulator",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "public DirectionAccumulator(StreamDirection direction)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "Add",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "public void Add(DateTime timestamp, byte[] delivered)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "Build",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "public DirectionAnalysis Build()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 145,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "kv =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 145,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "kv =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureAnalysis.cs",
+    "line": 147,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CaptureAnalyzer.DirectionAccumulator",
+    "signature": "kv =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "Record",
+    "scope": "CaptureFile",
+    "signature": "public static long Record(IPacketSource source, string path, CancellationToken cancellationToken = default, TimeSpan? readTimeout = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Open",
+    "scope": "CaptureFile",
+    "signature": "public static CaptureFileSource Open(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "WriteHeader",
+    "scope": "CaptureFile",
+    "signature": "private static void WriteHeader(Stream stream, IPAddress serverAddress, int serverPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "WritePacket",
+    "scope": "CaptureFile",
+    "signature": "private static void WritePacket(Stream stream, CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "ReadHeader",
+    "scope": "CaptureFile",
+    "signature": "internal static (IPAddress Address, int Port) ReadHeader(Stream stream)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "TryReadPacket",
+    "scope": "CaptureFile",
+    "signature": "internal static bool TryReadPacket(Stream stream, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "ReadFully",
+    "scope": "CaptureFile",
+    "signature": "private static int ReadFully(Stream stream, Span<byte> buffer)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 174,
+    "kind": "constructor_declaration",
+    "name": "CaptureFileSource",
+    "scope": "CaptureFileSource",
+    "signature": "internal CaptureFileSource(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 182,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureFileSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 183,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureFileSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 184,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureFileSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 184,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "CaptureFileSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "CaptureFileSource",
+    "signature": "public bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "CaptureFileSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Live",
+    "scope": "GameFrame",
+    "signature": "public static GameFrame Live(int opcode, ReadOnlyMemory<byte> body)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "Unframed",
+    "scope": "GameFrame",
+    "signature": "public static GameFrame Unframed(ReadOnlyMemory<byte> raw, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 39,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IGameStreamFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "Consume",
+    "scope": "IGameStreamFramer",
+    "signature": "IReadOnlyList<GameFrame> Consume(ReadOnlySpan<byte> delivered);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 71,
+    "kind": "constructor_declaration",
+    "name": "UnknownGameStreamFramer",
+    "scope": "UnknownGameStreamFramer",
+    "signature": "public UnknownGameStreamFramer(StreamDirection direction)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 73,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "UnknownGameStreamFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameStreamFramer.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Consume",
+    "scope": "UnknownGameStreamFramer",
+    "signature": "public IReadOnlyList<GameFrame> Consume(ReadOnlySpan<byte> delivered)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 67,
+    "kind": "constructor_declaration",
+    "name": "GameTrafficCaptureEngine",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "public GameTrafficCaptureEngine( IPacketSource source, Func<StreamDirection, IGameStreamFramer>? framerFactory = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 72,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "direction =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "public CaptureSummary Run(CancellationToken cancellationToken = default, TimeSpan? readTimeout = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "Pump",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "public void Pump(CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "Emit",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "private void Emit(DateTime timestamp, IGameStreamFramer framer, byte[] delivered)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "GameTrafficCaptureEngine",
+    "signature": "public CaptureSummary Snapshot()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs",
+    "line": 169,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IFinitePacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs",
+    "line": 37,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/IPacketSource.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "IPacketSource",
+    "signature": "bool TryRead(TimeSpan timeout, out CapturedPacket packet);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+    "line": 19,
+    "kind": "constructor_declaration",
+    "name": "InMemoryPacketSource",
+    "scope": "InMemoryPacketSource",
+    "signature": "public InMemoryPacketSource(IPAddress serverAddress, int serverPort, IReadOnlyList<CapturedPacket> packets)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+    "line": 26,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InMemoryPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+    "line": 27,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InMemoryPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "InMemoryPacketSource",
+    "signature": "public bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/InMemoryPacketSource.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "InMemoryPacketSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "Failed",
+    "scope": "ParsedPacket",
+    "signature": "public static ParsedPacket Failed(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Parse",
+    "scope": "Ipv4TcpParser",
+    "signature": "public static ParsedPacket Parse(ReadOnlySpan<byte> packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/Ipv4TcpParser.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "TryParseSegment",
+    "scope": "Ipv4TcpParser",
+    "signature": "public static bool TryParseSegment( ReadOnlySpan<byte> packet, IPAddress serverAddress, int serverPort, out TcpSegment segment, out string? reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "LiveWireMonitor",
+    "signature": "public static int Run(string? endpoint, int seconds = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+    "line": 83,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LiveWireMonitor",
+    "signature": "(_, e) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+    "line": 133,
+    "kind": "method_declaration",
+    "name": "Monitor",
+    "scope": "LiveWireMonitor",
+    "signature": "public static Summary Monitor(IPacketSource source, TextWriter output, CancellationToken cancellationToken = default, DataSourceKind sourceKind = DataSourceKind.Live)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+    "line": 144,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LiveWireMonitor",
+    "signature": "frame =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/LiveWireMonitor.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "LiveWireMonitor",
+    "signature": "private static string Describe(DecodedObservations o)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 58,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosTaleWorldFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 61,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosTaleWorldFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 61,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "NosTaleWorldFramer",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 75,
+    "kind": "constructor_declaration",
+    "name": "NosTaleWorldFramer",
+    "scope": "NosTaleWorldFramer",
+    "signature": "public NosTaleWorldFramer(StreamDirection direction, DataSourceKind streamSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "Factory",
+    "scope": "NosTaleWorldFramer",
+    "signature": "public static Func<StreamDirection, IGameStreamFramer> Factory(DataSourceKind streamSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 91,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosTaleWorldFramer",
+    "signature": "direction =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "Consume",
+    "scope": "NosTaleWorldFramer",
+    "signature": "public IReadOnlyList<GameFrame> Consume(ReadOnlySpan<byte> delivered)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "ReportDesyncOnce",
+    "scope": "NosTaleWorldFramer",
+    "signature": "private IReadOnlyList<GameFrame> ReportDesyncOnce()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/NosTaleWorldFramer.cs",
+    "line": 165,
+    "kind": "method_declaration",
+    "name": "Reset",
+    "scope": "NosTaleWorldFramer",
+    "signature": "public void Reset()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 111,
+    "kind": "constructor_declaration",
+    "name": "PreLoginCaptureSession",
+    "scope": "PreLoginCaptureSession",
+    "signature": "public PreLoginCaptureSession( BroadWirePrelude prelude, ClientArrivalWatcher watcher, string capturePath, DataSourceKind streamProvenance = DataSourceKind.Live, TimeSpan? timeout = null, TimeSpan? pollInterval = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PreLoginCaptureSession",
+    "signature": "public PreLoginCaptureOutcome Run(CancellationToken cancellationToken = default, Action<string>? onStatus = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 201,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginCaptureSession",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 275,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginCaptureSession",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 344,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PreLoginCaptureSession",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 367,
+    "kind": "method_declaration",
+    "name": "BuildMissingOpcodes",
+    "scope": "PreLoginCaptureSession",
+    "signature": "private string[] BuildMissingOpcodes()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 389,
+    "kind": "method_declaration",
+    "name": "EndpointNeverResolved",
+    "scope": "PreLoginCaptureSession",
+    "signature": "private static PreLoginCaptureOutcome EndpointNeverResolved(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 412,
+    "kind": "method_declaration",
+    "name": "OnFrame",
+    "scope": "PreLoginCaptureSession",
+    "signature": "private void OnFrame(CapturedGameFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 474,
+    "kind": "constructor_declaration",
+    "name": "PreLoginTeeSource",
+    "scope": "PreLoginCaptureSession.PreLoginTeeSource",
+    "signature": "public PreLoginTeeSource(BroadWirePrelude prelude, IReadOnlyList<CapturedPacket> backlog, IPAddress serverAddress, int serverPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 490,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "PreLoginCaptureSession.PreLoginTeeSource",
+    "signature": "public bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 513,
+    "kind": "method_declaration",
+    "name": "TryDequeueForDecoding",
+    "scope": "PreLoginCaptureSession.PreLoginTeeSource",
+    "signature": "public bool TryDequeueForDecoding(out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 515,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PreLoginCaptureSession.PreLoginTeeSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 542,
+    "kind": "method_declaration",
+    "name": "DefaultPath",
+    "scope": "AwaitClientCaptureCommand",
+    "signature": "public static string DefaultPath(DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 555,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "AwaitClientCaptureCommand",
+    "signature": "public static int Run(string? outPath, int timeoutMinutes, Action<string> report, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 579,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AwaitClientCaptureCommand",
+    "signature": "line =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 685,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "AwaitClientCaptureCommand",
+    "signature": "public static int Run(string? outPath, int timeoutMinutes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/PreLoginCaptureSession.cs",
+    "line": 688,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AwaitClientCaptureCommand",
+    "signature": "(_, e) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 46,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 49,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 49,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFramer",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 52,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 52,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFramer",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 65,
+    "kind": "constructor_declaration",
+    "name": "ProtocolMapFramer",
+    "scope": "ProtocolMapFramer",
+    "signature": "public ProtocolMapFramer(ProtocolMap map, StreamDirection direction, DataSourceKind streamSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "Consume",
+    "scope": "ProtocolMapFramer",
+    "signature": "public IReadOnlyList<GameFrame> Consume(ReadOnlySpan<byte> delivered)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "ReportDesyncOnce",
+    "scope": "ProtocolMapFramer",
+    "signature": "private IReadOnlyList<GameFrame> ReportDesyncOnce()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "Reset",
+    "scope": "ProtocolMapFramer",
+    "signature": "public void Reset()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "Weaker",
+    "scope": "ProtocolMapFramer",
+    "signature": "private static DataSourceKind Weaker(DataSourceKind a, DataSourceKind b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ProtocolMapFramer.cs",
+    "line": 138,
+    "kind": "local_function_statement",
+    "name": "Rank",
+    "scope": "ProtocolMapFramer",
+    "signature": "static int Rank(DataSourceKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 61,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReassembledObservationSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 67,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReassembledObservationSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 67,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReassembledObservationSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReassembledObservationSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ReassembledObservationSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 83,
+    "kind": "constructor_declaration",
+    "name": "ReassembledObservationSource",
+    "scope": "ReassembledObservationSource",
+    "signature": "public ReassembledObservationSource( IPacketSource packets, ProtocolMap map, DataSourceKind streamSource, TimeSpan? readTimeout = null) : this(packets, FramerFrom(map, streamSource), streamSource, readTimeout)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 96,
+    "kind": "constructor_declaration",
+    "name": "ReassembledObservationSource",
+    "scope": "ReassembledObservationSource",
+    "signature": "public ReassembledObservationSource( IPacketSource packets, Func<StreamDirection, IGameStreamFramer> framerFactory, DataSourceKind streamSource, TimeSpan? readTimeout = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "ForNosTaleWorld",
+    "scope": "ReassembledObservationSource",
+    "signature": "public static ReassembledObservationSource ForNosTaleWorld( IPacketSource packets, DataSourceKind streamSource, TimeSpan? readTimeout = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "FramerFrom",
+    "scope": "ReassembledObservationSource",
+    "signature": "private static Func<StreamDirection, IGameStreamFramer> FramerFrom( ProtocolMap map, DataSourceKind streamSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 130,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ReassembledObservationSource",
+    "signature": "direction =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 133,
+    "kind": "method_declaration",
+    "name": "OnFrame",
+    "scope": "ReassembledObservationSource",
+    "signature": "private void OnFrame(CapturedGameFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "ReassembledObservationSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ReassembledObservationSource.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ReassembledObservationSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 54,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "private init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 63,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 63,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 66,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 66,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 68,
+    "kind": "constructor_declaration",
+    "name": "ScopedLiveCaptureBackend",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "private ScopedLiveCaptureBackend( IPacketSource packets, IPAddress serverAddress, int serverPort, GameEndpoint endpoint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "TryOpenForProcess",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "public static ScopedLiveCaptureBackend? TryOpenForProcess( int processId, SecurityPrincipal principal, out string? failureReason, IRuntimeAuthorizationPolicy? authorization = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "public static ScopedLiveCaptureBackend? TryOpen( IPAddress serverAddress, int serverPort, SecurityPrincipal principal, out string? failureReason, IRuntimeAuthorizationPolicy? authorization = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 177,
+    "kind": "method_declaration",
+    "name": "OverSource",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "internal static ScopedLiveCaptureBackend OverSource( IPacketSource source, IPAddress serverAddress, int serverPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 182,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 220,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ScopedLiveCaptureBackend",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 244,
+    "kind": "constructor_declaration",
+    "name": "ScopedCaptureBackendOverSource",
+    "scope": "ScopedCaptureBackendOverSource",
+    "signature": "public ScopedCaptureBackendOverSource( IPacketSource source, IPAddress serverAddress, int serverPort, DataSourceKind source_)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 261,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScopedCaptureBackendOverSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 267,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "ScopedCaptureBackendOverSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/ScopedLiveCaptureBackend.cs",
+    "line": 278,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ScopedCaptureBackendOverSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 49,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TcpStreamReassembler",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "Anchor",
+    "scope": "TcpStreamReassembler",
+    "signature": "public void Anchor(uint firstSequence)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "Accept",
+    "scope": "TcpStreamReassembler",
+    "signature": "public byte[] Accept(TcpSegment segment)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "StorePending",
+    "scope": "TcpStreamReassembler",
+    "signature": "private void StorePending(uint start, ReadOnlySpan<byte> data)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "Drain",
+    "scope": "TcpStreamReassembler",
+    "signature": "private byte[] Drain()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "First",
+    "scope": "TcpStreamReassembler",
+    "signature": "private static KeyValuePair<uint, byte[]> First(SortedDictionary<uint, byte[]> map)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 190,
+    "kind": "method_declaration",
+    "name": "SerialLess",
+    "scope": "TcpStreamReassembler",
+    "signature": "private static bool SerialLess(uint a, uint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 191,
+    "kind": "method_declaration",
+    "name": "SerialLessOrEqual",
+    "scope": "TcpStreamReassembler",
+    "signature": "private static bool SerialLessOrEqual(uint a, uint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "Compare",
+    "scope": "TcpStreamReassembler.SerialComparer",
+    "signature": "public int Compare(uint a, uint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/TcpStreamReassembler.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "Accept",
+    "scope": "TcpConversation",
+    "signature": "public byte[] Accept(TcpSegment segment)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 59,
+    "kind": "constructor_declaration",
+    "name": "WinDivertPacketSource",
+    "scope": "WinDivertPacketSource",
+    "signature": "private WinDivertPacketSource(IntPtr handle, IPAddress serverAddress, int serverPort)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 80,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WinDivertPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 81,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WinDivertPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "WinDivertPacketSource",
+    "signature": "public static WinDivertPacketSource? TryOpen(IPAddress serverAddress, int serverPort, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "WinDivertPacketSource",
+    "signature": "public bool TryRead(TimeSpan timeout, out CapturedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 174,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WinDivertPacketSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 174,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "WinDivertPacketSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "Pump",
+    "scope": "WinDivertPacketSource",
+    "signature": "private void Pump()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "PumpLoop",
+    "scope": "WinDivertPacketSource",
+    "signature": "private void PumpLoop()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 232,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "WinDivertPacketSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 253,
+    "kind": "method_declaration",
+    "name": "WinDivertOpen",
+    "scope": "WinDivertPacketSource",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true, CharSet = CharSet.Ansi)] private static extern IntPtr WinDivertOpen(string filter, short layer, short priority, ulong flags);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "WinDivertRecv",
+    "scope": "WinDivertPacketSource",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true)] private static extern bool WinDivertRecv(IntPtr handle, byte[] packet, uint packetLen, out uint recvLen, byte[] address);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WinDivertPacketSource.cs",
+    "line": 259,
+    "kind": "method_declaration",
+    "name": "WinDivertClose",
+    "scope": "WinDivertPacketSource",
+    "signature": "[DllImport(\"WinDivert.dll\", SetLastError = true)] private static extern bool WinDivertClose(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "TryParseEndpoint",
+    "scope": "WireRecorder",
+    "signature": "public static bool TryParseEndpoint( string? text, out IPAddress address, out int port, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "DefaultPath",
+    "scope": "WireRecorder",
+    "signature": "public static string DefaultPath(DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 118,
+    "kind": "method_declaration",
+    "name": "RecordFrom",
+    "scope": "WireRecorder",
+    "signature": "public static RecordingOutcome RecordFrom( IPacketSource source, string path, CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 165,
+    "kind": "method_declaration",
+    "name": "Discard",
+    "scope": "WireRecorder",
+    "signature": "private static void Discard(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "WireRecorder",
+    "signature": "public static int Run(string? endpoint, string? path = null, int seconds = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 214,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireRecorder",
+    "signature": "(_, e) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 66,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "DescribeSlots",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "private static string DescribeSlots(IReadOnlyList<WornEquipmentSlot>? slots)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 150,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 150,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 154,
+    "kind": "method_declaration",
+    "name": "FormatCounts",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "private static string FormatCounts(IReadOnlyList<KeyValuePair<string, long>> counts)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 157,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "FormatByDesign",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "private static string FormatByDesign(IReadOnlyList<KeyValuePair<string, long>> counts)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 163,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "EmptyByDesignReason",
+    "scope": "WorldChannelReplaySummary",
+    "signature": "private static string EmptyByDesignReason(string opcode)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 216,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnobservedBreakdown",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 217,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnobservedBreakdown",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 218,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnobservedBreakdown",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 219,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnobservedBreakdown",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 222,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnobservedBreakdown",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 265,
+    "kind": "method_declaration",
+    "name": "ReplayFile",
+    "scope": "WorldChannelReplay",
+    "signature": "public static WorldChannelReplaySummary ReplayFile(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 268,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 276,
+    "kind": "method_declaration",
+    "name": "Replay",
+    "scope": "WorldChannelReplay",
+    "signature": "public static WorldChannelReplaySummary Replay(Func<IPacketSource> openSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 285,
+    "kind": "method_declaration",
+    "name": "Census",
+    "scope": "WorldChannelReplay",
+    "signature": "private static IReadOnlyList<KeyValuePair<string, long>> Census(Func<IPacketSource> openSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 292,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "frame =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 305,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 305,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "o =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 309,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "WorldChannelReplay",
+    "signature": "private static WorldChannelReplaySummary Decode( Func<IPacketSource> openSource, IReadOnlyList<KeyValuePair<string, long>> opcodes, UnobservedBreakdown unobserved)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 446,
+    "kind": "method_declaration",
+    "name": "Classify",
+    "scope": "WorldChannelReplay",
+    "signature": "private static UnobservedBreakdown Classify(Func<IPacketSource> openSource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 531,
+    "kind": "method_declaration",
+    "name": "TrackState",
+    "scope": "WorldChannelReplay",
+    "signature": "private static void TrackState( string opcode, string[] fields, HashSet<long> positioned, ref long? ownId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 571,
+    "kind": "method_declaration",
+    "name": "CarriesEntityTypeFirst",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool CarriesEntityTypeFirst(string opcode)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 574,
+    "kind": "method_declaration",
+    "name": "ClassifyEmpty",
+    "scope": "WorldChannelReplay",
+    "signature": "private static void ClassifyEmpty( string opcode, string[] fields, HashSet<long> positioned, long? ownId, Dictionary<string, long> rejected, Dictionary<string, long> emptyByDesign, Dictionary<string, long> unexplained)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 638,
+    "kind": "method_declaration",
+    "name": "StShapeValid",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool StShapeValid(string[] fields, out long entityId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 655,
+    "kind": "method_declaration",
+    "name": "CtShapeValid",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool CtShapeValid( string[] fields, out int sourceType, out long sourceId, out int targetType, out long targetId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 677,
+    "kind": "method_declaration",
+    "name": "TryReadLine",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool TryReadLine(ReadOnlySpan<byte> payload, out string line)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 692,
+    "kind": "method_declaration",
+    "name": "TryReadAscii",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool TryReadAscii(ReadOnlySpan<byte> payload, out string text)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 706,
+    "kind": "method_declaration",
+    "name": "TryInt",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool TryInt(string[] fields, int index, out int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 714,
+    "kind": "method_declaration",
+    "name": "TryLong",
+    "scope": "WorldChannelReplay",
+    "signature": "private static bool TryLong(string[] fields, int index, out long value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 722,
+    "kind": "method_declaration",
+    "name": "Add",
+    "scope": "WorldChannelReplay",
+    "signature": "private static void Add(Dictionary<string, long> counts, string key)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 725,
+    "kind": "method_declaration",
+    "name": "Sort",
+    "scope": "WorldChannelReplay",
+    "signature": "private static IReadOnlyList<KeyValuePair<string, long>> Sort(Dictionary<string, long> counts)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 726,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WorldChannelReplay.cs",
+    "line": 726,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldChannelReplay",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 94,
+    "kind": "constructor_declaration",
+    "name": "ClientArrivalWatcher",
+    "scope": "ClientArrivalWatcher",
+    "signature": "public ClientArrivalWatcher( Func<IReadOnlyList<int>>? processLookup = null, Func<int, ClientNetworkObservation>? networkLookup = null, TimeSpan? pollInterval = null, Func<DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 108,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClientArrivalWatcher",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 114,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ClientArrivalWatcher",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "Poll",
+    "scope": "ClientArrivalWatcher",
+    "signature": "public ClientArrivalStatus Poll()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "WaitForClient",
+    "scope": "ClientArrivalWatcher",
+    "signature": "public ClientArrivalStatus WaitForClient( TimeSpan timeout, CancellationToken cancellationToken = default, Action<ClientArrivalStatus>? onStatus = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "IsSubstantiallyDifferent",
+    "scope": "ClientArrivalWatcher",
+    "signature": "private static bool IsSubstantiallyDifferent(ClientArrivalStatus current, ClientArrivalStatus next)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientArrivalWatcher.cs",
+    "line": 261,
+    "kind": "method_declaration",
+    "name": "EnumerateClientProcesses",
+    "scope": "ClientArrivalWatcher",
+    "signature": "private static IReadOnlyList<int> EnumerateClientProcesses()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+    "line": 35,
+    "kind": "constructor_declaration",
+    "name": "ClientMapWorldSource",
+    "scope": "ClientMapWorldSource",
+    "signature": "public ClientMapWorldSource(Func<int?> processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ClientMapWorldSource",
+    "signature": "public MapWorldObservation Read()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ClientMapWorldSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "TrySession",
+    "scope": "ClientMapWorldSource",
+    "signature": "private bool TrySession(int pid, out ClientMemorySession? session, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMapWorldSource.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "DropSession",
+    "scope": "ClientMapWorldSource",
+    "signature": "private void DropSession()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 33,
+    "kind": "constructor_declaration",
+    "name": "ClientMemorySession",
+    "scope": "ClientMemorySession",
+    "signature": "private ClientMemorySession( Process process, ProcessMemoryReader reader, NosTaleClientLayout layout, IntPtr moduleBase, long moduleSize)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 57,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ClientMemorySession",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ClientMemorySession",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "TryAttach",
+    "scope": "ClientMemorySession",
+    "signature": "public static bool TryAttach( out ClientMemorySession? session, out string? failureReason, int processId = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "TryReadPlayer",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadPlayer(out PlayerObjectReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "TryResolveBases",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryResolveBases(out IntPtr playerManager, out IntPtr playerObject, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 156,
+    "kind": "method_declaration",
+    "name": "TryReadTarget",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadTarget(out TargetPointerReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 163,
+    "kind": "method_declaration",
+    "name": "TryReadMapId",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadMapId(out int mapId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 177,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadPlayerVitals(out PlayerVitalsReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 183,
+    "kind": "method_declaration",
+    "name": "TryScanPlayerVitals",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryScanPlayerVitals( out IReadOnlyList<PlayerVitalsHit> hits, out string? failureReason, int windowBytes = PlayerVitalsScan.DefaultWindowBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadPlayerVitals(out PlayerVitalsCandidate reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 203,
+    "kind": "method_declaration",
+    "name": "TryReadEntities",
+    "scope": "ClientMemorySession",
+    "signature": "public bool TryReadEntities( MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 211,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ClientMemorySession",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientMemorySession.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "FindClient",
+    "scope": "ClientMemorySession",
+    "signature": "private static Process? FindClient(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "ToString",
+    "scope": "ClientTcpConnection",
+    "signature": "public override string ToString()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "Failed",
+    "scope": "ClientNetworkObservation",
+    "signature": "public static ClientNetworkObservation Failed(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClientNetworkObservation",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 111,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "ClientNetworkObserver",
+    "signature": "public static ClientNetworkObservation Observe(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 135,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClientNetworkObserver",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "ReadIPv4",
+    "scope": "ClientNetworkObserver",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static IEnumerable<ClientTcpConnection> ReadIPv4(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "ReadIPv6",
+    "scope": "ClientNetworkObserver",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static IEnumerable<ClientTcpConnection> ReadIPv6(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 197,
+    "kind": "method_declaration",
+    "name": "ReadTable",
+    "scope": "ClientNetworkObserver",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static IEnumerable<IntPtr> ReadTable(int addressFamily)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "NetworkPort",
+    "scope": "ClientNetworkObserver",
+    "signature": "private static int NetworkPort(uint value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 229,
+    "kind": "method_declaration",
+    "name": "ToState",
+    "scope": "ClientNetworkObserver",
+    "signature": "private static ClientTcpState ToState(uint state)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/ClientNetworkObserver.cs",
+    "line": 232,
+    "kind": "method_declaration",
+    "name": "GetExtendedTcpTable",
+    "scope": "ClientNetworkObserver",
+    "signature": "[DllImport(\"iphlpapi.dll\", SetLastError = true)] private static extern uint GetExtendedTcpTable( IntPtr pTcpTable, ref int pdwSize, bool bOrder, int ulAf, int tableClass, int reserved);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityName.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "Missing",
+    "scope": "EntityNameCandidate",
+    "signature": "public static EntityNameCandidate Missing(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityName.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "EntityNameCandidate",
+    "signature": "public static EntityNameCandidate Candidate(string value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityName.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "TryParseAnsi",
+    "scope": "EntityNameText",
+    "signature": "public static bool TryParseAnsi(ReadOnlySpan<byte> bytes, out string? name, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityNameProbe.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "EntityNameProbe",
+    "signature": "public static int Run(string? capturePath = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityNameProbe.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "FormatRow",
+    "scope": "EntityNameProbe",
+    "signature": "internal static string FormatRow( MapEntityKind kind, in MapEntityReading entity, WireEntityName? wire, string vs)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityNameProbe.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "LoadWire",
+    "scope": "EntityNameProbe",
+    "signature": "private static WireEntityNameTable LoadWire(string? capturePath, out string source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EntityNameProbe.cs",
+    "line": 140,
+    "kind": "method_declaration",
+    "name": "Pad",
+    "scope": "EntityNameProbe",
+    "signature": "private static string Pad(string text, int width)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 83,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 83,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 100,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 100,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 126,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 126,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 150,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 150,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 162,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 162,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 176,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 176,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 180,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 180,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 184,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 184,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 196,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 196,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 206,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 206,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 210,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 210,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 214,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "GameplayObservation",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 214,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "GameplayObservation",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "Unobserved",
+    "scope": "GameplayObservation",
+    "signature": "public static GameplayObservation Unobserved(string reason, DateTime? atUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 303,
+    "kind": "method_declaration",
+    "name": "ToWire",
+    "scope": "GameplayObservation",
+    "signature": "public object ToWire()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 313,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "list =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 313,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 326,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 328,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 329,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 330,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 331,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "list =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 331,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 336,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "list =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 336,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "i =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 345,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "p =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 352,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "list =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 352,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameplayObservation",
+    "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 369,
+    "kind": "method_declaration",
+    "name": "Project",
+    "scope": "GameplayObservation",
+    "signature": "private static object Project<T>(ClassifiedValue<T> value, Func<T, object> shape)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 378,
+    "kind": "method_declaration",
+    "name": "Iso",
+    "scope": "GameplayObservation",
+    "signature": "private static string Iso(DateTime at)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 401,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IGameplayProvider",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 404,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "IGameplayProvider",
+    "signature": "GameplayObservation Observe();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 536,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkGameplayProvider",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 539,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkGameplayProvider",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 553,
+    "kind": "constructor_declaration",
+    "name": "NetworkGameplayProvider",
+    "scope": "NetworkGameplayProvider",
+    "signature": "public NetworkGameplayProvider( NetworkWorldFeed feed, TimeProvider? clock = null, TimeSpan? maxVitalsAge = null, TimeSpan? maxEntityRetention = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 570,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "NetworkGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 608,
+    "kind": "method_declaration",
+    "name": "MissingVitalsReason",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private string MissingVitalsReason(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 619,
+    "kind": "method_declaration",
+    "name": "Publish",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static GameplayObservation Publish( PlayerVitals vitals, DataSourceKind source, DateTime observedAtUtc, DateTime now, ClassifiedValue<int> entitiesInView)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 653,
+    "kind": "method_declaration",
+    "name": "CountEntities",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static ClassifiedValue<int> CountEntities(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 656,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 657,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 675,
+    "kind": "method_declaration",
+    "name": "Absorb",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void Absorb(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 688,
+    "kind": "method_declaration",
+    "name": "AbsorbEntities",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbEntities(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 744,
+    "kind": "method_declaration",
+    "name": "AbsorbHit",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbHit(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 757,
+    "kind": "method_declaration",
+    "name": "AbsorbTarget",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbTarget(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 768,
+    "kind": "method_declaration",
+    "name": "AbsorbSkills",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbSkills(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 782,
+    "kind": "method_declaration",
+    "name": "AbsorbInventory",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbInventory(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 807,
+    "kind": "method_declaration",
+    "name": "AbsorbEquipment",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbEquipment(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 828,
+    "kind": "method_declaration",
+    "name": "AbsorbProgression",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbProgression(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 840,
+    "kind": "method_declaration",
+    "name": "AbsorbGroundItems",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbGroundItems(NetworkObservationReport report, DateTime now)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 865,
+    "kind": "method_declaration",
+    "name": "AbsorbPickup",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void AbsorbPickup(NetworkObservationReport report)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 879,
+    "kind": "method_declaration",
+    "name": "Expire",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private void Expire<TKey, T>(Dictionary<TKey, Retained<T>> table, DateTime now) where TKey : notnull",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 882,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "entry =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 883,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "entry =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 890,
+    "kind": "method_declaration",
+    "name": "WithWorld",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private GameplayObservation WithWorld(GameplayObservation observation)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 905,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 907,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 907,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 917,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 928,
+    "kind": "method_declaration",
+    "name": "PublishEquipment",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private ClassifiedValue<WornEquipmentReading> PublishEquipment()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 930,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 937,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 938,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 939,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 943,
+    "kind": "method_declaration",
+    "name": "PublishEntities",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private ClassifiedValue<IReadOnlyList<SelectableEntity>> PublishEntities()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 946,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 956,
+    "kind": "method_declaration",
+    "name": "PublishList",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static ClassifiedValue<IReadOnlyList<T>> PublishList<T>(IEnumerable<Retained<T>> ordered, string emptyReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 962,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 963,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 964,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkGameplayProvider",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 971,
+    "kind": "method_declaration",
+    "name": "Remembered",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static DataSourceKind Remembered(DataSourceKind source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 977,
+    "kind": "method_declaration",
+    "name": "Weakest",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static DataSourceKind Weakest(IEnumerable<DataSourceKind> sources)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 979,
+    "kind": "local_function_statement",
+    "name": "Rank",
+    "scope": "NetworkGameplayProvider",
+    "signature": "static int Rank(DataSourceKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 993,
+    "kind": "method_declaration",
+    "name": "TryToPoint",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static bool TryToPoint(double x, double y, out MapPoint point)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 1004,
+    "kind": "method_declaration",
+    "name": "Classify",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime at)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 1028,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "UnavailableGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 43,
+    "kind": "constructor_declaration",
+    "name": "LiveObservationGateway",
+    "scope": "LiveObservationGateway",
+    "signature": "public LiveObservationGateway( RealClientConnector client, IGameplayProvider gameplay)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "LiveObservationGateway",
+    "signature": "public LiveObservationSnapshot Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "ObserveGameplaySafely",
+    "scope": "LiveObservationGateway",
+    "signature": "private GameplayObservation ObserveGameplaySafely()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 64,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "LiveObservationScope",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 66,
+    "kind": "constructor_declaration",
+    "name": "LiveObservationScope",
+    "scope": "LiveObservationScope",
+    "signature": "private LiveObservationScope( SessionAuth auth, RealClientConnector client, ReassembledObservationSource observationSource, IGameplayProvider provider)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "LiveObservationScope",
+    "signature": "public static LiveObservationScope? TryOpen(int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "NewPublicKeyPem",
+    "scope": "LiveObservationScope",
+    "signature": "private static string NewPublicKeyPem()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "LiveObservationScope",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Contains",
+    "scope": "MapDimensions",
+    "signature": "public bool Contains(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "ReadPosition",
+    "scope": "IPlayerPositionProvider",
+    "signature": "ClassifiedValue<MapPoint> ReadPosition();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 126,
+    "kind": "constructor_declaration",
+    "name": "MemoryGameplayProvider",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public MemoryGameplayProvider( Func<ProcessMemoryReader?> reader, Func<(IntPtr Base, long Size)?> module, Func<long?> expectedCharacterId, Func<int?>? movementSpeed = null, Func<MapDimensions?>? mapBounds = null, TimeProvider? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 137,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryGameplayProvider",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 138,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryGameplayProvider",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "ReadPosition",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public ClassifiedValue<MapPoint> ReadPosition()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "IsPlausibleCoordinate",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public static bool IsPlausibleCoordinate(int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 242,
+    "kind": "method_declaration",
+    "name": "Distance",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private static double Distance(MapPoint a, MapPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "Forget",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private void Forget()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private static ClassifiedValue<MapPoint> Unknown(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "MapWorldObservation",
+    "signature": "public static MapWorldObservation Unknown(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 90,
+    "kind": "constructor_declaration",
+    "name": "MemoryMapWorldProvider",
+    "scope": "MemoryMapWorldProvider",
+    "signature": "public MemoryMapWorldProvider(IGameplayProvider inner, Func<MapWorldObservation> read)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "MemoryMapWorldProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "MemoryScanProbe",
+    "signature": "public static int Run(string[] args, int flagIndex)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "RunDump",
+    "scope": "MemoryScanProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunDump(string[] args, int flagIndex)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "Execute",
+    "scope": "MemoryScanProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int Execute(int processId, int value, bool narrowing)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "TryReadOperands",
+    "scope": "MemoryScanProbe",
+    "signature": "private static bool TryReadOperands( string[] args, int flagIndex, out int processId, out int value, out string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 200,
+    "kind": "method_declaration",
+    "name": "TryLoadCandidates",
+    "scope": "MemoryScanProbe",
+    "signature": "private static bool TryLoadCandidates(out List<IntPtr> candidates, out int passes, out string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 241,
+    "kind": "method_declaration",
+    "name": "SaveCandidates",
+    "scope": "MemoryScanProbe",
+    "signature": "private static void SaveCandidates(MemoryScanner.ScanResult result)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 252,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryScanProbe",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "Scan",
+    "scope": "MemoryScanner",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Scan(ProcessMemoryReader reader, int value, bool privateRegionsOnly = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "Narrow",
+    "scope": "MemoryScanner",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Narrow( ProcessMemoryReader reader, IReadOnlyList<IntPtr> candidates, int value, int previousPasses = 1)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 57,
+    "kind": "constructor_declaration",
+    "name": "MemoryTargetGameplayProvider",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "public MemoryTargetGameplayProvider( IGameplayProvider inner, Func<TargetPointerReading?> read, Func<string?>? failureReason = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 64,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
+    "line": 14,
+    "kind": "constructor_declaration",
+    "name": "NetworkWorldStateObserver",
+    "scope": "NetworkWorldStateObserver",
+    "signature": "public NetworkWorldStateObserver(IGameplayProvider provider)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "ObserveAsync",
+    "scope": "NetworkWorldStateObserver",
+    "signature": "public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Matches",
+    "scope": "SignatureByte",
+    "signature": "public bool Matches(byte candidate)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 327,
+    "kind": "constructor_declaration",
+    "name": "NosTaleClientLayout",
+    "scope": "NosTaleClientLayout",
+    "signature": "private NosTaleClientLayout(IntPtr pointerHolder, IntPtr moduleBase)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 354,
+    "kind": "method_declaration",
+    "name": "TryResolve",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryResolve( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out NosTaleClientLayout? layout, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 444,
+    "kind": "method_declaration",
+    "name": "TryReadTarget",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadTarget( ProcessMemoryReader reader, out TargetPointerReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 487,
+    "kind": "method_declaration",
+    "name": "TryReadPlayer",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayer( ProcessMemoryReader reader, out PlayerObjectReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 554,
+    "kind": "method_declaration",
+    "name": "TryResolveBases",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryResolveBases( ProcessMemoryReader reader, out IntPtr playerManager, out IntPtr playerObject, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 580,
+    "kind": "method_declaration",
+    "name": "TryScanPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryScanPlayerVitals( ProcessMemoryReader reader, out IReadOnlyList<PlayerVitalsHit> hits, out string? failureReason, int windowBytes = PlayerVitalsScan.DefaultWindowBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 622,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsCandidate reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 660,
+    "kind": "method_declaration",
+    "name": "TryReadMapId",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadMapId( ProcessMemoryReader reader, out int mapId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 716,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 762,
+    "kind": "method_declaration",
+    "name": "TryReadWord",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryReadWord( ProcessMemoryReader reader, IntPtr at, string what, out uint value, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 797,
+    "kind": "method_declaration",
+    "name": "TryReadEntities",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryReadEntities( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 893,
+    "kind": "method_declaration",
+    "name": "TryNameChain",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryNameChain( MapEntityKind kind, out int fromEntity, out int fromNameObject, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 926,
+    "kind": "method_declaration",
+    "name": "TryReadEntityName",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static EntityNameCandidate TryReadEntityName( ProcessMemoryReader reader, IntPtr entity, MapEntityKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1024,
+    "kind": "method_declaration",
+    "name": "IsPlausibleSceneOperand",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool IsPlausibleSceneOperand(uint operand, IntPtr moduleBase, out string? rejection)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1086,
+    "kind": "method_declaration",
+    "name": "TryResolveScene",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryResolveScene( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out IntPtr scene, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1187,
+    "kind": "method_declaration",
+    "name": "LooksLikeSceneManager",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool LooksLikeSceneManager(ProcessMemoryReader reader, IntPtr candidate)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1208,
+    "kind": "method_declaration",
+    "name": "TryConfirmSceneManager",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static bool TryConfirmSceneManager( ProcessMemoryReader reader, IntPtr candidate, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1278,
+    "kind": "method_declaration",
+    "name": "TryFollow",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryFollow( ProcessMemoryReader reader, IntPtr at, string what, out IntPtr value, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1304,
+    "kind": "method_declaration",
+    "name": "ParseSignature",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static SignatureByte[] ParseSignature(string signature)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1327,
+    "kind": "method_declaration",
+    "name": "IndexOfSignature",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static int IndexOfSignature( ReadOnlySpan<byte> haystack, ReadOnlySpan<SignatureByte> signature, int from = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PlayerObjectProbe",
+    "signature": "public static int Run(int processId, long? expectedCharacterId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "ReportEntities",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static void ReportEntities(ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "TryFindClient",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static bool TryFindClient(out int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 198,
+    "kind": "method_declaration",
+    "name": "TryGetProcess",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static Process? TryGetProcess(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "TryMainModule",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static bool TryMainModule( Process process, out IntPtr moduleBase, out long moduleSize, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Percent",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static int Percent(uint value, uint max)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "TryParse",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static bool TryParse(ReadOnlySpan<byte> bytes, out PlayerVitalsBlock block, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "TryRange",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static bool TryRange( uint hp, uint maxHp, uint mp, uint maxMp, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "DescribeOffset",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public string DescribeOffset()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "Missing",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public static PlayerVitalsCandidate Missing(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "From",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public static PlayerVitalsCandidate From(in PlayerVitalsHit hit)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "TryContinuity",
+    "scope": "PlayerVitalsPredicate",
+    "signature": "public static bool TryContinuity( in PlayerVitalsBlock previous, in PlayerVitalsBlock current, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 264,
+    "kind": "method_declaration",
+    "name": "TryMatchPercent",
+    "scope": "PlayerVitalsPredicate",
+    "signature": "public static bool TryMatchPercent( int memoryPercent, int wirePercent, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 289,
+    "kind": "method_declaration",
+    "name": "TookDamage",
+    "scope": "PlayerVitalsOracle",
+    "signature": "public static bool TookDamage(in PlayerVitalsHit before, in PlayerVitalsHit after)",
+    "category": "project"
+  }
+]
