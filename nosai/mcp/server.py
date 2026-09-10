@@ -94,7 +94,7 @@ def create_server(config_path: Path | str | None = None):
     @server.tool()
     def mcp_propose_change(component: str, summary: str, files_json: str) -> str:
         proposal = chief.propose_improvement(component, summary, json.loads(files_json))
-        audit.append("change_proposed", {"proposal_id": proposal.proposal_id, "component": component, "files": list(proposal.files)})
+        audit.append("change_proposed", {"proposal_id": proposal["proposal_id"], "component": component, "files": list(proposal["files"])})
         return json.dumps({"proposal_id": proposal["proposal_id"], "status": proposal["status"], "files": list(proposal["files"])}, ensure_ascii=False)
 
     @server.tool()
