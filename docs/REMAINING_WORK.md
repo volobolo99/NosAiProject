@@ -72,3 +72,10 @@ LAB-01..LAB-07 sono PLANNED, non implementati da questa importazione.
 Priorità iniziale: sostituire i booleani di audit forniti dal chiamante con evidenze
 verificate, quindi risolvere concorrenza e persistenza. R-208 è coperto da LAB-03.
 Il laboratorio non è attivo finché prove e integrazione end-to-end non sono completate.
+
+## Indice funzioni e audit verificato
+
+Consultare [FUNCTION_INDEX.md](FUNCTION_INDEX.md) per ricerca per file/simbolo,
+source revision e copertura. [DOCUMENTATION_ALIGNMENT_AUDIT.md](DOCUMENTATION_ALIGNMENT_AUDIT.md)
+elenca disallineamenti e 16 contratti con firme non precise. R-207 ha ora un indice
+statico generato; restano revisione dei quattro errori parser e automazione della rigenerazione.
