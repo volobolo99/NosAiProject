@@ -15,6 +15,7 @@ Questo catalogo distingue l’identità professionale dal modello che la esegue.
 | ID stabile | Nome | Responsabilità principale | Modello primario | Fallback |
 |---|---|---|---|---|
 | `employee.orchestrator_cto` | Orchestrator/CTO | architettura, scomposizione, routing e approvazione | Claude | Qwen3 Coder 30B |
+| `employee.mcp_chief` | MCP Chief | salute continua dell’Hub, ottimizzazione, proposte, promozione e rollback dei binding | Claude | Qwen3 Coder 30B, DeepSeek V4 Flash |
 | `employee.product_manager` | Product Manager | requisiti, roadmap e criteri di accettazione | Qwen2.5 Coder 7B locale | Claude |
 | `employee.game_ai_architect` | Game AI Architect | confini cognitivi, ADR e invarianti | Claude | Qwen3 Coder 30B |
 | `employee.perception` | Perception Agent | cattura, OCR/CV e classificazione osservazioni | Gemini Flash Lite | Qwen3 Coder 30B, Qwen2.5 locale |
@@ -41,7 +42,7 @@ Cambiare modello, provider o configurazione richiede ripetere i test del ruolo i
 
 - Il dipendente non può auto-aumentare permessi o rimuovere divieti.
 - Il modello non può diventare autorità di Safety, policy o audit solo perché è più capace.
-- Il Direttore assegna il lavoro; l’Auditor indipendente può porre veto.
+- Il Direttore assegna il lavoro; il **MCP Chief** sorveglia l’Hub e propone ottimizzazioni; l’Auditor indipendente può porre veto e imporre rollback.
 - Le attività di gioco restano subordinate a Guard, Trust e Safety del runtime locale.
 - La sostituzione automatica del modello richiede shadow mode, test, periodo di prova e rollback, come descritto in `docs/AGENT_COORDINATION.md`.
 
