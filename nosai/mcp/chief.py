@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from .auditor import McpAuditor
 from .bindings import RoleBindingRegistry
 from .director import McpDirector
+from .evidence import EvidenceAuthority
 from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 
 
@@ -22,6 +23,7 @@ class McpChief:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self.bindings = bindings or RoleBindingRegistry(self.root / "role_bindings.json", DEFAULT_EMPLOYEE_ROLES)
+        self.evidence: EvidenceAuthority = self.bindings.evidence
         self.router = router
         self.director = McpDirector(self.root / "proposals")
         self.auditor = McpAuditor()
@@ -33,6 +35,7 @@ class McpChief:
             "configuration_proposals": True,
             "binding_promotion": True,
             "rollback": True,
+            "evidence_recording": True,
             "direct_execution": False,
             "policy_override": False,
             "audit_override": False,
@@ -49,6 +52,11 @@ class McpChief:
             checks["binding_store"] = {"ok": True, "count": len(bindings)}
         except (OSError, ValueError, KeyError) as exc:
             checks["binding_store"] = {"ok": False, "errors": [str(exc)]}
+        try:
+            evidence = self.evidence.list()
+            checks["evidence_store"] = {"ok": True, "count": len(evidence)}
+        except (OSError, ValueError, KeyError) as exc:
+            checks["evidence_store"] = {"ok": False, "errors": [str(exc)]}
         checks["proposal_store"] = {"ok": self.director.root.is_dir(), "path": str(self.director.root)}
         if self.router is not None:
             try:
@@ -57,7 +65,12 @@ class McpChief:
                 checks["provider_catalog"] = {"ok": bool(enabled), "enabled": len(enabled), "total": len(catalog)}
             except (AttributeError, OSError, ValueError) as exc:
                 checks["provider_catalog"] = {"ok": False, "errors": [str(exc)]}
-        checks["policy_boundaries"] = {"ok": all(not self.authority[key] for key in ("direct_execution", "policy_override", "audit_override", "secret_export", "privileged_game_state"))}
+        checks["policy_boundaries"] = {
+            "ok": all(
+                not self.authority[key]
+                for key in ("direct_execution", "policy_override", "audit_override", "secret_export", "privileged_game_state")
+            )
+        }
         failed = [name for name, result in checks.items() if not result.get("ok")]
         return {
             "schema_version": "mcp.chief.health.v1",
@@ -74,6 +87,8 @@ class McpChief:
             recommendations.append("repair employee role catalog before accepting binding changes")
         if not checks.get("binding_store", {}).get("ok", False):
             recommendations.append("restore or rollback the binding store before routing inference")
+        if not checks.get("evidence_store", {}).get("ok", False):
+            recommendations.append("restore the evidence store before promoting bindings")
         if not checks.get("provider_catalog", {}).get("ok", True):
             recommendations.append("restore or qualify at least one enabled provider before online inference")
         if not checks.get("policy_boundaries", {}).get("ok", False):
@@ -92,8 +107,39 @@ class McpChief:
         verdict = self.auditor.review(ChangeProposal(**proposal), checks)
         return asdict(verdict)
 
-    def promote_binding(self, proposal_id: str, checks: dict[str, bool], confirmation: str) -> dict[str, Any]:
-        return self.bindings.promote(proposal_id, checks, confirmation)
+    def record_evidence(
+        self,
+        candidate_digest: str,
+        evidence_kind: str,
+        executor_id: str,
+        result: Mapping[str, Any],
+        *,
+        signer_id: str = "mcp-evidence-authority",
+        observed_at: str | None = None,
+        ttl_s: int | None = None,
+        test_version: str = "mcp-promotion-v1",
+        dataset_digest: str | None = None,
+        environment_digest: str | None = None,
+        artifact_digest: str | None = None,
+    ) -> dict[str, Any]:
+        """Record digests and status for a worker without storing raw secrets."""
+        zero = "sha256:" + "0" * 64
+        return self.evidence.record(
+            candidate_digest,
+            test_version,
+            dataset_digest or zero,
+            executor_id,
+            environment_digest or zero,
+            artifact_digest or zero,
+            result,
+            signer_id,
+            evidence_kind=evidence_kind,
+            observed_at=observed_at,
+            ttl_s=ttl_s,
+        )
+
+    def promote_binding(self, proposal_id: str, evidence_ids: dict[str, str], confirmation: str) -> dict[str, Any]:
+        return self.bindings.promote(proposal_id, evidence_ids, confirmation)
 
     def rollback_binding(self, employee_id: str, confirmation: str) -> dict[str, Any]:
         return self.bindings.rollback(employee_id, confirmation)
