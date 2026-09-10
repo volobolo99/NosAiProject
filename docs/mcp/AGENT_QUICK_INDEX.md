@@ -14,7 +14,7 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 | audit | `nosai/mcp/audit.py` | payload sempre redatto |
 | Direttore/Auditor | `nosai/mcp/director.py`, `nosai/mcp/auditor.py` | `tests/test_mcp_hub_governance.py` |
 | ruoli e dipendenti | `nosai/mcp/roles.py`, `docs/mcp/ROLE_CATALOG.md` | `RoleArchitect.verify()`, `verify_employee_catalog()` |
-| pannello | `nosai/mcp/static/index.html`, `scripts/mcp_dashboard_server.py` | API `/api/mcp/*` |
+| pannello | `nosai/mcp/static/index.html`, `scripts/mcp_dashboard_server.py` | API `/api/mcp/*`, ruoli `/api/mcp/roles` e verifica `/api/mcp/roles/verify` |
 
 ## Regole per i modelli programmatori
 
