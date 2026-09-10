@@ -27,6 +27,8 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 - `nosai/mcp/secrets.py` — cifratura locale Fernet; nessun ritorno plaintext.
 - `nosai/mcp/audit.py` — JSONL con redazione automatica.
 - `nosai/mcp/server.py` — tool/resource MCP.
+- `nosai/mcp/director.py` + `nosai/mcp/auditor.py` — proposta, veto e rollback esterno.
+- `nosai/mcp/roles.py` — ruoli MCP e verifica di copertura.
 - `nosai/mcp/dashboard.py` — API e pannello locale dedicato.
 
 ## Flusso online→offline
@@ -40,6 +42,8 @@ L’attivazione richiede una richiesta con `confirmation: "operator"`. La config
 
 Le credenziali sono gestite dal pannello ma non vengono mai mostrate integralmente, passate ai modelli o scritte nei log. Un eventuale dato sensibile intercettato viene redatto e non può essere usato come autorizzazione.
 
+Il Direttore MCP può proporre modifiche soltanto in aree non protette. L’Auditor controlla test, compatibilità dei contratti e invarianti Safety; un controllo mancante produce veto e rollback richiesto.
+
 ## Avvio locale
 
 ```powershell
@@ -48,5 +52,4 @@ python scripts/mcp_dashboard_server.py
 ```
 
 Il pannello ascolta su `127.0.0.1:8770`. L’MCP usa stdio tramite `.mcp.json`.
-
 
