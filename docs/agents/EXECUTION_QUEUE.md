@@ -8,6 +8,14 @@
 
 ---
 
+## Navigazione per gli agenti
+
+Guida generale: [AI_PROGRAMMING_GUIDE.md](../AI_PROGRAMMING_GUIDE.md).
+Mappa di integrazione: [AI_PROJECT_STEPS.md](../AI_PROJECT_STEPS.md).
+Questa coda resta la fonte del prossimo incarico. I pacchetti LAB sono definiti in
+contracts/mcp-research-lab-001.json e si attivano ai gate indicati nella mappa,
+senza reimpostare le voci DONE o trattare gli stati documentali come prove runtime.
+
 ## Coda attiva (AP-00 → AP-10)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |
