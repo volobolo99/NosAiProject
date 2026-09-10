@@ -18,8 +18,12 @@
   <section><h2>MCP Chief</h2><p>Supervisione continua e read-only dello stato dell’Hub. Le raccomandazioni non modificano nulla senza il ciclo di audit e conferma.</p><pre id="chief-health">Caricamento…</pre></section>
   <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
   <section><h2>Dipendenti e binding dinamici</h2>
-    <p>Una proposta entra prima in shadow. La promozione richiede test, shadow e audit indipendenti già registrati; il pannello non può inventare questi risultati.</p>
+    <p>Una proposta entra prima in shadow. La promozione richiede tre evidenze firmate, fresche e indipendenti già registrate; il pannello non può inventare questi risultati.</p>
     <div id="roles"></div><pre id="role-proposals"></pre>
+  </section>
+  <section><h2>Evidenze di promozione</h2>
+    <p>Vengono mostrati solo digest, stato, esecutore e scadenza. Chiavi API, token e credenziali non entrano mai nel pannello.</p>
+    <pre id="evidence"></pre>
   </section>
   <section><h2>Chiavi API</h2><p>Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p><pre id="secrets"></pre></section>
   <section><h2>Simulazione deterministica</h2><button id="simulate">Esegui scenario di prova</button><pre id="simulation"></pre></section>
@@ -63,6 +67,7 @@
       document.querySelector('#providers').textContent=JSON.stringify(s.providers,null,2);
       const chief=await json('/api/mcp/chief'); document.querySelector('#chief-health').textContent=JSON.stringify(chief,null,2);
       const k=await json('/api/mcp/secrets'); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
+      const evidence=await json('/api/mcp/evidence'); document.querySelector('#evidence').textContent=JSON.stringify(evidence,null,2);
       await refreshRoles();
     }
     document.querySelector('#toggle').onclick=async()=>{const s=await json('/api/mcp/status'); await json('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
