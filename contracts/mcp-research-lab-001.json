@@ -1,6 +1,6 @@
 {
   "contract_id": "mcp-research-lab-001",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "DRAFT",
   "design_approved": true,
   "implementation_verified": false,
@@ -68,17 +68,20 @@
       "depends_on": [],
       "objective": "Close caller-asserted audit promotion gap with authenticated evidence authority",
       "files": [
+        "nosai/mcp/evidence.py",
         "nosai/mcp/bindings.py",
         "nosai/mcp/chief.py",
         "nosai/mcp/dashboard.py",
-        "nosai/mcp/server.py"
+        "nosai/mcp/server.py",
+        "schemas/mcp_evidence_record.schema.json"
       ],
       "acceptance": [
         "forged/missing/stale evidence rejected",
         "candidate digest mismatch rejected",
         "evaluator cannot be candidate author"
       ],
-      "status": "PLANNED"
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "implementation_notes": "Signed TTL evidence and independent executor checks are present; runtime/provider execution still requires evidence."
     },
     {
       "id": "LAB-02",
@@ -87,8 +90,11 @@
       ],
       "objective": "Transactional shared state and JSON migration",
       "files": [
+        "nosai/mcp/state.py",
         "nosai/mcp/bindings.py",
-        "nosai/mcp/router.py"
+        "nosai/mcp/router.py",
+        "config/mcp.default.json",
+        "schemas/mcp_role_binding.schema.json"
       ],
       "acceptance": [
         "two processes observe same revision",
@@ -96,7 +102,8 @@
         "rollback survives restart",
         "crash does not partially promote"
       ],
-      "status": "PLANNED"
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "implementation_notes": "SQLite WAL store, JSON migration backup, monotone revision, idempotency and leases are present; multi-process and restart evidence remains to be recorded."
     },
     {
       "id": "LAB-03",
@@ -189,5 +196,9 @@
       ],
       "status": "PLANNED"
     }
+  ],
+  "implemented_packages": [
+    "LAB-01",
+    "LAB-02"
   ]
 }
