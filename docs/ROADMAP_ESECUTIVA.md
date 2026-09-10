@@ -164,3 +164,9 @@ Ogni fase richiede build Release senza warning, unit/integration tests, test neg
 8. character/build optimizer;
 9. adaptive knowledge + action-outcome ledger;
 10. end-to-end autonomous certification.
+
+## 10. MCP Hub integration
+
+Il sottosistema `nosai/mcp/` sostiene tutte le fasi AP-00–AP-10 senza diventare autorità di esecuzione. Il pannello MCP è locale e separato; MCP Rete resta spento al primo avvio e si abilita solo con conferma dell'operatore. Il routing usa provider locali/free-first, la simulazione è deterministica e l'apprendimento online produce soltanto candidati sottoposti a evidenza, audit e validazione prima dell'esportazione offline.
+
+Riferimenti operativi: `docs/mcp/AGENT_QUICK_INDEX.md`, `docs/mcp/CONTROL_PANEL.md`, `contracts/mcp-hub-001.json`.
