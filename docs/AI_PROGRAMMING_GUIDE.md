@@ -38,18 +38,14 @@ Non rileggere archivi, ricerca o third_party per ogni incarico.
 Da third_party riusare solo dopo verifica di commit, licenza e dipendenze.
 Il contratto completo non si ricostruisce dal nome del file.
 
-## Disallineamenti da gestire
-Le etichette AP del vecchio ledger non coincidono sempre con le AP della roadmap:
-AP-03 nel ledger può indicare decisione, nella roadmap ricostruzione mappe.
-Usare ID CID e scopo, mai associare automaticamente per numero.
-La mappa contratti presenta intestazioni contratto/stato invertite rispetto ad alcune
-righe: per leggere lo stato verificare il JSON del ledger.
-C-204 proprietà C#/Python e C-304 pianificazione richiedono decisioni documentate.
-La coda contiene istruzioni storiche di assegnazione diverse dalle regole permanenti:
-risolvere la precedenza delle istruzioni applicabili prima di delegare, senza
-riscrivere le regole o cambiare modelli implicitamente.
-Le schede JSON sono un indice di lettura, non una nuova coda né un indice completo
-delle funzioni. R-207 resta il lavoro per generare quest'ultimo.
+## Contratti e precedenza riconciliati
+
+CONTRACT_MAP distingue ora fase prodotto, titolo e stato; product_phases nel ledger
+mappa esplicitamente i gruppi legacy. La coda conserva incarichi storici ma le
+regole correnti degli agenti governano le nuove assegnazioni.
+CONTRACT_SIGNATURE_TASKS.md contiene i 16 contratti con firma ancora da risolvere.
+Non iniziare infilling se manca la firma del contratto assegnato.
+L'indice funzioni è uno snapshot sintattico: controllare revision e parse_errors.
 
 ## Indice funzioni e audit verificato
 
