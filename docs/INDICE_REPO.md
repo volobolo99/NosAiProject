@@ -8,6 +8,19 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 
 ---
 
+## 0. Documenti di coordinamento rapido
+
+| Documento | Uso |
+|---|---|
+| `docs/SOURCE_OF_TRUTH.md` | precedenza delle fonti |
+| `docs/CONTRACT_MAP.md` | CID, stato, file, test e blocker di ogni contratto |
+| `docs/SYSTEM_MAP.md` | moduli, confini e comunicazioni end-to-end |
+| `docs/AGENT_COORDINATION.md` | task packet, ownership, handoff, audit e rollback |
+| `docs/REMAINING_WORK.md` | attività residue ordinate per priorità ed evidenza |
+| `docs/agents/EXECUTION_QUEUE.md` | prossimo task operativo |
+
+---
+
 ## 1. Struttura di primo livello
 
 | Percorso | Contenuto |
