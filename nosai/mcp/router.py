@@ -6,6 +6,7 @@ from typing import Iterable
 from .contracts import ProviderConfig, RouteDecision
 from .bindings import RoleBindingRegistry
 from .policy import McpPolicy
+from .state import McpStateStore
 
 
 @dataclass
@@ -18,7 +19,8 @@ class ModelRouter:
     def from_config(cls, config: dict, policy: McpPolicy) -> "ModelRouter":
         providers = [ProviderConfig(**item) for item in config.get("providers", [])]
         binding_path = config.get("role_bindings_path", "data/mcp/role_bindings.json")
-        bindings = RoleBindingRegistry(binding_path)
+        state_path = config.get("state_path") or str(__import__("pathlib").Path(binding_path).with_suffix(".sqlite3"))
+        bindings = RoleBindingRegistry(binding_path, state_store=McpStateStore(state_path))
         return cls(policy=policy, providers=providers, role_bindings=bindings)
 
     def catalog(self) -> list[dict]:
