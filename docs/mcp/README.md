@@ -90,7 +90,11 @@ Il pannello ascolta su `127.0.0.1:8770`. L’MCP usa stdio tramite `.mcp.json`.
 
 Specifiche: [RESEARCH_LAB_SPEC.md](RESEARCH_LAB_SPEC.md).
 Contratto e sequenza per gli agenti: [mcp-research-lab-001](../../contracts/mcp-research-lab-001.json).
-Stato: progettazione importata, implementazione estesa PLANNED.
-I controlli attuali del catalogo non certificano disponibilità reale o supervisione continua.
-I booleani di promozione forniti dal chiamante non costituiscono audit indipendente:
-LAB-01 deve chiudere questa lacuna prima di abilitare rilasci autonomi.
+Stato: LAB-01 e LAB-02 sono implementati su `main`: evidenze firmate,
+promozioni con tre executor indipendenti e stato SQLite transazionale con lease,
+osservazioni e idempotenza. LAB-03..LAB-07 restano pianificati: manca ancora il
+watchdog end-to-end, il worker pool, il laboratorio di esperimenti, il rilascio a
+mandato e la certificazione completa del pannello.
+I controlli del catalogo non certificano disponibilità reale: usare le osservazioni
+del supervisore e trattare `UNKNOWN` come non operativo. I booleani `checks`
+storici non costituiscono audit indipendente e sono rifiutati dalla promozione.
