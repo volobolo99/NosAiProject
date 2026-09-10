@@ -53,7 +53,8 @@ if ($ProcessId -eq 0) {
         Where-Object { $_.MainWindowTitle } | Sort-Object WorkingSet64 -Descending
     if (-not $candidates) { Write-Error "No NostaleClientX process with a window. Is the client in game?" }
     $ProcessId = $candidates[0].Id
-    Write-Host "Client: PID $ProcessId ($([int]($candidates[0].WorkingSet64/1MB)) MB)" -ForegroundColor Cyan
+    $memoryMB = [int]($candidates[0].WorkingSet64 / [math]::Pow(1024, 2))
+    Write-Host "Client: PID $ProcessId ($memoryMB MB)" -ForegroundColor Cyan
 }
 
 function Invoke-Probe {
