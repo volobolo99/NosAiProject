@@ -36,6 +36,13 @@ Two root documents are canonical for their own subject because nothing else cove
 and cost policy). Verified model prices live in `scripts/model_prices.json`, which is the single
 source for cost classes.
 
+## AI programming navigation
+
+Start at [AI_PROGRAMMING_GUIDE.md](AI_PROGRAMMING_GUIDE.md).
+[AI_PROJECT_STEPS.md](AI_PROJECT_STEPS.md) maps canonical AP phases to MCP Lab integration.
+[AI_DEVELOPMENT_MAP.json](AI_DEVELOPMENT_MAP.json) is a compact navigation index, not a second status ledger.
+[AI_DELIVERY_PROTOCOL.md](AI_DELIVERY_PROTOCOL.md) defines implementation handoffs.
+
 ## Development-support documents
 
 - `docs/agents/EXECUTION_QUEUE.md` — work queue: what the next step is.
