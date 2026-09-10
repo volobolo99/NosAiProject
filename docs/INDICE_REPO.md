@@ -1,6 +1,6 @@
 # INDICE DI ROUTING — NosAiProject
 
-Mappa file → responsabilità → tipi pubblici. Serve a individuare il file esatto senza esplorare il repo.
+Mappa file → responsabilità → tipi pubblici. Serve a individuare il file esatto senza esplorare il repo. Per ownership e regole di archiviazione consultare `docs/REPOSITORY_ORDER.md`.
 Generato il 2026-09-02 da scansione diretta di `C:\Users\volob\Desktop\NosAiProject`.
 Notazione: `percorso (righe) — responsabilità. Tipi: ...`
 
@@ -12,14 +12,14 @@ Rigenerare quando si aggiungono/rimuovono file o si spostano namespace. Non serv
 
 | Percorso | Contenuto |
 |---|---|
-| `src/` | 10 progetti .NET 8 (291 file `.cs`) — codice di produzione |
-| `nosai/` | pacchetto Python (84 file `.py`) — ricerca, prototipi e tooling |
-| `tests/` | 3 progetti di test .NET + 37 test Python |
-| `docs/` | 51 documenti + 21 ADR |
+| `src/` | progetti .NET 8 — codice di produzione; conteggio aggiornato nell’inventario |
+| `nosai/` | pacchetto Python — runtime e tooling; conteggio aggiornato nell’inventario |
+| `tests/` | test .NET e Python; conteggio aggiornato nell’inventario |
+| `docs/` | specifiche, ADR, ricerca e report; conteggio aggiornato nell’inventario |
 | `proto/` | `nosai_network_v1.proto` — schema del protocollo di rete |
 | `scripts/` | `build/test/validate` in PowerShell e bash |
 | `tools/` | `NosAi.Analyzers`, `find-vitals.ps1`, `windivert`, `deepseek-mcp` (server MCP locale: Claude delega a DeepSeek senza copia-incolla) |
-| `data/` | configurazioni, chiavi (`guard_public_key.pem`, `runtime_identity.dpapi`), catture `.noscap`, evidenze test |
+| `data/` | configurazioni ed evidenze pubblicabili; segreti e artefatti locali restano esclusi da Git |
 | Radice | `NosAi.sln`, `Directory.Build.props`, `NosAi.cmd`, `.claude/CLAUDE.md` |
 
 ---
