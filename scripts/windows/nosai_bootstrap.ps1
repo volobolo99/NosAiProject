@@ -25,7 +25,7 @@ if ($volume.DriveLetter -eq $null) {
 }
 
 $root = "$($volume.DriveLetter):\"
-$freeGB = [math]::Round($volume.SizeRemaining / 1GB, 1)
+$freeGB = [math]::Round($volume.SizeRemaining / [math]::Pow(1024, 3), 1)
 if ($freeGB -lt $MinimumFreeGB) {
     throw "Insufficient free space on '$VolumeLabel': $freeGB GiB available; $MinimumFreeGB GiB required."
 }
