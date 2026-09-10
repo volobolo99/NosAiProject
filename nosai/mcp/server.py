@@ -8,9 +8,7 @@ from .audit import AuditLog
 from .config import load_config
 from .contracts import ActivationRequest, SimulationRequest, ToolRisk
 from .learning import LearningFactory
-from .auditor import McpAuditor
 from .chief import McpChief
-from .director import McpDirector
 from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 from .policy import McpPolicy
 from .router import ModelRouter
@@ -43,8 +41,6 @@ def create_server(config_path: Path | str | None = None):
         # fails closed until the operator configures the encrypted store.
         secret_store = None
     inference = InferenceGateway(router, secret_store)
-    director = McpDirector("data/mcp/proposals")
-    auditor = McpAuditor()
     server = FastMCP("nosai-mcp-hub")
 
     @server.tool()
