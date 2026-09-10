@@ -5,6 +5,7 @@
   "learning_path": "data/mcp/learning",
   "secret_path": "data/mcp/secrets.enc.json",
   "role_bindings_path": "data/mcp/role_bindings.json",
+  "state_path": "data/mcp/state.sqlite3",
   "providers": [
     {"provider_id": "ollama-local", "model_id": "qwen2.5-coder:7b", "tier": 0, "enabled": true, "network_required": false, "capabilities": ["documentation", "scaffold", "offline"]},
     {"provider_id": "groq-free", "model_id": "qwen/qwen3-32b", "tier": 1, "enabled": true, "network_required": true, "capabilities": ["tactical", "coding"]},
