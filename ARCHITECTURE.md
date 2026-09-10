@@ -1,7 +1,7 @@
 # Architettura
 
 ## Documenti canonici
-Il documento canonico degli invarianti architetturali è `docs/NOSAI_ARCHITECTURE_BASELINE.md`. Una descrizione architetturale estesa in italiano si trova in `docs/ARCHITETTURA.md`. Le decisioni architetturali accettate sono riportate in 30 file nella directory `docs/adr/`.
+Il documento canonico degli invarianti architetturali è `docs/NOSAI_ARCHITECTURE_BASELINE.md`. Una descrizione architetturale estesa in italiano si trova in `docs/ARCHITETTURA.md`. Le decisioni architetturali accettate sono riportate nei file numerati della directory `docs/adr/`; il conteggio corrente è nell’inventario del repository.
 
 ## Catena di esecuzione
 1. Observe
@@ -34,3 +34,6 @@ Il documento canonico degli invarianti architetturali è `docs/NOSAI_ARCHITECTUR
 
 ## Regola di modifica
 Ogni cambiamento architetturale richiede un ADR (Architecture Decision Record) nella directory `docs/adr/`.
+
+
+> Conteggi aggiornati e ownership delle cartelle: `docs/REPOSITORY_ORDER.md` e `docs/REPOSITORY_INVENTORY_2026-09-10.json`.
