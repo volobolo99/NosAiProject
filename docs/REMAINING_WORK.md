@@ -32,7 +32,7 @@
 | R-204 | Aggiungere fuzzing ai parser di input | C-402 | corpus, harness, esecuzione riproducibile e report |
 | R-205 | Completare la cascata free-first del MCP | `scripts/free_first.py`, docs/mcp | test provider, fallback, quote, timeout e funzionamento reale |
 | R-206 | Consolidare o formalizzare i due entrypoint MCP | `scripts/mcp_server.py` vs `scripts/mcp_hub_server.py` | ADR di consolidamento oppure compatibilità documentata e testata |
-| R-207 | Generare un catalogo machine-readable di tutte le funzioni pubbliche | `docs/INDICE_REPO.md` oggi è principalmente type/file-level | script di scansione su checkout completo, `FUNCTION_INDEX.json` e verifica link/test |
+| R-207 | Generare un catalogo machine-readable di tutte le funzioni pubbliche | `docs/INDICE_REPO.md` oggi è principalmente type/file-level | script di scansione su checkout completo, `FUNCTION_INDEX.json` e verifica link/test |\n| R-208 | Eseguire watchdog periodico del MCP Chief in ambiente operativo e collegarlo a metriche provider/latency | MCP Chief, observability | report di health tick e raccomandazioni su replay reali, senza auto-mutazioni non autorizzate |
 
 ## Ordine consigliato
 
