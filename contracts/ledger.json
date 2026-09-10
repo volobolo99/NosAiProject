@@ -28,7 +28,11 @@
           "verification": {
             "command": "dotnet build NosAi.sln -c Release",
             "last_result": "not_run_this_session"
-          }
+          },
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         },
         {
           "cid": "C-002",
@@ -44,7 +48,11 @@
           "verification": {
             "command": "python -m pytest tests/",
             "last_result": "not_run_this_session"
-          }
+          },
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         },
         {
           "cid": "C-003",
@@ -59,7 +67,11 @@
             "DETERMINISTIC"
           ],
           "blocker": "Il file non esiste. La FASE 5 di .claude/CLAUDE.md lo invoca: finche' manca, il collaudo dinamico non ha su cosa girare.",
-          "note": "Ha senso solo se il progetto acquisisce codice nativo; oggi non ne ha."
+          "note": "Ha senso solo se il progetto acquisisce codice nativo; oggi non ne ha.",
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         },
         {
           "cid": "C-004",
@@ -73,7 +85,11 @@
             "FAIL_CLOSED",
             "DETERMINISTIC"
           ],
-          "blocker": "Il file non esiste ed e' invocato dalla FASE 5."
+          "blocker": "Il file non esiste ed e' invocato dalla FASE 5.",
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         },
         {
           "cid": "C-005",
@@ -87,7 +103,11 @@
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Nessun modulo nativo da caricare. ctypes compare oggi solo in nosai/storage/volume.py, per API Windows."
+          "blocker": "Nessun modulo nativo da caricare. ctypes compare oggi solo in nosai/storage/volume.py, per API Windows.",
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         },
         {
           "cid": "C-006",
@@ -103,7 +123,11 @@
             "FAIL_CLOSED",
             "NO_PARTIAL_STATE"
           ],
-          "note": "call_openrouter solleva ValueError su qualunque model_id contenente 'deepseek': la regola e' imposta dal codice, non dalla disciplina. deepseek-v4-flash e' un modello di ragionamento e spende max_tokens in reasoning_content prima di content, quindi un content vuoto solleva un errore invece di tornare stringa vuota."
+          "note": "call_openrouter solleva ValueError su qualunque model_id contenente 'deepseek': la regola e' imposta dal codice, non dalla disciplina. deepseek-v4-flash e' un modello di ragionamento e spende max_tokens in reasoning_content prima di content, quindi un content vuoto solleva un errore invece di tornare stringa vuota.",
+          "product_phases": [
+            "AP-00"
+          ],
+          "legacy_gate": 0
         }
       ]
     },
@@ -125,7 +149,11 @@
             "THREAD_SAFE",
             "UNKNOWN_PRESERVED"
           ],
-          "note": "CapturedPacket e' un readonly record struct (DateTime TimestampUtc, ReadOnlyMemory<byte> Raw) a IPacketSource.cs:12; la dimensione dipende dal runtime, non e' un layout fissato."
+          "note": "CapturedPacket e' un readonly record struct (DateTime TimestampUtc, ReadOnlyMemory<byte> Raw) a IPacketSource.cs:12; la dimensione dipende dal runtime, non e' un layout fissato.",
+          "product_phases": [
+            "AP-02"
+          ],
+          "legacy_gate": 1
         },
         {
           "cid": "C-102",
@@ -139,7 +167,11 @@
             "THREAD_SAFE",
             "FAIL_CLOSED"
           ],
-          "note": "Coda a capacita' fissa QueueCapacity = 4096 (riga 51); i drop sono contati in Dropped (riga 89)."
+          "note": "Coda a capacita' fissa QueueCapacity = 4096 (riga 51); i drop sono contati in Dropped (riga 89).",
+          "product_phases": [
+            "AP-02"
+          ],
+          "legacy_gate": 1
         },
         {
           "cid": "C-103",
@@ -156,7 +188,13 @@
           "verification": {
             "command": "dotnet test tests/NosAi.Runtime.Tests --filter \"FullyQualifiedName~CaptureEngine\"",
             "last_result": "not_run_this_session"
-          }
+          },
+          "product_phases": [
+            "AP-02"
+          ],
+          "legacy_gate": 1,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-104",
@@ -170,7 +208,13 @@
             "BOUNDS_CHECKED",
             "UNKNOWN_PRESERVED"
           ],
-          "note": "33 sorgenti toccano gli opcode. Il lavoro residuo e' la copertura degli opcode ancora Unknown, non l'infrastruttura."
+          "note": "33 sorgenti toccano gli opcode. Il lavoro residuo e' la copertura degli opcode ancora Unknown, non l'infrastruttura.",
+          "product_phases": [
+            "AP-02"
+          ],
+          "legacy_gate": 1,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-105",
@@ -186,7 +230,13 @@
             "THREAD_SAFE",
             "FAIL_CLOSED"
           ],
-          "blocker": "Solo 8 sorgenti citano 'hook' e nessuno realizza un hook di memoria o DLL. Serve decidere se questa strada si apre davvero: cambia il confine tecnico del prodotto."
+          "blocker": "Solo 8 sorgenti citano 'hook' e nessuno realizza un hook di memoria o DLL. Serve decidere se questa strada si apre davvero: cambia il confine tecnico del prodotto.",
+          "product_phases": [
+            "AP-02"
+          ],
+          "legacy_gate": 1,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-106",
@@ -199,7 +249,14 @@
           "invariants": [
             "DETERMINISTIC",
             "UNKNOWN_PRESERVED"
-          ]
+          ],
+          "product_phases": [
+            "AP-02",
+            "AP-09"
+          ],
+          "legacy_gate": 1,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         }
       ]
     },
@@ -222,7 +279,13 @@
             "ZERO_ALLOC_LOOP",
             "NO_PARTIAL_STATE"
           ],
-          "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice."
+          "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice.",
+          "product_phases": [
+            "AP-01"
+          ],
+          "legacy_gate": 2,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-202",
@@ -237,7 +300,13 @@
             "UNKNOWN_PRESERVED",
             "DETERMINISTIC"
           ],
-          "note": "58 sorgenti toccano l'identita' delle entita': e' l'area piu' coperta del Gate."
+          "note": "58 sorgenti toccano l'identita' delle entita': e' l'area piu' coperta del Gate.",
+          "product_phases": [
+            "AP-01"
+          ],
+          "legacy_gate": 2,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-203",
@@ -250,7 +319,13 @@
           "invariants": [
             "UNKNOWN_PRESERVED",
             "ZERO_ALLOC_LOOP"
-          ]
+          ],
+          "product_phases": [
+            "AP-01"
+          ],
+          "legacy_gate": 2,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-204",
@@ -264,7 +339,13 @@
             "NO_PARTIAL_STATE",
             "UNKNOWN_PRESERVED"
           ],
-          "blocker": "Non esiste un canale dichiarato fra i due stack. Prima di scriverlo serve decidere quale dei due possiede lo stato: vedi la domanda aperta in fondo al file."
+          "blocker": "Non esiste un canale dichiarato fra i due stack. Prima di scriverlo serve decidere quale dei due possiede lo stato: vedi la domanda aperta in fondo al file.",
+          "product_phases": [
+            "AP-01"
+          ],
+          "legacy_gate": 2,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         }
       ]
     },
@@ -284,7 +365,13 @@
           "invariants": [
             "DETERMINISTIC"
           ],
-          "note": "ADR-0028 discute se il livello HTN/GOAP resta o si rimuove: leggerlo prima di estendere."
+          "note": "ADR-0028 discute se il livello HTN/GOAP resta o si rimuove: leggerlo prima di estendere.",
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-302",
@@ -296,7 +383,13 @@
           "status": "MERGED",
           "invariants": [
             "DETERMINISTIC"
-          ]
+          ],
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-303",
@@ -309,7 +402,13 @@
           "invariants": [
             "FAIL_CLOSED",
             "DETERMINISTIC"
-          ]
+          ],
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-304",
@@ -324,7 +423,13 @@
             "DETERMINISTIC",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero sorgenti contengono FSM o StateMachine. La decisione oggi passa da Planner (51 sorgenti) e Orchestrator (30): introdurre una FSM accanto a questi duplicherebbe l'autorita' di decisione. Serve dire se sostituisce o affianca."
+          "blocker": "Zero sorgenti contengono FSM o StateMachine. La decisione oggi passa da Planner (51 sorgenti) e Orchestrator (30): introdurre una FSM accanto a questi duplicherebbe l'autorita' di decisione. Serve dire se sostituisce o affianca.",
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-305",
@@ -337,7 +442,13 @@
           "invariants": [
             "FAIL_CLOSED",
             "NO_PARTIAL_STATE"
-          ]
+          ],
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         }
       ]
     },
@@ -357,7 +468,14 @@
           "invariants": [
             "FAIL_CLOSED",
             "NO_PARTIAL_STATE"
-          ]
+          ],
+          "product_phases": [
+            "AP-00",
+            "AP-10"
+          ],
+          "legacy_gate": 4,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-402",
@@ -371,7 +489,13 @@
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104."
+          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104.",
+          "product_phases": [
+            "AP-10"
+          ],
+          "legacy_gate": 4,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-403",
@@ -383,7 +507,14 @@
           "status": "MERGED",
           "invariants": [
             "FAIL_CLOSED"
-          ]
+          ],
+          "product_phases": [
+            "AP-00",
+            "AP-10"
+          ],
+          "legacy_gate": 4,
+          "signature_status": "UNRESOLVED",
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
         },
         {
           "cid": "C-404",
@@ -396,7 +527,11 @@
           "invariants": [
             "DETERMINISTIC"
           ],
-          "blocker": "La procedura esiste come documento; manca l'esecuzione verificata end-to-end che la chiuda."
+          "blocker": "La procedura esiste come documento; manca l'esecuzione verificata end-to-end che la chiuda.",
+          "product_phases": [
+            "AP-10"
+          ],
+          "legacy_gate": 4
         }
       ]
     },
@@ -420,7 +555,9 @@
           "verification": {
             "command": "python -m pytest tests/test_orchestration.py -q",
             "last_result": "verde in questa sessione"
-          }
+          },
+          "product_phases": [],
+          "legacy_gate": 9
         }
       ]
     }
@@ -429,5 +566,6 @@
     "C-003/C-004/C-005: la FASE 5 del protocollo presuppone codice nativo e ASan, che il progetto non ha. O si apre un ramo nativo, o quei tre contratti restano DRAFT per sempre e la FASE 5 va riscritta sugli stack reali (dotnet test, pytest).",
     "C-204: quale stack possiede lo stato di gioco, il runtime C# o nosai/ Python. Finche' non e' deciso, il canale fra i due non si puo' progettare.",
     "C-304: una FSM esplicita sostituisce Planner/Orchestrator o li affianca. Affiancarli senza dirlo creerebbe due autorita' di decisione."
-  ]
+  ],
+  "phase_mapping_note": "gates[].gate is a legacy grouping, NOT a product AP number. contracts[].product_phases maps to ROADMAP_ESECUTIVA. Existing status and verification are historical evidence, not revalidated by documentation reconciliation."
 }
