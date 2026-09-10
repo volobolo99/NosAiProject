@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_chief_health.schema.json",
+  "title": "NosAi MCP Chief health report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "checks", "failed_checks", "authority", "recommendations"],
+  "properties": {
+    "schema_version": {"const": "mcp.chief.health.v1"},
+    "status": {"enum": ["healthy", "degraded"]},
+    "checks": {"type": "object"},
+    "failed_checks": {"type": "array", "items": {"type": "string"}},
+    "authority": {"type": "object"},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}
