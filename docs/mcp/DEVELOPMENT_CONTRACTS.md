@@ -22,6 +22,6 @@ Il tool `mcp_record_evidence` registra soltanto digest e stato, firma il record 
 
 ## MCP Chief
 
-Il Chief è un supervisore di governance: health check, raccomandazioni, proposte e gestione staged dei binding. Non possiede autorità di esecuzione, policy override, audit override, secret export o stato privilegiato. Ogni promozione richiede controlli indipendenti (`tests_passed`, `shadow_passed`, `audit_approved`) e conferma esplicita `operator`; il registro è persistito atomicamente e supporta rollback versionato.
+Il Chief è un supervisore di governance: health check, raccomandazioni, proposte e gestione staged dei binding. Non possiede autorità di esecuzione, policy override, audit override, secret export o stato privilegiato. Ogni promozione richiede controlli indipendenti (`tests_passed`, `shadow_passed`, `audit_approved`) e conferma esplicita `operator`; il registro usa `McpStateStore` SQLite condiviso, revisioni monotone, idempotenza e rollback versionato; l'export JSON non è la sorgente di concorrenza.
 
 Contratto operativo: `contracts/mcp-hub-001.json` v1.1.0. Runbook: `docs/mcp/CHIEF_RUNBOOK.md`.
