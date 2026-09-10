@@ -2,7 +2,7 @@
 
 ## Scope
 
-È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali (1.480 nel tree corrente dopo l’aggiornamento documentale), directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
+È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali (1.484 nel tree corrente dopo l’aggiornamento MCP Chief e documentale), directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
 
 ## Controlli eseguiti
 
@@ -34,13 +34,13 @@ Non è stato eliminato alcun file: nessun candidato è risultato contemporaneame
 - aggiunto `docs/REPOSITORY_INVENTORY_2026-09-10.json` come fotografia machine-readable;
 - aggiornati `ARCHITECTURE.md`, `TEST_PLAN.md`, `docs/INDICE_REPO.md`, `docs/SOURCE_OF_TRUTH.md`, `docs/MASTER_ROADMAP.md` e `third_party/README.md`;
 - aggiunti `docs/CONTRACT_MAP.md`, `docs/SYSTEM_MAP.md`, `docs/AGENT_COORDINATION.md` e `docs/REMAINING_WORK.md`;
-- aggiunti catalogo ruoli `docs/mcp/ROLE_CATALOG.md`, schema `schemas/mcp_employee_role.schema.json`, test `tests/test_mcp_roles.py` e registro runtime dei dipendenti in `nosai/mcp/roles.py`;
+- aggiunti catalogo ruoli `docs/mcp/ROLE_CATALOG.md`, schema `schemas/mcp_employee_role.schema.json`, test `tests/test_mcp_roles.py` e registro runtime dei dipendenti in `nosai/mcp/roles.py`;\n- aggiunti `nosai/mcp/chief.py`, `nosai/mcp/bindings.py`, relativi test e schemi per health report/binding, con integrazione nel server e nel pannello;
 - marcato `docs/PIANO_DI_RIORDINO.md` come piano storico;
 - registrato l’MCP Hub nella Source of Truth e nel changelog.
 
 ## Verifica locale
 
-- `python -m compileall -q nosai/mcp scripts/mcp_hub_server.py scripts/mcp_dashboard_server.py`: superato;
+- `python -m compileall -q nosai/mcp scripts/mcp_hub_server.py scripts/mcp_dashboard_server.py`: superato in precedenza; i nuovi file richiedono una nuova esecuzione nel runner CI;
 - smoke test locali di contratti, policy, router, simulazione, learning, segreti, audit, governance e inferenza: superati;
 - smoke test HTTP della dashboard MCP: superato;
 - suite `pytest` completa non eseguita in questo ambiente perché il modulo `pytest` non è installato;
