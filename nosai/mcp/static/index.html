@@ -17,6 +17,7 @@
   <section><h2>Stato</h2><p id="status">Caricamento…</p><button id="toggle">Attiva MCP Rete</button></section>
   <section><h2>Modelli impegnati</h2><pre id="providers"></pre></section>
   <section><h2>Chiavi API</h2><p>Le chiavi vengono cifrate localmente. Il valore completo non viene mai mostrato o registrato.</p><pre id="secrets"></pre></section>
+  <section><h2>Simulazione deterministica</h2><button id="simulate">Esegui scenario di prova</button><pre id="simulation"></pre></section>
   <script>
     async function refresh(){
       const s=await (await fetch('/api/mcp/status')).json();
@@ -27,9 +28,9 @@
       const k=await (await fetch('/api/mcp/secrets')).json(); document.querySelector('#secrets').textContent=JSON.stringify(k,null,2);
     }
     document.querySelector('#toggle').onclick=async()=>{const s=await (await fetch('/api/mcp/status')).json(); await fetch('/api/mcp/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!s.network_enabled,confirmation:'operator'})}); refresh()};
+    document.querySelector('#simulate').onclick=async()=>{const r=await (await fetch('/api/mcp/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario_id:'combat/basic',seed:1,horizon_ticks:20,actions:[{kind:'observe'}]})})).json(); document.querySelector('#simulation').textContent=JSON.stringify(r,null,2)};
     refresh();
   </script>
 </body>
 </html>
-
 
