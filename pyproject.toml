@@ -7,11 +7,20 @@ name = "nosai"
 version = "0.1.0"
 description = "NosAi clean architecture runtime"
 requires-python = ">=3.11"
-dependencies = ["cryptography>=43"]
+dependencies = ["cryptography>=43", "requests>=2.31", "python-dotenv>=1.0"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
-mcp = ["mcp>=1.0"]
+mcp = ["mcp>=1.0", "pydantic>=2"]
+# La catena a cinque fasi: scripts/code_agent.py valida il C# con tree_sitter, e
+# scripts/build_function_index.py indicizza entrambi i linguaggi. Senza le
+# grammatiche, tests/test_function_index.py aborta la raccolta dell'intera suite
+# invece di saltare: e' accaduto il 2026-09-11.
+chain = [
+    "tree-sitter>=0.23",
+    "tree-sitter-python>=0.23",
+    "tree-sitter-c-sharp>=0.23",
+]
 
 [project.scripts]
 nosai-dashboard = "nosai.dashboard.server:serve"

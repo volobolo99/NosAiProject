@@ -246,8 +246,12 @@ public sealed class WireRecorderTests : IDisposable
 
     private static string RepositoryRoot()
     {
+        // Il marcatore e' NosAi.sln, la radice canonica di un repo .NET.
+        // Prima era CLAUDE.md, che il 2026-09-09 e' stato spostato in .claude/:
+        // la risalita non trovava piu' nulla e il test moriva su Assert.NotNull
+        // senza mai arrivare a controllare il cablaggio di Program.cs.
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "CLAUDE.md")))
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "NosAi.sln")))
             directory = directory.Parent;
 
         Assert.NotNull(directory);

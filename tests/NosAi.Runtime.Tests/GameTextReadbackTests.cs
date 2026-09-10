@@ -169,7 +169,7 @@ public sealed class GameTextReadbackTests
     /// cancella.
     /// </para>
     /// </remarks>
-    [NosTaleClientFact]
+    [NosAiVolumeFact]
     public void Sul_catalogo_reale_le_chiavi_note_si_rileggono_e_gli_id_del_filo_no()
     {
         GameReferenceLocation location = GameReferenceLocator.Locate();
