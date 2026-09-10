@@ -36,8 +36,18 @@ Non è stato eliminato alcun file: nessun candidato è risultato contemporaneame
 - marcato `docs/PIANO_DI_RIORDINO.md` come piano storico;
 - registrato l’MCP Hub nella Source of Truth e nel changelog.
 
+## Verifica locale
+
+- `python -m compileall -q nosai/mcp scripts/mcp_hub_server.py scripts/mcp_dashboard_server.py`: superato;
+- smoke test locali di contratti, policy, router, simulazione, learning, segreti, audit, governance e inferenza: superati;
+- smoke test HTTP della dashboard MCP: superato;
+- suite `pytest` completa non eseguita in questo ambiente perché il modulo `pytest` non è installato;
+- build .NET completa non eseguita in questo ambiente.
+
+## Stato GitHub Actions
+
+Le ultime esecuzioni di `NosAi CI` e `NosAi .NET (Windows)` risultano concluse con esito `failure` sul commit di riordino. Il connettore GitHub ha restituito i job ma non il contenuto dei log/step, quindi la causa non è stata attribuita né al riordino né a un singolo componente. Il repository è ordinato, ma la verifica CI resta **non verde** e richiede una successiva esecuzione con log disponibili.
+
 ## Prossima revisione
 
 Ripetere la stessa procedura il 2026-10-10 oppure dopo una riorganizzazione di namespace, progetti .NET o directory `docs/agents/phases/`.
-
-
