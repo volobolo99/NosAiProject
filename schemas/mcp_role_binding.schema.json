@@ -14,6 +14,7 @@
     "proposal_id": {"type": ["string", "null"]},
     "updated_at": {"type": "string"},
     "candidate_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-    "author_id": {"type": "string"}
+    "author_id": {"type": "string"},
+    "revision": {"type": "integer", "minimum": 0}
   }
 }
