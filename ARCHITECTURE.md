@@ -21,19 +21,22 @@ Il documento canonico degli invarianti architetturali è `docs/NOSAI_ARCHITECTUR
 ## Progetti del codice
 | Progetto             | File               | Responsabilità                                                                 |
 |----------------------|--------------------|--------------------------------------------------------------------------------|
-| NosAi.Core           | 4 file             | Contratti di pipeline, nessuna dipendenza                                          |
-| NosAi.Protocol       | 4 file             | Protocollo di trasporto con frame binario a 12 byte e cifratura di sessione          |
-| NosAi.Runtime        | 216 file           | Il cuore del sistema in esecuzione                                               |
-| NosAi.Security       | 9 file             | Noise, CapBAC e framing autenticato                                              |
-| NosAi.Storage        | 4 file             | Journal SQLite su volume NOSAI-SSD                                               |
-| NosAi.Adapter        | 3 file             | Aggancio al processo di gioco                                                   |
-| NosAi.GuardClient    | 5 file             | Client PC verso il nodo Guard mobile                                             |
-| NosAi.GuardAi.App    | 11 file            | App MAUI Android che fa da nodo Guard                                            |
-| NosAi.Host           | 3 file             | Host di processo                                                                 |
-| NosAi.ControlPanel   | 32 file            | Pannello operatore WPF                                                           |
+| NosAi.Core           | conteggio nell’inventario             | Contratti di pipeline, nessuna dipendenza                                          |
+| NosAi.Protocol       | conteggio nell’inventario             | Protocollo di trasporto con frame binario a 12 byte e cifratura di sessione          |
+| NosAi.Runtime        | conteggio nell’inventario           | Il cuore del sistema in esecuzione                                               |
+| NosAi.Security       | conteggio nell’inventario             | Noise, CapBAC e framing autenticato                                              |
+| NosAi.Storage        | conteggio nell’inventario             | Journal SQLite su volume NOSAI-SSD                                               |
+| NosAi.Adapter        | conteggio nell’inventario             | Aggancio al processo di gioco                                                   |
+| NosAi.GuardClient    | conteggio nell’inventario             | Client PC verso il nodo Guard mobile                                             |
+| NosAi.GuardAi.App    | conteggio nell’inventario            | App MAUI Android che fa da nodo Guard                                            |
+| NosAi.Host           | conteggio nell’inventario             | Host di processo                                                                 |
+| NosAi.ControlPanel   | conteggio nell’inventario            | Pannello operatore WPF                                                           |
 
 ## Regola di modifica
 Ogni cambiamento architetturale richiede un ADR (Architecture Decision Record) nella directory `docs/adr/`.
 
 
 > Conteggi aggiornati e ownership delle cartelle: `docs/REPOSITORY_ORDER.md` e `docs/REPOSITORY_INVENTORY_2026-09-10.json`.
+
+
+> Per i conteggi aggiornati usare `docs/REPOSITORY_INVENTORY_2026-09-10.json`; questa pagina descrive responsabilità, non una fotografia numerica.
