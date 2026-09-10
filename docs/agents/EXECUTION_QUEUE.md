@@ -2,6 +2,8 @@
 
 **Scopo:** un solo file da cui partire. Ogni voce ha un ID, chi la esegue, da cosa dipende, e dove sta il comando dettagliato. Aggiornato da Claude ad ogni avanzamento — questo file è la fonte di verità su "cosa è il prossimo passo", non `docs/agents/AGENT_COMMAND_REGISTRY.md` (che resta la mappa di ownership per dominio, statica) né i singoli file in `docs/agents/phases/` (che restano i comandi dettagliati per singolo task).
 
+**Precedenza operativa:** le attribuzioni personali e le deroghe di programmazione presenti nelle righe/note storiche descrivono consegne passate. Per nuovi incarichi applicare AGENTS.md e .claude/CLAUDE.md, subordinati alle istruzioni correnti dell’operatore. La coda determina task e dipendenze, non modifica i permessi dei modelli. Non reinterpretare una consegna storica come autorizzazione permanente.
+
 **Come si usa:** guarda la prima voce con stato `PENDING`. Se l'esecutore è `Claude`, dillo a Claude di partire (es. "vai con Q-004"). Se è `DeepSeek`, apri il file comando indicato e passalo a DeepSeek. Quando un task finisce, l'esecutore aggiorna lo stato qui.
 
 **Stati:** `PENDING` (non iniziato) · `IN_PROGRESS` · `DONE` · `BLOCKED` (dipendenza non soddisfatta).
