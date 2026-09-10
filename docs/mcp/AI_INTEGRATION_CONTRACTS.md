@@ -1,5 +1,5 @@
 # Contratti di integrazione per gli agenti
-Stato: requisiti da tradurre in schemi/firme prima dell'implementazione.
+Stato: contratti parzialmente implementati; EvidenceAuthority e McpStateStore sono presenti, mentre i pacchetti LAB-03..LAB-07 restano da implementare e verificare.
 Fonte: contracts/mcp-research-lab-001.json e RESEARCH_LAB_SPEC.md.
 
 ## Comunicazioni
@@ -27,8 +27,9 @@ Secret reference ammesso solo verso vault; nessun valore nelle evidenze.
 ## Semantica dei record
 ChangeRequest.kind: add_feature, modify_feature, retire_feature, change_binding,
 change_role, rollback. target_id riferisce una risorsa esistente salvo creazione.
-EvidenceRecord.result: passed, failed, inconclusive. observed_at non prova da solo
-freshness: applicare versione suite, digest, scadenza e identità dell'esecutore.
+EvidenceRecord.result: `ok|pass|passed|success|verified` per un esito accettabile;
+`failed|inconclusive` non promuovono. observed_at non prova da solo freshness:
+applicare versione suite, digest, scadenza e identità dell'esecutore.
 Experiment.state usa il ciclo definito nella specifica; transizioni illegali rifiutate.
 WorkerLease.fencing_token cresce a ogni riassegnazione; lease scaduta non scrive.
 ReleaseDecision.evidence_ids riferisce evidenze archiviate, non payload del caller.
