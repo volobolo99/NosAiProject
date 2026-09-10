@@ -8,6 +8,7 @@ from .auditor import McpAuditor
 from .bindings import RoleBindingRegistry
 from .director import McpDirector
 from .evidence import EvidenceAuthority
+from .health import HealthSupervisor
 from .roles import DEFAULT_EMPLOYEE_ROLES, RoleArchitect
 
 
@@ -24,6 +25,7 @@ class McpChief:
         self.root.mkdir(parents=True, exist_ok=True)
         self.bindings = bindings or RoleBindingRegistry(self.root / "role_bindings.json", DEFAULT_EMPLOYEE_ROLES)
         self.evidence: EvidenceAuthority = self.bindings.evidence
+        self.health = HealthSupervisor(self.bindings.state)
         self.router = router
         self.director = McpDirector(self.root / "proposals")
         self.auditor = McpAuditor()
@@ -58,6 +60,8 @@ class McpChief:
         except (OSError, ValueError, KeyError) as exc:
             checks["evidence_store"] = {"ok": False, "errors": [str(exc)]}
         checks["proposal_store"] = {"ok": self.director.root.is_dir(), "path": str(self.director.root)}
+        health = self.health.snapshot()
+        checks["health_supervisor"] = {"ok": True, "observations": len(health["observations"]), "state_revision": health["state_revision"]}
         if self.router is not None:
             try:
                 catalog = self.router.catalog()
@@ -79,7 +83,21 @@ class McpChief:
             "failed_checks": failed,
             "authority": self.authority,
             "recommendations": self.recommendations(checks),
+            "observations": health["observations"],
+            "state_revision": health["state_revision"],
+            "leases": self.bindings.state.snapshot()["leases"],
         }
+
+    def observe_health(
+        self,
+        name: str,
+        status: str,
+        details: Mapping[str, Any] | None = None,
+        *,
+        observed_at: str | None = None,
+        ttl_s: int | None = None,
+    ) -> dict[str, Any]:
+        return self.health.observe(name, status, details, observed_at=observed_at, ttl_s=ttl_s)
 
     def recommendations(self, checks: dict[str, dict[str, Any]]) -> list[str]:
         recommendations: list[str] = []
