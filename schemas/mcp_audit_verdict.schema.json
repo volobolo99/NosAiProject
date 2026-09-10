@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_audit_verdict.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "proposal_id": {"type": "string"},
+    "approved": {"type": "boolean"},
+    "reason": {"type": "string"},
+    "rollback_required": {"type": "boolean"}
+  },
+  "required": ["proposal_id", "approved", "reason", "rollback_required"]
+}
+
