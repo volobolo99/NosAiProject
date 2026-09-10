@@ -21,7 +21,7 @@ Un modello linguistico, il pannello e il MCP possono proporre interpretazioni o 
 |---|---|---|---|
 | Live control plane | `src/NosAi.Runtime/`, `src/NosAi.Core/`, `src/NosAi.Adapter/` | osservazione, stato del mondo, decisione, esecuzione e verifica | autorità operativa locale |
 | Operator plane | `src/NosAi.ControlPanel/`, `src/NosAi.Host/` | avvio, diagnostica, configurazione, stato e comandi dell’operatore | nessun bypass di Safety |
-| MCP advisory plane | `nosai/mcp/`, `scripts/mcp_hub_server.py`, dashboard su `127.0.0.1:8770` | routing modelli, simulazione, ricerca, memoria, audit e proposte | advisory; mai esecuzione diretta |
+| MCP advisory plane | `nosai/mcp/`, `scripts/mcp_hub_server.py`, dashboard su `127.0.0.1:8770` | routing modelli, simulazione, ricerca, memoria, audit, proposte e supervisione MCP Chief | advisory; mai esecuzione diretta |
 | Evidence plane | `src/NosAi.Storage/`, `src/NosAi.Runtime/*Replay*`, `data/` | journal, replay, metriche, provenienza e risultati | evidenza, non verità privilegiata |
 | Development plane | `contracts/`, `schemas/`, `docs/agents/`, `tests/`, `.github/` | contratti, task, test, CI e handoff fra agenti | gate di integrazione |
 
@@ -40,7 +40,7 @@ Un modello linguistico, il pannello e il MCP possono proporre interpretazioni o 
 | Runtime → Storage | eventi, risultati, hash-chain e replay | `src/NosAi.Storage/`, `Gate2/EventLog*` | journal/replay tests |
 | Runtime → Control Panel | snapshot operativo classificato | `Gate1/Gate1CanonicalSnapshot.cs`, `src/NosAi.ControlPanel/` | Gate 1 / dashboard smoke |
 | MCP → Runtime | solo proposta, evidenza o skill validata | `nosai/mcp/server.py`, `policy.py`, `learning.py` | `contracts/mcp-hub-001.json` |
-| Control Panel → MCP | configurazione, attivazione rete, provider, audit | `nosai/mcp/dashboard.py`, `scripts/mcp_dashboard_server.py` | API smoke + policy tests |
+| Control Panel → MCP | configurazione, attivazione rete, provider, audit e health Chief | `nosai/mcp/dashboard.py`, `scripts/mcp_dashboard_server.py` | API smoke + policy tests |
 
 ## 4. Moduli principali
 
@@ -64,7 +64,7 @@ L’elenco di classi e firme pubbliche è mantenuto in `docs/INDICE_REPO.md`; pr
 
 - `nosai/mcp/contracts.py`: request/response versionate.
 - `policy.py`: rete esplicita, rifiuto privilegi e secret-export.
-- `router.py`: selezione per capability, costo, latenza e disponibilità.
+- `router.py`: selezione per capability, costo, latenza, disponibilità e binding promosso per ruolo.\n- `chief.py`: watchdog MCP read-only, raccomandazioni, proposta e governance dei binding; non possiede autorità di esecuzione o override.\n- `bindings.py`: registro persistente e atomico dei binding, con shadow mode, qualificazione, promozione e rollback.
 - `inference.py`: gateway locale/online; online solo con MCP Rete attivo.
 - `simulation.py`: calcolo puro e riproducibile.
 - `learning.py`: candidate → validate → skill offline con evidenza.
