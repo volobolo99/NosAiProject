@@ -32,6 +32,7 @@
     "mcp_role_promote_binding",
     "mcp_role_rollback_binding",
     "mcp_chief_health",
+    "mcp_chief_observe_health",
     "mcp_chief_recommendations"
   ],
   "resources": [
@@ -46,6 +47,7 @@
     "Chief health reports every protected boundary and fails closed when a binding store is invalid",
     "role binding proposal does not change active routing",
     "promotion and rollback are versioned and auditable",
-    "forged, stale or candidate-mismatched evidence is rejected"
+    "forged, stale or candidate-mismatched evidence is rejected",
+    "health distinguishes configured, reachable, authenticated, qualified, operational and UNKNOWN"
   ]
 }
