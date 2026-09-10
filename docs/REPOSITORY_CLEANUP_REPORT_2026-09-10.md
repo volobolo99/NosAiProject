@@ -2,7 +2,7 @@
 
 ## Scope
 
-È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali, directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
+È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali (1.477 nel tree corrente dopo l’aggiornamento documentale), directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
 
 ## Controlli eseguiti
 
@@ -32,7 +32,8 @@ Non è stato eliminato alcun file: nessun candidato è risultato contemporaneame
 
 - aggiunto `docs/REPOSITORY_ORDER.md` con ownership, archiviazione e regole di rimozione;
 - aggiunto `docs/REPOSITORY_INVENTORY_2026-09-10.json` come fotografia machine-readable;
-- aggiornati `ARCHITECTURE.md`, `TEST_PLAN.md`, `docs/INDICE_REPO.md` e `third_party/README.md`;
+- aggiornati `ARCHITECTURE.md`, `TEST_PLAN.md`, `docs/INDICE_REPO.md`, `docs/SOURCE_OF_TRUTH.md`, `docs/MASTER_ROADMAP.md` e `third_party/README.md`;
+- aggiunti `docs/CONTRACT_MAP.md`, `docs/SYSTEM_MAP.md`, `docs/AGENT_COORDINATION.md` e `docs/REMAINING_WORK.md`;
 - marcato `docs/PIANO_DI_RIORDINO.md` come piano storico;
 - registrato l’MCP Hub nella Source of Truth e nel changelog.
 
