@@ -17,10 +17,12 @@ class McpChief:
         self,
         root: Path | str,
         bindings: RoleBindingRegistry | None = None,
+        router: Any | None = None,
     ) -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self.bindings = bindings or RoleBindingRegistry(self.root / "role_bindings.json", DEFAULT_EMPLOYEE_ROLES)
+        self.router = router
         self.director = McpDirector(self.root / "proposals")
         self.auditor = McpAuditor()
 
@@ -48,6 +50,13 @@ class McpChief:
         except (OSError, ValueError, KeyError) as exc:
             checks["binding_store"] = {"ok": False, "errors": [str(exc)]}
         checks["proposal_store"] = {"ok": self.director.root.is_dir(), "path": str(self.director.root)}
+        if self.router is not None:
+            try:
+                catalog = self.router.catalog()
+                enabled = [item for item in catalog if item.get("enabled")]
+                checks["provider_catalog"] = {"ok": bool(enabled), "enabled": len(enabled), "total": len(catalog)}
+            except (AttributeError, OSError, ValueError) as exc:
+                checks["provider_catalog"] = {"ok": False, "errors": [str(exc)]}
         checks["policy_boundaries"] = {"ok": all(not self.authority[key] for key in ("direct_execution", "policy_override", "audit_override", "secret_export", "privileged_game_state"))}
         failed = [name for name, result in checks.items() if not result.get("ok")]
         return {
@@ -65,6 +74,8 @@ class McpChief:
             recommendations.append("repair employee role catalog before accepting binding changes")
         if not checks.get("binding_store", {}).get("ok", False):
             recommendations.append("restore or rollback the binding store before routing inference")
+        if not checks.get("provider_catalog", {}).get("ok", True):
+            recommendations.append("restore or qualify at least one enabled provider before online inference")
         if not checks.get("policy_boundaries", {}).get("ok", False):
             recommendations.append("suspend MCP and restore immutable policy boundaries")
         if not recommendations:
