@@ -17,8 +17,11 @@ Messaggi pronti: [AI_TASK_PACKETS.json](AI_TASK_PACKETS.json).
    applicativo; nuovi test/file richiedono assegnazione esplicita del coordinatore.
 5. Completare contratto locale con firme, tipi, errori, timeout e migrazione prima del codice.
 6. Riprodurre il difetto o scrivere il test di accettazione, poi implementare.
-7. Eseguire verifiche mirate e consegnare artefatti al revisore.
-8. Integrare solo dopo controllo delle dipendenze e test sul commit risultante.
+7. Eseguire verifiche mirate, `python scripts/verify_mcp_contracts.py --strict` e
+   l'indice funzioni strict quando si tocca tooling/parser.
+8. Consegnare artefatti e record di evidenza al revisore; i booleani nel payload non
+   valgono come prova.
+9. Integrare solo dopo controllo delle dipendenze e test sul commit risultante.
 
 ## Ricerca breve
 Usare simboli e percorsi, non numeri di riga che diventano obsoleti:
@@ -27,6 +30,8 @@ rg -n "class McpChief|class RoleBindingRegistry|def promote|def rollback" nosai/
 rg -n "mcp_role_promote_binding|promote_role_binding|def choose" nosai/mcp
 rg -n "LAB-01|EvidenceRecord" contracts/mcp-research-lab-001.json docs/mcp
 rg --files tests | rg "mcp|binding|chief"
+python scripts/verify_mcp_contracts.py --strict
+python scripts/build_function_index.py CHECKOUT COMMIT OUTPUT_DIRECTORY --strict
 ```
 Non inviare l'intero repository al worker. Pacchetto minimo: commit, LAB, contratto,
 sezione della specifica, file posseduti, test e precedente errore verificato.
@@ -37,7 +42,10 @@ AI_TASK_PACKETS.json contiene messaggi pending conformi allo schema attuale
 schemas/agent_message.schema.json. I modelli sono assegnazioni iniziali di sviluppo,
 non certificazioni né configurazioni attive dei dipendenti.
 Il coordinatore completa il commit e le firme concordate nel campo input prima
-dell'invio. I pacchetti con dipendenze incomplete non sono eseguibili.
+dell'invio. I pacchetti con dipendenze incomplete non sono eseguibili. Le promozioni
+dei binding usano `evidence_ids.tests`, `evidence_ids.shadow` e
+`evidence_ids.audit`; i record devono essere firmati, freschi, digest-bound e
+prodotti da executor distinti. Lo stato condiviso è `data/mcp/state.sqlite3`.
 Lo schema attuale limita model a un enum: estenderlo con migrazione versionata
 prima di inserire altri identificatori. Non aggirare la validazione.
 
@@ -63,6 +71,8 @@ Le autorizzazioni runtime del Chief non cambiano le regole di sviluppo del repos
 
 ## Chiusura
 Per ogni LAB: contratto completo, implementazione, test, revisione e documentazione.
+Prima della consegna il verifier deve risultare `ok=true`; un fallimento CI o un
+ambiente non disponibile resta esplicitamente `blocked`, non `PASS`.
 La presenza di questi documenti non rende il Research Lab operativo.
 Mantenere versione prodotto invariata. Aggiornare la coda e il registro lavori
 senza modificare retroattivamente i report storici.
