@@ -93,17 +93,16 @@ def create_server(config_path: Path | str | None = None):
 
     @server.tool()
     def mcp_propose_change(component: str, summary: str, files_json: str) -> str:
-        proposal = director.propose(component, summary, json.loads(files_json))
+        proposal = chief.propose_improvement(component, summary, json.loads(files_json))
         audit.append("change_proposed", {"proposal_id": proposal.proposal_id, "component": component, "files": list(proposal.files)})
-        return json.dumps({"proposal_id": proposal.proposal_id, "status": proposal.status, "files": list(proposal.files)}, ensure_ascii=False)
+        return json.dumps({"proposal_id": proposal["proposal_id"], "status": proposal["status"], "files": list(proposal["files"])}, ensure_ascii=False)
 
     @server.tool()
     def mcp_audit_change(proposal_json: str, checks_json: str) -> str:
-        from .director import ChangeProposal
-        proposal = ChangeProposal(**json.loads(proposal_json))
-        verdict = auditor.review(proposal, json.loads(checks_json))
-        audit.append("change_audited", {"proposal_id": verdict.proposal_id, "approved": verdict.approved, "rollback_required": verdict.rollback_required})
-        return json.dumps({"proposal_id": verdict.proposal_id, "approved": verdict.approved, "reason": verdict.reason, "rollback_required": verdict.rollback_required}, ensure_ascii=False)
+        proposal = json.loads(proposal_json)
+        verdict = chief.audit_proposal(proposal, json.loads(checks_json))
+        audit.append("change_audited", {"proposal_id": verdict["proposal_id"], "approved": verdict["approved"], "rollback_required": verdict["rollback_required"]})
+        return json.dumps(verdict, ensure_ascii=False)
 
     @server.tool()
     def mcp_role_catalog() -> str:
