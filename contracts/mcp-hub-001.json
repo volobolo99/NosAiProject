@@ -1,6 +1,6 @@
 {
   "contract_id": "mcp-hub-001",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "DRAFT",
   "purpose": "Governed MCP Hub for NosAi local-first assistance and online-to-offline learning",
   "invariants": [
@@ -9,7 +9,10 @@
     "no tool may expose privileged game/admin/database state",
     "secret values are encrypted at rest and never returned by dashboard or model tools",
     "MCP never has direct execution authority; local Guard/Safety remains final",
-    "simulation and learning persistence are side-effect free with respect to the game client"
+    "simulation and learning persistence are side-effect free with respect to the game client",
+    "role bindings are staged and persisted atomically before promotion",
+    "binding promotion requires operator confirmation plus independent tests, shadow and audit checks",
+    "MCP Chief may monitor and propose improvements but cannot override policy, audit, tests, secrets or Safety"
   ],
   "tools": [
     "mcp_status",
@@ -22,15 +25,25 @@
     "mcp_validate_learning",
     "mcp_propose_change",
     "mcp_audit_change",
-    "mcp_verify_roles"
+    "mcp_verify_roles",
+    "mcp_role_catalog",
+    "mcp_role_propose_binding",
+    "mcp_role_promote_binding",
+    "mcp_role_rollback_binding",
+    "mcp_chief_health",
+    "mcp_chief_recommendations"
   ],
-  "resources": ["nosai://mcp/policy"],
+  "resources": [
+    "nosai://mcp/policy"
+  ],
   "acceptance_tests": [
     "offline default is observable",
     "non-operator activation is rejected",
     "privileged and secret-export risks are denied",
     "deterministic simulation returns identical output for identical request",
-    "candidate without observed evidence cannot become offline skill"
+    "candidate without observed evidence cannot become offline skill",
+    "Chief health reports every protected boundary and fails closed when a binding store is invalid",
+    "role binding proposal does not change active routing",
+    "promotion and rollback are versioned and auditable"
   ]
 }
-
