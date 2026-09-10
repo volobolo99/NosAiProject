@@ -3,7 +3,7 @@
   "generated_at": "2026-09-10T00:00:00Z",
   "branch": "main",
   "repository": "volobolo99/NosAiProject",
-  "file_count": 1480,
+  "file_count": 1484,
   "top_level_counts": {
     ".claude": 1,
     ".cursor": 8,
@@ -11,13 +11,13 @@
     "contracts": 9,
     "data": 12,
     "docs": 209,
-    "nosai": 101,
+    "nosai": 103,
     "prompts": 3,
     "reports": 4,
     "schemas": 11,
     "scripts": 22,
     "src": 533,
-    "tests": 446,
+    "tests": 448,
     "third_party": 46,
     "tools": 44
   },
@@ -32,7 +32,8 @@
     "system_map": "docs/SYSTEM_MAP.md",
     "agent_coordination": "docs/AGENT_COORDINATION.md",
     "role_catalog": "docs/mcp/ROLE_CATALOG.md",
-    "remaining_work": "docs/REMAINING_WORK.md"
+    "remaining_work": "docs/REMAINING_WORK.md",
+    "mcp_chief": "nosai/mcp/chief.py"
   },
   "intentional_archives": [
     "docs/agents/phases/ARCHIVE",
