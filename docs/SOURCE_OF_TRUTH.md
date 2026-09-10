@@ -19,8 +19,9 @@ This file defines which project documents are authoritative. When documents disa
 9. `contracts/ledger.json` and `docs/CONTRACT_MAP.md` — authoritative contract status, files, tests, blockers and open questions.
 10. `docs/SYSTEM_MAP.md` — authoritative module boundaries and communication paths.
 11. `docs/AGENT_COORDINATION.md` — authoritative multi-agent task packet, ownership, handoff and audit protocol.
-12. `docs/REMAINING_WORK.md` — prioritized work still required, with acceptance evidence.
-13. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
+12. `docs/mcp/ROLE_CATALOG.md` and `schemas/mcp_employee_role.schema.json` — stable employee identities, model bindings, capabilities and forbidden actions.
+13. `docs/REMAINING_WORK.md` — prioritized work still required, with acceptance evidence.
+14. `docs/REPOSITORY_ORDER.md` and `docs/REPOSITORY_INVENTORY_2026-09-10.json` — directory ownership, archival/removal rules and current tree inventory.
 
 ## Root front-door documents
 
