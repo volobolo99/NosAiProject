@@ -68,16 +68,17 @@ Se l’evidenza dipende da un client Windows, provider online, GPU o hardware no
 ## Chief e Research Lab — progettazione importata
 
 Fonte: docs/mcp/RESEARCH_LAB_SPEC.md; contratto: contracts/mcp-research-lab-001.json.
-LAB-01..LAB-07 sono PLANNED, non implementati da questa importazione.
-Priorità iniziale completata per i primi due pacchetti: le promozioni usano evidenze
-firmate e il registro usa `data/mcp/state.sqlite3` con migrazione JSON, revisioni,
-idempotenza e lease. Restano LAB-03..LAB-07: supervisione end-to-end, worker pool,
-esperimenti, rilasci a mandato e certificazione del pannello. R-208 è coperto da LAB-03.
+LAB-01 (evidenze firmate), LAB-02 (stato SQLite con migrazione JSON, revisioni,
+idempotenza e lease), il supervisore health e il verifier contratti sono presenti su
+`main`. Restano LAB-03..LAB-07: supervisione end-to-end, worker pool, esperimenti,
+rilasci a mandato e certificazione del pannello. R-208 è coperto solo a livello di
+API: serve ancora il watchdog operativo e la raccolta di metriche reali.
 Il laboratorio non è attivo finché prove e integrazione end-to-end non sono completate.
 
 ## Indice funzioni e audit verificato
 
 Consultare [FUNCTION_INDEX.md](FUNCTION_INDEX.md) per ricerca per file/simbolo,
 source revision e copertura. [DOCUMENTATION_ALIGNMENT_AUDIT.md](DOCUMENTATION_ALIGNMENT_AUDIT.md)
-elenca disallineamenti e 16 contratti con firme non precise. R-207 ha ora un indice
-statico generato; restano revisione dei quattro errori parser e automazione della rigenerazione.
+elenca disallineamenti, cinque firme risolte e undici ancora da precisare. R-207 ha
+ora un indice statico con diagnostica parser e modalità strict; resta la rigenerazione
+a ogni revisione e la verifica del call graph.
