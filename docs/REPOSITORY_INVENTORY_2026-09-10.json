@@ -3,7 +3,7 @@
   "generated_at": "2026-09-10T00:00:00Z",
   "branch": "main",
   "repository": "volobolo99/NosAiProject",
-  "file_count": 1486,
+  "file_count": 1487,
   "top_level_counts": {
     ".claude": 1,
     ".cursor": 8,
@@ -14,7 +14,7 @@
     "nosai": 103,
     "prompts": 3,
     "reports": 4,
-    "schemas": 11,
+    "schemas": 13,
     "scripts": 22,
     "src": 533,
     "tests": 448,
