@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_simulation_request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer"},
+    "horizon_ticks": {"type": "integer", "minimum": 1, "maximum": 10000},
+    "actions": {"type": "array", "items": {"type": "object"}}
+  },
+  "required": ["scenario_id"]
+}
+
