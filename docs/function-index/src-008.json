@@ -1,0 +1,4502 @@
+[
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 250,
+    "kind": "method_declaration",
+    "name": "Unchanged",
+    "scope": "GeometryEpoch",
+    "signature": "public static bool Unchanged(in GeometryEpoch stamped, in GeometryEpoch current, out string? changeReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 303,
+    "kind": "method_declaration",
+    "name": "StillCurrent",
+    "scope": "GeometryEpoch",
+    "signature": "public bool StillCurrent(out string? changeReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 306,
+    "kind": "method_declaration",
+    "name": "ReadWindows",
+    "scope": "GeometryEpoch",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static GeometryEpoch ReadWindows(IntPtr window)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 346,
+    "kind": "method_declaration",
+    "name": "GetClientRect",
+    "scope": "GeometryEpoch",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool GetClientRect(IntPtr handle, out Rect rect);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 350,
+    "kind": "method_declaration",
+    "name": "ClientToScreen",
+    "scope": "GeometryEpoch",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool ClientToScreen(IntPtr handle, ref Point point);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 354,
+    "kind": "method_declaration",
+    "name": "GetDpiForWindow",
+    "scope": "GeometryEpoch",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern uint GetDpiForWindow(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 358,
+    "kind": "method_declaration",
+    "name": "MonitorFromWindow",
+    "scope": "GeometryEpoch",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr MonitorFromWindow(IntPtr handle, uint flags);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudBarFillReader.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "Measure",
+    "scope": "HudBarFillReader",
+    "signature": "public static HudBarMeasure Measure(ReadOnlySpan<byte> bgra, int width, int height, HudFillHue hue)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudBarFillReader.cs",
+    "line": 204,
+    "kind": "method_declaration",
+    "name": "MatchesHue",
+    "scope": "HudBarFillReader",
+    "signature": "internal static bool MatchesHue(byte r, byte g, byte b, HudFillHue hue)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "TrySave",
+    "scope": "HudCropWriter",
+    "signature": "public static string? TrySave( string? repoRoot, CaptureFrame frame, ScreenVitalObservation observation, PixelRect? targetRoi = null, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "SaveCrops",
+    "scope": "HudCropWriter",
+    "signature": "public static IReadOnlyList<HudCropWrite> SaveCrops( string? repoRoot, CaptureFrame frame, ScreenVitalObservation observation, PixelRect? targetRoi = null, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "WriteIfNotEmpty",
+    "scope": "HudCropWriter",
+    "signature": "private static void WriteIfNotEmpty(string directory, string fileName, CaptureFrame frame, PixelRect rect, List<HudCropWrite> written)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "TrySavePanelPreview",
+    "scope": "HudCropWriter",
+    "signature": "public static string? TrySavePanelPreview(string? repoRoot, CaptureFrame frame, PixelRect panelArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "WriteBmp",
+    "scope": "HudCropWriter",
+    "signature": "private static bool WriteBmp(string path, CaptureFrame frame, PixelRect rect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "Refused",
+    "scope": "HudGlyphTrainingResult",
+    "signature": "public static HudGlyphTrainingResult Refused(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 67,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "HudGlyphAtlas",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 70,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "HudGlyphAtlas",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 77,
+    "kind": "constructor_declaration",
+    "name": "HudGlyphAtlas",
+    "scope": "HudGlyphAtlas",
+    "signature": "public HudGlyphAtlas() : this(HudGlyphExtractor.NormalizedWidth, HudGlyphExtractor.NormalizedHeight)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 82,
+    "kind": "constructor_declaration",
+    "name": "HudGlyphAtlas",
+    "scope": "HudGlyphAtlas",
+    "signature": "private HudGlyphAtlas(int glyphWidth, int glyphHeight)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "Train",
+    "scope": "HudGlyphAtlas",
+    "signature": "public HudGlyphTrainingResult Train(IReadOnlyList<byte[]> glyphs, string expectedText)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 176,
+    "kind": "method_declaration",
+    "name": "ToOcrCache",
+    "scope": "HudGlyphAtlas",
+    "signature": "public GlyphHashOcrCache ToOcrCache()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 193,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "HudGlyphAtlas",
+    "signature": "public static HudGlyphAtlas Load(string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 273,
+    "kind": "method_declaration",
+    "name": "Save",
+    "scope": "HudGlyphAtlas",
+    "signature": "public void Save(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphAtlas.cs",
+    "line": 287,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "HudGlyphAtlas",
+    "signature": "entry =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphExtractor.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "Extract",
+    "scope": "HudGlyphExtractor",
+    "signature": "public static IReadOnlyList<byte[]> Extract(ReadOnlySpan<byte> bgra, int width, int height)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphExtractor.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "IsInk",
+    "scope": "HudGlyphExtractor",
+    "signature": "internal static bool IsInk(byte r, byte g, byte b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphExtractor.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "ColumnHasInk",
+    "scope": "HudGlyphExtractor",
+    "signature": "private static bool ColumnHasInk(bool[] ink, int width, int height, int x)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphExtractor.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "Normalize",
+    "scope": "HudGlyphExtractor",
+    "signature": "private static byte[]? Normalize(bool[] ink, int width, int height, int x0, int x1)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphTraining.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "TrainHpFromFrame",
+    "scope": "HudGlyphTraining",
+    "signature": "public static HudGlyphTrainingResult TrainHpFromFrame( HudGlyphAtlas atlas, CaptureFrame frame, int current, int maximum, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphTraining.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "TrainHpFromObservedVitals",
+    "scope": "HudGlyphTraining",
+    "signature": "public static HudGlyphTrainingResult TrainHpFromObservedVitals( HudGlyphAtlas atlas, CaptureFrame frame, ClassifiedValue<int> current, ClassifiedValue<int> maximum, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudGlyphTraining.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "FormatVitalText",
+    "scope": "HudGlyphTraining",
+    "signature": "public static string FormatVitalText(int current, int maximum)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "RunConsoleProbe",
+    "scope": "HudProbe",
+    "signature": "public static int RunConsoleProbe( string? repoRoot = null, string processName = \"NostaleClientX\", (double X, double Y, double Width, double Height)? calibrateTarget = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "FindClientWindow",
+    "scope": "HudProbe",
+    "signature": "[System.Runtime.Versioning.SupportedOSPlatform(\"windows\")] public static ClientWindow? FindClientWindow(string processName = \"NostaleClientX\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "TargetRegion",
+    "scope": "HudProbe",
+    "signature": "private static PixelRect TargetRegion( PixelRect area, (double X, double Y, double Width, double Height)? proposed, CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 176,
+    "kind": "method_declaration",
+    "name": "DescribeTarget",
+    "scope": "HudProbe",
+    "signature": "private static string DescribeTarget(CaptureFrame frame, PixelRect roi)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 202,
+    "kind": "method_declaration",
+    "name": "ReportTargetCalibration",
+    "scope": "HudProbe",
+    "signature": "private static void ReportTargetCalibration( string repoRoot, PixelRect area, (double X, double Y, double Width, double Height)? proposed)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "HudProbe",
+    "signature": "private static string Describe(PixelRect rect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudProbe.cs",
+    "line": 249,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "HudProbe",
+    "signature": "private static string Describe(ScreenBarFill bar)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "TryParseSlots",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "public static bool TryParseSlots( IReadOnlyList<string> tokens, out IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi> rois, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "public static int Run( string? repoRoot = null, string processName = \"NostaleClientX\", IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi>? slots = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 214,
+    "kind": "method_declaration",
+    "name": "ReportCalibrationState",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "private static void ReportCalibrationState( string path, IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi>? proposed, PixelRect area)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 255,
+    "kind": "method_declaration",
+    "name": "TryParseOne",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "private static bool TryParseOne( string token, out EquipmentSlot slot, out InventorySlotRoi roi, out string? reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 294,
+    "kind": "method_declaration",
+    "name": "AcquireFrame",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "private static CaptureFrame? AcquireFrame(DxgiDesktopDuplicationSource capture)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelCalibrationProbe.cs",
+    "line": 312,
+    "kind": "method_declaration",
+    "name": "WritePreview",
+    "scope": "InventoryPanelCalibrationProbe",
+    "signature": "private static void WritePreview(string repoRoot, CaptureFrame frame, PixelRect area)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 74,
+    "kind": "constructor_declaration",
+    "name": "InventoryPanelRoiCalibration",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "private InventoryPanelRoiCalibration( bool isCalibrated, IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi> rois, int clientWidth, int clientHeight, DateTime? calibratedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 89,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 92,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 95,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 98,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 101,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "Confirmed",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "public static InventoryPanelRoiCalibration Confirmed( IReadOnlyDictionary<EquipmentSlot, InventorySlotRoi> rois, int clientWidth, int clientHeight, DateTime calibratedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 124,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "slot =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "Resolve",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "public IReadOnlyDictionary<EquipmentSlot, PixelRect>? Resolve(PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 172,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "public static InventoryPanelRoiCalibration Load(string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "Save",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "public void Save(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/InventoryPanelRoiCalibration.cs",
+    "line": 287,
+    "kind": "method_declaration",
+    "name": "TryFraction",
+    "scope": "InventoryPanelRoiCalibration",
+    "signature": "private static bool TryFraction(string field, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 132,
+    "kind": "method_declaration",
+    "name": "ToDetection",
+    "scope": "EntitySighting",
+    "signature": "public Detection? ToDetection()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 552,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IGamePacketDecoder",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 565,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IGamePacketDecoder",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 568,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "IGamePacketDecoder",
+    "signature": "bool CanDecode(ObservedPacket packet);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 570,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "IGamePacketDecoder",
+    "signature": "DecodedObservations Decode(ObservedPacket packet);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 619,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 619,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 626,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 626,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 629,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 629,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 632,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 632,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 635,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 635,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 638,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 638,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 641,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkObservationReport",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 641,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "NetworkObservationReport",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 660,
+    "kind": "constructor_declaration",
+    "name": "GameTrafficObserver",
+    "scope": "GameTrafficObserver",
+    "signature": "public GameTrafficObserver(INetworkObservationSource source, ScopedGameTrafficFilter filter, IGamePacketDecoder decoder)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 697,
+    "kind": "method_declaration",
+    "name": "ObservePending",
+    "scope": "GameTrafficObserver",
+    "signature": "public NetworkObservationReport ObservePending(int maxPackets = 4096, TimeSpan? budget = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 736,
+    "kind": "local_function_statement",
+    "name": "Accumulate",
+    "scope": "GameTrafficObserver",
+    "signature": "void Accumulate(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/GameTrafficObserver.cs",
+    "line": 855,
+    "kind": "method_declaration",
+    "name": "TryToWorldState",
+    "scope": "GameTrafficObserver",
+    "signature": "public bool TryToWorldState( NetworkObservationReport report, out NosAi.Runtime.WorldModel.WorldState worldState, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "FramingSpec",
+    "signature": "public void Validate()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 81,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFramer",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 81,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFramer",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 83,
+    "kind": "constructor_declaration",
+    "name": "MessageFramer",
+    "scope": "MessageFramer",
+    "signature": "public MessageFramer(FramingSpec framing)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "Push",
+    "scope": "MessageFramer",
+    "signature": "public IReadOnlyList<byte[]> Push(ReadOnlySpan<byte> data)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "ReadLength",
+    "scope": "MessageFramer",
+    "signature": "private long ReadLength()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/MessageFramer.cs",
+    "line": 137,
+    "kind": "method_declaration",
+    "name": "Reset",
+    "scope": "MessageFramer",
+    "signature": "public void Reset()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "Framed",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static byte[] Framed(byte opcode, params byte[] body)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "TestReassemblerJoinsSplitMessages",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestReassemblerJoinsSplitMessages()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "TestReassemblerSplitsCoalescedMessages",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestReassemblerSplitsCoalescedMessages()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "TestReassemblerFailsClosedOnNonsense",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestReassemblerFailsClosedOnNonsense()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "Resets",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool Resets(MessageFramer reassembler)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "SightingMessage",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static byte[] SightingMessage(long entityId, int x, int y, int hpPercent)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "TestProtocolMapDecodesFromConfiguration",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestProtocolMapDecodesFromConfiguration()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "TestUnmappedOpcodeDecodesNothing",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestUnmappedOpcodeDecodesNothing()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "TestMalformedMessageDecodesNothing",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestMalformedMessageDecodesNothing()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 141,
+    "kind": "method_declaration",
+    "name": "TestMapConfidenceCapsProvenance",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestMapConfidenceCapsProvenance()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "TestMalformedMapRefused",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestMalformedMapRefused()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "TestMissingMapReported",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestMissingMapReported()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "TestCalibrationFindsKnownValue",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestCalibrationFindsKnownValue()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "TestRecorderRoundTrip",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestRecorderRoundTrip()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "FeedObserver",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static GameTrafficObserver FeedObserver(params byte[][] messages)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 233,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "TestFeedFansOutToConsumers",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestFeedFansOutToConsumers()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 246,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 247,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 254,
+    "kind": "method_declaration",
+    "name": "TestFeedProducesDecisionFacts",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestFeedProducesDecisionFacts()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 273,
+    "kind": "method_declaration",
+    "name": "TestFeedFactsAreUnknownWithoutObservation",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestFeedFactsAreUnknownWithoutObservation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkDecoderChecks.cs",
+    "line": 289,
+    "kind": "method_declaration",
+    "name": "TestFeedDrivesTheDecisionEngine",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestFeedDrivesTheDecisionEngine()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationContracts.cs",
+    "line": 66,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "INetworkObservationSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationContracts.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "INetworkObservationSource",
+    "signature": "bool TryObserve(out ObservedPacket packet);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 30,
+    "kind": "constructor_declaration",
+    "name": "SyntheticNetworkSource",
+    "scope": "SyntheticNetworkSource",
+    "signature": "public SyntheticNetworkSource(IEnumerable<ObservedPacket> packets)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "SyntheticNetworkSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 65,
+    "kind": "constructor_declaration",
+    "name": "ReplayNetworkSource",
+    "scope": "ReplayNetworkSource",
+    "signature": "public ReplayNetworkSource(IEnumerable<ObservedPacket> recorded)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "ReplayNetworkSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "UnavailableNetworkSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 125,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IRawScopedCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationSources.cs",
+    "line": 128,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IRawScopedCaptureBackend",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "RunAll",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "public static bool RunAll()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool Run(string name, Func<bool> check)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool Report(string name, bool passed, string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "GamePacket",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static ObservedPacket GamePacket(byte[] payload, DataSourceKind source = DataSourceKind.Simulated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "ForeignPacket",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static ObservedPacket ForeignPacket(string host, int port)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "TestMatchAllScopeRefused",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestMatchAllScopeRefused()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "TestOtherTrafficIsDropped",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestOtherTrafficIsDropped()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "TestChannelIsObservationOnly",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestChannelIsObservationOnly()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 118,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "TestUnavailableSourceIsHonest",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestUnavailableSourceIsHonest()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "TestSyntheticStaysSimulated",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestSyntheticStaysSimulated()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 162,
+    "kind": "method_declaration",
+    "name": "TestReplayIsCached",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestReplayIsCached()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 178,
+    "kind": "method_declaration",
+    "name": "TestUnknownOpcodeYieldsNothing",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestUnknownOpcodeYieldsNothing()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "TestConvergesIntoWorldModel",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestConvergesIntoWorldModel()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 207,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "TestTacticalEventsDecoded",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestTacticalEventsDecoded()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 221,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 222,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 223,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkObservationTestRunner.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "TestScopedOutAreCounted",
+    "scope": "NetworkObservationTestRunner",
+    "signature": "private static bool TestScopedOutAreCounted()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 70,
+    "kind": "constructor_declaration",
+    "name": "NetworkWorldFeed",
+    "scope": "NetworkWorldFeed",
+    "signature": "public NetworkWorldFeed(GameTrafficObserver observer)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "Subscribe",
+    "scope": "NetworkWorldFeed",
+    "signature": "public void Subscribe(Action<NetworkObservationReport> subscriber)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "Poll",
+    "scope": "NetworkWorldFeed",
+    "signature": "public NetworkObservationReport Poll(int maxPackets = 4096)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "TryToWorldState",
+    "scope": "NetworkWorldFeed",
+    "signature": "public bool TryToWorldState( out NosAi.Runtime.WorldModel.WorldState worldState, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "ToDecisionContext",
+    "scope": "NetworkWorldFeed",
+    "signature": "public DecisionContext ToDecisionContext(long? currentTargetId = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 147,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkWorldFeed",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 158,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkWorldFeed",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 166,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkWorldFeed",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NetworkWorldFeed",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 187,
+    "kind": "method_declaration",
+    "name": "Classify",
+    "scope": "NetworkWorldFeed",
+    "signature": "private static ClassifiedValue<double> Classify(double value, DataSourceKind source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 219,
+    "kind": "constructor_declaration",
+    "name": "TrafficRecorder",
+    "scope": "TrafficRecorder",
+    "signature": "public TrafficRecorder(int capacity = 100_000)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "Record",
+    "scope": "TrafficRecorder",
+    "signature": "public void Record(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 238,
+    "kind": "method_declaration",
+    "name": "WriteTo",
+    "scope": "TrafficRecorder",
+    "signature": "public void WriteTo(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NetworkWorldFeed.cs",
+    "line": 269,
+    "kind": "method_declaration",
+    "name": "FindOffsetsMatching",
+    "scope": "TrafficRecorder",
+    "signature": "public static ImmutableArray<int> FindOffsetsMatching(ReadOnlySpan<byte> message, long knownValue, int size, bool bigEndian = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "NosTaleWorldDecoder",
+    "signature": "public static IReadOnlyList<string> Decode(ReadOnlySpan<byte> stream)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "TryMeasurePacket",
+    "scope": "NosTaleWorldDecoder",
+    "signature": "public static bool TryMeasurePacket(ReadOnlySpan<byte> stream, out int length)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+    "line": 133,
+    "kind": "method_declaration",
+    "name": "ReadLiteral",
+    "scope": "NosTaleWorldDecoder",
+    "signature": "private static int ReadLiteral(ReadOnlySpan<byte> stream, int index, int length, StringBuilder into)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "ReadPacked",
+    "scope": "NosTaleWorldDecoder",
+    "signature": "private static int ReadPacked(ReadOnlySpan<byte> stream, int index, int length, StringBuilder into)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldDecoder.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Append",
+    "scope": "NosTaleWorldDecoder",
+    "signature": "private static void Append(StringBuilder into, int nibble)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "public bool CanDecode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "DecodeStat",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeStat(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "DecodeOtherVitals",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeOtherVitals(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 212,
+    "kind": "method_declaration",
+    "name": "DecodeEnter",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeEnter(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 253,
+    "kind": "method_declaration",
+    "name": "DecodeMove",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeMove(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 285,
+    "kind": "method_declaration",
+    "name": "DecodeDeath",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeDeath(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 321,
+    "kind": "method_declaration",
+    "name": "DecodeLeave",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeLeave(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 367,
+    "kind": "method_declaration",
+    "name": "DecodeHit",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeHit(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 436,
+    "kind": "method_declaration",
+    "name": "ReadTargetVitals",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private ImmutableArray<EntitySighting> ReadTargetVitals( string[] fields, long targetId, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 478,
+    "kind": "method_declaration",
+    "name": "DecodeCondition",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeCondition(string[] fields)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 519,
+    "kind": "method_declaration",
+    "name": "DecodeProgression",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeProgression(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 561,
+    "kind": "method_declaration",
+    "name": "DecodeEq",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeEq(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 606,
+    "kind": "method_declaration",
+    "name": "DecodeEquip",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeEquip(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 644,
+    "kind": "method_declaration",
+    "name": "DecodeSkillReady",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeSkillReady(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 687,
+    "kind": "method_declaration",
+    "name": "DecodeInventorySlot",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeInventorySlot(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 740,
+    "kind": "method_declaration",
+    "name": "DecodePickup",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodePickup(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 772,
+    "kind": "method_declaration",
+    "name": "DecodeGroundItem",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeGroundItem(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 814,
+    "kind": "method_declaration",
+    "name": "DecodeItemIcon",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations DecodeItemIcon(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 844,
+    "kind": "method_declaration",
+    "name": "DecodeCast",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private DecodedObservations DecodeCast(string[] fields, DataSourceKind source, DateTime capturedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 894,
+    "kind": "method_declaration",
+    "name": "IsPlausibleCoordinate",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool IsPlausibleCoordinate(int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 896,
+    "kind": "method_declaration",
+    "name": "Sighting",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DecodedObservations Sighting( long entityId, string kind, double x, double y, double? hpRatio, DataSourceKind source, DateTime positionAtUtc, DateTime? hpAtUtc, int? vnum, AbsoluteVitals? vitals = null, int? level = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 913,
+    "kind": "method_declaration",
+    "name": "KindOf",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static string KindOf(string typeField)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 976,
+    "kind": "method_declaration",
+    "name": "IsReadableEntity",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "internal static bool IsReadableEntity(string typeField)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1007,
+    "kind": "method_declaration",
+    "name": "IsReadableEntity",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "internal static bool IsReadableEntity(string opcode, string typeField)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1037,
+    "kind": "method_declaration",
+    "name": "Stale",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static DataSourceKind Stale(DataSourceKind source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1050,
+    "kind": "method_declaration",
+    "name": "VitalsArePlausible",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool VitalsArePlausible(int hp, int maxHp, int mp)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1057,
+    "kind": "method_declaration",
+    "name": "TryReadText",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool TryReadText(ReadOnlySpan<byte> payload, out string text)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1073,
+    "kind": "method_declaration",
+    "name": "TryReadAscii",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool TryReadAscii(ReadOnlySpan<byte> payload, out string text)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1087,
+    "kind": "method_declaration",
+    "name": "TryInt",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool TryInt(string field, out int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1090,
+    "kind": "method_declaration",
+    "name": "TryLong",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool TryLong(string field, out long value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/NosTaleWorldProtocolDecoder.cs",
+    "line": 1093,
+    "kind": "method_declaration",
+    "name": "TryDouble",
+    "scope": "NosTaleWorldProtocolDecoder",
+    "signature": "private static bool TryDouble(string field, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "FieldSpec",
+    "signature": "public void Validate(string owner, string field)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "TryRead",
+    "scope": "FieldSpec",
+    "signature": "public bool TryRead(ReadOnlySpan<byte> message, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "MessageSpec",
+    "signature": "public void Validate()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "ProtocolMap",
+    "signature": "public void Validate()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "PlayerVitalsSpec",
+    "signature": "public void Validate(string mapName)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 211,
+    "kind": "constructor_declaration",
+    "name": "ConfigurableProtocolDecoder",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "public ConfigurableProtocolDecoder(ProtocolMap map)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 216,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "public bool CanDecode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 225,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 235,
+    "kind": "method_declaration",
+    "name": "DecodeMessage",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "public DecodedObservations DecodeMessage( ReadOnlySpan<byte> message, DataSourceKind packetSource, DateTime? capturedUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 321,
+    "kind": "method_declaration",
+    "name": "DecodeVitals",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "private DecodedObservations DecodeVitals( ReadOnlySpan<byte> message, PlayerVitalsSpec spec, DataSourceKind packetSource, DateTime? capturedUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 360,
+    "kind": "method_declaration",
+    "name": "Weaker",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "private static DataSourceKind Weaker(DataSourceKind a, DataSourceKind b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 362,
+    "kind": "local_function_statement",
+    "name": "Rank",
+    "scope": "ConfigurableProtocolDecoder",
+    "signature": "static int Rank(DataSourceKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 378,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FieldFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 378,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FieldFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 379,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FieldFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 379,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FieldFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 380,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FieldFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 380,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FieldFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 381,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FieldFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 381,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FieldFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 382,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FieldFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 382,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FieldFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 384,
+    "kind": "method_declaration",
+    "name": "ToSpec",
+    "scope": "FieldFile",
+    "signature": "public FieldSpec ToSpec()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 389,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 389,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 390,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 390,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 391,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 391,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 392,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 392,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 393,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 393,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 394,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 394,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 395,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 395,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 396,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MessageFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 396,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "MessageFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 401,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 401,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 402,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 402,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 403,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 403,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 404,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 404,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 405,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 405,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FramingFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "FramingFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 411,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 411,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 412,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 412,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 413,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 413,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 414,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 414,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 415,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ProtocolMapFile",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 415,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ProtocolMapFile",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 424,
+    "kind": "method_declaration",
+    "name": "Parse",
+    "scope": "ProtocolMapLoader",
+    "signature": "public static ProtocolMap Parse(string json)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ProtocolMap.cs",
+    "line": 472,
+    "kind": "method_declaration",
+    "name": "TryLoadFile",
+    "scope": "ProtocolMapLoader",
+    "signature": "public static bool TryLoadFile(string path, out ProtocolMap? map, out string? failure)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ScopedGameTrafficFilter.cs",
+    "line": 36,
+    "kind": "constructor_declaration",
+    "name": "ScopedGameTrafficFilter",
+    "scope": "ScopedGameTrafficFilter",
+    "signature": "public ScopedGameTrafficFilter(GameEndpoint endpoint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/ScopedGameTrafficFilter.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Admit",
+    "scope": "ScopedGameTrafficFilter",
+    "signature": "public bool Admit(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "SkillCooldownReading",
+    "signature": "public static SkillCooldownReading Unknown(int slot, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "SkillCooldownReading",
+    "signature": "public string Describe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "NoteUsed",
+    "scope": "SkillCooldownTracker",
+    "signature": "public void NoteUsed(int slot, DateTime atUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "NoteReady",
+    "scope": "SkillCooldownTracker",
+    "signature": "public void NoteReady(int slot, DateTime atUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "SkillCooldownTracker",
+    "signature": "public SkillCooldownReading Read(int slot, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SkillCooldownTracker.cs",
+    "line": 162,
+    "kind": "method_declaration",
+    "name": "ReadAll",
+    "scope": "SkillCooldownTracker",
+    "signature": "public IReadOnlyList<SkillCooldownReading> ReadAll(DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SyntheticProtocolDecoder.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "SyntheticProtocolDecoder",
+    "signature": "public bool CanDecode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SyntheticProtocolDecoder.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "SyntheticProtocolDecoder",
+    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/Network/SyntheticProtocolDecoder.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "BuildFrame",
+    "scope": "SyntheticProtocolDecoder",
+    "signature": "public static byte[] BuildFrame(byte opcode, long entityId, int x, int y, int hpPercent)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/NullPerceptionProvider.cs",
+    "line": 5,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "NullPerceptionProvider",
+    "signature": "public PerceptionSnapshot Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "OnnxDetectorOptions",
+    "signature": "public void Validate()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "IOnnxDetectionDecoder",
+    "signature": "IReadOnlyList<Detection> Decode( IReadOnlyList<OnnxTensorOutput> outputs, int sourceWidth, int sourceHeight);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "OnnxObjectDetector",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 62,
+    "kind": "constructor_declaration",
+    "name": "OnnxObjectDetector",
+    "scope": "OnnxObjectDetector",
+    "signature": "private OnnxObjectDetector( InferenceSession session, OnnxDetectorOptions options, IOnnxDetectionDecoder decoder, string name)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "TryCreate",
+    "scope": "OnnxObjectDetector",
+    "signature": "public static bool TryCreate( OnnxDetectorOptions options, IOnnxDetectionDecoder decoder, out OnnxObjectDetector? detector, out string? unavailableReason, SessionOptions? sessionOptions = null, string name = \"onnx-detector\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "OnnxObjectDetector",
+    "signature": "public IReadOnlyList<Detection> Detect(CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 179,
+    "kind": "method_declaration",
+    "name": "CreateInputTensor",
+    "scope": "OnnxObjectDetector",
+    "signature": "internal static DenseTensor<float> CreateInputTensor( CaptureFrame frame, int inputWidth, int inputHeight, float pixelScale)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 216,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "OnnxObjectDetector",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OnnxObjectDetector.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "EmptyOnnxDetectionDecoder",
+    "signature": "public IReadOnlyList<Detection> Decode( IReadOnlyList<OnnxTensorOutput> outputs, int sourceWidth, int sourceHeight)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 87,
+    "kind": "constructor_declaration",
+    "name": "OpportunisticBarProbe",
+    "scope": "OpportunisticBarProbe",
+    "signature": "public OpportunisticBarProbe( string? atlasPath = null, double drainedThreshold = DefaultDrainedThreshold, double tolerance = DefaultTolerance, int requiredSamples = DefaultRequiredSamples)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 156,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "OpportunisticBarProbe",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "Offer",
+    "scope": "OpportunisticBarProbe",
+    "signature": "public BarProbeState Offer( CaptureFrame? frame, WirePlayerVitals? wire, PixelRect? clientArea = null, HudGlyphAtlas? atlas = null, bool clientInForeground = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 373,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OpportunisticBarProbe",
+    "signature": "sampleToCount =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 391,
+    "kind": "method_declaration",
+    "name": "BuildEvidence",
+    "scope": "OpportunisticBarProbe",
+    "signature": "public DeferredEvidenceRecord BuildEvidence(DateTime closedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 394,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OpportunisticBarProbe",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 464,
+    "kind": "method_declaration",
+    "name": "CountAgreeingSamples",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private int CountAgreeingSamples()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 464,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OpportunisticBarProbe",
+    "signature": "sample =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 466,
+    "kind": "method_declaration",
+    "name": "RecordRejection",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private void RecordRejection(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 472,
+    "kind": "method_declaration",
+    "name": "DescribeAtlasTraining",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private string DescribeAtlasTraining()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 487,
+    "kind": "method_declaration",
+    "name": "FormatAtlasResult",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private string FormatAtlasResult()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 500,
+    "kind": "method_declaration",
+    "name": "FormatDouble",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private static string FormatDouble(double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 502,
+    "kind": "method_declaration",
+    "name": "FormatDouble4",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private static string FormatDouble4(double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 504,
+    "kind": "method_declaration",
+    "name": "FormatInt",
+    "scope": "OpportunisticBarProbe",
+    "signature": "private static string FormatInt(int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 529,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "EvidenceWatch",
+    "signature": "public static int Run(string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 542,
+    "kind": "method_declaration",
+    "name": "GetForegroundWindow",
+    "scope": "EvidenceWatch",
+    "signature": "[SupportedOSPlatform(\"windows\")] [LibraryImport(\"user32.dll\")] private static partial nint GetForegroundWindow();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 546,
+    "kind": "method_declaration",
+    "name": "RunCore",
+    "scope": "EvidenceWatch",
+    "signature": "private static int RunCore(string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 630,
+    "kind": "method_declaration",
+    "name": "Watch",
+    "scope": "EvidenceWatch",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int Watch( DxgiDesktopDuplicationSource capture, ClientWindow window, int minutes, string? capturePath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 663,
+    "kind": "method_declaration",
+    "name": "WatchCore",
+    "scope": "EvidenceWatch",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int WatchCore( ClientMemorySession? session, long? playerId, DxgiDesktopDuplicationSource capture, ClientWindow window, int minutes, string? capturePath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 756,
+    "kind": "method_declaration",
+    "name": "WriteEvidence",
+    "scope": "EvidenceWatch",
+    "signature": "private static void WriteEvidence(DeferredEvidenceRecord record, string label)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 769,
+    "kind": "method_declaration",
+    "name": "FormatInt",
+    "scope": "EvidenceWatch",
+    "signature": "private static string FormatInt(int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
+    "line": 771,
+    "kind": "method_declaration",
+    "name": "FormatLong",
+    "scope": "EvidenceWatch",
+    "signature": "private static string FormatLong(long value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionContracts.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "IPerceptionProvider",
+    "signature": "PerceptionSnapshot Capture();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionContracts.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "ToWorldState",
+    "scope": "IPerceptionWorldAdapter",
+    "signature": "WorldState ToWorldState(PerceptionSnapshot snapshot);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionContracts.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "ToWorldState",
+    "scope": "PerceptionWorldAdapter",
+    "signature": "public WorldState ToWorldState(PerceptionSnapshot snapshot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 37,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IFrameSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "IFrameSource",
+    "signature": "bool TryAcquire(out CaptureFrame frame);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 56,
+    "kind": "constructor_declaration",
+    "name": "SyntheticFrameSource",
+    "scope": "SyntheticFrameSource",
+    "signature": "public SyntheticFrameSource(int width = 1920, int height = 1080, Func<int, DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 62,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SyntheticFrameSource",
+    "signature": "i =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "SyntheticFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "UnavailableFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "IsWithin",
+    "scope": "PixelRect",
+    "signature": "public bool IsWithin(int frameWidth, int frameHeight)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "Segment",
+    "scope": "RoiSegmenter",
+    "signature": "public static ImmutableArray<RegionOfInterest> Segment( int frameWidth, int frameHeight, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 160,
+    "kind": "local_function_statement",
+    "name": "Roi",
+    "scope": "RoiSegmenter",
+    "signature": "RegionOfInterest Roi(RoiKind kind, double x, double y, double w, double h)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "HashGlyph",
+    "scope": "GlyphHashOcrCache",
+    "signature": "public static ulong HashGlyph(ReadOnlySpan<byte> glyphBitmap)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "Train",
+    "scope": "GlyphHashOcrCache",
+    "signature": "public void Train(char character, ReadOnlySpan<byte> glyphBitmap)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 235,
+    "kind": "method_declaration",
+    "name": "TrainHash",
+    "scope": "GlyphHashOcrCache",
+    "signature": "public void TrainHash(ulong glyphHash, char character)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 238,
+    "kind": "method_declaration",
+    "name": "Recognize",
+    "scope": "GlyphHashOcrCache",
+    "signature": "public string Recognize(IEnumerable<byte[]> glyphs)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 260,
+    "kind": "method_declaration",
+    "name": "RecognizeInteger",
+    "scope": "GlyphHashOcrCache",
+    "signature": "public int? RecognizeInteger(IEnumerable<byte[]> glyphs)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 291,
+    "kind": "constructor_declaration",
+    "name": "Kalman2DFilter",
+    "scope": "Kalman2DFilter",
+    "signature": "public Kalman2DFilter(double processNoise = 1.0, double measurementNoise = 4.0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 300,
+    "kind": "method_declaration",
+    "name": "Initialize",
+    "scope": "Kalman2DFilter",
+    "signature": "public void Initialize(double x, double y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 307,
+    "kind": "method_declaration",
+    "name": "Predict",
+    "scope": "Kalman2DFilter",
+    "signature": "public void Predict(double dt)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 326,
+    "kind": "method_declaration",
+    "name": "Update",
+    "scope": "Kalman2DFilter",
+    "signature": "public void Update(double measuredX, double measuredY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 369,
+    "kind": "method_declaration",
+    "name": "Multiply",
+    "scope": "Kalman2DFilter",
+    "signature": "private static double[,] Multiply(double[,] a, double[,] b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 382,
+    "kind": "method_declaration",
+    "name": "Transpose",
+    "scope": "Kalman2DFilter",
+    "signature": "private static double[,] Transpose(double[,] a)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 407,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 407,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 408,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 408,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 409,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 409,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 410,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 410,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "TemporalEntityTracker.TrackState",
+    "signature": "set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 420,
+    "kind": "constructor_declaration",
+    "name": "TemporalEntityTracker",
+    "scope": "TemporalEntityTracker",
+    "signature": "public TemporalEntityTracker(double associationRadius = 40.0, int maxMissedFrames = 5)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 433,
+    "kind": "method_declaration",
+    "name": "Track",
+    "scope": "TemporalEntityTracker",
+    "signature": "public ImmutableArray<TrackedEntity> Track(IReadOnlyList<Detection> detections, double dt)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 452,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TemporalEntityTracker",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 474,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TemporalEntityTracker",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 477,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TemporalEntityTracker",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 478,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TemporalEntityTracker",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 483,
+    "kind": "method_declaration",
+    "name": "Track",
+    "scope": "TemporalEntityTracker",
+    "signature": "IReadOnlyList<TrackedEntity> IObjectTracker.Track(IReadOnlyList<Detection> detections, double deltaSeconds)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 486,
+    "kind": "method_declaration",
+    "name": "Square",
+    "scope": "TemporalEntityTracker",
+    "signature": "private static double Square(double v)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 515,
+    "kind": "constructor_declaration",
+    "name": "PerceptionPipeline",
+    "scope": "PerceptionPipeline",
+    "signature": "public PerceptionPipeline( IFrameSource frameSource, IObjectDetector detector, IObjectTracker? tracker = null, CaptureFreshnessPolicy? freshnessPolicy = null, Func<DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 526,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionPipeline",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 529,
+    "kind": "constructor_declaration",
+    "name": "PerceptionPipeline",
+    "scope": "PerceptionPipeline",
+    "signature": "public PerceptionPipeline( IFrameSource frameSource, Func<CaptureFrame, IReadOnlyList<Detection>> detector, IObjectTracker? tracker = null, CaptureFreshnessPolicy? freshnessPolicy = null, Func<DateTime>? clock = null) : this( frameSource, new DelegateObjectDetector(detector), tracker, freshnessPolicy, clock)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 544,
+    "kind": "method_declaration",
+    "name": "ProcessNext",
+    "scope": "PerceptionPipeline",
+    "signature": "public PerceptionResult ProcessNext()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 575,
+    "kind": "method_declaration",
+    "name": "ToWorldState",
+    "scope": "PerceptionWorldStateAdapter",
+    "signature": "public static WorldModel.WorldState ToWorldState(PerceptionResult result, bool playerAlive, double playerHpRatio)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipeline.cs",
+    "line": 579,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionWorldStateAdapter",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "RunAll",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "public static bool RunAll()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool Run(string name, Func<bool> check)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool Report(string name, bool passed, string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "NoDetections",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static IReadOnlyList<Detection> NoDetections(CaptureFrame _)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "TestUnavailableCaptureIsHonest",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestUnavailableCaptureIsHonest()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "TestSyntheticFramesAreSimulated",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestSyntheticFramesAreSimulated()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "TestRoiSegmentationBounds",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestRoiSegmentationBounds()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 91,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "r =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "TestGlyphHashStability",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestGlyphHashStability()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "TestGlyphOcrCache",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestGlyphOcrCache()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 115,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "TestKalmanConvergence",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestKalmanConvergence()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 144,
+    "kind": "method_declaration",
+    "name": "TestKalmanPrediction",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestKalmanPrediction()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 156,
+    "kind": "method_declaration",
+    "name": "TestTrackerStableIds",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestTrackerStableIds()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 172,
+    "kind": "method_declaration",
+    "name": "TestTrackerSpawnAndExpire",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestTrackerSpawnAndExpire()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "TestPipelineToWorldState",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestPipelineToWorldState()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 191,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 193,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "f =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 212,
+    "kind": "method_declaration",
+    "name": "Frame",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static CaptureFrame Frame(int tone, int width = 4, int height = 4)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 220,
+    "kind": "method_declaration",
+    "name": "TestTripleBufferSemantics",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestTripleBufferSemantics()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 238,
+    "kind": "method_declaration",
+    "name": "TestTripleBufferedCapturePublishes",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestTripleBufferedCapturePublishes()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "TestCaptureHealthClassification",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestCaptureHealthClassification()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "TestOnnxDetectorMissingModelFailsClosed",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestOnnxDetectorMissingModelFailsClosed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 290,
+    "kind": "method_declaration",
+    "name": "TestDxgiBackendIsFailClosed",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestDxgiBackendIsFailClosed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 307,
+    "kind": "method_declaration",
+    "name": "TestDxgiFrameIsLiveWhenAvailable",
+    "scope": "PerceptionPipelineTestRunner",
+    "signature": "private static bool TestDxgiFrameIsLiveWhenAvailable()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 336,
+    "kind": "constructor_declaration",
+    "name": "DeterministicNoise",
+    "scope": "PerceptionPipelineTestRunner.DeterministicNoise",
+    "signature": "public DeterministicNoise(uint seed)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/PerceptionPipelineTestRunner.cs",
+    "line": 337,
+    "kind": "method_declaration",
+    "name": "Next",
+    "scope": "PerceptionPipelineTestRunner.DeterministicNoise",
+    "signature": "public double Next()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "Publish",
+    "scope": "ScreenDerivedVitalGate",
+    "signature": "public ScreenVitalPair Publish(int? current, int? maximum, double confidence, ScreenVitalPair? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "AsCached",
+    "scope": "ScreenDerivedVitalGate",
+    "signature": "public static ScreenVitalPair AsCached(ScreenVitalPair last, string reason = \"stale_not_current\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "ScreenDerivedVitalGate",
+    "signature": "public static ScreenVitalPair Unknown(double confidence, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "Publish",
+    "scope": "ScreenDerivedBarGate",
+    "signature": "public ScreenBarFill Publish(double? ratio, double confidence, ScreenBarFill? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDerivedVitals.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "ScreenDerivedBarGate",
+    "signature": "public static ScreenBarFill Unknown(double confidence, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDialogWindowSource.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "IDialogWindowSource",
+    "signature": "DialogWindowObservation Read();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDialogWindowSource.cs",
+    "line": 43,
+    "kind": "constructor_declaration",
+    "name": "ScreenDialogWindowSource",
+    "scope": "ScreenDialogWindowSource",
+    "signature": "public ScreenDialogWindowSource( IFrameSource frames, DialogRoiCalibration calibration, Func<PixelRect?> clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDialogWindowSource.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ScreenDialogWindowSource",
+    "signature": "public DialogWindowObservation Read()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenDialogWindowSource.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "Refused",
+    "scope": "ScreenDialogWindowSource",
+    "signature": "private static DialogWindowObservation Refused(string reason, DateTime? atUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 191,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "public static int Run(bool armInput, string? repoRoot = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 380,
+    "kind": "method_declaration",
+    "name": "Solve",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "internal static bool Solve( IReadOnlyList<ScreenProjectionSample> samples, PixelRect area, out ScreenProjectionCalibration calibration, out int dropped, out string? failureReason, uint clientDpi = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 453,
+    "kind": "method_declaration",
+    "name": "Subsets",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "private static IEnumerable<int[]> Subsets(int count, int size)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 457,
+    "kind": "local_function_statement",
+    "name": "Choose",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "IEnumerable<int[]> Choose(int next, int depth)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 479,
+    "kind": "method_declaration",
+    "name": "TryCollect",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "private static bool TryCollect( ClientMemorySession session, GatedInputBackend input, PixelRect area, int pixelX, int pixelY, out ScreenProjectionSample sample, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 553,
+    "kind": "method_declaration",
+    "name": "WaitUntilStopped",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "private static bool WaitUntilStopped( ClientMemorySession session, out PlayerObjectReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 593,
+    "kind": "method_declaration",
+    "name": "WaitForNewWalkTarget",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "private static bool WaitForNewWalkTarget( ClientMemorySession session, short beforeX, short beforeY, out short targetX, out short targetY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 629,
+    "kind": "method_declaration",
+    "name": "ProbePoints",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "internal static IReadOnlyList<(int X, int Y)> ProbePoints(PixelRect area, int count)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 648,
+    "kind": "method_declaration",
+    "name": "IsClientFocused",
+    "scope": "ScreenProjectionAutoCalibrator",
+    "signature": "private static bool IsClientFocused(IntPtr handle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionAutoCalibrator.cs",
+    "line": 653,
+    "kind": "method_declaration",
+    "name": "GetForegroundWindow",
+    "scope": "ScreenProjectionAutoCalibrator.NativeMethods",
+    "signature": "[System.Runtime.InteropServices.DllImport(\"user32.dll\")] internal static extern IntPtr GetForegroundWindow();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 248,
+    "kind": "constructor_declaration",
+    "name": "ScreenProjectionCalibration",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private ScreenProjectionCalibration( bool isCalibrated, double a, double b, double c, double d, double e, double f, int clientWidth, int clientHeight, double worstResidual, int verifiedAgainst, int discardedSamples, DpiAwarenessRegime regime, uint clientDpi, DateTime? calibratedAtUtc, double g = 0, double h = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 277,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 280,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 281,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 282,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 308,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 309,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 312,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 313,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 314,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 334,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 335,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 345,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 366,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 385,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 418,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 421,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 424,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 441,
+    "kind": "method_declaration",
+    "name": "TrySolve",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "public static bool TrySolve( IReadOnlyList<ScreenProjectionSample> samples, int clientWidth, int clientHeight, DateTime calibratedAtUtc, out ScreenProjectionCalibration calibration, out string? failureReason, DpiAwarenessRegime? regime = null, uint clientDpi = 0, int discardedSamples = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 470,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 471,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 501,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 501,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 502,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 502,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 511,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "static s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 513,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "static s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 653,
+    "kind": "method_declaration",
+    "name": "ProjectDelta",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "public (double X, double Y)? ProjectDelta(MapPoint mapDelta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 676,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "public static ScreenProjectionCalibration Load(string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 780,
+    "kind": "method_declaration",
+    "name": "Save",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "public void Save(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 819,
+    "kind": "method_declaration",
+    "name": "SolveComponent",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static (double A, double B, double C) SolveComponent( IReadOnlyList<ScreenProjectionSample> samples, double meanX, double meanY, double sxx, double sxy, double syy, double determinant, Func<ScreenProjectionSample, int> screen)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 829,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 865,
+    "kind": "method_declaration",
+    "name": "TrySolvePerspective",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool TrySolvePerspective( IReadOnlyList<ScreenProjectionSample> samples, out double[]? coefficients, out double varianceFactorX, out double varianceFactorY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 936,
+    "kind": "method_declaration",
+    "name": "TryInvertDiagonal",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool TryInvertDiagonal(double[,] normal, out double forA, out double forE)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 964,
+    "kind": "method_declaration",
+    "name": "TrySolveInPlace",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool TrySolveInPlace(double[,] matrix, out double[] solution)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 1018,
+    "kind": "method_declaration",
+    "name": "WorstTiles",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool WorstTiles( IReadOnlyList<ScreenProjectionSample> samples, double a, double b, double c, double d, double e, double f, double g, double h, out double worstTiles, out double worstPixels, out int worstIndex)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 1071,
+    "kind": "method_declaration",
+    "name": "AnchorIsInside",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool AnchorIsInside(double x, double y, int clientWidth, int clientHeight)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 1074,
+    "kind": "method_declaration",
+    "name": "TryNumber",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "private static bool TryNumber(string field, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "RunSample",
+    "scope": "ScreenProjectionProbe",
+    "signature": "public static int RunSample(string? repoRoot, int mapX, int mapY, string? processName = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "RunSolve",
+    "scope": "ScreenProjectionProbe",
+    "signature": "public static int RunSolve(string? repoRoot, Action<string>? report = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 109,
+    "kind": "local_function_statement",
+    "name": "Say",
+    "scope": "ScreenProjectionProbe",
+    "signature": "void Say(string line = \"\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 179,
+    "kind": "method_declaration",
+    "name": "RunClear",
+    "scope": "ScreenProjectionProbe",
+    "signature": "public static int RunClear(string? repoRoot, Action<string>? report = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 181,
+    "kind": "local_function_statement",
+    "name": "Say",
+    "scope": "ScreenProjectionProbe",
+    "signature": "void Say(string line = \"\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "NameTheOddOneOut",
+    "scope": "ScreenProjectionProbe",
+    "signature": "private static void NameTheOddOneOut( IReadOnlyList<ScreenProjectionSample> samples, int clientWidth, int clientHeight, Action<string> say)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 228,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionProbe",
+    "signature": "(_, i) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 250,
+    "kind": "method_declaration",
+    "name": "ReadSamples",
+    "scope": "ScreenProjectionProbe",
+    "signature": "private static List<ScreenProjectionSample> ReadSamples( string path, out int clientWidth, out int clientHeight, out uint clientDpi, Action<string>? report = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 254,
+    "kind": "local_function_statement",
+    "name": "Say",
+    "scope": "ScreenProjectionProbe",
+    "signature": "void Say(string line = \"\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 318,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionProbe",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 319,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionProbe",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 321,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenProjectionProbe",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
+    "line": 340,
+    "kind": "method_declaration",
+    "name": "TryClientArea",
+    "scope": "ScreenProjectionProbe",
+    "signature": "private static bool TryClientArea(string? processName, out PixelRect area, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "public static int Run( int seconds, int wanted, string? repoRoot = null, Action<string>? report = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 64,
+    "kind": "local_function_statement",
+    "name": "Say",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "void Say(string line = \"\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "ArchivePreviousSession",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "private static string? ArchivePreviousSession(string samplesPath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 284,
+    "kind": "method_declaration",
+    "name": "LocateClientArea",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "private static PixelRect? LocateClientArea(int processId, out IntPtr windowHandle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 158,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 169,
+    "kind": "constructor_declaration",
+    "name": "ScreenSampleCoach",
+    "scope": "ScreenSampleCoach",
+    "signature": "public ScreenSampleCoach(int clientWidth, int clientHeight, int wanted = DefaultWantedSamples)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 196,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "static filled =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "Offer",
+    "scope": "ScreenSampleCoach",
+    "signature": "public ScreenSampleVerdict Offer(ScreenProjectionSample sample, bool characterWasAtRest)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 230,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 251,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 253,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "static x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 256,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 269,
+    "kind": "method_declaration",
+    "name": "TrySolve",
+    "scope": "ScreenSampleCoach",
+    "signature": "public bool TrySolve( int clientWidth, int clientHeight, DateTime calibratedAtUtc, out ScreenProjectionCalibration calibration, out string? failureReason, DpiAwarenessRegime? regime = null, uint clientDpi = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 281,
+    "kind": "method_declaration",
+    "name": "Spread",
+    "scope": "ScreenSampleCoach",
+    "signature": "private double Spread()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 284,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 285,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 305,
+    "kind": "method_declaration",
+    "name": "ImpliedPixelsPerTile",
+    "scope": "ScreenSampleCoach",
+    "signature": "public double ImpliedPixelsPerTile(ScreenProjectionSample sample)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 315,
+    "kind": "method_declaration",
+    "name": "DistanceTiles",
+    "scope": "ScreenSampleCoach",
+    "signature": "private static double DistanceTiles(MapPoint delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 322,
+    "kind": "method_declaration",
+    "name": "SectorOf",
+    "scope": "ScreenSampleCoach",
+    "signature": "private static int SectorOf(MapPoint delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 36,
+    "kind": "constructor_declaration",
+    "name": "ScreenTargetFrameSource",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "public ScreenTargetFrameSource( IFrameSource frames, TargetRoiCalibration calibration, Func<PixelRect?> clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "public TargetFrameObservation Read()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "Refused",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "private static TargetFrameObservation Refused(string reason, DateTime? atUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 28,
+    "kind": "constructor_declaration",
+    "name": "ScreenVitalReader",
+    "scope": "ScreenVitalReader",
+    "signature": "public ScreenVitalReader(GlyphHashOcrCache? ocr = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ScreenVitalReader",
+    "signature": "public ScreenVitalObservation Read( CaptureFrame frame, ScreenBarFill? previousHpBar = null, ScreenBarFill? previousMpBar = null, ScreenVitalPair? previousHp = null, ScreenVitalPair? previousMp = null, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "ClassifyBar",
+    "scope": "ScreenVitalReader",
+    "signature": "private ScreenBarFill ClassifyBar(HudBarMeasure measure, ScreenBarFill? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "Recognize",
+    "scope": "ScreenVitalReader",
+    "signature": "private ScreenVitalPair Recognize(IReadOnlyList<byte[]> glyphs, ScreenVitalPair? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "TryParseCurrentMax",
+    "scope": "ScreenVitalReader",
+    "signature": "public static bool TryParseCurrentMax(string text, out int current, out int maximum)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "ExtractGlyphs",
+    "scope": "ScreenVitalReader",
+    "signature": "public static IReadOnlyList<byte[]> ExtractGlyphs(CaptureFrame frame, RoiKind kind, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "Find",
+    "scope": "ScreenVitalReader",
+    "signature": "private static RegionOfInterest Find(IReadOnlyList<RegionOfInterest> regions, RoiKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "Crop",
+    "scope": "ScreenVitalReader",
+    "signature": "public static byte[] Crop(CaptureFrame frame, PixelRect rect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 138,
+    "kind": "constructor_declaration",
+    "name": "ScreenVitalsCapture",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public ScreenVitalsCapture( Func<int?> processId, ScreenVitalReader? reader = null, TargetRoiCalibration? targetCalibration = null, DialogRoiCalibration? dialogCalibration = null, IPlayerAttackObserver? wire = null, uint adapterIndex = 0, uint outputIndex = 0, uint acquireTimeoutMs = 250, Func<DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 157,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public VisualObservation Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 221,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 239,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "TryEnsurePipeline",
+    "scope": "ScreenVitalsCapture",
+    "signature": "internal bool TryEnsurePipeline(out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 285,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 302,
+    "kind": "constructor_declaration",
+    "name": "RecordingFrameSource",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "public RecordingFrameSource(IFrameSource inner)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 304,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 304,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 308,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 331,
+    "kind": "constructor_declaration",
+    "name": "SingleFrameSource",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "public SingleFrameSource(CaptureFrame frame, DataSourceKind source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 337,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 339,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "TargetFrameReader",
+    "signature": "public static TargetFrameReading Read(ReadOnlySpan<byte> bgra, int width, int height)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Unreadable",
+    "scope": "TargetFrameReader",
+    "signature": "private static TargetFrameReading Unreadable(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 95,
+    "kind": "constructor_declaration",
+    "name": "TargetRoiAutoCalibrator",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public TargetRoiAutoCalibrator( string calibrationPath, int differenceThreshold = DefaultDifferenceThreshold, int minFramesPerGroup = DefaultMinFramesPerGroup, int minVerificationsPerCase = DefaultMinVerificationsPerCase, int minChangedPixels = DefaultMinChangedPixels, int maxFramesPerGroup = DefaultMaxFramesPerGroup)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 189,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 229,
+    "kind": "method_declaration",
+    "name": "Offer",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public TargetRoiCalibrationState Offer( CaptureFrame? frame, bool? hasTarget, PixelRect clientArea, bool clientInForeground = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "BuildEvidence",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public DeferredEvidenceRecord BuildEvidence(DateTime closedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 374,
+    "kind": "method_declaration",
+    "name": "ProcessDerivationFrame",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private TargetRoiCalibrationState ProcessDerivationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 431,
+    "kind": "method_declaration",
+    "name": "TryDerive",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void TryDerive(PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 502,
+    "kind": "method_declaration",
+    "name": "ProcessVerificationFrame",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private TargetRoiCalibrationState ProcessVerificationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 587,
+    "kind": "method_declaration",
+    "name": "RecordUnreadableVerification",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void RecordUnreadableVerification(TargetFrameReading reading)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 597,
+    "kind": "method_declaration",
+    "name": "ResetSession",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void ResetSession()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 616,
+    "kind": "method_declaration",
+    "name": "RegisterRejection",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void RegisterRejection(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 622,
+    "kind": "method_declaration",
+    "name": "DescribeDerivation",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 633,
+    "kind": "method_declaration",
+    "name": "DescribeVerification",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeVerification()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 645,
+    "kind": "method_declaration",
+    "name": "DescribeDerivedRect",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivedRect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 655,
+    "kind": "method_declaration",
+    "name": "DescribeDerivedFractions",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivedFractions()",
+    "category": "project"
+  }
+]
