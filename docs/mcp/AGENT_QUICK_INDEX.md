@@ -7,6 +7,7 @@ Usare questo indice prima di modificare il sistema: riduce contesto, token e reg
 | policy e confini | `nosai/mcp/policy.py`, `contracts/mcp-hub-001.json` | `tests/test_mcp_hub_policy.py` |
 | stato/attivazione rete | `nosai/mcp/contracts.py`, `nosai/mcp/server.py` | `schemas/mcp_activation.schema.json` |
 | routing modelli | `nosai/mcp/router.py`, `config/mcp.default.json` | `schemas/mcp_status.schema.json` |
+| inferenza | `nosai/mcp/inference.py` | `mcp_infer`; chiavi solo tramite `SecretStore` |
 | simulazione | `nosai/mcp/simulation.py` | `schemas/mcp_simulation_request.schema.json` |
 | apprendimento offline | `nosai/mcp/learning.py` | `schemas/mcp_learning_candidate.schema.json`, `tests/test_mcp_hub_learning.py` |
 | chiavi API | `nosai/mcp/secrets.py`, `nosai/mcp/dashboard.py` | nessun plaintext; test cifratura |
