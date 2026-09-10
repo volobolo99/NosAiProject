@@ -1,0 +1,4502 @@
+[
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "AnEmptySnapshotIsNoObservationNotAnEmptyMap",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void AnEmptySnapshotIsNoObservationNotAnEmptyMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "AHostedSnapshotCopiesTypedGameplay",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void AHostedSnapshotCopiesTypedGameplay()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "AnAttachedEmptyEntityListIsNoEntitiesAround",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void AnAttachedEmptyEntityListIsNoEntitiesAround()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "AnAttachedPopulatedListKeepsAgeAndThreeValuedTarget",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void AnAttachedPopulatedListKeepsAgeAndThreeValuedTarget()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "AnAttachedSnapshotWithoutGameplayIsNoObservation",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void AnAttachedSnapshotWithoutGameplayIsNoObservation()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AroundSnapshotTests.cs",
+    "line": 187,
+    "kind": "method_declaration",
+    "name": "TheAroundViewsHaveNoWritePathAndCannotMarkASessionActuating",
+    "scope": "AroundSnapshotTests",
+    "signature": "[Fact] public void TheAroundViewsHaveNoWritePathAndCannotMarkASessionActuating()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Occupied_slot_is_derived_from_live_flags",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void Occupied_slot_is_derived_from_live_flags()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 27,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AttachedSnapshotTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "Session_authority_fields_are_additive_and_an_old_snapshot_still_parses",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void Session_authority_fields_are_additive_and_an_old_snapshot_still_parses()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 45,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AttachedSnapshotTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 46,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AttachedSnapshotTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "Actuating_session_is_named_without_a_retry",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void Actuating_session_is_named_without_a_retry()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "Terminal_verdict_is_named_in_full_and_offers_no_retry",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void Terminal_verdict_is_named_in_full_and_offers_no_retry()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "The_panel_has_no_retry_control_and_cannot_mark_a_session_actuating",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void The_panel_has_no_retry_control_and_cannot_mark_a_session_actuating()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "AttachedSnapshotTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/AttachedSnapshotTests.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "Unknown_contract_is_not_silently_accepted",
+    "scope": "AttachedSnapshotTests",
+    "signature": "[Fact] public void Unknown_contract_is_not_silently_accepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Wire_label_matches_this_build",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Wire_label_matches_this_build()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "Missing_flags_stay_unknown",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Missing_flags_stay_unknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "Authenticated_peer_owns_the_slot",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Authenticated_peer_owns_the_slot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Connected_without_auth_is_occupied",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Connected_without_auth_is_occupied()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Idle_channel_is_free",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Idle_channel_is_free()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ChannelViewTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "Phone_reminder_is_not_a_pass",
+    "scope": "ChannelViewTests",
+    "signature": "[Fact] public void Phone_reminder_is_not_a_pass()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveDecisionDisplayTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "Cycle_decision_without_measure_never_prints_a_percentage",
+    "scope": "CognitiveDecisionDisplayTests",
+    "signature": "[Fact] public void Cycle_decision_without_measure_never_prints_a_percentage()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveDecisionDisplayTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Cycle_trace_without_measure_never_prints_a_percentage",
+    "scope": "CognitiveDecisionDisplayTests",
+    "signature": "[Fact] public void Cycle_trace_without_measure_never_prints_a_percentage()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "Real_stage_events_are_projected_without_becoming_execution_authority",
+    "scope": "CognitiveRuntimeTraceBridgeTests",
+    "signature": "[Fact] public void Real_stage_events_are_projected_without_becoming_execution_authority()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+    "line": 28,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveRuntimeTraceBridgeTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+    "line": 29,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveRuntimeTraceBridgeTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+    "line": 30,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveRuntimeTraceBridgeTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CognitiveRuntimeTraceBridgeTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "ReadAsync",
+    "scope": "CognitiveRuntimeTraceBridgeTests.UnavailableWorldStateSource",
+    "signature": "public Task<Gate3WorldState> ReadAsync(CancellationToken cancellationToken)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "AKnownHitAndPresentTargetAreNamedWithAge",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void AKnownHitAndPresentTargetAreNamedWithAge()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "AnAbsentTargetIsNamedAbsentNotFalse",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void AnAbsentTargetIsNamedAbsentNotFalse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "AnUnreadableTargetKeepsTheReasonAndIsNotAbsent",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void AnUnreadableTargetKeepsTheReasonAndIsNotAbsent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 61,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "UnpublishedCombatIsNoObservationNotAnEmptyFight",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void UnpublishedCombatIsNoObservationNotAnEmptyFight()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 72,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "TheThreeTargetValuesStayDistinct",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void TheThreeTargetValuesStayDistinct()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "TheViewHasNoWritePathIntoTheRuntime",
+    "scope": "CombatInspectTests",
+    "signature": "[Fact] public void TheViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Attached_session_is_unknown_with_hosted_reason_not_zeros",
+    "scope": "DecisionInspectTests",
+    "signature": "[Fact] public void Attached_session_is_unknown_with_hosted_reason_not_zeros()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 29,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 34,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 35,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Hosted_acting_disabled_is_decide_not_a_fault",
+    "scope": "DecisionInspectTests",
+    "signature": "[Fact] public void Hosted_acting_disabled_is_decide_not_a_fault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 57,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 61,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 62,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecisionInspectTests.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "OgniPacchettoDellaTimelineDiventaUnaRiga",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void OgniPacchettoDellaTimelineDiventaUnaRiga()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 33,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EquipWireInspectTests",
+    "signature": "l =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 34,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EquipWireInspectTests",
+    "signature": "l =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "SuUnEquipRealeIvnUsaUnSoloTipo",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void SuUnEquipRealeIvnUsaUnSoloTipo()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "LeTransizioniDiEquipDiconoQualePezzoEUscitoEQualeERientrato",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void LeTransizioniDiEquipDiconoQualePezzoEUscitoEQualeERientrato()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "IDueCampiInizialiDiEquipNonSonoPezzi",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void IDueCampiInizialiDiEquipNonSonoPezzi()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 81,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EquipWireInspectTests",
+    "signature": "t =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 81,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EquipWireInspectTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "UnaRegistrazioneSenzaQueiPacchettiLoDiceInveceDiTacere",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void UnaRegistrazioneSenzaQueiPacchettiLoDiceInveceDiTacere()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "UnOutputVuotoNonEUnEccezione",
+    "scope": "EquipWireInspectTests",
+    "signature": "[Fact] public void UnOutputVuotoNonEUnEccezione()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "ALogWithAGapIsShownAsIncomplete",
+    "scope": "EventLogInspectTests",
+    "signature": "[Fact] public void ALogWithAGapIsShownAsIncomplete()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 31,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 35,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 39,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 40,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "ACompleteLogIsNotLabelledIncomplete",
+    "scope": "EventLogInspectTests",
+    "signature": "[Fact] public void ACompleteLogIsNotLabelledIncomplete()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EventLogInspectTests.cs",
+    "line": 62,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "Observe_game_round_trips_through_host_options",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Observe_game_round_trips_through_host_options()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "Empty_observe_game_does_not_pass_the_flag",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Empty_observe_game_does_not_pass_the_flag()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Malformed_observe_game_is_rejected_before_save",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Malformed_observe_game_is_rejected_before_save()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "Network_inspect_shows_configured_endpoint_or_unknown",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Network_inspect_shows_configured_endpoint_or_unknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 53,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 59,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "Empty_snapshot_does_not_invent_observation_counts",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Empty_snapshot_does_not_invent_observation_counts()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 68,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 69,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 70,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Attached_snapshot_without_observation_block_is_unknown_with_reason",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Attached_snapshot_without_observation_block_is_unknown_with_reason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 84,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 85,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "Attached_snapshot_renders_classified_observation_fields",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Attached_snapshot_renders_classified_observation_fields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 114,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 117,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 118,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 123,
+    "kind": "method_declaration",
+    "name": "Snapshot_view_from_not_configured_keeps_unknown_reasons",
+    "scope": "GameObservationPanelTests",
+    "signature": "[Fact] public void Snapshot_view_from_not_configured_keeps_unknown_reasons()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameObservationPanelTests.cs",
+    "line": 145,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GameObservationPanelTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Parse",
+    "scope": "GameplayWireEntityTests",
+    "signature": "private static SnapshotView Parse(string entitiesJson)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "IlVnumELaSpecieArrivanoFinoAllaVista",
+    "scope": "GameplayWireEntityTests",
+    "signature": "[Fact] public void IlVnumELaSpecieArrivanoFinoAllaVista()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "UnoSnapshotSenzaQuelliCampiSiLeggeLoStesso",
+    "scope": "GameplayWireEntityTests",
+    "signature": "[Fact] public void UnoSnapshotSenzaQuelliCampiSiLeggeLoStesso()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "UnVnumNonNumericoRestaAssente",
+    "scope": "GameplayWireEntityTests",
+    "signature": "[Fact] public void UnVnumNonNumericoRestaAssente()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireEntityTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "DalJsonAllaRigaMostrata",
+    "scope": "GameplayWireEntityTests",
+    "signature": "[Fact] public void DalJsonAllaRigaMostrata()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "GameplayWireReaderTests",
+    "signature": "private static GameplayPanelRead Read(string valueJson)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Parse",
+    "scope": "GameplayWireReaderTests",
+    "signature": "private static JsonElement Parse(string json)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "InventoryIsReadWithKindSlotVnumAmountRarity",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void InventoryIsReadWithKindSlotVnumAmountRarity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 42,
+    "kind": "method_declaration",
+    "name": "SelectedTargetIsReadWithEntityIdAndType",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void SelectedTargetIsReadWithEntityIdAndType()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "GroundItemsAreReadWithDropVnumPositionAndAmount",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void GroundItemsAreReadWithDropVnumPositionAndAmount()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "LastPickupIsReadAndNullByPlayerStaysNullNotFalse",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void LastPickupIsReadAndNullByPlayerStaysNullNotFalse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "SkillsReadyAreReadWithSlot",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void SkillsReadyAreReadWithSlot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "InCombatIsReadAsABool",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void InCombatIsReadAsABool()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "MissingFieldsAreUnknownWithTheProducersReason",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void MissingFieldsAreUnknownWithTheProducersReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 118,
+    "kind": "method_declaration",
+    "name": "AnEmptyInventoryListIsEmptyNotUnknown",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void AnEmptyInventoryListIsEmptyNotUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/GameplayWireReaderTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "CachedProvenanceIsPreservedNotCollapsedIntoLive",
+    "scope": "GameplayWireReaderTests",
+    "signature": "[Fact] public void CachedProvenanceIsPreservedNotCollapsedIntoLive()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/HardwareProbeTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Windows_probe_does_not_throw_and_does_not_invent_gpu",
+    "scope": "HardwareProbeTests",
+    "signature": "[Fact] public void Windows_probe_does_not_throw_and_does_not_invent_gpu()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "TempPath",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "private static string TempPath(string stem)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "AnAbsentFileIsNotCalibrated",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "[Fact] public void AnAbsentFileIsNotCalibrated()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "AConfirmedCalibrationListsAllSlotsWhenAndResolution",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "[Fact] public void AConfirmedCalibrationListsAllSlotsWhenAndResolution()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 50,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 51,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "AMalformedFileIsUnreadableNotCalibrated",
+    "scope": "InventoryPanelInspectTests",
+    "signature": "[Fact] public void AMalformedFileIsUnreadableNotCalibrated()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "AKnownSelectedTargetNamesWhichEntity",
+    "scope": "CombatSelectedTargetTests",
+    "signature": "[Fact] public void AKnownSelectedTargetNamesWhichEntity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 98,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatSelectedTargetTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "WithoutSelectedTargetTheReasonIsShownNotABlank",
+    "scope": "CombatSelectedTargetTests",
+    "signature": "[Fact] public void WithoutSelectedTargetTheReasonIsShownNotABlank()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/InventoryPanelInspectTests.cs",
+    "line": 110,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatSelectedTargetTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 17,
+    "kind": "constructor_declaration",
+    "name": "KeybindsInspectTests",
+    "scope": "KeybindsInspectTests",
+    "signature": "public KeybindsInspectTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "KeybindsInspectTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "ACoveredFileShowsConfiguredIntentsAndNoMissingRows",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void ACoveredFileShowsConfiguredIntentsAndNoMissingRows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 41,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 42,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 43,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 44,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "ADeclaredBindIsNotDrawnAsAWorkingOne",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void ADeclaredBindIsNotDrawnAsAWorkingOne()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 67,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 71,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 76,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 77,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 80,
+    "kind": "method_declaration",
+    "name": "AnEmptyMapNamesTheUncoveredPrefixesAsMissing",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void AnEmptyMapNamesTheUncoveredPrefixesAsMissing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 94,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 95,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 100,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "AMissingFileIsUnknownAndStillNamesTheMissingIntents",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void AMissingFileIsUnknownAndStillNamesTheMissingIntents()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 111,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 113,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 114,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 115,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "AMalformedFileIsUnknownAndNamesTheMissingIntents",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void AMalformedFileIsUnknownAndNamesTheMissingIntents()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 127,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 128,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 130,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KeybindsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 133,
+    "kind": "method_declaration",
+    "name": "InspectDoesNotCreateTheFile",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void InspectDoesNotCreateTheFile()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 141,
+    "kind": "method_declaration",
+    "name": "TheViewHasNoWritePathIntoTheRuntime",
+    "scope": "KeybindsInspectTests",
+    "signature": "[Fact] public void TheViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindsInspectTests.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "Write",
+    "scope": "KeybindsInspectTests",
+    "signature": "private string Write(string json)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Unknown_classified_value_shows_unknown_and_reason_not_an_empty_cell",
+    "scope": "LiveFieldRenderingTests",
+    "signature": "[Fact] public void Unknown_classified_value_shows_unknown_and_reason_not_an_empty_cell()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+    "line": 26,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LiveFieldRenderingTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "Cached_and_live_values_with_same_content_draw_differently",
+    "scope": "LiveFieldRenderingTests",
+    "signature": "[Fact] public void Cached_and_live_values_with_same_content_draw_differently()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LiveFieldRenderingTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LiveFieldRenderingTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LiveFieldRenderingTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/LocalPortProbeTests.cs",
+    "line": 7,
+    "kind": "method_declaration",
+    "name": "Closed_or_invalid_port_is_not_open",
+    "scope": "LocalPortProbeTests",
+    "signature": "[Fact] public void Closed_or_invalid_port_is_not_open()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "AWalkableStandingCellIsNamedWalkableAndIsNotAnError",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void AWalkableStandingCellIsNamedWalkableAndIsNotAnError()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "ABlockedStandingCellIsAnErrorAndNotADetail",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ABlockedStandingCellIsAnErrorAndNotADetail()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "AStandingCellOutsideTheGridIsAnErrorNamedOutOfGrid",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void AStandingCellOutsideTheGridIsAnErrorNamedOutOfGrid()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "AnUnknownPositionIsUnknownWithTheReasonAndIsNotAnError",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void AnUnknownPositionIsUnknownWithTheReasonAndIsNotAnError()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 79,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "ACropAtTheMapEdgeDoesNotThrowAndShowsOutOfGrid",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ACropAtTheMapEdgeDoesNotThrowAndShowsOutOfGrid()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "WithoutAGridNothingIsDrawnAsWalkable",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void WithoutAGridNothingIsDrawnAsWalkable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 124,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 125,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 126,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 127,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 134,
+    "kind": "method_declaration",
+    "name": "IdleSessionIsUnknownAndDoesNotInventAFreeCell",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void IdleSessionIsUnknownAndDoesNotInventAFreeCell()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 143,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 144,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "cell =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "FourGlyphsStayDistinctInBlackAndWhite",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void FourGlyphsStayDistinctInBlackAndWhite()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "RecordedIdentityIsCachedAndUnverifiedWithoutACurrentFingerprint",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void RecordedIdentityIsCachedAndUnverifiedWithoutACurrentFingerprint()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 183,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 187,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 191,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "MatchingCurrentIdentityIsVerifiedDerived",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void MatchingCurrentIdentityIsVerifiedDerived()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 213,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "ObserveWithTheClientOnDiskVerifiesTheIdentityAsDerived",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ObserveWithTheClientOnDiskVerifiesTheIdentityAsDerived()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 227,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 231,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 235,
+    "kind": "method_declaration",
+    "name": "ObserveAfterTheClientExecutableChangedRefusesTheIdentity",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ObserveAfterTheClientExecutableChangedRefusesTheIdentity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 245,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 251,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 255,
+    "kind": "method_declaration",
+    "name": "ObserveWithoutAClientOnDiskKeepsTheIdentityUnverified",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ObserveWithoutAClientOnDiskKeepsTheIdentityUnverified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 267,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "MapIdUnknownKeepsTheNamedReason",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void MapIdUnknownKeepsTheNamedReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 285,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 288,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 293,
+    "kind": "method_declaration",
+    "name": "ManifestRoundTripIsTheRecordedIdentity",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ManifestRoundTripIsTheRecordedIdentity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 311,
+    "kind": "method_declaration",
+    "name": "AMissingManifestIsTheRecordedIdentityRefusal",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void AMissingManifestIsTheRecordedIdentityRefusal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 320,
+    "kind": "method_declaration",
+    "name": "ObserveWithAWorldReadingLoadsTheGridAndDoesNotWriteIt",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void ObserveWithAWorldReadingLoadsTheGridAndDoesNotWriteIt()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 340,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MapInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 345,
+    "kind": "method_declaration",
+    "name": "TheMapViewHasNoWritePathIntoTheRuntime",
+    "scope": "MapInspectTests",
+    "signature": "[Fact] public void TheMapViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 398,
+    "kind": "method_declaration",
+    "name": "Standing",
+    "scope": "MapInspectTests",
+    "signature": "private static MapView Standing(MapGrid grid, int x, int y)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 408,
+    "kind": "method_declaration",
+    "name": "Center",
+    "scope": "MapInspectTests",
+    "signature": "private static MapCellDraw Center(MapView view)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 411,
+    "kind": "method_declaration",
+    "name": "At",
+    "scope": "MapInspectTests",
+    "signature": "private static MapCellDraw At(MapView view, int dx, int dy)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 414,
+    "kind": "method_declaration",
+    "name": "Grid",
+    "scope": "MapInspectTests",
+    "signature": "private static MapGrid Grid(int mapId, int width, int height, params byte[] cells)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 417,
+    "kind": "method_declaration",
+    "name": "BuildGridFile",
+    "scope": "MapInspectTests",
+    "signature": "private static byte[] BuildGridFile(int width, int height, params byte[] cells)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 426,
+    "kind": "method_declaration",
+    "name": "MapNineAtOrigin",
+    "scope": "MapInspectTests",
+    "signature": "private static MapWorldReading MapNineAtOrigin()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 437,
+    "kind": "method_declaration",
+    "name": "WriteVerifiableClientAndGrids",
+    "scope": "MapInspectTests",
+    "signature": "private static void WriteVerifiableClientAndGrids(TempDir dir, ReadOnlySpan<byte> executableBytes)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 452,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "MapInspectTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 463,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "MapInspectTests.TempDir",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 468,
+    "kind": "constructor_declaration",
+    "name": "TempDir",
+    "scope": "MapInspectTests.TempDir",
+    "signature": "private TempDir(string root)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 470,
+    "kind": "method_declaration",
+    "name": "Create",
+    "scope": "MapInspectTests.TempDir",
+    "signature": "public static TempDir Create()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/MapInspectTests.cs",
+    "line": 478,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "MapInspectTests.TempDir",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ObserveGameDetectorTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "Zero_remote_sessions_do_not_fill_the_box",
+    "scope": "ObserveGameDetectorTests",
+    "signature": "[Fact] public void Zero_remote_sessions_do_not_fill_the_box()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ObserveGameDetectorTests.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "Two_remote_sessions_do_not_pick_one",
+    "scope": "ObserveGameDetectorTests",
+    "signature": "[Fact] public void Two_remote_sessions_do_not_pick_one()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ObserveGameDetectorTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "Remote",
+    "scope": "ObserveGameDetectorTests",
+    "signature": "private static ClientTcpConnection Remote(string host, int port)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 7,
+    "kind": "method_declaration",
+    "name": "Idle_or_unreachable_does_not_invent_ok",
+    "scope": "OperatorHealthTests",
+    "signature": "[Fact] public void Idle_or_unreachable_does_not_invent_ok()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 11,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 12,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 15,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Healthy_snapshot_is_ok_without_inventing_events",
+    "scope": "OperatorHealthTests",
+    "signature": "[Fact] public void Healthy_snapshot_is_ok_without_inventing_events()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 27,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 28,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorHealthTests.cs",
+    "line": 29,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "OperatorHealthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorSettingsTests.cs",
+    "line": 7,
+    "kind": "method_declaration",
+    "name": "Valid_defaults_pass",
+    "scope": "OperatorSettingsTests",
+    "signature": "[Fact] public void Valid_defaults_pass()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorSettingsTests.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "Out_of_range_is_rejected",
+    "scope": "OperatorSettingsTests",
+    "signature": "[Theory] [InlineData(-1, 17471, 5000, \"x\")] [InlineData(8766, 70000, 5000, \"x\")] [InlineData(8766, 17471, 50, \"x\")] [InlineData(8766, 17471, 5000, \"\")] public void Out_of_range_is_rejected(int dashboard, int guard, int timeout, string process)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorSettingsTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Decision_loop_settings_reach_host_options",
+    "scope": "OperatorSettingsTests",
+    "signature": "[Fact] public void Decision_loop_settings_reach_host_options()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/OperatorSettingsTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "Decision_interval_out_of_range_is_rejected",
+    "scope": "OperatorSettingsTests",
+    "signature": "[Fact] public void Decision_interval_out_of_range_is_rejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 24,
+    "kind": "constructor_declaration",
+    "name": "PerceptionMapTargetTruthTests",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "public PerceptionMapTargetTruthTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Hud_crop_row_is_unknown_when_nothing_was_written_and_live_with_its_instant_when_it_was",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Hud_crop_row_is_unknown_when_nothing_was_written_and_live_with_its_instant_when_it_was()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "SaveCrops_reports_only_the_crops_that_have_pixels",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void SaveCrops_reports_only_the_crops_that_have_pixels()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 62,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "w =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "w =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 64,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "w =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "No_frame_branch_names_the_frame_not_the_glyphs",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void No_frame_branch_names_the_frame_not_the_glyphs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 77,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 78,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "True_constant_reasons_are_still_produced_where_they_belong",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void True_constant_reasons_are_still_produced_where_they_belong()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "Intact_grids_with_unknown_client_differ_from_tampered_grids",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Intact_grids_with_unknown_client_differ_from_tampered_grids()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 126,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 137,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 143,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "Cached_value_carries_the_explicit_observed_instant_not_now",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Cached_value_carries_the_explicit_observed_instant_not_now()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 172,
+    "kind": "method_declaration",
+    "name": "Cached_value_without_an_observed_instant_is_not_marked_fresh",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Cached_value_without_an_observed_instant_is_not_marked_fresh()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "Roi_fractions_are_shown",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Roi_fractions_are_shown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "Process_id_is_shown",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "[Fact] public void Process_id_is_shown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 213,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "WriteCandidates",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "private string WriteCandidates(int processId, params string[] hits)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 234,
+    "kind": "method_declaration",
+    "name": "Grid",
+    "scope": "PerceptionMapTargetTruthTests",
+    "signature": "private static MapGrid Grid(int mapId, int width, int height, params byte[] cells)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 239,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PerceptionMapTargetTruthTests.TempDir",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 242,
+    "kind": "constructor_declaration",
+    "name": "TempDir",
+    "scope": "PerceptionMapTargetTruthTests.TempDir",
+    "signature": "private TempDir(string root)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "Create",
+    "scope": "PerceptionMapTargetTruthTests.TempDir",
+    "signature": "public static TempDir Create()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionMapTargetTruthTests.cs",
+    "line": 251,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PerceptionMapTargetTruthTests.TempDir",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "Probe_never_invents_pixels",
+    "scope": "PerceptionProbeTests",
+    "signature": "[Fact] public void Probe_never_invents_pixels()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 36,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "The_frame_always_agrees_with_whether_capture_opened",
+    "scope": "PerceptionProbeTests",
+    "signature": "[Fact] public void The_frame_always_agrees_with_whether_capture_opened()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 88,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 89,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 97,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 98,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 105,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "ReadFrame_passes_client_area_so_windowed_roi_is_not_the_full_desktop",
+    "scope": "PerceptionProbeTests",
+    "signature": "[Fact] public void ReadFrame_passes_client_area_so_windowed_roi_is_not_the_full_desktop()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 132,
+    "kind": "method_declaration",
+    "name": "Missing_client_window_is_unknown_and_declares_fullscreen_fallback",
+    "scope": "PerceptionProbeTests",
+    "signature": "[Fact] public void Missing_client_window_is_unknown_and_declares_fullscreen_fallback()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PerceptionProbeTests.cs",
+    "line": 136,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbeTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "PracticalTestCenterTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "TestCenterWindowAndShortcutArePresent",
+    "scope": "PracticalTestCenterTests",
+    "signature": "[Fact] public void TestCenterWindowAndShortcutArePresent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "TestCatalogContainsAllTwentyPracticalPillars",
+    "scope": "PracticalTestCenterTests",
+    "signature": "[Fact] public void TestCatalogContainsAllTwentyPracticalPillars()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "Test",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "private static PracticalTestDefinition Test(string id)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 13,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "T5_with_populated_entities_is_not_blocked",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "[Fact] public void T5_with_populated_entities_is_not_blocked()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "T5_without_entities_is_blocked_and_evidence_names_a_real_path",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "[Fact] public void T5_without_entities_is_blocked_and_evidence_names_a_real_path()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "T8_with_populated_inventory_no_longer_claims_the_contract_is_unpublished",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "[Fact] public void T8_with_populated_inventory_no_longer_claims_the_contract_is_unpublished()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "True_blocked_reasons_are_pinned",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "[Theory] [InlineData(\"T7\", \"quest_state_not_published\")] [InlineData(\"T17\", \"event-log-endpoint-required\")] [InlineData(\"T18\", \"controlled-reconnect-required\")] [InlineData(\"T20\", \"certification_requires_physical_e2e\")] public void True_blocked_reasons_are_pinned(string testId, string reason)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PracticalTestCenterVerdictTests.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Unknown_test_id_is_blocked_unsupported",
+    "scope": "PracticalTestCenterVerdictTests",
+    "signature": "[Fact] public void Unknown_test_id_is_blocked_unsupported()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "AnAbsentControllerIsUnknownNotZero",
+    "scope": "ResilienceInspectTests",
+    "signature": "[Fact] public void AnAbsentControllerIsUnknownNotZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 19,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 20,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 21,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "ALiveControllerIsShownWithItsBudgets",
+    "scope": "ResilienceInspectTests",
+    "signature": "[Fact] public void ALiveControllerIsShownWithItsBudgets()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 30,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 34,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
+    "line": 38,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ResilienceInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Place",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "private void Place(string directory, params string[] files)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "An_incomplete_copy_next_to_the_panel_is_passed_over_with_a_reason",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "[Fact] public void An_incomplete_copy_next_to_the_panel_is_passed_over_with_a_reason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "A_complete_copy_next_to_the_panel_is_used_when_nothing_is_built",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "[Fact] public void A_complete_copy_next_to_the_panel_is_used_when_nothing_is_built()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "An_incomplete_copy_alone_resolves_to_nothing_and_says_why",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "[Fact] public void An_incomplete_copy_alone_resolves_to_nothing_and_says_why()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "No_runtime_at_all_says_it_is_not_built",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "[Fact] public void No_runtime_at_all_says_it_is_not_built()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/RuntimeDllLocatorTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "RuntimeDllLocatorTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Honest_read_is_derived_never_live",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Honest_read_is_derived_never_live()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "Low_confidence_is_unknown_not_last_value",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Low_confidence_is_unknown_not_last_value()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Outside_range_is_unknown",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Outside_range_is_unknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "Impossible_jump_is_unknown",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Impossible_jump_is_unknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Cached_is_stale_not_current",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Cached_is_stale_not_current()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "Bar_fill_is_derived_never_live",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Bar_fill_is_derived_never_live()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ScreenDerivedVitalTests.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "Empty_bar_region_is_not_published_as_zero",
+    "scope": "ScreenDerivedVitalTests",
+    "signature": "[Fact] public void Empty_bar_region_is_not_published_as_zero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Missing_files_are_unknown_not_invented",
+    "scope": "SecurityInspectTests",
+    "signature": "[Fact] public void Missing_files_are_unknown_not_invented()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+    "line": 17,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SecurityInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+    "line": 18,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SecurityInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+    "line": 19,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SecurityInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SecurityInspectTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "Protected_path_constant_is_what_we_observe",
+    "scope": "SecurityInspectTests",
+    "signature": "[Fact] public void Protected_path_constant_is_what_we_observe()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "APopulatedListShowsIdPositionLifeAndAge",
+    "scope": "SurroundingsInspectTests",
+    "signature": "[Fact] public void APopulatedListShowsIdPositionLifeAndAge()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 41,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "SurroundingsInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "AnObservedEmptyListIsNoEntitiesAroundNotUnknown",
+    "scope": "SurroundingsInspectTests",
+    "signature": "[Fact] public void AnObservedEmptyListIsNoEntitiesAroundNotUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "AnUnpublishedListIsNoObservationNotAnEmptyMap",
+    "scope": "SurroundingsInspectTests",
+    "signature": "[Fact] public void AnUnpublishedListIsNoObservationNotAnEmptyMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "ANullListIsNoObservation",
+    "scope": "SurroundingsInspectTests",
+    "signature": "[Fact] public void ANullListIsNoObservation()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "TheViewHasNoWritePathIntoTheRuntime",
+    "scope": "SurroundingsInspectTests",
+    "signature": "[Fact] public void TheViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "AssertNoWrite",
+    "scope": "SurroundingsInspectTests",
+    "signature": "internal static void AssertNoWrite(string source)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "SurroundingsInspectTests",
+    "signature": "internal static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 137,
+    "kind": "method_declaration",
+    "name": "Inspect",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "private static SurroundingsView Inspect(params SelectableEntity[] entities)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 141,
+    "kind": "method_declaration",
+    "name": "LaSpecieDichiarataSiVede",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "[Fact] public void LaSpecieDichiarataSiVede()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 158,
+    "kind": "method_declaration",
+    "name": "SenzaSpecieCompareIlMotivo",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "[Fact] public void SenzaSpecieCompareIlMotivo()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 170,
+    "kind": "method_declaration",
+    "name": "IlVnumOsservatoSiVede",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "[Fact] public void IlVnumOsservatoSiVede()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "SenzaVnumIlMotivoResta",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "[Fact] public void SenzaVnumIlMotivoResta()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/SurroundingsInspectTests.cs",
+    "line": 203,
+    "kind": "method_declaration",
+    "name": "LaRigaMostrataPortaLaSpecie",
+    "scope": "SurroundingsSpeciesTests",
+    "signature": "[Fact] public void LaRigaMostrataPortaLaSpecie()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 21,
+    "kind": "constructor_declaration",
+    "name": "TargetInspectTests",
+    "scope": "TargetInspectTests",
+    "signature": "public TargetInspectTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "TargetInspectTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "AMissingCandidateFileIsHuntNotStartedAndNotZeroCandidates",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AMissingCandidateFileIsHuntNotStartedAndNotZeroCandidates()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 45,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TargetInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 46,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TargetInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "AFileWithCandidatesShowsCountsAndCallsAdvice",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AFileWithCandidatesShowsCountsAndCallsAdvice()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "AZeroCandidateFileIsNotHuntNotStartedAndAdviceIsTheEmptySetSentence",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AZeroCandidateFileIsNotHuntNotStartedAndAdviceIsTheEmptySetSentence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "AMissingClearedPassIsDrawnAsMissingAndBlocksTheAdviceOrder",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AMissingClearedPassIsDrawnAsMissingAndBlocksTheAdviceOrder()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 135,
+    "kind": "method_declaration",
+    "name": "AnAbsentCalibrationIsNotCalibratedAndIsNotACombatError",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AnAbsentCalibrationIsNotCalibratedAndIsNotACombatError()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "APresentCalibrationNamesWhenAndWhichResolutionAndStaysTheSecondSource",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void APresentCalibrationNamesWhenAndWhichResolutionAndStaysTheSecondSource()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 180,
+    "kind": "method_declaration",
+    "name": "AMalformedCalibrationIsUnreadableAndStillNotACombatError",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AMalformedCalibrationIsUnreadableAndStillNotACombatError()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 197,
+    "kind": "method_declaration",
+    "name": "InspectDoesNotCreateMissingFiles",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void InspectDoesNotCreateMissingFiles()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "SignatureChangesWhenACandidateFileAppearsAndNotWhenNothingDoes",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void SignatureChangesWhenACandidateFileAppearsAndNotWhenNothingDoes()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "AProvenSetIsNamedProvenAndAdviceIsTheFoundSentence",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void AProvenSetIsNamedProvenAndAdviceIsTheFoundSentence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 246,
+    "kind": "method_declaration",
+    "name": "TheViewHasNoWritePathIntoTheRuntime",
+    "scope": "TargetInspectTests",
+    "signature": "[Fact] public void TheViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 283,
+    "kind": "method_declaration",
+    "name": "WriteCandidates",
+    "scope": "TargetInspectTests",
+    "signature": "private string WriteCandidates(int selections, int restarts, bool cleared, int processId, params string[] hits)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "Field",
+    "scope": "TargetInspectTests",
+    "signature": "private static DisplayField Field(TargetHuntView view, string label)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetInspectTests.cs",
+    "line": 302,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "TargetInspectTests",
+    "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "Chatterbox",
+    "scope": "ToolRunnerTests",
+    "signature": "private static (string File, string Arguments) Chatterbox()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "LUltimaRigaStampataEntraNellOutput",
+    "scope": "ToolRunnerTests",
+    "signature": "[Fact] public async Task LUltimaRigaStampataEntraNellOutput()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "NessunaRigaArrivaDopoCheLaChiamataEGiaTornata",
+    "scope": "ToolRunnerTests",
+    "signature": "[Fact] public async Task NessunaRigaArrivaDopoCheLaChiamataEGiaTornata()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "UnComandoInesistenteTornaUnErrore",
+    "scope": "ToolRunnerTests",
+    "signature": "[Fact] public async Task UnComandoInesistenteTornaUnErrore()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/ToolRunnerTests.cs",
+    "line": 56,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ToolRunnerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/UnequipInspectTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "TempPath",
+    "scope": "UnequipInspectTests",
+    "signature": "private static string TempPath(string stem)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/UnequipInspectTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "AnAbsentCalibration_OffersNoButton_WithTheReason",
+    "scope": "UnequipInspectTests",
+    "signature": "[Fact] public void AnAbsentCalibration_OffersNoButton_WithTheReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/UnequipInspectTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "AConfirmedCalibration_OffersTheButton_AndListsTheCalibratedSlots",
+    "scope": "UnequipInspectTests",
+    "signature": "[Fact] public void AConfirmedCalibration_OffersTheButton_AndListsTheCalibratedSlots()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/UnequipInspectTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "TheSlotList_ReadsTheFileOrder_NotTheEnumOrder",
+    "scope": "UnequipInspectTests",
+    "signature": "[Fact] public void TheSlotList_ReadsTheFileOrder_NotTheEnumOrder()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 25,
+    "kind": "constructor_declaration",
+    "name": "WireCaptureFactAttribute",
+    "scope": "WireCaptureFactAttribute",
+    "signature": "public WireCaptureFactAttribute(string recording)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "Resolve",
+    "scope": "WireCaptureFactAttribute",
+    "signature": "public static string? Resolve(string recording)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "Una_cattura_che_non_esiste_e_un_motivo_e_non_un_elenco_vuoto",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Una_cattura_che_non_esiste_e_un_motivo_e_non_un_elenco_vuoto()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "Le_parole_corte_non_si_cercano_perche_non_restringono",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Le_parole_corte_non_si_cercano_perche_non_restringono()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "Le_parole_sono_ordinate_dalla_piu_lunga_e_senza_ripetizioni",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Le_parole_sono_ordinate_dalla_piu_lunga_e_senza_ripetizioni()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "Una_nota_vuota_non_produce_parole",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Una_nota_vuota_non_produce_parole()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "Senza_nota_il_blocco_dice_che_manca_la_meta_che_conta",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Senza_nota_il_blocco_dice_che_manca_la_meta_che_conta()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "Il_blocco_dichiara_che_accostare_non_e_provare",
+    "scope": "WireMessageInspectTests",
+    "signature": "[Fact] public void Il_blocco_dichiara_che_accostare_non_e_provare()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "Sulla_registrazione_reale_i_quattro_sayi_si_leggono",
+    "scope": "WireMessageInspectTests",
+    "signature": "[WireCaptureFact(Messages)] public void Sulla_registrazione_reale_i_quattro_sayi_si_leggono()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 170,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 172,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 173,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 177,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 179,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/WireMessageInspectTests.cs",
+    "line": 180,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireMessageInspectTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 20,
+    "kind": "constructor_declaration",
+    "name": "ActionOutcomeLedgerStoreTests",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "public ActionOutcomeLedgerStoreTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "Options",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "private static SqliteJournalOptions Options()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "FullyPopulatedEntry",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "private static ActionOutcomeLedgerEntry FullyPopulatedEntry(string context)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "AppendThenLoadByContext_RoundTripsAFullyPopulatedEntry_UnchangedFieldForField",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "[Fact] public void AppendThenLoadByContext_RoundTripsAFullyPopulatedEntry_UnchangedFieldForField()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "AppendThenLoadByContext_RoundTripsAnUnknownOutcome_WithoutFabricatingAValue",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "[Fact] public void AppendThenLoadByContext_RoundTripsAnUnknownOutcome_WithoutFabricatingAValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "LoadByContext_ReturnsEntriesOldestFirst_AndExcludesOtherContexts_WithOrdinalCaseSensitiveMatch",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "[Fact] public void LoadByContext_ReturnsEntriesOldestFirst_AndExcludesOtherContexts_WithOrdinalCaseSensitiveMatch()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "LoadByContext_ForAContextWithNoEntries_ReturnsEmpty_NeverThrows",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "[Fact] public void LoadByContext_ForAContextWithNoEntries_ReturnsEmpty_NeverThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
+    "scope": "ActionOutcomeLedgerStoreTests",
+    "signature": "[Fact] public void ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/AdaptiveKnowledgeIngestionEngineTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Ingest_persists_candidate_without_granting_live_use",
+    "scope": "AdaptiveKnowledgeIngestionEngineTests",
+    "signature": "[Fact] public async Task Ingest_persists_candidate_without_granting_live_use()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/AdaptiveKnowledgeIngestionEngineTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "Validator_requires_independent_evidence_for_verified_state",
+    "scope": "AdaptiveKnowledgeIngestionEngineTests",
+    "signature": "[Fact] public void Validator_requires_independent_evidence_for_verified_state()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/AdaptiveKnowledgeIngestionEngineTests.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "Ingest_rejects_privileged_or_exploit_sources",
+    "scope": "AdaptiveKnowledgeIngestionEngineTests",
+    "signature": "[Fact] public async Task Ingest_rejects_privileged_or_exploit_sources()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/AdaptiveKnowledgeIngestionEngineTests.cs",
+    "line": 85,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AdaptiveKnowledgeIngestionEngineTests",
+    "signature": "async () =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "ValidTokenWithinWindowAndScopeIsGranted",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void ValidTokenWithinWindowAndScopeIsGranted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "RequestingScopeBeyondTheTokensGrantIsDenied",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void RequestingScopeBeyondTheTokensGrantIsDenied()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "TamperedMacIsRejected",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void TamperedMacIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 56,
+    "kind": "method_declaration",
+    "name": "TokenSignedWithADifferentRootKeyIsRejected",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void TokenSignedWithADifferentRootKeyIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "TokenNotYetValidBeyondSkewToleranceIsRejectedWithTimeout",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void TokenNotYetValidBeyondSkewToleranceIsRejectedWithTimeout()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "TokenExpiredBeyondSkewToleranceIsRejectedWithTimeout",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void TokenExpiredBeyondSkewToleranceIsRejectedWithTimeout()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "TimeJustInsideTheSkewToleranceOnEitherEdgeIsAccepted",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void TimeJustInsideTheSkewToleranceOnEitherEdgeIsAccepted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "ConstructorRejectsAnEmptyRootKey",
+    "scope": "CapabilityValidatorTests",
+    "signature": "[Fact] public void ConstructorRejectsAnEmptyRootKey()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs",
+    "line": 106,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CapabilityValidatorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Select_RejectsStaleObservation",
+    "scope": "CharacterActionPlannerTests",
+    "signature": "[Fact] public void Select_RejectsStaleObservation()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "Select_PrioritizesRecoveryWhenHpIsCritical",
+    "scope": "CharacterActionPlannerTests",
+    "signature": "[Fact] public void Select_PrioritizesRecoveryWhenHpIsCritical()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "Select_UsesSkillOnlyWhenReadyAndConfidenceIsHigh",
+    "scope": "CharacterActionPlannerTests",
+    "signature": "[Fact] public void Select_UsesSkillOnlyWhenReadyAndConfidenceIsHigh()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Select_FallsBackToBasicAttackWhenSkillIsUnavailable",
+    "scope": "CharacterActionPlannerTests",
+    "signature": "[Fact] public void Select_FallsBackToBasicAttackWhenSkillIsUnavailable()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterActionPlannerTests.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "CharacterActionPlannerTests",
+    "signature": "private static CharacterWorldSnapshot Snapshot( int hp = 100, int maxHp = 100, bool inCombat = false, DateTimeOffset? observedAt = null, IReadOnlyDictionary<string, double>? stats = null, IReadOnlyDictionary<string, int>? cooldowns = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "GuardRejectsStaleObservation",
+    "scope": "CharacterControlTests",
+    "signature": "[Fact] public void GuardRejectsStaleObservation()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "GuardRejectsUnknownOrLowConfidenceAction",
+    "scope": "CharacterControlTests",
+    "signature": "[Fact] public void GuardRejectsUnknownOrLowConfidenceAction()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "GuardAllowsFreshSafeClientAction",
+    "scope": "CharacterControlTests",
+    "signature": "[Fact] public void GuardAllowsFreshSafeClientAction()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "TheAgeBoundIsTheCallersToState_AndDefaultsToFiveHundredMilliseconds",
+    "scope": "CharacterControlTests",
+    "signature": "[Fact] public void TheAgeBoundIsTheCallersToState_AndDefaultsToFiveHundredMilliseconds()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CharacterControl/CharacterControlTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "ANegativeAgeIsRefusedHoweverWideTheBound",
+    "scope": "CharacterControlTests",
+    "signature": "[Fact] public void ANegativeAgeIsRefusedHoweverWideTheBound()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CognitiveObservabilityTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "SinkKeepsLatestStateAndBoundedTrace",
+    "scope": "CognitiveObservabilityTests",
+    "signature": "[Fact] public async Task SinkKeepsLatestStateAndBoundedTrace()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CognitiveObservabilityTests.cs",
+    "line": 21,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveObservabilityTests",
+    "signature": "x =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/CognitiveObservabilityTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "DecisionIsReadOnlyProjection",
+    "scope": "CognitiveObservabilityTests",
+    "signature": "[Fact] public async Task DecisionIsReadOnlyProjection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 13,
+    "kind": "method_declaration",
+    "name": "RoundTripEncodeThenDecodeRecoversTheOriginalPayload",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void RoundTripEncodeThenDecodeRecoversTheOriginalPayload()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "SingleBitFlipInThePayloadIsRejectedWithoutThrowing",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void SingleBitFlipInThePayloadIsRejectedWithoutThrowing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "TamperedTagIsRejected",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void TamperedTagIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 62,
+    "kind": "method_declaration",
+    "name": "WrongSessionKeyCannotDecodeAFrameEncodedByAnotherSession",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void WrongSessionKeyCannotDecodeAFrameEncodedByAnotherSession()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "TruncatedFrameIsRejected",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void TruncatedFrameIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "WrongProtocolVersionIsRejected",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void WrongProtocolVersionIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "DeclaredLengthBeyondBufferIsRejected",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void DeclaredLengthBeyondBufferIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "EncodeRejectsPayloadsLargerThanTheFrameLimit",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void EncodeRejectsPayloadsLargerThanTheFrameLimit()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 121,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "FrameCodecTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/FrameCodecTests.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "EncodingTenThousandFramesWithAWarmedUpCalculatorDoesNotGrowManagedHeapUsage",
+    "scope": "FrameCodecTests",
+    "signature": "[Fact] public void EncodingTenThousandFramesWithAWarmedUpCalculatorDoesNotGrowManagedHeapUsage()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Unknown_NeverExposesAUsableValue",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Fact] public void Unknown_NeverExposesAUsableValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Unknown_UnderlyingValueDefaultsButHasValueMustGateReads",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Fact] public void Unknown_UnderlyingValueDefaultsButHasValueMustGateReads()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Unknown_RequiresAReason",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Fact] public void Unknown_RequiresAReason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "IsTrustedForScheduling_ExcludesSimulatedAndUnknown",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Theory] [InlineData(DataSourceKind.Live, true)] [InlineData(DataSourceKind.Derived, true)] [InlineData(DataSourceKind.Cached, true)] [InlineData(DataSourceKind.Simulated, false)] [InlineData(DataSourceKind.Unknown, false)] public void IsTrustedForScheduling_ExcludesSimulatedAndUnknown(DataSourceKind kind, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "Live_Derived_Cached_Simulated_AllProduceAUsableValue",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Fact] public void Live_Derived_Cached_Simulated_AllProduceAUsableValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/ClassifiedValueTests.cs",
+    "line": 80,
+    "kind": "method_declaration",
+    "name": "EqualClassifiedValues_CompareEqualByValueSemantics",
+    "scope": "ClassifiedValueTests",
+    "signature": "[Fact] public void EqualClassifiedValues_CompareEqualByValueSemantics()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Unknown_EveryFieldIsExplicitlyUnknown_NeverAZeroOrDefault",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void Unknown_EveryFieldIsExplicitlyUnknown_NeverAZeroOrDefault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Gpu_FreeVramMb_IsDerivedWhenBothTotalAndUsedAreKnown",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void Gpu_FreeVramMb_IsDerivedWhenBothTotalAndUsedAreKnown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "Gpu_FreeVramMb_IsUnknownWhenEitherInputIsUnknown",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void Gpu_FreeVramMb_IsUnknownWhenEitherInputIsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "Gpu_FreeVramMb_NeverGoesNegativeWhenUsedExceedsTotal",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void Gpu_FreeVramMb_NeverGoesNegativeWhenUsedExceedsTotal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 105,
+    "kind": "method_declaration",
+    "name": "TwoSnapshotsBuiltFromTheSameInputs_AreEqual_Deterministic",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void TwoSnapshotsBuiltFromTheSameInputs_AreEqual_Deterministic()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "ChangingOneLeafValue_BreaksEquality",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void ChangingOneLeafValue_BreaksEquality()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "Snapshot_RoundTripsThroughJsonWithoutCustomConverters",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void Snapshot_RoundTripsThroughJsonWithoutCustomConverters()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "UnknownSnapshot_RoundTripsThroughJson",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "[Fact] public void UnknownSnapshot_RoundTripsThroughJson()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/HardwareCapabilitySnapshotTests.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "FullyKnownSnapshot",
+    "scope": "HardwareCapabilitySnapshotTests",
+    "signature": "internal static HardwareCapabilitySnapshot FullyKnownSnapshot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "UnknownPlan_EveryTierBudgetIsExplicitlyUnknown",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void UnknownPlan_EveryTierBudgetIsExplicitlyUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "GetBudget_ReturnsTheMatchingTierField",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void GetBudget_ReturnsTheMatchingTierField()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "GetBudget_ThrowsForAnUnrecognizedTierValue",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void GetBudget_ThrowsForAnUnrecognizedTierValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 63,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "JobBudgetRequest_ValidRequestIsStructurallyValid",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void JobBudgetRequest_ValidRequestIsStructurallyValid()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "JobBudgetRequest_InvalidFieldsFailStructuralValidation",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Theory] [InlineData(\"\", 5.0, 5.0, 10L, 10L, 0.5, true)] [InlineData(\"job\", -1.0, 5.0, 10L, 10L, 0.5, true)] [InlineData(\"job\", 5.0, -1.0, 10L, 10L, 0.5, true)] [InlineData(\"job\", 5.0, 5.0, -1L, 10L, 0.5, true)] [InlineData(\"job\", 5.0, 5.0, 10L, -1L, 0.5, true)] [InlineData(\"job\", 5.0, 5.0, 10L, 10L, 1.5, true)] [InlineData(\"job\", 5.0, 5.0, 10L, 10L, -0.1, true)] public void JobBudgetRequest_InvalidFieldsFailStructuralValidation( string jobId, double cpu, double gpu, long ram, long vram, double confidence, bool expectInvalid)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "JobBudgetRequest_FallbackTierMustBeCheaperThanPrimaryTier",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void JobBudgetRequest_FallbackTierMustBeCheaperThanPrimaryTier()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceResourceBudgetTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "JobBudgetRequest_NegativeDeadlineIsInvalid",
+    "scope": "InferenceResourceBudgetTests",
+    "signature": "[Fact] public void JobBudgetRequest_NegativeDeadlineIsInvalid()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Capable",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "private static HardwareCapabilitySnapshot Capable( int cores, long totalRamMb, long availableRamMb, bool gpuKnown, long totalVramMb, long usedVramMb, HardwareThrottleState throttle)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "Tier2_FreeVramBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier2MinFreeVramMb, true)] [InlineData(InferenceTierThresholds.Tier2MinFreeVramMb - 1, false)] public void Tier2_FreeVramBoundary(long freeVramMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "Tier2_TotalRamBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier2MinTotalRamMb, true)] [InlineData(InferenceTierThresholds.Tier2MinTotalRamMb - 1, false)] public void Tier2_TotalRamBoundary(long totalRamMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "Tier3_MinTotalRamBoundary_OnTheCpuFallbackPath",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier3MinTotalRamMb, true)] [InlineData(InferenceTierThresholds.Tier3MinTotalRamMb - 1, false)] public void Tier3_MinTotalRamBoundary_OnTheCpuFallbackPath(long totalRamMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "Tier3_CpuFallbackLogicalCoresBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier3CpuFallbackMinLogicalCores, true)] [InlineData(InferenceTierThresholds.Tier3CpuFallbackMinLogicalCores - 1, false)] public void Tier3_CpuFallbackLogicalCoresBoundary(int cores, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 134,
+    "kind": "method_declaration",
+    "name": "Tier3_CpuFallbackAvailableRamBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier3CpuFallbackMinAvailableRamMb, true)] [InlineData(InferenceTierThresholds.Tier3CpuFallbackMinAvailableRamMb - 1, false)] public void Tier3_CpuFallbackAvailableRamBoundary(long availableRamMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "Tier3_GpuPathTotalVramBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier3GpuPathMinTotalVramMb, InferenceTierThresholds.Tier3GpuPathMinFreeVramMb, true)] [InlineData(InferenceTierThresholds.Tier3GpuPathMinTotalVramMb - 1, InferenceTierThresholds.Tier3GpuPathMinFreeVramMb, false)] public void Tier3_GpuPathTotalVramBoundary(long totalVramMb, long freeVramMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "Tier3_GpuPathFreeVramBoundary",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier3GpuPathMinFreeVramMb, true)] [InlineData(InferenceTierThresholds.Tier3GpuPathMinFreeVramMb - 1, false)] public void Tier3_GpuPathFreeVramBoundary(long freeVramMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "NegativeLogicalCores_NeverSatisfiesTier1",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Fact] public void NegativeLogicalCores_NeverSatisfiesTier1()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 211,
+    "kind": "method_declaration",
+    "name": "NegativeTotalRam_NeverSatisfiesAnyTierAboveZero",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Fact] public void NegativeTotalRam_NeverSatisfiesAnyTierAboveZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 263,
+    "kind": "method_declaration",
+    "name": "GpuCapability_FreeVramMb_OverflowsToALargePositiveValue_ForACorruptedNegativeTotalVram_KnownA1RobustnessGap",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Fact] public void GpuCapability_FreeVramMb_OverflowsToALargePositiveValue_ForACorruptedNegativeTotalVram_KnownA1RobustnessGap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityAdditionalBoundaryTests.cs",
+    "line": 307,
+    "kind": "method_declaration",
+    "name": "CanRun_IsNotFooledByThatOverflow_OnlyBecauseOfTheIndependentTotalVramFloorCheck",
+    "scope": "InferenceTierFeasibilityAdditionalBoundaryTests",
+    "signature": "[Fact] public void CanRun_IsNotFooledByThatOverflow_OnlyBecauseOfTheIndependentTotalVramFloorCheck()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "Tier0_AlwaysRuns_EvenWithFullyUnknownHardware",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void Tier0_AlwaysRuns_EvenWithFullyUnknownHardware()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "FullyUnknownHardware_CannotRunAnyTierAboveZero",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void FullyUnknownHardware_CannotRunAnyTierAboveZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "FullyCapableHardware_CanRunEveryTier",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void FullyCapableHardware_CanRunEveryTier()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "HigherTiers_RequireStrictlyMoreResourcesThanLowerTiers",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void HigherTiers_RequireStrictlyMoreResourcesThanLowerTiers()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "Tier1_LogicalCoresBoundary",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier1MinLogicalCores, true)] [InlineData(InferenceTierThresholds.Tier1MinLogicalCores - 1, false)] public void Tier1_LogicalCoresBoundary(int cores, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "Tier1_TotalRamBoundary",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier1MinTotalRamMb, true)] [InlineData(InferenceTierThresholds.Tier1MinTotalRamMb - 1, false)] public void Tier1_TotalRamBoundary(long totalRamMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "Tier1_ThrottleStateBoundary",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Theory] [InlineData(HardwareThrottleState.Nominal, true)] [InlineData(HardwareThrottleState.Elevated, true)] [InlineData(HardwareThrottleState.Throttling, false)] [InlineData(HardwareThrottleState.Critical, false)] public void Tier1_ThrottleStateBoundary(HardwareThrottleState throttle, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "Tier2_TotalVramBoundary",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Theory] [InlineData(InferenceTierThresholds.Tier2MinTotalVramMb, InferenceTierThresholds.Tier2MinFreeVramMb, true)] [InlineData(InferenceTierThresholds.Tier2MinTotalVramMb - 1, InferenceTierThresholds.Tier2MinFreeVramMb, false)] public void Tier2_TotalVramBoundary(long totalVramMb, long freeVramMb, bool expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 156,
+    "kind": "method_declaration",
+    "name": "Tier2_UnconfirmedGpu_NeverSatisfiesTheGpuRequirement",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void Tier2_UnconfirmedGpu_NeverSatisfiesTheGpuRequirement()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 173,
+    "kind": "method_declaration",
+    "name": "Tier3_CpuFallbackPath_RunsWithoutAGpuWhenCoresAndRamAreSufficient",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void Tier3_CpuFallbackPath_RunsWithoutAGpuWhenCoresAndRamAreSufficient()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "Tier3_RequiresFullyNominalThermalState_ElevatedIsNotEnough",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void Tier3_RequiresFullyNominalThermalState_ElevatedIsNotEnough()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 203,
+    "kind": "method_declaration",
+    "name": "CanRun_ThrowsOnNullSnapshot",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "[Fact] public void CanRun_ThrowsOnNullSnapshot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 206,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Hardware/InferenceTierFeasibilityTests.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "Capable",
+    "scope": "InferenceTierFeasibilityTests",
+    "signature": "private static HardwareCapabilitySnapshot Capable( int cores, long totalRamMb, long availableRamMb, bool gpuKnown, long totalVramMb, long usedVramMb, HardwareThrottleState throttle)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "ToKnowledgeStatus_MapsEveryLifecycleValueExplicitly",
+    "scope": "KnowledgeLifecycleProjectionTests",
+    "signature": "[Theory] [InlineData(KnowledgeLifecycle.Candidate, KnowledgeStatus.Candidate)] [InlineData(KnowledgeLifecycle.Tested, KnowledgeStatus.Testing)] [InlineData(KnowledgeLifecycle.Validated, KnowledgeStatus.Validated)] [InlineData(KnowledgeLifecycle.Verified, KnowledgeStatus.Verified)] [InlineData(KnowledgeLifecycle.RevalidationRequired, KnowledgeStatus.Testing)] [InlineData(KnowledgeLifecycle.Deprecated, KnowledgeStatus.Deprecated)] [InlineData(KnowledgeLifecycle.Forbidden, KnowledgeStatus.Deprecated)] public void ToKnowledgeStatus_MapsEveryLifecycleValueExplicitly(KnowledgeLifecycle lifecycle, KnowledgeStatus expected)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "ToKnowledgeStatus_RevalidationRequired_IsNeverReadAsEligibleForLiveUse",
+    "scope": "KnowledgeLifecycleProjectionTests",
+    "signature": "[Fact] public void ToKnowledgeStatus_RevalidationRequired_IsNeverReadAsEligibleForLiveUse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "ToKnowledgeStatus_DeprecatedAndForbidden_AreNeverReadAsCandidate",
+    "scope": "KnowledgeLifecycleProjectionTests",
+    "signature": "[Fact] public void ToKnowledgeStatus_DeprecatedAndForbidden_AreNeverReadAsCandidate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "ToKnowledgeStatus_UnrecognizedValue_ThrowsRatherThanGuessing",
+    "scope": "KnowledgeLifecycleProjectionTests",
+    "signature": "[Fact] public void ToKnowledgeStatus_UnrecognizedValue_ThrowsRatherThanGuessing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeLifecycleProjectionTests.cs",
+    "line": 53,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "KnowledgeLifecycleProjectionTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeStrategyBridgeTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "KnowledgeCandidateStrategyProjectorTests",
+    "signature": "private static KnowledgeCandidate Candidate(KnowledgeLifecycle lifecycle, KnowledgeScope scope = KnowledgeScope.Context)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeStrategyBridgeTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "Project_StatusMatchesTheOfficialLifecycleProjection_ForEveryLifecycleValue",
+    "scope": "KnowledgeCandidateStrategyProjectorTests",
+    "signature": "[Theory] [InlineData(KnowledgeLifecycle.Candidate, KnowledgeStatus.Candidate)] [InlineData(KnowledgeLifecycle.Tested, KnowledgeStatus.Testing)] [InlineData(KnowledgeLifecycle.Validated, KnowledgeStatus.Validated)] [InlineData(KnowledgeLifecycle.Verified, KnowledgeStatus.Verified)] [InlineData(KnowledgeLifecycle.RevalidationRequired, KnowledgeStatus.Testing)] [InlineData(KnowledgeLifecycle.Deprecated, KnowledgeStatus.Deprecated)] [InlineData(KnowledgeLifecycle.Forbidden, KnowledgeStatus.Deprecated)] public void Project_StatusMatchesTheOfficialLifecycleProjection_ForEveryLifecycleValue( KnowledgeLifecycle lifecycle, KnowledgeStatus expectedStatus)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Knowledge/KnowledgeStrategyBridgeTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "Project_ScopeIsPassedThroughUnchanged_NeverReDerived",
+    "scope": "KnowledgeCandidateStrategyProjectorTests",
+    "signature": "[Fact] public void Project_ScopeIsPassedThroughUnchanged_NeverReDerived()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreSimulatedSourceAndBoundaryConfidenceTests.cs",
+    "line": 24,
+    "kind": "constructor_declaration",
+    "name": "MapModelStoreSimulatedSourceAndBoundaryConfidenceTests",
+    "scope": "MapModelStoreSimulatedSourceAndBoundaryConfidenceTests",
+    "signature": "public MapModelStoreSimulatedSourceAndBoundaryConfidenceTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreSimulatedSourceAndBoundaryConfidenceTests.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "MapModelStoreSimulatedSourceAndBoundaryConfidenceTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreSimulatedSourceAndBoundaryConfidenceTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "SaveThenTryLoad_RoundTripsASimulatedSourceTile_AndBoundaryConfidenceValues",
+    "scope": "MapModelStoreSimulatedSourceAndBoundaryConfidenceTests",
+    "signature": "[Fact] public void SaveThenTryLoad_RoundTripsASimulatedSourceTile_AndBoundaryConfidenceValues()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 20,
+    "kind": "constructor_declaration",
+    "name": "MapModelStoreTests",
+    "scope": "MapModelStoreTests",
+    "signature": "public MapModelStoreTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "MapModelStoreTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 34,
+    "kind": "method_declaration",
+    "name": "FullyPopulatedMap",
+    "scope": "MapModelStoreTests",
+    "signature": "private static MapModel FullyPopulatedMap(MapId id)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "SaveThenTryLoad_RoundTripsTilesPortalsAndBounds_WithFullFidelity",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void SaveThenTryLoad_RoundTripsTilesPortalsAndBounds_WithFullFidelity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "SaveThenTryLoad_RoundTripsAnUnknownMap",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void SaveThenTryLoad_RoundTripsAnUnknownMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 144,
+    "kind": "method_declaration",
+    "name": "TryLoad_ForAMapIdNeverSaved_ReturnsFalseWithAnUnchangedUnknownMap",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void TryLoad_ForAMapIdNeverSaved_ReturnsFalseWithAnUnchangedUnknownMap()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "SavingTheSameMapIdTwice_OverwritesRatherThanDuplicating",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void SavingTheSameMapIdTwice_OverwritesRatherThanDuplicating()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 236,
+    "kind": "method_declaration",
+    "name": "ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "NewCategories_AreDefined",
+    "scope": "MemoryTypeExtensionTests",
+    "signature": "[Theory] [InlineData(MemoryType.Spatial)] [InlineData(MemoryType.Combat)] [InlineData(MemoryType.Quest)] [InlineData(MemoryType.Character)] [InlineData(MemoryType.Failure)] public void NewCategories_AreDefined(MemoryType kind)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "OriginalCategories_KeepTheirNumericValues",
+    "scope": "MemoryTypeExtensionTests",
+    "signature": "[Fact] public void OriginalCategories_KeepTheirNumericValues()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "BuildEntry",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "private static ActionOutcomeLedgerEntry BuildEntry(string context, ActionOutcome outcome)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "BuildUnknownEntry",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "private static ActionOutcomeLedgerEntry BuildUnknownEntry(string context, string reason)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Predict_EmptyLedger_ReturnsZeroCountsAndNullRate",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_EmptyLedger_ReturnsZeroCountsAndNullRate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Predict_OnlyInProgressEntries_RateStaysNull",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_OnlyInProgressEntries_RateStaysNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "Predict_MixedOutcomes_ComputesRateFromSettledOnly",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_MixedOutcomes_ComputesRateFromSettledOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "Predict_IgnoresEntriesForOtherContexts",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_IgnoresEntriesForOtherContexts()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "Predict_ContextMatchIsOrdinal_CaseSensitive",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_ContextMatchIsOrdinal_CaseSensitive()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "SaveAndGet_PersistsEntryInScopedPath",
+    "scope": "AdaptiveKnowledgeStoreTests",
+    "signature": "[Fact] public async Task SaveAndGet_PersistsEntryInScopedPath()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "EnsurePath_CreatesNewContextDirectory",
+    "scope": "AdaptiveKnowledgeStoreTests",
+    "signature": "[Fact] public async Task EnsurePath_CreatesNewContextDirectory()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "MissingObservation_RemainsUnknown",
+    "scope": "NavigationEvidenceEvaluatorTests",
+    "signature": "[Fact] public void MissingObservation_RemainsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "StaleObservation_RemainsUnknown",
+    "scope": "NavigationEvidenceEvaluatorTests",
+    "signature": "[Fact] public void StaleObservation_RemainsUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "PathWithoutMovementOrReplan_IsNotEvidenceOfExecution",
+    "scope": "NavigationEvidenceEvaluatorTests",
+    "signature": "[Fact] public void PathWithoutMovementOrReplan_IsNotEvidenceOfExecution()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+    "line": 50,
+    "kind": "method_declaration",
+    "name": "MovementWithPath_ProducesNavigationEvidence",
+    "scope": "NavigationEvidenceEvaluatorTests",
+    "signature": "[Fact] public void MovementWithPath_ProducesNavigationEvidence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "Observation",
+    "scope": "NavigationEvidenceEvaluatorTests",
+    "signature": "private static NavigationObservation Observation( float x, float y, bool pathFound, DateTime observedAt)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationObservationTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "UnknownObservation_IsExplicitlyUnknown",
+    "scope": "NavigationObservationTests",
+    "signature": "[Fact] public void UnknownObservation_IsExplicitlyUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Navigation/NavigationObservationTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Observation_IsFreshWithinConfiguredAge",
+    "scope": "NavigationObservationTests",
+    "signature": "[Fact] public void Observation_IsFreshWithinConfiguredAge()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "ADeclaredTypeNamedAfterATestDoubleIsFlagged",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "[Theory] [InlineData(\"Mock\")] [InlineData(\"Fake\")] [InlineData(\"Stub\")] [InlineData(\"Dummy\")] [InlineData(\"Synthetic\")] public async Task ADeclaredTypeNamedAfterATestDoubleIsFlagged(string bannedWord)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 41,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "ReferencingATypeDefinedInAnotherAssemblyIsFlaggedJustLikeALocalDeclaration",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "[Fact] public async Task ReferencingATypeDefinedInAnotherAssemblyIsFlaggedJustLikeALocalDeclaration()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 74,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "AStringLiteralThatHappensToContainABannedWordIsNotFlagged",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "[Fact] public async Task AStringLiteralThatHappensToContainABannedWordIsNotFlagged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 92,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "OrdinaryProductionCodeWithNoBannedNamesProducesNoDiagnostic",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "[Fact] public async Task OrdinaryProductionCodeWithNoBannedNamesProducesNoDiagnostic()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 119,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "ALocalVariableMerelyNamedAfterABannedWordIsNotFlagged",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "[Fact] public async Task ALocalVariableMerelyNamedAfterABannedWordIsNotFlagged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 142,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "RunAnalyzerAsync",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "private static async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string source, params MetadataReference[] extraReferences)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 163,
+    "kind": "method_declaration",
+    "name": "CompileToReference",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "private static MetadataReference CompileToReference(string source)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "AssertNoCompileErrors",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "private static void AssertNoCompileErrors(CSharpCompilation compilation)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 184,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "d =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 189,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
+    "line": 197,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoMockOnCriticalPathAnalyzerTests",
+    "signature": "path =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "FullXxHandshakeCompletesAndBothSidesReachTransport",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void FullXxHandshakeCompletesAndBothSidesReachTransport()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "TransportMessagesRoundTripAfterHandshakeCompletes",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void TransportMessagesRoundTripAfterHandshakeCompletes()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "TamperedTransportCiphertextFailsToDecryptAndFailsTheSession",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void TamperedTransportCiphertextFailsToDecryptAndFailsTheSession()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 73,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoiseSessionTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 88,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoiseSessionTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 91,
+    "kind": "method_declaration",
+    "name": "RekeyBeforeTheHandshakeCompletesThrows",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void RekeyBeforeTheHandshakeCompletesThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "RekeyAfterHandshakeAllowsContinuedTransportUse",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void RekeyAfterHandshakeAllowsContinuedTransportUse()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "GeneratedStaticPrivateKeysAreThirtyTwoBytesAndNotAllZero",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void GeneratedStaticPrivateKeysAreThirtyTwoBytesAndNotAllZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 126,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NoiseSessionTests",
+    "signature": "b =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "CompleteHandshake",
+    "scope": "NoiseSessionTests",
+    "signature": "private static void CompleteHandshake(INoiseSession initiator, INoiseSession responder)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "BothSidesDeriveTheSameFrameSessionKeyAfterHandshake",
+    "scope": "NoiseSessionTests",
+    "signature": "[Fact] public void BothSidesDeriveTheSameFrameSessionKeyAfterHandshake()",
+    "category": "test"
+  }
+]
