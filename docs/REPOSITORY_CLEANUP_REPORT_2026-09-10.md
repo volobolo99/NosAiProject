@@ -8,7 +8,7 @@
 
 - conteggio e classificazione di ogni directory di primo livello;
 - verifica degli entrypoint (`NosAi.sln`, package Python, MCP Hub, dashboard);
-- ricerca repository di `TODO`, `FIXME`, `TBD`, `XXX`, `NotImplementedError`;
+- ricerca repository di `TODO`, `FIXME`, `TBD`, `XXX`, `NotImplementedError`; i primi quattro marker non risultano presenti, mentre i residui `NotImplementedError` sono confinati a skeleton/agent e alla cascata free-first e sono tracciati in `docs/REMAINING_WORK.md`;
 - controllo dei riferimenti dei documenti front-door e delle fonti canoniche;
 - verifica dello stato recente dei file chiave tramite cronologia Git;
 - controllo delle directory archivio e dei materiali third-party;
