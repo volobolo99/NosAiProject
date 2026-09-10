@@ -84,7 +84,7 @@ internal static unsafe class DxgiInterop
         out void* immediateContext);
 
     /// <summary>Reads one slot of a COM object's vtable.</summary>
-    private static void* Slot(void* comObject, int index) => (*(void***)comObject)[index];
+    private static void* Slot(void* comObject, int index) => ((void***)comObject)[0][index];
 
     internal static int QueryInterface(void* comObject, in Guid iid, out void* result)
     {
