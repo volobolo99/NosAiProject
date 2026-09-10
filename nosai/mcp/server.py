@@ -67,8 +67,8 @@ def create_server(config_path: Path | str | None = None):
         return json.dumps(decision.__dict__, ensure_ascii=False)
 
     @server.tool()
-    def mcp_infer(prompt: str, capability: str = "") -> str:
-        result = inference.infer(prompt, capability or None)
+    def mcp_infer(prompt: str, capability: str = "", role_id: str = "") -> str:
+        result = inference.infer(prompt, capability or None, role_id=role_id or None)
         audit.append("inference_completed", {"capability": capability, "provider": router.choose(capability or None).provider_id})
         return json.dumps(result, ensure_ascii=False)
 
@@ -102,6 +102,36 @@ def create_server(config_path: Path | str | None = None):
         verdict = auditor.review(proposal, json.loads(checks_json))
         audit.append("change_audited", {"proposal_id": verdict.proposal_id, "approved": verdict.approved, "rollback_required": verdict.rollback_required})
         return json.dumps({"proposal_id": verdict.proposal_id, "approved": verdict.approved, "reason": verdict.reason, "rollback_required": verdict.rollback_required}, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_role_catalog() -> str:
+        bindings = router.role_bindings.list() if router.role_bindings is not None else []
+        proposals = router.role_bindings.proposals() if router.role_bindings is not None else []
+        return json.dumps({"schema_version": "mcp.role.catalog.v1", "bindings": bindings, "proposals": proposals}, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_role_propose_binding(employee_id: str, primary_model: str, fallback_models_json: str = "[]") -> str:
+        if router.role_bindings is None:
+            raise RuntimeError("role binding registry is not configured")
+        proposal = router.role_bindings.propose(employee_id, primary_model, json.loads(fallback_models_json))
+        audit.append("role_binding_proposed", {"proposal_id": proposal["proposal_id"], "employee_id": employee_id})
+        return json.dumps(proposal, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_role_promote_binding(proposal_id: str, checks_json: str, confirmation: str = "") -> str:
+        if router.role_bindings is None:
+            raise RuntimeError("role binding registry is not configured")
+        result = router.role_bindings.promote(proposal_id, json.loads(checks_json), confirmation)
+        audit.append("role_binding_promoted", {"proposal_id": proposal_id, "employee_id": result["employee_id"], "version": result["version"]})
+        return json.dumps(result, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_role_rollback_binding(employee_id: str, confirmation: str = "") -> str:
+        if router.role_bindings is None:
+            raise RuntimeError("role binding registry is not configured")
+        result = router.role_bindings.rollback(employee_id, confirmation)
+        audit.append("role_binding_rolled_back", {"employee_id": employee_id, "version": result["version"]})
+        return json.dumps(result, ensure_ascii=False)
 
     @server.tool()
     def mcp_verify_roles() -> str:
