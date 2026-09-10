@@ -4,13 +4,16 @@
   "title": "NosAi MCP Chief health report",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "status", "checks", "failed_checks", "authority", "recommendations"],
+  "required": ["schema_version", "status", "checks", "failed_checks", "authority", "recommendations", "observations", "state_revision", "leases"],
   "properties": {
     "schema_version": {"const": "mcp.chief.health.v1"},
     "status": {"enum": ["healthy", "degraded"]},
     "checks": {"type": "object"},
     "failed_checks": {"type": "array", "items": {"type": "string"}},
     "authority": {"type": "object"},
-    "recommendations": {"type": "array", "items": {"type": "string"}}
+    "recommendations": {"type": "array", "items": {"type": "string"}},
+    "observations": {"type": "array", "items": {"type": "object"}},
+    "state_revision": {"type": "integer", "minimum": 0},
+    "leases": {"type": "array", "items": {"type": "object"}}
   }
 }
