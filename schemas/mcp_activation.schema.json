@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nosai.local/schemas/mcp_activation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {"type": "boolean"},
+    "mode": {"enum": ["offline", "network"]},
+    "confirmation": {"const": "operator"}
+  },
+  "required": ["enabled"]
+}
+
