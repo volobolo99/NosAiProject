@@ -1,71 +1,80 @@
 # Audit documentale e firme contrattuali
-Snapshot storico: 3e4a8c42d75a73ccf5c6b739705e6293b059827e. Riconciliazione aggiornata: 2026-09-10; non è un audit di esecuzione runtime.
 
-## Disallineamenti e stato della correzione
-1. **Risolto:** ROADMAP_ESECUTIVA usa AP-01 World Model, AP-02 Perception, AP-03 mappe;
-   CONTRACT_MAP associa vecchi gate AP-01 cattura, AP-02 dispatcher, AP-03 decisione.
-   CONTRACT_MAP e ledger ora usano `product_phases`; gli agenti devono identificare i contratti tramite CID.
-2. **Risolto:** CONTRACT_MAP ha colonne Contratto/Stato ma le righe mettono MERGED/DRAFT nella
-   colonna Contratto e il titolo nella colonna Stato. Il ledger JSON è leggibile.
-3. **Risolto nella documentazione di ingresso:** EXECUTION_QUEUE include istruzioni storiche per Claude che implementa A1/A3,
-   mentre .claude/CLAUDE.md descrive Claude come coordinatore che non implementa.
-   Risolvere precedenza delle istruzioni applicabili prima di assegnare lavoro.
-4. **Risolto:** ROADMAP_ESECUTIVA e profilo hardware indicano Acer Nitro V16 AI e SSD esterno a capacità rilevata; Ryzen 7 260 è registrato come baseline confermata. La specifica hardware
-   fornita dall'operatore in conversazione è Acer Nitro V16 AI, Ryzen 7 260, RTX 5060,
-   RAM 16 GB e SSD 1024 GB. Non convertire il profilo documentale in valori rilevati:
-   riconciliare hardware tramite AutoSet e decisione canonica.
-5. **Risolto:** SYSTEM_MAP non contiene più sequenze letterali backslash-n nelle voci Python.
-6. **Risolto nella documentazione:** le descrizioni di watchdog permanente, audit indipendente e rollback
-   non sono certificate dai soli cataloghi, flag booleani o endpoint su richiesta.
-   RESEARCH_LAB_SPEC e LAB-01..07 distinguono correttamente progettato da verificato.
-7. **Risolto per lo snapshot corrente:** l’inventario ora riporta la revisione Git e 1.533 file; la rigenerazione automatica resta consigliata.
-   Usare un tree Git fissato, come FUNCTION_INDEX.json, per contare i sorgenti.
+Snapshot storico: `3e4a8c42d75a73ccf5c6b739705e6293b059827e`.
+Riconciliazione corrente: 2026-09-10. Questo documento controlla la coerenza
+documentale e dei riferimenti; non certifica build, provider, client o hardware.
 
-## Sedici contratti senza firma precisa nel ledger
-| CID | Firma corrente | Bersaglio |
-|---|---|---|
-| C-103 | vedi il file: superficie pubblica gia' in uso dai test | src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs |
-| C-104 | da confermare sul file prima di modificarlo | src/NosAi.Protocol/WireProtocol.cs |
-| C-105 | da definire | da definire |
-| C-106 | da confermare sul file | src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs |
-| C-201 | da confermare | da confermare fra i 16 sorgenti che citano dispatch |
-| C-202 | da confermare | src/NosAi.Core/WorldModel/ |
-| C-203 | da confermare sul file | src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs |
-| C-204 | da definire | da definire |
-| C-301 | da confermare | da confermare fra i 4 sorgenti che citano HTN |
-| C-302 | da confermare | da confermare fra i 5 sorgenti che citano GOAP |
-| C-303 | da confermare | da confermare fra i 30 sorgenti che citano Orchestrator |
-| C-304 | da definire | da definire |
-| C-305 | da confermare | da confermare fra i 44 sorgenti che citano recovery o reconnect |
-| C-401 | da confermare sul file | src/NosAi.Protocol/SessionCipher.cs |
-| C-402 | da definire | da definire |
-| C-403 | da confermare | src/NosAi.Security/ |
+## Disallineamenti risolti
 
-C-103/104/106/203/401 hanno un file specifico: consultare l'indice per estrarre
-la superficie pertinente, poi scegliere quali firme fanno parte del contratto.
-C-202/403 indicano directory: serve definire il perimetro pubblico.
-C-201/301/302/303/305 devono prima identificare l'implementazione canonica.
-C-105/204/304/402 richiedono decisioni o nuovi contratti prima del codice.
-C-003/004/005 hanno già firme proposte, ma non equivalgono a implementazioni verificate.
-C-404 è una procedura di rilascio con firma n/a, non una funzione mancante.
-Anche le firme già compilate vanno confrontate col codice prima di modificarle.
+1. **Mappa delle fasi:** `ROADMAP_ESECUTIVA`, `CONTRACT_MAP` e
+   `contracts/ledger.json` usano ora `product_phases` e i CID come chiavi
+   canoniche; le etichette storiche dei gate restano solo come compatibilità.
+2. **Tabelle dei contratti:** stato, titolo, firma, sorgente e test sono in colonne
+   coerenti; il ledger JSON resta l'autorità machine-readable.
+3. **Istruzioni agli agenti:** la precedenza tra coordinatore e implementatore è
+   esplicitata prima dell'assegnazione; le modifiche devono seguire il protocollo
+   in `.claude/CLAUDE.md`.
+4. **Hardware:** Acer Nitro V16 AI, Ryzen 7 260, RTX 5060, 16 GB RAM e SSD 1024 GB
+   sono registrati come profilo dichiarato dall'operatore, non come telemetria
+   rilevata. AutoSet e le prove runtime restano necessari.
+5. **MCP Chief:** le promozioni usano tre record di evidenza firmati e freschi
+   (`tests`, `shadow`, `audit`) con executor indipendenti; i booleani
+   `checks` non sono più una prova accettabile.
+6. **Stato condiviso:** binding, proposte, lease, osservazioni e idempotenza hanno
+   come autorità `data/mcp/state.sqlite3`; `role_bindings.json` è solo export
+   compatibile e viene migrato con backup.
+7. **Parser/index:** i quattro file che avevano diagnostica Tree-sitter sono stati
+   corretti; `scripts/build_function_index.py` ora registra posizione, excerpt,
+   versione grammar e supporta `--strict`.
+8. **Verifica automatica:** `scripts/verify_mcp_contracts.py --strict` controlla
+   JSON, link a sorgenti/test, firme risolte e presenza dei CID nella mappa; è
+   eseguito dalla GitHub Action Linux.
+
+## Firme risolte il 2026-09-10
+
+| CID | Firma canonica | Sorgente | Prova |
+|---|---|---|---|
+| C-103 | `GameTrafficCaptureEngine(IPacketSource, Func<StreamDirection, IGameStreamFramer>? = null); Run(CancellationToken = default, TimeSpan? = null); Pump(CapturedPacket); Snapshot()` | `src/NosAi.Runtime/LiveIntegration/Capture/GameTrafficCaptureEngine.cs` | `tests/NosAi.Runtime.Tests/CaptureEngineTests.cs` |
+| C-104 | `bool WireHeader.TryRead(ReadOnlySpan<byte>, out WireHeader, out string?)` | `src/NosAi.Protocol/WireProtocol.cs` | `HeartbeatPayloadTests.cs`, `DiscoveryTests.cs` |
+| C-106 | `long CaptureFile.Record(IPacketSource, string, CancellationToken = default, TimeSpan? = null); CaptureFileSource Open(string)` | `src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs` | `DecideReplayAsOfCaptureTests.cs` |
+| C-203 | `WorldModelSnapshot RunOnce(Gate1CanonicalSnapshot, DateTime)` | `src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs` | `tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs` |
+| C-401 | `SessionCipher.ForRuntime(ReadOnlySpan<byte>); ForPhone(ReadOnlySpan<byte>); SealFrameInto(Span<byte>, WireMessageType, uint, ReadOnlySpan<byte>); TryOpenFrame(ReadOnlySpan<byte>, ReadOnlySpan<byte>, out byte[], out string?)` | `src/NosAi.Protocol/SessionCipher.cs` | C# e Python session-cipher tests |
+
+La firma risolta non equivale a comportamento verificato: la prova deve essere
+eseguita nell'ambiente indicato e registrata secondo il ledger.
+
+## Firme ancora da precisare
+
+Restano **11** voci con `signature_status: UNRESOLVED`:
+
+| CID | Decisione necessaria |
+|---|---|
+| C-105 | perimetro di hook memoria/DLL, versione e test |
+| C-201 | dispatcher canonico, firma, errori e thread-safety |
+| C-202 | perimetro pubblico della correlazione entità |
+| C-204 | proprietà dello stato C# o Python e round-trip |
+| C-301 | implementazione HTN canonica |
+| C-302 | implementazione GOAP canonica |
+| C-303 | orchestratore unico e sua firma |
+| C-304 | FSM sostituisce o affianca Planner/Orchestrator |
+| C-305 | implementazione canonica di recovery/reconnect |
+| C-402 | corpus e harness di fuzzing |
+| C-403 | superficie pubblica di `NosAi.Security` |
+
+I dettagli operativi sono in [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_TASKS.md).
+C-003/004/005 sono proposte bloccate per assenza di stack nativo; C-404 è una
+procedura di rilascio e non una funzione.
 
 ## Limiti dell'indice
-FUNCTION_INDEX.json contiene copertura per 1.098 sorgenti e 12.599 voci sintattiche
-ripartite in 29 shard. Quattro file hanno errori parser: non certificarne completezza.
-- scripts/windows/nosai_bootstrap.ps1
-- src/NosAi.Runtime/Perception/DxgiInterop.cs
-- third_party/sources/opennos/reference/LoginPacketHandler.cs
-- tools/find-vitals.ps1
 
-Sono incluse definizioni private, test, sorgenti esterni, lambda e accessori.
-Non è un call graph né include funzioni generate a runtime o varianti del preprocessore.
-La copertura completa dei file non garantisce riconoscimento di ogni costrutto linguistico.
-Nessun contratto è promosso a VERIFIED con questo audit.
+`FUNCTION_INDEX.json` è una mappa sintattica: non è un call graph, non include
+codice generato/runtime e non espande varianti del preprocessore. Una rigenerazione
+completa deve usare la revisione Git dichiarata; la modalità `--strict` fallisce
+se resta una diagnostica parser. Consultare [FUNCTION_INDEX.md](FUNCTION_INDEX.md).
 
 ## Esito
 
-La documentazione è stata riallineata e il profilo Acer è stato registrato.
-Le firme contrattuali non sono state inventate: restano task espliciti in
-CONTRACT_SIGNATURE_TASKS.md. L’indice delle funzioni è stato rigenerato sullo snapshot
-Git e include la copertura dichiarata; non certifica compilazione o comportamento.
+La documentazione e i riferimenti machine-readable sono riallineati per la fase di
+sviluppo. Le verifiche ambientali e i test di comportamento restano attività
+esplicite in [REMAINING_WORK.md](REMAINING_WORK.md), non vengono dedotti dalla
+presenza dei file.
