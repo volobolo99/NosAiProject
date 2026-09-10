@@ -107,18 +107,49 @@ def create_server(config_path: Path | str | None = None):
         return json.dumps({"schema_version": "mcp.role.catalog.v1", "bindings": bindings, "proposals": proposals}, ensure_ascii=False)
 
     @server.tool()
-    def mcp_role_propose_binding(employee_id: str, primary_model: str, fallback_models_json: str = "[]") -> str:
+    def mcp_record_evidence(
+        candidate_digest: str,
+        evidence_kind: str,
+        executor_id: str,
+        result_json: str,
+        signer_id: str = "",
+    ) -> str:
+        record = chief.record_evidence(
+            candidate_digest,
+            evidence_kind,
+            executor_id,
+            json.loads(result_json),
+            signer_id=signer_id or "mcp-evidence-authority",
+        )
+        audit.append(
+            "evidence_recorded",
+            {"evidence_id": record["evidence_id"], "evidence_kind": record["evidence_kind"], "executor_id": record["executor_id"]},
+        )
+        return json.dumps(record, ensure_ascii=False)
+
+    @server.tool()
+    def mcp_role_propose_binding(
+        employee_id: str,
+        primary_model: str,
+        fallback_models_json: str = "[]",
+        author_id: str = "operator",
+    ) -> str:
         if router.role_bindings is None:
             raise RuntimeError("role binding registry is not configured")
-        proposal = chief.bindings.propose(employee_id, primary_model, json.loads(fallback_models_json))
+        proposal = chief.bindings.propose(
+            employee_id,
+            primary_model,
+            json.loads(fallback_models_json),
+            author_id=author_id,
+        )
         audit.append("role_binding_proposed", {"proposal_id": proposal["proposal_id"], "employee_id": employee_id})
         return json.dumps(proposal, ensure_ascii=False)
 
     @server.tool()
-    def mcp_role_promote_binding(proposal_id: str, checks_json: str, confirmation: str = "") -> str:
+    def mcp_role_promote_binding(proposal_id: str, evidence_ids_json: str, confirmation: str = "") -> str:
         if router.role_bindings is None:
             raise RuntimeError("role binding registry is not configured")
-        result = chief.promote_binding(proposal_id, json.loads(checks_json), confirmation)
+        result = chief.promote_binding(proposal_id, json.loads(evidence_ids_json), confirmation)
         audit.append("role_binding_promoted", {"proposal_id": proposal_id, "employee_id": result["employee_id"], "version": result["version"]})
         return json.dumps(result, ensure_ascii=False)
 
