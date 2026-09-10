@@ -2,7 +2,7 @@
 
 ## Scope
 
-È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali (1.486 nel tree corrente dopo l’aggiornamento MCP Chief e documentale), directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
+È stato analizzato il tree completo del ramo `main` di `volobolo99/NosAiProject`: 1.472 file iniziali (1.487 nel tree corrente dopo l’aggiornamento MCP Chief e documentale), directory di produzione C# e Python, test, contratti, schemi, documentazione, strumenti e vault third-party.
 
 ## Controlli eseguiti
 
