@@ -1,5 +1,7 @@
 # MCP Agent Quick Index
 
+Per programmare Chief e Research Lab iniziare da [AI_PROGRAMMING_GUIDE.md](AI_PROGRAMMING_GUIDE.md).
+
 Usare questo indice prima di modificare il sistema: riduce contesto, token e regressioni.
 
 | Necessità | File da leggere | Contratto/test |
