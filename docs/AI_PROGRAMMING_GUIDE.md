@@ -50,3 +50,10 @@ risolvere la precedenza delle istruzioni applicabili prima di delegare, senza
 riscrivere le regole o cambiare modelli implicitamente.
 Le schede JSON sono un indice di lettura, non una nuova coda né un indice completo
 delle funzioni. R-207 resta il lavoro per generare quest'ultimo.
+
+## Indice funzioni e audit verificato
+
+Consultare [FUNCTION_INDEX.md](FUNCTION_INDEX.md) per ricerca per file/simbolo,
+source revision e copertura. [DOCUMENTATION_ALIGNMENT_AUDIT.md](DOCUMENTATION_ALIGNMENT_AUDIT.md)
+elenca disallineamenti e 16 contratti con firme non precise. R-207 ha ora un indice
+statico generato; restano revisione dei quattro errori parser e automazione della rigenerazione.
