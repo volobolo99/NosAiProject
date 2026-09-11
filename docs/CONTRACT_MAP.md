@@ -32,6 +32,9 @@ Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_T
 | C-403 | AP-00, AP-10 | Superficie di sicurezza del runtime | MERGED | da confermare | src/NosAi.Security/ | tests/test_crypto_auth.py |
 | C-404 | AP-10 | Procedura di rilascio verificata | DRAFT | n/a | docs/BUILD_TEST_RELEASE.md | scripts/validate.ps1 |
 | ORCH-001 | Tooling trasversale | Routing per costo, registro dei consumi, messaggi fra agenti | TEST_VERIFIED | route_task(kind: TaskKind) -> ModelRoute | nosai/orchestration/routing.py | tests/test_orchestration.py |
+| ORCH-002 | Tooling trasversale | Drift-check CI per l'indice funzioni (manifest + shard) | TEST_VERIFIED | `write_index_tree(output_directory: pathlib.Path, result: dict[str, Any], shard_size: int = 500) -> list[pathlib.Path]` | scripts/build_function_index.py; .github/workflows/function-index-check.yml | tests/test_function_index.py |
+| ORCH-003 | Tooling trasversale | Edges di chiamata testuali (C#/Python) nell'indice funzioni, non un call graph semantico | TEST_VERIFIED | `_call_edges(path: str, language: str, raw: bytes, tree: Any, line_offset: int, file_function_names: set[str]) -> list[dict[str, Any]]` | scripts/build_function_index.py | tests/test_function_index.py |
+| ORCH-004 | Tooling trasversale | Rendering deterministico di MASTER_ROADMAP.md (niente modello, niente parafrasi) | TEST_VERIFIED | `render_roadmap_markdown(ledger: dict) -> str` | scripts/mcp_server.py | tests/test_contract_ledger.py |
 
 Contratti standalone MCP: [mcp-hub-001](../contracts/mcp-hub-001.json), [mcp-research-lab-001](../contracts/mcp-research-lab-001.json).
 Non sono inclusi nei conteggi dei gruppi legacy. Il contratto Lab è DRAFT e i pacchetti PLANNED.
