@@ -38,6 +38,43 @@ VALID_STATES = ["DRAFT", "SKELETON_OK", "INFILLED", "PREFLIGHT_OK", "VERIFIED", 
 DONE_STATES = ["VERIFIED", "ASAN_VERIFIED", "TEST_VERIFIED", "MERGED"]
 
 # =====================================================================
+# REGISTRO DEI COSTI (stesso file di scripts/code_agent.py)
+# =====================================================================
+
+LEDGER = PROJECT_ROOT / "data" / "ai_task_ledger.jsonl"
+
+
+def record(entry: dict) -> None:
+    """Aggiunge una riga al registro dei costi, nello stesso formato usato da
+    scripts/code_agent.py, cosi' le chiamate fatte da questi tool non restano
+    invisibili al resto della catena."""
+    LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    with LEDGER.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _stima_costo_usd(model_id: str, testo_input: str, testo_output: str) -> float:
+    """Stima il costo in dollari da un conteggio di parole, non dai token reali:
+    call_openrouter, call_deepseek, chiama_groq e chiama_openrouter non
+    restituiscono il campo "usage" della risposta HTTP (esporlo ne cambierebbe
+    la firma, vincolata da contratti gia' chiusi). 1.3 token per parola e' una
+    approssimazione dichiarata, non una misura: la cifra vera resta nel
+    pannello di ogni provider. Vedi .claude/CLAUDE.md sezione 15."""
+    try:
+        prezzi = json.loads(
+            (PROJECT_ROOT / "scripts" / "model_prices.json").read_text(encoding="utf-8")
+        )["models"]
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return 0.0
+    prezzo = prezzi.get(model_id)
+    if not prezzo:
+        return 0.0
+    token_input = len(testo_input.split()) * 1.3
+    token_output = len(testo_output.split()) * 1.3
+    costo = token_input * prezzo.get("input", 0.0) + token_output * prezzo.get("output", 0.0)
+    return round(costo, 6)
+
+# =====================================================================
 # STRUMENTI PER LA CATENA DI MONTAGGIO A ZERO DIFETTI
 # =====================================================================
 
@@ -60,7 +97,13 @@ def local_generate_skeleton(specifications_json: str) -> str:
     }
     r = requests.post(OLLAMA_URL, json=payload, timeout=120)
     r.raise_for_status()
-    return r.json().get("response", "")
+    risposta = r.json().get("response", "")
+    record({
+        "task_id": "local_generate_skeleton", "model": ROSTER["local_scaffold"],
+        "calls": 1, "estimated_cost_usd": 0.0, "status": "completed",
+        "file": "mcp_tool", "words": len(risposta.split()),
+    })
+    return risposta
 
 @mcp.tool()
 def cloud_infill_implementation(skeleton_and_contract: str) -> str:
@@ -73,7 +116,13 @@ def cloud_infill_implementation(skeleton_and_contract: str) -> str:
         "Devi implementare TUTTI i corpi delle funzioni nel rispetto assoluto dei vincoli di memoria e firme. "
         "NON usare commenti // TODO o scorciatoche. Restituisci il codice completo pronto alla produzione."
     )
-    return call_openrouter(ROSTER["worker"], skeleton_and_contract, sys_prompt, temperature=0.1, max_tokens=8192)
+    testo = call_openrouter(ROSTER["worker"], skeleton_and_contract, sys_prompt, temperature=0.1, max_tokens=8192)
+    record({
+        "task_id": "cloud_infill_implementation", "model": ROSTER["worker"],
+        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["worker"], skeleton_and_contract, testo),
+        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+    })
+    return testo
 
 @mcp.tool()
 def preflight_contract_check(contract_json: str, generated_code: str) -> str:
@@ -87,7 +136,13 @@ def preflight_contract_check(contract_json: str, generated_code: str) -> str:
         "i problemi critici riscontrati."
     )
     prompt = f"CONTRATTO:\n{contract_json}\n\nCODICE PRODOTTO:\n{generated_code}"
-    return call_openrouter(ROSTER["preflight"], prompt, sys_prompt, temperature=0.0, max_tokens=1024)
+    testo = call_openrouter(ROSTER["preflight"], prompt, sys_prompt, temperature=0.0, max_tokens=1024)
+    record({
+        "task_id": "preflight_contract_check", "model": ROSTER["preflight"],
+        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["preflight"], prompt, testo),
+        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+    })
+    return testo
 
 @mcp.tool()
 def deep_reasoner_solve_crash(error_context_json: str) -> str:
@@ -99,7 +154,13 @@ def deep_reasoner_solve_crash(error_context_json: str) -> str:
         "Sei il Principal Systems & Memory Security Engineer. Analizza il crash nativo o la violazione di invarianti. "
         "Identifica l'errore logico o di puntatore e fornisci la correzione chirurgica in C++ o Python."
     )
-    return call_deepseek(ROSTER["auditor"], error_context_json, sys_prompt, temperature=0.6, max_tokens=12000)
+    testo = call_deepseek(ROSTER["auditor"], error_context_json, sys_prompt, temperature=0.6, max_tokens=12000)
+    record({
+        "task_id": "deep_reasoner_solve_crash", "model": ROSTER["auditor"],
+        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["auditor"], error_context_json, testo),
+        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+    })
+    return testo
 
 @mcp.tool()
 def local_update_documentation(doc_payload_json: str) -> str:
@@ -113,7 +174,13 @@ def local_update_documentation(doc_payload_json: str) -> str:
     }
     r = requests.post(OLLAMA_URL, json=payload, timeout=120)
     r.raise_for_status()
-    return r.json().get("response", "")
+    risposta = r.json().get("response", "")
+    record({
+        "task_id": "local_update_documentation", "model": ROSTER["local_scaffold"],
+        "calls": 1, "estimated_cost_usd": 0.0, "status": "completed",
+        "file": "mcp_tool", "words": len(risposta.split()),
+    })
+    return risposta
 
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
