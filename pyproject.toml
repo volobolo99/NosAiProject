@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = ["cryptography>=43", "requests>=2.31", "python-dotenv>=1.0"]
 
 [project.optional-dependencies]
-test = ["pytest>=8"]
+test = ["pytest>=8", "jsonschema>=4"]
 mcp = ["mcp>=1.0", "pydantic>=2"]
 # La catena a cinque fasi: scripts/code_agent.py valida il C# con tree_sitter, e
 # scripts/build_function_index.py indicizza entrambi i linguaggi. Senza le
