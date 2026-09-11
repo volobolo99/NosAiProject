@@ -620,6 +620,28 @@
           "product_phases": [],
           "legacy_gate": 9,
           "metrics": "pytest tests/test_function_index.py -q verde; schema v3 con calls risolte su fixture C#/Python, nessuna eccezione su nodi non riconosciuti"
+        },
+        {
+          "cid": "ORCH-004",
+          "title": "Rendering deterministico di MASTER_ROADMAP.md (niente modello, niente parafrasi)",
+          "target_file": "scripts/mcp_server.py",
+          "signature": "render_roadmap_markdown(ledger: dict) -> str",
+          "struct_size": null,
+          "test_file": "tests/test_contract_ledger.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-11",
+          "invariants": [
+            "NO_MODEL_CALL",
+            "VERBATIM_FIELDS"
+          ],
+          "note": "Sostituisce regenerate_roadmap() che passava l'intero ledger dentro un prompt libero a un 7B locale: quel modello riportava domande gia' chiuse come ancora aperte e mischiava note del ledger (phase_mapping_note, signature_resolution_note) in righe di contratti a cui non appartenevano. Un rendering deterministico non puo' commettere quell'errore: ogni riga del Markdown e' copiata cosi' com'e' da un campo del ledger.",
+          "verification": {
+            "command": "python -m pytest tests/test_contract_ledger.py -q",
+            "last_result": "15 test verdi in questa sessione; rigenerato MASTER_ROADMAP.md dal ledger reale e verificato a mano che tutte le domande_aperte risultano correttamente RISOLTA con il proprio ADR, incluso C-105"
+          },
+          "product_phases": [],
+          "legacy_gate": 9,
+          "metrics": "15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli"
         }
       ]
     }

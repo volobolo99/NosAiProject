@@ -259,6 +259,81 @@ def local_update_documentation(doc_payload_json: str) -> str:
     })
     return risposta
 
+def render_roadmap_markdown(ledger: dict) -> str:
+    """Deterministic Markdown rendering of the contract ledger. No model call,
+    no paraphrasing: every line comes verbatim from a ledger field, so it
+    cannot misreport a fact the ledger itself doesn't contain.
+
+    Replaces a prior implementation that asked a local 7B model to "translate"
+    the raw ledger JSON into prose: it routinely reported already-closed
+    questions as still open and, at least once, mixed a fragment of its own
+    note fields into an unrelated contract's row.
+    """
+    lines: list[str] = []
+    lines.append("# NosAi — Master Roadmap")
+    lines.append("")
+    lines.append(
+        "_Generato automaticamente da `update_contract_state` a partire da "
+        "`contracts/ledger.json`. Non modificare a mano: verra' sovrascritto "
+        "alla prossima chiamata._"
+    )
+
+    stack = ledger.get("stack", {})
+    if stack:
+        parts = [stack[key] for key in ("managed", "python", "native") if stack.get(key)]
+        if parts:
+            lines.append("**Stack**: " + " · ".join(parts))
+
+    vocabulary = ledger.get("vocabulary")
+    if vocabulary:
+        lines.append(f"**Vocabolario**: {vocabulary}")
+
+    note_di_lettura = ledger.get("note_di_lettura")
+    if note_di_lettura:
+        lines.append("")
+        lines.append(f"> {note_di_lettura}")
+
+    for gate in ledger.get("gates", []):
+        gate_num = gate.get("gate", "")
+        gate_title = gate.get("title", "")
+        completion_pct = gate.get("completion_pct", "")
+        lines.append("")
+        lines.append(f"## Gate {gate_num} — {gate_title} ({completion_pct}%)")
+        lines.append("")
+        lines.append("| CID | Titolo | Stato |")
+        lines.append("|---|---|---|")
+        for contract in gate.get("contracts", []):
+            cid = contract.get("cid", "")
+            title = contract.get("title", "")
+            status = contract.get("status", "")
+            lines.append(f"| {cid} | {title} | {status} |")
+            for field in ("updated", "metrics", "note", "blocker"):
+                value = contract.get(field)
+                if value:
+                    lines.append(f"  - {field}: {value}")
+
+    domande_aperte = ledger.get("domande_aperte", [])
+    if domande_aperte:
+        lines.append("")
+        lines.append("## Domande aperte")
+        lines.append("")
+        for domanda in domande_aperte:
+            lines.append(f"- {domanda}")
+
+    phase_mapping_note = ledger.get("phase_mapping_note")
+    signature_resolution_note = ledger.get("signature_resolution_note")
+    if phase_mapping_note or signature_resolution_note:
+        lines.append("")
+        lines.append("## Note")
+        lines.append("")
+        if phase_mapping_note:
+            lines.append(f"- {phase_mapping_note}")
+        if signature_resolution_note:
+            lines.append(f"- {signature_resolution_note}")
+
+    return "\n".join(lines) + "\n"
+
+
 @mcp.tool()
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
@@ -325,22 +400,9 @@ def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -
 
     def regenerate_roadmap():
         try:
-            prompt = (
-                "Sei un Technical Writer. Traduci questo registro di contratti in una "
-                "roadmap Markdown con una sezione per Gate, la percentuale di ogni Gate "
-                "e una checklist dei contratti. Nessuna prosa introduttiva.\n\n"
-                f"{json.dumps(ledger, ensure_ascii=False)}"
-            )
-            response = requests.post(
-                OLLAMA_URL,
-                json={"model": ROSTER["local_scaffold"], "prompt": prompt, "stream": False},
-                timeout=180
-            )
-            response.raise_for_status()
-            content = response.json().get("response", "")
-            if content:
-                with open(PROJECT_ROOT / "docs" / "MASTER_ROADMAP.md", "w", encoding="utf-8") as f:
-                    f.write(content)
+            content = render_roadmap_markdown(ledger)
+            with open(PROJECT_ROOT / "docs" / "MASTER_ROADMAP.md", "w", encoding="utf-8") as f:
+                f.write(content)
         except Exception:
             pass
 

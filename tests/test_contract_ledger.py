@@ -152,3 +152,96 @@ def test_l_abbandono_non_gonfia_la_percentuale_se_resta_lavoro(ledger_env):
     assert read(path)["gates"][0]["completion_pct"] == 0, (
         "C-102 e' ancora DRAFT: il gate non e' completo"
     )
+
+
+# --- render_roadmap_markdown e' deterministico, non un modello -------------
+#
+# Prima chiamava un 7B locale con l'intero ledger dentro un prompt libero, e
+# quel modello riportava domande gia' chiuse come ancora aperte, oltre a
+# mischiare note del ledger in righe di contratti a cui non appartenevano.
+# Un rendering deterministico non puo' commettere quell'errore: ogni riga e'
+# copiata cosi' com'e' da un campo del ledger.
+
+def test_roadmap_riporta_verbatim_una_domanda_aperta(ledger_env):
+    mcp_server, _ = ledger_env
+    ledger = {
+        "gates": [],
+        "domande_aperte": ["C-999: RISOLTA da ADR-0099 del 2026-01-01 — testo esatto."],
+    }
+    markdown = mcp_server.render_roadmap_markdown(ledger)
+
+    assert "## Domande aperte" in markdown
+    assert "- C-999: RISOLTA da ADR-0099 del 2026-01-01 — testo esatto." in markdown
+
+
+def test_roadmap_non_riporta_domande_aperte_assenti(ledger_env):
+    mcp_server, _ = ledger_env
+    markdown = mcp_server.render_roadmap_markdown({"gates": []})
+
+    assert "## Domande aperte" not in markdown
+
+
+def test_roadmap_elenca_ogni_contratto_del_gate_con_stato(ledger_env):
+    mcp_server, _ = ledger_env
+    ledger = {
+        "gates": [
+            {
+                "gate": 1,
+                "title": "Gate di prova",
+                "completion_pct": 50,
+                "contracts": [
+                    {"cid": "C-101", "title": "Uno", "status": "MERGED"},
+                    {"cid": "C-102", "title": "Due", "status": "DRAFT", "blocker": "manca il file"},
+                ],
+            }
+        ]
+    }
+    markdown = mcp_server.render_roadmap_markdown(ledger)
+
+    assert "## Gate 1 — Gate di prova (50%)" in markdown
+    assert "| C-101 | Uno | MERGED |" in markdown
+    assert "| C-102 | Due | DRAFT |" in markdown
+    assert "blocker: manca il file" in markdown
+
+
+def test_roadmap_non_solleva_eccezioni_su_ledger_minimale(ledger_env):
+    mcp_server, _ = ledger_env
+    assert mcp_server.render_roadmap_markdown({}) == mcp_server.render_roadmap_markdown({"gates": []})
+    mcp_server.render_roadmap_markdown({"gates": [{"gate": 1, "title": "x", "completion_pct": 0, "contracts": [{"cid": "C-1", "status": "DRAFT"}]}]})
+
+
+def test_update_contract_state_scrive_la_roadmap_dal_ledger_reale(tmp_path, monkeypatch):
+    """A differenza della fixture ledger_env, qui il thread NON e' mockato:
+    regenerate_roadmap ora e' puro calcolo locale (nessuna rete), quindi puo'
+    girare per davvero dentro il test senza renderlo lento o fragile."""
+    import mcp_server
+
+    (tmp_path / "contracts").mkdir()
+    (tmp_path / "docs").mkdir()
+    ledger = {
+        "domande_aperte": ["C-304: RISOLTA da ADR-0031 — nessuna FSM esplicita."],
+        "gates": [
+            {
+                "gate": 1,
+                "title": "Gate di prova",
+                "completion_pct": 0,
+                "contracts": [{"cid": "C-101", "status": "DRAFT"}],
+            }
+        ],
+    }
+    ledger_path = tmp_path / "contracts" / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+    monkeypatch.setattr(mcp_server, "PROJECT_ROOT", tmp_path)
+
+    mcp_server.update_contract_state("C-101", "MERGED")
+
+    import time
+
+    for _ in range(50):
+        roadmap_path = tmp_path / "docs" / "MASTER_ROADMAP.md"
+        if roadmap_path.exists():
+            break
+        time.sleep(0.02)
+    content = roadmap_path.read_text(encoding="utf-8")
+    assert "C-304: RISOLTA da ADR-0031 — nessuna FSM esplicita." in content
+    assert "| C-101 |" in content and "MERGED" in content
