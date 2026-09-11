@@ -1,5 +1,401 @@
 [
   {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "LoadOrCreate",
+    "scope": "RuntimeIdentity",
+    "signature": "public static RuntimeIdentity LoadOrCreate(string? path = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "Unwrap",
+    "scope": "RuntimeIdentity",
+    "signature": "private static RSA Unwrap(string protectedFile)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "Migrate",
+    "scope": "RuntimeIdentity",
+    "signature": "private static RuntimeIdentity Migrate(string legacyFile, string protectedFile)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 277,
+    "kind": "method_declaration",
+    "name": "Create",
+    "scope": "RuntimeIdentity",
+    "signature": "private static RuntimeIdentity Create(string legacyFile, string protectedFile)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 290,
+    "kind": "method_declaration",
+    "name": "Store",
+    "scope": "RuntimeIdentity",
+    "signature": "private static void Store(RSA key, string protectedFile)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 331,
+    "kind": "method_declaration",
+    "name": "Adopt",
+    "scope": "RuntimeIdentity",
+    "signature": "private static RuntimeIdentity Adopt(RSA key, string legacyFile, string? remnant = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 338,
+    "kind": "method_declaration",
+    "name": "WritePublicCompanion",
+    "scope": "RuntimeIdentity",
+    "signature": "private static void WritePublicCompanion(string privatePath, RuntimeIdentity identity)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 352,
+    "kind": "method_declaration",
+    "name": "CreateEphemeral",
+    "scope": "RuntimeIdentity",
+    "signature": "public static RuntimeIdentity CreateEphemeral()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 360,
+    "kind": "method_declaration",
+    "name": "SignAsServer",
+    "scope": "RuntimeIdentity",
+    "signature": "public byte[] SignAsServer( ReadOnlySpan<byte> clientNonce, ReadOnlySpan<byte> serverNonce, ReadOnlySpan<byte> clientEphemeral, ReadOnlySpan<byte> serverEphemeral)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 370,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "RuntimeIdentity",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "Failed",
+    "scope": "EventLogHealth",
+    "signature": "public static EventLogHealth Failed(string path, bool exists, string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Inspect",
+    "scope": "EventLogDiagnostics",
+    "signature": "public static EventLogHealth Inspect(string? databasePath = null, int tailCount = DefaultTailCount)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+    "line": 103,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogDiagnostics",
+    "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+    "line": 109,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "EventLogDiagnostics",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "EventLogDiagnostics",
+    "signature": "public static string Describe(EventLogHealth health)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 57,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "EventLogReplay",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 97,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "EventLogReader",
+    "signature": "public static EventLogReplay Read(string databasePath, string? sessionId = null, int busyTimeoutMs = 5000)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "ReadEvents",
+    "scope": "EventLogReader",
+    "signature": "private static List<EventLogEntry> ReadEvents(SqliteConnection connection, string? sessionId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "ReadGaps",
+    "scope": "EventLogReader",
+    "signature": "private static List<EventLogGap> ReadGaps(SqliteConnection connection)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 177,
+    "kind": "method_declaration",
+    "name": "Merge",
+    "scope": "EventLogReader",
+    "signature": "private static EventLogReplay Merge(List<EventLogEntry> events, List<EventLogGap> gaps)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 231,
+    "kind": "method_declaration",
+    "name": "EnsureSchema",
+    "scope": "Gate2EventSchema",
+    "signature": "internal static void EnsureSchema(SqliteConnection connection)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 265,
+    "kind": "method_declaration",
+    "name": "MigrateEventsTable",
+    "scope": "Gate2EventSchema",
+    "signature": "private static void MigrateEventsTable(SqliteConnection connection)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 294,
+    "kind": "method_declaration",
+    "name": "TableExists",
+    "scope": "Gate2EventSchema",
+    "signature": "internal static bool TableExists(SqliteConnection connection, string table)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
+    "line": 305,
+    "kind": "method_declaration",
+    "name": "ColumnExists",
+    "scope": "Gate2EventSchema",
+    "signature": "private static bool ColumnExists(SqliteConnection connection, string table, string column)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 40,
+    "kind": "constructor_declaration",
+    "name": "ErrorHistoryCompressor",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public ErrorHistoryCompressor(int maxErrors = 3, int maxMessageChars = 240)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "Normalize",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public static string Normalize(string error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "ComputeSignature",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public static string ComputeSignature(string error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "CompressError",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public ExceptionSignature CompressError(string rawError, string exceptionType = \"unknown\", string source = \"unknown\", int? attempt = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 66,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "l =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 67,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "l =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "CompressError",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public ExceptionSignature CompressError(Exception exception, string source = \"unknown\", int? attempt = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 80,
+    "kind": "method_declaration",
+    "name": "CompressHistory",
+    "scope": "ErrorHistoryCompressor",
+    "signature": "public ImmutableArray<ExceptionSignature> CompressHistory(IReadOnlyList<string> errorHistory)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "Slim",
+    "scope": "WorldContextSlimmer",
+    "signature": "public static SlimmedWorldContext Slim(WorldStateSnapshot snapshot, int maxEntities = 8)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 128,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldContextSlimmer",
+    "signature": "e =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldContextSlimmer",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 130,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldContextSlimmer",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
+    "line": 132,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldContextSlimmer",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "Serialize",
+    "scope": "WorldStateDeltaCodec",
+    "signature": "public static byte[] Serialize(WorldStateDeltaPacket delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "TryDeserialize",
+    "scope": "WorldStateDeltaCodec",
+    "signature": "public static bool TryDeserialize(ReadOnlyMemory<byte> payload, out WorldStateDeltaPacket? delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "WriteString",
+    "scope": "WorldStateDeltaCodec",
+    "signature": "private static void WriteString(BinaryWriter writer, string value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 193,
+    "kind": "method_declaration",
+    "name": "TryReadString",
+    "scope": "WorldStateDeltaCodec",
+    "signature": "private static bool TryReadString(BinaryReader reader, out string value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 221,
+    "kind": "constructor_declaration",
+    "name": "DeltaSyncTracker",
+    "scope": "DeltaSyncTracker",
+    "signature": "public DeltaSyncTracker(int historyCapacity = 32)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "TrackFrame",
+    "scope": "DeltaSyncTracker",
+    "signature": "public void TrackFrame(WorldStateSnapshot snapshot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
+    "line": 250,
+    "kind": "method_declaration",
+    "name": "RegisterConsumer",
+    "scope": "DeltaSyncTracker",
+    "signature": "public void RegisterConsumer(string consumerId)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
     "line": 256,
     "kind": "method_declaration",
@@ -902,28 +1298,28 @@
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
     "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Gate3LoopView",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Gate3LoopView",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
+    "line": 14,
     "kind": "method_declaration",
     "name": "ToWire",
     "scope": "Gate3LoopView",
     "signature": "public object ToWire()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 14,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "Gate3LoopView",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 14,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "Gate3LoopView",
-    "signature": "x =>",
     "category": "project"
   },
   {
@@ -937,16 +1333,16 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 62,
+    "line": 75,
     "kind": "constructor_declaration",
     "name": "Gate3DecisionLoop",
     "scope": "Gate3DecisionLoop",
-    "signature": "public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null, PredictionCalibrationStore? calibrationStore = null)",
+    "signature": "public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null, PredictionCalibrationStore? calibrationStore = null, IDecisionTelemetrySink? telemetry = null)",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 78,
+    "line": 92,
     "kind": "accessor_declaration",
     "name": "get",
     "scope": "Gate3DecisionLoop",
@@ -955,7 +1351,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 81,
+    "line": 95,
     "kind": "method_declaration",
     "name": "Start",
     "scope": "Gate3DecisionLoop",
@@ -964,7 +1360,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 91,
+    "line": 105,
     "kind": "method_declaration",
     "name": "RunOnceAsync",
     "scope": "Gate3DecisionLoop",
@@ -973,7 +1369,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 132,
+    "line": 147,
     "kind": "method_declaration",
     "name": "PublishNode",
     "scope": "Gate3DecisionLoop",
@@ -982,7 +1378,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 137,
+    "line": 152,
     "kind": "method_declaration",
     "name": "Describe",
     "scope": "Gate3DecisionLoop",
@@ -991,7 +1387,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 140,
+    "line": 155,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Gate3DecisionLoop",
@@ -1000,7 +1396,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 140,
+    "line": 155,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Gate3DecisionLoop",
@@ -1009,7 +1405,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 145,
+    "line": 160,
     "kind": "method_declaration",
     "name": "PumpAsync",
     "scope": "Gate3DecisionLoop",
@@ -1018,7 +1414,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 153,
+    "line": 168,
     "kind": "method_declaration",
     "name": "DisposeAsync",
     "scope": "Gate3DecisionLoop",
@@ -1027,7 +1423,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 168,
+    "line": 183,
     "kind": "method_declaration",
     "name": "RestoreCalibration",
     "scope": "Gate3DecisionLoop",
@@ -1036,7 +1432,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
-    "line": 182,
+    "line": 197,
     "kind": "method_declaration",
     "name": "SaveCalibration",
     "scope": "Gate3DecisionLoop",
@@ -3272,7 +3668,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Gate5TestRunner",
-    "signature": "type =>",
+    "signature": "m =>",
     "category": "project"
   },
   {
@@ -3281,7 +3677,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Gate5TestRunner",
-    "signature": "m =>",
+    "signature": "type =>",
     "category": "project"
   },
   {
@@ -4101,402 +4497,6 @@
     "name": "TestClosedLoopDiscrepancyRecoveryAsync",
     "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
     "signature": "private static async Task<bool> TestClosedLoopDiscrepancyRecoveryAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 510,
-    "kind": "method_declaration",
-    "name": "TestThermalWatchdogFailClosed",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestThermalWatchdogFailClosed()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 527,
-    "kind": "method_declaration",
-    "name": "TestRecoveryTrustInviolability",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestRecoveryTrustInviolability()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 545,
-    "kind": "method_declaration",
-    "name": "TestProgressionDagIntegration",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestProgressionDagIntegration()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 555,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "q =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 561,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "q =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 565,
-    "kind": "method_declaration",
-    "name": "TestStrictLocalOnlyIntegrationAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static async Task<bool> TestStrictLocalOnlyIntegrationAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 578,
-    "kind": "method_declaration",
-    "name": "LoadModelAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
-    "signature": "public Task<bool> LoadModelAsync(CancellationToken cancellationToken = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 579,
-    "kind": "method_declaration",
-    "name": "GenerateDecisionAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
-    "signature": "public Task<NosAi.Runtime.Gate5.DecisionSuggestion> GenerateDecisionAsync(string promptContext, CancellationToken cancellationToken = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 581,
-    "kind": "method_declaration",
-    "name": "UnloadModelAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
-    "signature": "public Task UnloadModelAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 584,
-    "kind": "method_declaration",
-    "name": "TestCloudEscalationFailClosedIntegrationAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static async Task<bool> TestCloudEscalationFailClosedIntegrationAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 607,
-    "kind": "method_declaration",
-    "name": "TestFingerprintAnonymized",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestFingerprintAnonymized()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 624,
-    "kind": "method_declaration",
-    "name": "Main",
-    "scope": "NosAi.Runtime.Gate6.Program",
-    "signature": "public static async Task<int> Main(string[] args)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Guard/GuardAi.cs",
-    "line": 7,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "GuardAi",
-    "signature": "public GuardDecision Evaluate(CandidateAction action, TrustTier maxAllowedTier)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/AutoSetManager.cs",
-    "line": 8,
-    "kind": "constructor_declaration",
-    "name": "AutoSetManager",
-    "scope": "AutoSetManager",
-    "signature": "public AutoSetManager(IHardwareProbe probe, HardwareProfileStore store)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/AutoSetManager.cs",
-    "line": 15,
-    "kind": "method_declaration",
-    "name": "Initialize",
-    "scope": "AutoSetManager",
-    "signature": "public RuntimeSettings Initialize()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 57,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 59,
-    "kind": "method_declaration",
-    "name": "EvaluateAndScale",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
-    "signature": "public HardwareTelemetrySnapshot EvaluateAndScale(double simulatedGpuTemp = 68.0)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 87,
-    "kind": "method_declaration",
-    "name": "GetBudgetForMode",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
-    "signature": "public RuntimeBudgetParameters GetBudgetForMode(RuntimePerformanceMode mode)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 99,
-    "kind": "method_declaration",
-    "name": "RunAllTestsAsync",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "public static async Task<bool> RunAllTestsAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 115,
-    "kind": "method_declaration",
-    "name": "RunTest",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool RunTest(string name, Func<bool> testFunc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 130,
-    "kind": "method_declaration",
-    "name": "Report",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool Report(string name, bool passed, string? error)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 138,
-    "kind": "method_declaration",
-    "name": "TestNominalTelemetryCapture",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool TestNominalTelemetryCapture()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 145,
-    "kind": "method_declaration",
-    "name": "TestThermalThrottlingTrigger",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool TestThermalThrottlingTrigger()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 152,
-    "kind": "method_declaration",
-    "name": "TestBudgetScalingParameters",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool TestBudgetScalingParameters()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 160,
-    "kind": "method_declaration",
-    "name": "TestRecoveryToNominalMode",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool TestRecoveryToNominalMode()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 168,
-    "kind": "method_declaration",
-    "name": "TestHardwareSecurityInvariant",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "private static bool TestHardwareSecurityInvariant()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 170,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 171,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
-    "line": 171,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
-    "signature": "m =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 33,
-    "kind": "method_declaration",
-    "name": "TryAuthorize",
-    "scope": "IHardwareInferenceCapabilityGate",
-    "signature": "bool TryAuthorize(CoreHardware.InferenceTier tier, out string? refusalReason);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 70,
-    "kind": "constructor_declaration",
-    "name": "HardwareInferenceCapabilityGate",
-    "scope": "HardwareInferenceCapabilityGate",
-    "signature": "public HardwareInferenceCapabilityGate(CoreHardware.IHardwareCapabilityProvider provider)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 76,
-    "kind": "method_declaration",
-    "name": "TryAuthorize",
-    "scope": "HardwareInferenceCapabilityGate",
-    "signature": "public bool TryAuthorize(CoreHardware.InferenceTier tier, out string? refusalReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 105,
-    "kind": "method_declaration",
-    "name": "CaptureSnapshotFailClosed",
-    "scope": "HardwareInferenceCapabilityGate",
-    "signature": "private CoreHardware.HardwareCapabilitySnapshot CaptureSnapshotFailClosed()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 129,
-    "kind": "method_declaration",
-    "name": "DescribeRefusal",
-    "scope": "HardwareInferenceCapabilityGate",
-    "signature": "private static string DescribeRefusal(CoreHardware.InferenceTier tier, CoreHardware.HardwareCapabilitySnapshot snapshot)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
-    "line": 133,
-    "kind": "local_function_statement",
-    "name": "NoteIfUnknown",
-    "scope": "HardwareInferenceCapabilityGate",
-    "signature": "void NoteIfUnknown<T>(CoreHardware.ClassifiedValue<T> value, string label)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 63,
-    "kind": "constructor_declaration",
-    "name": "RuntimeHardwareCapabilityProvider",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "public RuntimeHardwareCapabilityProvider() : this(new LiveHardwareTelemetry(new SafeHardwareProbe(CreateDefaultProbe())))",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 73,
-    "kind": "constructor_declaration",
-    "name": "RuntimeHardwareCapabilityProvider",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "public RuntimeHardwareCapabilityProvider(LiveHardwareTelemetry telemetry)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "GetSnapshot",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "public CoreHardware.HardwareCapabilitySnapshot GetSnapshot()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "Map",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "internal static CoreHardware.HardwareCapabilitySnapshot Map(Gate1HardwareView view)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 160,
-    "kind": "method_declaration",
-    "name": "Convert",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "private static CoreHardware.ClassifiedValue<T> Convert<T>(RuntimeContracts.ClassifiedValue<T> source)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 183,
-    "kind": "method_declaration",
-    "name": "CreateDefaultProbe",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "private static IHardwareProbe CreateDefaultProbe()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
-    "line": 186,
-    "kind": "method_declaration",
-    "name": "CreateWindowsProbe",
-    "scope": "RuntimeHardwareCapabilityProvider",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static IHardwareProbe CreateWindowsProbe()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/HardwareAutoSettings.cs",
-    "line": 29,
-    "kind": "method_declaration",
-    "name": "Calculate",
-    "scope": "HardwareAutoSettings",
-    "signature": "public RuntimeSettings Calculate(HardwareFingerprint h)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
-    "line": 9,
-    "kind": "method_declaration",
-    "name": "Detect",
-    "scope": "IHardwareProbe",
-    "signature": "HardwareFingerprint Detect();",
     "category": "project"
   }
 ]

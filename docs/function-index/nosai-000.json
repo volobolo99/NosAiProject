@@ -581,7 +581,7 @@
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
-    "signature": "button =>",
+    "signature": "() =>",
     "category": "project"
   },
   {
@@ -590,7 +590,7 @@
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
-    "signature": "() =>",
+    "signature": "button =>",
     "category": "project"
   },
   {
@@ -617,7 +617,7 @@
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
-    "signature": "t =>",
+    "signature": "() =>",
     "category": "project"
   },
   {
@@ -626,7 +626,7 @@
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
-    "signature": "() =>",
+    "signature": "t =>",
     "category": "project"
   },
   {
@@ -712,34 +712,25 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 31,
+    "line": 18,
+    "kind": "function_definition",
+    "name": "binding_candidate_digest",
+    "scope": "",
+    "signature": "def binding_candidate_digest(primary_model: str, fallback_models: Iterable[str]) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/bindings.py",
+    "line": 45,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "RoleBindingRegistry",
-    "signature": "def __init__(self, path: Path | str, employees: Iterable[EmployeeRole] = DEFAULT_EMPLOYEE_ROLES):",
+    "signature": "def __init__( self, path: Path | str, employees: Iterable[EmployeeRole] = DEFAULT_EMPLOYEE_ROLES, evidence_authority: EvidenceAuthority | None = None, state_store: McpStateStore | None = None, ):",
     "category": "project"
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 39,
-    "kind": "function_definition",
-    "name": "_load",
-    "scope": "RoleBindingRegistry",
-    "signature": "def _load(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/bindings.py",
-    "line": 67,
-    "kind": "function_definition",
-    "name": "_persist",
-    "scope": "RoleBindingRegistry",
-    "signature": "def _persist(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/bindings.py",
-    "line": 78,
+    "line": 61,
     "kind": "function_definition",
     "name": "get",
     "scope": "RoleBindingRegistry",
@@ -748,7 +739,7 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 83,
+    "line": 66,
     "kind": "function_definition",
     "name": "list",
     "scope": "RoleBindingRegistry",
@@ -757,7 +748,7 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 87,
+    "line": 70,
     "kind": "function_definition",
     "name": "proposals",
     "scope": "RoleBindingRegistry",
@@ -766,25 +757,34 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 91,
+    "line": 74,
+    "kind": "function_definition",
+    "name": "get_proposal",
+    "scope": "RoleBindingRegistry",
+    "signature": "def get_proposal(self, proposal_id: str) -> dict:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/bindings.py",
+    "line": 78,
     "kind": "function_definition",
     "name": "propose",
     "scope": "RoleBindingRegistry",
-    "signature": "def propose(self, employee_id: str, primary_model: str, fallback_models: Iterable[str]) -> dict:",
+    "signature": "def propose( self, employee_id: str, primary_model: str, fallback_models: Iterable[str], *, author_id: str = \"operator\", ) -> dict:",
     "category": "project"
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 113,
+    "line": 110,
     "kind": "function_definition",
     "name": "promote",
     "scope": "RoleBindingRegistry",
-    "signature": "def promote(self, proposal_id: str, checks: dict[str, bool], confirmation: str) -> dict:",
+    "signature": "def promote(self, proposal_id: str, evidence_ids: dict[str, str], confirmation: str) -> dict:",
     "category": "project"
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 141,
+    "line": 149,
     "kind": "function_definition",
     "name": "rollback",
     "scope": "RoleBindingRegistry",
@@ -793,7 +793,16 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 167,
+    "line": 163,
+    "kind": "function_definition",
+    "name": "_sync_legacy_json",
+    "scope": "RoleBindingRegistry",
+    "signature": "def _sync_legacy_json(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/bindings.py",
+    "line": 177,
     "kind": "function_definition",
     "name": "_require_employee",
     "scope": "RoleBindingRegistry",
@@ -802,7 +811,7 @@
   },
   {
     "path": "nosai/mcp/bindings.py",
-    "line": 172,
+    "line": 182,
     "kind": "function_definition",
     "name": "_now",
     "scope": "RoleBindingRegistry",
@@ -811,7 +820,7 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 16,
+    "line": 18,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "McpChief",
@@ -820,7 +829,7 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 30,
+    "line": 34,
     "kind": "function_definition",
     "name": "authority",
     "scope": "McpChief",
@@ -829,7 +838,7 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 43,
+    "line": 48,
     "kind": "function_definition",
     "name": "health_check",
     "scope": "McpChief",
@@ -838,7 +847,16 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 71,
+    "line": 103,
+    "kind": "function_definition",
+    "name": "observe_health",
+    "scope": "McpChief",
+    "signature": "def observe_health( self, name: str, status: str, details: Mapping[str, Any] | None = None, *, observed_at: str | None = None, ttl_s: int | None = None, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/chief.py",
+    "line": 114,
     "kind": "function_definition",
     "name": "recommendations",
     "scope": "McpChief",
@@ -847,7 +865,7 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 85,
+    "line": 132,
     "kind": "function_definition",
     "name": "propose_improvement",
     "scope": "McpChief",
@@ -856,7 +874,7 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 89,
+    "line": 136,
     "kind": "function_definition",
     "name": "audit_proposal",
     "scope": "McpChief",
@@ -865,16 +883,25 @@
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 95,
+    "line": 142,
     "kind": "function_definition",
-    "name": "promote_binding",
+    "name": "record_evidence",
     "scope": "McpChief",
-    "signature": "def promote_binding(self, proposal_id: str, checks: dict[str, bool], confirmation: str) -> dict[str, Any]:",
+    "signature": "def record_evidence( self, candidate_digest: str, evidence_kind: str, executor_id: str, result: Mapping[str, Any], *, signer_id: str = \"mcp-evidence-authority\", observed_at: str | None = None, ttl_s: int | None = None, test_version: str = \"mcp-promotion-v1\", dataset_digest: str | None = None, environment_digest: str | None = None, artifact_digest: str | None = None, ) -> dict[str, Any]:",
     "category": "project"
   },
   {
     "path": "nosai/mcp/chief.py",
-    "line": 98,
+    "line": 173,
+    "kind": "function_definition",
+    "name": "promote_binding",
+    "scope": "McpChief",
+    "signature": "def promote_binding(self, proposal_id: str, evidence_ids: dict[str, str], confirmation: str) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/chief.py",
+    "line": 176,
     "kind": "function_definition",
     "name": "rollback_binding",
     "scope": "McpChief",
@@ -883,7 +910,7 @@
   },
   {
     "path": "nosai/mcp/config.py",
-    "line": 23,
+    "line": 38,
     "kind": "function_definition",
     "name": "load_config",
     "scope": "",
@@ -939,6 +966,24 @@
     "path": "nosai/mcp/dashboard.py",
     "line": 36,
     "kind": "function_definition",
+    "name": "evidence_records",
+    "scope": "McpDashboardService",
+    "signature": "def evidence_records(self) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/dashboard.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "record_evidence",
+    "scope": "McpDashboardService",
+    "signature": "def record_evidence(self, body: dict[str, Any]) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/dashboard.py",
+    "line": 59,
+    "kind": "function_definition",
     "name": "role_proposals",
     "scope": "McpDashboardService",
     "signature": "def role_proposals(self) -> list[dict[str, Any]]:",
@@ -946,7 +991,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 40,
+    "line": 63,
     "kind": "function_definition",
     "name": "propose_role_binding",
     "scope": "McpDashboardService",
@@ -955,7 +1000,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 52,
+    "line": 76,
     "kind": "function_definition",
     "name": "promote_role_binding",
     "scope": "McpDashboardService",
@@ -964,7 +1009,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 64,
+    "line": 91,
     "kind": "function_definition",
     "name": "rollback_role_binding",
     "scope": "McpDashboardService",
@@ -973,7 +1018,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 72,
+    "line": 99,
     "kind": "function_definition",
     "name": "employee_roles",
     "scope": "McpDashboardService",
@@ -982,7 +1027,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 88,
+    "line": 115,
     "kind": "function_definition",
     "name": "verify_employee_roles",
     "scope": "McpDashboardService",
@@ -991,7 +1036,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 96,
+    "line": 123,
     "kind": "function_definition",
     "name": "chief_health",
     "scope": "McpDashboardService",
@@ -1000,7 +1045,16 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 102,
+    "line": 129,
+    "kind": "function_definition",
+    "name": "observe_health",
+    "scope": "McpDashboardService",
+    "signature": "def observe_health(self, body: dict[str, Any]) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/dashboard.py",
+    "line": 140,
     "kind": "function_definition",
     "name": "status",
     "scope": "McpDashboardService",
@@ -1009,7 +1063,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 112,
+    "line": 150,
     "kind": "function_definition",
     "name": "activate",
     "scope": "McpDashboardService",
@@ -1018,7 +1072,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 117,
+    "line": 155,
     "kind": "function_definition",
     "name": "secret_metadata",
     "scope": "McpDashboardService",
@@ -1027,7 +1081,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 121,
+    "line": 159,
     "kind": "function_definition",
     "name": "upsert_secret",
     "scope": "McpDashboardService",
@@ -1036,7 +1090,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 127,
+    "line": 165,
     "kind": "function_definition",
     "name": "delete_secret",
     "scope": "McpDashboardService",
@@ -1045,7 +1099,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 131,
+    "line": 169,
     "kind": "function_definition",
     "name": "simulate",
     "scope": "McpDashboardService",
@@ -1054,7 +1108,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 136,
+    "line": 174,
     "kind": "function_definition",
     "name": "propose_change",
     "scope": "McpDashboardService",
@@ -1063,7 +1117,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 140,
+    "line": 178,
     "kind": "function_definition",
     "name": "audit_change",
     "scope": "McpDashboardService",
@@ -1072,7 +1126,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 145,
+    "line": 183,
     "kind": "function_definition",
     "name": "make_handler",
     "scope": "",
@@ -1081,7 +1135,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 151,
+    "line": 189,
     "kind": "function_definition",
     "name": "_json",
     "scope": "make_handler.Handler",
@@ -1090,7 +1144,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 160,
+    "line": 198,
     "kind": "function_definition",
     "name": "do_GET",
     "scope": "make_handler.Handler",
@@ -1099,7 +1153,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 207,
+    "line": 251,
     "kind": "function_definition",
     "name": "do_POST",
     "scope": "make_handler.Handler",
@@ -1108,7 +1162,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 265,
+    "line": 321,
     "kind": "function_definition",
     "name": "do_DELETE",
     "scope": "make_handler.Handler",
@@ -1117,7 +1171,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 276,
+    "line": 332,
     "kind": "function_definition",
     "name": "_audit_path",
     "scope": "make_handler.Handler",
@@ -1126,7 +1180,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 279,
+    "line": 335,
     "kind": "function_definition",
     "name": "log_message",
     "scope": "make_handler.Handler",
@@ -1135,7 +1189,7 @@
   },
   {
     "path": "nosai/mcp/dashboard.py",
-    "line": 285,
+    "line": 341,
     "kind": "function_definition",
     "name": "serve",
     "scope": "",
@@ -1158,6 +1212,168 @@
     "name": "propose",
     "scope": "McpDirector",
     "signature": "def propose(self, component: str, summary: str, files: list[str]) -> ChangeProposal:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "EvidenceAuthority",
+    "signature": "def __init__(self, root: Path | str, default_ttl_s: int = _DEFAULT_TTL_S) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "record",
+    "scope": "EvidenceAuthority",
+    "signature": "def record( self, candidate_digest: str, test_version: str, dataset_digest: str, executor_id: str, environment_digest: str, artifact_digest: str, result: Mapping[str, Any], signer_id: str, *, evidence_kind: str = \"generic\", observed_at: str | None = None, ttl_s: int | None = None, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 101,
+    "kind": "function_definition",
+    "name": "get",
+    "scope": "EvidenceAuthority",
+    "signature": "def get(self, evidence_id: str) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 108,
+    "kind": "function_definition",
+    "name": "list",
+    "scope": "EvidenceAuthority",
+    "signature": "def list(self) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 112,
+    "kind": "function_definition",
+    "name": "verify",
+    "scope": "EvidenceAuthority",
+    "signature": "def verify( self, record: Mapping[str, Any], *, expected_candidate_digest: str | None = None, expected_kind: str | None = None, now: datetime | None = None, ) -> tuple[bool, str]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 164,
+    "kind": "function_definition",
+    "name": "_validate_digest",
+    "scope": "EvidenceAuthority",
+    "signature": "def _validate_digest(name: str, value: str) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 169,
+    "kind": "function_definition",
+    "name": "_safe_result",
+    "scope": "EvidenceAuthority",
+    "signature": "def _safe_result(cls, value: Mapping[str, Any]) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "visit",
+    "scope": "EvidenceAuthority._safe_result",
+    "signature": "def visit(node: Any) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 195,
+    "kind": "function_definition",
+    "name": "_sign",
+    "scope": "EvidenceAuthority",
+    "signature": "def _sign(self, record: Mapping[str, Any]) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 200,
+    "kind": "function_definition",
+    "name": "_load_or_create_key",
+    "scope": "EvidenceAuthority",
+    "signature": "def _load_or_create_key(self) -> bytes:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 215,
+    "kind": "function_definition",
+    "name": "_load_records",
+    "scope": "EvidenceAuthority",
+    "signature": "def _load_records(self) -> dict[str, dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 223,
+    "kind": "function_definition",
+    "name": "_persist",
+    "scope": "EvidenceAuthority",
+    "signature": "def _persist(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/evidence.py",
+    "line": 233,
+    "kind": "function_definition",
+    "name": "_parse_time",
+    "scope": "EvidenceAuthority",
+    "signature": "def _parse_time(value: str) -> datetime:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/health.py",
+    "line": 15,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "HealthSupervisor",
+    "signature": "def __init__(self, state: McpStateStore) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/health.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "observe",
+    "scope": "HealthSupervisor",
+    "signature": "def observe( self, name: str, status: str, details: Mapping[str, Any] | None = None, *, observed_at: str | None = None, ttl_s: int | None = None, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/health.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "status",
+    "scope": "HealthSupervisor",
+    "signature": "def status(self, name: str, *, now: str | None = None) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/health.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "HealthSupervisor",
+    "signature": "def snapshot(self, *, now: str | None = None) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/health.py",
+    "line": 51,
+    "kind": "function_definition",
+    "name": "operational_provider_ids",
+    "scope": "HealthSupervisor",
+    "signature": "def operational_provider_ids(self, *, now: str | None = None) -> set[str]:",
     "category": "project"
   },
   {
@@ -1261,7 +1477,7 @@
   },
   {
     "path": "nosai/mcp/roles.py",
-    "line": 165,
+    "line": 179,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "RoleArchitect",
@@ -1270,7 +1486,7 @@
   },
   {
     "path": "nosai/mcp/roles.py",
-    "line": 168,
+    "line": 182,
     "kind": "function_definition",
     "name": "verify",
     "scope": "RoleArchitect",
@@ -1279,7 +1495,7 @@
   },
   {
     "path": "nosai/mcp/roles.py",
-    "line": 181,
+    "line": 195,
     "kind": "function_definition",
     "name": "verify_employee_catalog",
     "scope": "RoleArchitect",
@@ -1288,7 +1504,7 @@
   },
   {
     "path": "nosai/mcp/router.py",
-    "line": 18,
+    "line": 20,
     "kind": "function_definition",
     "name": "from_config",
     "scope": "ModelRouter",
@@ -1297,7 +1513,7 @@
   },
   {
     "path": "nosai/mcp/router.py",
-    "line": 24,
+    "line": 27,
     "kind": "function_definition",
     "name": "catalog",
     "scope": "ModelRouter",
@@ -1306,7 +1522,7 @@
   },
   {
     "path": "nosai/mcp/router.py",
-    "line": 37,
+    "line": 40,
     "kind": "function_definition",
     "name": "choose",
     "scope": "ModelRouter",
@@ -1351,7 +1567,7 @@
   },
   {
     "path": "nosai/mcp/secrets.py",
-    "line": 52,
+    "line": 54,
     "kind": "function_definition",
     "name": "delete",
     "scope": "SecretStore",
@@ -1360,7 +1576,7 @@
   },
   {
     "path": "nosai/mcp/secrets.py",
-    "line": 59,
+    "line": 63,
     "kind": "function_definition",
     "name": "metadata",
     "scope": "SecretStore",
@@ -1369,7 +1585,7 @@
   },
   {
     "path": "nosai/mcp/secrets.py",
-    "line": 65,
+    "line": 69,
     "kind": "function_definition",
     "name": "resolve_for_internal_call",
     "scope": "SecretStore",
@@ -1488,23 +1704,32 @@
     "path": "nosai/mcp/server.py",
     "line": 110,
     "kind": "function_definition",
-    "name": "mcp_role_propose_binding",
+    "name": "mcp_record_evidence",
     "scope": "create_server",
-    "signature": "def mcp_role_propose_binding(employee_id: str, primary_model: str, fallback_models_json: str = \"[]\") -> str:",
+    "signature": "def mcp_record_evidence( candidate_digest: str, evidence_kind: str, executor_id: str, result_json: str, signer_id: str = \"\", ) -> str:",
     "category": "project"
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 118,
+    "line": 131,
+    "kind": "function_definition",
+    "name": "mcp_role_propose_binding",
+    "scope": "create_server",
+    "signature": "def mcp_role_propose_binding( employee_id: str, primary_model: str, fallback_models_json: str = \"[]\", author_id: str = \"operator\", ) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/server.py",
+    "line": 149,
     "kind": "function_definition",
     "name": "mcp_role_promote_binding",
     "scope": "create_server",
-    "signature": "def mcp_role_promote_binding(proposal_id: str, checks_json: str, confirmation: str = \"\") -> str:",
+    "signature": "def mcp_role_promote_binding(proposal_id: str, evidence_ids_json: str, confirmation: str = \"\") -> str:",
     "category": "project"
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 126,
+    "line": 157,
     "kind": "function_definition",
     "name": "mcp_role_rollback_binding",
     "scope": "create_server",
@@ -1513,7 +1738,7 @@
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 134,
+    "line": 165,
     "kind": "function_definition",
     "name": "mcp_chief_health",
     "scope": "create_server",
@@ -1522,7 +1747,16 @@
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 141,
+    "line": 172,
+    "kind": "function_definition",
+    "name": "mcp_chief_observe_health",
+    "scope": "create_server",
+    "signature": "def mcp_chief_observe_health( name: str, status: str, details_json: str = \"{}\", ttl_s: int = 60, ) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/server.py",
+    "line": 183,
     "kind": "function_definition",
     "name": "mcp_chief_recommendations",
     "scope": "create_server",
@@ -1531,7 +1765,7 @@
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 147,
+    "line": 189,
     "kind": "function_definition",
     "name": "mcp_verify_roles",
     "scope": "create_server",
@@ -1540,7 +1774,7 @@
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 154,
+    "line": 196,
     "kind": "function_definition",
     "name": "mcp_policy_resource",
     "scope": "create_server",
@@ -1549,7 +1783,7 @@
   },
   {
     "path": "nosai/mcp/server.py",
-    "line": 160,
+    "line": 202,
     "kind": "function_definition",
     "name": "run",
     "scope": "",
@@ -1566,8 +1800,242 @@
     "category": "project"
   },
   {
+    "path": "nosai/mcp/state.py",
+    "line": 24,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "McpStateStore",
+    "signature": "def __init__(self, path: Path | str) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "_connect",
+    "scope": "McpStateStore",
+    "signature": "def _connect(self) -> sqlite3.Connection:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "_initialize",
+    "scope": "McpStateStore",
+    "signature": "def _initialize(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 87,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "McpStateStore",
+    "signature": "def snapshot(self) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "get_binding",
+    "scope": "McpStateStore",
+    "signature": "def get_binding(self, employee_id: str) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 129,
+    "kind": "function_definition",
+    "name": "list_bindings",
+    "scope": "McpStateStore",
+    "signature": "def list_bindings(self) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 132,
+    "kind": "function_definition",
+    "name": "get_proposal",
+    "scope": "McpStateStore",
+    "signature": "def get_proposal(self, proposal_id: str) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "list_proposals",
+    "scope": "McpStateStore",
+    "signature": "def list_proposals(self) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 142,
+    "kind": "function_definition",
+    "name": "ensure_default_bindings",
+    "scope": "McpStateStore",
+    "signature": "def ensure_default_bindings(self, employees: Iterable[Any]) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 179,
+    "kind": "function_definition",
+    "name": "stage_binding",
+    "scope": "McpStateStore",
+    "signature": "def stage_binding(self, proposal: Mapping[str, Any], expected_revision: int | None = None) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 209,
+    "kind": "function_definition",
+    "name": "promote_binding",
+    "scope": "McpStateStore",
+    "signature": "def promote_binding( self, proposal_id: str, evidence_ids: Mapping[str, str], expected_revision: int | None, idempotency_key: str, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 282,
+    "kind": "function_definition",
+    "name": "rollback_binding",
+    "scope": "McpStateStore",
+    "signature": "def rollback_binding( self, employee_id: str, expected_revision: int | None, idempotency_key: str, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 347,
+    "kind": "function_definition",
+    "name": "migrate_json",
+    "scope": "McpStateStore",
+    "signature": "def migrate_json(self, legacy_path: Path | str) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 408,
+    "kind": "function_definition",
+    "name": "acquire_lease",
+    "scope": "McpStateStore",
+    "signature": "def acquire_lease( self, task_id: str, worker_id: str, ttl_s: int, *, now: str | None = None, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 441,
+    "kind": "function_definition",
+    "name": "release_lease",
+    "scope": "McpStateStore",
+    "signature": "def release_lease(self, task_id: str, worker_id: str, fencing_token: int) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 451,
+    "kind": "function_definition",
+    "name": "observe",
+    "scope": "McpStateStore",
+    "signature": "def observe( self, name: str, status: str, details: Mapping[str, Any] | None = None, *, observed_at: str | None = None, ttl_s: int | None = None, ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 485,
+    "kind": "function_definition",
+    "name": "observation_snapshot",
+    "scope": "McpStateStore",
+    "signature": "def observation_snapshot(self, *, now: str | None = None) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 495,
+    "kind": "function_definition",
+    "name": "_check_revision",
+    "scope": "McpStateStore",
+    "signature": "def _check_revision(self, connection: sqlite3.Connection, expected_revision: int | None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 501,
+    "kind": "function_definition",
+    "name": "_revision",
+    "scope": "McpStateStore",
+    "signature": "def _revision(self, connection: sqlite3.Connection) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 504,
+    "kind": "function_definition",
+    "name": "_bump_revision",
+    "scope": "McpStateStore",
+    "signature": "def _bump_revision(self, connection: sqlite3.Connection) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 510,
+    "kind": "function_definition",
+    "name": "_binding_from_row",
+    "scope": "McpStateStore",
+    "signature": "def _binding_from_row(row: sqlite3.Row) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 524,
+    "kind": "function_definition",
+    "name": "_idempotent_result",
+    "scope": "McpStateStore",
+    "signature": "def _idempotent_result(connection: sqlite3.Connection, key: str) -> dict[str, Any] | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 529,
+    "kind": "function_definition",
+    "name": "_store_idempotent",
+    "scope": "McpStateStore",
+    "signature": "def _store_idempotent(connection: sqlite3.Connection, key: str, result: Mapping[str, Any]) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 536,
+    "kind": "function_definition",
+    "name": "_json",
+    "scope": "McpStateStore",
+    "signature": "def _json(value: Any) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 540,
+    "kind": "function_definition",
+    "name": "_now",
+    "scope": "McpStateStore",
+    "signature": "def _now() -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/state.py",
+    "line": 544,
+    "kind": "function_definition",
+    "name": "_parse_time",
+    "scope": "McpStateStore",
+    "signature": "def _parse_time(value: str) -> datetime:",
+    "category": "project"
+  },
+  {
     "path": "nosai/mcp/static/index.html",
-    "line": 27,
+    "line": 40,
     "kind": "function_declaration",
     "name": "json",
     "scope": "",
@@ -1576,70 +2044,43 @@
   },
   {
     "path": "nosai/mcp/static/index.html",
-    "line": 28,
+    "line": 41,
     "kind": "function_declaration",
-    "name": "refreshRoles",
+    "name": "el",
     "scope": "",
-    "signature": "async function refreshRoles()",
+    "signature": "function el(tag, text)",
     "category": "project"
   },
   {
     "path": "nosai/mcp/static/index.html",
-    "line": 32,
+    "line": 42,
+    "kind": "function_declaration",
+    "name": "refreshSecrets",
+    "scope": "",
+    "signature": "async function refreshSecrets()",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 50,
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
-    "signature": "x =>",
+    "signature": "() =>",
     "category": "project"
   },
   {
     "path": "nosai/mcp/static/index.html",
-    "line": 33,
-    "kind": "arrow_function",
-    "name": "<anonymous/accessor>",
-    "scope": "",
-    "signature": "role =>",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/static/index.html",
-    "line": 46,
+    "line": 54,
     "kind": "function_declaration",
-    "name": "proposeRole",
+    "name": "deleteSecret",
     "scope": "",
-    "signature": "async function proposeRole(employeeId)",
+    "signature": "async function deleteSecret(providerId)",
     "category": "project"
   },
   {
     "path": "nosai/mcp/static/index.html",
-    "line": 48,
-    "kind": "arrow_function",
-    "name": "<anonymous/accessor>",
-    "scope": "",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/static/index.html",
-    "line": 52,
-    "kind": "function_declaration",
-    "name": "rollbackRole",
-    "scope": "",
-    "signature": "async function rollbackRole(employeeId)",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/static/index.html",
-    "line": 58,
-    "kind": "function_declaration",
-    "name": "refresh",
-    "scope": "",
-    "signature": "async function refresh()",
-    "category": "project"
-  },
-  {
-    "path": "nosai/mcp/static/index.html",
-    "line": 68,
+    "line": 60,
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
@@ -1649,6 +2090,87 @@
   {
     "path": "nosai/mcp/static/index.html",
     "line": 69,
+    "kind": "function_declaration",
+    "name": "refreshRoles",
+    "scope": "",
+    "signature": "async function refreshRoles()",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 71,
+    "kind": "arrow_function",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 80,
+    "kind": "arrow_function",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 81,
+    "kind": "arrow_function",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 86,
+    "kind": "function_declaration",
+    "name": "proposeRole",
+    "scope": "",
+    "signature": "async function proposeRole(employeeId)",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 88,
+    "kind": "arrow_function",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 92,
+    "kind": "function_declaration",
+    "name": "rollbackRole",
+    "scope": "",
+    "signature": "async function rollbackRole(employeeId)",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 97,
+    "kind": "function_declaration",
+    "name": "refresh",
+    "scope": "",
+    "signature": "async function refresh()",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 107,
+    "kind": "arrow_function",
+    "name": "<anonymous/accessor>",
+    "scope": "",
+    "signature": "async() =>",
+    "category": "project"
+  },
+  {
+    "path": "nosai/mcp/static/index.html",
+    "line": 108,
     "kind": "arrow_function",
     "name": "<anonymous/accessor>",
     "scope": "",
@@ -3975,528 +4497,6 @@
     "name": "mean_absolute_drift_s",
     "scope": "ClockDiagnostics",
     "signature": "def mean_absolute_drift_s(self) -> float | None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 83,
-    "kind": "function_definition",
-    "name": "last_information_at",
-    "scope": "_Entry",
-    "signature": "def last_information_at(self) -> float | None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 110,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "ShadowCooldownClock",
-    "signature": "def __init__( self, book: ActionBook, confirmation_horizon_s: float = DEFAULT_CONFIRMATION_HORIZON_S, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 121,
-    "kind": "function_definition",
-    "name": "_entry",
-    "scope": "ShadowCooldownClock",
-    "signature": "def _entry(self, action_id: str) -> _Entry: # Raises for an unregistered id; see ActionBook on why that stays loud.",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 126,
-    "kind": "function_definition",
-    "name": "note_execution",
-    "scope": "ShadowCooldownClock",
-    "signature": "def note_execution(self, action_id: str, at: float) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 139,
-    "kind": "function_definition",
-    "name": "reconcile",
-    "scope": "ShadowCooldownClock",
-    "signature": "def reconcile(self, action_id: str, observed_ready: bool, at: float) -> float | None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 175,
-    "kind": "function_definition",
-    "name": "readiness",
-    "scope": "ShadowCooldownClock",
-    "signature": "def readiness(self, action_id: str, now: float) -> Readiness:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 234,
-    "kind": "function_definition",
-    "name": "snapshot",
-    "scope": "ShadowCooldownClock",
-    "signature": "def snapshot(self, now: float) -> tuple[Readiness, ...]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 237,
-    "kind": "function_definition",
-    "name": "diagnostics",
-    "scope": "ShadowCooldownClock",
-    "signature": "def diagnostics(self, action_id: str) -> ClockDiagnostics:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 264,
-    "kind": "function_definition",
-    "name": "for_action",
-    "scope": "CastWindow",
-    "signature": "def for_action(spec: ActionSpec, starts_at: float) -> \"CastWindow\":",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 268,
-    "kind": "function_definition",
-    "name": "phase_at",
-    "scope": "CastWindow",
-    "signature": "def phase_at(self, now: float) -> CastPhase:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 287,
-    "kind": "function_definition",
-    "name": "__post_init__",
-    "scope": "PredictedTransition",
-    "signature": "def __post_init__(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 313,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "InterruptModel",
-    "signature": "def __init__(self, book: ActionBook, loss_on_interrupt: float = 1.0) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 319,
-    "kind": "function_definition",
-    "name": "forecast",
-    "scope": "InterruptModel",
-    "signature": "def forecast( self, action_id: str, start_at: float, transitions: tuple[PredictedTransition, ...] = (), ) -> InterruptForecast:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 382,
-    "kind": "function_definition",
-    "name": "should_cancel_cast",
-    "scope": "InterruptModel",
-    "signature": "def should_cancel_cast( self, window: CastWindow, now: float, alternative_value: float, transitions: tuple[PredictedTransition, ...] = (), forced: bool = False, ) -> CancelVerdict:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/scheduling.py",
-    "line": 425,
-    "kind": "function_definition",
-    "name": "should_cancel_animation",
-    "scope": "InterruptModel",
-    "signature": "def should_cancel_animation( self, window: CastWindow, now: float, has_queued_action: bool, ) -> CancelVerdict:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 69,
-    "kind": "function_definition",
-    "name": "__post_init__",
-    "scope": "SearchConfig",
-    "signature": "def __post_init__(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 93,
-    "kind": "function_definition",
-    "name": "is_terminal",
-    "scope": "CombatSimState",
-    "signature": "def is_terminal(self) -> bool:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 96,
-    "kind": "function_definition",
-    "name": "cooldown_of",
-    "scope": "CombatSimState",
-    "signature": "def cooldown_of(self, action_id: str) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 103,
-    "kind": "function_definition",
-    "name": "_as_pairs",
-    "scope": "",
-    "signature": "def _as_pairs(values: dict[str, float]) -> tuple[tuple[str, float], ...]: # Sorted so equivalent states compare and hash identically regardless of the # order effects happened to be applied in.",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 115,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "CombatSimulator",
-    "signature": "def __init__( self, book: ActionBook, matrix: StochasticTransitionMatrix, config: SearchConfig | None = None, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 128,
-    "kind": "function_definition",
-    "name": "legal_actions",
-    "scope": "CombatSimulator",
-    "signature": "def legal_actions(self, state: CombatSimState) -> tuple[str, ...]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 137,
-    "kind": "function_definition",
-    "name": "_scale_at",
-    "scope": "CombatSimulator",
-    "signature": "def _scale_at(self, effects: dict[str, float], elapsed_into_step: float, incoming: bool) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 148,
-    "kind": "function_definition",
-    "name": "_integrate_incoming",
-    "scope": "CombatSimulator",
-    "signature": "def _integrate_incoming( self, effects: dict[str, float], base_dps: float, elapsed: float ) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 169,
-    "kind": "function_definition",
-    "name": "step",
-    "scope": "CombatSimulator",
-    "signature": "def step( self, state: CombatSimState, action_id: str, target_class: str | None, rng: random.Random, ) -> tuple[CombatSimState, float, float]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 264,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "_Node",
-    "signature": "def __init__(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 270,
-    "kind": "function_definition",
-    "name": "mean_value",
-    "scope": "_Node",
-    "signature": "def mean_value(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 294,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "MonteCarloCombatSearch",
-    "signature": "def __init__( self, book: ActionBook, matrix: StochasticTransitionMatrix, config: SearchConfig | None = None, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 303,
-    "kind": "function_definition",
-    "name": "search",
-    "scope": "MonteCarloCombatSearch",
-    "signature": "def search( self, root_state: CombatSimState, target_class: str | None = None, seed: int = 0, restrict_to: tuple[str, ...] | None = None, ) -> SearchResult:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 441,
-    "kind": "function_definition",
-    "name": "_root_actions",
-    "scope": "MonteCarloCombatSearch",
-    "signature": "def _root_actions( self, state: CombatSimState, restrict_to: tuple[str, ...] | None ) -> tuple[str, ...]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/search.py",
-    "line": 451,
-    "kind": "function_definition",
-    "name": "_uct_select",
-    "scope": "MonteCarloCombatSearch",
-    "signature": "def _uct_select( self, node: _Node, legal: tuple[str, ...], value_min: float, value_max: float, ) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 68,
-    "kind": "function_definition",
-    "name": "mean",
-    "scope": "BetaPosterior",
-    "signature": "def mean(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 73,
-    "kind": "function_definition",
-    "name": "variance",
-    "scope": "BetaPosterior",
-    "signature": "def variance(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 79,
-    "kind": "function_definition",
-    "name": "observations",
-    "scope": "BetaPosterior",
-    "signature": "def observations(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 84,
-    "kind": "function_definition",
-    "name": "nominal",
-    "scope": "BetaPosterior",
-    "signature": "def nominal(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 89,
-    "kind": "function_definition",
-    "name": "source",
-    "scope": "BetaPosterior",
-    "signature": "def source(self) -> DataSource:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 98,
-    "kind": "function_definition",
-    "name": "credible_interval",
-    "scope": "BetaPosterior",
-    "signature": "def credible_interval(self, z: float = 2.0) -> tuple[float, float]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 108,
-    "kind": "function_definition",
-    "name": "sample",
-    "scope": "BetaPosterior",
-    "signature": "def sample(self, rng: random.Random) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 141,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def __init__( self, book: ActionBook, prior_strength: float = DEFAULT_PRIOR_STRENGTH, forgetting: float = DEFAULT_FORGETTING, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 157,
-    "kind": "function_definition",
-    "name": "effective_sample_size",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def effective_sample_size(self) -> float:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 163,
-    "kind": "function_definition",
-    "name": "_prior",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def _prior(self, action_id: str) -> tuple[float, float]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 173,
-    "kind": "function_definition",
-    "name": "_cell",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def _cell(self, action_id: str, target_class: str) -> _Cell:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 182,
-    "kind": "function_definition",
-    "name": "posterior",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def posterior(self, action_id: str, target_class: str | None) -> BetaPosterior:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 204,
-    "kind": "function_definition",
-    "name": "observe",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def observe( self, action_id: str, target_class: str | None, applied: bool, weight: float = 1.0, ) -> BetaPosterior:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 240,
-    "kind": "function_definition",
-    "name": "known_pairs",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def known_pairs(self) -> tuple[tuple[str, str], ...]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/stochastic.py",
-    "line": 243,
-    "kind": "function_definition",
-    "name": "susceptibility",
-    "scope": "StochasticTransitionMatrix",
-    "signature": "def susceptibility(self, target_class: str | None) -> float | None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 43,
-    "kind": "function_definition",
-    "name": "__post_init__",
-    "scope": "ThreatWeights",
-    "signature": "def __post_init__(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 90,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "ThreatEvaluator",
-    "signature": "def __init__( self, weights: ThreatWeights | None = None, proximity_half_life: float = DEFAULT_PROXIMITY_HALF_LIFE, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 100,
-    "kind": "function_definition",
-    "name": "_proximity_term",
-    "scope": "ThreatEvaluator",
-    "signature": "def _proximity_term(self, distance: float | None) -> float | None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 106,
-    "kind": "function_definition",
-    "name": "score",
-    "scope": "ThreatEvaluator",
-    "signature": "def score(self, candidate: ThreatCandidate) -> ThreatScore:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 154,
-    "kind": "function_definition",
-    "name": "prioritise",
-    "scope": "ThreatEvaluator",
-    "signature": "def prioritise(self, candidates: tuple[ThreatCandidate, ...]) -> tuple[ThreatScore, ...]:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 200,
-    "kind": "function_definition",
-    "name": "preempts_combat",
-    "scope": "SurvivalVerdict",
-    "signature": "def preempts_combat(self) -> bool:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 229,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "BurstMonitor",
-    "signature": "def __init__( self, window_s: float = 3.0, capacity: int = 32, absolute_floor: float = DEFAULT_ABSOLUTE_FLOOR, ) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 245,
-    "kind": "function_definition",
-    "name": "observe",
-    "scope": "BurstMonitor",
-    "signature": "def observe(self, at: float, hp_ratio: float | None) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 258,
-    "kind": "function_definition",
-    "name": "reset",
-    "scope": "BurstMonitor",
-    "signature": "def reset(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 261,
-    "kind": "function_definition",
-    "name": "velocity",
-    "scope": "BurstMonitor",
-    "signature": "def velocity(self) -> VelocityEstimate:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/tactical/threat.py",
-    "line": 295,
-    "kind": "function_definition",
-    "name": "verdict",
-    "scope": "BurstMonitor",
-    "signature": "def verdict( self, hp_ratio: float | None, recover_budget_s: float, escape_budget_s: float, ) -> SurvivalVerdict:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/telemetry/advanced.py",
-    "line": 25,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "AdvancedTelemetryCollector",
-    "signature": "def __init__(self) -> None:",
-    "category": "project"
-  },
-  {
-    "path": "nosai/telemetry/advanced.py",
-    "line": 29,
-    "kind": "function_definition",
-    "name": "record_tick_metrics",
-    "scope": "AdvancedTelemetryCollector",
-    "signature": "def record_tick_metrics(self, metrics: TelemetryMetrics) -> None:",
     "category": "project"
   }
 ]

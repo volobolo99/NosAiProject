@@ -1,5 +1,329 @@
 [
   {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 49,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 50,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Equip_RequiresItemAndSlot",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Equip_RequiresItemAndSlot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 15,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 16,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Equip_WithItemAndSlot_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Equip_WithItemAndSlot_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Unequip_RequiresSlotOnly",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Unequip_RequiresSlotOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 31,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 32,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "Unequip_WithSlot_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Unequip_WithSlot_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Upgrade_RequiresItemOnly",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Upgrade_RequiresItemOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 48,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Upgrade_WithItem_Constructs",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void Upgrade_WithItem_Constructs()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "LoadoutActionCandidateTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "Allowed_HasNoViolations",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Allowed_HasNoViolations()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "Violated_CarriesTheGivenReasons",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Violated_CarriesTheGivenReasons()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "Violated_WithNoReasons_Throws",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "[Fact] public void Violated_WithNoReasons_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 98,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutConstraintCheckTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutContractsTests.cs",
+    "line": 104,
+    "kind": "method_declaration",
+    "name": "RecordEquality_ComparesAllFields",
+    "scope": "LoadoutEvaluationTests",
+    "signature": "[Fact] public void RecordEquality_ComparesAllFields()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "NoSlot",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "private static EquipmentSlot? NoSlot(ItemId item)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "NeitherSourceObserved_IsNotAFinishedAssessment",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void NeitherSourceObserved_IsNotAFinishedAssessment()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "AnEquippedItem_OffersAChange",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnEquippedItem_OffersAChange()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "BothSourcesReadAndEmpty_IsNothingToChange",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void BothSourcesReadAndEmpty_IsNothingToChange()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "UnreadEquipment_IsNamedRatherThanCalledSettled",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void UnreadEquipment_IsNamedRatherThanCalledSettled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "UnreadInventory_IsNamedRatherThanCalledSettled",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void UnreadInventory_IsNamedRatherThanCalledSettled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "NullResolver_Throws",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void NullResolver_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 72,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "GearNeverRead_ReportsNothingRatherThanNoUrgency",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void GearNeverRead_ReportsNothingRatherThanNoUrgency()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "APartialReading_KeepsTheGoalAliveWithoutPretendingItIsPressing",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void APartialReading_KeepsTheGoalAliveWithoutPretendingItIsPressing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "AvailableOptions_ScoreLowBecauseTheyAreNotRanked",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AvailableOptions_ScoreLowBecauseTheyAreNotRanked()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "AnItemFittingAFreeSlot_IsAProvableGain",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnItemFittingAFreeSlot_IsAProvableGain()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 123,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "AnItemFittingAnOccupiedSlot_IsNotAProvableGain",
+    "scope": "LoadoutOpportunityVerdictTests",
+    "signature": "[Fact] public void AnItemFittingAnOccupiedSlot_IsNotAProvableGain()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Core.Tests/WorldModel/Loadout/LoadoutOpportunityVerdictTests.cs",
     "line": 133,
     "kind": "lambda_expression",
@@ -4173,330 +4497,6 @@
     "name": "OnlyOneOfManyRacingThreadsSpendsTheToken",
     "scope": "AutonomyPipelineTests",
     "signature": "[Fact] public void OnlyOneOfManyRacingThreadsSpendsTheToken()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 200,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "AutonomyPipelineTests",
-    "signature": "_ =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 209,
-    "kind": "method_declaration",
-    "name": "AnExpiredTokenCannotBeSpent",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void AnExpiredTokenCannotBeSpent()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 221,
-    "kind": "method_declaration",
-    "name": "ThePolicyRefusesWhatItAlwaysRefused",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Theory] [InlineData(RuntimeMode.Stopped, ActionType.MoveToPosition, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseSkill, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseBasicAttack, 0.0f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.9f)] public void ThePolicyRefusesWhatItAlwaysRefused(RuntimeMode mode, ActionType type, float risk)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 238,
-    "kind": "method_declaration",
-    "name": "FleeingIsAllowedEvenAtHighRisk",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void FleeingIsAllowedEvenAtHighRisk()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 249,
-    "kind": "method_declaration",
-    "name": "BothFormsOfThePolicyAgree",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Theory] [InlineData(RuntimeMode.Stopped, ActionType.MoveToPosition, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseSkill, 0.0f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.9f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.1f)] [InlineData(RuntimeMode.Normal, ActionType.EmergencyFlee, 0.99f)] public void BothFormsOfThePolicyAgree(RuntimeMode mode, ActionType type, float risk)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 272,
-    "kind": "method_declaration",
-    "name": "TrustFallsButNeverRises",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void TrustFallsButNeverRises()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 286,
-    "kind": "method_declaration",
-    "name": "AGateRefusesAnActionAboveTheCurrentTier",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void AGateRefusesAnActionAboveTheCurrentTier()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 302,
-    "kind": "method_declaration",
-    "name": "FailuresEscalateThroughRetryThenDegradeThenHalt",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void FailuresEscalateThroughRetryThenDegradeThenHalt()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 322,
-    "kind": "method_declaration",
-    "name": "AStoppedRuntimeAuthorisesNothing",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void AStoppedRuntimeAuthorisesNothing()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 334,
-    "kind": "method_declaration",
-    "name": "ResetClearsTheFailureCountUnderEitherName",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void ResetClearsTheFailureCountUnderEitherName()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 351,
-    "kind": "method_declaration",
-    "name": "TheCanonicalTrustScaleStartsAtReadOnlyAndKeepsTheNumericTiers",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void TheCanonicalTrustScaleStartsAtReadOnlyAndKeepsTheNumericTiers()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "Vitals",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static PlayerVitalsReading Vitals(uint hp)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 40,
-    "kind": "method_declaration",
-    "name": "ConfirmedConsumableMap",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static KeybindMap ConfirmedConsumableMap(int slot = RecoverSlot, ushort virtualKey = 112)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 54,
-    "kind": "method_declaration",
-    "name": "MapFromJson",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static KeybindMap MapFromJson(string json)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 71,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 74,
-    "kind": "method_declaration",
-    "name": "TryGetCursorPosition",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool TryGetCursorPosition(out int x, out int y)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 75,
-    "kind": "method_declaration",
-    "name": "MoveRelative",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool MoveRelative(int dx, int dy)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 76,
-    "kind": "method_declaration",
-    "name": "MoveAbsolute",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool MoveAbsolute(int x, int y)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 77,
-    "kind": "method_declaration",
-    "name": "Click",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "KeyPress",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 83,
-    "kind": "method_declaration",
-    "name": "ScrollWheel",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "public bool ScrollWheel(int detents)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 85,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 85,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "AutoplayCommandTests.RecordingInput",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 95,
-    "kind": "method_declaration",
-    "name": "FullyExploredFootprint",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static ExplorationFootprint FullyExploredFootprint()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 102,
-    "kind": "method_declaration",
-    "name": "RunCycle",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static AutoplayCommand.AutoplayCycleResult RunCycle( StrategicPlan plan, int? recoverSlot = RecoverSlot, RecordingInput? input = null, KeybindMap? keybinds = null, PlayerVitalsReading? before = null, PlayerVitalsReading? after = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 122,
-    "kind": "method_declaration",
-    "name": "RunCycleWithMap",
-    "scope": "AutoplayCommandTests",
-    "signature": "private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap( StrategicPlan plan, MapModel map, ExplorationFootprint footprint, int? recoverSlot = RecoverSlot, RecordingInput? input = null, KeybindMap? keybinds = null, PlayerVitalsReading? before = null, PlayerVitalsReading? after = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 140,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "AutoplayCommandTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 141,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "AutoplayCommandTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 152,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "AutoplayCommandTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 160,
-    "kind": "method_declaration",
-    "name": "APlanWithNoSelection_IsIdle_AndNeverTouchesInputOrTheWalkController",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void APlanWithNoSelection_IsIdle_AndNeverTouchesInputOrTheWalkController()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 176,
-    "kind": "method_declaration",
-    "name": "AnExplorationPlan_DispatchesToScoutCommand_UnderAutoplayAuthority",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void AnExplorationPlan_DispatchesToScoutCommand_UnderAutoplayAuthority()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 222,
-    "kind": "method_declaration",
-    "name": "AnExplorationPlan_CarriesTheUpdatedFootprintForward_NotTheOriginal",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void AnExplorationPlan_CarriesTheUpdatedFootprintForward_NotTheOriginal()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 256,
-    "kind": "method_declaration",
-    "name": "AnIdleCycle_PassesTheFootprintThroughUnchanged",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void AnIdleCycle_PassesTheFootprintThroughUnchanged()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 270,
-    "kind": "method_declaration",
-    "name": "ASurvivalPlanWithARecoverSlot_DispatchesToRecoverCommand_AndReportsTheEvidence",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void ASurvivalPlanWithARecoverSlot_DispatchesToRecoverCommand_AndReportsTheEvidence()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 300,
-    "kind": "method_declaration",
-    "name": "ASurvivalPlanWithoutARecoverSlot_IsSkipped_AndNeverTouchesInputOrTheWalkController",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void ASurvivalPlanWithoutARecoverSlot_IsSkipped_AndNeverTouchesInputOrTheWalkController()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
-    "line": 319,
-    "kind": "method_declaration",
-    "name": "AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController",
-    "scope": "AutoplayCommandTests",
-    "signature": "[Fact] public void AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController()",
     "category": "test"
   }
 ]

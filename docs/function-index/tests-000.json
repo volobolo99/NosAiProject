@@ -261,6 +261,51 @@
     "category": "test"
   },
   {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatChainCardTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "A_report_with_mobs_and_both_kinds_of_line_is_counted",
+    "scope": "CombatChainCardTests",
+    "signature": "[Fact] public void A_report_with_mobs_and_both_kinds_of_line_is_counted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatChainCardTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "A_report_without_the_mobs_line_says_so",
+    "scope": "CombatChainCardTests",
+    "signature": "[Fact] public void A_report_without_the_mobs_line_says_so()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatChainCardTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "Engage_validation_names_the_guilty_field",
+    "scope": "CombatChainCardTests",
+    "signature": "[Theory] [InlineData(\" \", \"skill.100\", \"10\", \"target\")] [InlineData(\"42\", \"\", \"10\", \"skill\")] [InlineData(\"42\", \"skill.100\", \"abc\", \"round\")] [InlineData(\"42\", \"skill.100\", \"0\", \"round\")] [InlineData(\"42\", \"skill.100\", \"61\", \"round\")] public void Engage_validation_names_the_guilty_field(string target, string skill, string rounds, string guiltyField)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatChainCardTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "Valid_engage_arguments_pass",
+    "scope": "CombatChainCardTests",
+    "signature": "[Fact] public void Valid_engage_arguments_pass()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/CombatChainCardTests.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "A_refusal_and_a_press_are_not_the_same_case",
+    "scope": "CombatChainCardTests",
+    "signature": "[Fact] public void A_refusal_and_a_press_are_not_the_same_case()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.ControlPanel.Tests/CombatInspectTests.cs",
     "line": 18,
     "kind": "method_declaration",
@@ -330,6 +375,51 @@
     "name": "TheViewHasNoWritePathIntoTheRuntime",
     "scope": "CombatInspectTests",
     "signature": "[Fact] public void TheViewHasNoWritePathIntoTheRuntime()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecideCycleCardTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "The_expectation_names_execution_disabled_as_expected_not_as_a_fault",
+    "scope": "DecideCycleCardTests",
+    "signature": "[Fact] public void The_expectation_names_execution_disabled_as_expected_not_as_a_fault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecideCycleCardTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Start_validation_names_the_guilty_field",
+    "scope": "DecideCycleCardTests",
+    "signature": "[Theory] [InlineData(\"\", \"5000\", \"endpoint\")] [InlineData(\"localhost\", \"5000\", \"endpoint\")] [InlineData(\"localhost:70000\", \"5000\", \"endpoint\")] [InlineData(\"localhost:1234\", \"abc\", \"intervallo\")] [InlineData(\"localhost:1234\", \"499\", \"intervallo\")] [InlineData(\"localhost:1234\", \"60001\", \"intervallo\")] public void Start_validation_names_the_guilty_field(string endpoint, string intervalMs, string guiltyField)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecideCycleCardTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "Valid_start_arguments_pass",
+    "scope": "DecideCycleCardTests",
+    "signature": "[Fact] public void Valid_start_arguments_pass()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecideCycleCardTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "The_four_line_kinds_are_not_collapsed",
+    "scope": "DecideCycleCardTests",
+    "signature": "[Fact] public void The_four_line_kinds_are_not_collapsed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/DecideCycleCardTests.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "A_run_with_no_lines_says_so",
+    "scope": "DecideCycleCardTests",
+    "signature": "[Fact] public void A_run_with_no_lines_says_so()",
     "category": "test"
   },
   {
@@ -414,6 +504,69 @@
     "category": "test"
   },
   {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Detection_runs_when_the_client_appears_and_the_box_is_empty",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void Detection_runs_when_the_client_appears_and_the_box_is_empty()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "A_value_typed_by_the_operator_is_never_overwritten",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void A_value_typed_by_the_operator_is_never_overwritten()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Detection_does_not_repeat_for_the_same_client",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void Detection_does_not_repeat_for_the_same_client()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "A_new_client_pid_triggers_a_fresh_detection",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void A_new_client_pid_triggers_a_fresh_detection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "Without_a_client_nothing_is_detected",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void Without_a_client_nothing_is_detected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "The_provenance_line_names_the_reason_when_the_client_is_absent",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Fact] public void The_provenance_line_names_the_reason_when_the_client_is_absent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/EndpointAutoDetectTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "A_detected_endpoint_says_how_long_ago",
+    "scope": "EndpointAutoDetectTests",
+    "signature": "[Theory] [InlineData(5, \"5 secondi fa\")] [InlineData(180, \"3 minuti fa\")] [InlineData(7200, \"2 ore fa\")] public void A_detected_endpoint_says_how_long_ago(int ageSeconds, string expectedAge)",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.ControlPanel.Tests/EquipWireInspectTests.cs",
     "line": 27,
     "kind": "method_declaration",
@@ -473,7 +626,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "EquipWireInspectTests",
-    "signature": "t =>",
+    "signature": "p =>",
     "category": "test"
   },
   {
@@ -482,7 +635,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "EquipWireInspectTests",
-    "signature": "p =>",
+    "signature": "t =>",
     "category": "test"
   },
   {
@@ -978,6 +1131,96 @@
     "name": "<anonymous/accessor>",
     "scope": "CombatSelectedTargetTests",
     "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 19,
+    "kind": "method_declaration",
+    "name": "Describe_separates_confirmed_from_declared",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Fact] public void Describe_separates_confirmed_from_declared()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "Confirming_without_an_observation_is_refused",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void Confirming_without_an_observation_is_refused(string? observation)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "Confirming_an_unknown_intent_is_refused",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Fact] public void Confirming_an_unknown_intent_is_refused()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "A_virtual_key_outside_the_range_is_refused",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Theory] [InlineData(\"0\")] [InlineData(\"255\")] [InlineData(\"non-un-numero\")] public void A_virtual_key_outside_the_range_is_refused(string virtualKeyText)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 94,
+    "kind": "method_declaration",
+    "name": "A_confirmation_touches_only_its_own_bind",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Fact] public void A_confirmation_touches_only_its_own_bind()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 118,
+    "kind": "method_declaration",
+    "name": "A_confirmed_bind_records_what_was_observed",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "[Fact] public void A_confirmed_bind_records_what_was_observed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 142,
+    "kind": "method_declaration",
+    "name": "Confirm",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "private static string Confirm(string intent, string virtualKeyText, string observation)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "AssertRefusalNames",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "private static void AssertRefusalNames(string? refusal, params string[] terms)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 165,
+    "kind": "method_declaration",
+    "name": "ContainsAny",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "private static bool ContainsAny(string text, params string[] terms)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/KeybindConfirmCardTests.cs",
+    "line": 178,
+    "kind": "method_declaration",
+    "name": "FragmentAround",
+    "scope": "NosAi.ControlPanel.Tests.KeybindConfirmCardTests",
+    "signature": "private static string FragmentAround(string text, string marker)",
     "category": "test"
   },
   {
@@ -2304,6 +2547,24 @@
     "category": "test"
   },
   {
+    "path": "tests/NosAi.ControlPanel.Tests/PreLoginPanelTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "TheReteSectionDescribesThePreLoginRecordingWithItsLimitAndShowsTheReport",
+    "scope": "PreLoginPanelTests",
+    "signature": "[Fact] public void TheReteSectionDescribesThePreLoginRecordingWithItsLimitAndShowsTheReport()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/PreLoginPanelTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "PreLoginPanelTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.ControlPanel.Tests/ResilienceInspectTests.cs",
     "line": 14,
     "kind": "method_declaration",
@@ -2823,6 +3084,69 @@
     "name": "<anonymous/accessor>",
     "scope": "TargetInspectTests",
     "signature": "f =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiCardTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "Four_valid_fractions_pass",
+    "scope": "TargetRoiCardTests",
+    "signature": "[Fact] public void Four_valid_fractions_pass()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiCardTests.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "Each_range_rule_names_the_guilty_fraction",
+    "scope": "TargetRoiCardTests",
+    "signature": "[Theory] [InlineData(\"-0.10\", \"0.06\", \"0.20\", \"0.02\", \"x\")] // x below 0 [InlineData(\"0.40\", \"1.00\", \"0.20\", \"0.02\", \"y\")] // y at 1, outside [0, 1) [InlineData(\"0.40\", \"0.06\", \"0.00\", \"0.02\", \"w\")] // w at 0, outside (0, 1] [InlineData(\"0.40\", \"0.06\", \"0.20\", \"1.50\", \"h\")] // h above 1 [InlineData(\"0.90\", \"0.06\", \"0.20\", \"0.02\", \"x\")] // x + w > 1 [InlineData(\"0.40\", \"0.90\", \"0.20\", \"0.20\", \"y\")] // y + h > 1 [InlineData(\"abc\", \"0.06\", \"0.20\", \"0.02\", \"x\")] // not a number public void Each_range_rule_names_the_guilty_fraction( string xText, string yText, string wText, string hText, string guiltyFraction)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiCardTests.cs",
+    "line": 43,
+    "kind": "method_declaration",
+    "name": "A_crop_older_than_the_run_is_not_presented_as_new",
+    "scope": "TargetRoiCardTests",
+    "signature": "[Fact] public void A_crop_older_than_the_run_is_not_presented_as_new()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiPanelTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "TargetRoiPanelTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiPanelTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "XamlPath",
+    "scope": "TargetRoiPanelTests",
+    "signature": "private static string XamlPath()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiPanelTests.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "The_card_lists_the_five_steps_in_order",
+    "scope": "TargetRoiPanelTests",
+    "signature": "[Fact] public void The_card_lists_the_five_steps_in_order()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.Tests/TargetRoiPanelTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "The_card_declares_every_control_the_handlers_use",
+    "scope": "TargetRoiPanelTests",
+    "signature": "[Fact] public void The_card_declares_every_control_the_handlers_use()",
     "category": "test"
   },
   {
@@ -4173,330 +4497,6 @@
     "name": "Predict_ContextMatchIsOrdinal_CaseSensitive",
     "scope": "LocalOutcomeSimulatorTests",
     "signature": "[Fact] public void Predict_ContextMatchIsOrdinal_CaseSensitive()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
-    "line": 8,
-    "kind": "method_declaration",
-    "name": "SaveAndGet_PersistsEntryInScopedPath",
-    "scope": "AdaptiveKnowledgeStoreTests",
-    "signature": "[Fact] public async Task SaveAndGet_PersistsEntryInScopedPath()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
-    "line": 33,
-    "kind": "method_declaration",
-    "name": "EnsurePath_CreatesNewContextDirectory",
-    "scope": "AdaptiveKnowledgeStoreTests",
-    "signature": "[Fact] public async Task EnsurePath_CreatesNewContextDirectory()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
-    "line": 10,
-    "kind": "method_declaration",
-    "name": "MissingObservation_RemainsUnknown",
-    "scope": "NavigationEvidenceEvaluatorTests",
-    "signature": "[Fact] public void MissingObservation_RemainsUnknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
-    "line": 24,
-    "kind": "method_declaration",
-    "name": "StaleObservation_RemainsUnknown",
-    "scope": "NavigationEvidenceEvaluatorTests",
-    "signature": "[Fact] public void StaleObservation_RemainsUnknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
-    "line": 37,
-    "kind": "method_declaration",
-    "name": "PathWithoutMovementOrReplan_IsNotEvidenceOfExecution",
-    "scope": "NavigationEvidenceEvaluatorTests",
-    "signature": "[Fact] public void PathWithoutMovementOrReplan_IsNotEvidenceOfExecution()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
-    "line": 50,
-    "kind": "method_declaration",
-    "name": "MovementWithPath_ProducesNavigationEvidence",
-    "scope": "NavigationEvidenceEvaluatorTests",
-    "signature": "[Fact] public void MovementWithPath_ProducesNavigationEvidence()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationEvidenceEvaluatorTests.cs",
-    "line": 64,
-    "kind": "method_declaration",
-    "name": "Observation",
-    "scope": "NavigationEvidenceEvaluatorTests",
-    "signature": "private static NavigationObservation Observation( float x, float y, bool pathFound, DateTime observedAt)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationObservationTests.cs",
-    "line": 8,
-    "kind": "method_declaration",
-    "name": "UnknownObservation_IsExplicitlyUnknown",
-    "scope": "NavigationObservationTests",
-    "signature": "[Fact] public void UnknownObservation_IsExplicitlyUnknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Navigation/NavigationObservationTests.cs",
-    "line": 19,
-    "kind": "method_declaration",
-    "name": "Observation_IsFreshWithinConfiguredAge",
-    "scope": "NavigationObservationTests",
-    "signature": "[Fact] public void Observation_IsFreshWithinConfiguredAge()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 22,
-    "kind": "method_declaration",
-    "name": "ADeclaredTypeNamedAfterATestDoubleIsFlagged",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "[Theory] [InlineData(\"Mock\")] [InlineData(\"Fake\")] [InlineData(\"Stub\")] [InlineData(\"Dummy\")] [InlineData(\"Synthetic\")] public async Task ADeclaredTypeNamedAfterATestDoubleIsFlagged(string bannedWord)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 41,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 46,
-    "kind": "method_declaration",
-    "name": "ReferencingATypeDefinedInAnotherAssemblyIsFlaggedJustLikeALocalDeclaration",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "[Fact] public async Task ReferencingATypeDefinedInAnotherAssemblyIsFlaggedJustLikeALocalDeclaration()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 74,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "AStringLiteralThatHappensToContainABannedWordIsNotFlagged",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "[Fact] public async Task AStringLiteralThatHappensToContainABannedWordIsNotFlagged()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 92,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 95,
-    "kind": "method_declaration",
-    "name": "OrdinaryProductionCodeWithNoBannedNamesProducesNoDiagnostic",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "[Fact] public async Task OrdinaryProductionCodeWithNoBannedNamesProducesNoDiagnostic()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 119,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 122,
-    "kind": "method_declaration",
-    "name": "ALocalVariableMerelyNamedAfterABannedWordIsNotFlagged",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "[Fact] public async Task ALocalVariableMerelyNamedAfterABannedWordIsNotFlagged()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 142,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 145,
-    "kind": "method_declaration",
-    "name": "RunAnalyzerAsync",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "private static async Task<ImmutableArray<Diagnostic>> RunAnalyzerAsync(string source, params MetadataReference[] extraReferences)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 163,
-    "kind": "method_declaration",
-    "name": "CompileToReference",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "private static MetadataReference CompileToReference(string source)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 181,
-    "kind": "method_declaration",
-    "name": "AssertNoCompileErrors",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "private static void AssertNoCompileErrors(CSharpCompilation compilation)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 184,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "d =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 189,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoMockOnCriticalPathAnalyzerTests.cs",
-    "line": 197,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoMockOnCriticalPathAnalyzerTests",
-    "signature": "path =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 10,
-    "kind": "method_declaration",
-    "name": "FullXxHandshakeCompletesAndBothSidesReachTransport",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void FullXxHandshakeCompletesAndBothSidesReachTransport()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 40,
-    "kind": "method_declaration",
-    "name": "TransportMessagesRoundTripAfterHandshakeCompletes",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void TransportMessagesRoundTripAfterHandshakeCompletes()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 58,
-    "kind": "method_declaration",
-    "name": "TamperedTransportCiphertextFailsToDecryptAndFailsTheSession",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void TamperedTransportCiphertextFailsToDecryptAndFailsTheSession()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 73,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoiseSessionTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 88,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoiseSessionTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 91,
-    "kind": "method_declaration",
-    "name": "RekeyBeforeTheHandshakeCompletesThrows",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void RekeyBeforeTheHandshakeCompletesThrows()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 99,
-    "kind": "method_declaration",
-    "name": "RekeyAfterHandshakeAllowsContinuedTransportUse",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void RekeyAfterHandshakeAllowsContinuedTransportUse()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 120,
-    "kind": "method_declaration",
-    "name": "GeneratedStaticPrivateKeysAreThirtyTwoBytesAndNotAllZero",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void GeneratedStaticPrivateKeysAreThirtyTwoBytesAndNotAllZero()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 126,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NoiseSessionTests",
-    "signature": "b =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 129,
-    "kind": "method_declaration",
-    "name": "CompleteHandshake",
-    "scope": "NoiseSessionTests",
-    "signature": "private static void CompleteHandshake(INoiseSession initiator, INoiseSession responder)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/NoiseSessionTests.cs",
-    "line": 146,
-    "kind": "method_declaration",
-    "name": "BothSidesDeriveTheSameFrameSessionKeyAfterHandshake",
-    "scope": "NoiseSessionTests",
-    "signature": "[Fact] public void BothSidesDeriveTheSameFrameSessionKeyAfterHandshake()",
     "category": "test"
   }
 ]

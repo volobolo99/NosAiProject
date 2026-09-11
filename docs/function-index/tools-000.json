@@ -55,7 +55,7 @@
   },
   {
     "path": "tools/find-vitals.ps1",
-    "line": 59,
+    "line": 60,
     "kind": "function_statement",
     "name": "<anonymous/accessor>",
     "scope": "",
@@ -64,7 +64,7 @@
   },
   {
     "path": "tools/open-webui/nosai_free_router.py",
-    "line": 18,
+    "line": 39,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "Filter",
@@ -73,7 +73,7 @@
   },
   {
     "path": "tools/open-webui/nosai_free_router.py",
-    "line": 21,
+    "line": 42,
     "kind": "function_definition",
     "name": "e_gratuito",
     "scope": "Filter",
@@ -82,7 +82,7 @@
   },
   {
     "path": "tools/open-webui/nosai_free_router.py",
-    "line": 25,
+    "line": 53,
     "kind": "function_definition",
     "name": "inlet",
     "scope": "Filter",
@@ -91,7 +91,7 @@
   },
   {
     "path": "tools/open-webui/nosai_free_router.py",
-    "line": 29,
+    "line": 99,
     "kind": "function_definition",
     "name": "outlet",
     "scope": "Filter",

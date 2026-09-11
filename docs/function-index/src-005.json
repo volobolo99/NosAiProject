@@ -1,5 +1,401 @@
 [
   {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 510,
+    "kind": "method_declaration",
+    "name": "TestThermalWatchdogFailClosed",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestThermalWatchdogFailClosed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 527,
+    "kind": "method_declaration",
+    "name": "TestRecoveryTrustInviolability",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestRecoveryTrustInviolability()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 545,
+    "kind": "method_declaration",
+    "name": "TestProgressionDagIntegration",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestProgressionDagIntegration()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 555,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "q =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 561,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "q =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 565,
+    "kind": "method_declaration",
+    "name": "TestStrictLocalOnlyIntegrationAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static async Task<bool> TestStrictLocalOnlyIntegrationAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 578,
+    "kind": "method_declaration",
+    "name": "LoadModelAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
+    "signature": "public Task<bool> LoadModelAsync(CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 579,
+    "kind": "method_declaration",
+    "name": "GenerateDecisionAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
+    "signature": "public Task<NosAi.Runtime.Gate5.DecisionSuggestion> GenerateDecisionAsync(string promptContext, CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 581,
+    "kind": "method_declaration",
+    "name": "UnloadModelAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier.FailingLocalProvider",
+    "signature": "public Task UnloadModelAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 584,
+    "kind": "method_declaration",
+    "name": "TestCloudEscalationFailClosedIntegrationAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static async Task<bool> TestCloudEscalationFailClosedIntegrationAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 607,
+    "kind": "method_declaration",
+    "name": "TestFingerprintAnonymized",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestFingerprintAnonymized()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 624,
+    "kind": "method_declaration",
+    "name": "Main",
+    "scope": "NosAi.Runtime.Gate6.Program",
+    "signature": "public static async Task<int> Main(string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Guard/GuardAi.cs",
+    "line": 7,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "GuardAi",
+    "signature": "public GuardDecision Evaluate(CandidateAction action, TrustTier maxAllowedTier)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/AutoSetManager.cs",
+    "line": 8,
+    "kind": "constructor_declaration",
+    "name": "AutoSetManager",
+    "scope": "AutoSetManager",
+    "signature": "public AutoSetManager(IHardwareProbe probe, HardwareProfileStore store)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/AutoSetManager.cs",
+    "line": 15,
+    "kind": "method_declaration",
+    "name": "Initialize",
+    "scope": "AutoSetManager",
+    "signature": "public RuntimeSettings Initialize()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 57,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "EvaluateAndScale",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
+    "signature": "public HardwareTelemetrySnapshot EvaluateAndScale(double simulatedGpuTemp = 68.0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "GetBudgetForMode",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleController",
+    "signature": "public RuntimeBudgetParameters GetBudgetForMode(RuntimePerformanceMode mode)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "RunAllTestsAsync",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "public static async Task<bool> RunAllTestsAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "RunTest",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool RunTest(string name, Func<bool> testFunc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "Report",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool Report(string name, bool passed, string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "TestNominalTelemetryCapture",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool TestNominalTelemetryCapture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "TestThermalThrottlingTrigger",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool TestThermalThrottlingTrigger()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 152,
+    "kind": "method_declaration",
+    "name": "TestBudgetScalingParameters",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool TestBudgetScalingParameters()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "TestRecoveryToNominalMode",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool TestRecoveryToNominalMode()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "TestHardwareSecurityInvariant",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "private static bool TestHardwareSecurityInvariant()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 170,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Autoscale/HardwareAutoscaleController.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Hardware.Autoscale.HardwareAutoscaleTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "TryAuthorize",
+    "scope": "IHardwareInferenceCapabilityGate",
+    "signature": "bool TryAuthorize(CoreHardware.InferenceTier tier, out string? refusalReason);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 70,
+    "kind": "constructor_declaration",
+    "name": "HardwareInferenceCapabilityGate",
+    "scope": "HardwareInferenceCapabilityGate",
+    "signature": "public HardwareInferenceCapabilityGate(CoreHardware.IHardwareCapabilityProvider provider)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "TryAuthorize",
+    "scope": "HardwareInferenceCapabilityGate",
+    "signature": "public bool TryAuthorize(CoreHardware.InferenceTier tier, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 105,
+    "kind": "method_declaration",
+    "name": "CaptureSnapshotFailClosed",
+    "scope": "HardwareInferenceCapabilityGate",
+    "signature": "private CoreHardware.HardwareCapabilitySnapshot CaptureSnapshotFailClosed()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "DescribeRefusal",
+    "scope": "HardwareInferenceCapabilityGate",
+    "signature": "private static string DescribeRefusal(CoreHardware.InferenceTier tier, CoreHardware.HardwareCapabilitySnapshot snapshot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/HardwareInferenceCapabilityGate.cs",
+    "line": 133,
+    "kind": "local_function_statement",
+    "name": "NoteIfUnknown",
+    "scope": "HardwareInferenceCapabilityGate",
+    "signature": "void NoteIfUnknown<T>(CoreHardware.ClassifiedValue<T> value, string label)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 63,
+    "kind": "constructor_declaration",
+    "name": "RuntimeHardwareCapabilityProvider",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "public RuntimeHardwareCapabilityProvider() : this(new LiveHardwareTelemetry(new SafeHardwareProbe(CreateDefaultProbe())))",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 73,
+    "kind": "constructor_declaration",
+    "name": "RuntimeHardwareCapabilityProvider",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "public RuntimeHardwareCapabilityProvider(LiveHardwareTelemetry telemetry)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "GetSnapshot",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "public CoreHardware.HardwareCapabilitySnapshot GetSnapshot()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Map",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "internal static CoreHardware.HardwareCapabilitySnapshot Map(Gate1HardwareView view)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "Convert",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "private static CoreHardware.ClassifiedValue<T> Convert<T>(RuntimeContracts.ClassifiedValue<T> source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 183,
+    "kind": "method_declaration",
+    "name": "CreateDefaultProbe",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "private static IHardwareProbe CreateDefaultProbe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/Gate/RuntimeHardwareCapabilityProvider.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "CreateWindowsProbe",
+    "scope": "RuntimeHardwareCapabilityProvider",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static IHardwareProbe CreateWindowsProbe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareAutoSettings.cs",
+    "line": 29,
+    "kind": "method_declaration",
+    "name": "Calculate",
+    "scope": "HardwareAutoSettings",
+    "signature": "public RuntimeSettings Calculate(HardwareFingerprint h)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "IHardwareProbe",
+    "signature": "HardwareFingerprint Detect();",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Hardware/HardwareProbe.cs",
     "line": 20,
     "kind": "accessor_declaration",
@@ -527,7 +923,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.Host.MasterHostTestRunner",
-    "signature": "t =>",
+    "signature": "m =>",
     "category": "project"
   },
   {
@@ -536,7 +932,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.Host.MasterHostTestRunner",
-    "signature": "m =>",
+    "signature": "t =>",
     "category": "project"
   },
   {
@@ -2269,7 +2665,7 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 61,
+    "line": 93,
     "kind": "method_declaration",
     "name": "TryParseEndpoint",
     "scope": "WireRecorder",
@@ -2278,7 +2674,7 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 106,
+    "line": 138,
     "kind": "method_declaration",
     "name": "DefaultPath",
     "scope": "WireRecorder",
@@ -2287,7 +2683,7 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 118,
+    "line": 150,
     "kind": "method_declaration",
     "name": "RecordFrom",
     "scope": "WireRecorder",
@@ -2296,7 +2692,7 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 165,
+    "line": 197,
     "kind": "method_declaration",
     "name": "Discard",
     "scope": "WireRecorder",
@@ -2305,7 +2701,7 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 181,
+    "line": 213,
     "kind": "method_declaration",
     "name": "Run",
     "scope": "WireRecorder",
@@ -2314,11 +2710,110 @@
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
-    "line": 214,
+    "line": 246,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "WireRecorder",
     "signature": "(_, e) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 295,
+    "kind": "method_declaration",
+    "name": "AwaitClientConflictReason",
+    "scope": "WireRecorder",
+    "signature": "public static string? AwaitClientConflictReason(string? endpoint, bool awaitClient)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 303,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "WireRecorder",
+    "signature": "public static int Run(string? endpoint, string? path, int seconds, bool awaitClient)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 340,
+    "kind": "method_declaration",
+    "name": "RunAwaitClient",
+    "scope": "WireRecorder",
+    "signature": "public static int RunAwaitClient(string? path = null, int seconds = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 351,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireRecorder",
+    "signature": "(_, e) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 406,
+    "kind": "method_declaration",
+    "name": "RunAwaitAndRecord",
+    "scope": "WireRecorder",
+    "signature": "public static int RunAwaitAndRecord( string path, int recordingSeconds, string? clientProcessNames = null, TimeSpan? pollInterval = null, TimeSpan? clientProcessTimeout = null, TimeSpan? gameSessionTimeout = null, Func<string, IReadOnlyList<int>>? findClientProcessIds = null, Func<int, ClientNetworkObservation>? observe = null, Func<IPEndPoint, string, CancellationToken, RecordingOutcome>? recordOnEndpoint = null, TextWriter? output = null, CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 475,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WireRecorder",
+    "signature": "id =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 586,
+    "kind": "method_declaration",
+    "name": "FindClientProcesses",
+    "scope": "WireRecorder",
+    "signature": "private static IReadOnlyList<int> FindClientProcesses(string clientProcessNames)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 614,
+    "kind": "method_declaration",
+    "name": "RecordOnEndpoint",
+    "scope": "WireRecorder",
+    "signature": "private static RecordingOutcome RecordOnEndpoint(IPEndPoint endpoint, string path, CancellationToken cancellationToken)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 628,
+    "kind": "method_declaration",
+    "name": "LooksLikeEndpointArgument",
+    "scope": "WireRecorder",
+    "signature": "private static bool LooksLikeEndpointArgument(string? text)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 631,
+    "kind": "method_declaration",
+    "name": "PrintUsage",
+    "scope": "WireRecorder",
+    "signature": "private static void PrintUsage()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/Capture/WireRecorder.cs",
+    "line": 638,
+    "kind": "method_declaration",
+    "name": "FormatDuration",
+    "scope": "WireRecorder",
+    "signature": "private static string FormatDuration(TimeSpan duration)",
     "category": "project"
   },
   {
@@ -3326,7 +3821,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "list =>",
+    "signature": "e =>",
     "category": "project"
   },
   {
@@ -3335,7 +3830,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "e =>",
+    "signature": "list =>",
     "category": "project"
   },
   {
@@ -3398,7 +3893,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "list =>",
+    "signature": "i =>",
     "category": "project"
   },
   {
@@ -3407,7 +3902,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "i =>",
+    "signature": "list =>",
     "category": "project"
   },
   {
@@ -3425,7 +3920,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "list =>",
+    "signature": "g =>",
     "category": "project"
   },
   {
@@ -3434,7 +3929,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GameplayObservation",
-    "signature": "g =>",
+    "signature": "list =>",
     "category": "project"
   },
   {
@@ -4002,501 +4497,6 @@
     "name": "IsPlausibleCoordinate",
     "scope": "MemoryGameplayProvider",
     "signature": "public static bool IsPlausibleCoordinate(int value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 242,
-    "kind": "method_declaration",
-    "name": "Distance",
-    "scope": "MemoryGameplayProvider",
-    "signature": "private static double Distance(MapPoint a, MapPoint b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 256,
-    "kind": "method_declaration",
-    "name": "Forget",
-    "scope": "MemoryGameplayProvider",
-    "signature": "private void Forget()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 262,
-    "kind": "method_declaration",
-    "name": "Unknown",
-    "scope": "MemoryGameplayProvider",
-    "signature": "private static ClassifiedValue<MapPoint> Unknown(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
-    "line": 16,
-    "kind": "method_declaration",
-    "name": "Unknown",
-    "scope": "MapWorldObservation",
-    "signature": "public static MapWorldObservation Unknown(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
-    "line": 90,
-    "kind": "constructor_declaration",
-    "name": "MemoryMapWorldProvider",
-    "scope": "MemoryMapWorldProvider",
-    "signature": "public MemoryMapWorldProvider(IGameplayProvider inner, Func<MapWorldObservation> read)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
-    "line": 100,
-    "kind": "method_declaration",
-    "name": "Observe",
-    "scope": "MemoryMapWorldProvider",
-    "signature": "public GameplayObservation Observe()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 31,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "MemoryScanProbe",
-    "signature": "public static int Run(string[] args, int flagIndex)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 67,
-    "kind": "method_declaration",
-    "name": "RunDump",
-    "scope": "MemoryScanProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunDump(string[] args, int flagIndex)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 120,
-    "kind": "method_declaration",
-    "name": "Execute",
-    "scope": "MemoryScanProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static int Execute(int processId, int value, bool narrowing)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 171,
-    "kind": "method_declaration",
-    "name": "TryReadOperands",
-    "scope": "MemoryScanProbe",
-    "signature": "private static bool TryReadOperands( string[] args, int flagIndex, out int processId, out int value, out string? error)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 200,
-    "kind": "method_declaration",
-    "name": "TryLoadCandidates",
-    "scope": "MemoryScanProbe",
-    "signature": "private static bool TryLoadCandidates(out List<IntPtr> candidates, out int passes, out string? error)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 241,
-    "kind": "method_declaration",
-    "name": "SaveCandidates",
-    "scope": "MemoryScanProbe",
-    "signature": "private static void SaveCandidates(MemoryScanner.ScanResult result)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
-    "line": 252,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MemoryScanProbe",
-    "signature": "a =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
-    "line": 92,
-    "kind": "method_declaration",
-    "name": "Scan",
-    "scope": "MemoryScanner",
-    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Scan(ProcessMemoryReader reader, int value, bool privateRegionsOnly = true)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
-    "line": 157,
-    "kind": "method_declaration",
-    "name": "Narrow",
-    "scope": "MemoryScanner",
-    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Narrow( ProcessMemoryReader reader, IReadOnlyList<IntPtr> candidates, int value, int previousPasses = 1)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
-    "line": 57,
-    "kind": "constructor_declaration",
-    "name": "MemoryTargetGameplayProvider",
-    "scope": "MemoryTargetGameplayProvider",
-    "signature": "public MemoryTargetGameplayProvider( IGameplayProvider inner, Func<TargetPointerReading?> read, Func<string?>? failureReason = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
-    "line": 64,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MemoryTargetGameplayProvider",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
-    "line": 71,
-    "kind": "method_declaration",
-    "name": "Observe",
-    "scope": "MemoryTargetGameplayProvider",
-    "signature": "public GameplayObservation Observe()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
-    "line": 14,
-    "kind": "constructor_declaration",
-    "name": "NetworkWorldStateObserver",
-    "scope": "NetworkWorldStateObserver",
-    "signature": "public NetworkWorldStateObserver(IGameplayProvider provider)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
-    "line": 26,
-    "kind": "method_declaration",
-    "name": "ObserveAsync",
-    "scope": "NetworkWorldStateObserver",
-    "signature": "public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 11,
-    "kind": "method_declaration",
-    "name": "Matches",
-    "scope": "SignatureByte",
-    "signature": "public bool Matches(byte candidate)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 327,
-    "kind": "constructor_declaration",
-    "name": "NosTaleClientLayout",
-    "scope": "NosTaleClientLayout",
-    "signature": "private NosTaleClientLayout(IntPtr pointerHolder, IntPtr moduleBase)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 354,
-    "kind": "method_declaration",
-    "name": "TryResolve",
-    "scope": "NosTaleClientLayout",
-    "signature": "public static bool TryResolve( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out NosTaleClientLayout? layout, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 444,
-    "kind": "method_declaration",
-    "name": "TryReadTarget",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryReadTarget( ProcessMemoryReader reader, out TargetPointerReading reading, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 487,
-    "kind": "method_declaration",
-    "name": "TryReadPlayer",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryReadPlayer( ProcessMemoryReader reader, out PlayerObjectReading reading, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 554,
-    "kind": "method_declaration",
-    "name": "TryResolveBases",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryResolveBases( ProcessMemoryReader reader, out IntPtr playerManager, out IntPtr playerObject, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 580,
-    "kind": "method_declaration",
-    "name": "TryScanPlayerVitals",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryScanPlayerVitals( ProcessMemoryReader reader, out IReadOnlyList<PlayerVitalsHit> hits, out string? failureReason, int windowBytes = PlayerVitalsScan.DefaultWindowBytes)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 622,
-    "kind": "method_declaration",
-    "name": "TryReadPlayerVitals",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsCandidate reading, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 660,
-    "kind": "method_declaration",
-    "name": "TryReadMapId",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryReadMapId( ProcessMemoryReader reader, out int mapId, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 716,
-    "kind": "method_declaration",
-    "name": "TryReadPlayerVitals",
-    "scope": "NosTaleClientLayout",
-    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsReading reading, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 762,
-    "kind": "method_declaration",
-    "name": "TryReadWord",
-    "scope": "NosTaleClientLayout",
-    "signature": "private static bool TryReadWord( ProcessMemoryReader reader, IntPtr at, string what, out uint value, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 797,
-    "kind": "method_declaration",
-    "name": "TryReadEntities",
-    "scope": "NosTaleClientLayout",
-    "signature": "public static bool TryReadEntities( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 893,
-    "kind": "method_declaration",
-    "name": "TryNameChain",
-    "scope": "NosTaleClientLayout",
-    "signature": "public static bool TryNameChain( MapEntityKind kind, out int fromEntity, out int fromNameObject, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 926,
-    "kind": "method_declaration",
-    "name": "TryReadEntityName",
-    "scope": "NosTaleClientLayout",
-    "signature": "public static EntityNameCandidate TryReadEntityName( ProcessMemoryReader reader, IntPtr entity, MapEntityKind kind)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1024,
-    "kind": "method_declaration",
-    "name": "IsPlausibleSceneOperand",
-    "scope": "NosTaleClientLayout",
-    "signature": "public static bool IsPlausibleSceneOperand(uint operand, IntPtr moduleBase, out string? rejection)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1086,
-    "kind": "method_declaration",
-    "name": "TryResolveScene",
-    "scope": "NosTaleClientLayout",
-    "signature": "private static bool TryResolveScene( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out IntPtr scene, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1187,
-    "kind": "method_declaration",
-    "name": "LooksLikeSceneManager",
-    "scope": "NosTaleClientLayout",
-    "signature": "private static bool LooksLikeSceneManager(ProcessMemoryReader reader, IntPtr candidate)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1208,
-    "kind": "method_declaration",
-    "name": "TryConfirmSceneManager",
-    "scope": "NosTaleClientLayout",
-    "signature": "internal static bool TryConfirmSceneManager( ProcessMemoryReader reader, IntPtr candidate, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1278,
-    "kind": "method_declaration",
-    "name": "TryFollow",
-    "scope": "NosTaleClientLayout",
-    "signature": "private static bool TryFollow( ProcessMemoryReader reader, IntPtr at, string what, out IntPtr value, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1304,
-    "kind": "method_declaration",
-    "name": "ParseSignature",
-    "scope": "NosTaleClientLayout",
-    "signature": "internal static SignatureByte[] ParseSignature(string signature)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
-    "line": 1327,
-    "kind": "method_declaration",
-    "name": "IndexOfSignature",
-    "scope": "NosTaleClientLayout",
-    "signature": "internal static int IndexOfSignature( ReadOnlySpan<byte> haystack, ReadOnlySpan<SignatureByte> signature, int from = 0)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
-    "line": 32,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "PlayerObjectProbe",
-    "signature": "public static int Run(int processId, long? expectedCharacterId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
-    "line": 145,
-    "kind": "method_declaration",
-    "name": "ReportEntities",
-    "scope": "PlayerObjectProbe",
-    "signature": "private static void ReportEntities(ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
-    "line": 166,
-    "kind": "method_declaration",
-    "name": "TryFindClient",
-    "scope": "PlayerObjectProbe",
-    "signature": "private static bool TryFindClient(out int processId, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
-    "line": 198,
-    "kind": "method_declaration",
-    "name": "TryGetProcess",
-    "scope": "PlayerObjectProbe",
-    "signature": "private static Process? TryGetProcess(int processId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
-    "line": 210,
-    "kind": "method_declaration",
-    "name": "TryMainModule",
-    "scope": "PlayerObjectProbe",
-    "signature": "private static bool TryMainModule( Process process, out IntPtr moduleBase, out long moduleSize, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "Percent",
-    "scope": "PlayerVitalsBlock",
-    "signature": "public static int Percent(uint value, uint max)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 89,
-    "kind": "method_declaration",
-    "name": "TryParse",
-    "scope": "PlayerVitalsBlock",
-    "signature": "public static bool TryParse(ReadOnlySpan<byte> bytes, out PlayerVitalsBlock block, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 114,
-    "kind": "method_declaration",
-    "name": "TryRange",
-    "scope": "PlayerVitalsBlock",
-    "signature": "public static bool TryRange( uint hp, uint maxHp, uint mp, uint maxMp, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 201,
-    "kind": "method_declaration",
-    "name": "DescribeOffset",
-    "scope": "PlayerVitalsCandidate",
-    "signature": "public string DescribeOffset()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 205,
-    "kind": "method_declaration",
-    "name": "Missing",
-    "scope": "PlayerVitalsCandidate",
-    "signature": "public static PlayerVitalsCandidate Missing(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 208,
-    "kind": "method_declaration",
-    "name": "From",
-    "scope": "PlayerVitalsCandidate",
-    "signature": "public static PlayerVitalsCandidate From(in PlayerVitalsHit hit)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 244,
-    "kind": "method_declaration",
-    "name": "TryContinuity",
-    "scope": "PlayerVitalsPredicate",
-    "signature": "public static bool TryContinuity( in PlayerVitalsBlock previous, in PlayerVitalsBlock current, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 264,
-    "kind": "method_declaration",
-    "name": "TryMatchPercent",
-    "scope": "PlayerVitalsPredicate",
-    "signature": "public static bool TryMatchPercent( int memoryPercent, int wirePercent, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
-    "line": 289,
-    "kind": "method_declaration",
-    "name": "TookDamage",
-    "scope": "PlayerVitalsOracle",
-    "signature": "public static bool TookDamage(in PlayerVitalsHit before, in PlayerVitalsHit after)",
     "category": "project"
   }
 ]

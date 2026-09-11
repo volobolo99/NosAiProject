@@ -1,5 +1,455 @@
 [
   {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 238,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "n =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 246,
+    "kind": "method_declaration",
+    "name": "No_module_is_declared_that_no_longer_exists",
+    "scope": "ModuleReachabilityTests",
+    "signature": "[Fact] public void No_module_is_declared_that_no_longer_exists()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 252,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 254,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "n =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 270,
+    "kind": "method_declaration",
+    "name": "The_declared_reach_matches_what_the_source_shows",
+    "scope": "ModuleReachabilityTests",
+    "signature": "[Fact] public void The_declared_reach_matches_what_the_source_shows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 282,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "n =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 294,
+    "kind": "method_declaration",
+    "name": "Every_unreached_module_says_why",
+    "scope": "ModuleReachabilityTests",
+    "signature": "[Fact] public void Every_unreached_module_says_why()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 298,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 299,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 306,
+    "kind": "method_declaration",
+    "name": "No_module_is_declared_twice",
+    "scope": "ModuleReachabilityTests",
+    "signature": "[Fact] public void No_module_is_declared_twice()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 310,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 311,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "g =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 312,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "g =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 323,
+    "kind": "method_declaration",
+    "name": "The_unreached_share_of_production_is_reported",
+    "scope": "ModuleReachabilityTests",
+    "signature": "[Fact] public void The_unreached_share_of_production_is_reported()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 337,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ModuleReachabilityTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
+    "line": 337,
+    "kind": "local_function_statement",
+    "name": "Total",
+    "scope": "ModuleReachabilityTests",
+    "signature": "int Total(ModuleReach reach)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "WithMonster",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "private static GameReferenceDatabase WithMonster(int vnum, params (string Name, string[] Values)[] rows)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 20,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Un_vnum_che_il_catalogo_non_ha_e_rifiutato_col_proprio_motivo",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Un_vnum_che_il_catalogo_non_ha_e_rifiutato_col_proprio_motivo()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 45,
+    "kind": "method_declaration",
+    "name": "Una_riga_presente_si_decodifica_sempre_anche_senza_campi",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Una_riga_presente_si_decodifica_sempre_anche_senza_campi()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Il_livello_e_confermato_e_i_bonus_hp_mp_restano_provvisori",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Il_livello_e_confermato_e_i_bonus_hp_mp_restano_provvisori()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Senza_bersaglio_il_comando_rifiuta",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Senza_bersaglio_il_comando_rifiuta()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "Un_vnum_che_non_e_un_numero_e_rifiutato",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Theory] [InlineData(\"non-un-numero\")] [InlineData(\"\")] public void Un_vnum_che_non_e_un_numero_e_rifiutato(string value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "Un_vnum_senza_valore_e_rifiutato_e_non_vale_zero",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Un_vnum_senza_valore_e_rifiutato_e_non_vale_zero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 148,
+    "kind": "method_declaration",
+    "name": "Una_registrazione_senza_valore_e_rifiutata",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Una_registrazione_senza_valore_e_rifiutata()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 163,
+    "kind": "method_declaration",
+    "name": "Unopzione_sconosciuta_e_rifiutata_col_proprio_nome",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Unopzione_sconosciuta_e_rifiutata_col_proprio_nome()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 175,
+    "kind": "method_declaration",
+    "name": "Un_vnum_ben_formato_non_e_rifiutato",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Un_vnum_ben_formato_non_e_rifiutato()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "Il_motivo_del_catalogo_assente_e_distinto_da_quello_del_vnum_assente",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Il_motivo_del_catalogo_assente_e_distinto_da_quello_del_vnum_assente()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "Un_rapporto_senza_vnum_non_inventa_righe",
+    "scope": "MonsterCatalogueRefusalTests",
+    "signature": "[Fact] public void Un_rapporto_senza_vnum_non_inventa_righe()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "WithMonster",
+    "scope": "MonsterReportCommandTests",
+    "signature": "private static GameReferenceDatabase WithMonster(int vnum, params (string Name, string[] Values)[] rows)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 19,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MonsterReportCommandTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "WriteReport_marks_each_field_confirmed_or_provisional",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Fact] public void WriteReport_marks_each_field_confirmed_or_provisional()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "WriteReport_prints_a_reason_for_a_missing_vnum",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Fact] public void WriteReport_prints_a_reason_for_a_missing_vnum()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "TryParse_rejects_malformed_arguments",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Theory] [InlineData(\"--monster-report --summary\", MonsterReportCommand.UnknownOptionReason)] [InlineData(\"--monster-report --vnum abc\", MonsterReportCommand.InvalidVnumReason)] [InlineData(\"--monster-report --recording\", MonsterReportCommand.RecordingWithoutValueReason)] // The value is asserted, not the constant name: SkillReportCommand declares a // same-named constant with a different value, and RefusalReasonRegisterTests // treats a name match as coverage — naming it here would mark that one covered // too. See MonsterCatalogueRefusalTests for the same rule. [InlineData(\"--monster-report\", \"monster_report_no_target\")] public void TryParse_rejects_malformed_arguments(string argsText, string expectedReason)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "TryParse_accepts_a_vnum_and_a_recording",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Fact] public void TryParse_accepts_a_vnum_and_a_recording()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 88,
+    "kind": "method_declaration",
+    "name": "ObservedMonsters_returns_the_monster_vnums_a_capture_names",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[RecordedCaptureFact(\"nostale_combat.noscap\")] public void ObservedMonsters_returns_the_monster_vnums_a_capture_names()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "The_catalogue_unavailable_reason_is_named_and_not_an_empty_catalogue",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Fact] public void The_catalogue_unavailable_reason_is_named_and_not_an_empty_catalogue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "The_runtime_wires_the_monster_report_flag",
+    "scope": "MonsterReportCommandTests",
+    "signature": "[Fact] public void The_runtime_wires_the_monster_report_flag()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
+    "line": 116,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "MonsterReportCommandTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkObservationTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "NetworkObservationSuitePasses",
+    "scope": "NetworkObservationTests",
+    "signature": "[Fact] public void NetworkObservationSuitePasses()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 36,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 38,
+    "kind": "constructor_declaration",
+    "name": "ScriptedSource",
+    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
+    "signature": "public ScriptedSource(DataSourceKind source)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "Send",
+    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
+    "signature": "public void Send(string line)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "TryObserve",
+    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
+    "signature": "public bool TryObserve(out ObservedPacket packet)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 57,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingDecoder",
+    "signature": "public bool CanDecode(ObservedPacket packet)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingDecoder",
+    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "CanDecode",
+    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingWithoutHealthDecoder",
+    "signature": "public bool CanDecode(ObservedPacket packet)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Decode",
+    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingWithoutHealthDecoder",
+    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Feed",
+    "scope": "NetworkWorldFeedVitalsTests",
+    "signature": "private static NetworkWorldFeed Feed(ScriptedSource wire, IGamePacketDecoder? decoder = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "The_player_hp_comes_from_the_vitals_message",
+    "scope": "NetworkWorldFeedVitalsTests",
+    "signature": "[Fact] public void The_player_hp_comes_from_the_vitals_message()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
     "line": 99,
     "kind": "method_declaration",
@@ -321,6 +771,15 @@
     "name": "NonWindowsFactAttribute",
     "scope": "NonWindowsFactAttribute",
     "signature": "public NonWindowsFactAttribute()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/NosAiVolumeFactAttribute.cs",
+    "line": 29,
+    "kind": "constructor_declaration",
+    "name": "NosAiVolumeFactAttribute",
+    "scope": "NosAiVolumeFactAttribute",
+    "signature": "public NosAiVolumeFactAttribute()",
     "category": "test"
   },
   {
@@ -4038,465 +4497,6 @@
     "name": "SpanAndMemoryAliasTheSameBytes",
     "scope": "PooledWireBufferTests",
     "signature": "[Fact] public void SpanAndMemoryAliasTheSameBytes()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 39,
-    "kind": "method_declaration",
-    "name": "AZeroLengthRentNeedsNoPoolSlotAndDisposesCleanly",
-    "scope": "PooledWireBufferTests",
-    "signature": "[Fact] public void AZeroLengthRentNeedsNoPoolSlotAndDisposesCleanly()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 49,
-    "kind": "method_declaration",
-    "name": "ANegativeLengthIsRejected",
-    "scope": "PooledWireBufferTests",
-    "signature": "[Fact] public void ANegativeLengthIsRejected()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 52,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PooledWireBufferTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 55,
-    "kind": "method_declaration",
-    "name": "DisposeIsIdempotent",
-    "scope": "PooledWireBufferTests",
-    "signature": "[Fact] public void DisposeIsIdempotent()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 67,
-    "kind": "method_declaration",
-    "name": "AccessingTheBufferAfterDisposeFailsClosedInsteadOfExposingPooledBytes",
-    "scope": "PooledWireBufferTests",
-    "signature": "[Fact] public void AccessingTheBufferAfterDisposeFailsClosedInsteadOfExposingPooledBytes()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 75,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PooledWireBufferTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 76,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PooledWireBufferTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "ManySequentialRentalsOfTheHeaderSizeRoundTripWithoutAliasing",
-    "scope": "PooledWireBufferTests",
-    "signature": "[Fact] public void ManySequentialRentalsOfTheHeaderSizeRoundTripWithoutAliasing()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 44,
-    "kind": "method_declaration",
-    "name": "Every_action_with_a_card_declares_its_own_window_and_action",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Theory] [InlineData(ActionType.MoveToPosition)] [InlineData(ActionType.TargetEntity)] [InlineData(ActionType.UseBasicAttack)] [InlineData(ActionType.UseSkill)] [InlineData(ActionType.UseConsumable)] [InlineData(ActionType.CollectGroundItem)] [InlineData(ActionType.EmergencyFlee)] public void Every_action_with_a_card_declares_its_own_window_and_action(ActionType action)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 68,
-    "kind": "method_declaration",
-    "name": "An_action_with_no_card_is_not_admissible_and_says_so_by_name",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Theory] [InlineData(ActionType.RestAndRecover)] [InlineData(ActionType.None)] public void An_action_with_no_card_is_not_admissible_and_says_so_by_name(ActionType action)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "Two_cards_for_one_action_is_refused_at_construction",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void Two_cards_for_one_action_is_refused_at_construction()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 82,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 92,
-    "kind": "method_declaration",
-    "name": "Evaluate_cannot_see_the_prediction_because_it_is_not_a_parameter",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void Evaluate_cannot_see_the_prediction_because_it_is_not_a_parameter()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 104,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "p =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 112,
-    "kind": "method_declaration",
-    "name": "Every_window_declares_itself_unmeasured_while_it_is",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void Every_window_declares_itself_unmeasured_while_it_is()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 123,
-    "kind": "method_declaration",
-    "name": "Only_the_flight_forbids_a_retry",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void Only_the_flight_forbids_a_retry()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 135,
-    "kind": "method_declaration",
-    "name": "The_bands_map_a_divergence_to_an_outcome_and_a_next_step",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Theory] [InlineData(0.00f, VerificationOutcome.Confirmed, null)] [InlineData(0.14f, VerificationOutcome.Confirmed, null)] [InlineData(0.15f, VerificationOutcome.Discrepant, RecoveryStrategy.Replan)] [InlineData(0.39f, VerificationOutcome.Discrepant, RecoveryStrategy.Replan)] [InlineData(0.40f, VerificationOutcome.Discrepant, RecoveryStrategy.Cooling)] [InlineData(0.69f, VerificationOutcome.Discrepant, RecoveryStrategy.Cooling)] [InlineData(0.70f, VerificationOutcome.Discrepant, RecoveryStrategy.HaltAndAlert)] [InlineData(1.00f, VerificationOutcome.Discrepant, RecoveryStrategy.HaltAndAlert)] public void The_bands_map_a_divergence_to_an_outcome_and_a_next_step( float divergence, VerificationOutcome outcome, RecoveryStrategy? next)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 153,
-    "kind": "method_declaration",
-    "name": "A_move_that_closes_the_distance_is_confirmed",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_move_that_closes_the_distance_is_confirmed()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 168,
-    "kind": "method_declaration",
-    "name": "A_move_that_did_not_change_the_cell_is_a_stall_and_says_so",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_move_that_did_not_change_the_cell_is_a_stall_and_says_so()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 179,
-    "kind": "method_declaration",
-    "name": "A_move_that_went_the_other_way_is_a_deviation_and_says_so",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_move_that_went_the_other_way_is_a_deviation_and_says_so()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 195,
-    "kind": "method_declaration",
-    "name": "A_blow_taken_during_a_successful_move_does_not_fail_the_move",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_blow_taken_during_a_successful_move_does_not_fail_the_move()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 207,
-    "kind": "method_declaration",
-    "name": "A_move_with_no_position_after_the_act_is_unverified",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_move_with_no_position_after_the_act_is_unverified()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 220,
-    "kind": "method_declaration",
-    "name": "A_target_frame_that_appeared_confirms_the_selection",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_target_frame_that_appeared_confirms_the_selection()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 230,
-    "kind": "method_declaration",
-    "name": "A_target_frame_that_stayed_absent_contradicts_the_selection",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_target_frame_that_stayed_absent_contradicts_the_selection()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 246,
-    "kind": "method_declaration",
-    "name": "An_unreadable_target_frame_is_unverified_and_carries_the_readers_reason",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void An_unreadable_target_frame_is_unverified_and_carries_the_readers_reason()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 265,
-    "kind": "method_declaration",
-    "name": "An_attack_is_confirmed_by_the_targets_health_falling_not_the_players",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void An_attack_is_confirmed_by_the_targets_health_falling_not_the_players()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 279,
-    "kind": "method_declaration",
-    "name": "The_players_own_health_decides_nothing_about_an_attack",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void The_players_own_health_decides_nothing_about_an_attack()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 292,
-    "kind": "method_declaration",
-    "name": "An_attack_is_confirmed_by_a_death_whatever_the_health_readings_said",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void An_attack_is_confirmed_by_a_death_whatever_the_health_readings_said()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 309,
-    "kind": "method_declaration",
-    "name": "A_target_seen_without_health_is_unverified_and_never_a_failure",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_target_seen_without_health_is_unverified_and_never_a_failure()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 322,
-    "kind": "method_declaration",
-    "name": "A_target_never_sighted_in_the_window_is_unverified",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_target_never_sighted_in_the_window_is_unverified()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 337,
-    "kind": "method_declaration",
-    "name": "An_attack_is_judged_on_the_lowest_health_in_the_window_not_the_last",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void An_attack_is_judged_on_the_lowest_health_in_the_window_not_the_last()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 352,
-    "kind": "method_declaration",
-    "name": "A_skill_whose_mp_fell_is_confirmed_and_still_names_the_blind_half",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_skill_whose_mp_fell_is_confirmed_and_still_names_the_blind_half()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 365,
-    "kind": "method_declaration",
-    "name": "A_skill_whose_mp_did_not_fall_did_not_fire",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_skill_whose_mp_did_not_fall_did_not_fire()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 377,
-    "kind": "method_declaration",
-    "name": "Mp_spent_and_regenerated_inside_the_window_still_counts_as_spent",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void Mp_spent_and_regenerated_inside_the_window_still_counts_as_spent()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 389,
-    "kind": "method_declaration",
-    "name": "A_potion_that_raised_the_hp_is_confirmed_whatever_the_amount",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_potion_that_raised_the_hp_is_confirmed_whatever_the_amount()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 405,
-    "kind": "method_declaration",
-    "name": "A_potion_is_not_required_to_return_an_exact_amount",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_potion_is_not_required_to_return_an_exact_amount()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 422,
-    "kind": "method_declaration",
-    "name": "A_heal_undone_by_a_blow_before_the_window_closed_is_still_a_heal",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_heal_undone_by_a_blow_before_the_window_closed_is_still_a_heal()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 433,
-    "kind": "method_declaration",
-    "name": "No_rise_at_all_is_reported_as_the_ambiguity_it_is",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void No_rise_at_all_is_reported_as_the_ambiguity_it_is()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 446,
-    "kind": "method_declaration",
-    "name": "A_collection_is_confirmed_when_an_inventory_slot_gains",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_collection_is_confirmed_when_an_inventory_slot_gains()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 459,
-    "kind": "method_declaration",
-    "name": "A_collection_that_gained_nothing_is_a_discrepancy",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_collection_that_gained_nothing_is_a_discrepancy()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 472,
-    "kind": "method_declaration",
-    "name": "A_collection_with_no_inventory_reading_is_unverified",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_collection_with_no_inventory_reading_is_unverified()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 485,
-    "kind": "method_declaration",
-    "name": "A_flight_that_opened_the_distance_is_confirmed",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_flight_that_opened_the_distance_is_confirmed()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 497,
-    "kind": "method_declaration",
-    "name": "A_flight_that_did_not_open_the_distance_is_a_discrepancy",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_flight_that_did_not_open_the_distance_is_a_discrepancy()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 510,
-    "kind": "method_declaration",
-    "name": "A_flight_with_no_hostile_observed_is_unverified",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_flight_with_no_hostile_observed_is_unverified()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 527,
-    "kind": "method_declaration",
-    "name": "A_series_holding_nothing_after_the_act_confirms_nothing",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void A_series_holding_nothing_after_the_act_confirms_nothing()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 551,
-    "kind": "method_declaration",
-    "name": "An_unverifiable_verdict_carries_no_divergence_to_be_misread_as_a_failure",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "[Fact] public void An_unverifiable_verdict_carries_no_divergence_to_be_misread_as_a_failure()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 564,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "private static PostConditionVerdict Evaluate( ActionCandidate candidate, IReadOnlyList<Gate3WorldState> states, IReadOnlyList<long>? deaths = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 576,
-    "kind": "method_declaration",
-    "name": "States",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "private static IReadOnlyList<Gate3WorldState> States(params Gate3WorldState[] states)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 579,
-    "kind": "method_declaration",
-    "name": "At",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "private static Gate3WorldState At( DateTime at, int hp = 1000, int mp = 1420, MapPoint? position = null, IReadOnlyList<SelectableEntity>? entities = null, IReadOnlyList<InventorySlotReading>? inventory = null, ClassifiedValue<bool>? hasTarget = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 600,
-    "kind": "method_declaration",
-    "name": "Entity",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "private static SelectableEntity Entity(long id, double? hp, DateTime at, int x = 105, int y = 100)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
-    "line": 603,
-    "kind": "method_declaration",
-    "name": "Slot",
-    "scope": "PostConditionCatalogueTests",
-    "signature": "private static InventorySlotReading Slot(int slot, int vnum, int amount, DateTime at)",
     "category": "test"
   }
 ]

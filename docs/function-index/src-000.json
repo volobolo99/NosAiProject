@@ -1580,25 +1580,25 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "CognitiveMemoryWindow",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs",
-    "line": 71,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CognitiveMemoryWindow",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs",
-    "line": 71,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CognitiveMemoryWindow",
     "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs",
+    "line": 71,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveMemoryWindow",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CognitiveMemoryWindow.xaml.cs",
+    "line": 71,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CognitiveMemoryWindow",
+    "signature": "x =>",
     "category": "project"
   },
   {
@@ -1800,6 +1800,51 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.ControlPanel/CombatChainCard.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "DescribeElevation",
+    "scope": "CombatChainCard",
+    "signature": "public static string DescribeElevation(bool elevated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CombatChainCard.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "SummariseCombatReport",
+    "scope": "CombatChainCard",
+    "signature": "public static string SummariseCombatReport(string output)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CombatChainCard.cs",
+    "line": 55,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "CombatChainCard",
+    "signature": "l =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CombatChainCard.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "TryValidateEngage",
+    "scope": "CombatChainCard",
+    "signature": "public static bool TryValidateEngage(string? targetId, string? skillId, string? rounds, out int roundCount, out string? refusal)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/CombatChainCard.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "ClassifyEngageLine",
+    "scope": "CombatChainCard",
+    "signature": "public static EngageLineKind ClassifyEngageLine(string line)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.ControlPanel/CombatInspect.cs",
     "line": 12,
     "kind": "accessor_declaration",
@@ -1926,6 +1971,42 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.ControlPanel/DecideCycleCard.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "DescribeExpectation",
+    "scope": "DecideCycleCard",
+    "signature": "public static string DescribeExpectation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/DecideCycleCard.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "TryValidateStart",
+    "scope": "DecideCycleCard",
+    "signature": "public static bool TryValidateStart(string? endpoint, string? intervalMs, out int interval, out string? refusal)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/DecideCycleCard.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "ClassifyDecideLine",
+    "scope": "DecideCycleCard",
+    "signature": "public static string ClassifyDecideLine(string line)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/DecideCycleCard.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "SummariseRun",
+    "scope": "DecideCycleCard",
+    "signature": "public static string SummariseRun(int noWorldState, int attached, int executionDisabled, int total, bool stoppedByOperator)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.ControlPanel/DecisionInspect.cs",
     "line": 11,
     "kind": "method_declaration",
@@ -1977,6 +2058,42 @@
     "name": "Field",
     "scope": "ElevationInspect",
     "signature": "public static DisplayField Field(bool elevated)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/EndpointAutoDetect.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "ShouldDetect",
+    "scope": "EndpointAutoDetect",
+    "signature": "public static bool ShouldDetect( bool clientPidKnown, int? currentPid, int? lastDetectedForPid, string currentText, EndpointOrigin origin)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/EndpointAutoDetect.cs",
+    "line": 58,
+    "kind": "method_declaration",
+    "name": "DescribeOrigin",
+    "scope": "EndpointAutoDetect",
+    "signature": "public static string DescribeOrigin( EndpointOrigin origin, string endpoint, DateTime? whenUtc, DateTime nowUtc, string? clientFailureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/EndpointAutoDetect.cs",
+    "line": 91,
+    "kind": "method_declaration",
+    "name": "OriginAfterEdit",
+    "scope": "EndpointAutoDetect",
+    "signature": "public static EndpointOrigin OriginAfterEdit(EndpointOrigin previous, string oldText, string newText)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/EndpointAutoDetect.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "DescribeAge",
+    "scope": "EndpointAutoDetect",
+    "signature": "private static string DescribeAge(DateTime whenUtc, DateTime nowUtc)",
     "category": "project"
   },
   {
@@ -2502,6 +2619,33 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.ControlPanel/KeybindConfirmCard.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Describe",
+    "scope": "KeybindConfirmCard",
+    "signature": "public static string Describe(string json)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/KeybindConfirmCard.cs",
+    "line": 108,
+    "kind": "method_declaration",
+    "name": "TryConfirm",
+    "scope": "KeybindConfirmCard",
+    "signature": "public static bool TryConfirm( string json, string? intent, string? virtualKeyText, string? observation, out string updatedJson, out string? refusal)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/KeybindConfirmCard.cs",
+    "line": 202,
+    "kind": "method_declaration",
+    "name": "SummariseConfirmation",
+    "scope": "KeybindConfirmCard",
+    "signature": "public static string SummariseConfirmation(string intent, int virtualKey, string observation)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.ControlPanel/KeybindsInspect.cs",
     "line": 8,
     "kind": "accessor_declaration",
@@ -2571,6 +2715,159 @@
     "name": "CanConnect",
     "scope": "LocalPortProbe",
     "signature": "public static bool CanConnect(int port, int timeoutMs = 80)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Combat.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "OnCheckKeybinds",
+    "scope": "MainWindow",
+    "signature": "private async void OnCheckKeybinds(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Combat.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "OnCombatReport",
+    "scope": "MainWindow",
+    "signature": "private async void OnCombatReport(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Combat.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "OnEngageTarget",
+    "scope": "MainWindow",
+    "signature": "private async void OnEngageTarget(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Combat.cs",
+    "line": 81,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "line =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Decide.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "OnStartDecideCycle",
+    "scope": "MainWindow",
+    "signature": "private async void OnStartDecideCycle(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Decide.cs",
+    "line": 69,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "line =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Decide.cs",
+    "line": 73,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Decide.cs",
+    "line": 130,
+    "kind": "method_declaration",
+    "name": "OnStopDecideCycle",
+    "scope": "MainWindow",
+    "signature": "private void OnStopDecideCycle(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Endpoint.cs",
+    "line": 25,
+    "kind": "method_declaration",
+    "name": "RefreshEndpointAutoDetect",
+    "scope": "MainWindow",
+    "signature": "private void RefreshEndpointAutoDetect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Endpoint.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "OnEndpointTextChanged",
+    "scope": "MainWindow",
+    "signature": "private void OnEndpointTextChanged(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Keybinds.cs",
+    "line": 10,
+    "kind": "method_declaration",
+    "name": "OnReloadKeybinds",
+    "scope": "MainWindow",
+    "signature": "private void OnReloadKeybinds(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.Keybinds.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "OnConfirmKeybind",
+    "scope": "MainWindow",
+    "signature": "private void OnConfirmKeybind(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.TargetRoi.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "OnCaptureTargetCrop",
+    "scope": "MainWindow",
+    "signature": "private async void OnCaptureTargetCrop(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.TargetRoi.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "OnRegisterTargetRoi",
+    "scope": "MainWindow",
+    "signature": "private async void OnRegisterTargetRoi(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.TargetRoi.cs",
+    "line": 103,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "line =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.TargetRoi.cs",
+    "line": 126,
+    "kind": "method_declaration",
+    "name": "OnRereadTargetState",
+    "scope": "MainWindow",
+    "signature": "private async void OnRereadTargetState(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.TargetRoi.cs",
+    "line": 147,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "line =>",
     "category": "project"
   },
   {
@@ -2773,7 +3070,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 285,
+    "line": 289,
     "kind": "method_declaration",
     "name": "ApplyMode",
     "scope": "MainWindow",
@@ -2782,7 +3079,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 297,
+    "line": 301,
     "kind": "method_declaration",
     "name": "ApplyMap",
     "scope": "MainWindow",
@@ -2791,7 +3088,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 308,
+    "line": 312,
     "kind": "method_declaration",
     "name": "ApplyAround",
     "scope": "MainWindow",
@@ -2800,7 +3097,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 323,
+    "line": 327,
     "kind": "method_declaration",
     "name": "ApplyTarget",
     "scope": "MainWindow",
@@ -2809,7 +3106,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 355,
+    "line": 359,
     "kind": "method_declaration",
     "name": "ApplyInventoryPanelRoi",
     "scope": "MainWindow",
@@ -2818,7 +3115,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 378,
+    "line": 382,
     "kind": "method_declaration",
     "name": "ApplyUnequip",
     "scope": "MainWindow",
@@ -2827,7 +3124,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 400,
+    "line": 404,
     "kind": "method_declaration",
     "name": "OnUnequip",
     "scope": "MainWindow",
@@ -2836,7 +3133,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 437,
+    "line": 441,
     "kind": "method_declaration",
     "name": "SummariseUnequip",
     "scope": "MainWindow",
@@ -2845,7 +3142,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 462,
+    "line": 466,
     "kind": "method_declaration",
     "name": "WatchTargetFiles",
     "scope": "MainWindow",
@@ -2854,7 +3151,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 492,
+    "line": 496,
     "kind": "method_declaration",
     "name": "OnTargetFileEvent",
     "scope": "MainWindow",
@@ -2863,7 +3160,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 500,
+    "line": 504,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -2872,7 +3169,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 507,
+    "line": 511,
     "kind": "method_declaration",
     "name": "IsTargetWatchedPath",
     "scope": "MainWindow",
@@ -2881,7 +3178,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 514,
+    "line": 518,
     "kind": "method_declaration",
     "name": "ModeLabel",
     "scope": "MainWindow",
@@ -2890,7 +3187,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 521,
+    "line": 525,
     "kind": "method_declaration",
     "name": "FirstValue",
     "scope": "MainWindow",
@@ -2899,7 +3196,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 522,
+    "line": 526,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -2908,7 +3205,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 524,
+    "line": 528,
     "kind": "method_declaration",
     "name": "RefreshSetup",
     "scope": "MainWindow",
@@ -2917,7 +3214,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 526,
+    "line": 530,
     "kind": "method_declaration",
     "name": "ShowPreviousStartupRound",
     "scope": "MainWindow",
@@ -2926,7 +3223,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 551,
+    "line": 555,
     "kind": "method_declaration",
     "name": "StartStartupRoundAsync",
     "scope": "MainWindow",
@@ -2935,7 +3232,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 597,
+    "line": 601,
     "kind": "method_declaration",
     "name": "ApplyStartupRound",
     "scope": "MainWindow",
@@ -2944,7 +3241,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 620,
+    "line": 624,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -2953,7 +3250,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 629,
+    "line": 633,
     "kind": "method_declaration",
     "name": "OnStartupRoundDetails",
     "scope": "MainWindow",
@@ -2962,7 +3259,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 634,
+    "line": 638,
     "kind": "method_declaration",
     "name": "OnStartupRoundRepeat",
     "scope": "MainWindow",
@@ -2971,7 +3268,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 649,
+    "line": 653,
     "kind": "method_declaration",
     "name": "OnNav",
     "scope": "MainWindow",
@@ -2980,7 +3277,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 732,
+    "line": 736,
     "kind": "method_declaration",
     "name": "RefreshListenThenShowAsync",
     "scope": "MainWindow",
@@ -2989,7 +3286,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 741,
+    "line": 745,
     "kind": "method_declaration",
     "name": "LoadSettingsIntoForm",
     "scope": "MainWindow",
@@ -2998,7 +3295,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 755,
+    "line": 759,
     "kind": "method_declaration",
     "name": "OnSaveSettings",
     "scope": "MainWindow",
@@ -3007,7 +3304,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 806,
+    "line": 810,
     "kind": "method_declaration",
     "name": "BuildSuiteButtons",
     "scope": "MainWindow",
@@ -3016,16 +3313,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 819,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MainWindow",
-    "signature": "async (_, _) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 829,
+    "line": 823,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3035,6 +3323,15 @@
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
     "line": 833,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "async (_, _) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 837,
     "kind": "method_declaration",
     "name": "RunSuiteAsync",
     "scope": "MainWindow",
@@ -3043,7 +3340,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 850,
+    "line": 854,
     "kind": "method_declaration",
     "name": "RefreshScreenCalibration",
     "scope": "MainWindow",
@@ -3052,7 +3349,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 865,
+    "line": 869,
     "kind": "method_declaration",
     "name": "OnScreenCalibrationRefresh",
     "scope": "MainWindow",
@@ -3061,7 +3358,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 867,
+    "line": 871,
     "kind": "method_declaration",
     "name": "CalibrationSay",
     "scope": "MainWindow",
@@ -3070,7 +3367,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 883,
+    "line": 887,
     "kind": "method_declaration",
     "name": "OnScreenSamples",
     "scope": "MainWindow",
@@ -3079,7 +3376,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 897,
+    "line": 901,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3088,7 +3385,16 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 901,
+    "line": 905,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 905,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3097,16 +3403,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 901,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MainWindow",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 922,
+    "line": 926,
     "kind": "method_declaration",
     "name": "OnScreenCalibrate",
     "scope": "MainWindow",
@@ -3115,7 +3412,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 934,
+    "line": 938,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3124,7 +3421,16 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 935,
+    "line": 939,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 939,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3133,16 +3439,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 935,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MainWindow",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 953,
+    "line": 957,
     "kind": "method_declaration",
     "name": "OnScreenSamplesClear",
     "scope": "MainWindow",
@@ -3151,7 +3448,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 974,
+    "line": 978,
     "kind": "method_declaration",
     "name": "OnDxgiProbe",
     "scope": "MainWindow",
@@ -3160,7 +3457,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 986,
+    "line": 990,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3169,7 +3466,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1004,
+    "line": 1008,
     "kind": "method_declaration",
     "name": "OnTrainGlyphs",
     "scope": "MainWindow",
@@ -3178,7 +3475,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1018,
+    "line": 1022,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3187,7 +3484,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1037,
+    "line": 1041,
     "kind": "method_declaration",
     "name": "OnDetectObserveGame",
     "scope": "MainWindow",
@@ -3196,7 +3493,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1080,
+    "line": 1084,
     "kind": "method_declaration",
     "name": "OnRecordWireWithNote",
     "scope": "MainWindow",
@@ -3205,7 +3502,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1146,
+    "line": 1150,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3214,7 +3511,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1169,
+    "line": 1173,
     "kind": "method_declaration",
     "name": "NewestCapture",
     "scope": "MainWindow",
@@ -3223,7 +3520,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1175,
+    "line": 1179,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3232,7 +3529,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1176,
+    "line": 1180,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3241,7 +3538,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1180,
+    "line": 1184,
     "kind": "method_declaration",
     "name": "OnRecordEquipWire",
     "scope": "MainWindow",
@@ -3250,7 +3547,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1234,
+    "line": 1238,
     "kind": "method_declaration",
     "name": "OnAnalyzeEquipWire",
     "scope": "MainWindow",
@@ -3259,7 +3556,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1286,
+    "line": 1290,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3268,7 +3565,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1299,
+    "line": 1303,
     "kind": "method_declaration",
     "name": "OnStartLiveDecode",
     "scope": "MainWindow",
@@ -3277,7 +3574,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1326,
+    "line": 1330,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3286,7 +3583,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1348,
+    "line": 1352,
     "kind": "method_declaration",
     "name": "OnRestartElevated",
     "scope": "MainWindow",
@@ -3295,7 +3592,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1374,
+    "line": 1378,
     "kind": "method_declaration",
     "name": "OnPairPhone",
     "scope": "MainWindow",
@@ -3304,7 +3601,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1377,
+    "line": 1381,
     "kind": "method_declaration",
     "name": "OnEnrollPhone",
     "scope": "MainWindow",
@@ -3313,7 +3610,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1380,
+    "line": 1384,
     "kind": "method_declaration",
     "name": "RunPythonAsync",
     "scope": "MainWindow",
@@ -3322,7 +3619,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1396,
+    "line": 1400,
     "kind": "method_declaration",
     "name": "RunToolAsync",
     "scope": "MainWindow",
@@ -3331,7 +3628,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1410,
+    "line": 1414,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3340,7 +3637,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1411,
+    "line": 1415,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3349,7 +3646,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1446,
+    "line": 1450,
     "kind": "method_declaration",
     "name": "ResolveRuntimeDll",
     "scope": "MainWindow",
@@ -3358,7 +3655,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1448,
+    "line": 1452,
     "kind": "method_declaration",
     "name": "AppendLog",
     "scope": "MainWindow",
@@ -3367,7 +3664,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1466,
+    "line": 1470,
     "kind": "method_declaration",
     "name": "OnOpenOperatorLog",
     "scope": "MainWindow",
@@ -3376,7 +3673,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1484,
+    "line": 1488,
     "kind": "method_declaration",
     "name": "OnClearLog",
     "scope": "MainWindow",
@@ -3385,7 +3682,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1496,
+    "line": 1500,
     "kind": "method_declaration",
     "name": "OnAwaitClientCapture",
     "scope": "MainWindow",
@@ -3394,7 +3691,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1521,
+    "line": 1525,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3403,7 +3700,16 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1524,
+    "line": 1528,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 1528,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "MainWindow",
@@ -3412,16 +3718,7 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1524,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MainWindow",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1553,
+    "line": 1557,
     "kind": "method_declaration",
     "name": "Status",
     "scope": "MainWindow",
@@ -3430,7 +3727,25 @@
   },
   {
     "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
-    "line": 1559,
+    "line": 1578,
+    "kind": "method_declaration",
+    "name": "OnRecordPreLoginWire",
+    "scope": "MainWindow",
+    "signature": "private async void OnRecordPreLoginWire(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 1612,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MainWindow",
+    "signature": "line =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/MainWindow.xaml.cs",
+    "line": 1646,
     "kind": "method_declaration",
     "name": "ShutdownAsync",
     "scope": "MainWindow",
@@ -4182,321 +4497,6 @@
     "name": "HudCropField",
     "scope": "PerceptionProbe",
     "signature": "internal static DisplayField HudCropField(IReadOnlyList<HudCropWrite> crops)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 328,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PerceptionProbe",
-    "signature": "static c =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 332,
-    "kind": "method_declaration",
-    "name": "FormatInstant",
-    "scope": "PerceptionProbe",
-    "signature": "private static string FormatInstant(DateTime utc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 335,
-    "kind": "method_declaration",
-    "name": "BarField",
-    "scope": "PerceptionProbe",
-    "signature": "private static DisplayField BarField(string label, ScreenBarFill bar)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 342,
-    "kind": "method_declaration",
-    "name": "FormatVital",
-    "scope": "PerceptionProbe",
-    "signature": "private static string FormatVital(ClassifiedValue<int> value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 345,
-    "kind": "method_declaration",
-    "name": "FormatRoi",
-    "scope": "PerceptionProbe",
-    "signature": "private static string FormatRoi(PixelRect rect)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
-    "line": 347,
-    "kind": "method_declaration",
-    "name": "VitalUnknownFields",
-    "scope": "PerceptionProbe",
-    "signature": "internal static DisplayField[] VitalUnknownFields()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 24,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "PracticalTestCenter",
-    "signature": "public static PracticalTestVerdict Evaluate(PracticalTestDefinition definition, JsonElement snapshot, DateTime nowUtc, DateTime snapshotReceivedAtUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 157,
-    "kind": "method_declaration",
-    "name": "ReadLiveFields",
-    "scope": "PracticalTestCenter",
-    "signature": "public static IReadOnlyList<DisplayField> ReadLiveFields(JsonElement root)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 189,
-    "kind": "method_declaration",
-    "name": "AddRoot",
-    "scope": "PracticalTestCenter",
-    "signature": "private static void AddRoot(List<DisplayField> fields, JsonElement root, string property, string label, string category)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 192,
-    "kind": "method_declaration",
-    "name": "AddSection",
-    "scope": "PracticalTestCenter",
-    "signature": "private static void AddSection(List<DisplayField> fields, JsonElement root, string section, string property, string label, string category)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 202,
-    "kind": "method_declaration",
-    "name": "RenderRoot",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string RenderRoot(JsonElement root, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 210,
-    "kind": "method_declaration",
-    "name": "Unwrap",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string Unwrap(JsonElement value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 230,
-    "kind": "method_declaration",
-    "name": "SourceOf",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string SourceOf(JsonElement value, string fallback)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 239,
-    "kind": "method_declaration",
-    "name": "FailureReason",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string FailureReason(JsonElement classified)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 245,
-    "kind": "method_declaration",
-    "name": "Both",
-    "scope": "PracticalTestCenter",
-    "signature": "private static bool Both(JsonElement root, string section, string a, string b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 248,
-    "kind": "method_declaration",
-    "name": "ReadBool",
-    "scope": "PracticalTestCenter",
-    "signature": "private static bool ReadBool(JsonElement root, string section, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 251,
-    "kind": "method_declaration",
-    "name": "ReadLong",
-    "scope": "PracticalTestCenter",
-    "signature": "private static long ReadLong(JsonElement root, string section, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 254,
-    "kind": "method_declaration",
-    "name": "ReadClassified",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string? ReadClassified(JsonElement root, string section, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 260,
-    "kind": "method_declaration",
-    "name": "HasProperty",
-    "scope": "PracticalTestCenter",
-    "signature": "private static bool HasProperty(JsonElement root, string section)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 263,
-    "kind": "method_declaration",
-    "name": "HasProperty",
-    "scope": "PracticalTestCenter",
-    "signature": "private static bool HasProperty(JsonElement root, string section, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 266,
-    "kind": "method_declaration",
-    "name": "ReadRootString",
-    "scope": "PracticalTestCenter",
-    "signature": "private static string? ReadRootString(JsonElement root, string property)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
-    "line": 274,
-    "kind": "method_declaration",
-    "name": "TryReadArray",
-    "scope": "PracticalTestCenter",
-    "signature": "private static bool TryReadArray(JsonElement snapshot, string name, out int count, out string? reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 20,
-    "kind": "constructor_declaration",
-    "name": "PracticalTestCenterWindow",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "public PracticalTestCenterWindow(string repoRoot)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 25,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "async (_, _) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 26,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "async (_, _) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 27,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "(_, _) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 30,
-    "kind": "method_declaration",
-    "name": "BuildTestButtons",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private void BuildTestButtons()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 48,
-    "kind": "method_declaration",
-    "name": "OnRunTest",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private async void OnRunTest(object sender, RoutedEventArgs e)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 63,
-    "kind": "method_declaration",
-    "name": "OnAcknowledge",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private void OnAcknowledge(object sender, RoutedEventArgs e)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 65,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 69,
-    "kind": "method_declaration",
-    "name": "RefreshAsync",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private async Task RefreshAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 85,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 100,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private void Evaluate(PracticalTestDefinition definition)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 113,
-    "kind": "method_declaration",
-    "name": "ShowResult",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private void ShowResult(PracticalTestResult result, string evidence, string detail)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
-    "line": 119,
-    "kind": "method_declaration",
-    "name": "AppendRun",
-    "scope": "PracticalTestCenterWindow",
-    "signature": "private void AppendRun(string testId, PracticalTestResult result, string evidence)",
     "category": "project"
   }
 ]

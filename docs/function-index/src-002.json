@@ -1,5 +1,347 @@
 [
   {
+    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
+    "line": 296,
+    "kind": "method_declaration",
+    "name": "Verdict",
+    "scope": "CombatPlanner",
+    "signature": "private static CombatConstraintCheck Verdict(CombatActionCandidate candidate, List<string> violations)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "CheckTarget",
+    "scope": "CombatPlanner",
+    "signature": "private static void CheckTarget( EntityId target, EquatableArray<Mob> mobs, WorldPosition playerPosition, double range, List<string> violations)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
+    "line": 340,
+    "kind": "method_declaration",
+    "name": "CheckSkillReady",
+    "scope": "CombatPlanner",
+    "signature": "private static void CheckSkillReady(SkillId skillId, Player player, List<string> violations)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
+    "line": 390,
+    "kind": "method_declaration",
+    "name": "Distance",
+    "scope": "CombatPlanner",
+    "signature": "private static double Distance(WorldPosition a, WorldPosition b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+    "line": 15,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CombatantStatus",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Player",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+    "line": 74,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Player",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+    "line": 91,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Mob",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
+    "line": 91,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Mob",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 30,
+    "kind": "constructor_declaration",
+    "name": "EquatableArray",
+    "scope": "EquatableArray",
+    "signature": "public EquatableArray(ImmutableArray<T> items)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "From",
+    "scope": "EquatableArray",
+    "signature": "public static EquatableArray<T> From(IEnumerable<T> items)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "GetEnumerator",
+    "scope": "EquatableArray",
+    "signature": "public ImmutableArray<T>.Enumerator GetEnumerator()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "GetEnumerator",
+    "scope": "EquatableArray",
+    "signature": "IEnumerator<T> IEnumerable<T>.GetEnumerator()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "GetEnumerator",
+    "scope": "EquatableArray",
+    "signature": "IEnumerator IEnumerable.GetEnumerator()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "Equals",
+    "scope": "EquatableArray",
+    "signature": "public bool Equals(EquatableArray<T> other)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "Equals",
+    "scope": "EquatableArray",
+    "signature": "public override bool Equals(object? obj)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "GetHashCode",
+    "scope": "EquatableArray",
+    "signature": "public override int GetHashCode()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 93,
+    "kind": "operator_declaration",
+    "name": "<anonymous/accessor>",
+    "scope": "EquatableArray",
+    "signature": "public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
+    "line": 95,
+    "kind": "operator_declaration",
+    "name": "<anonymous/accessor>",
+    "scope": "EquatableArray",
+    "signature": "public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "Empty",
+    "scope": "ExplorationFootprint",
+    "signature": "public static ExplorationFootprint Empty(MapId mapId, string reason, DateTime? observedAtUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "Unreachable",
+    "scope": "NavigationPlan",
+    "signature": "public static NavigationPlan Unreachable(string reason, DateTime? observedAtUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "ToTileCoordinate",
+    "scope": "ExplorationPlanner",
+    "signature": "public static TileCoordinate ToTileCoordinate(WorldPosition position)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 64,
+    "kind": "method_declaration",
+    "name": "UpdateFootprint",
+    "scope": "ExplorationPlanner",
+    "signature": "public static ExplorationFootprint UpdateFootprint( ExplorationFootprint previous, MapModel map, WorldFact<WorldPosition> playerPosition, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "BuildFrontierCandidates",
+    "scope": "ExplorationPlanner",
+    "signature": "public static IReadOnlyList<FrontierCandidate> BuildFrontierCandidates( MapModel map, ExplorationFootprint footprint, WorldPosition playerPosition, EquatableArray<Mob> mobs, WorldPosition? missionFocus = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 180,
+    "kind": "method_declaration",
+    "name": "SelectNextFrontier",
+    "scope": "ExplorationPlanner",
+    "signature": "public static FrontierCandidate? SelectNextFrontier( IReadOnlyList<FrontierCandidate> candidates, FrontierScoringWeights? weights = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 214,
+    "kind": "method_declaration",
+    "name": "BuildNavigationPlan",
+    "scope": "ExplorationPlanner",
+    "signature": "public static NavigationPlan BuildNavigationPlan(MapId mapId, FrontierCandidate? selected, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "ExplainFrontier",
+    "scope": "ExplorationPlanner",
+    "signature": "public static ExplorationVerdict ExplainFrontier(MapModel map, ExplorationFootprint footprint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 292,
+    "kind": "method_declaration",
+    "name": "IsWalkable",
+    "scope": "ExplorationPlanner",
+    "signature": "private static bool IsWalkable(Tile tile)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 295,
+    "kind": "method_declaration",
+    "name": "Score",
+    "scope": "ExplorationPlanner",
+    "signature": "private static double Score(FrontierCandidate candidate, FrontierScoringWeights weights)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "ComputeInformationGain",
+    "scope": "ExplorationPlanner",
+    "signature": "private static double ComputeInformationGain( TileCoordinate candidate, Dictionary<TileCoordinate, Tile> tilesByCoordinate, HashSet<TileCoordinate> visited)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 326,
+    "kind": "method_declaration",
+    "name": "ComputeRisk",
+    "scope": "ExplorationPlanner",
+    "signature": "private static double ComputeRisk(TileCoordinate candidate, EquatableArray<Mob> mobs)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 343,
+    "kind": "method_declaration",
+    "name": "ComputeDistance",
+    "scope": "ExplorationPlanner",
+    "signature": "private static double ComputeDistance(TileCoordinate tile, WorldPosition position)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 350,
+    "kind": "method_declaration",
+    "name": "ContainsCoordinate",
+    "scope": "ExplorationPlanner",
+    "signature": "private static bool ContainsCoordinate(EquatableArray<TileCoordinate> coordinates, TileCoordinate target)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 361,
+    "kind": "method_declaration",
+    "name": "AppendCoordinate",
+    "scope": "ExplorationPlanner",
+    "signature": "private static EquatableArray<TileCoordinate> AppendCoordinate(EquatableArray<TileCoordinate> coordinates, TileCoordinate toAppend)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 370,
+    "kind": "method_declaration",
+    "name": "ComputeFullyExplored",
+    "scope": "ExplorationPlanner",
+    "signature": "private static WorldFact<bool> ComputeFullyExplored(MapModel map, EquatableArray<TileCoordinate> visited, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
+    "line": 406,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "FrontierScoringWeights",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/MovementExecutionContracts.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "NotAttempted",
+    "scope": "MovementExecutionEvidence",
+    "signature": "public static MovementExecutionEvidence NotAttempted( MapId mapId, TileCoordinate requested, string reason, DateTime? observedAtUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Exploration/MultiMapRoutePlanner.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "PlanRoute",
+    "scope": "MultiMapRoutePlanner",
+    "signature": "public static NavigationPlan PlanRoute( IReadOnlyDictionary<MapId, MapModel> knownMaps, MapId startMap, WorldPosition startPosition, MapId destinationMap, WorldPosition destinationPosition, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Core/WorldModel/Exploration/MultiMapRoutePlanner.cs",
     "line": 122,
     "kind": "method_declaration",
@@ -1541,19 +1883,19 @@
   {
     "path": "src/NosAi.GuardAi.App/MainPage.xaml.cs",
     "line": 80,
-    "kind": "method_declaration",
-    "name": "OnStatusChanged",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "MainPage",
-    "signature": "private void OnStatusChanged(GuardStatus status)",
+    "signature": "() =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.GuardAi.App/MainPage.xaml.cs",
     "line": 80,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "OnStatusChanged",
     "scope": "MainPage",
-    "signature": "() =>",
+    "signature": "private void OnStatusChanged(GuardStatus status)",
     "category": "project"
   },
   {
@@ -3539,19 +3881,19 @@
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
     "line": 51,
-    "kind": "method_declaration",
-    "name": "ContainsActiveInjection",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.CapBacPromptSanitizer",
-    "signature": "public static bool ContainsActiveInjection(string input)",
+    "signature": "phrase =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
     "line": 51,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "ContainsActiveInjection",
     "scope": "NosAi.AI.LocalInference.CapBacPromptSanitizer",
-    "signature": "phrase =>",
+    "signature": "public static bool ContainsActiveInjection(string input)",
     "category": "project"
   },
   {
@@ -3620,46 +3962,46 @@
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
     "line": 95,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 95,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 95,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 95,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
+    "signature": "_ =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 95,
     "kind": "method_declaration",
     "name": "RegisterDefaultTools",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
     "signature": "private void RegisterDefaultTools()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
-    "signature": "_ =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
-    "signature": "_ =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
-    "signature": "_ =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
-    "signature": "_ =>",
     "category": "project"
   },
   {
@@ -4043,6 +4385,15 @@
   {
     "path": "src/NosAi.Runtime/Autonomy/GoalStack.cs",
     "line": 146,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "GoalStack",
+    "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Autonomy/GoalStack.cs",
+    "line": 146,
     "kind": "method_declaration",
     "name": "Remove",
     "scope": "GoalStack",
@@ -4051,7 +4402,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Autonomy/GoalStack.cs",
-    "line": 146,
+    "line": 156,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "GoalStack",
@@ -4065,15 +4416,6 @@
     "name": "Names",
     "scope": "GoalStack",
     "signature": "public bool Names(int? vnum)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Autonomy/GoalStack.cs",
-    "line": 156,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "GoalStack",
-    "signature": "g =>",
     "category": "project"
   },
   {
@@ -4155,348 +4497,6 @@
     "name": "Distance",
     "scope": "TargetSelector",
     "signature": "private static double Distance(MapPoint a, MapPoint b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 31,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 31,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 32,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 32,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 33,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 33,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 34,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 34,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 35,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 35,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 36,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 36,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 39,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 39,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 51,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 51,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 54,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 54,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 60,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 60,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 72,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 72,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 91,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 91,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 94,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 94,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 110,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 110,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 113,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Gate1HostOptions",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 113,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Gate1HostOptions",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 115,
-    "kind": "method_declaration",
-    "name": "Validate",
-    "scope": "Gate1HostOptions",
-    "signature": "public void Validate()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 136,
-    "kind": "method_declaration",
-    "name": "Load",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "public static Gate1HostOptions Load(IReadOnlyDictionary<string, string?> environment, IEnumerable<string> args)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 169,
-    "kind": "method_declaration",
-    "name": "ParseObserveGame",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "public static GameEndpoint ParseObserveGame(string raw)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 205,
-    "kind": "method_declaration",
-    "name": "ValidateObserveGame",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "internal static void ValidateObserveGame(GameEndpoint endpoint)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 216,
-    "kind": "method_declaration",
-    "name": "ReadObserveGame",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "private static GameEndpoint? ReadObserveGame(IReadOnlyDictionary<string, string?> environment, string[] args)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 224,
-    "kind": "method_declaration",
-    "name": "ReadPemWithSource",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "private static (string? Pem, string? Source) ReadPemWithSource( IReadOnlyDictionary<string, string?> environment, string[] args)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 248,
-    "kind": "method_declaration",
-    "name": "ReadInt",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "private static int ReadInt(IReadOnlyDictionary<string, string?> environment, string[] args, string envName, string flag, int fallback)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
-    "line": 258,
-    "kind": "method_declaration",
-    "name": "ReadString",
-    "scope": "Gate1HostOptionsLoader",
-    "signature": "private static string ReadString(IReadOnlyDictionary<string, string?> environment, string[] args, string envName, string flag, string fallback)",
     "category": "project"
   }
 ]

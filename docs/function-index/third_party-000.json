@@ -1657,11 +1657,11 @@
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.cpp",
-    "line": 24,
-    "kind": "function_declarator",
-    "name": "CaptureSnapshot::TakeAsync",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)",
     "scope": "",
-    "signature": "CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)",
+    "signature": "wil::task<winrt::com_ptr<ID3D11Texture2D>> CaptureSnapshot::TakeAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)",
     "category": "third_party"
   },
   {
@@ -1694,17 +1694,17 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/CaptureSnapshot.h",
     "line": 13,
-    "kind": "function_declarator",
-    "name": "CaptureSnapshot",
+    "kind": "function_definition",
+    "name": "CaptureSnapshot()",
     "scope": "",
-    "signature": "CaptureSnapshot()",
+    "signature": "CaptureSnapshot() = delete;",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 22,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::SimpleCapture",
+    "kind": "function_definition",
+    "name": "SimpleCapture::SimpleCapture(\n    winrt::IDirect3DDevice const& device,\n    std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer,\n    winrt::GraphicsCaptureItem const& item, \n    winrt::DirectXPixelFormat pixelFormat)",
     "scope": "",
     "signature": "SimpleCapture::SimpleCapture( winrt::IDirect3DDevice const& device, std::shared_ptr<DirtyRegionVisualizer> const& dirtyRegionVisualizer, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat pixelFormat)",
     "category": "third_party"
@@ -1712,82 +1712,82 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 52,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::StartCapture",
+    "kind": "function_definition",
+    "name": "SimpleCapture::StartCapture()",
     "scope": "",
-    "signature": "SimpleCapture::StartCapture()",
+    "signature": "void SimpleCapture::StartCapture()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 58,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::CreateSurface",
+    "kind": "function_definition",
+    "name": "SimpleCapture::CreateSurface(winrt::Compositor const& compositor)",
     "scope": "",
-    "signature": "SimpleCapture::CreateSurface(winrt::Compositor const& compositor)",
+    "signature": "winrt::ICompositionSurface SimpleCapture::CreateSurface(winrt::Compositor const& compositor)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 64,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::VisualizeDirtyRegions",
+    "kind": "function_definition",
+    "name": "SimpleCapture::VisualizeDirtyRegions(bool value)",
     "scope": "",
-    "signature": "SimpleCapture::VisualizeDirtyRegions(bool value)",
+    "signature": "void SimpleCapture::VisualizeDirtyRegions(bool value)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 73,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::Close",
+    "kind": "function_definition",
+    "name": "SimpleCapture::Close()",
     "scope": "",
-    "signature": "SimpleCapture::Close()",
+    "signature": "void SimpleCapture::Close()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 88,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::ResizeSwapChain",
+    "kind": "function_definition",
+    "name": "SimpleCapture::ResizeSwapChain()",
     "scope": "",
-    "signature": "SimpleCapture::ResizeSwapChain()",
+    "signature": "void SimpleCapture::ResizeSwapChain()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 96,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::TryResizeSwapChain",
+    "kind": "function_definition",
+    "name": "SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)",
     "scope": "",
-    "signature": "SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)",
+    "signature": "bool SimpleCapture::TryResizeSwapChain(winrt::Direct3D11CaptureFrame const& frame)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 110,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::TryUpdatePixelFormat",
+    "kind": "function_definition",
+    "name": "SimpleCapture::TryUpdatePixelFormat()",
     "scope": "",
-    "signature": "SimpleCapture::TryUpdatePixelFormat()",
+    "signature": "bool SimpleCapture::TryUpdatePixelFormat()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 126,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::GetColorSpaceFromPixelFormat",
+    "kind": "function_definition",
+    "name": "SimpleCapture::GetColorSpaceFromPixelFormat(DXGI_FORMAT format)",
     "scope": "",
-    "signature": "SimpleCapture::GetColorSpaceFromPixelFormat(DXGI_FORMAT format)",
+    "signature": "DXGI_COLOR_SPACE_TYPE SimpleCapture::GetColorSpaceFromPixelFormat(DXGI_FORMAT format)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.cpp",
     "line": 140,
-    "kind": "function_declarator",
-    "name": "SimpleCapture::OnFrameArrived",
+    "kind": "function_definition",
+    "name": "SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)",
     "scope": "",
-    "signature": "SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)",
+    "signature": "void SimpleCapture::OnFrameArrived(winrt::Direct3D11CaptureFramePool const& sender, winrt::IInspectable const&)",
     "category": "third_party"
   },
   {
@@ -1802,8 +1802,8 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 12,
-    "kind": "function_declarator",
-    "name": "~SimpleCapture",
+    "kind": "function_definition",
+    "name": "~SimpleCapture()",
     "scope": "",
     "signature": "~SimpleCapture()",
     "category": "third_party"
@@ -1829,100 +1829,100 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 18,
-    "kind": "function_declarator",
-    "name": "IsCursorEnabled",
+    "kind": "function_definition",
+    "name": "IsCursorEnabled()",
     "scope": "",
-    "signature": "IsCursorEnabled()",
+    "signature": "bool IsCursorEnabled()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 19,
-    "kind": "function_declarator",
-    "name": "IsCursorEnabled",
+    "kind": "function_definition",
+    "name": "IsCursorEnabled(bool value)",
     "scope": "",
-    "signature": "IsCursorEnabled(bool value)",
+    "signature": "void IsCursorEnabled(bool value)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 20,
-    "kind": "function_declarator",
-    "name": "IsBorderRequired",
+    "kind": "function_definition",
+    "name": "IsBorderRequired()",
     "scope": "",
-    "signature": "IsBorderRequired()",
+    "signature": "bool IsBorderRequired()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 21,
-    "kind": "function_declarator",
-    "name": "IsBorderRequired",
+    "kind": "function_definition",
+    "name": "IsBorderRequired(bool value)",
     "scope": "",
-    "signature": "IsBorderRequired(bool value)",
+    "signature": "void IsBorderRequired(bool value)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 22,
-    "kind": "function_declarator",
-    "name": "IncludeSecondaryWindows",
+    "kind": "function_definition",
+    "name": "IncludeSecondaryWindows()",
     "scope": "",
-    "signature": "IncludeSecondaryWindows()",
+    "signature": "bool IncludeSecondaryWindows()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 23,
-    "kind": "function_declarator",
-    "name": "IncludeSecondaryWindows",
+    "kind": "function_definition",
+    "name": "IncludeSecondaryWindows(bool value)",
     "scope": "",
-    "signature": "IncludeSecondaryWindows(bool value)",
+    "signature": "void IncludeSecondaryWindows(bool value)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 24,
-    "kind": "function_declarator",
-    "name": "DirtyRegionMode",
+    "kind": "function_definition",
+    "name": "DirtyRegionMode()",
     "scope": "",
-    "signature": "DirtyRegionMode()",
+    "signature": "winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode DirtyRegionMode()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 25,
-    "kind": "function_declarator",
-    "name": "DirtyRegionMode",
+    "kind": "function_definition",
+    "name": "DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value)",
     "scope": "",
-    "signature": "DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value)",
+    "signature": "void DirtyRegionMode(winrt::Windows::Graphics::Capture::GraphicsCaptureDirtyRegionMode value)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 26,
-    "kind": "function_declarator",
-    "name": "CaptureItem",
+    "kind": "function_definition",
+    "name": "CaptureItem()",
     "scope": "",
-    "signature": "CaptureItem()",
+    "signature": "winrt::Windows::Graphics::Capture::GraphicsCaptureItem CaptureItem()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 28,
-    "kind": "function_declarator",
-    "name": "SetPixelFormat",
+    "kind": "function_definition",
+    "name": "SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)",
     "scope": "",
-    "signature": "SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)",
+    "signature": "void SetPixelFormat(winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat)",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 35,
-    "kind": "function_declarator",
-    "name": "VisualizeDirtyRegions",
+    "kind": "function_definition",
+    "name": "VisualizeDirtyRegions()",
     "scope": "",
-    "signature": "VisualizeDirtyRegions()",
+    "signature": "bool VisualizeDirtyRegions()",
     "category": "third_party"
   },
   {
@@ -1937,19 +1937,19 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 38,
-    "kind": "function_declarator",
-    "name": "MinUpdateInterval",
+    "kind": "function_definition",
+    "name": "MinUpdateInterval()",
     "scope": "",
-    "signature": "MinUpdateInterval()",
+    "signature": "winrt::Windows::Foundation::TimeSpan MinUpdateInterval()",
     "category": "third_party"
   },
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 39,
-    "kind": "function_declarator",
-    "name": "MinUpdateInterval",
+    "kind": "function_definition",
+    "name": "MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value)",
     "scope": "",
-    "signature": "MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value)",
+    "signature": "void MinUpdateInterval(winrt::Windows::Foundation::TimeSpan value)",
     "category": "third_party"
   },
   {
@@ -1973,10 +1973,10 @@
   {
     "path": "third_party/sources/robmikh/Win32CaptureSample/reference/SimpleCapture.h",
     "line": 48,
-    "kind": "function_declarator",
-    "name": "CheckClosed",
+    "kind": "function_definition",
+    "name": "CheckClosed()",
     "scope": "",
-    "signature": "CheckClosed()",
+    "signature": "inline void CheckClosed()",
     "category": "third_party"
   },
   {

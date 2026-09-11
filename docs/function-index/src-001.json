@@ -1,5 +1,320 @@
 [
   {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 328,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PerceptionProbe",
+    "signature": "static c =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 332,
+    "kind": "method_declaration",
+    "name": "FormatInstant",
+    "scope": "PerceptionProbe",
+    "signature": "private static string FormatInstant(DateTime utc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 335,
+    "kind": "method_declaration",
+    "name": "BarField",
+    "scope": "PerceptionProbe",
+    "signature": "private static DisplayField BarField(string label, ScreenBarFill bar)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 342,
+    "kind": "method_declaration",
+    "name": "FormatVital",
+    "scope": "PerceptionProbe",
+    "signature": "private static string FormatVital(ClassifiedValue<int> value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 345,
+    "kind": "method_declaration",
+    "name": "FormatRoi",
+    "scope": "PerceptionProbe",
+    "signature": "private static string FormatRoi(PixelRect rect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PerceptionProbe.cs",
+    "line": 347,
+    "kind": "method_declaration",
+    "name": "VitalUnknownFields",
+    "scope": "PerceptionProbe",
+    "signature": "internal static DisplayField[] VitalUnknownFields()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "PracticalTestCenter",
+    "signature": "public static PracticalTestVerdict Evaluate(PracticalTestDefinition definition, JsonElement snapshot, DateTime nowUtc, DateTime snapshotReceivedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "ReadLiveFields",
+    "scope": "PracticalTestCenter",
+    "signature": "public static IReadOnlyList<DisplayField> ReadLiveFields(JsonElement root)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "AddRoot",
+    "scope": "PracticalTestCenter",
+    "signature": "private static void AddRoot(List<DisplayField> fields, JsonElement root, string property, string label, string category)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 192,
+    "kind": "method_declaration",
+    "name": "AddSection",
+    "scope": "PracticalTestCenter",
+    "signature": "private static void AddSection(List<DisplayField> fields, JsonElement root, string section, string property, string label, string category)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 202,
+    "kind": "method_declaration",
+    "name": "RenderRoot",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string RenderRoot(JsonElement root, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "Unwrap",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string Unwrap(JsonElement value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "SourceOf",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string SourceOf(JsonElement value, string fallback)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "FailureReason",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string FailureReason(JsonElement classified)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 245,
+    "kind": "method_declaration",
+    "name": "Both",
+    "scope": "PracticalTestCenter",
+    "signature": "private static bool Both(JsonElement root, string section, string a, string b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "ReadBool",
+    "scope": "PracticalTestCenter",
+    "signature": "private static bool ReadBool(JsonElement root, string section, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 251,
+    "kind": "method_declaration",
+    "name": "ReadLong",
+    "scope": "PracticalTestCenter",
+    "signature": "private static long ReadLong(JsonElement root, string section, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 254,
+    "kind": "method_declaration",
+    "name": "ReadClassified",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string? ReadClassified(JsonElement root, string section, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 260,
+    "kind": "method_declaration",
+    "name": "HasProperty",
+    "scope": "PracticalTestCenter",
+    "signature": "private static bool HasProperty(JsonElement root, string section)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 263,
+    "kind": "method_declaration",
+    "name": "HasProperty",
+    "scope": "PracticalTestCenter",
+    "signature": "private static bool HasProperty(JsonElement root, string section, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 266,
+    "kind": "method_declaration",
+    "name": "ReadRootString",
+    "scope": "PracticalTestCenter",
+    "signature": "private static string? ReadRootString(JsonElement root, string property)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenter.cs",
+    "line": 274,
+    "kind": "method_declaration",
+    "name": "TryReadArray",
+    "scope": "PracticalTestCenter",
+    "signature": "private static bool TryReadArray(JsonElement snapshot, string name, out int count, out string? reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 20,
+    "kind": "constructor_declaration",
+    "name": "PracticalTestCenterWindow",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "public PracticalTestCenterWindow(string repoRoot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 25,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "async (_, _) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 26,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "async (_, _) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 27,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "(_, _) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "BuildTestButtons",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private void BuildTestButtons()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "OnRunTest",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private async void OnRunTest(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "OnAcknowledge",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private void OnAcknowledge(object sender, RoutedEventArgs e)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 65,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "RefreshAsync",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private async Task RefreshAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 85,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private void Evaluate(PracticalTestDefinition definition)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 113,
+    "kind": "method_declaration",
+    "name": "ShowResult",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private void ShowResult(PracticalTestResult result, string evidence, string detail)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/PracticalTestCenterWindow.xaml.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "AppendRun",
+    "scope": "PracticalTestCenterWindow",
+    "signature": "private void AppendRun(string testId, PracticalTestResult result, string evidence)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.ControlPanel/ResilienceInspect.cs",
     "line": 9,
     "kind": "method_declaration",
@@ -1257,6 +1572,33 @@
     "name": "FileSignature",
     "scope": "TargetInspect",
     "signature": "private static string FileSignature(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/TargetRoiCalibrationCard.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "TryValidateFractions",
+    "scope": "TargetRoiCalibrationCard",
+    "signature": "public static bool TryValidateFractions( string? xText, string? yText, string? wText, string? hText, out double x, out double y, out double w, out double h, out string? refusal)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/TargetRoiCalibrationCard.cs",
+    "line": 110,
+    "kind": "method_declaration",
+    "name": "DescribeCrop",
+    "scope": "TargetRoiCalibrationCard",
+    "signature": "public static string DescribeCrop(bool exists, DateTime writtenUtc, DateTime runStartedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.ControlPanel/TargetRoiCalibrationCard.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "FormatInstant",
+    "scope": "TargetRoiCalibrationCard",
+    "signature": "private static string FormatInstant(DateTime utc)",
     "category": "project"
   },
   {
@@ -4155,348 +4497,6 @@
     "name": "CollectTargetViolations",
     "scope": "CombatPlanner",
     "signature": "private static bool CollectTargetViolations( CombatActionCandidate candidate, Player player, EquatableArray<Mob> mobs, double basicAttackRange, double skillRange, List<string> violations)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
-    "line": 296,
-    "kind": "method_declaration",
-    "name": "Verdict",
-    "scope": "CombatPlanner",
-    "signature": "private static CombatConstraintCheck Verdict(CombatActionCandidate candidate, List<string> violations)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
-    "line": 301,
-    "kind": "method_declaration",
-    "name": "CheckTarget",
-    "scope": "CombatPlanner",
-    "signature": "private static void CheckTarget( EntityId target, EquatableArray<Mob> mobs, WorldPosition playerPosition, double range, List<string> violations)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
-    "line": 340,
-    "kind": "method_declaration",
-    "name": "CheckSkillReady",
-    "scope": "CombatPlanner",
-    "signature": "private static void CheckSkillReady(SkillId skillId, Player player, List<string> violations)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Combat/CombatPlanner.cs",
-    "line": 390,
-    "kind": "method_declaration",
-    "name": "Distance",
-    "scope": "CombatPlanner",
-    "signature": "private static double Distance(WorldPosition a, WorldPosition b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
-    "line": 15,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CombatantStatus",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
-    "line": 74,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Player",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
-    "line": 74,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Player",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
-    "line": 91,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "Mob",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EntityContracts.cs",
-    "line": 91,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "Mob",
-    "signature": "init;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 30,
-    "kind": "constructor_declaration",
-    "name": "EquatableArray",
-    "scope": "EquatableArray",
-    "signature": "public EquatableArray(ImmutableArray<T> items)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 49,
-    "kind": "method_declaration",
-    "name": "From",
-    "scope": "EquatableArray",
-    "signature": "public static EquatableArray<T> From(IEnumerable<T> items)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 59,
-    "kind": "method_declaration",
-    "name": "GetEnumerator",
-    "scope": "EquatableArray",
-    "signature": "public ImmutableArray<T>.Enumerator GetEnumerator()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 61,
-    "kind": "method_declaration",
-    "name": "GetEnumerator",
-    "scope": "EquatableArray",
-    "signature": "IEnumerator<T> IEnumerable<T>.GetEnumerator()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 63,
-    "kind": "method_declaration",
-    "name": "GetEnumerator",
-    "scope": "EquatableArray",
-    "signature": "IEnumerator IEnumerable.GetEnumerator()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 66,
-    "kind": "method_declaration",
-    "name": "Equals",
-    "scope": "EquatableArray",
-    "signature": "public bool Equals(EquatableArray<T> other)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 83,
-    "kind": "method_declaration",
-    "name": "Equals",
-    "scope": "EquatableArray",
-    "signature": "public override bool Equals(object? obj)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 85,
-    "kind": "method_declaration",
-    "name": "GetHashCode",
-    "scope": "EquatableArray",
-    "signature": "public override int GetHashCode()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 93,
-    "kind": "operator_declaration",
-    "name": "<anonymous/accessor>",
-    "scope": "EquatableArray",
-    "signature": "public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/EquatableArray.cs",
-    "line": 95,
-    "kind": "operator_declaration",
-    "name": "<anonymous/accessor>",
-    "scope": "EquatableArray",
-    "signature": "public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs",
-    "line": 33,
-    "kind": "method_declaration",
-    "name": "Empty",
-    "scope": "ExplorationFootprint",
-    "signature": "public static ExplorationFootprint Empty(MapId mapId, string reason, DateTime? observedAtUtc = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationContracts.cs",
-    "line": 125,
-    "kind": "method_declaration",
-    "name": "Unreachable",
-    "scope": "NavigationPlan",
-    "signature": "public static NavigationPlan Unreachable(string reason, DateTime? observedAtUtc = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 44,
-    "kind": "method_declaration",
-    "name": "ToTileCoordinate",
-    "scope": "ExplorationPlanner",
-    "signature": "public static TileCoordinate ToTileCoordinate(WorldPosition position)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 64,
-    "kind": "method_declaration",
-    "name": "UpdateFootprint",
-    "scope": "ExplorationPlanner",
-    "signature": "public static ExplorationFootprint UpdateFootprint( ExplorationFootprint previous, MapModel map, WorldFact<WorldPosition> playerPosition, DateTime nowUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 124,
-    "kind": "method_declaration",
-    "name": "BuildFrontierCandidates",
-    "scope": "ExplorationPlanner",
-    "signature": "public static IReadOnlyList<FrontierCandidate> BuildFrontierCandidates( MapModel map, ExplorationFootprint footprint, WorldPosition playerPosition, EquatableArray<Mob> mobs, WorldPosition? missionFocus = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 180,
-    "kind": "method_declaration",
-    "name": "SelectNextFrontier",
-    "scope": "ExplorationPlanner",
-    "signature": "public static FrontierCandidate? SelectNextFrontier( IReadOnlyList<FrontierCandidate> candidates, FrontierScoringWeights? weights = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 214,
-    "kind": "method_declaration",
-    "name": "BuildNavigationPlan",
-    "scope": "ExplorationPlanner",
-    "signature": "public static NavigationPlan BuildNavigationPlan(MapId mapId, FrontierCandidate? selected, DateTime nowUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 248,
-    "kind": "method_declaration",
-    "name": "ExplainFrontier",
-    "scope": "ExplorationPlanner",
-    "signature": "public static ExplorationVerdict ExplainFrontier(MapModel map, ExplorationFootprint footprint)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 292,
-    "kind": "method_declaration",
-    "name": "IsWalkable",
-    "scope": "ExplorationPlanner",
-    "signature": "private static bool IsWalkable(Tile tile)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 295,
-    "kind": "method_declaration",
-    "name": "Score",
-    "scope": "ExplorationPlanner",
-    "signature": "private static double Score(FrontierCandidate candidate, FrontierScoringWeights weights)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 301,
-    "kind": "method_declaration",
-    "name": "ComputeInformationGain",
-    "scope": "ExplorationPlanner",
-    "signature": "private static double ComputeInformationGain( TileCoordinate candidate, Dictionary<TileCoordinate, Tile> tilesByCoordinate, HashSet<TileCoordinate> visited)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 326,
-    "kind": "method_declaration",
-    "name": "ComputeRisk",
-    "scope": "ExplorationPlanner",
-    "signature": "private static double ComputeRisk(TileCoordinate candidate, EquatableArray<Mob> mobs)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 343,
-    "kind": "method_declaration",
-    "name": "ComputeDistance",
-    "scope": "ExplorationPlanner",
-    "signature": "private static double ComputeDistance(TileCoordinate tile, WorldPosition position)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 350,
-    "kind": "method_declaration",
-    "name": "ContainsCoordinate",
-    "scope": "ExplorationPlanner",
-    "signature": "private static bool ContainsCoordinate(EquatableArray<TileCoordinate> coordinates, TileCoordinate target)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 361,
-    "kind": "method_declaration",
-    "name": "AppendCoordinate",
-    "scope": "ExplorationPlanner",
-    "signature": "private static EquatableArray<TileCoordinate> AppendCoordinate(EquatableArray<TileCoordinate> coordinates, TileCoordinate toAppend)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 370,
-    "kind": "method_declaration",
-    "name": "ComputeFullyExplored",
-    "scope": "ExplorationPlanner",
-    "signature": "private static WorldFact<bool> ComputeFullyExplored(MapModel map, EquatableArray<TileCoordinate> visited, DateTime nowUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/ExplorationPlanner.cs",
-    "line": 406,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "FrontierScoringWeights",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/MovementExecutionContracts.cs",
-    "line": 63,
-    "kind": "method_declaration",
-    "name": "NotAttempted",
-    "scope": "MovementExecutionEvidence",
-    "signature": "public static MovementExecutionEvidence NotAttempted( MapId mapId, TileCoordinate requested, string reason, DateTime? observedAtUtc = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Core/WorldModel/Exploration/MultiMapRoutePlanner.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "PlanRoute",
-    "scope": "MultiMapRoutePlanner",
-    "signature": "public static NavigationPlan PlanRoute( IReadOnlyDictionary<MapId, MapModel> knownMaps, MapId startMap, WorldPosition startPosition, MapId destinationMap, WorldPosition destinationPosition, DateTime nowUtc)",
     "category": "project"
   }
 ]

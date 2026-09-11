@@ -1,5 +1,104 @@
 [
   {
+    "path": "scripts/build_function_index.py",
+    "line": 61,
+    "kind": "function_definition",
+    "name": "_package_version",
+    "scope": "",
+    "signature": "def _package_version(language: str) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 71,
+    "kind": "function_definition",
+    "name": "_get_parser",
+    "scope": "",
+    "signature": "def _get_parser(language: str, cache: dict[str, tuple[Parser, str]]) -> tuple[Parser, str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 81,
+    "kind": "function_definition",
+    "name": "_iter_sections",
+    "scope": "",
+    "signature": "def _iter_sections(path: str, source: str) -> Iterable[tuple[str, int]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 95,
+    "kind": "function_definition",
+    "name": "_node_excerpt",
+    "scope": "",
+    "signature": "def _node_excerpt(raw: bytes, node: Any) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 101,
+    "kind": "function_definition",
+    "name": "_parse_errors",
+    "scope": "",
+    "signature": "def _parse_errors(raw: bytes, root: Any) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 121,
+    "kind": "function_definition",
+    "name": "_function_rows",
+    "scope": "",
+    "signature": "def _function_rows(path: str, language: str, raw: bytes, tree: Any, line_offset: int) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 172,
+    "kind": "function_definition",
+    "name": "_call_edges",
+    "scope": "",
+    "signature": "def _call_edges( path: str, language: str, raw: bytes, tree: Any, line_offset: int, file_function_names: set[str], ) -> list[dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 223,
+    "kind": "function_definition",
+    "name": "generate",
+    "scope": "",
+    "signature": "def generate( sources: Mapping[str, str], revision: str, *, strict: bool = False, excluded_paths: Iterable[str] = (), ) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 313,
+    "kind": "function_definition",
+    "name": "_load_sources",
+    "scope": "",
+    "signature": "def _load_sources(root: pathlib.Path) -> dict[str, str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 327,
+    "kind": "function_definition",
+    "name": "write_index_tree",
+    "scope": "",
+    "signature": "def write_index_tree(output_directory: pathlib.Path, result: dict[str, Any], shard_size: int = 500) -> list[pathlib.Path]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/build_function_index.py",
+    "line": 363,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main(argv: list[str] | None = None) -> int:",
+    "category": "project"
+  },
+  {
     "path": "scripts/check_credentials.py",
     "line": 28,
     "kind": "function_definition",
@@ -55,7 +154,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 85,
+    "line": 114,
     "kind": "function_definition",
     "name": "call_model",
     "scope": "",
@@ -64,7 +163,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 170,
+    "line": 199,
     "kind": "function_definition",
     "name": "budget_token",
     "scope": "",
@@ -73,7 +172,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 184,
+    "line": 213,
     "kind": "function_definition",
     "name": "cost_of",
     "scope": "",
@@ -82,7 +181,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 198,
+    "line": 227,
     "kind": "function_definition",
     "name": "extract_code",
     "scope": "",
@@ -91,7 +190,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 205,
+    "line": 234,
     "kind": "function_definition",
     "name": "signatures",
     "scope": "",
@@ -100,7 +199,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 210,
+    "line": 239,
     "kind": "function_definition",
     "name": "walk",
     "scope": "signatures",
@@ -109,7 +208,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 223,
+    "line": 252,
     "kind": "function_definition",
     "name": "dataclass_fields",
     "scope": "",
@@ -118,7 +217,115 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 239,
+    "line": 268,
+    "kind": "function_definition",
+    "name": "_intervalli_funzioni",
+    "scope": "",
+    "signature": "def _intervalli_funzioni(source: str):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 279,
+    "kind": "function_definition",
+    "name": "innesta_funzioni",
+    "scope": "",
+    "signature": "def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 325,
+    "kind": "function_definition",
+    "name": "prompt_parziale",
+    "scope": "",
+    "signature": "def prompt_parziale(contract: str, nome_file: str, skeleton: str, nomi) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 338,
+    "kind": "function_definition",
+    "name": "linguaggio_del_file",
+    "scope": "",
+    "signature": "def linguaggio_del_file(target: Path) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 350,
+    "kind": "function_definition",
+    "name": "_senza_stringhe",
+    "scope": "",
+    "signature": "def _senza_stringhe(code: str) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 359,
+    "kind": "function_definition",
+    "name": "_firme_csharp",
+    "scope": "",
+    "signature": "def _firme_csharp(source: str):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 374,
+    "kind": "function_definition",
+    "name": "testo",
+    "scope": "_firme_csharp",
+    "signature": "def testo(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 377,
+    "kind": "function_definition",
+    "name": "normalizza",
+    "scope": "_firme_csharp",
+    "signature": "def normalizza(valore):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 380,
+    "kind": "function_definition",
+    "name": "nome_di",
+    "scope": "_firme_csharp",
+    "signature": "def nome_di(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 386,
+    "kind": "function_definition",
+    "name": "firma_metodo",
+    "scope": "_firme_csharp",
+    "signature": "def firma_metodo(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 405,
+    "kind": "function_definition",
+    "name": "visita",
+    "scope": "_firme_csharp",
+    "signature": "def visita(nodo, contenitore=None):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 421,
+    "kind": "function_definition",
+    "name": "_valida_csharp",
+    "scope": "",
+    "signature": "def _valida_csharp(code: str, skeleton: str, task: dict):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 458,
     "kind": "function_definition",
     "name": "validate_implementation",
     "scope": "",
@@ -127,7 +334,16 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 292,
+    "line": 513,
+    "kind": "function_definition",
+    "name": "build_check",
+    "scope": "",
+    "signature": "def build_check(target: Path) -> list:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 545,
     "kind": "function_definition",
     "name": "import_check",
     "scope": "",
@@ -136,7 +352,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 308,
+    "line": 575,
     "kind": "function_definition",
     "name": "preflight",
     "scope": "",
@@ -145,7 +361,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 325,
+    "line": 592,
     "kind": "function_definition",
     "name": "record",
     "scope": "",
@@ -154,7 +370,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 331,
+    "line": 598,
     "kind": "function_definition",
     "name": "run",
     "scope": "",
@@ -163,7 +379,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 428,
+    "line": 709,
     "kind": "function_definition",
     "name": "main",
     "scope": "",
@@ -253,7 +469,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 17,
+    "line": 20,
     "kind": "function_definition",
     "name": "free_models",
     "scope": "",
@@ -262,7 +478,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 34,
+    "line": 37,
     "kind": "function_definition",
     "name": "get_sec_medi",
     "scope": "free_models",
@@ -271,7 +487,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 55,
+    "line": 58,
     "kind": "function_definition",
     "name": "call_with_fallback",
     "scope": "",
@@ -280,7 +496,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 80,
+    "line": 83,
     "kind": "function_definition",
     "name": "gruppi",
     "scope": "",
@@ -289,7 +505,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 90,
+    "line": 93,
     "kind": "function_definition",
     "name": "corpo_richiesta",
     "scope": "",
@@ -298,7 +514,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 113,
+    "line": 116,
     "kind": "function_definition",
     "name": "testo_utile",
     "scope": "",
@@ -307,7 +523,7 @@
   },
   {
     "path": "scripts/free_chain.py",
-    "line": 136,
+    "line": 139,
     "kind": "function_definition",
     "name": "chiama_a_gruppi",
     "scope": "",
@@ -316,7 +532,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 15,
+    "line": 16,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "LimiteRaggiunto",
@@ -325,7 +541,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 38,
+    "line": 39,
     "kind": "function_definition",
     "name": "__init__",
     "scope": "Pausa",
@@ -334,7 +550,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 41,
+    "line": 42,
     "kind": "function_definition",
     "name": "attiva",
     "scope": "Pausa",
@@ -343,7 +559,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 44,
+    "line": 45,
     "kind": "function_definition",
     "name": "attivo",
     "scope": "Pausa",
@@ -352,7 +568,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 47,
+    "line": 49,
     "kind": "function_definition",
     "name": "filtra",
     "scope": "Pausa",
@@ -361,7 +577,7 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 50,
+    "line": 52,
     "kind": "function_definition",
     "name": "budget_residuo",
     "scope": "",
@@ -370,34 +586,61 @@
   },
   {
     "path": "scripts/free_first.py",
-    "line": 54,
+    "line": 59,
     "kind": "function_definition",
     "name": "esegui",
     "scope": "",
-    "signature": "def esegui(chiama_gruppo: Callable[[Sequence[str]], Tuple[str, str]], chiama_pagato: Callable[[], Tuple[str, str]], giudizio: Callable[[str], List[str]], modelli: Optional[Sequence[str]] = None, budget_secondi: float = BUDGET_PREDEFINITO, orologio: Callable[[], float] = time.monotonic, pausa: Optional[Pausa] = None) -> Esito:",
+    "signature": "def esegui( chiama_gruppo: Callable[[Sequence[str]], Tuple[str, str]], chiama_pagato: Callable[[], Tuple[str, str]], giudizio: Callable[[str], List[str]], modelli: Optional[Sequence[str]] = None, budget_secondi: float = BUDGET_PREDEFINITO, orologio: Callable[[], float] = time.monotonic, pausa: Optional[Pausa] = None, ) -> Esito:",
     "category": "project"
   },
   {
-    "path": "scripts/mcp_server.py",
-    "line": 32,
+    "path": "scripts/free_first.py",
+    "line": 138,
     "kind": "function_definition",
-    "name": "call_openrouter",
-    "scope": "",
-    "signature": "def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
+    "name": "_aggiungi_tentativo_budget",
+    "scope": "esegui",
+    "signature": "def _aggiungi_tentativo_budget(gruppo_corrente: List[str]) -> None:",
     "category": "project"
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 57,
+    "line": 47,
     "kind": "function_definition",
-    "name": "call_deepseek",
+    "name": "record",
     "scope": "",
-    "signature": "def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
+    "signature": "def record(entry: dict) -> None:",
     "category": "project"
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 96,
+    "line": 62,
+    "kind": "function_definition",
+    "name": "_costo_reale_usd",
+    "scope": "",
+    "signature": "def _costo_reale_usd(model_id: str) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 118,
+    "kind": "function_definition",
+    "name": "_rileva_linguaggio_bersaglio",
+    "scope": "",
+    "signature": "def _rileva_linguaggio_bersaglio(specifications_json: str) -> str | None:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 146,
+    "kind": "function_definition",
+    "name": "_prompt_scheletro",
+    "scope": "",
+    "signature": "def _prompt_scheletro(specifications_json: str) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 159,
     "kind": "function_definition",
     "name": "local_generate_skeleton",
     "scope": "",
@@ -406,7 +649,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 117,
+    "line": 183,
     "kind": "function_definition",
     "name": "cloud_infill_implementation",
     "scope": "",
@@ -415,7 +658,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 130,
+    "line": 203,
     "kind": "function_definition",
     "name": "preflight_contract_check",
     "scope": "",
@@ -424,7 +667,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 144,
+    "line": 224,
     "kind": "function_definition",
     "name": "deep_reasoner_solve_crash",
     "scope": "",
@@ -433,7 +676,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 156,
+    "line": 243,
     "kind": "function_definition",
     "name": "local_update_documentation",
     "scope": "",
@@ -442,7 +685,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 178,
+    "line": 263,
     "kind": "function_definition",
     "name": "update_contract_state",
     "scope": "",
@@ -451,7 +694,7 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 228,
+    "line": 326,
     "kind": "function_definition",
     "name": "regenerate_roadmap",
     "scope": "update_contract_state",
@@ -459,8 +702,116 @@
     "category": "project"
   },
   {
+    "path": "scripts/mcp_server.py",
+    "line": 352,
+    "kind": "function_definition",
+    "name": "call_openrouter",
+    "scope": "",
+    "signature": "def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 379,
+    "kind": "function_definition",
+    "name": "call_deepseek",
+    "scope": "",
+    "signature": "def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 415,
+    "kind": "function_definition",
+    "name": "modelli_gratuiti",
+    "scope": "",
+    "signature": "def modelli_gratuiti() -> list[str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 439,
+    "kind": "function_definition",
+    "name": "giudizio_infill",
+    "scope": "",
+    "signature": "def giudizio_infill(scheletro_e_contratto: str) -> Callable[[str], list[str]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 441,
+    "kind": "function_definition",
+    "name": "giudice",
+    "scope": "giudizio_infill",
+    "signature": "def giudice(codice_candidato: str) -> list[str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 534,
+    "kind": "function_definition",
+    "name": "giudizio_preflight",
+    "scope": "",
+    "signature": "def giudizio_preflight(risposta: str) -> list[str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 566,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "Pausa",
+    "signature": "def __init__(self):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 568,
+    "kind": "function_definition",
+    "name": "__call__",
+    "scope": "Pausa",
+    "signature": "def __call__(self, secondi):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 590,
+    "kind": "function_definition",
+    "name": "chiama_groq",
+    "scope": "",
+    "signature": "def chiama_groq(modello: str, messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 619,
+    "kind": "function_definition",
+    "name": "chiama_openrouter",
+    "scope": "",
+    "signature": "def chiama_openrouter(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 655,
+    "kind": "function_definition",
+    "name": "chiama_gruppo",
+    "scope": "",
+    "signature": "def chiama_gruppo(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_server.py",
+    "line": 682,
+    "kind": "function_definition",
+    "name": "controlla_quota",
+    "scope": "",
+    "signature": "def controlla_quota(risposta) -> None:",
+    "category": "project"
+  },
+  {
     "path": "scripts/model_scout.py",
-    "line": 26,
+    "line": 45,
     "kind": "function_definition",
     "name": "fetch_catalog",
     "scope": "",
@@ -469,7 +820,7 @@
   },
   {
     "path": "scripts/model_scout.py",
-    "line": 34,
+    "line": 53,
     "kind": "function_definition",
     "name": "is_free",
     "scope": "",
@@ -478,7 +829,16 @@
   },
   {
     "path": "scripts/model_scout.py",
-    "line": 43,
+    "line": 62,
+    "kind": "function_definition",
+    "name": "is_price_sentinel",
+    "scope": "",
+    "signature": "def is_price_sentinel(model: Dict[str, Any]) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 73,
     "kind": "function_definition",
     "name": "cost_per_mtok",
     "scope": "",
@@ -487,7 +847,43 @@
   },
   {
     "path": "scripts/model_scout.py",
-    "line": 52,
+    "line": 84,
+    "kind": "function_definition",
+    "name": "is_text_capable",
+    "scope": "",
+    "signature": "def is_text_capable(model: Dict[str, Any]) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 100,
+    "kind": "function_definition",
+    "name": "load_roster",
+    "scope": "",
+    "signature": "def load_roster(path: Path = FREE_ROSTER_PATH) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, str]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 118,
+    "kind": "function_definition",
+    "name": "roster_id",
+    "scope": "",
+    "signature": "def roster_id(model_id: str, provider_id: str) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 130,
+    "kind": "function_definition",
+    "name": "classifica_modello",
+    "scope": "",
+    "signature": "def classifica_modello( model: Dict[str, Any], validati: Dict[str, Dict[str, Any]], scartati: Dict[str, str], gratuiti_ieri: Dict[str, bool], provider_id: str = \"openrouter\" ) -> Dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 204,
     "kind": "function_definition",
     "name": "compare_to_roster",
     "scope": "",
@@ -496,7 +892,52 @@
   },
   {
     "path": "scripts/model_scout.py",
-    "line": 117,
+    "line": 282,
+    "kind": "function_definition",
+    "name": "save_snapshot",
+    "scope": "",
+    "signature": "def save_snapshot(catalog: List[Dict[str, Any]], giorno: str, cartella: Path = HISTORY_DIR) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 302,
+    "kind": "function_definition",
+    "name": "load_last_snapshot",
+    "scope": "",
+    "signature": "def load_last_snapshot(giorno: str, cartella: Path = HISTORY_DIR) -> Dict[str, Dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 334,
+    "kind": "function_definition",
+    "name": "diventati_gratuiti",
+    "scope": "",
+    "signature": "def diventati_gratuiti(catalog: List[Dict[str, Any]], precedente: Dict[str, Dict[str, Any]]) -> List[str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 354,
+    "kind": "function_definition",
+    "name": "candidati_a_pagamento",
+    "scope": "",
+    "signature": "def candidati_a_pagamento(catalog: List[Dict[str, Any]], modello_in_uso: str, prezzo_in_uso: Tuple[float, float]) -> List[Dict[str, Any]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 400,
+    "kind": "function_definition",
+    "name": "scrivi_proposte",
+    "scope": "",
+    "signature": "def scrivi_proposte(esiti: Dict[str, Any], percorso: Path = PROPOSALS_PATH) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/model_scout.py",
+    "line": 423,
     "kind": "function_definition",
     "name": "render_report",
     "scope": "",
@@ -505,7 +946,7 @@
   },
   {
     "path": "scripts/model_scout.py",
-    "line": 178,
+    "line": 570,
     "kind": "function_definition",
     "name": "main",
     "scope": "",
@@ -528,6 +969,60 @@
     "name": "main",
     "scope": "",
     "signature": "def main() -> int:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "_load_json",
+    "scope": "",
+    "signature": "def _load_json(path: Path, errors: list[str]) -> Any | None:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "_paths",
+    "scope": "",
+    "signature": "def _paths(value: Any) -> list[str]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "_is_concrete_path",
+    "scope": "",
+    "signature": "def _is_concrete_path(value: str) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 45,
+    "kind": "function_definition",
+    "name": "_check_contract_file",
+    "scope": "",
+    "signature": "def _check_contract_file( root: Path, value: str, field: str, cid: str, errors: list[str], *, allow_missing: bool = False, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 62,
+    "kind": "function_definition",
+    "name": "verify",
+    "scope": "",
+    "signature": "def verify(root: Path | str) -> dict[str, Any]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/verify_mcp_contracts.py",
+    "line": 150,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main(argv: list[str] | None = None) -> int:",
     "category": "project"
   },
   {

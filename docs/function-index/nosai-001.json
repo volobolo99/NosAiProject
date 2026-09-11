@@ -1,5 +1,527 @@
 [
   {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 83,
+    "kind": "function_definition",
+    "name": "last_information_at",
+    "scope": "_Entry",
+    "signature": "def last_information_at(self) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 110,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "ShadowCooldownClock",
+    "signature": "def __init__( self, book: ActionBook, confirmation_horizon_s: float = DEFAULT_CONFIRMATION_HORIZON_S, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 121,
+    "kind": "function_definition",
+    "name": "_entry",
+    "scope": "ShadowCooldownClock",
+    "signature": "def _entry(self, action_id: str) -> _Entry: # Raises for an unregistered id; see ActionBook on why that stays loud.",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 126,
+    "kind": "function_definition",
+    "name": "note_execution",
+    "scope": "ShadowCooldownClock",
+    "signature": "def note_execution(self, action_id: str, at: float) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "reconcile",
+    "scope": "ShadowCooldownClock",
+    "signature": "def reconcile(self, action_id: str, observed_ready: bool, at: float) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "readiness",
+    "scope": "ShadowCooldownClock",
+    "signature": "def readiness(self, action_id: str, now: float) -> Readiness:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 234,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "ShadowCooldownClock",
+    "signature": "def snapshot(self, now: float) -> tuple[Readiness, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 237,
+    "kind": "function_definition",
+    "name": "diagnostics",
+    "scope": "ShadowCooldownClock",
+    "signature": "def diagnostics(self, action_id: str) -> ClockDiagnostics:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 264,
+    "kind": "function_definition",
+    "name": "for_action",
+    "scope": "CastWindow",
+    "signature": "def for_action(spec: ActionSpec, starts_at: float) -> \"CastWindow\":",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 268,
+    "kind": "function_definition",
+    "name": "phase_at",
+    "scope": "CastWindow",
+    "signature": "def phase_at(self, now: float) -> CastPhase:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 287,
+    "kind": "function_definition",
+    "name": "__post_init__",
+    "scope": "PredictedTransition",
+    "signature": "def __post_init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 313,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "InterruptModel",
+    "signature": "def __init__(self, book: ActionBook, loss_on_interrupt: float = 1.0) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 319,
+    "kind": "function_definition",
+    "name": "forecast",
+    "scope": "InterruptModel",
+    "signature": "def forecast( self, action_id: str, start_at: float, transitions: tuple[PredictedTransition, ...] = (), ) -> InterruptForecast:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 382,
+    "kind": "function_definition",
+    "name": "should_cancel_cast",
+    "scope": "InterruptModel",
+    "signature": "def should_cancel_cast( self, window: CastWindow, now: float, alternative_value: float, transitions: tuple[PredictedTransition, ...] = (), forced: bool = False, ) -> CancelVerdict:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 425,
+    "kind": "function_definition",
+    "name": "should_cancel_animation",
+    "scope": "InterruptModel",
+    "signature": "def should_cancel_animation( self, window: CastWindow, now: float, has_queued_action: bool, ) -> CancelVerdict:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 69,
+    "kind": "function_definition",
+    "name": "__post_init__",
+    "scope": "SearchConfig",
+    "signature": "def __post_init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 93,
+    "kind": "function_definition",
+    "name": "is_terminal",
+    "scope": "CombatSimState",
+    "signature": "def is_terminal(self) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "cooldown_of",
+    "scope": "CombatSimState",
+    "signature": "def cooldown_of(self, action_id: str) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 103,
+    "kind": "function_definition",
+    "name": "_as_pairs",
+    "scope": "",
+    "signature": "def _as_pairs(values: dict[str, float]) -> tuple[tuple[str, float], ...]: # Sorted so equivalent states compare and hash identically regardless of the # order effects happened to be applied in.",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 115,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "CombatSimulator",
+    "signature": "def __init__( self, book: ActionBook, matrix: StochasticTransitionMatrix, config: SearchConfig | None = None, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 128,
+    "kind": "function_definition",
+    "name": "legal_actions",
+    "scope": "CombatSimulator",
+    "signature": "def legal_actions(self, state: CombatSimState) -> tuple[str, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "_scale_at",
+    "scope": "CombatSimulator",
+    "signature": "def _scale_at(self, effects: dict[str, float], elapsed_into_step: float, incoming: bool) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 148,
+    "kind": "function_definition",
+    "name": "_integrate_incoming",
+    "scope": "CombatSimulator",
+    "signature": "def _integrate_incoming( self, effects: dict[str, float], base_dps: float, elapsed: float ) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 169,
+    "kind": "function_definition",
+    "name": "step",
+    "scope": "CombatSimulator",
+    "signature": "def step( self, state: CombatSimState, action_id: str, target_class: str | None, rng: random.Random, ) -> tuple[CombatSimState, float, float]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 264,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "_Node",
+    "signature": "def __init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 270,
+    "kind": "function_definition",
+    "name": "mean_value",
+    "scope": "_Node",
+    "signature": "def mean_value(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 294,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "MonteCarloCombatSearch",
+    "signature": "def __init__( self, book: ActionBook, matrix: StochasticTransitionMatrix, config: SearchConfig | None = None, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 303,
+    "kind": "function_definition",
+    "name": "search",
+    "scope": "MonteCarloCombatSearch",
+    "signature": "def search( self, root_state: CombatSimState, target_class: str | None = None, seed: int = 0, restrict_to: tuple[str, ...] | None = None, ) -> SearchResult:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 441,
+    "kind": "function_definition",
+    "name": "_root_actions",
+    "scope": "MonteCarloCombatSearch",
+    "signature": "def _root_actions( self, state: CombatSimState, restrict_to: tuple[str, ...] | None ) -> tuple[str, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/search.py",
+    "line": 451,
+    "kind": "function_definition",
+    "name": "_uct_select",
+    "scope": "MonteCarloCombatSearch",
+    "signature": "def _uct_select( self, node: _Node, legal: tuple[str, ...], value_min: float, value_max: float, ) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 68,
+    "kind": "function_definition",
+    "name": "mean",
+    "scope": "BetaPosterior",
+    "signature": "def mean(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 73,
+    "kind": "function_definition",
+    "name": "variance",
+    "scope": "BetaPosterior",
+    "signature": "def variance(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 79,
+    "kind": "function_definition",
+    "name": "observations",
+    "scope": "BetaPosterior",
+    "signature": "def observations(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 84,
+    "kind": "function_definition",
+    "name": "nominal",
+    "scope": "BetaPosterior",
+    "signature": "def nominal(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 89,
+    "kind": "function_definition",
+    "name": "source",
+    "scope": "BetaPosterior",
+    "signature": "def source(self) -> DataSource:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 98,
+    "kind": "function_definition",
+    "name": "credible_interval",
+    "scope": "BetaPosterior",
+    "signature": "def credible_interval(self, z: float = 2.0) -> tuple[float, float]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 108,
+    "kind": "function_definition",
+    "name": "sample",
+    "scope": "BetaPosterior",
+    "signature": "def sample(self, rng: random.Random) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 141,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def __init__( self, book: ActionBook, prior_strength: float = DEFAULT_PRIOR_STRENGTH, forgetting: float = DEFAULT_FORGETTING, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 157,
+    "kind": "function_definition",
+    "name": "effective_sample_size",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def effective_sample_size(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 163,
+    "kind": "function_definition",
+    "name": "_prior",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def _prior(self, action_id: str) -> tuple[float, float]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 173,
+    "kind": "function_definition",
+    "name": "_cell",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def _cell(self, action_id: str, target_class: str) -> _Cell:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 182,
+    "kind": "function_definition",
+    "name": "posterior",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def posterior(self, action_id: str, target_class: str | None) -> BetaPosterior:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 204,
+    "kind": "function_definition",
+    "name": "observe",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def observe( self, action_id: str, target_class: str | None, applied: bool, weight: float = 1.0, ) -> BetaPosterior:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 240,
+    "kind": "function_definition",
+    "name": "known_pairs",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def known_pairs(self) -> tuple[tuple[str, str], ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/stochastic.py",
+    "line": 243,
+    "kind": "function_definition",
+    "name": "susceptibility",
+    "scope": "StochasticTransitionMatrix",
+    "signature": "def susceptibility(self, target_class: str | None) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 43,
+    "kind": "function_definition",
+    "name": "__post_init__",
+    "scope": "ThreatWeights",
+    "signature": "def __post_init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 90,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "ThreatEvaluator",
+    "signature": "def __init__( self, weights: ThreatWeights | None = None, proximity_half_life: float = DEFAULT_PROXIMITY_HALF_LIFE, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 100,
+    "kind": "function_definition",
+    "name": "_proximity_term",
+    "scope": "ThreatEvaluator",
+    "signature": "def _proximity_term(self, distance: float | None) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 106,
+    "kind": "function_definition",
+    "name": "score",
+    "scope": "ThreatEvaluator",
+    "signature": "def score(self, candidate: ThreatCandidate) -> ThreatScore:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 154,
+    "kind": "function_definition",
+    "name": "prioritise",
+    "scope": "ThreatEvaluator",
+    "signature": "def prioritise(self, candidates: tuple[ThreatCandidate, ...]) -> tuple[ThreatScore, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 200,
+    "kind": "function_definition",
+    "name": "preempts_combat",
+    "scope": "SurvivalVerdict",
+    "signature": "def preempts_combat(self) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 229,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "BurstMonitor",
+    "signature": "def __init__( self, window_s: float = 3.0, capacity: int = 32, absolute_floor: float = DEFAULT_ABSOLUTE_FLOOR, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 245,
+    "kind": "function_definition",
+    "name": "observe",
+    "scope": "BurstMonitor",
+    "signature": "def observe(self, at: float, hp_ratio: float | None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 258,
+    "kind": "function_definition",
+    "name": "reset",
+    "scope": "BurstMonitor",
+    "signature": "def reset(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 261,
+    "kind": "function_definition",
+    "name": "velocity",
+    "scope": "BurstMonitor",
+    "signature": "def velocity(self) -> VelocityEstimate:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/threat.py",
+    "line": 295,
+    "kind": "function_definition",
+    "name": "verdict",
+    "scope": "BurstMonitor",
+    "signature": "def verdict( self, hp_ratio: float | None, recover_budget_s: float, escape_budget_s: float, ) -> SurvivalVerdict:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def __init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/telemetry/advanced.py",
+    "line": 29,
+    "kind": "function_definition",
+    "name": "record_tick_metrics",
+    "scope": "AdvancedTelemetryCollector",
+    "signature": "def record_tick_metrics(self, metrics: TelemetryMetrics) -> None:",
+    "category": "project"
+  },
+  {
     "path": "nosai/telemetry/advanced.py",
     "line": 33,
     "kind": "function_definition",

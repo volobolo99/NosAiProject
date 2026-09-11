@@ -1,5 +1,527 @@
 [
   {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 89,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 92,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 95,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 98,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 101,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 104,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 107,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 110,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 123,
+    "kind": "method_declaration",
+    "name": "Confirmed",
+    "scope": "DialogRoiCalibration",
+    "signature": "public static DialogRoiCalibration Confirmed( double x, double y, double width, double height, int clientWidth, int clientHeight, DateTime calibratedAtUtc, double baselineMeanB, double baselineMeanG, double baselineMeanR)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "Resolve",
+    "scope": "DialogRoiCalibration",
+    "signature": "public PixelRect? Resolve(PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 162,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "DialogRoiCalibration",
+    "signature": "public static DialogRoiCalibration Load(string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 235,
+    "kind": "method_declaration",
+    "name": "Save",
+    "scope": "DialogRoiCalibration",
+    "signature": "public void Save(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "TryFraction",
+    "scope": "DialogRoiCalibration",
+    "signature": "private static bool TryFraction(string field, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogWindowReader.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "DialogWindowReader",
+    "signature": "public static DialogWindowReading Read( ReadOnlySpan<byte> bgra, int width, int height, double baselineMeanB, double baselineMeanG, double baselineMeanR, double presentThreshold = DefaultPresentThreshold)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogWindowReader.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "Unreadable",
+    "scope": "DialogWindowReader",
+    "signature": "private static DialogWindowReading Unreadable(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogWindowStateComposer.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "Compose",
+    "scope": "DialogWindowStateComposer",
+    "signature": "public static ClassifiedValue<bool> Compose(DialogRoiCalibration calibration, DialogWindowObservation observation)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "Current",
+    "scope": "DpiAwareness",
+    "signature": "public static DpiAwarenessRegime Current()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "ToWire",
+    "scope": "DpiAwareness",
+    "signature": "public static string ToWire(this DpiAwarenessRegime regime)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "FromWire",
+    "scope": "DpiAwareness",
+    "signature": "public static DpiAwarenessRegime FromWire(string? token)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 105,
+    "kind": "method_declaration",
+    "name": "CurrentWindows",
+    "scope": "DpiAwareness",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static DpiAwarenessRegime CurrentWindows()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 164,
+    "kind": "method_declaration",
+    "name": "GetThreadDpiAwarenessContext",
+    "scope": "DpiAwareness",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr GetThreadDpiAwarenessContext();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "AreDpiAwarenessContextsEqual",
+    "scope": "DpiAwareness",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool AreDpiAwarenessContextsEqual(IntPtr a, IntPtr b);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 173,
+    "kind": "method_declaration",
+    "name": "GetProcessDpiAwareness",
+    "scope": "DpiAwareness",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"shcore.dll\")] private static extern int GetProcessDpiAwareness(IntPtr process, out int awareness);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DpiAwarenessRegime.cs",
+    "line": 177,
+    "kind": "method_declaration",
+    "name": "GetCurrentProcess",
+    "scope": "DpiAwareness",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"kernel32.dll\")] private static extern IntPtr GetCurrentProcess();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Publish",
+    "scope": "TripleFrameBuffer",
+    "signature": "public void Publish(CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "TryTakeLatest",
+    "scope": "TripleFrameBuffer",
+    "signature": "public bool TryTakeLatest(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "OtherSlot",
+    "scope": "TripleFrameBuffer",
+    "signature": "private static int OtherSlot(int a, int b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 134,
+    "kind": "constructor_declaration",
+    "name": "DxgiDesktopDuplicationSource",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "private DxgiDesktopDuplicationSource(void* factory, void* adapter, void* output, void* output1, void* device, void* context, void* duplication, void* stagingTexture, int width, int height, uint acquireTimeoutMs, Func<DateTime> clock)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "TryCreate",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "public static bool TryCreate(out DxgiDesktopDuplicationSource? source, out CaptureUnavailable? unavailable, uint adapterIndex = 0, uint outputIndex = 0, uint acquireTimeoutMs = 250, Func<DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 252,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 286,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 351,
+    "kind": "method_declaration",
+    "name": "ReleaseHeldFrame",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "private void ReleaseHeldFrame()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 358,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "DxgiDesktopDuplicationSource",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 398,
+    "kind": "constructor_declaration",
+    "name": "TripleBufferedCapture",
+    "scope": "TripleBufferedCapture",
+    "signature": "public TripleBufferedCapture( IFrameSource inner, bool startImmediately = true, CaptureHealthPolicy? healthPolicy = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 413,
+    "kind": "method_declaration",
+    "name": "Start",
+    "scope": "TripleBufferedCapture",
+    "signature": "public void Start()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 418,
+    "kind": "method_declaration",
+    "name": "CaptureLoop",
+    "scope": "TripleBufferedCapture",
+    "signature": "private void CaptureLoop()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 442,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "TripleBufferedCapture",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 448,
+    "kind": "method_declaration",
+    "name": "GetHealthSnapshot",
+    "scope": "TripleBufferedCapture",
+    "signature": "public CaptureHealthSnapshot GetHealthSnapshot()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiCapture.cs",
+    "line": 455,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "TripleBufferedCapture",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 70,
+    "kind": "method_declaration",
+    "name": "CreateDXGIFactory1",
+    "scope": "DxgiInterop",
+    "signature": "[DllImport(\"dxgi.dll\", ExactSpelling = true)] internal static extern int CreateDXGIFactory1(in Guid riid, out void* factory);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "D3D11CreateDevice",
+    "scope": "DxgiInterop",
+    "signature": "[DllImport(\"d3d11.dll\", ExactSpelling = true)] internal static extern int D3D11CreateDevice( void* adapter, uint driverType, IntPtr software, uint flags, uint* featureLevels, uint featureLevelCount, uint sdkVersion, out void* device, uint* featureLevel, out void* immediateContext);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "Slot",
+    "scope": "DxgiInterop",
+    "signature": "private static void* Slot(void* comObject, int index)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "QueryInterface",
+    "scope": "DxgiInterop",
+    "signature": "internal static int QueryInterface(void* comObject, in Guid iid, out void* result)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 99,
+    "kind": "method_declaration",
+    "name": "Release",
+    "scope": "DxgiInterop",
+    "signature": "internal static void Release(ref void* comObject)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 106,
+    "kind": "method_declaration",
+    "name": "EnumAdapters1",
+    "scope": "DxgiInterop",
+    "signature": "internal static int EnumAdapters1(void* factory, uint index, out void* adapter)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "EnumOutputs",
+    "scope": "DxgiInterop",
+    "signature": "internal static int EnumOutputs(void* adapter, uint index, out void* output)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 124,
+    "kind": "method_declaration",
+    "name": "DuplicateOutput",
+    "scope": "DxgiInterop",
+    "signature": "internal static int DuplicateOutput(void* output1, void* device, out void* duplication)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 133,
+    "kind": "method_declaration",
+    "name": "GetDuplicationDesc",
+    "scope": "DxgiInterop",
+    "signature": "internal static int GetDuplicationDesc(void* duplication, out DxgiOutduplDesc desc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 144,
+    "kind": "method_declaration",
+    "name": "AcquireNextFrame",
+    "scope": "DxgiInterop",
+    "signature": "internal static int AcquireNextFrame(void* duplication, uint timeoutMs, out DxgiOutduplFrameInfo info, out void* desktopResource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 154,
+    "kind": "method_declaration",
+    "name": "ReleaseFrame",
+    "scope": "DxgiInterop",
+    "signature": "internal static int ReleaseFrame(void* duplication)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 158,
+    "kind": "method_declaration",
+    "name": "CreateTexture2D",
+    "scope": "DxgiInterop",
+    "signature": "internal static int CreateTexture2D(void* device, in D3D11Texture2DDesc desc, out void* texture)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "CopyResource",
+    "scope": "DxgiInterop",
+    "signature": "internal static void CopyResource(void* context, void* destination, void* source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 172,
+    "kind": "method_declaration",
+    "name": "Map",
+    "scope": "DxgiInterop",
+    "signature": "internal static int Map(void* context, void* resource, uint subresource, uint mapType, out D3D11MappedSubresource mapped)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DxgiInterop.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "Unmap",
+    "scope": "DxgiInterop",
+    "signature": "internal static void Unmap(void* context, void* resource, uint subresource)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Take",
+    "scope": "GeometryStamp",
+    "signature": "public static GeometryStamp Take(IntPtr window, TimeProvider clock)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "StillCurrent",
+    "scope": "GeometryStamp",
+    "signature": "public bool StillCurrent( TimeProvider clock, TimeSpan maxAge, out string? refusalReason, out TimeSpan age)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 221,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "GeometryEpoch",
+    "signature": "public static GeometryEpoch Read(IntPtr window)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "GeometryEpoch",
+    "signature": "public static GeometryEpoch Read(ClientWindow? window)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Perception/GeometryEpoch.cs",
     "line": 250,
     "kind": "method_declaration",
@@ -2513,19 +3035,19 @@
   {
     "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
     "line": 464,
-    "kind": "method_declaration",
-    "name": "CountAgreeingSamples",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "OpportunisticBarProbe",
-    "signature": "private int CountAgreeingSamples()",
+    "signature": "sample =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/Perception/OpportunisticBarProbe.cs",
     "line": 464,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "CountAgreeingSamples",
     "scope": "OpportunisticBarProbe",
-    "signature": "sample =>",
+    "signature": "private int CountAgreeingSamples()",
     "category": "project"
   },
   {
@@ -3975,528 +4497,6 @@
     "name": "Say",
     "scope": "ScreenProjectionWatcher",
     "signature": "void Say(string line = \"\")",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
-    "line": 272,
-    "kind": "method_declaration",
-    "name": "ArchivePreviousSession",
-    "scope": "ScreenProjectionWatcher",
-    "signature": "private static string? ArchivePreviousSession(string samplesPath)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
-    "line": 284,
-    "kind": "method_declaration",
-    "name": "LocateClientArea",
-    "scope": "ScreenProjectionWatcher",
-    "signature": "private static PixelRect? LocateClientArea(int processId, out IntPtr windowHandle)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 158,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenSampleCoach",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 169,
-    "kind": "constructor_declaration",
-    "name": "ScreenSampleCoach",
-    "scope": "ScreenSampleCoach",
-    "signature": "public ScreenSampleCoach(int clientWidth, int clientHeight, int wanted = DefaultWantedSamples)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 196,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenSampleCoach",
-    "signature": "static filled =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 207,
-    "kind": "method_declaration",
-    "name": "Offer",
-    "scope": "ScreenSampleCoach",
-    "signature": "public ScreenSampleVerdict Offer(ScreenProjectionSample sample, bool characterWasAtRest)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 230,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenSampleCoach",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 251,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenSampleCoach",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 253,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenSampleCoach",
-    "signature": "static x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 256,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenSampleCoach",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 269,
-    "kind": "method_declaration",
-    "name": "TrySolve",
-    "scope": "ScreenSampleCoach",
-    "signature": "public bool TrySolve( int clientWidth, int clientHeight, DateTime calibratedAtUtc, out ScreenProjectionCalibration calibration, out string? failureReason, DpiAwarenessRegime? regime = null, uint clientDpi = 0)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 281,
-    "kind": "method_declaration",
-    "name": "Spread",
-    "scope": "ScreenSampleCoach",
-    "signature": "private double Spread()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 284,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenSampleCoach",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 285,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenSampleCoach",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 305,
-    "kind": "method_declaration",
-    "name": "ImpliedPixelsPerTile",
-    "scope": "ScreenSampleCoach",
-    "signature": "public double ImpliedPixelsPerTile(ScreenProjectionSample sample)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 315,
-    "kind": "method_declaration",
-    "name": "DistanceTiles",
-    "scope": "ScreenSampleCoach",
-    "signature": "private static double DistanceTiles(MapPoint delta)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
-    "line": 322,
-    "kind": "method_declaration",
-    "name": "SectorOf",
-    "scope": "ScreenSampleCoach",
-    "signature": "private static int SectorOf(MapPoint delta)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
-    "line": 36,
-    "kind": "constructor_declaration",
-    "name": "ScreenTargetFrameSource",
-    "scope": "ScreenTargetFrameSource",
-    "signature": "public ScreenTargetFrameSource( IFrameSource frames, TargetRoiCalibration calibration, Func<PixelRect?> clientArea)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
-    "line": 47,
-    "kind": "method_declaration",
-    "name": "Read",
-    "scope": "ScreenTargetFrameSource",
-    "signature": "public TargetFrameObservation Read()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
-    "line": 75,
-    "kind": "method_declaration",
-    "name": "Refused",
-    "scope": "ScreenTargetFrameSource",
-    "signature": "private static TargetFrameObservation Refused(string reason, DateTime? atUtc = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 28,
-    "kind": "constructor_declaration",
-    "name": "ScreenVitalReader",
-    "scope": "ScreenVitalReader",
-    "signature": "public ScreenVitalReader(GlyphHashOcrCache? ocr = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "Read",
-    "scope": "ScreenVitalReader",
-    "signature": "public ScreenVitalObservation Read( CaptureFrame frame, ScreenBarFill? previousHpBar = null, ScreenBarFill? previousMpBar = null, ScreenVitalPair? previousHp = null, ScreenVitalPair? previousMp = null, PixelRect? clientArea = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 93,
-    "kind": "method_declaration",
-    "name": "ClassifyBar",
-    "scope": "ScreenVitalReader",
-    "signature": "private ScreenBarFill ClassifyBar(HudBarMeasure measure, ScreenBarFill? previous)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 101,
-    "kind": "method_declaration",
-    "name": "Recognize",
-    "scope": "ScreenVitalReader",
-    "signature": "private ScreenVitalPair Recognize(IReadOnlyList<byte[]> glyphs, ScreenVitalPair? previous)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 119,
-    "kind": "method_declaration",
-    "name": "TryParseCurrentMax",
-    "scope": "ScreenVitalReader",
-    "signature": "public static bool TryParseCurrentMax(string text, out int current, out int maximum)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 139,
-    "kind": "method_declaration",
-    "name": "ExtractGlyphs",
-    "scope": "ScreenVitalReader",
-    "signature": "public static IReadOnlyList<byte[]> ExtractGlyphs(CaptureFrame frame, RoiKind kind, PixelRect? clientArea = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 149,
-    "kind": "method_declaration",
-    "name": "Find",
-    "scope": "ScreenVitalReader",
-    "signature": "private static RegionOfInterest Find(IReadOnlyList<RegionOfInterest> regions, RoiKind kind)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
-    "line": 160,
-    "kind": "method_declaration",
-    "name": "Crop",
-    "scope": "ScreenVitalReader",
-    "signature": "public static byte[] Crop(CaptureFrame frame, PixelRect rect)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 138,
-    "kind": "constructor_declaration",
-    "name": "ScreenVitalsCapture",
-    "scope": "ScreenVitalsCapture",
-    "signature": "public ScreenVitalsCapture( Func<int?> processId, ScreenVitalReader? reader = null, TargetRoiCalibration? targetCalibration = null, DialogRoiCalibration? dialogCalibration = null, IPlayerAttackObserver? wire = null, uint adapterIndex = 0, uint outputIndex = 0, uint acquireTimeoutMs = 250, Func<DateTime>? clock = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 157,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenVitalsCapture",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 167,
-    "kind": "method_declaration",
-    "name": "Capture",
-    "scope": "ScreenVitalsCapture",
-    "signature": "public VisualObservation Capture()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 221,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenVitalsCapture",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 239,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenVitalsCapture",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 262,
-    "kind": "method_declaration",
-    "name": "TryEnsurePipeline",
-    "scope": "ScreenVitalsCapture",
-    "signature": "internal bool TryEnsurePipeline(out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 285,
-    "kind": "method_declaration",
-    "name": "Dispose",
-    "scope": "ScreenVitalsCapture",
-    "signature": "public void Dispose()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 302,
-    "kind": "constructor_declaration",
-    "name": "RecordingFrameSource",
-    "scope": "ScreenVitalsCapture.RecordingFrameSource",
-    "signature": "public RecordingFrameSource(IFrameSource inner)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 304,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenVitalsCapture.RecordingFrameSource",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 304,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScreenVitalsCapture.RecordingFrameSource",
-    "signature": "private set;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 308,
-    "kind": "method_declaration",
-    "name": "TryAcquire",
-    "scope": "ScreenVitalsCapture.RecordingFrameSource",
-    "signature": "public bool TryAcquire(out CaptureFrame frame)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 331,
-    "kind": "constructor_declaration",
-    "name": "SingleFrameSource",
-    "scope": "ScreenVitalsCapture.SingleFrameSource",
-    "signature": "public SingleFrameSource(CaptureFrame frame, DataSourceKind source)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 337,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenVitalsCapture.SingleFrameSource",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
-    "line": 339,
-    "kind": "method_declaration",
-    "name": "TryAcquire",
-    "scope": "ScreenVitalsCapture.SingleFrameSource",
-    "signature": "public bool TryAcquire(out CaptureFrame frame)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
-    "line": 36,
-    "kind": "method_declaration",
-    "name": "Read",
-    "scope": "TargetFrameReader",
-    "signature": "public static TargetFrameReading Read(ReadOnlySpan<byte> bgra, int width, int height)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
-    "line": 72,
-    "kind": "method_declaration",
-    "name": "Unreadable",
-    "scope": "TargetFrameReader",
-    "signature": "private static TargetFrameReading Unreadable(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 95,
-    "kind": "constructor_declaration",
-    "name": "TargetRoiAutoCalibrator",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "public TargetRoiAutoCalibrator( string calibrationPath, int differenceThreshold = DefaultDifferenceThreshold, int minFramesPerGroup = DefaultMinFramesPerGroup, int minVerificationsPerCase = DefaultMinVerificationsPerCase, int minChangedPixels = DefaultMinChangedPixels, int maxFramesPerGroup = DefaultMaxFramesPerGroup)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 189,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 229,
-    "kind": "method_declaration",
-    "name": "Offer",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "public TargetRoiCalibrationState Offer( CaptureFrame? frame, bool? hasTarget, PixelRect clientArea, bool clientInForeground = true)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 301,
-    "kind": "method_declaration",
-    "name": "BuildEvidence",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "public DeferredEvidenceRecord BuildEvidence(DateTime closedUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 374,
-    "kind": "method_declaration",
-    "name": "ProcessDerivationFrame",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private TargetRoiCalibrationState ProcessDerivationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 431,
-    "kind": "method_declaration",
-    "name": "TryDerive",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private void TryDerive(PixelRect clientArea)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 502,
-    "kind": "method_declaration",
-    "name": "ProcessVerificationFrame",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private TargetRoiCalibrationState ProcessVerificationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 587,
-    "kind": "method_declaration",
-    "name": "RecordUnreadableVerification",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private void RecordUnreadableVerification(TargetFrameReading reading)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 597,
-    "kind": "method_declaration",
-    "name": "ResetSession",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private void ResetSession()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 616,
-    "kind": "method_declaration",
-    "name": "RegisterRejection",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private void RegisterRejection(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 622,
-    "kind": "method_declaration",
-    "name": "DescribeDerivation",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private string DescribeDerivation()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 633,
-    "kind": "method_declaration",
-    "name": "DescribeVerification",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private string DescribeVerification()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 645,
-    "kind": "method_declaration",
-    "name": "DescribeDerivedRect",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private string DescribeDerivedRect()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
-    "line": 655,
-    "kind": "method_declaration",
-    "name": "DescribeDerivedFractions",
-    "scope": "TargetRoiAutoCalibrator",
-    "signature": "private string DescribeDerivedFractions()",
     "category": "project"
   }
 ]

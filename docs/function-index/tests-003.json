@@ -1,5 +1,329 @@
 [
   {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 200,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AutonomyPipelineTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "AnExpiredTokenCannotBeSpent",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void AnExpiredTokenCannotBeSpent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 221,
+    "kind": "method_declaration",
+    "name": "ThePolicyRefusesWhatItAlwaysRefused",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Theory] [InlineData(RuntimeMode.Stopped, ActionType.MoveToPosition, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseSkill, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseBasicAttack, 0.0f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.9f)] public void ThePolicyRefusesWhatItAlwaysRefused(RuntimeMode mode, ActionType type, float risk)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 238,
+    "kind": "method_declaration",
+    "name": "FleeingIsAllowedEvenAtHighRisk",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void FleeingIsAllowedEvenAtHighRisk()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 249,
+    "kind": "method_declaration",
+    "name": "BothFormsOfThePolicyAgree",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Theory] [InlineData(RuntimeMode.Stopped, ActionType.MoveToPosition, 0.0f)] [InlineData(RuntimeMode.Cooling, ActionType.UseSkill, 0.0f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.9f)] [InlineData(RuntimeMode.Normal, ActionType.UseSkill, 0.1f)] [InlineData(RuntimeMode.Normal, ActionType.EmergencyFlee, 0.99f)] public void BothFormsOfThePolicyAgree(RuntimeMode mode, ActionType type, float risk)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "TrustFallsButNeverRises",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void TrustFallsButNeverRises()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 286,
+    "kind": "method_declaration",
+    "name": "AGateRefusesAnActionAboveTheCurrentTier",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void AGateRefusesAnActionAboveTheCurrentTier()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 302,
+    "kind": "method_declaration",
+    "name": "FailuresEscalateThroughRetryThenDegradeThenHalt",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void FailuresEscalateThroughRetryThenDegradeThenHalt()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 322,
+    "kind": "method_declaration",
+    "name": "AStoppedRuntimeAuthorisesNothing",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void AStoppedRuntimeAuthorisesNothing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 334,
+    "kind": "method_declaration",
+    "name": "ResetClearsTheFailureCountUnderEitherName",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void ResetClearsTheFailureCountUnderEitherName()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
+    "line": 351,
+    "kind": "method_declaration",
+    "name": "TheCanonicalTrustScaleStartsAtReadOnlyAndKeepsTheNumericTiers",
+    "scope": "AutonomyPipelineTests",
+    "signature": "[Fact] public void TheCanonicalTrustScaleStartsAtReadOnlyAndKeepsTheNumericTiers()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Vitals",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static PlayerVitalsReading Vitals(uint hp)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "ConfirmedConsumableMap",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static KeybindMap ConfirmedConsumableMap(int slot = RecoverSlot, ushort virtualKey = 112)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 54,
+    "kind": "method_declaration",
+    "name": "MapFromJson",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static KeybindMap MapFromJson(string json)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 71,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 74,
+    "kind": "method_declaration",
+    "name": "TryGetCursorPosition",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool TryGetCursorPosition(out int x, out int y)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "MoveRelative",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool MoveRelative(int dx, int dy)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "MoveAbsolute",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool MoveAbsolute(int x, int y)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool KeyPress(ushort virtualKey, int pressDurationMs = 80, ReadOnlySpan<ushort> modifiers = default)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 83,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "public bool ScrollWheel(int detents)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 85,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 85,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "AutoplayCommandTests.RecordingInput",
+    "signature": "set;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 95,
+    "kind": "method_declaration",
+    "name": "FullyExploredFootprint",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static ExplorationFootprint FullyExploredFootprint()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "RunCycle",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static AutoplayCommand.AutoplayCycleResult RunCycle( StrategicPlan plan, int? recoverSlot = RecoverSlot, RecordingInput? input = null, KeybindMap? keybinds = null, PlayerVitalsReading? before = null, PlayerVitalsReading? after = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "RunCycleWithMap",
+    "scope": "AutoplayCommandTests",
+    "signature": "private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap( StrategicPlan plan, MapModel map, ExplorationFootprint footprint, int? recoverSlot = RecoverSlot, RecordingInput? input = null, KeybindMap? keybinds = null, PlayerVitalsReading? before = null, PlayerVitalsReading? after = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 140,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AutoplayCommandTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 141,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AutoplayCommandTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 152,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "AutoplayCommandTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "APlanWithNoSelection_IsIdle_AndNeverTouchesInputOrTheWalkController",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void APlanWithNoSelection_IsIdle_AndNeverTouchesInputOrTheWalkController()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 176,
+    "kind": "method_declaration",
+    "name": "AnExplorationPlan_DispatchesToScoutCommand_UnderAutoplayAuthority",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void AnExplorationPlan_DispatchesToScoutCommand_UnderAutoplayAuthority()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 222,
+    "kind": "method_declaration",
+    "name": "AnExplorationPlan_CarriesTheUpdatedFootprintForward_NotTheOriginal",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void AnExplorationPlan_CarriesTheUpdatedFootprintForward_NotTheOriginal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "AnIdleCycle_PassesTheFootprintThroughUnchanged",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void AnIdleCycle_PassesTheFootprintThroughUnchanged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 270,
+    "kind": "method_declaration",
+    "name": "ASurvivalPlanWithARecoverSlot_DispatchesToRecoverCommand_AndReportsTheEvidence",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void ASurvivalPlanWithARecoverSlot_DispatchesToRecoverCommand_AndReportsTheEvidence()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 300,
+    "kind": "method_declaration",
+    "name": "ASurvivalPlanWithoutARecoverSlot_IsSkipped_AndNeverTouchesInputOrTheWalkController",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void ASurvivalPlanWithoutARecoverSlot_IsSkipped_AndNeverTouchesInputOrTheWalkController()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "line": 319,
+    "kind": "method_declaration",
+    "name": "AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController",
+    "scope": "AutoplayCommandTests",
+    "signature": "[Fact] public void AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
     "line": 341,
     "kind": "method_declaration",
@@ -1337,7 +1661,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "CertificationReportBuilderTests",
-    "signature": "s =>",
+    "signature": "_ =>",
     "category": "test"
   },
   {
@@ -1346,7 +1670,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "CertificationReportBuilderTests",
-    "signature": "_ =>",
+    "signature": "s =>",
     "category": "test"
   },
   {
@@ -2246,7 +2570,7 @@
     "kind": "method_declaration",
     "name": "ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable",
     "scope": "ClientWindowDpiProbeTests",
-    "signature": "[WindowsOnlyFact] public void ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable()",
+    "signature": "[InteractiveDesktopOnlyFact] public void ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable()",
     "category": "test"
   },
   {
@@ -2264,7 +2588,7 @@
     "kind": "method_declaration",
     "name": "TheApphostAndDotnetExecReportDifferentRegimes",
     "scope": "ClientWindowDpiProbeTests",
-    "signature": "[WindowsOnlyFact] public void TheApphostAndDotnetExecReportDifferentRegimes()",
+    "signature": "[InteractiveDesktopOnlyFact] public void TheApphostAndDotnetExecReportDifferentRegimes()",
     "category": "test"
   },
   {
@@ -3897,6 +4221,87 @@
     "category": "test"
   },
   {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "SampleCycle",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "private static Gate3LoopCycle SampleCycle(CycleOutcome outcome = CycleOutcome.Confirmed, ActionType action = ActionType.UseSkill)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Append_CreatesTheDirectory_AndWritesOneJsonLine",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "[Fact] public void Append_CreatesTheDirectory_AndWritesOneJsonLine()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "Append_TwiceOnTheSamePath_AppendsRatherThanOverwriting",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "[Fact] public void Append_TwiceOnTheSamePath_AppendsRatherThanOverwriting()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "Append_WhenThePathIsUnwritable_NeverThrows",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "[Fact] public void Append_WhenThePathIsUnwritable_NeverThrows()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 75,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 80,
+    "kind": "method_declaration",
+    "name": "Constructor_RejectsNullArguments",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "[Fact] public void Constructor_RejectsNullArguments()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 83,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs",
+    "line": 84,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "DecisionTelemetryWriterTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Runtime.Tests/DetectionBoundaryTests.cs",
     "line": 9,
     "kind": "method_declaration",
@@ -4092,411 +4497,6 @@
     "name": "Dispose",
     "scope": "DialogRoiCalibrationTests",
     "signature": "public void Dispose()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 23,
-    "kind": "method_declaration",
-    "name": "A_missing_file_is_uncalibrated_and_is_not_broken",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void A_missing_file_is_uncalibrated_and_is_not_broken()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 32,
-    "kind": "method_declaration",
-    "name": "A_confirmed_calibration_survives_a_round_trip",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void A_confirmed_calibration_survives_a_round_trip()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 57,
-    "kind": "method_declaration",
-    "name": "An_uncalibrated_calibration_resolves_to_no_region_at_all",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void An_uncalibrated_calibration_resolves_to_no_region_at_all()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 61,
-    "kind": "method_declaration",
-    "name": "A_confirmed_calibration_resolves_against_the_client_area",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void A_confirmed_calibration_resolves_against_the_client_area()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 75,
-    "kind": "method_declaration",
-    "name": "A_region_outside_the_client_area_is_refused",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Theory] [InlineData(-0.1, 0.4, 0.4, 0.3)] [InlineData(0.90, 0.4, 0.4, 0.3)] [InlineData(0.30, 0.4, 0.0, 0.3)] [InlineData(0.30, 0.99, 0.4, 0.3)] public void A_region_outside_the_client_area_is_refused(double x, double y, double w, double h)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 82,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 84,
-    "kind": "method_declaration",
-    "name": "A_baseline_channel_mean_outside_a_valid_pixel_range_is_refused",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Theory] [InlineData(-1, 40, 40)] [InlineData(256, 40, 40)] [InlineData(40, -1, 40)] [InlineData(40, 256, 40)] [InlineData(40, 40, -1)] [InlineData(40, 40, 256)] public void A_baseline_channel_mean_outside_a_valid_pixel_range_is_refused(double b, double g, double r)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 93,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 95,
-    "kind": "method_declaration",
-    "name": "The_uncalibrated_state_refuses_to_be_written",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void The_uncalibrated_state_refuses_to_be_written()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 98,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 100,
-    "kind": "method_declaration",
-    "name": "A_malformed_file_is_uncalibrated_with_a_reason",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Theory] [InlineData(\"garbage\")] [InlineData(\"nosai-dialog-roi 1\")] [InlineData(\"nosai-dialog-roi 1\\n0.3 0.4 0.4 0.3\")] [InlineData(\"nosai-dialog-roi 1\\nx y 0.4 0.3 1920 1080 2026-09-06T12:00:00Z 40 40 40\")] public void A_malformed_file_is_uncalibrated_with_a_reason(string contents)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 117,
-    "kind": "method_declaration",
-    "name": "A_future_version_is_refused_rather_than_guessed_at",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void A_future_version_is_refused_rather_than_guessed_at()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogRoiCalibrationTests.cs",
-    "line": 130,
-    "kind": "method_declaration",
-    "name": "A_file_claiming_a_region_off_the_client_area_is_refused",
-    "scope": "DialogRoiCalibrationTests",
-    "signature": "[Fact] public void A_file_claiming_a_region_off_the_client_area_is_refused()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 8,
-    "kind": "method_declaration",
-    "name": "FlatColor",
-    "scope": "DialogWindowReaderTests",
-    "signature": "private static byte[] FlatColor(int width, int height, byte b, byte g, byte r)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 22,
-    "kind": "method_declaration",
-    "name": "A_crop_smaller_than_the_minimum_is_unreadable",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_crop_smaller_than_the_minimum_is_unreadable()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 33,
-    "kind": "method_declaration",
-    "name": "A_buffer_that_does_not_match_the_declared_dimensions_is_unreadable",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_buffer_that_does_not_match_the_declared_dimensions_is_unreadable()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 44,
-    "kind": "method_declaration",
-    "name": "A_crop_matching_the_baseline_exactly_is_absent_with_zero_divergence",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_crop_matching_the_baseline_exactly_is_absent_with_zero_divergence()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 55,
-    "kind": "method_declaration",
-    "name": "A_crop_clearly_different_from_the_baseline_is_present",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_crop_clearly_different_from_the_baseline_is_present()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 67,
-    "kind": "method_declaration",
-    "name": "A_divergence_exactly_at_the_threshold_is_absent_not_present",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_divergence_exactly_at_the_threshold_is_absent_not_present()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowReaderTests.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "A_custom_threshold_overrides_the_default",
-    "scope": "DialogWindowReaderTests",
-    "signature": "[Fact] public void A_custom_threshold_overrides_the_default()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 10,
-    "kind": "method_declaration",
-    "name": "Calibrated",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "private static DialogRoiCalibration Calibrated()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 13,
-    "kind": "method_declaration",
-    "name": "An_uncalibrated_roi_reports_the_calibration_reason_before_inspecting_the_reading",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "[Fact] public void An_uncalibrated_roi_reports_the_calibration_reason_before_inspecting_the_reading()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "A_present_reading_composes_to_a_derived_true",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "[Fact] public void A_present_reading_composes_to_a_derived_true()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "An_absent_reading_composes_to_a_derived_false",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "[Fact] public void An_absent_reading_composes_to_a_derived_false()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 50,
-    "kind": "method_declaration",
-    "name": "An_unreadable_reading_composes_to_unknown_with_its_own_reason",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "[Fact] public void An_unreadable_reading_composes_to_unknown_with_its_own_reason()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DialogWindowStateComposerTests.cs",
-    "line": 62,
-    "kind": "method_declaration",
-    "name": "An_unreadable_reading_without_a_named_reason_falls_back_to_the_composers_own",
-    "scope": "DialogWindowStateComposerTests",
-    "signature": "[Fact] public void An_unreadable_reading_without_a_named_reason_falls_back_to_the_composers_own()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
-    "line": 30,
-    "kind": "method_declaration",
-    "name": "Containing",
-    "scope": "ClientModuleImage",
-    "signature": "internal static byte[] Containing(EngineClientProfile profile)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
-    "line": 41,
-    "kind": "method_declaration",
-    "name": "Containing",
-    "scope": "ClientModuleImage",
-    "signature": "internal static byte[] Containing(EngineClientProfile profile, IReadOnlyCollection<EngineCapability> omit)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
-    "line": 53,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ClientModuleImage",
-    "signature": "existing =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
-    "line": 68,
-    "kind": "method_declaration",
-    "name": "Materialize",
-    "scope": "ClientModuleImage",
-    "signature": "private static byte[] Materialize(EngineSignature signature)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/ClientModuleImage.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "OffsetOf",
-    "scope": "ClientModuleImage",
-    "signature": "internal static int OffsetOf(byte[] image, EngineSignature signature)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 30,
-    "kind": "method_declaration",
-    "name": "Permitting",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "private static IEngineAuthorizationGate Permitting(params EngineCapability[] permitted)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 31,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "capability =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 35,
-    "kind": "method_declaration",
-    "name": "PermittingEverything",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "private static IEngineAuthorizationGate PermittingEverything()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 36,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "_ =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "Adapter",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "private static DirectEngineAdapter Adapter(IEngineAuthorizationGate? gate = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 39,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 42,
-    "kind": "method_declaration",
-    "name": "Loaded",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "private static DirectEngineAdapter Loaded( IEngineAuthorizationGate gate, params EngineCapability[] omitFromModule)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 58,
-    "kind": "method_declaration",
-    "name": "EveryLegacyCapabilityIsNamedOnTheContract",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void EveryLegacyCapabilityIsNamedOnTheContract()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 82,
-    "kind": "method_declaration",
-    "name": "ReadingIsSeparatedFromCommanding",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void ReadingIsSeparatedFromCommanding()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 95,
-    "kind": "method_declaration",
-    "name": "EveryNamedMethodCarriesItsOwnCapability",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void EveryNamedMethodCarriesItsOwnCapability()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 113,
-    "kind": "method_declaration",
-    "name": "AnAdapterNobodyDecidedAboutRefusesEverything",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void AnAdapterNobodyDecidedAboutRefusesEverything()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 126,
-    "kind": "method_declaration",
-    "name": "ScanningIsRefusedSeparatelyFromCalling",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void ScanningIsRefusedSeparatelyFromCalling()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 147,
-    "kind": "method_declaration",
-    "name": "WithoutAProfileNothingIsAvailable",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void WithoutAProfileNothingIsAvailable()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/DirectEngine/DirectEngineAdapterTests.cs",
-    "line": 162,
-    "kind": "method_declaration",
-    "name": "AnInvalidProfileIsNeverLoaded",
-    "scope": "DirectEngineAdapterTests",
-    "signature": "[Fact] public void AnInvalidProfileIsNeverLoaded()",
     "category": "test"
   }
 ]

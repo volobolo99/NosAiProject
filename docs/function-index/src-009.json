@@ -1,5 +1,527 @@
 [
   {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 272,
+    "kind": "method_declaration",
+    "name": "ArchivePreviousSession",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "private static string? ArchivePreviousSession(string samplesPath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
+    "line": 284,
+    "kind": "method_declaration",
+    "name": "LocateClientArea",
+    "scope": "ScreenProjectionWatcher",
+    "signature": "private static PixelRect? LocateClientArea(int processId, out IntPtr windowHandle)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 158,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 169,
+    "kind": "constructor_declaration",
+    "name": "ScreenSampleCoach",
+    "scope": "ScreenSampleCoach",
+    "signature": "public ScreenSampleCoach(int clientWidth, int clientHeight, int wanted = DefaultWantedSamples)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 196,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "static filled =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "Offer",
+    "scope": "ScreenSampleCoach",
+    "signature": "public ScreenSampleVerdict Offer(ScreenProjectionSample sample, bool characterWasAtRest)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 230,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 251,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenSampleCoach",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 253,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "static x =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 256,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 269,
+    "kind": "method_declaration",
+    "name": "TrySolve",
+    "scope": "ScreenSampleCoach",
+    "signature": "public bool TrySolve( int clientWidth, int clientHeight, DateTime calibratedAtUtc, out ScreenProjectionCalibration calibration, out string? failureReason, DpiAwarenessRegime? regime = null, uint clientDpi = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 281,
+    "kind": "method_declaration",
+    "name": "Spread",
+    "scope": "ScreenSampleCoach",
+    "signature": "private double Spread()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 284,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 285,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenSampleCoach",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 305,
+    "kind": "method_declaration",
+    "name": "ImpliedPixelsPerTile",
+    "scope": "ScreenSampleCoach",
+    "signature": "public double ImpliedPixelsPerTile(ScreenProjectionSample sample)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 315,
+    "kind": "method_declaration",
+    "name": "DistanceTiles",
+    "scope": "ScreenSampleCoach",
+    "signature": "private static double DistanceTiles(MapPoint delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenSampleCoach.cs",
+    "line": 322,
+    "kind": "method_declaration",
+    "name": "SectorOf",
+    "scope": "ScreenSampleCoach",
+    "signature": "private static int SectorOf(MapPoint delta)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 36,
+    "kind": "constructor_declaration",
+    "name": "ScreenTargetFrameSource",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "public ScreenTargetFrameSource( IFrameSource frames, TargetRoiCalibration calibration, Func<PixelRect?> clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 47,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "public TargetFrameObservation Read()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenTargetFrameSource.cs",
+    "line": 75,
+    "kind": "method_declaration",
+    "name": "Refused",
+    "scope": "ScreenTargetFrameSource",
+    "signature": "private static TargetFrameObservation Refused(string reason, DateTime? atUtc = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 28,
+    "kind": "constructor_declaration",
+    "name": "ScreenVitalReader",
+    "scope": "ScreenVitalReader",
+    "signature": "public ScreenVitalReader(GlyphHashOcrCache? ocr = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "ScreenVitalReader",
+    "signature": "public ScreenVitalObservation Read( CaptureFrame frame, ScreenBarFill? previousHpBar = null, ScreenBarFill? previousMpBar = null, ScreenVitalPair? previousHp = null, ScreenVitalPair? previousMp = null, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "ClassifyBar",
+    "scope": "ScreenVitalReader",
+    "signature": "private ScreenBarFill ClassifyBar(HudBarMeasure measure, ScreenBarFill? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "Recognize",
+    "scope": "ScreenVitalReader",
+    "signature": "private ScreenVitalPair Recognize(IReadOnlyList<byte[]> glyphs, ScreenVitalPair? previous)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 119,
+    "kind": "method_declaration",
+    "name": "TryParseCurrentMax",
+    "scope": "ScreenVitalReader",
+    "signature": "public static bool TryParseCurrentMax(string text, out int current, out int maximum)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "ExtractGlyphs",
+    "scope": "ScreenVitalReader",
+    "signature": "public static IReadOnlyList<byte[]> ExtractGlyphs(CaptureFrame frame, RoiKind kind, PixelRect? clientArea = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 149,
+    "kind": "method_declaration",
+    "name": "Find",
+    "scope": "ScreenVitalReader",
+    "signature": "private static RegionOfInterest Find(IReadOnlyList<RegionOfInterest> regions, RoiKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalReader.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "Crop",
+    "scope": "ScreenVitalReader",
+    "signature": "public static byte[] Crop(CaptureFrame frame, PixelRect rect)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 138,
+    "kind": "constructor_declaration",
+    "name": "ScreenVitalsCapture",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public ScreenVitalsCapture( Func<int?> processId, ScreenVitalReader? reader = null, TargetRoiCalibration? targetCalibration = null, DialogRoiCalibration? dialogCalibration = null, IPlayerAttackObserver? wire = null, uint adapterIndex = 0, uint outputIndex = 0, uint acquireTimeoutMs = 250, Func<DateTime>? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 157,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 167,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public VisualObservation Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 221,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 239,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ScreenVitalsCapture",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "TryEnsurePipeline",
+    "scope": "ScreenVitalsCapture",
+    "signature": "internal bool TryEnsurePipeline(out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 285,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "ScreenVitalsCapture",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 302,
+    "kind": "constructor_declaration",
+    "name": "RecordingFrameSource",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "public RecordingFrameSource(IFrameSource inner)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 304,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 304,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 308,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "ScreenVitalsCapture.RecordingFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 331,
+    "kind": "constructor_declaration",
+    "name": "SingleFrameSource",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "public SingleFrameSource(CaptureFrame frame, DataSourceKind source)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 337,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenVitalsCapture.cs",
+    "line": 339,
+    "kind": "method_declaration",
+    "name": "TryAcquire",
+    "scope": "ScreenVitalsCapture.SingleFrameSource",
+    "signature": "public bool TryAcquire(out CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "TargetFrameReader",
+    "signature": "public static TargetFrameReading Read(ReadOnlySpan<byte> bgra, int width, int height)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Unreadable",
+    "scope": "TargetFrameReader",
+    "signature": "private static TargetFrameReading Unreadable(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 95,
+    "kind": "constructor_declaration",
+    "name": "TargetRoiAutoCalibrator",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public TargetRoiAutoCalibrator( string calibrationPath, int differenceThreshold = DefaultDifferenceThreshold, int minFramesPerGroup = DefaultMinFramesPerGroup, int minVerificationsPerCase = DefaultMinVerificationsPerCase, int minChangedPixels = DefaultMinChangedPixels, int maxFramesPerGroup = DefaultMaxFramesPerGroup)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 189,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "get",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 229,
+    "kind": "method_declaration",
+    "name": "Offer",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public TargetRoiCalibrationState Offer( CaptureFrame? frame, bool? hasTarget, PixelRect clientArea, bool clientInForeground = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "BuildEvidence",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "public DeferredEvidenceRecord BuildEvidence(DateTime closedUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 374,
+    "kind": "method_declaration",
+    "name": "ProcessDerivationFrame",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private TargetRoiCalibrationState ProcessDerivationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 431,
+    "kind": "method_declaration",
+    "name": "TryDerive",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void TryDerive(PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 502,
+    "kind": "method_declaration",
+    "name": "ProcessVerificationFrame",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private TargetRoiCalibrationState ProcessVerificationFrame(CaptureFrame frame, bool hasTarget, PixelRect clientArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 587,
+    "kind": "method_declaration",
+    "name": "RecordUnreadableVerification",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void RecordUnreadableVerification(TargetFrameReading reading)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 597,
+    "kind": "method_declaration",
+    "name": "ResetSession",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void ResetSession()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 616,
+    "kind": "method_declaration",
+    "name": "RegisterRejection",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private void RegisterRejection(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 622,
+    "kind": "method_declaration",
+    "name": "DescribeDerivation",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivation()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 633,
+    "kind": "method_declaration",
+    "name": "DescribeVerification",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeVerification()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 645,
+    "kind": "method_declaration",
+    "name": "DescribeDerivedRect",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivedRect()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/TargetRoiAutoCalibrator.cs",
+    "line": 655,
+    "kind": "method_declaration",
+    "name": "DescribeDerivedFractions",
+    "scope": "TargetRoiAutoCalibrator",
+    "signature": "private string DescribeDerivedFractions()",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Perception/TargetRoiCalibration.cs",
     "line": 45,
     "kind": "constructor_declaration",
@@ -757,7 +1279,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 633,
+    "line": 629,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -766,7 +1288,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 635,
+    "line": 640,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -784,7 +1306,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 658,
+    "line": 649,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -793,7 +1315,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 660,
+    "line": 665,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -811,7 +1333,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 683,
+    "line": 674,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -820,7 +1342,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 685,
+    "line": 690,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -838,7 +1360,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 703,
+    "line": 699,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -847,7 +1369,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 705,
+    "line": 710,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -856,7 +1378,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 722,
+    "line": 712,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -865,7 +1387,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 724,
+    "line": 729,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -874,7 +1396,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 763,
+    "line": 731,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -883,7 +1405,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 765,
+    "line": 770,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -892,7 +1414,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 783,
+    "line": 772,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -901,7 +1423,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 819,
+    "line": 790,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -910,7 +1432,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 828,
+    "line": 826,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -919,7 +1441,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 837,
+    "line": 835,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -928,7 +1450,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 857,
+    "line": 844,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -937,7 +1459,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 863,
+    "line": 864,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -946,7 +1468,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 874,
+    "line": 870,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -955,7 +1477,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 888,
+    "line": 881,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -991,7 +1513,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 917,
+    "line": 916,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1009,7 +1531,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 934,
+    "line": 931,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1018,7 +1540,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 949,
+    "line": 941,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1027,7 +1549,16 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 967,
+    "line": 956,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Program",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Program.cs",
+    "line": 974,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1036,7 +1567,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1016,
+    "line": 1023,
     "kind": "local_function_statement",
     "name": "AttachedProcessId",
     "scope": "Program",
@@ -1045,7 +1576,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1078,
+    "line": 1085,
     "kind": "local_function_statement",
     "name": "ResolveMap",
     "scope": "Program",
@@ -1054,7 +1585,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1186,
+    "line": 1193,
     "kind": "method_declaration",
     "name": "TryParseWindow",
     "scope": "Program",
@@ -1063,7 +1594,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1199,
+    "line": 1206,
     "kind": "method_declaration",
     "name": "FormatClassified",
     "scope": "Program",
@@ -1072,7 +1603,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1214,
+    "line": 1221,
     "kind": "method_declaration",
     "name": "RunDxgiProbe",
     "scope": "Program",
@@ -1081,7 +1612,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1262,
+    "line": 1269,
     "kind": "method_declaration",
     "name": "ReadEnvironment",
     "scope": "Program",
@@ -1244,19 +1775,19 @@
   {
     "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
     "line": 133,
-    "kind": "method_declaration",
-    "name": "ApplyDebuffStack",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "NosAi.Raids.Dodekatheon.CelestialTeamCoordinator",
-    "signature": "public void ApplyDebuffStack(string debuffName, int maxStacks = 5)",
+    "signature": "(_, current) =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
     "line": 133,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "ApplyDebuffStack",
     "scope": "NosAi.Raids.Dodekatheon.CelestialTeamCoordinator",
-    "signature": "(_, current) =>",
+    "signature": "public void ApplyDebuffStack(string debuffName, int maxStacks = 5)",
     "category": "project"
   },
   {
@@ -1298,19 +1829,19 @@
   {
     "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
     "line": 146,
-    "kind": "method_declaration",
-    "name": "CleanExpiredTelegraphs",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidOrchestrator",
-    "signature": "public void CleanExpiredTelegraphs()",
+    "signature": "t =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
     "line": 146,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "CleanExpiredTelegraphs",
     "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidOrchestrator",
-    "signature": "t =>",
+    "signature": "public void CleanExpiredTelegraphs()",
     "category": "project"
   },
   {
@@ -1397,37 +1928,37 @@
   {
     "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
     "line": 183,
-    "kind": "method_declaration",
-    "name": "TestDodekaSecurityInvariant",
-    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
-    "signature": "private static bool TestDodekaSecurityInvariant()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
-    "line": 183,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
-    "line": 183,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
-    "line": 183,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
     "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
+    "line": 183,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
+    "line": 183,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Raids/Dodekatheon/DodekatheonRaidOrchestrator.cs",
+    "line": 183,
+    "kind": "method_declaration",
+    "name": "TestDodekaSecurityInvariant",
+    "scope": "NosAi.Raids.Dodekatheon.DodekatheonRaidTestRunner",
+    "signature": "private static bool TestDodekaSecurityInvariant()",
     "category": "project"
   },
   {
@@ -3966,537 +4497,6 @@
     "name": "TacticalPlanner",
     "scope": "TacticalPlanner",
     "signature": "public TacticalPlanner(IActionSimulator simulator, TacticalRanking ranking)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalPlanner.cs",
-    "line": 17,
-    "kind": "method_declaration",
-    "name": "Rank",
-    "scope": "TacticalPlanner",
-    "signature": "public IReadOnlyList<RankedAction> Rank(WorldState state, IEnumerable<CandidateAction> candidates)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalPlanner.cs",
-    "line": 19,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "TacticalPlanner",
-    "signature": "action =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalRanking.cs",
-    "line": 9,
-    "kind": "method_declaration",
-    "name": "Rank",
-    "scope": "TacticalRanking",
-    "signature": "public IReadOnlyList<RankedAction> Rank(IEnumerable<CandidateAction> candidates)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalRanking.cs",
-    "line": 12,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "TacticalRanking",
-    "signature": "a =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalRanking.cs",
-    "line": 13,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "TacticalRanking",
-    "signature": "a =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/TacticalRanking.cs",
-    "line": 14,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "TacticalRanking",
-    "signature": "(action, index) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 110,
-    "kind": "method_declaration",
-    "name": "TryParse",
-    "scope": "UnequipCommand",
-    "signature": "public static string? TryParse( string[] args, out EquipmentSlot? slot, out UnequipGesture? gesture, out int? verifyMs, out bool armInput)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 122,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipCommand",
-    "signature": "a =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 178,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "UnequipCommand",
-    "signature": "public static int Run(string[] args)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 215,
-    "kind": "method_declaration",
-    "name": "RunWindows",
-    "scope": "UnequipCommand",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(EquipmentSlot slot, UnequipGesture gesture, int? verifyMs)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 288,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipCommand",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 304,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipCommand",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 335,
-    "kind": "method_declaration",
-    "name": "DescribeVerification",
-    "scope": "UnequipCommand",
-    "signature": "private static string DescribeVerification(UnequipVerification verification)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipCommand.cs",
-    "line": 346,
-    "kind": "method_declaration",
-    "name": "TryFindWindow",
-    "scope": "UnequipCommand",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(out ClientWindow window, out int processId, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 87,
-    "kind": "method_declaration",
-    "name": "NotAttempted",
-    "scope": "UnequipVerification",
-    "signature": "public static UnequipVerification NotAttempted(EquipmentSlot slot)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 120,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "UnequipReport",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 238,
-    "kind": "constructor_declaration",
-    "name": "UnequipExecutor",
-    "scope": "UnequipExecutor",
-    "signature": "public UnequipExecutor( GatedInputBackend input, Func<IntPtr> sessionWindow, Func<IntPtr, GeometryStamp>? readGeometry = null, TimeProvider? clock = null, TimeSpan? verificationWindow = null, TimeSpan? pollInterval = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 249,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipExecutor",
-    "signature": "window =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 277,
-    "kind": "method_declaration",
-    "name": "Unequip",
-    "scope": "UnequipExecutor",
-    "signature": "public UnequipReport Unequip( UnequipRequest request, InventoryPanelRoiCalibration calibration, in ActuationAuthority authority, Func<WornEquipment?> readLatestEquip, CancellationToken cancellationToken = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 353,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipExecutor",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 375,
-    "kind": "method_declaration",
-    "name": "EmitGesture",
-    "scope": "UnequipExecutor",
-    "signature": "private bool EmitGesture(UnequipGesture gesture, out string? refusal)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 418,
-    "kind": "method_declaration",
-    "name": "Verify",
-    "scope": "UnequipExecutor",
-    "signature": "private UnequipVerification Verify( EquipmentSlot slot, WornEquipment baseline, Func<WornEquipment?> readLatestEquip, CancellationToken cancellationToken)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 433,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipExecutor",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 452,
-    "kind": "method_declaration",
-    "name": "SameSlots",
-    "scope": "UnequipExecutor",
-    "signature": "private static bool SameSlots(WornEquipment a, WornEquipment b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 457,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "UnequipExecutor",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/UnequipExecutor.cs",
-    "line": 467,
-    "kind": "method_declaration",
-    "name": "NotEmitted",
-    "scope": "UnequipExecutor",
-    "signature": "private static UnequipReport NotEmitted(EquipmentSlot slot, UnequipGesture gesture, string? refusalReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportBuilder.cs",
-    "line": 69,
-    "kind": "method_declaration",
-    "name": "NatureFor",
-    "scope": "CertificationReportBuilder",
-    "signature": "public static EvidenceNature NatureFor( CertificationStage stage, IReadOnlySet<CertificationStage>? recordedStages)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportBuilder.cs",
-    "line": 84,
-    "kind": "method_declaration",
-    "name": "NatureLabel",
-    "scope": "CertificationReportBuilder",
-    "signature": "public static string NatureLabel(EvidenceNature nature)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportBuilder.cs",
-    "line": 101,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CertificationReportBuilder",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportBuilder.cs",
-    "line": 147,
-    "kind": "method_declaration",
-    "name": "Build",
-    "scope": "CertificationReportBuilder",
-    "signature": "public static CertificationReport Build( IReadOnlyDictionary<string, bool> suitePassed, DateTime observedAtUtc, IReadOnlySet<CertificationStage>? recordedEvidence = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportCommand.cs",
-    "line": 32,
-    "kind": "method_declaration",
-    "name": "RunAsync",
-    "scope": "CertificationReportCommand",
-    "signature": "public static async Task<int> RunAsync(CancellationToken token = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportCommand.cs",
-    "line": 59,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationReportCommand",
-    "signature": "v =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationReportCommand.cs",
-    "line": 64,
-    "kind": "method_declaration",
-    "name": "Print",
-    "scope": "CertificationReportCommand",
-    "signature": "public static void Print(CertificationReport report)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 33,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CertificationSuites",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 65,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 67,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 69,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 75,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 87,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CertificationSuites",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 88,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 88,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 92,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 94,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 94,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 97,
-    "kind": "method_declaration",
-    "name": "Resolve",
-    "scope": "CertificationSuites",
-    "signature": "public static Func<Task<bool>>? Resolve(string key)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/CertificationSuites.cs",
-    "line": 98,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "CertificationSuites",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/DeferredEvidence.cs",
-    "line": 89,
-    "kind": "method_declaration",
-    "name": "CriteriaFor",
-    "scope": "DeferredEvidence",
-    "signature": "public static IReadOnlyList<DeferredCriterion> CriteriaFor(string testId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/DeferredEvidence.cs",
-    "line": 126,
-    "kind": "method_declaration",
-    "name": "Write",
-    "scope": "DeferredEvidence",
-    "signature": "public static string Write(DeferredEvidenceRecord record, string? root = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/DeferredEvidence.cs",
-    "line": 185,
-    "kind": "method_declaration",
-    "name": "ReadPointer",
-    "scope": "DeferredEvidence",
-    "signature": "public static DeferredEvidencePointer? ReadPointer(string testId, string? root = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/DeferredEvidence.cs",
-    "line": 218,
-    "kind": "method_declaration",
-    "name": "ReadLatest",
-    "scope": "DeferredEvidence",
-    "signature": "public static DeferredEvidenceRecord? ReadLatest(string testId, string? root = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 26,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "GateCertificationRunner",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 27,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "GateCertificationRunner",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 40,
-    "kind": "constructor_declaration",
-    "name": "GateCertificationRunner",
-    "scope": "GateCertificationRunner",
-    "signature": "public GateCertificationRunner(Func<string, Func<Task<bool>>?> resolve)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 48,
-    "kind": "method_declaration",
-    "name": "Discover",
-    "scope": "GateCertificationRunner",
-    "signature": "public IEnumerable<(string Id, string Suite, TestSuiteKind Kind, string Name)> Discover()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 49,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "GateCertificationRunner",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 53,
-    "kind": "method_declaration",
-    "name": "RunAsync",
-    "scope": "GateCertificationRunner",
-    "signature": "public async Task<SuiteResult> RunAsync(string suiteKey, CancellationToken token = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 55,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "GateCertificationRunner",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/GateCertificationRunner.cs",
-    "line": 128,
-    "kind": "method_declaration",
-    "name": "SuiteName",
-    "scope": "GateCertificationRunner",
-    "signature": "private static string SuiteName(GateSuite suite)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Testing/LivePracticalTestService.cs",
-    "line": 17,
-    "kind": "constructor_declaration",
-    "name": "LivePracticalTestService",
-    "scope": "LivePracticalTestService",
-    "signature": "public LivePracticalTestService( Func<Gate1CanonicalSnapshot> snapshot, Func<bool> runtimeLive, Func<bool> clientAttached)",
     "category": "project"
   }
 ]

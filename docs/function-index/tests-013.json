@@ -1,0 +1,830 @@
+[
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 84,
+    "kind": "function_definition",
+    "name": "test_a_different_binding_derives_different_keys",
+    "scope": "",
+    "signature": "def test_a_different_binding_derives_different_keys(): # The binding is the HKDF salt, so a peer that saw a different handshake ends # up unable to decrypt rather than quietly agreeing on a key.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "test_the_golden_frame_is_byte_for_byte_reproducible",
+    "scope": "",
+    "signature": "def test_the_golden_frame_is_byte_for_byte_reproducible():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 102,
+    "kind": "function_definition",
+    "name": "test_the_runtime_opens_what_the_phone_sealed",
+    "scope": "",
+    "signature": "def test_the_runtime_opens_what_the_phone_sealed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 110,
+    "kind": "function_definition",
+    "name": "test_the_directions_do_not_share_a_key",
+    "scope": "",
+    "signature": "def test_the_directions_do_not_share_a_key(): # With one shared key a frame captured in one direction would decrypt when # replayed down the other.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 123,
+    "kind": "function_definition",
+    "name": "test_a_tampered_header_fails_the_tag",
+    "scope": "",
+    "signature": "def test_a_tampered_header_fails_the_tag(): # The header is readable but authenticated: rewriting the type or the sequence # number must not go unnoticed.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "test_a_tampered_ciphertext_fails_the_tag",
+    "scope": "",
+    "signature": "def test_a_tampered_ciphertext_fails_the_tag():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 149,
+    "kind": "function_definition",
+    "name": "test_the_nonce_advances_and_is_never_reused",
+    "scope": "",
+    "signature": "def test_the_nonce_advances_and_is_never_reused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 161,
+    "kind": "function_definition",
+    "name": "test_an_out_of_order_nonce_is_refused",
+    "scope": "",
+    "signature": "def test_an_out_of_order_nonce_is_refused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "test_a_short_payload_is_refused",
+    "scope": "",
+    "signature": "def test_a_short_payload_is_refused():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 182,
+    "kind": "function_definition",
+    "name": "test_an_invalid_peer_point_is_refused",
+    "scope": "",
+    "signature": "def test_an_invalid_peer_point_is_refused(): # An unchecked point would let a peer steer the agreement.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_session_cipher.py",
+    "line": 192,
+    "kind": "function_definition",
+    "name": "test_only_handshake_messages_may_travel_in_clear",
+    "scope": "",
+    "signature": "def test_only_handshake_messages_may_travel_in_clear():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_simulation.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "test_simulation_is_deterministic_and_fail_closed",
+    "scope": "",
+    "signature": "def test_simulation_is_deterministic_and_fail_closed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 12,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 37,
+    "kind": "function_definition",
+    "name": "_engine",
+    "scope": "",
+    "signature": "def _engine(book: ActionBook | None = None, ready: bool = True) -> StochasticCombatEngine:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "_world",
+    "scope": "",
+    "signature": "def _world(**overrides) -> WorldState:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 55,
+    "kind": "function_definition",
+    "name": "test_the_proposal_is_accepted_by_the_safety_gate",
+    "scope": "",
+    "signature": "def test_the_proposal_is_accepted_by_the_safety_gate():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 71,
+    "kind": "function_definition",
+    "name": "test_survival_preempts_a_winning_attack",
+    "scope": "",
+    "signature": "def test_survival_preempts_a_winning_attack():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 87,
+    "kind": "function_definition",
+    "name": "test_a_moderate_drain_proposes_the_recovery_action",
+    "scope": "",
+    "signature": "def test_a_moderate_drain_proposes_the_recovery_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 97,
+    "kind": "function_definition",
+    "name": "test_unknown_readiness_withholds_offence_but_not_recovery",
+    "scope": "",
+    "signature": "def test_unknown_readiness_withholds_offence_but_not_recovery():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 113,
+    "kind": "function_definition",
+    "name": "test_a_cooling_action_is_withheld_from_the_search",
+    "scope": "",
+    "signature": "def test_a_cooling_action_is_withheld_from_the_search():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_a_cast_that_will_be_interrupted_is_withheld",
+    "scope": "",
+    "signature": "def test_a_cast_that_will_be_interrupted_is_withheld():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 137,
+    "kind": "function_definition",
+    "name": "test_retargeting_is_a_recommendation_and_never_an_action",
+    "scope": "",
+    "signature": "def test_retargeting_is_a_recommendation_and_never_an_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 160,
+    "kind": "function_definition",
+    "name": "test_no_retarget_is_reported_when_the_observed_target_already_leads",
+    "scope": "",
+    "signature": "def test_no_retarget_is_reported_when_the_observed_target_already_leads():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 175,
+    "kind": "function_definition",
+    "name": "test_no_observed_target_yields_noop",
+    "scope": "",
+    "signature": "def test_no_observed_target_yields_noop():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 183,
+    "kind": "function_definition",
+    "name": "test_an_unreadable_mp_bar_withholds_costed_actions",
+    "scope": "",
+    "signature": "def test_an_unreadable_mp_bar_withholds_costed_actions():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 194,
+    "kind": "function_definition",
+    "name": "test_an_unreadable_target_hp_withholds_the_kill_bonus",
+    "scope": "",
+    "signature": "def test_an_unreadable_target_hp_withholds_the_kill_bonus():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 201,
+    "kind": "function_definition",
+    "name": "test_decide_refuses_to_answer_for_a_tick_it_never_evaluated",
+    "scope": "",
+    "signature": "def test_decide_refuses_to_answer_for_a_tick_it_never_evaluated():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 211,
+    "kind": "function_definition",
+    "name": "test_re_evaluating_one_instant_does_not_bias_the_trend",
+    "scope": "",
+    "signature": "def test_re_evaluating_one_instant_does_not_bias_the_trend():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 220,
+    "kind": "function_definition",
+    "name": "test_the_frame_is_reproducible_for_a_tick",
+    "scope": "",
+    "signature": "def test_the_frame_is_reproducible_for_a_tick():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 230,
+    "kind": "function_definition",
+    "name": "test_learning_changes_what_the_engine_reaches_for",
+    "scope": "",
+    "signature": "def test_learning_changes_what_the_engine_reaches_for():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 260,
+    "kind": "function_definition",
+    "name": "test_confidence_is_a_bounded_share_of_the_search_budget",
+    "scope": "",
+    "signature": "def test_confidence_is_a_bounded_share_of_the_search_budget():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 266,
+    "kind": "function_definition",
+    "name": "test_the_risk_term_is_reported_as_unknown_before_a_trend_exists",
+    "scope": "",
+    "signature": "def test_the_risk_term_is_reported_as_unknown_before_a_trend_exists():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_stochastic_combat_engine.py",
+    "line": 278,
+    "kind": "function_definition",
+    "name": "test_an_unknown_recovery_action_is_rejected_at_construction",
+    "scope": "",
+    "signature": "def test_an_unknown_recovery_action_is_rejected_at_construction():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "test_readiness_is_unknown_before_any_execution_or_observation",
+    "scope": "",
+    "signature": "def test_readiness_is_unknown_before_any_execution_or_observation():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 53,
+    "kind": "function_definition",
+    "name": "test_shadow_clock_predicts_the_cooldown_after_an_execution",
+    "scope": "",
+    "signature": "def test_shadow_clock_predicts_the_cooldown_after_an_execution():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "test_prediction_degrades_to_cached_past_the_confirmation_horizon",
+    "scope": "",
+    "signature": "def test_prediction_degrades_to_cached_past_the_confirmation_horizon():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "test_observed_ready_snaps_the_clock_and_reports_drift",
+    "scope": "",
+    "signature": "def test_observed_ready_snaps_the_clock_and_reports_drift():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "test_observed_cooling_past_prediction_leaves_the_remainder_unknown",
+    "scope": "",
+    "signature": "def test_observed_cooling_past_prediction_leaves_the_remainder_unknown():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 114,
+    "kind": "function_definition",
+    "name": "test_instant_action_has_no_interrupt_window",
+    "scope": "",
+    "signature": "def test_instant_action_has_no_interrupt_window():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_independent_transitions_compose_multiplicatively",
+    "scope": "",
+    "signature": "def test_independent_transitions_compose_multiplicatively():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 138,
+    "kind": "function_definition",
+    "name": "test_wasting_the_cooldown_can_drive_the_expected_yield_negative",
+    "scope": "",
+    "signature": "def test_wasting_the_cooldown_can_drive_the_expected_yield_negative():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 154,
+    "kind": "function_definition",
+    "name": "test_animation_cancel_is_free_while_a_cast_cancel_must_beat_the_residual",
+    "scope": "",
+    "signature": "def test_animation_cancel_is_free_while_a_cast_cancel_must_beat_the_residual():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_scheduling.py",
+    "line": 178,
+    "kind": "function_definition",
+    "name": "test_survival_forces_a_cast_cancel_regardless_of_value",
+    "scope": "",
+    "signature": "def test_survival_forces_a_cast_cancel_regardless_of_value():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "_stun_book",
+    "scope": "",
+    "signature": "def _stun_book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 41,
+    "kind": "function_definition",
+    "name": "_root",
+    "scope": "",
+    "signature": "def _root(**overrides) -> CombatSimState:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "_search",
+    "scope": "",
+    "signature": "def _search(book: ActionBook, **config) -> MonteCarloCombatSearch:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 53,
+    "kind": "function_definition",
+    "name": "test_search_is_reproducible_for_a_fixed_seed",
+    "scope": "",
+    "signature": "def test_search_is_reproducible_for_a_fixed_seed():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "test_search_prefers_the_higher_damage_action",
+    "scope": "",
+    "signature": "def test_search_prefers_the_higher_damage_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "test_restriction_withholds_an_action_from_the_root",
+    "scope": "",
+    "signature": "def test_restriction_withholds_an_action_from_the_root():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 88,
+    "kind": "function_definition",
+    "name": "test_the_search_avoids_a_line_that_kills_the_character",
+    "scope": "",
+    "signature": "def test_the_search_avoids_a_line_that_kills_the_character():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 108,
+    "kind": "function_definition",
+    "name": "test_incoming_damage_is_integrated_only_over_the_seconds_the_stun_covers",
+    "scope": "",
+    "signature": "def test_incoming_damage_is_integrated_only_over_the_seconds_the_stun_covers():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 130,
+    "kind": "function_definition",
+    "name": "test_waiting_is_the_fallback_when_nothing_is_off_cooldown",
+    "scope": "",
+    "signature": "def test_waiting_is_the_fallback_when_nothing_is_off_cooldown():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 144,
+    "kind": "function_definition",
+    "name": "test_a_root_with_nothing_committable_proposes_no_action",
+    "scope": "",
+    "signature": "def test_a_root_with_nothing_committable_proposes_no_action():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 152,
+    "kind": "function_definition",
+    "name": "test_an_unaffordable_action_is_not_legal",
+    "scope": "",
+    "signature": "def test_an_unaffordable_action_is_not_legal():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_search.py",
+    "line": 165,
+    "kind": "function_definition",
+    "name": "test_the_simulator_does_not_mutate_its_input_state",
+    "scope": "",
+    "signature": "def test_the_simulator_does_not_mutate_its_input_state():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_lookahead_contributes_to_ranking",
+    "scope": "",
+    "signature": "def test_lookahead_contributes_to_ranking():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_low_hp_recovery_forecast_is_prioritized",
+    "scope": "",
+    "signature": "def test_low_hp_recovery_forecast_is_prioritized():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 27,
+    "kind": "function_definition",
+    "name": "test_attack_forecast_tolerates_unknown_target_hp",
+    "scope": "",
+    "signature": "def test_attack_forecast_tolerates_unknown_target_hp():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "test_unknown_max_hp_does_not_fabricate_a_survival_score",
+    "scope": "",
+    "signature": "def test_unknown_max_hp_does_not_fabricate_a_survival_score():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 47,
+    "kind": "function_definition",
+    "name": "test_unknown_max_hp_still_ranks_recovery_over_combat",
+    "scope": "",
+    "signature": "def test_unknown_max_hp_still_ranks_recovery_over_combat():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "test_known_healthy_hp_does_not_preempt_combat",
+    "scope": "",
+    "signature": "def test_known_healthy_hp_does_not_preempt_combat():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_simulation_ranking.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "test_critical_hp_outranks_combat_regardless_of_score",
+    "scope": "",
+    "signature": "def test_critical_hp_outranks_combat_regardless_of_score():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "_book",
+    "scope": "",
+    "signature": "def _book() -> ActionBook:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_unobserved_pair_reports_the_claim_and_declares_it_unmeasured",
+    "scope": "",
+    "signature": "def test_unobserved_pair_reports_the_claim_and_declares_it_unmeasured():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 40,
+    "kind": "function_definition",
+    "name": "test_resists_pull_the_posterior_below_the_claim",
+    "scope": "",
+    "signature": "def test_resists_pull_the_posterior_below_the_claim():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 52,
+    "kind": "function_definition",
+    "name": "test_evidence_moves_the_posterior_toward_what_was_measured",
+    "scope": "",
+    "signature": "def test_evidence_moves_the_posterior_toward_what_was_measured():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 59,
+    "kind": "function_definition",
+    "name": "test_forgetting_bounds_the_effective_sample_size",
+    "scope": "",
+    "signature": "def test_forgetting_bounds_the_effective_sample_size():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 80,
+    "kind": "function_definition",
+    "name": "test_target_classes_do_not_share_evidence",
+    "scope": "",
+    "signature": "def test_target_classes_do_not_share_evidence():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 95,
+    "kind": "function_definition",
+    "name": "test_an_unclassified_target_is_its_own_bucket",
+    "scope": "",
+    "signature": "def test_an_unclassified_target_is_its_own_bucket():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "test_variance_shrinks_as_evidence_accumulates",
+    "scope": "",
+    "signature": "def test_variance_shrinks_as_evidence_accumulates():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 116,
+    "kind": "function_definition",
+    "name": "test_susceptibility_is_none_when_nothing_in_the_book_carries_an_effect",
+    "scope": "",
+    "signature": "def test_susceptibility_is_none_when_nothing_in_the_book_carries_an_effect():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_stochastic.py",
+    "line": 126,
+    "kind": "function_definition",
+    "name": "test_learning_about_an_effectless_action_is_rejected",
+    "scope": "",
+    "signature": "def test_learning_about_an_effectless_action_is_rejected():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "_falling",
+    "scope": "",
+    "signature": "def _falling(monitor: BurstMonitor, samples: tuple[tuple[float, float], ...]) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 21,
+    "kind": "function_definition",
+    "name": "test_priority_renormalises_over_the_observed_terms",
+    "scope": "",
+    "signature": "def test_priority_renormalises_over_the_observed_terms():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_an_entity_with_no_observable_term_is_ranked_last_but_kept",
+    "scope": "",
+    "signature": "def test_an_entity_with_no_observable_term_is_ranked_last_but_kept():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "test_a_weakened_nearby_target_outranks_a_healthy_distant_one",
+    "scope": "",
+    "signature": "def test_a_weakened_nearby_target_outranks_a_healthy_distant_one():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 65,
+    "kind": "function_definition",
+    "name": "test_velocity_needs_two_samples_at_distinct_timestamps",
+    "scope": "",
+    "signature": "def test_velocity_needs_two_samples_at_distinct_timestamps():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 78,
+    "kind": "function_definition",
+    "name": "test_least_squares_recovers_the_drain_rate",
+    "scope": "",
+    "signature": "def test_least_squares_recovers_the_drain_rate():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 88,
+    "kind": "function_definition",
+    "name": "test_burst_disengages_while_hp_is_still_above_the_static_floor",
+    "scope": "",
+    "signature": "def test_burst_disengages_while_hp_is_still_above_the_static_floor():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 104,
+    "kind": "function_definition",
+    "name": "test_a_moderate_drain_recovers_rather_than_disengaging",
+    "scope": "",
+    "signature": "def test_a_moderate_drain_recovers_rather_than_disengaging():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 116,
+    "kind": "function_definition",
+    "name": "test_a_healthy_character_under_the_same_drain_keeps_fighting",
+    "scope": "",
+    "signature": "def test_a_healthy_character_under_the_same_drain_keeps_fighting():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 122,
+    "kind": "function_definition",
+    "name": "test_a_slow_bleed_still_hits_the_absolute_floor",
+    "scope": "",
+    "signature": "def test_a_slow_bleed_still_hits_the_absolute_floor():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 138,
+    "kind": "function_definition",
+    "name": "test_unknown_hp_ratio_fails_closed_to_recovery",
+    "scope": "",
+    "signature": "def test_unknown_hp_ratio_fails_closed_to_recovery():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 153,
+    "kind": "function_definition",
+    "name": "test_unreadable_frames_are_dropped_rather_than_carried_forward",
+    "scope": "",
+    "signature": "def test_unreadable_frames_are_dropped_rather_than_carried_forward():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 168,
+    "kind": "function_definition",
+    "name": "test_samples_older_than_the_window_stop_counting",
+    "scope": "",
+    "signature": "def test_samples_older_than_the_window_stop_counting():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_tactical_threat.py",
+    "line": 174,
+    "kind": "function_definition",
+    "name": "test_escape_budget_may_not_exceed_the_recovery_budget",
+    "scope": "",
+    "signature": "def test_escape_budget_may_not_exceed_the_recovery_budget():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 7,
+    "kind": "function_definition",
+    "name": "make_world",
+    "scope": "",
+    "signature": "def make_world(target_id=\"enemy-1\"):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 15,
+    "kind": "function_definition",
+    "name": "test_world_model_ticks_party_entities",
+    "scope": "",
+    "signature": "def test_world_model_ticks_party_entities():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "test_coordinated_manager_proposes_party_actions",
+    "scope": "",
+    "signature": "def test_coordinated_manager_proposes_party_actions():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_world_model_party.py",
+    "line": 35,
+    "kind": "function_definition",
+    "name": "test_coordinated_manager_keeps_party_logic_observation_only",
+    "scope": "",
+    "signature": "def test_coordinated_manager_keeps_party_logic_observation_only():",
+    "category": "test"
+  }
+]

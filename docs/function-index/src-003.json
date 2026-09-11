@@ -1,6 +1,348 @@
 [
   {
     "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 31,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 31,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 32,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 32,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 33,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 33,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 35,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 35,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 36,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 36,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 39,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 39,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 51,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 51,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 54,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 54,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 60,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 72,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 72,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 91,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 91,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 94,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 94,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 110,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 110,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 113,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "Gate1HostOptions",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 113,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "Gate1HostOptions",
+    "signature": "init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 115,
+    "kind": "method_declaration",
+    "name": "Validate",
+    "scope": "Gate1HostOptions",
+    "signature": "public void Validate()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "public static Gate1HostOptions Load(IReadOnlyDictionary<string, string?> environment, IEnumerable<string> args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "ParseObserveGame",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "public static GameEndpoint ParseObserveGame(string raw)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "ValidateObserveGame",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "internal static void ValidateObserveGame(GameEndpoint endpoint)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 216,
+    "kind": "method_declaration",
+    "name": "ReadObserveGame",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "private static GameEndpoint? ReadObserveGame(IReadOnlyDictionary<string, string?> environment, string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 224,
+    "kind": "method_declaration",
+    "name": "ReadPemWithSource",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "private static (string? Pem, string? Source) ReadPemWithSource( IReadOnlyDictionary<string, string?> environment, string[] args)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "ReadInt",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "private static int ReadInt(IReadOnlyDictionary<string, string?> environment, string[] args, string envName, string flag, int fallback)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
+    "line": 258,
+    "kind": "method_declaration",
+    "name": "ReadString",
+    "scope": "Gate1HostOptionsLoader",
+    "signature": "private static string ReadString(IReadOnlyDictionary<string, string?> environment, string[] args, string envName, string flag, string fallback)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/Gate1HostOptions.cs",
     "line": 261,
     "kind": "method_declaration",
     "name": "ReadOptionalString",
@@ -33,6 +375,60 @@
     "name": "IsTruthy",
     "scope": "Gate1HostOptionsLoader",
     "signature": "private static bool IsTruthy(IReadOnlyDictionary<string, string?> environment, string envName)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 27,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 29,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 31,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 33,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "public static RoleBindingConfiguration Load(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 82,
+    "kind": "method_declaration",
+    "name": "TryGetBinding",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "public RoleBinding? TryGetBinding(string employeeId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+    "line": 87,
+    "kind": "constructor_declaration",
+    "name": "RoleBindingConfiguration",
+    "scope": "NosAi.Runtime.Configuration.RoleBindingConfiguration",
+    "signature": "private RoleBindingConfiguration(int stateRevision, IReadOnlyDictionary<string, RoleBinding> bindings)",
     "category": "project"
   },
   {
@@ -518,6 +914,24 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "InventoryGridOptimizer",
+    "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+    "line": 60,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryGridOptimizer",
+    "signature": "g =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+    "line": 60,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryGridOptimizer",
     "signature": "k =>",
     "category": "project"
   },
@@ -527,43 +941,25 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "InventoryGridOptimizer",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+    "line": 60,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryGridOptimizer",
+    "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+    "line": 60,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InventoryGridOptimizer",
     "signature": "v =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
-    "line": 60,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "InventoryGridOptimizer",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
-    "line": 60,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "InventoryGridOptimizer",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
-    "line": 60,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "InventoryGridOptimizer",
-    "signature": "g =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
-    "line": 60,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "InventoryGridOptimizer",
-    "signature": "g =>",
     "category": "project"
   },
   {
@@ -758,15 +1154,6 @@
   {
     "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
     "line": 138,
-    "kind": "method_declaration",
-    "name": "GetTotalItemQuantity",
-    "scope": "InventoryEconomyOrchestrator",
-    "signature": "public int GetTotalItemQuantity(int itemId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
-    "line": 138,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "InventoryEconomyOrchestrator",
@@ -789,6 +1176,15 @@
     "name": "<anonymous/accessor>",
     "scope": "InventoryEconomyOrchestrator",
     "signature": "s =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Economy/Inventory/InventoryEconomy.cs",
+    "line": 138,
+    "kind": "method_declaration",
+    "name": "GetTotalItemQuantity",
+    "scope": "InventoryEconomyOrchestrator",
+    "signature": "public int GetTotalItemQuantity(int itemId)",
     "category": "project"
   },
   {
@@ -4101,402 +4497,6 @@
     "name": "SiblingOf",
     "scope": "RuntimeIdentity",
     "signature": "private static string SiblingOf(string privatePath, string defaultPath)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 136,
-    "kind": "method_declaration",
-    "name": "LoadOrCreate",
-    "scope": "RuntimeIdentity",
-    "signature": "public static RuntimeIdentity LoadOrCreate(string? path = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 150,
-    "kind": "method_declaration",
-    "name": "Unwrap",
-    "scope": "RuntimeIdentity",
-    "signature": "private static RSA Unwrap(string protectedFile)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 227,
-    "kind": "method_declaration",
-    "name": "Migrate",
-    "scope": "RuntimeIdentity",
-    "signature": "private static RuntimeIdentity Migrate(string legacyFile, string protectedFile)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 277,
-    "kind": "method_declaration",
-    "name": "Create",
-    "scope": "RuntimeIdentity",
-    "signature": "private static RuntimeIdentity Create(string legacyFile, string protectedFile)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 290,
-    "kind": "method_declaration",
-    "name": "Store",
-    "scope": "RuntimeIdentity",
-    "signature": "private static void Store(RSA key, string protectedFile)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 331,
-    "kind": "method_declaration",
-    "name": "Adopt",
-    "scope": "RuntimeIdentity",
-    "signature": "private static RuntimeIdentity Adopt(RSA key, string legacyFile, string? remnant = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 338,
-    "kind": "method_declaration",
-    "name": "WritePublicCompanion",
-    "scope": "RuntimeIdentity",
-    "signature": "private static void WritePublicCompanion(string privatePath, RuntimeIdentity identity)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 352,
-    "kind": "method_declaration",
-    "name": "CreateEphemeral",
-    "scope": "RuntimeIdentity",
-    "signature": "public static RuntimeIdentity CreateEphemeral()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 360,
-    "kind": "method_declaration",
-    "name": "SignAsServer",
-    "scope": "RuntimeIdentity",
-    "signature": "public byte[] SignAsServer( ReadOnlySpan<byte> clientNonce, ReadOnlySpan<byte> serverNonce, ReadOnlySpan<byte> clientEphemeral, ReadOnlySpan<byte> serverEphemeral)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 370,
-    "kind": "method_declaration",
-    "name": "Dispose",
-    "scope": "RuntimeIdentity",
-    "signature": "public void Dispose()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
-    "line": 46,
-    "kind": "method_declaration",
-    "name": "Failed",
-    "scope": "EventLogHealth",
-    "signature": "public static EventLogHealth Failed(string path, bool exists, string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "Inspect",
-    "scope": "EventLogDiagnostics",
-    "signature": "public static EventLogHealth Inspect(string? databasePath = null, int tailCount = DefaultTailCount)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
-    "line": 103,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "EventLogDiagnostics",
-    "signature": "g =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
-    "line": 109,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "EventLogDiagnostics",
-    "signature": "e =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogDiagnostics.cs",
-    "line": 130,
-    "kind": "method_declaration",
-    "name": "Describe",
-    "scope": "EventLogDiagnostics",
-    "signature": "public static string Describe(EventLogHealth health)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 57,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "EventLogReplay",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 97,
-    "kind": "method_declaration",
-    "name": "Read",
-    "scope": "EventLogReader",
-    "signature": "public static EventLogReplay Read(string databasePath, string? sessionId = null, int busyTimeoutMs = 5000)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "ReadEvents",
-    "scope": "EventLogReader",
-    "signature": "private static List<EventLogEntry> ReadEvents(SqliteConnection connection, string? sessionId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 147,
-    "kind": "method_declaration",
-    "name": "ReadGaps",
-    "scope": "EventLogReader",
-    "signature": "private static List<EventLogGap> ReadGaps(SqliteConnection connection)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 177,
-    "kind": "method_declaration",
-    "name": "Merge",
-    "scope": "EventLogReader",
-    "signature": "private static EventLogReplay Merge(List<EventLogEntry> events, List<EventLogGap> gaps)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 231,
-    "kind": "method_declaration",
-    "name": "EnsureSchema",
-    "scope": "Gate2EventSchema",
-    "signature": "internal static void EnsureSchema(SqliteConnection connection)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 265,
-    "kind": "method_declaration",
-    "name": "MigrateEventsTable",
-    "scope": "Gate2EventSchema",
-    "signature": "private static void MigrateEventsTable(SqliteConnection connection)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 294,
-    "kind": "method_declaration",
-    "name": "TableExists",
-    "scope": "Gate2EventSchema",
-    "signature": "internal static bool TableExists(SqliteConnection connection, string table)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/EventLogReplay.cs",
-    "line": 305,
-    "kind": "method_declaration",
-    "name": "ColumnExists",
-    "scope": "Gate2EventSchema",
-    "signature": "private static bool ColumnExists(SqliteConnection connection, string table, string column)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 40,
-    "kind": "constructor_declaration",
-    "name": "ErrorHistoryCompressor",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public ErrorHistoryCompressor(int maxErrors = 3, int maxMessageChars = 240)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 48,
-    "kind": "method_declaration",
-    "name": "Normalize",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public static string Normalize(string error)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 54,
-    "kind": "method_declaration",
-    "name": "ComputeSignature",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public static string ComputeSignature(string error)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 60,
-    "kind": "method_declaration",
-    "name": "CompressError",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public ExceptionSignature CompressError(string rawError, string exceptionType = \"unknown\", string source = \"unknown\", int? attempt = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 66,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "l =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 67,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "l =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 73,
-    "kind": "method_declaration",
-    "name": "CompressError",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public ExceptionSignature CompressError(Exception exception, string source = \"unknown\", int? attempt = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 80,
-    "kind": "method_declaration",
-    "name": "CompressHistory",
-    "scope": "ErrorHistoryCompressor",
-    "signature": "public ImmutableArray<ExceptionSignature> CompressHistory(IReadOnlyList<string> errorHistory)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 121,
-    "kind": "method_declaration",
-    "name": "Slim",
-    "scope": "WorldContextSlimmer",
-    "signature": "public static SlimmedWorldContext Slim(WorldStateSnapshot snapshot, int maxEntities = 8)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 128,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "WorldContextSlimmer",
-    "signature": "e =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 129,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "WorldContextSlimmer",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 130,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "WorldContextSlimmer",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2ContextSlimming.cs",
-    "line": 132,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "WorldContextSlimmer",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 48,
-    "kind": "method_declaration",
-    "name": "Serialize",
-    "scope": "WorldStateDeltaCodec",
-    "signature": "public static byte[] Serialize(WorldStateDeltaPacket delta)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 114,
-    "kind": "method_declaration",
-    "name": "TryDeserialize",
-    "scope": "WorldStateDeltaCodec",
-    "signature": "public static bool TryDeserialize(ReadOnlyMemory<byte> payload, out WorldStateDeltaPacket? delta)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 184,
-    "kind": "method_declaration",
-    "name": "WriteString",
-    "scope": "WorldStateDeltaCodec",
-    "signature": "private static void WriteString(BinaryWriter writer, string value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 193,
-    "kind": "method_declaration",
-    "name": "TryReadString",
-    "scope": "WorldStateDeltaCodec",
-    "signature": "private static bool TryReadString(BinaryReader reader, out string value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 221,
-    "kind": "constructor_declaration",
-    "name": "DeltaSyncTracker",
-    "scope": "DeltaSyncTracker",
-    "signature": "public DeltaSyncTracker(int historyCapacity = 32)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 227,
-    "kind": "method_declaration",
-    "name": "TrackFrame",
-    "scope": "DeltaSyncTracker",
-    "signature": "public void TrackFrame(WorldStateSnapshot snapshot)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate2/Gate2DeltaSync.cs",
-    "line": 250,
-    "kind": "method_declaration",
-    "name": "RegisterConsumer",
-    "scope": "DeltaSyncTracker",
-    "signature": "public void RegisterConsumer(string consumerId)",
     "category": "project"
   }
 ]

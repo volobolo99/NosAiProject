@@ -1,5 +1,464 @@
 [
   {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "AZeroLengthRentNeedsNoPoolSlotAndDisposesCleanly",
+    "scope": "PooledWireBufferTests",
+    "signature": "[Fact] public void AZeroLengthRentNeedsNoPoolSlotAndDisposesCleanly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "ANegativeLengthIsRejected",
+    "scope": "PooledWireBufferTests",
+    "signature": "[Fact] public void ANegativeLengthIsRejected()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 52,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PooledWireBufferTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "DisposeIsIdempotent",
+    "scope": "PooledWireBufferTests",
+    "signature": "[Fact] public void DisposeIsIdempotent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "AccessingTheBufferAfterDisposeFailsClosedInsteadOfExposingPooledBytes",
+    "scope": "PooledWireBufferTests",
+    "signature": "[Fact] public void AccessingTheBufferAfterDisposeFailsClosedInsteadOfExposingPooledBytes()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 75,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PooledWireBufferTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 76,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PooledWireBufferTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PooledWireBufferTests.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "ManySequentialRentalsOfTheHeaderSizeRoundTripWithoutAliasing",
+    "scope": "PooledWireBufferTests",
+    "signature": "[Fact] public void ManySequentialRentalsOfTheHeaderSizeRoundTripWithoutAliasing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Every_action_with_a_card_declares_its_own_window_and_action",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Theory] [InlineData(ActionType.MoveToPosition)] [InlineData(ActionType.TargetEntity)] [InlineData(ActionType.UseBasicAttack)] [InlineData(ActionType.UseSkill)] [InlineData(ActionType.UseConsumable)] [InlineData(ActionType.CollectGroundItem)] [InlineData(ActionType.EmergencyFlee)] public void Every_action_with_a_card_declares_its_own_window_and_action(ActionType action)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 68,
+    "kind": "method_declaration",
+    "name": "An_action_with_no_card_is_not_admissible_and_says_so_by_name",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Theory] [InlineData(ActionType.RestAndRecover)] [InlineData(ActionType.None)] public void An_action_with_no_card_is_not_admissible_and_says_so_by_name(ActionType action)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Two_cards_for_one_action_is_refused_at_construction",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void Two_cards_for_one_action_is_refused_at_construction()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 82,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "Evaluate_cannot_see_the_prediction_because_it_is_not_a_parameter",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void Evaluate_cannot_see_the_prediction_because_it_is_not_a_parameter()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 104,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "p =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "Every_window_declares_itself_unmeasured_while_it_is",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void Every_window_declares_itself_unmeasured_while_it_is()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 123,
+    "kind": "method_declaration",
+    "name": "Only_the_flight_forbids_a_retry",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void Only_the_flight_forbids_a_retry()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 135,
+    "kind": "method_declaration",
+    "name": "The_bands_map_a_divergence_to_an_outcome_and_a_next_step",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Theory] [InlineData(0.00f, VerificationOutcome.Confirmed, null)] [InlineData(0.14f, VerificationOutcome.Confirmed, null)] [InlineData(0.15f, VerificationOutcome.Discrepant, RecoveryStrategy.Replan)] [InlineData(0.39f, VerificationOutcome.Discrepant, RecoveryStrategy.Replan)] [InlineData(0.40f, VerificationOutcome.Discrepant, RecoveryStrategy.Cooling)] [InlineData(0.69f, VerificationOutcome.Discrepant, RecoveryStrategy.Cooling)] [InlineData(0.70f, VerificationOutcome.Discrepant, RecoveryStrategy.HaltAndAlert)] [InlineData(1.00f, VerificationOutcome.Discrepant, RecoveryStrategy.HaltAndAlert)] public void The_bands_map_a_divergence_to_an_outcome_and_a_next_step( float divergence, VerificationOutcome outcome, RecoveryStrategy? next)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 153,
+    "kind": "method_declaration",
+    "name": "A_move_that_closes_the_distance_is_confirmed",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_move_that_closes_the_distance_is_confirmed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 168,
+    "kind": "method_declaration",
+    "name": "A_move_that_did_not_change_the_cell_is_a_stall_and_says_so",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_move_that_did_not_change_the_cell_is_a_stall_and_says_so()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 179,
+    "kind": "method_declaration",
+    "name": "A_move_that_went_the_other_way_is_a_deviation_and_says_so",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_move_that_went_the_other_way_is_a_deviation_and_says_so()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 195,
+    "kind": "method_declaration",
+    "name": "A_blow_taken_during_a_successful_move_does_not_fail_the_move",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_blow_taken_during_a_successful_move_does_not_fail_the_move()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 207,
+    "kind": "method_declaration",
+    "name": "A_move_with_no_position_after_the_act_is_unverified",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_move_with_no_position_after_the_act_is_unverified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 220,
+    "kind": "method_declaration",
+    "name": "A_target_frame_that_appeared_confirms_the_selection",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_target_frame_that_appeared_confirms_the_selection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "A_target_frame_that_stayed_absent_contradicts_the_selection",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_target_frame_that_stayed_absent_contradicts_the_selection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 246,
+    "kind": "method_declaration",
+    "name": "An_unreadable_target_frame_is_unverified_and_carries_the_readers_reason",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void An_unreadable_target_frame_is_unverified_and_carries_the_readers_reason()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 265,
+    "kind": "method_declaration",
+    "name": "An_attack_is_confirmed_by_the_targets_health_falling_not_the_players",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void An_attack_is_confirmed_by_the_targets_health_falling_not_the_players()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 279,
+    "kind": "method_declaration",
+    "name": "The_players_own_health_decides_nothing_about_an_attack",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void The_players_own_health_decides_nothing_about_an_attack()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 292,
+    "kind": "method_declaration",
+    "name": "An_attack_is_confirmed_by_a_death_whatever_the_health_readings_said",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void An_attack_is_confirmed_by_a_death_whatever_the_health_readings_said()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 309,
+    "kind": "method_declaration",
+    "name": "A_target_seen_without_health_is_unverified_and_never_a_failure",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_target_seen_without_health_is_unverified_and_never_a_failure()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 322,
+    "kind": "method_declaration",
+    "name": "A_target_never_sighted_in_the_window_is_unverified",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_target_never_sighted_in_the_window_is_unverified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 337,
+    "kind": "method_declaration",
+    "name": "An_attack_is_judged_on_the_lowest_health_in_the_window_not_the_last",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void An_attack_is_judged_on_the_lowest_health_in_the_window_not_the_last()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 352,
+    "kind": "method_declaration",
+    "name": "A_skill_whose_mp_fell_is_confirmed_and_still_names_the_blind_half",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_skill_whose_mp_fell_is_confirmed_and_still_names_the_blind_half()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 365,
+    "kind": "method_declaration",
+    "name": "A_skill_whose_mp_did_not_fall_did_not_fire",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_skill_whose_mp_did_not_fall_did_not_fire()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 377,
+    "kind": "method_declaration",
+    "name": "Mp_spent_and_regenerated_inside_the_window_still_counts_as_spent",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void Mp_spent_and_regenerated_inside_the_window_still_counts_as_spent()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 389,
+    "kind": "method_declaration",
+    "name": "A_potion_that_raised_the_hp_is_confirmed_whatever_the_amount",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_potion_that_raised_the_hp_is_confirmed_whatever_the_amount()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 405,
+    "kind": "method_declaration",
+    "name": "A_potion_is_not_required_to_return_an_exact_amount",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_potion_is_not_required_to_return_an_exact_amount()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 422,
+    "kind": "method_declaration",
+    "name": "A_heal_undone_by_a_blow_before_the_window_closed_is_still_a_heal",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_heal_undone_by_a_blow_before_the_window_closed_is_still_a_heal()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 433,
+    "kind": "method_declaration",
+    "name": "No_rise_at_all_is_reported_as_the_ambiguity_it_is",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void No_rise_at_all_is_reported_as_the_ambiguity_it_is()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 446,
+    "kind": "method_declaration",
+    "name": "A_collection_is_confirmed_when_an_inventory_slot_gains",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_collection_is_confirmed_when_an_inventory_slot_gains()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 459,
+    "kind": "method_declaration",
+    "name": "A_collection_that_gained_nothing_is_a_discrepancy",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_collection_that_gained_nothing_is_a_discrepancy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 472,
+    "kind": "method_declaration",
+    "name": "A_collection_with_no_inventory_reading_is_unverified",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_collection_with_no_inventory_reading_is_unverified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 485,
+    "kind": "method_declaration",
+    "name": "A_flight_that_opened_the_distance_is_confirmed",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_flight_that_opened_the_distance_is_confirmed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 497,
+    "kind": "method_declaration",
+    "name": "A_flight_that_did_not_open_the_distance_is_a_discrepancy",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_flight_that_did_not_open_the_distance_is_a_discrepancy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 510,
+    "kind": "method_declaration",
+    "name": "A_flight_with_no_hostile_observed_is_unverified",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_flight_with_no_hostile_observed_is_unverified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 527,
+    "kind": "method_declaration",
+    "name": "A_series_holding_nothing_after_the_act_confirms_nothing",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void A_series_holding_nothing_after_the_act_confirms_nothing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 551,
+    "kind": "method_declaration",
+    "name": "An_unverifiable_verdict_carries_no_divergence_to_be_misread_as_a_failure",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "[Fact] public void An_unverifiable_verdict_carries_no_divergence_to_be_misread_as_a_failure()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 564,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "private static PostConditionVerdict Evaluate( ActionCandidate candidate, IReadOnlyList<Gate3WorldState> states, IReadOnlyList<long>? deaths = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 576,
+    "kind": "method_declaration",
+    "name": "States",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "private static IReadOnlyList<Gate3WorldState> States(params Gate3WorldState[] states)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 579,
+    "kind": "method_declaration",
+    "name": "At",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "private static Gate3WorldState At( DateTime at, int hp = 1000, int mp = 1420, MapPoint? position = null, IReadOnlyList<SelectableEntity>? entities = null, IReadOnlyList<InventorySlotReading>? inventory = null, ClassifiedValue<bool>? hasTarget = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 600,
+    "kind": "method_declaration",
+    "name": "Entity",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "private static SelectableEntity Entity(long id, double? hp, DateTime at, int x = 105, int y = 100)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
+    "line": 603,
+    "kind": "method_declaration",
+    "name": "Slot",
+    "scope": "PostConditionCatalogueTests",
+    "signature": "private static InventorySlotReading Slot(int slot, int vnum, int amount, DateTime at)",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Runtime.Tests/PostConditionCatalogueTests.cs",
     "line": 606,
     "kind": "method_declaration",
@@ -222,6 +681,204 @@
     "name": "ApplyAsync",
     "scope": "PostConditionWiringTests.CountingEffector",
     "signature": "public Task<ExecutionResult> ApplyAsync( ActionCandidate candidate, SafetyToken token, CancellationToken cancellationToken = default)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "TempRecordingPath",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "private string TempRecordingPath()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "NoSession",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "private static ClientNetworkObservation NoSession()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "GameSession",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "private static ClientNetworkObservation GameSession(IPEndPoint server)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "AttachesAsSoonAsTheObservationReportsARemoteSessionAndRecordsOnThatEndpoint",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void AttachesAsSoonAsTheObservationReportsARemoteSessionAndRecordsOnThatEndpoint()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 93,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 94,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 100,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "(endpoint, target, _) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "AClientProcessThatNeverAppearsIsANamedRefusalAndWritesNoFile",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void AClientProcessThatNeverAppearsIsANamedRefusalAndWritesNoFile()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 135,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "names =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 140,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "AProcessWithoutAGameSessionIsADifferentNamedRefusalAndWritesNoFile",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void AProcessWithoutAGameSessionIsADifferentNamedRefusalAndWritesNoFile()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 173,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 174,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 175,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "(_, _, _) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 195,
+    "kind": "method_declaration",
+    "name": "AnEndpointTogetherWithTheAwaitModeIsRefusedNotChosen",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void AnEndpointTogetherWithTheAwaitModeIsRefusedNotChosen()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 212,
+    "kind": "method_declaration",
+    "name": "TheEndpointModeWithoutTheAwaitFlagBehavesAsBefore",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void TheEndpointModeWithoutTheAwaitFlagBehavesAsBefore()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 232,
+    "kind": "method_declaration",
+    "name": "TheFinalReportStatesHowLongTheAttachTookAndTheStartStatesWhatIsNotCaptured",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "[Fact] public void TheFinalReportStatesHowLongTheAttachTookAndTheStartStatesWhatIsNotCaptured()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 245,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 246,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 247,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "(_, target, _) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/PreLoginAwaitClientTests.cs",
+    "line": 260,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "PreLoginAwaitClientTests",
+    "signature": "private static string RepositoryRoot()",
     "category": "test"
   },
   {
@@ -1855,7 +2512,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 123,
+    "line": 127,
     "kind": "method_declaration",
     "name": "NoRefusalReasonIsUncoveredOutsideWhatIsDeclared",
     "scope": "RefusalReasonRegisterTests",
@@ -1864,7 +2521,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 129,
+    "line": 133,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1873,7 +2530,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 130,
+    "line": 134,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1882,7 +2539,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 143,
+    "line": 147,
     "kind": "method_declaration",
     "name": "EveryDeclaredRefusalReasonIsStillUncovered",
     "scope": "RefusalReasonRegisterTests",
@@ -1891,7 +2548,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 149,
+    "line": 153,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1900,7 +2557,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 150,
+    "line": 154,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1909,7 +2566,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 164,
+    "line": 168,
     "kind": "method_declaration",
     "name": "UncoveredValues",
     "scope": "RefusalReasonRegisterTests",
@@ -1918,7 +2575,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 175,
+    "line": 179,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1927,7 +2584,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 180,
+    "line": 184,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1936,7 +2593,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 198,
+    "line": 202,
     "kind": "method_declaration",
     "name": "RefusalConstants",
     "scope": "RefusalReasonRegisterTests",
@@ -1945,7 +2602,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 209,
+    "line": 213,
     "kind": "method_declaration",
     "name": "RuntimeSources",
     "scope": "RefusalReasonRegisterTests",
@@ -1954,7 +2611,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 219,
+    "line": 223,
     "kind": "method_declaration",
     "name": "TestSources",
     "scope": "RefusalReasonRegisterTests",
@@ -1963,7 +2620,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 225,
+    "line": 229,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "RefusalReasonRegisterTests",
@@ -1972,7 +2629,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 229,
+    "line": 233,
     "kind": "method_declaration",
     "name": "IsSource",
     "scope": "RefusalReasonRegisterTests",
@@ -1981,7 +2638,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/RefusalReasonRegisterTests.cs",
-    "line": 233,
+    "line": 237,
     "kind": "method_declaration",
     "name": "RepositoryRoot",
     "scope": "RefusalReasonRegisterTests",
@@ -2067,6 +2724,123 @@
     "name": "<anonymous/accessor>",
     "scope": "RoiClientAreaTests",
     "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 16,
+    "kind": "constructor_declaration",
+    "name": "RoleBindingConfigurationTests",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "public RoleBindingConfigurationTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "PathFor",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "private string PathFor(string name)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Load_OnAMissingFile_ReturnsEmpty_WithoutThrowing",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void Load_OnAMissingFile_ReturnsEmpty_WithoutThrowing()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "Load_OnAValidExport_PopulatesEveryBinding_AndIgnoresProposals",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void Load_OnAValidExport_PopulatesEveryBinding_AndIgnoresProposals()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 80,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "kvp =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "Load_OnAnUnknownSchemaVersion_ThrowsAndNamesTheValueFound",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void Load_OnAnUnknownSchemaVersion_ThrowsAndNamesTheValueFound()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 98,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 102,
+    "kind": "method_declaration",
+    "name": "Load_OnMalformedJson_Throws",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void Load_OnMalformedJson_Throws()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 108,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 111,
+    "kind": "method_declaration",
+    "name": "Load_OnANullBindingValue_ThrowsAndNamesTheEmployeeId",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void Load_OnANullBindingValue_ThrowsAndNamesTheEmployeeId()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 117,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "TryGetBinding_OnAnUnknownEmployeeId_ReturnsNull",
+    "scope": "RoleBindingConfigurationTests",
+    "signature": "[Fact] public void TryGetBinding_OnAnUnknownEmployeeId_ReturnsNull()",
     "category": "test"
   },
   {
@@ -3290,7 +4064,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "ScenarioOnRecordedBytesTests",
-    "signature": "s =>",
+    "signature": "_ =>",
     "category": "test"
   },
   {
@@ -3299,7 +4073,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "ScenarioOnRecordedBytesTests",
-    "signature": "_ =>",
+    "signature": "s =>",
     "category": "test"
   },
   {
@@ -3723,780 +4497,6 @@
     "name": "<anonymous/accessor>",
     "scope": "ScopedLiveCaptureBackendTests",
     "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScopedLiveCaptureBackendTests.cs",
-    "line": 215,
-    "kind": "method_declaration",
-    "name": "ADeclaredProvenanceTravelsWithEveryPacket",
-    "scope": "ScopedLiveCaptureBackendTests",
-    "signature": "[Theory] [InlineData(DataSourceKind.Cached)] [InlineData(DataSourceKind.Simulated)] [InlineData(DataSourceKind.Unknown)] public void ADeclaredProvenanceTravelsWithEveryPacket(DataSourceKind declared)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScopedLiveCaptureBackendTests.cs",
-    "line": 230,
-    "kind": "method_declaration",
-    "name": "TheBackendNamesTheOneConnectionItIsBoundTo",
-    "scope": "ScopedLiveCaptureBackendTests",
-    "signature": "[Fact] public void TheBackendNamesTheOneConnectionItIsBoundTo()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 43,
-    "kind": "method_declaration",
-    "name": "MapOf",
-    "scope": "ScoutCommandTests",
-    "signature": "private static MapModel MapOf(params TileCoordinate[] walkable)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 64,
-    "kind": "method_declaration",
-    "name": "Footprint",
-    "scope": "ScoutCommandTests",
-    "signature": "private static ExplorationFootprint Footprint(params TileCoordinate[] visited)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 72,
-    "kind": "method_declaration",
-    "name": "OpenMap",
-    "scope": "ScoutCommandTests",
-    "signature": "private static MapGrid OpenMap()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 74,
-    "kind": "method_declaration",
-    "name": "FreshView",
-    "scope": "ScoutCommandTests",
-    "signature": "private static OccupancyView FreshView()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 81,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 81,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 82,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 82,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 83,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 85,
-    "kind": "method_declaration",
-    "name": "Build",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "public StepGuardChain Build()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 86,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 87,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests.ChainRig",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 93,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 93,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 94,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 94,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 95,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 95,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "set;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 97,
-    "kind": "method_declaration",
-    "name": "TryProject",
-    "scope": "ScoutCommandTests.ProjectionStandIn",
-    "signature": "public bool TryProject(int mapX, int mapY, out int screenX, out int screenY, out string? failureReason)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 108,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.WalkRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 109,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.WalkRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 110,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScoutCommandTests.WalkRig",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 112,
-    "kind": "method_declaration",
-    "name": "Gate",
-    "scope": "ScoutCommandTests.WalkRig",
-    "signature": "public GatedInputBackend Gate()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 113,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests.WalkRig",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 120,
-    "kind": "method_declaration",
-    "name": "StatedGeometry",
-    "scope": "ScoutCommandTests",
-    "signature": "private static GeometryStamp StatedGeometry(IntPtr window)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 137,
-    "kind": "constructor_declaration",
-    "name": "FollowingPosition",
-    "scope": "ScoutCommandTests.FollowingPosition",
-    "signature": "public FollowingPosition(MapPoint start, RecordingInputBackend recorder)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 143,
-    "kind": "method_declaration",
-    "name": "Read",
-    "scope": "ScoutCommandTests.FollowingPosition",
-    "signature": "public PositionReading? Read()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 171,
-    "kind": "method_declaration",
-    "name": "RunRound",
-    "scope": "ScoutCommandTests",
-    "signature": "private static RoundOutcome RunRound( MapModel map, ExplorationFootprint footprint, MapPoint origin, MapGrid? grid = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 182,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 208,
-    "kind": "method_declaration",
-    "name": "ReachableFrontier_WalksAndReportsEvidenceForEachEmittedStepInOrder",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void ReachableFrontier_WalksAndReportsEvidenceForEachEmittedStepInOrder()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 241,
-    "kind": "method_declaration",
-    "name": "DistantFrontier_WalksEveryCell_EmittingOneEvidencePerStepInOrder",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void DistantFrontier_WalksEveryCell_EmittingOneEvidencePerStepInOrder()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 266,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests",
-    "signature": "e =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 267,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScoutCommandTests",
-    "signature": "e =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 270,
-    "kind": "method_declaration",
-    "name": "TheUpdatedFootprint_FoldsThePlayersPositionIn_ForTheNextRound",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void TheUpdatedFootprint_FoldsThePlayersPositionIn_ForTheNextRound()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 297,
-    "kind": "method_declaration",
-    "name": "FullyExploredMap_ReturnsNullWithAnUnreachablePlan_AndNeverCallsWalkCommand",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void FullyExploredMap_ReturnsNullWithAnUnreachablePlan_AndNeverCallsWalkCommand()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 313,
-    "kind": "method_declaration",
-    "name": "MapWithNoReconstructedTiles_ReturnsNullWithAnUnreachablePlan_AndEmitsNothing",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void MapWithNoReconstructedTiles_ReturnsNullWithAnUnreachablePlan_AndEmitsNothing()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 331,
-    "kind": "method_declaration",
-    "name": "UnreachableDestination_WalkReturnsNoPath_AndNoStepIsEverEmitted",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void UnreachableDestination_WalkReturnsNoPath_AndNoStepIsEverEmitted()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 361,
-    "kind": "method_declaration",
-    "name": "ExecuteOneRound_FoldsThePlayersPositionIntoTheUpdatedFootprint",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void ExecuteOneRound_FoldsThePlayersPositionIntoTheUpdatedFootprint()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 381,
-    "kind": "method_declaration",
-    "name": "TheRuntimeWiresTheScoutFlag",
-    "scope": "ScoutCommandTests",
-    "signature": "[Fact] public void TheRuntimeWiresTheScoutFlag()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScoutCommandTests.cs",
-    "line": 392,
-    "kind": "method_declaration",
-    "name": "RepositoryRoot",
-    "scope": "ScoutCommandTests",
-    "signature": "private static string RepositoryRoot()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 15,
-    "kind": "constructor_declaration",
-    "name": "OneFrameSource",
-    "scope": "ScreenDialogWindowSourceTests.OneFrameSource",
-    "signature": "public OneFrameSource(CaptureFrame? frame)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 18,
-    "kind": "method_declaration",
-    "name": "TryAcquire",
-    "scope": "ScreenDialogWindowSourceTests.OneFrameSource",
-    "signature": "public bool TryAcquire(out CaptureFrame frame)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "FlatFrame",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "private static CaptureFrame FlatFrame(int width, int height, byte b, byte g, byte r)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 40,
-    "kind": "method_declaration",
-    "name": "Calibrated",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "private static DialogRoiCalibration Calibrated(double baselineB = 40, double baselineG = 40, double baselineR = 40)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 43,
-    "kind": "method_declaration",
-    "name": "A_region_still_matching_the_baseline_is_absent_with_the_frames_capture_time",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void A_region_still_matching_the_baseline_is_absent_with_the_frames_capture_time()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 49,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 57,
-    "kind": "method_declaration",
-    "name": "A_region_that_diverges_from_the_baseline_is_present",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void A_region_that_diverges_from_the_baseline_is_present()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 63,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 68,
-    "kind": "method_declaration",
-    "name": "Without_a_calibration_nothing_is_captured_and_the_reason_is_the_calibration",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void Without_a_calibration_nothing_is_captured_and_the_reason_is_the_calibration()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 74,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 82,
-    "kind": "method_declaration",
-    "name": "A_window_that_cannot_be_located_is_a_refusal_not_a_full_screen_guess",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void A_window_that_cannot_be_located_is_a_refusal_not_a_full_screen_guess()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 86,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 94,
-    "kind": "method_declaration",
-    "name": "No_frame_is_a_refusal_with_its_own_reason",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void No_frame_is_a_refusal_with_its_own_reason()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 98,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 103,
-    "kind": "method_declaration",
-    "name": "A_region_off_the_frame_is_refused_rather_than_clamped",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "[Fact] public void A_region_off_the_frame_is_refused_rather_than_clamped()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenDialogWindowSourceTests.cs",
-    "line": 109,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenDialogWindowSourceTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 9,
-    "kind": "method_declaration",
-    "name": "Half_red_bar_is_derived_near_half",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Half_red_bar_is_derived_near_half()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 20,
-    "kind": "method_declaration",
-    "name": "Full_red_bar_is_derived_one",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Full_red_bar_is_derived_one()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 29,
-    "kind": "method_declaration",
-    "name": "Dark_crop_is_unknown_not_zero",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Dark_crop_is_unknown_not_zero()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "Checkerboard_is_unknown",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Checkerboard_is_unknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 58,
-    "kind": "method_declaration",
-    "name": "Blue_bar_is_ignored_as_hp",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Blue_bar_is_ignored_as_hp()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 70,
-    "kind": "method_declaration",
-    "name": "Bar_gate_never_labels_live",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Bar_gate_never_labels_live()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "Bar_jump_is_unknown",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Bar_jump_is_unknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 89,
-    "kind": "method_declaration",
-    "name": "Glyph_extractor_finds_white_column_and_ignores_red_bar",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Glyph_extractor_finds_white_column_and_ignores_red_bar()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 99,
-    "kind": "method_declaration",
-    "name": "Solid_bar_without_text_is_not_a_glyph_string",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Solid_bar_without_text_is_not_a_glyph_string()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 106,
-    "kind": "method_declaration",
-    "name": "Current_max_text_parses_and_rejects_bare_number",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Current_max_text_parses_and_rejects_bare_number()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 115,
-    "kind": "method_declaration",
-    "name": "Reader_on_painted_hud_derives_bar_and_keeps_numbers_unknown",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Reader_on_painted_hud_derives_bar_and_keeps_numbers_unknown()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 131,
-    "kind": "method_declaration",
-    "name": "Trained_ocr_publishes_derived_numbers",
-    "scope": "ScreenPerceptionTests",
-    "signature": "[Fact] public void Trained_ocr_publishes_derived_numbers()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 158,
-    "kind": "method_declaration",
-    "name": "PaintBar",
-    "scope": "ScreenPerceptionTests",
-    "signature": "private static byte[] PaintBar(int width, int height, int fillColumns, byte r, byte g, byte b)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 175,
-    "kind": "method_declaration",
-    "name": "PaintWhiteRect",
-    "scope": "ScreenPerceptionTests",
-    "signature": "private static void PaintWhiteRect(byte[] bgra, int width, int height, int x0, int y0, int w, int h)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 188,
-    "kind": "method_declaration",
-    "name": "PaintHudFrame",
-    "scope": "ScreenPerceptionTests",
-    "signature": "private static CaptureFrame PaintHudFrame(int width, int height, double hpFill, double mpFill)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenPerceptionTests.cs",
-    "line": 211,
-    "kind": "method_declaration",
-    "name": "PaintRoi",
-    "scope": "ScreenPerceptionTests",
-    "signature": "private static void PaintRoi(byte[] bgra, int frameWidth, PixelRect rect, double fill, byte r, byte g, byte b)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "LiveRunThatMustNotFit",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "private static List<ScreenProjectionSample> LiveRunThatMustNotFit()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 42,
-    "kind": "method_declaration",
-    "name": "A_set_that_only_agrees_once_it_is_cut_below_the_floor_is_refused",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void A_set_that_only_agrees_once_it_is_cut_below_the_floor_is_refused()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 58,
-    "kind": "method_declaration",
-    "name": "One_click_that_hit_an_obstacle_is_dropped_and_the_rest_are_fitted",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void One_click_that_hit_an_obstacle_is_dropped_and_the_rest_are_fitted()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 81,
-    "kind": "method_declaration",
-    "name": "Samples_that_agree_are_all_kept",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void Samples_that_agree_are_all_kept()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 94,
-    "kind": "method_declaration",
-    "name": "Fewer_pairs_than_the_floor_is_refused_by_name",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void Fewer_pairs_than_the_floor_is_refused_by_name()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 112,
-    "kind": "method_declaration",
-    "name": "Two_runs_that_disagreed_with_each_other_are_both_refused",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void Two_runs_that_disagreed_with_each_other_are_both_refused()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 164,
-    "kind": "method_declaration",
-    "name": "The_probe_points_reach_wide_enough_to_measure_a_scale",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void The_probe_points_reach_wide_enough_to_measure_a_scale()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 172,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "p =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 172,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "p =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 173,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "p =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 173,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "p =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ScreenProjectionAutoCalibratorTests.cs",
-    "line": 186,
-    "kind": "method_declaration",
-    "name": "Every_probe_point_is_inside_the_client_area",
-    "scope": "ScreenProjectionAutoCalibratorTests",
-    "signature": "[Fact] public void Every_probe_point_is_inside_the_client_area()",
     "category": "test"
   }
 ]

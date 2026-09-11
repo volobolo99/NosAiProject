@@ -1,5 +1,500 @@
 [
   {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 242,
+    "kind": "method_declaration",
+    "name": "Distance",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private static double Distance(MapPoint a, MapPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 256,
+    "kind": "method_declaration",
+    "name": "Forget",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private void Forget()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "MemoryGameplayProvider",
+    "signature": "private static ClassifiedValue<MapPoint> Unknown(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 16,
+    "kind": "method_declaration",
+    "name": "Unknown",
+    "scope": "MapWorldObservation",
+    "signature": "public static MapWorldObservation Unknown(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 90,
+    "kind": "constructor_declaration",
+    "name": "MemoryMapWorldProvider",
+    "scope": "MemoryMapWorldProvider",
+    "signature": "public MemoryMapWorldProvider(IGameplayProvider inner, Func<MapWorldObservation> read)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryMapWorldProvider.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "MemoryMapWorldProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "MemoryScanProbe",
+    "signature": "public static int Run(string[] args, int flagIndex)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "RunDump",
+    "scope": "MemoryScanProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunDump(string[] args, int flagIndex)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "Execute",
+    "scope": "MemoryScanProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int Execute(int processId, int value, bool narrowing)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 171,
+    "kind": "method_declaration",
+    "name": "TryReadOperands",
+    "scope": "MemoryScanProbe",
+    "signature": "private static bool TryReadOperands( string[] args, int flagIndex, out int processId, out int value, out string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 200,
+    "kind": "method_declaration",
+    "name": "TryLoadCandidates",
+    "scope": "MemoryScanProbe",
+    "signature": "private static bool TryLoadCandidates(out List<IntPtr> candidates, out int passes, out string? error)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 241,
+    "kind": "method_declaration",
+    "name": "SaveCandidates",
+    "scope": "MemoryScanProbe",
+    "signature": "private static void SaveCandidates(MemoryScanner.ScanResult result)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanProbe.cs",
+    "line": 252,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryScanProbe",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "Scan",
+    "scope": "MemoryScanner",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Scan(ProcessMemoryReader reader, int value, bool privateRegionsOnly = true)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryScanner.cs",
+    "line": 157,
+    "kind": "method_declaration",
+    "name": "Narrow",
+    "scope": "MemoryScanner",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static ScanResult Narrow( ProcessMemoryReader reader, IReadOnlyList<IntPtr> candidates, int value, int previousPasses = 1)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 57,
+    "kind": "constructor_declaration",
+    "name": "MemoryTargetGameplayProvider",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "public MemoryTargetGameplayProvider( IGameplayProvider inner, Func<TargetPointerReading?> read, Func<string?>? failureReason = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 64,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryTargetGameplayProvider.cs",
+    "line": 71,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "MemoryTargetGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
+    "line": 14,
+    "kind": "constructor_declaration",
+    "name": "NetworkWorldStateObserver",
+    "scope": "NetworkWorldStateObserver",
+    "signature": "public NetworkWorldStateObserver(IGameplayProvider provider)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NetworkWorldStateObserver.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "ObserveAsync",
+    "scope": "NetworkWorldStateObserver",
+    "signature": "public Task<ObservedState> ObserveAsync(CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Matches",
+    "scope": "SignatureByte",
+    "signature": "public bool Matches(byte candidate)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 327,
+    "kind": "constructor_declaration",
+    "name": "NosTaleClientLayout",
+    "scope": "NosTaleClientLayout",
+    "signature": "private NosTaleClientLayout(IntPtr pointerHolder, IntPtr moduleBase)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 354,
+    "kind": "method_declaration",
+    "name": "TryResolve",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryResolve( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out NosTaleClientLayout? layout, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 444,
+    "kind": "method_declaration",
+    "name": "TryReadTarget",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadTarget( ProcessMemoryReader reader, out TargetPointerReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 487,
+    "kind": "method_declaration",
+    "name": "TryReadPlayer",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayer( ProcessMemoryReader reader, out PlayerObjectReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 554,
+    "kind": "method_declaration",
+    "name": "TryResolveBases",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryResolveBases( ProcessMemoryReader reader, out IntPtr playerManager, out IntPtr playerObject, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 580,
+    "kind": "method_declaration",
+    "name": "TryScanPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryScanPlayerVitals( ProcessMemoryReader reader, out IReadOnlyList<PlayerVitalsHit> hits, out string? failureReason, int windowBytes = PlayerVitalsScan.DefaultWindowBytes)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 622,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsCandidate reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 660,
+    "kind": "method_declaration",
+    "name": "TryReadMapId",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadMapId( ProcessMemoryReader reader, out int mapId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 716,
+    "kind": "method_declaration",
+    "name": "TryReadPlayerVitals",
+    "scope": "NosTaleClientLayout",
+    "signature": "public bool TryReadPlayerVitals( ProcessMemoryReader reader, out PlayerVitalsReading reading, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 762,
+    "kind": "method_declaration",
+    "name": "TryReadWord",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryReadWord( ProcessMemoryReader reader, IntPtr at, string what, out uint value, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 797,
+    "kind": "method_declaration",
+    "name": "TryReadEntities",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryReadEntities( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, MapEntityKind kind, out IReadOnlyList<MapEntityReading> entities, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 893,
+    "kind": "method_declaration",
+    "name": "TryNameChain",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool TryNameChain( MapEntityKind kind, out int fromEntity, out int fromNameObject, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 926,
+    "kind": "method_declaration",
+    "name": "TryReadEntityName",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static EntityNameCandidate TryReadEntityName( ProcessMemoryReader reader, IntPtr entity, MapEntityKind kind)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1024,
+    "kind": "method_declaration",
+    "name": "IsPlausibleSceneOperand",
+    "scope": "NosTaleClientLayout",
+    "signature": "public static bool IsPlausibleSceneOperand(uint operand, IntPtr moduleBase, out string? rejection)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1086,
+    "kind": "method_declaration",
+    "name": "TryResolveScene",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryResolveScene( ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize, out IntPtr scene, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1187,
+    "kind": "method_declaration",
+    "name": "LooksLikeSceneManager",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool LooksLikeSceneManager(ProcessMemoryReader reader, IntPtr candidate)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1208,
+    "kind": "method_declaration",
+    "name": "TryConfirmSceneManager",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static bool TryConfirmSceneManager( ProcessMemoryReader reader, IntPtr candidate, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1278,
+    "kind": "method_declaration",
+    "name": "TryFollow",
+    "scope": "NosTaleClientLayout",
+    "signature": "private static bool TryFollow( ProcessMemoryReader reader, IntPtr at, string what, out IntPtr value, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1304,
+    "kind": "method_declaration",
+    "name": "ParseSignature",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static SignatureByte[] ParseSignature(string signature)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/NosTaleClientLayout.cs",
+    "line": 1327,
+    "kind": "method_declaration",
+    "name": "IndexOfSignature",
+    "scope": "NosTaleClientLayout",
+    "signature": "internal static int IndexOfSignature( ReadOnlySpan<byte> haystack, ReadOnlySpan<SignatureByte> signature, int from = 0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "PlayerObjectProbe",
+    "signature": "public static int Run(int processId, long? expectedCharacterId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 145,
+    "kind": "method_declaration",
+    "name": "ReportEntities",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static void ReportEntities(ProcessMemoryReader reader, IntPtr moduleBase, long moduleSize)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "TryFindClient",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static bool TryFindClient(out int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 198,
+    "kind": "method_declaration",
+    "name": "TryGetProcess",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static Process? TryGetProcess(int processId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerObjectProbe.cs",
+    "line": 210,
+    "kind": "method_declaration",
+    "name": "TryMainModule",
+    "scope": "PlayerObjectProbe",
+    "signature": "private static bool TryMainModule( Process process, out IntPtr moduleBase, out long moduleSize, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 78,
+    "kind": "method_declaration",
+    "name": "Percent",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static int Percent(uint value, uint max)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 89,
+    "kind": "method_declaration",
+    "name": "TryParse",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static bool TryParse(ReadOnlySpan<byte> bytes, out PlayerVitalsBlock block, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 114,
+    "kind": "method_declaration",
+    "name": "TryRange",
+    "scope": "PlayerVitalsBlock",
+    "signature": "public static bool TryRange( uint hp, uint maxHp, uint mp, uint maxMp, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "DescribeOffset",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public string DescribeOffset()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 205,
+    "kind": "method_declaration",
+    "name": "Missing",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public static PlayerVitalsCandidate Missing(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "From",
+    "scope": "PlayerVitalsCandidate",
+    "signature": "public static PlayerVitalsCandidate From(in PlayerVitalsHit hit)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "TryContinuity",
+    "scope": "PlayerVitalsPredicate",
+    "signature": "public static bool TryContinuity( in PlayerVitalsBlock previous, in PlayerVitalsBlock current, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 264,
+    "kind": "method_declaration",
+    "name": "TryMatchPercent",
+    "scope": "PlayerVitalsPredicate",
+    "signature": "public static bool TryMatchPercent( int memoryPercent, int wirePercent, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
+    "line": 289,
+    "kind": "method_declaration",
+    "name": "TookDamage",
+    "scope": "PlayerVitalsOracle",
+    "signature": "public static bool TookDamage(in PlayerVitalsHit before, in PlayerVitalsHit after)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitals.cs",
     "line": 303,
     "kind": "method_declaration",
@@ -119,19 +614,19 @@
   {
     "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
     "line": 315,
-    "kind": "method_declaration",
-    "name": "Word",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "PlayerVitalsCalibrator",
-    "signature": "private static Func<IntPtr, uint?> Word(ClientMemorySession session)",
+    "signature": "address =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/LiveIntegration/PlayerVitalsCalibrator.cs",
     "line": 315,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "Word",
     "scope": "PlayerVitalsCalibrator",
-    "signature": "address =>",
+    "signature": "private static Func<IntPtr, uint?> Word(ClientMemorySession session)",
     "category": "project"
   },
   {
@@ -302,7 +797,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "PointerAnchorHunter",
-    "signature": "t =>",
+    "signature": "a =>",
     "category": "project"
   },
   {
@@ -311,7 +806,7 @@
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "PointerAnchorHunter",
-    "signature": "a =>",
+    "signature": "t =>",
     "category": "project"
   },
   {
@@ -2882,19 +3377,19 @@
   {
     "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
     "line": 41,
-    "kind": "method_declaration",
-    "name": "GetReadyStations",
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
     "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
-    "signature": "public List<MinilandStationState> GetReadyStations()",
+    "signature": "s =>",
     "category": "project"
   },
   {
     "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
     "line": 41,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
+    "kind": "method_declaration",
+    "name": "GetReadyStations",
     "scope": "NosAi.Miniland.Production.MinilandProductionScheduler",
-    "signature": "s =>",
+    "signature": "public List<MinilandStationState> GetReadyStations()",
     "category": "project"
   },
   {
@@ -3008,37 +3503,37 @@
   {
     "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
     "line": 129,
-    "kind": "method_declaration",
-    "name": "TestMinilandSecurityInvariant",
-    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
-    "signature": "private static bool TestMinilandSecurityInvariant()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
-    "line": 129,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
-    "line": 129,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
-    "line": 129,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
     "signature": "m =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "t =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Miniland/Production/MinilandProductionEngine.cs",
+    "line": 129,
+    "kind": "method_declaration",
+    "name": "TestMinilandSecurityInvariant",
+    "scope": "NosAi.Miniland.Production.MinilandProductionTestRunner",
+    "signature": "private static bool TestMinilandSecurityInvariant()",
     "category": "project"
   },
   {
@@ -4002,501 +4497,6 @@
     "name": "TryAdoptReplan",
     "scope": "PathWalkController",
     "signature": "public bool TryAdoptReplan( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 436,
-    "kind": "method_declaration",
-    "name": "Cancel",
-    "scope": "PathWalkController",
-    "signature": "public void Cancel()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 443,
-    "kind": "method_declaration",
-    "name": "Replan",
-    "scope": "PathWalkController",
-    "signature": "private WalkDecision Replan(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 479,
-    "kind": "method_declaration",
-    "name": "Resynchronise",
-    "scope": "PathWalkController",
-    "signature": "private void Resynchronise(MapPoint observed)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 498,
-    "kind": "method_declaration",
-    "name": "NoteProgress",
-    "scope": "PathWalkController",
-    "signature": "private void NoteProgress(MapPoint observed)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 508,
-    "kind": "method_declaration",
-    "name": "Distance",
-    "scope": "PathWalkController",
-    "signature": "private static int Distance(MapPoint a, MapPoint b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 67,
-    "kind": "method_declaration",
-    "name": "DistanceTo",
-    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
-    "signature": "public double DistanceTo(GridPoint other)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 74,
-    "kind": "method_declaration",
-    "name": "ManhattanDistanceTo",
-    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
-    "signature": "public int ManhattanDistanceTo(GridPoint other)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 77,
-    "kind": "method_declaration",
-    "name": "ToString",
-    "scope": "NosAi.Navigation.Pathfinding.GridPoint",
-    "signature": "public override string ToString()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 113,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 114,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 115,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 116,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 126,
-    "kind": "constructor_declaration",
-    "name": "MapGridData",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public MapGridData(int mapId, string mapName, int width, int height, TileType initialTile = TileType.Unobserved)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 144,
-    "kind": "method_declaration",
-    "name": "CreateFullyWalkable",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public static MapGridData CreateFullyWalkable(int mapId, string mapName, int width, int height)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 150,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "get",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 161,
-    "kind": "method_declaration",
-    "name": "IsWithinBounds",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public bool IsWithinBounds(int x, int y)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 164,
-    "kind": "method_declaration",
-    "name": "GetTileType",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public TileType GetTileType(int x, int y)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 170,
-    "kind": "method_declaration",
-    "name": "SetTileType",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public void SetTileType(int x, int y, TileType type)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 178,
-    "kind": "method_declaration",
-    "name": "IsWalkable",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public bool IsWalkable(int x, int y)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 184,
-    "kind": "method_declaration",
-    "name": "ClearHazardOverlay",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public void ClearHazardOverlay()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 189,
-    "kind": "method_declaration",
-    "name": "ApplyHazard",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public void ApplyHazard(DynamicHazardZone hazard)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 210,
-    "kind": "method_declaration",
-    "name": "GetTraversalCost",
-    "scope": "NosAi.Navigation.Pathfinding.MapGridData",
-    "signature": "public float GetTraversalCost(int x, int y)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 230,
-    "kind": "method_declaration",
-    "name": "FindPath",
-    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
-    "signature": "public CalculatedPathResult FindPath( MapGridData map, GridPoint start, GridPoint target, bool allowDiagonal = true)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 313,
-    "kind": "method_declaration",
-    "name": "Heuristic",
-    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
-    "signature": "private static float Heuristic(GridPoint a, GridPoint b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 320,
-    "kind": "method_declaration",
-    "name": "ReconstructPath",
-    "scope": "NosAi.Navigation.Pathfinding.AStarPathfinder",
-    "signature": "private static ImmutableArray<GridPoint> ReconstructPath(Dictionary<GridPoint, GridPoint> cameFrom, GridPoint current)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 339,
-    "kind": "method_declaration",
-    "name": "SmoothPath",
-    "scope": "NosAi.Navigation.Pathfinding.PathSmoother",
-    "signature": "public ImmutableArray<GridPoint> SmoothPath(MapGridData map, ImmutableArray<GridPoint> rawPath)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 366,
-    "kind": "method_declaration",
-    "name": "HasLineOfSight",
-    "scope": "NosAi.Navigation.Pathfinding.PathSmoother",
-    "signature": "public bool HasLineOfSight(MapGridData map, GridPoint start, GridPoint end)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 416,
-    "kind": "constructor_declaration",
-    "name": "WorldMapPortalRouter",
-    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
-    "signature": "public WorldMapPortalRouter()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 421,
-    "kind": "method_declaration",
-    "name": "InitializeStandardNosTaleWorldGraph",
-    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
-    "signature": "private void InitializeStandardNosTaleWorldGraph()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 435,
-    "kind": "method_declaration",
-    "name": "AddBidirectionalPortal",
-    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
-    "signature": "public void AddBidirectionalPortal(string id, int map1, GridPoint pos1, int map2, GridPoint pos2, string targetName)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 441,
-    "kind": "method_declaration",
-    "name": "PlanMultiMapRoute",
-    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
-    "signature": "public List<MultiMapTransitLeg>? PlanMultiMapRoute(int startMapId, int destinationMapId)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 462,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.WorldMapPortalRouter",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 524,
-    "kind": "constructor_declaration",
-    "name": "NavigationExecutionController",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
-    "signature": "public NavigationExecutionController()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 530,
-    "kind": "method_declaration",
-    "name": "StartNavigation",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
-    "signature": "public bool StartNavigation(MapGridData map, GridPoint start, GridPoint destination, bool applySmoothing = true)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 548,
-    "kind": "method_declaration",
-    "name": "UpdateNavigationTick",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
-    "signature": "public GridPoint? UpdateNavigationTick(GridPoint currentActualPosition, MapGridData map, GridPoint finalDestination)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 583,
-    "kind": "method_declaration",
-    "name": "CancelNavigation",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationExecutionController",
-    "signature": "public void CancelNavigation()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 597,
-    "kind": "method_declaration",
-    "name": "RunAllTestsAsync",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "public static async Task<bool> RunAllTestsAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 621,
-    "kind": "method_declaration",
-    "name": "RunTest",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool RunTest(string testName, Func<bool> testFunc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 636,
-    "kind": "method_declaration",
-    "name": "PrintResult",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static void PrintResult(string name, bool passed, string? error = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 653,
-    "kind": "method_declaration",
-    "name": "TestUnobservedTerrainIsNotWalkable",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestUnobservedTerrainIsNotWalkable()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 676,
-    "kind": "method_declaration",
-    "name": "TestBudgetExhaustionIsDistinctFromUnreachable",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestBudgetExhaustionIsDistinctFromUnreachable()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 691,
-    "kind": "method_declaration",
-    "name": "TestDiagonalDoesNotCutCorners",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestDiagonalDoesNotCutCorners()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 713,
-    "kind": "method_declaration",
-    "name": "TestAStarObstacleAvoidance",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestAStarObstacleAvoidance()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 722,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 723,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 728,
-    "kind": "method_declaration",
-    "name": "TestDynamicHazardAvoidance",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestDynamicHazardAvoidance()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 740,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "p =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 744,
-    "kind": "method_declaration",
-    "name": "TestPathSmoothingReduction",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestPathSmoothingReduction()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 756,
-    "kind": "method_declaration",
-    "name": "TestMultiMapPortalRouting",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestMultiMapPortalRouting()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 770,
-    "kind": "method_declaration",
-    "name": "TestStuckDetectionAndReroute",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestStuckDetectionAndReroute()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 786,
-    "kind": "method_declaration",
-    "name": "TestNavigationSecurityInvariant",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "private static bool TestNavigationSecurityInvariant()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 789,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 791,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "t =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/Pathfinding/NavigationPathfinding.cs",
-    "line": 791,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "NosAi.Navigation.Pathfinding.NavigationPathfindingTestRunner",
-    "signature": "m =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/RouteProbe.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "RouteProbe",
-    "signature": "public static int Run(int destinationMapId, float destinationX, float destinationY)",
     "category": "project"
   }
 ]

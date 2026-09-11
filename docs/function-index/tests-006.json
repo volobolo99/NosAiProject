@@ -1,5 +1,446 @@
 [
   {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 91,
+    "kind": "method_declaration",
+    "name": "Click",
+    "scope": "InputActionEffectorTests.RejectingInputBackend",
+    "signature": "public bool Click(MouseButton button, int delayBetweenDownUpMs = 45)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 92,
+    "kind": "method_declaration",
+    "name": "KeyPress",
+    "scope": "InputActionEffectorTests.RejectingInputBackend",
+    "signature": "public bool KeyPress(ushort key, int ms = 80, ReadOnlySpan<ushort> modifiers = default)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 93,
+    "kind": "method_declaration",
+    "name": "ScrollWheel",
+    "scope": "InputActionEffectorTests.RejectingInputBackend",
+    "signature": "public bool ScrollWheel(int detents)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "A_declared_bind_refuses_by_a_different_name_than_a_missing_one",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_declared_bind_refuses_by_a_different_name_than_a_missing_one()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 120,
+    "kind": "method_declaration",
+    "name": "A_declared_bind_emits_no_keystroke_at_all",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_declared_bind_emits_no_keystroke_at_all()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 136,
+    "kind": "method_declaration",
+    "name": "Binds",
+    "scope": "InputActionEffectorTests",
+    "signature": "private static KeybindMap Binds(params (string Intent, ushort Key)[] binds)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 139,
+    "kind": "method_declaration",
+    "name": "Binds",
+    "scope": "InputActionEffectorTests",
+    "signature": "private static KeybindMap Binds(bool confirmed, params (string Intent, ushort Key)[] binds)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 142,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "b =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "Candidate",
+    "scope": "InputActionEffectorTests",
+    "signature": "private static ActionCandidate Candidate( ActionType type, int skillOrItemId = 0, int x = 0, int y = 0, int slot = 1, long entityId = 101)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 174,
+    "kind": "method_declaration",
+    "name": "TargetFor",
+    "scope": "InputActionEffectorTests",
+    "signature": "private static ActionTarget TargetFor(ActionType type, int x, int y, int slot, long entityId)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 188,
+    "kind": "method_declaration",
+    "name": "Build",
+    "scope": "InputActionEffectorTests",
+    "signature": "private static (InputActionEffector Effector, RecordingInputBackend Backend) Build( RuntimeSafetyPolicy policy, KeybindMap? keybinds = null, IScreenProjection? projection = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 194,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 195,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 200,
+    "kind": "method_declaration",
+    "name": "A_consumable_presses_the_key_the_operator_bound_to_its_slot",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_consumable_presses_the_key_the_operator_bound_to_its_slot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "A_skill_presses_the_key_bound_to_that_skill_slot",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_skill_presses_the_key_bound_to_that_skill_slot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "A_click_action_moves_to_the_projected_point_and_then_clicks",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Theory] [InlineData(ActionType.UseBasicAttack)] [InlineData(ActionType.TargetEntity)] [InlineData(ActionType.MoveToPosition)] [InlineData(ActionType.EmergencyFlee)] public async Task A_click_action_moves_to_the_projected_point_and_then_clicks(ActionType type)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 252,
+    "kind": "method_declaration",
+    "name": "An_unconfigured_keybind_is_refused_by_name_and_nothing_is_pressed",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task An_unconfigured_keybind_is_refused_by_name_and_nothing_is_pressed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 270,
+    "kind": "method_declaration",
+    "name": "Without_a_calibrated_projection_no_click_is_attempted",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task Without_a_calibrated_projection_no_click_is_attempted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 287,
+    "kind": "method_declaration",
+    "name": "A_point_the_projection_rejects_carries_its_reason_out",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_point_the_projection_rejects_carries_its_reason_out()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 306,
+    "kind": "method_declaration",
+    "name": "A_target_without_a_position_is_refused_before_the_projection_is_asked",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_target_without_a_position_is_refused_before_the_projection_is_asked()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 325,
+    "kind": "method_declaration",
+    "name": "An_entity_nobody_has_identified_is_refused_before_the_projection",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task An_entity_nobody_has_identified_is_refused_before_the_projection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 345,
+    "kind": "method_declaration",
+    "name": "An_identified_entity_without_a_position_is_refused_by_its_own_name",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task An_identified_entity_without_a_position_is_refused_by_its_own_name()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 363,
+    "kind": "method_declaration",
+    "name": "An_action_with_no_gesture_yet_is_refused_by_name",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Theory] [InlineData(ActionType.CollectGroundItem)] [InlineData(ActionType.RestAndRecover)] public async Task An_action_with_no_gesture_yet_is_refused_by_name(ActionType type)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 377,
+    "kind": "method_declaration",
+    "name": "An_action_type_of_none_is_refused_rather_than_ignored",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task An_action_type_of_none_is_refused_rather_than_ignored()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 397,
+    "kind": "method_declaration",
+    "name": "A_key_the_backend_did_not_queue_is_failed_and_never_completed",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_key_the_backend_did_not_queue_is_failed_and_never_completed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 401,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 402,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 412,
+    "kind": "method_declaration",
+    "name": "A_click_the_backend_did_not_queue_is_failed_and_never_completed",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_click_the_backend_did_not_queue_is_failed_and_never_completed()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 416,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 418,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 434,
+    "kind": "method_declaration",
+    "name": "With_the_policy_closed_nothing_reaches_the_backend",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Theory] [InlineData(ActionType.UseConsumable)] [InlineData(ActionType.UseSkill)] [InlineData(ActionType.UseBasicAttack)] [InlineData(ActionType.MoveToPosition)] [InlineData(ActionType.TargetEntity)] [InlineData(ActionType.EmergencyFlee)] public async Task With_the_policy_closed_nothing_reaches_the_backend(ActionType type)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 460,
+    "kind": "method_declaration",
+    "name": "Closing_the_policy_mid_session_stops_the_very_next_action",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task Closing_the_policy_mid_session_stops_the_very_next_action()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 465,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 467,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 486,
+    "kind": "method_declaration",
+    "name": "The_factory_selects_the_live_effector_only_when_the_policy_is_open",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public void The_factory_selects_the_live_effector_only_when_the_policy_is_open()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 491,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 493,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 505,
+    "kind": "method_declaration",
+    "name": "A_policy_source_lets_the_operator_arm_the_runtime_after_it_started",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task A_policy_source_lets_the_operator_arm_the_runtime_after_it_started()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 510,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 512,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 513,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 535,
+    "kind": "method_declaration",
+    "name": "Disarming_through_the_policy_source_stops_the_next_action",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public async Task Disarming_through_the_policy_source_stops_the_next_action()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 541,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 543,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 545,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 559,
+    "kind": "method_declaration",
+    "name": "A_policy_source_without_an_effector_is_still_disabled",
+    "scope": "InputActionEffectorTests",
+    "signature": "[Fact] public void A_policy_source_without_an_effector_is_still_disabled()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputActionEffectorTests.cs",
+    "line": 562,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "InputActionEffectorTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputAuthoritySurfaceTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "TheRuntimeWiresTheInputAuthorityFlag",
+    "scope": "InputAuthoritySurfaceTests",
+    "signature": "[Fact] public void TheRuntimeWiresTheInputAuthorityFlag()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InputAuthoritySurfaceTests.cs",
+    "line": 48,
+    "kind": "method_declaration",
+    "name": "FormatNamesAnActuatingSession",
+    "scope": "InputAuthoritySurfaceTests",
+    "signature": "[Fact] public void FormatNamesAnActuatingSession()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Runtime.Tests/InputAuthoritySurfaceTests.cs",
     "line": 70,
     "kind": "method_declaration",
@@ -411,6 +852,15 @@
     "name": "RepositoryRoot",
     "scope": "InputGuardsProbeTests",
     "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/InteractiveDesktopOnlyFactAttribute.cs",
+    "line": 17,
+    "kind": "constructor_declaration",
+    "name": "InteractiveDesktopOnlyFactAttribute",
+    "scope": "InteractiveDesktopOnlyFactAttribute",
+    "signature": "public InteractiveDesktopOnlyFactAttribute()",
     "category": "test"
   },
   {
@@ -1541,6 +1991,15 @@
   {
     "path": "tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs",
     "line": 198,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClientArrivalWatcherTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs",
+    "line": 198,
     "kind": "method_declaration",
     "name": "Pids",
     "scope": "ClientArrivalWatcherTests",
@@ -1549,7 +2008,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs",
-    "line": 198,
+    "line": 200,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "ClientArrivalWatcherTests",
@@ -1563,15 +2022,6 @@
     "name": "FixedClock",
     "scope": "ClientArrivalWatcherTests",
     "signature": "private static Func<DateTime> FixedClock(DateTime utc)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/LiveIntegration/ClientArrivalWatcherTests.cs",
-    "line": 200,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ClientArrivalWatcherTests",
-    "signature": "() =>",
     "category": "test"
   },
   {
@@ -4047,456 +4497,6 @@
     "name": "<anonymous/accessor>",
     "scope": "ModuleReachabilityTests",
     "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 238,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "n =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 246,
-    "kind": "method_declaration",
-    "name": "No_module_is_declared_that_no_longer_exists",
-    "scope": "ModuleReachabilityTests",
-    "signature": "[Fact] public void No_module_is_declared_that_no_longer_exists()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 252,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 254,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "n =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 270,
-    "kind": "method_declaration",
-    "name": "The_declared_reach_matches_what_the_source_shows",
-    "scope": "ModuleReachabilityTests",
-    "signature": "[Fact] public void The_declared_reach_matches_what_the_source_shows()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 282,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "n =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 294,
-    "kind": "method_declaration",
-    "name": "Every_unreached_module_says_why",
-    "scope": "ModuleReachabilityTests",
-    "signature": "[Fact] public void Every_unreached_module_says_why()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 298,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 299,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 306,
-    "kind": "method_declaration",
-    "name": "No_module_is_declared_twice",
-    "scope": "ModuleReachabilityTests",
-    "signature": "[Fact] public void No_module_is_declared_twice()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 310,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 311,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "g =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 312,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "g =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 323,
-    "kind": "method_declaration",
-    "name": "The_unreached_share_of_production_is_reported",
-    "scope": "ModuleReachabilityTests",
-    "signature": "[Fact] public void The_unreached_share_of_production_is_reported()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 337,
-    "kind": "local_function_statement",
-    "name": "Total",
-    "scope": "ModuleReachabilityTests",
-    "signature": "int Total(ModuleReach reach)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/ModuleReachabilityTests.cs",
-    "line": 337,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ModuleReachabilityTests",
-    "signature": "m =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 17,
-    "kind": "method_declaration",
-    "name": "WithMonster",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "private static GameReferenceDatabase WithMonster(int vnum, params (string Name, string[] Values)[] rows)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 20,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "r =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 28,
-    "kind": "method_declaration",
-    "name": "Un_vnum_che_il_catalogo_non_ha_e_rifiutato_col_proprio_motivo",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Un_vnum_che_il_catalogo_non_ha_e_rifiutato_col_proprio_motivo()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 45,
-    "kind": "method_declaration",
-    "name": "Una_riga_presente_si_decodifica_sempre_anche_senza_campi",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Una_riga_presente_si_decodifica_sempre_anche_senza_campi()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 73,
-    "kind": "method_declaration",
-    "name": "Il_livello_e_confermato_e_i_bonus_hp_mp_restano_provvisori",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Il_livello_e_confermato_e_i_bonus_hp_mp_restano_provvisori()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "Senza_bersaglio_il_comando_rifiuta",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Senza_bersaglio_il_comando_rifiuta()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 126,
-    "kind": "method_declaration",
-    "name": "Un_vnum_che_non_e_un_numero_e_rifiutato",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Theory] [InlineData(\"non-un-numero\")] [InlineData(\"\")] public void Un_vnum_che_non_e_un_numero_e_rifiutato(string value)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 138,
-    "kind": "method_declaration",
-    "name": "Un_vnum_senza_valore_e_rifiutato_e_non_vale_zero",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Un_vnum_senza_valore_e_rifiutato_e_non_vale_zero()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 148,
-    "kind": "method_declaration",
-    "name": "Una_registrazione_senza_valore_e_rifiutata",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Una_registrazione_senza_valore_e_rifiutata()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 163,
-    "kind": "method_declaration",
-    "name": "Unopzione_sconosciuta_e_rifiutata_col_proprio_nome",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Unopzione_sconosciuta_e_rifiutata_col_proprio_nome()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 175,
-    "kind": "method_declaration",
-    "name": "Un_vnum_ben_formato_non_e_rifiutato",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Un_vnum_ben_formato_non_e_rifiutato()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 188,
-    "kind": "method_declaration",
-    "name": "Il_motivo_del_catalogo_assente_e_distinto_da_quello_del_vnum_assente",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Il_motivo_del_catalogo_assente_e_distinto_da_quello_del_vnum_assente()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterCatalogueRefusalTests.cs",
-    "line": 209,
-    "kind": "method_declaration",
-    "name": "Un_rapporto_senza_vnum_non_inventa_righe",
-    "scope": "MonsterCatalogueRefusalTests",
-    "signature": "[Fact] public void Un_rapporto_senza_vnum_non_inventa_righe()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 16,
-    "kind": "method_declaration",
-    "name": "WithMonster",
-    "scope": "MonsterReportCommandTests",
-    "signature": "private static GameReferenceDatabase WithMonster(int vnum, params (string Name, string[] Values)[] rows)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 19,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MonsterReportCommandTests",
-    "signature": "r =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "WriteReport_marks_each_field_confirmed_or_provisional",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Fact] public void WriteReport_marks_each_field_confirmed_or_provisional()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 46,
-    "kind": "method_declaration",
-    "name": "WriteReport_prints_a_reason_for_a_missing_vnum",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Fact] public void WriteReport_prints_a_reason_for_a_missing_vnum()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 57,
-    "kind": "method_declaration",
-    "name": "TryParse_rejects_malformed_arguments",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Theory] [InlineData(\"--monster-report --summary\", MonsterReportCommand.UnknownOptionReason)] [InlineData(\"--monster-report --vnum abc\", MonsterReportCommand.InvalidVnumReason)] [InlineData(\"--monster-report --recording\", MonsterReportCommand.RecordingWithoutValueReason)] // The value is asserted, not the constant name: SkillReportCommand declares a // same-named constant with a different value, and RefusalReasonRegisterTests // treats a name match as coverage — naming it here would mark that one covered // too. See MonsterCatalogueRefusalTests for the same rule. [InlineData(\"--monster-report\", \"monster_report_no_target\")] public void TryParse_rejects_malformed_arguments(string argsText, string expectedReason)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 76,
-    "kind": "method_declaration",
-    "name": "TryParse_accepts_a_vnum_and_a_recording",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Fact] public void TryParse_accepts_a_vnum_and_a_recording()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 88,
-    "kind": "method_declaration",
-    "name": "ObservedMonsters_returns_the_monster_vnums_a_capture_names",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[RecordedCaptureFact(\"nostale_combat.noscap\")] public void ObservedMonsters_returns_the_monster_vnums_a_capture_names()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 98,
-    "kind": "method_declaration",
-    "name": "The_catalogue_unavailable_reason_is_named_and_not_an_empty_catalogue",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Fact] public void The_catalogue_unavailable_reason_is_named_and_not_an_empty_catalogue()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 107,
-    "kind": "method_declaration",
-    "name": "The_runtime_wires_the_monster_report_flag",
-    "scope": "MonsterReportCommandTests",
-    "signature": "[Fact] public void The_runtime_wires_the_monster_report_flag()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MonsterReportCommandTests.cs",
-    "line": 116,
-    "kind": "method_declaration",
-    "name": "RepositoryRoot",
-    "scope": "MonsterReportCommandTests",
-    "signature": "private static string RepositoryRoot()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkObservationTests.cs",
-    "line": 17,
-    "kind": "method_declaration",
-    "name": "NetworkObservationSuitePasses",
-    "scope": "NetworkObservationTests",
-    "signature": "[Fact] public void NetworkObservationSuitePasses()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 36,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
-    "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 38,
-    "kind": "constructor_declaration",
-    "name": "ScriptedSource",
-    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
-    "signature": "public ScriptedSource(DataSourceKind source)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 40,
-    "kind": "method_declaration",
-    "name": "Send",
-    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
-    "signature": "public void Send(string line)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 44,
-    "kind": "method_declaration",
-    "name": "TryObserve",
-    "scope": "NetworkWorldFeedVitalsTests.ScriptedSource",
-    "signature": "public bool TryObserve(out ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 57,
-    "kind": "method_declaration",
-    "name": "CanDecode",
-    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingDecoder",
-    "signature": "public bool CanDecode(ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 59,
-    "kind": "method_declaration",
-    "name": "Decode",
-    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingDecoder",
-    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 70,
-    "kind": "method_declaration",
-    "name": "CanDecode",
-    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingWithoutHealthDecoder",
-    "signature": "public bool CanDecode(ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 72,
-    "kind": "method_declaration",
-    "name": "Decode",
-    "scope": "NetworkWorldFeedVitalsTests.PlayerSightingWithoutHealthDecoder",
-    "signature": "public DecodedObservations Decode(ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 78,
-    "kind": "method_declaration",
-    "name": "Feed",
-    "scope": "NetworkWorldFeedVitalsTests",
-    "signature": "private static NetworkWorldFeed Feed(ScriptedSource wire, IGamePacketDecoder? decoder = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/NetworkWorldFeedVitalsTests.cs",
-    "line": 84,
-    "kind": "method_declaration",
-    "name": "The_player_hp_comes_from_the_vitals_message",
-    "scope": "NetworkWorldFeedVitalsTests",
-    "signature": "[Fact] public void The_player_hp_comes_from_the_vitals_message()",
     "category": "test"
   }
 ]
