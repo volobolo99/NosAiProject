@@ -259,6 +259,10 @@ Ranking azioni che il Verify scoprirà fallite una per una.
 
 Il bersaglio osservato è un criceto livello 27, selezionato/attaccato dall'operatore in game. L'operatore ha riportato l'HP corrente in tre momenti successivi: 719, poi 463, poi 335. L'HP massimo riportato è stato costante a 975.
 
+#### Posizione candidata
+
+La coordinata X a offset `-20` (valore 155) coincide esattamente con la X del player letta nello stesso istante (155,176) via `--player-probe`, quindi è un'evidenza forte. Il valore a offset `-12` (157) è un candidato debole per la Y: vicino alla Y del player (176) ma non identico (differenza 19), quindi resta CANDIDATO non confermato. Offset `-16` (valore 5) non ha un'interpretazione plausibile per ora e resta UNKNOWN. Il bersaglio era fermo fra le due letture (nessuna variazione nei campi diversi da HP), quindi la corrispondenza X non è stata confermata da un secondo campione con posizione diversa.
+
 ### Perche' resta CANDIDATO e non Integrated
 
 La seconda fonte usata finora (l'operatore che legge l'HP a schermo) non è la stessa cosa della seconda fonte richiesta da questo documento (il pacchetto wire `st`). Quindi il campo resta CANDIDATO, non Integrated e non Verified.
