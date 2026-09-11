@@ -1,0 +1,42 @@
+{
+  "contract_id": "mcp-tool-decorator-010",
+  "file": "scripts/mcp_server.py",
+  "scopo": "Allineare il codice alla governance: .claude/CLAUDE.md sezione 7 e docs/contracts/README.md documentano update_contract_state come lo strumento con cui si aggiorna lo stato di un contratto in contracts/ledger.json, ma la funzione, a differenza degli altri cinque passi della catena (local_generate_skeleton, cloud_infill_implementation, preflight_contract_check, deep_reasoner_solve_crash, local_update_documentation, tutti con @mcp.tool() alla riga immediatamente precedente), non ha il decoratore: non compare fra i tool MCP realmente esposti alla sessione Claude.",
+  "fatti_verificati": [
+    "scripts/mcp_server.py:196, def update_contract_state(contract_id, new_state, metrics='') -> str, priva del decoratore che hanno le altre cinque funzioni della catena (righe 89, 116, 136, 157, 176).",
+    "FastMCP.tool() (mcp.server.fastmcp), ispezionato con inspect.getsource: il decoratore chiama self.add_tool(fn, ...) e restituisce fn invariata. Aggiungere il decoratore non cambia l'identita' della funzione: resta chiamabile come prima.",
+    "tests/test_contract_ledger.py chiama mcp_server.update_contract_state(...) come funzione Python diretta in 11 punti (righe 51, 64, 73, 83, 93, 103, 111, 129, 130, 140, 141): nessun test enumera o conta i tool esposti da FastMCP, quindi nessun test assume l'assenza del decoratore."
+  ],
+  "modifica_puntuale": {
+    "update_contract_state": [
+      "Aggiungere esattamente la riga '@mcp.tool()' immediatamente sopra 'def update_contract_state(contract_id: str, new_state: str, metrics: str = \"\") -> str:', nella stessa forma usata sopra le altre cinque funzioni della catena nello stesso file.",
+      "Nessun'altra riga della funzione cambia: corpo, docstring, validazioni, scrittura del ledger, rigenerazione della roadmap restano carattere per carattere identici."
+    ]
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Modifica SOLO l'aggiunta del decoratore sopra update_contract_state. Firma e corpo non cambiano.",
+    "conservare_identiche": [
+      "local_generate_skeleton",
+      "cloud_infill_implementation",
+      "preflight_contract_check",
+      "deep_reasoner_solve_crash",
+      "local_update_documentation",
+      "il corpo di update_contract_state",
+      "VALID_STATES",
+      "DONE_STATES"
+    ],
+    "implementare_o_creare": []
+  },
+  "postcondizioni_verificabili": [
+    "import mcp_server riesce (import_check di scripts/code_agent.py).",
+    "mcp_server.update_contract_state resta chiamabile direttamente con la stessa firma: mcp_server.update_contract_state('C-101', 'MERGED') non solleva TypeError.",
+    "tutti i casi in tests/test_contract_ledger.py restano verdi.",
+    "il tool compare nel registro di FastMCP: 'update_contract_state' in [t.name for t in mcp._tool_manager.list_tools()]."
+  ],
+  "stato": "TEST_VERIFIED",
+  "esecuzione": {
+    "fase_3_infilling": "scripts/code_agent.py, tier simple (deepseek-v4-flash), solo_funzioni=[update_contract_state]. Diff ottenuto identico alla modifica_puntuale dichiarata: git diff mostra la sola riga '@mcp.tool()' aggiunta, nient'altro.",
+    "fase_4_preflight": "NON eseguita: OPENROUTER_API_KEY assente in questa sessione (confermato con scripts/check_credentials.py). Nessun fallback nella politica di routing per questo passo su un'altra chiave gia' attiva.",
+    "fase_5_collaudo": "import_check su scripts/mcp_server.py superato; tests/test_contract_ledger.py, 10 casi, tutti verdi con l'interprete Python 3.14 (pythoncore-3.14-64, l'unico con pytest installato in questo ambiente). Verificato inoltre a mano che 'update_contract_state' compare in mcp_server.mcp._tool_manager.list_tools() e resta chiamabile direttamente con la stessa firma."
+  }
+}

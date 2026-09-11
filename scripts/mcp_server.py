@@ -193,6 +193,7 @@ def local_update_documentation(doc_payload_json: str) -> str:
     })
     return risposta
 
+@mcp.tool()
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
     Aggiorna lo stato di un contratto in contracts/ledger.json, ricalcola la
