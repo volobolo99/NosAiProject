@@ -18,19 +18,27 @@ Queste firme sono state estratte dal sorgente canonico e dai consumatori present
 Lo stato del ledger resta storico finché le prove indicate non vengono eseguite in un
 ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 
+## Firme risolte il 2026-09-11
+
+| CID | Firma canonica | Sorgente | Prova da eseguire |
+|---|---|---|---|
+| C-201 | `BoundedEventBus(int capacity = 5000); bool TryPublish(RuntimeEvent runtimeEvent); void Subscribe(Action<RuntimeEvent> subscriber); long DroppedEventsCount; long PublishedEventsCount` | `src/NosAi.Runtime/Gate2/Gate2Runtime.cs` | `tests/NosAi.Runtime.Tests/Gate2Tests.cs` |
+| C-202 | `readonly record struct EntityId(string Value); WorldModelSnapshot WorldModelTemporalEnricher.Enrich(WorldModelSnapshot, WorldModelSnapshot, DateTime, TimeSpan, TimeSpan)` | `src/NosAi.Core/WorldModel/Identifiers.cs`; `src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs` | `tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs`, `tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs` |
+| C-305 | `RecoveryController(TrustBoundary, int maxRetries = 2, TimeProvider? = null, int windowSize = DefaultWindowSize, int probeSuccessesToClose = DefaultProbeSuccessesToClose, TimeSpan? baseCooldown = null, TimeSpan? maxCooldown = null); bool TryBeginAction(ref RuntimeMode, out string?); RecoveryStrategy HandleFailure(ref RuntimeMode); RecoveryState HandleSuccess(ref RuntimeMode)` | `src/NosAi.Runtime/Safety/RecoveryController.cs` | `tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs` |
+
+Queste firme sono state estratte dal sorgente canonico e dai consumatori presenti,
+stessa disciplina delle firme del 2026-09-10.
+
 ## Firme ancora da precisare
 
 | CID | Primo percorso di ricerca | Consegna richiesta |
 |---|---|---|
 | C-105 | da definire | Decisione sul perimetro di hook memoria/DLL, contratto e test; nessuna implementazione implicita |
-| C-201 | da confermare fra i 16 sorgenti che citano dispatch | Simbolo canonico, firma completa, tipi/unità/errori, test e revisione del contratto |
-| C-202 | src/NosAi.Core/WorldModel/ | Perimetro pubblico per correlazione identificativi, firma, test e revisione |
 | C-204 | da definire | ADR sulla proprietà dello stato C# o Python, schema di sincronizzazione e test round-trip |
 | C-301 | da confermare fra i 4 sorgenti che citano HTN | Simbolo canonico, firma completa e test |
 | C-302 | da confermare fra i 5 sorgenti che citano GOAP | Simbolo canonico, firma completa e test |
 | C-303 | da confermare fra i 30 sorgenti che citano Orchestrator | Unica implementazione canonica, firma e test |
 | C-304 | da definire | Decisione se FSM sostituisce o affianca Planner/Orchestrator, ADR e test |
-| C-305 | da confermare fra i 44 sorgenti che citano recovery o reconnect | Simbolo canonico, firma completa e test |
 | C-402 | da definire | Corpus, harness di fuzzing, limiti e report riproducibile |
 | C-403 | src/NosAi.Security/ | Perimetro pubblico della superficie di sicurezza, firma e test |
 

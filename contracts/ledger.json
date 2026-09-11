@@ -280,23 +280,23 @@
           "cid": "C-201",
           "sid": "S-EVT-01",
           "title": "Dispatcher thread-safe degli eventi",
-          "target_file": "da confermare fra i 16 sorgenti che citano dispatch",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Runtime/Gate2/Gate2Runtime.cs",
+          "signature": "BoundedEventBus(int capacity = 5000); bool TryPublish(RuntimeEvent runtimeEvent); void Subscribe(Action<RuntimeEvent> subscriber); long DroppedEventsCount { get; }; long PublishedEventsCount { get; }",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Runtime.Tests/Gate2Tests.cs",
           "status": "MERGED",
           "invariants": [
             "THREAD_SAFE",
             "ZERO_ALLOC_LOOP",
             "NO_PARTIAL_STATE"
           ],
-          "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice.",
           "product_phases": [
             "AP-01"
           ],
           "legacy_gate": 2,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: BoundedEventBus in src/NosAi.Runtime/Gate2/Gate2Runtime.cs:90, thread-safe (Channel<RuntimeEvent> bounded con SingleReader=true/SingleWriter=false, ConcurrentBag<Action<RuntimeEvent>> per i subscriber, contatori aggiornati con Interlocked). Dispatch loop asincrono senza allocazioni (DispatchLoopAsync, righe 151-167: WaitToReadAsync + TryRead + foreach sui subscriber). Nel percorso live: istanziata in Gate2RuntimeEngine (riga 547) ed esposta come property EventBus; Gate2IntegratedEngine la compone nella pipeline observation batch -> world model fold -> bounded event bus -> WAL persistence. Test dedicati: TestEventBusDroppingAsync e TestEventBusSecurityInvariant in Gate2Runtime.cs, invocati da tests/NosAi.Runtime.Tests/Gate2Tests.cs via Gate2TestRunner. Candidato escluso: NetworkWorldFeed (Perception/Network/NetworkWorldFeed.cs) usa una List non thread-safe e distribuzione diretta sincrona, non un bus limitato."
         },
@@ -304,10 +304,10 @@
           "cid": "C-202",
           "sid": "S-ENT-01",
           "title": "Correlazione degli identificativi di entita'",
-          "target_file": "src/NosAi.Core/WorldModel/",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Core/WorldModel/Identifiers.cs; src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs",
+          "signature": "readonly record struct EntityId(string Value); static WorldModelSnapshot WorldModelTemporalEnricher.Enrich(WorldModelSnapshot previous, WorldModelSnapshot current, DateTime nowUtc, TimeSpan maxAge, TimeSpan maxObservationGap); private static EquatableArray<Mob> EnrichMobs(EquatableArray<Mob> previous, EquatableArray<Mob> current, DateTime nowUtc, TimeSpan maxAge, TimeSpan maxObservationGap) -- correlazione interna per EntityId",
           "struct_size": null,
-          "test_file": "tests/NosAi.Core.Tests/",
+          "test_file": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs; tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs",
           "status": "MERGED",
           "invariants": [
             "UNKNOWN_PRESERVED",
@@ -318,8 +318,9 @@
             "AP-01"
           ],
           "legacy_gate": 2,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11, in due parti coerenti col titolo \"correlazione degli identificativi\": (1) EntityId, struct in src/NosAi.Core/WorldModel/Identifiers.cs:10, la chiave primitiva deterministica usata come Dictionary<EntityId,Mob> in tutto il World Model; preserva Unknown via DataSourceKind invece di inventare un default. (2) La correlazione vera e propria e' WorldModelTemporalEnricher.EnrichMobs (src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs:47): costruisce il dizionario delle entita' del ciclo precedente per EntityId e le confronta con quelle nuove, marcando \"no_prior_sighting_of_this_entity\" quando non trova corrispondenza invece di inventarla. GameplayObservationProjector.ProjectEntities (src/NosAi.Runtime/WorldModel/Fusion/GameplayObservationProjector.cs:350) e' il punto che deriva l'EntityId dalla SelectableEntity osservata in rete. Test dedicati: tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs e tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs. Gap noto e documentato dal test stesso (riga 181, \"DocumentedGap\"): con EntityId duplicati nel ciclo precedente, il matching prende quello che compare per ultimo nella lista, comportamento accettato ma non garantito univoco."
         },
@@ -461,10 +462,10 @@
         {
           "cid": "C-305",
           "title": "Recupero dopo disconnessione",
-          "target_file": "da confermare fra i 44 sorgenti che citano recovery o reconnect",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Runtime/Safety/RecoveryController.cs",
+          "signature": "RecoveryController(TrustBoundary trustBoundary, int maxRetries = 2, TimeProvider? clock = null, int windowSize = DefaultWindowSize, int probeSuccessesToClose = DefaultProbeSuccessesToClose, TimeSpan? baseCooldown = null, TimeSpan? maxCooldown = null); bool TryBeginAction(ref RuntimeMode runtimeMode, out string? refusalReason); RecoveryStrategy HandleFailure(ref RuntimeMode runtimeMode); RecoveryState HandleSuccess(ref RuntimeMode runtimeMode)",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs",
           "status": "MERGED",
           "invariants": [
             "FAIL_CLOSED",
@@ -474,8 +475,9 @@
             "AP-08"
           ],
           "legacy_gate": 3,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: RecoveryController in src/NosAi.Runtime/Safety/RecoveryController.cs:104, con gli enum RecoveryStrategy (Retry/Replan/DegradedReplan/Cooling/HaltAndAlert) e RecoveryState (Closed/Throttled/Halted/Probing). E' il circuit breaker del ciclo decisionale (finestra sliding di fallimenti, escalation ladder, Halted = FAIL_CLOSED, transizioni atomiche = NO_PARTIAL_STATE), coerente col titolo del Gate 3 \"Decisione autonoma e recupero\" e con product_phases AP-08. Usato da Gate3ExecutionOrchestrator (Gate3Runtime.cs:1113, esposto come property Recovery a riga 1126); src/NosAi.Core/Safety/RetryBudgetContracts.cs:6 lo dichiara esplicitamente \"the authoritative one\". Test dedicati: tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs. Distinto da GuardReconnectPolicy (src/NosAi.GuardClient/GuardReconnectPolicy.cs:34): quella e' la policy di reconnect a livello di trasporto/socket del Guard client (Gate 1, backoff esponenziale, nessuna sliding window), usata da GuardConnectionService; il nome del contratto (\"disconnessione\") ricorda quella, ma l'invariante e il Gate collocano il contratto sul circuit breaker decisionale, non sul socket."
         }

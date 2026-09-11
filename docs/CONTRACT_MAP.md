@@ -18,15 +18,15 @@ Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_T
 | C-104 | AP-02 | Parsing e registro degli opcode | MERGED | `bool WireHeader.TryRead(ReadOnlySpan<byte>, out WireHeader, out string?)` | src/NosAi.Protocol/WireProtocol.cs | tests/NosAi.Runtime.Tests/HeartbeatPayloadTests.cs; tests/NosAi.Runtime.Tests/DiscoveryTests.cs |
 | C-105 | AP-02 | Hook di memoria o DLL nel client | DRAFT | da definire | da definire | da definire |
 | C-106 | AP-02, AP-09 | Replay deterministico di una cattura | MERGED | `long CaptureFile.Record(IPacketSource, string, CancellationToken = default, TimeSpan? = null); CaptureFileSource Open(string)` | src/NosAi.Runtime/LiveIntegration/Capture/CaptureFile.cs | tests/NosAi.Runtime.Tests/DecideReplayAsOfCaptureTests.cs |
-| C-201 | AP-01 | Dispatcher thread-safe degli eventi | MERGED | da confermare | da confermare fra i 16 sorgenti che citano dispatch | da confermare |
-| C-202 | AP-01 | Correlazione degli identificativi di entita' | MERGED | da confermare | src/NosAi.Core/WorldModel/ | tests/NosAi.Core.Tests/ |
+| C-201 | AP-01 | Dispatcher thread-safe degli eventi | MERGED | `BoundedEventBus(int capacity = 5000); bool TryPublish(RuntimeEvent); void Subscribe(Action<RuntimeEvent>); long DroppedEventsCount; long PublishedEventsCount` | src/NosAi.Runtime/Gate2/Gate2Runtime.cs | tests/NosAi.Runtime.Tests/Gate2Tests.cs |
+| C-202 | AP-01 | Correlazione degli identificativi di entita' | MERGED | `readonly record struct EntityId(string Value); WorldModelTemporalEnricher.Enrich(WorldModelSnapshot, WorldModelSnapshot, DateTime, TimeSpan, TimeSpan)` | src/NosAi.Core/WorldModel/Identifiers.cs; src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs | tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs; tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs |
 | C-203 | AP-01 | Fusione delle osservazioni nel World Model | MERGED | `WorldModelSnapshot RunOnce(Gate1CanonicalSnapshot, DateTime)` | src/NosAi.Runtime/WorldModel/Fusion/WorldModelFusionLoop.cs | tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs |
 | C-204 | AP-01 | Sincronizzazione fra runtime C# e nosai/ Python | DRAFT | da definire | da definire | da definire |
 | C-301 | AP-08 | Pianificazione gerarchica HTN | MERGED | da confermare | da confermare fra i 4 sorgenti che citano HTN | da confermare |
 | C-302 | AP-08 | Pianificazione GOAP | MERGED | da confermare | da confermare fra i 5 sorgenti che citano GOAP | da confermare |
 | C-303 | AP-08 | Orchestratore strategico | MERGED | da confermare | da confermare fra i 30 sorgenti che citano Orchestrator | tests/test_orchestrator.py |
 | C-304 | AP-08 | Macchina a stati finiti esplicita | DRAFT | da definire | da definire | da definire |
-| C-305 | AP-08 | Recupero dopo disconnessione | MERGED | da confermare | da confermare fra i 44 sorgenti che citano recovery o reconnect | da confermare |
+| C-305 | AP-08 | Recupero dopo disconnessione | MERGED | `RecoveryController(TrustBoundary, int maxRetries = 2, TimeProvider? = null, int windowSize = DefaultWindowSize, int probeSuccessesToClose = DefaultProbeSuccessesToClose, TimeSpan? baseCooldown = null, TimeSpan? maxCooldown = null); bool TryBeginAction(ref RuntimeMode, out string?); RecoveryStrategy HandleFailure(ref RuntimeMode); RecoveryState HandleSuccess(ref RuntimeMode)` | src/NosAi.Runtime/Safety/RecoveryController.cs | tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs |
 | C-401 | AP-00, AP-10 | Cifratura di sessione e autenticazione | MERGED | `SessionCipher.ForRuntime(ReadOnlySpan<byte>); ForPhone(ReadOnlySpan<byte>); SealFrameInto(Span<byte>, WireMessageType, uint, ReadOnlySpan<byte>); TryOpenFrame(ReadOnlySpan<byte>, ReadOnlySpan<byte>, out byte[], out string?)` | src/NosAi.Protocol/SessionCipher.cs | tests/NosAi.Runtime.Tests/SessionCipherTests.cs; tests/test_session_cipher.py |
 | C-402 | AP-10 | Fuzzing sui pacchetti corrotti | DRAFT | da definire | da definire | da definire |
 | C-403 | AP-00, AP-10 | Superficie di sicurezza del runtime | MERGED | da confermare | src/NosAi.Security/ | tests/test_crypto_auth.py |
@@ -41,3 +41,4 @@ Non sono inclusi nei conteggi dei gruppi legacy. Il contratto Lab è DRAFT e i p
 
 
 Firme risolte il 2026-09-10 dal sorgente canonico: C-103, C-104, C-106, C-203 e C-401. Il campo Stato resta quello storico del ledger finché i comandi di verifica non vengono rieseguiti.
+Firme risolte il 2026-09-11 dal sorgente canonico: C-201, C-202 e C-305.
