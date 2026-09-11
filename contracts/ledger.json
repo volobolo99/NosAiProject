@@ -355,7 +355,8 @@
           ],
           "legacy_gate": 2,
           "signature_status": "RESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Blocco rimosso da ADR-0030 del 2026-09-11 (due flussi asimmetrici, nessuno stato condiviso; il campo 'blocker' e' testo residuo pre-ADR). Entrambi i canali implementati e testati. Canale 2 (Python -> C#, in ingresso): src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs legge data/mcp/role_bindings.json, 6/6 test verdi, commit ba31c2e. Canale 1 (C# -> Python, in uscita, solo append): src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs registra ogni Gate3LoopCycle in JSONL, collegato in Gate3DecisionLoop tramite parametro opzionale telemetry (default null, comportamento invariato se assente), 4 test sul writer + 2 sul collegamento nel loop, tutti verdi. Suite completa NosAi.Runtime.Tests: 2830+ passati, 0 falliti attribuibili a queste modifiche (osservato un fallimento isolato e non riproducibile in GuardAdmissionTests/GuardNegativeTests su socket reali, confermato transitorio da rerun immediati, pre-esistente e indipendente da questo contratto)."
         }
