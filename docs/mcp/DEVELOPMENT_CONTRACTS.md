@@ -8,6 +8,10 @@ Ogni nuovo tool deve dichiarare: input JSON versionato, output JSON versionato, 
 
 `McpPolicy` è il gate minimo. `Guard`, `Trust` e `Safety` del runtime restano autorità finale sulle azioni di gioco. Il Direttore MCP può proporre modifiche al candidato, ma non può modificare policy, audit, contratti o test di sicurezza per autoapprovarsi.
 
+## Enforcement dei ruoli a runtime
+
+`nosai/mcp/enforcement.py` espone `require_capability(employee_id, capability, *, employees=DEFAULT_EMPLOYEE_ROLES)`, chiamata come prima istruzione di `InferenceGateway.infer()` (`nosai/mcp/inference.py`). Solleva `RoleEnforcementError` se la capability richiesta è in `employee.forbidden` o non è in `employee.capabilities`. Prima di questa funzione, `capabilities`/`forbidden` erano letti solo da `RoleArchitect.verify_employee_catalog()` come controllo statico del catalogo, mai applicati a runtime: `mcp_infer` è ora fail-closed per ogni chiamata che dichiara un ruolo. Limite noto e deliberato: se `employee_id` o `capability` sono vuoti, la funzione non fa nulla — le chiamate che non dichiarano un ruolo restano permissive. Test: `tests/test_mcp_enforcement.py`, `tests/test_mcp_hub_inference.py`.
+
 ## Promozione
 
 `DRAFT → TESTED → AUDITED → SHADOW → PROMOTED`.
