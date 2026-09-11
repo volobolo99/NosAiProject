@@ -510,23 +510,23 @@
         {
           "cid": "C-402",
           "title": "Fuzzing sui pacchetti corrotti",
-          "target_file": "da definire",
-          "signature": "da definire",
+          "target_file": "src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs",
+          "signature": "bool WireProtocolFuzzTestRunner.RunAll()",
           "struct_size": null,
-          "test_file": "da definire",
+          "test_file": "tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs",
           "status": "TEST_VERIFIED",
           "invariants": [
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104.",
           "product_phases": [
             "AP-10"
           ],
           "legacy_gate": 4,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
           "updated": "2026-09-11",
+          "signature_resolved_at": "2026-09-11",
           "metrics": "Simbolo esatto (i campi target_file/signature/blocker del ledger erano rimasti a \"da definire\"/al blocker pre-harness): src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs, static bool WireProtocolFuzzTestRunner.RunAll(), sei controlli deterministici su WireHeader.TryRead (src/NosAi.Protocol/WireProtocol.cs, non modificato) con seed fisso 1337. Test dedicato: tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs. Il blocker \"zero occorrenze di fuzz nel repository\" non e' piu' vero dal 2026-09-11: l'harness esiste, --wire-fuzz-test 6/6 PASS, dotnet test 2832/2841 (9 ignorati, 0 falliti). Nessun lavoro nuovo in questo aggiornamento: solo la registrazione dei simboli gia' costruiti nella sessione precedente."
         },
         {

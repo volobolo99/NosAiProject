@@ -28,7 +28,7 @@ Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_T
 | C-304 | AP-08 | Macchina a stati finiti esplicita | DRAFT | da definire | da definire | da definire |
 | C-305 | AP-08 | Recupero dopo disconnessione | MERGED | da confermare | da confermare fra i 44 sorgenti che citano recovery o reconnect | da confermare |
 | C-401 | AP-00, AP-10 | Cifratura di sessione e autenticazione | MERGED | `SessionCipher.ForRuntime(ReadOnlySpan<byte>); ForPhone(ReadOnlySpan<byte>); SealFrameInto(Span<byte>, WireMessageType, uint, ReadOnlySpan<byte>); TryOpenFrame(ReadOnlySpan<byte>, ReadOnlySpan<byte>, out byte[], out string?)` | src/NosAi.Protocol/SessionCipher.cs | tests/NosAi.Runtime.Tests/SessionCipherTests.cs; tests/test_session_cipher.py |
-| C-402 | AP-10 | Fuzzing sui pacchetti corrotti | DRAFT | da definire | da definire | da definire |
+| C-402 | AP-10 | Fuzzing sui pacchetti corrotti | TEST_VERIFIED | bool WireProtocolFuzzTestRunner.RunAll() | src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs | tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs |
 | C-403 | AP-00, AP-10 | Superficie di sicurezza del runtime | MERGED | da confermare | src/NosAi.Security/ | tests/test_crypto_auth.py |
 | C-404 | AP-10 | Procedura di rilascio verificata | DRAFT | n/a | docs/BUILD_TEST_RELEASE.md | scripts/validate.ps1 |
 | ORCH-001 | Tooling trasversale | Routing per costo, registro dei consumi, messaggi fra agenti | TEST_VERIFIED | route_task(kind: TaskKind) -> ModelRoute | nosai/orchestration/routing.py | tests/test_orchestration.py |

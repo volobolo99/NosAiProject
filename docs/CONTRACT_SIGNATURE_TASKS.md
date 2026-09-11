@@ -18,6 +18,12 @@ Queste firme sono state estratte dal sorgente canonico e dai consumatori present
 Lo stato del ledger resta storico finché le prove indicate non vengono eseguite in un
 ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 
+## Firme risolte il 2026-09-11
+
+| CID | Firma canonica | Sorgente | Prova da eseguire |
+|---|---|---|---|
+| C-402 | `bool WireProtocolFuzzTestRunner.RunAll()` | `src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs` | `tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs` |
+
 ## Firme ancora da precisare
 
 | CID | Primo percorso di ricerca | Consegna richiesta |
@@ -31,7 +37,6 @@ ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 | C-303 | da confermare fra i 30 sorgenti che citano Orchestrator | Unica implementazione canonica, firma e test |
 | C-304 | da definire | Decisione se FSM sostituisce o affianca Planner/Orchestrator, ADR e test |
 | C-305 | da confermare fra i 44 sorgenti che citano recovery o reconnect | Simbolo canonico, firma completa e test |
-| C-402 | da definire | Corpus, harness di fuzzing, limiti e report riproducibile |
 | C-403 | src/NosAi.Security/ | Perimetro pubblico della superficie di sicurezza, firma e test |
 
 C-003/C-004/C-005 hanno firme proposte ma non equivalgono a implementazioni verificate.
