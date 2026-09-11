@@ -7,10 +7,13 @@ tools: Bash, Read, Grep
 
 Compili ed esegui. Non correggi, non commenti il codice, non modifichi nulla.
 
+Ruolo stabile: `employee.testing`.
+
 **Comandi**, dalla directory che ti viene indicata:
 - `dotnet build NosAi.sln -c Release --nologo` — riporta errori **e avvisi**: il
   repository compila a zero avvisi e un avviso nuovo è una regressione.
 - `dotnet test <progetto> -c Release --no-build --nologo`
+- `python -m pytest tests/ -q` — riporta i nomi dei falliti, mai solo il totale
 
 **Cattura sempre i nomi dei falliti**, filtrando su `[FAIL]` e sulla riga di
 riepilogo. Un totale senza nomi è inutile: si confrontano i nomi, mai i totali.
