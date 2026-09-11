@@ -43,16 +43,25 @@ documentale e dei riferimenti; non certifica build, provider, client o hardware.
 La firma risolta non equivale a comportamento verificato: la prova deve essere
 eseguita nell'ambiente indicato e registrata secondo il ledger.
 
+## Firme risolte il 2026-09-11
+
+| CID | Firma canonica | Sorgente | Prova |
+|---|---|---|---|
+| C-204 | Canale 2: `RoleBindingConfiguration.Load(string path); RoleBinding? TryGetBinding(string employeeId)`. Canale 1: `DecisionTelemetryWriter.Append(Gate3LoopCycle cycle)`, agganciato in `Gate3DecisionLoop` come parametro opzionale `IDecisionTelemetrySink? telemetry = null` | `src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs`, `src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs` | `tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs`, `tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs`, `Gate3DecisionLoopTests.cs` |
+
+ADR-0030 aveva riformulato l'oggetto del contratto (due canali asimmetrici invece di
+uno stato condiviso) prima che la firma potesse essere precisata: vedi
+`docs/adr/ADR-0030-csharp-owns-game-state-python-governs-models.md`.
+
 ## Firme ancora da precisare
 
-Restano **11** voci con `signature_status: UNRESOLVED`:
+Restano **10** voci con `signature_status: UNRESOLVED`:
 
 | CID | Decisione necessaria |
 |---|---|
 | C-105 | perimetro di hook memoria/DLL, versione e test |
 | C-201 | dispatcher canonico, firma, errori e thread-safety |
 | C-202 | perimetro pubblico della correlazione entità |
-| C-204 | proprietà dello stato C# o Python e round-trip |
 | C-301 | implementazione HTN canonica |
 | C-302 | implementazione GOAP canonica |
 | C-303 | orchestratore unico e sua firma |

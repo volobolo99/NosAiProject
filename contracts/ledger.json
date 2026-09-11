@@ -340,21 +340,21 @@
         {
           "cid": "C-204",
           "title": "Sincronizzazione fra runtime C# e nosai/ Python",
-          "target_file": "da definire",
-          "signature": "da definire",
+          "target_file": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs; src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs",
+          "signature": "Canale 2: RoleBindingConfiguration.Load(string path); RoleBinding? TryGetBinding(string employeeId). Canale 1: DecisionTelemetryWriter.Append(Gate3LoopCycle cycle), agganciato in Gate3DecisionLoop tramite IDecisionTelemetrySink? telemetry = null",
           "struct_size": null,
-          "test_file": "da definire",
+          "test_file": "tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs; tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs; tests/NosAi.Runtime.Tests/Gate3DecisionLoopTests.cs",
           "status": "TEST_VERIFIED",
           "invariants": [
             "NO_PARTIAL_STATE",
             "UNKNOWN_PRESERVED"
           ],
-          "blocker": "Non esiste un canale dichiarato fra i due stack. Prima di scriverlo serve decidere quale dei due possiede lo stato: vedi la domanda aperta in fondo al file.",
+          "blocker": null,
           "product_phases": [
             "AP-01"
           ],
           "legacy_gate": 2,
-          "signature_status": "UNRESOLVED",
+          "signature_status": "RESOLVED",
           "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
           "updated": "2026-09-11",
           "metrics": "Blocco rimosso da ADR-0030 del 2026-09-11 (due flussi asimmetrici, nessuno stato condiviso; il campo 'blocker' e' testo residuo pre-ADR). Entrambi i canali implementati e testati. Canale 2 (Python -> C#, in ingresso): src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs legge data/mcp/role_bindings.json, 6/6 test verdi, commit ba31c2e. Canale 1 (C# -> Python, in uscita, solo append): src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs registra ogni Gate3LoopCycle in JSONL, collegato in Gate3DecisionLoop tramite parametro opzionale telemetry (default null, comportamento invariato se assente), 4 test sul writer + 2 sul collegamento nel loop, tutti verdi. Suite completa NosAi.Runtime.Tests: 2830+ passati, 0 falliti attribuibili a queste modifiche (osservato un fallimento isolato e non riproducibile in GuardAdmissionTests/GuardNegativeTests su socket reali, confermato transitorio da rerun immediati, pre-esistente e indipendente da questo contratto)."
@@ -581,7 +581,7 @@
   ],
   "domande_aperte": [
     "C-003/C-004/C-005: la FASE 5 del protocollo presuppone codice nativo e ASan, che il progetto non ha. O si apre un ramo nativo, o quei tre contratti restano DRAFT per sempre e la FASE 5 va riscritta sugli stack reali (dotnet test, pytest).",
-    "C-204: quale stack possiede lo stato di gioco, il runtime C# o nosai/ Python. Finche' non e' deciso, il canale fra i due non si puo' progettare.",
+    "C-204: RISOLTA da ADR-0030 del 2026-09-11 (docs/adr/ADR-0030-csharp-owns-game-state-python-governs-models.md) — il runtime C# possiede lo stato di gioco, nosai/ Python governa i modelli. Due canali asimmetrici, implementati e testati (TEST_VERIFIED).",
     "C-304: una FSM esplicita sostituisce Planner/Orchestrator o li affianca. Affiancarli senza dirlo creerebbe due autorita' di decisione."
   ],
   "phase_mapping_note": "gates[].gate is a legacy grouping, NOT a product AP number. contracts[].product_phases maps to ROADMAP_ESECUTIVA. Existing status and verification are historical evidence, not revalidated by documentation reconciliation.",
