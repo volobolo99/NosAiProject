@@ -105,7 +105,8 @@ public sealed class AutoplayCommandTests
         RecordingInput? input = null,
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
-        PlayerVitalsReading? after = null)
+        PlayerVitalsReading? after = null,
+        EquatableArray<Mob>? mobs = null)
     {
         ExplorationFootprint footprint = FullyExploredFootprint();
         return RunCycleWithMap(
@@ -116,7 +117,8 @@ public sealed class AutoplayCommandTests
             input,
             keybinds,
             before,
-            after);
+            after,
+            mobs);
     }
 
     private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap(
@@ -127,7 +129,8 @@ public sealed class AutoplayCommandTests
         RecordingInput? input = null,
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
-        PlayerVitalsReading? after = null)
+        PlayerVitalsReading? after = null,
+        EquatableArray<Mob>? mobs = null)
     {
         RecordingInput recording = input ?? new RecordingInput();
         var reads = new Queue<PlayerVitalsReading?>(new[] { before, after });
@@ -142,7 +145,7 @@ public sealed class AutoplayCommandTests
             map,
             footprint,
             playerPosition: new WorldPosition(0f, 0f),
-            EquatableArray<Mob>.Empty,
+            mobs ?? EquatableArray<Mob>.Empty,
             origin: new MapPoint(0, 0),
             grid: default,
             view: new OccupancyView(null, Now),
@@ -319,10 +322,11 @@ public sealed class AutoplayCommandTests
     [Fact]
     public void AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController()
     {
-        // QuestUrgency is the only other kind StrategyPlanner can select
-        // today; Recovery/Progression/Farming/Optimization have no assessor at
-        // all. Whatever the kind, dispatch must name it -- never substitute a
-        // different act for the one the plan selected.
+        // QuestUrgency is the only kind here with no assessor and no dispatch
+        // at all; Progression/Optimization have no assessor either, and
+        // Farming (which does, see the Farming branch tests below) is
+        // covered separately. Whatever the kind, dispatch must name it --
+        // never substitute a different act for the one the plan selected.
         StrategicPlan plan = new(
             StrategicGoalKind.QuestUrgency,
             WorldFact<bool>.Derived(true, confidence: 1d, Now),
@@ -340,7 +344,6 @@ public sealed class AutoplayCommandTests
 
     [Theory]
     [InlineData(StrategicGoalKind.Progression)]
-    [InlineData(StrategicGoalKind.Farming)]
     [InlineData(StrategicGoalKind.Optimization)]
     public void EveryUndispatchedGoalKind_IsNotDispatchable_ByName_NeverSubstituted(StrategicGoalKind kind)
     {
@@ -352,6 +355,51 @@ public sealed class AutoplayCommandTests
         Assert.Equal(AutoplayCommand.AutoplayDispatch.NotDispatchable, result.Dispatch);
         Assert.Equal(kind, result.Plan.SelectedKind);
         Assert.Empty(input.Presses);
+    }
+
+    // ------------------------------------------------------------ Farming branch
+
+    private static Mob AttackableMob(string id, float x, float y) => new(
+        new EntityId(id),
+        WorldFact<WorldPosition>.Live(new WorldPosition(x, y), confidence: 1d, Now),
+        WorldFact<string>.Live("test-mob", confidence: 1d, Now),
+        WorldFact<bool>.Live(true, confidence: 1d, Now),
+        WorldFact<bool>.Live(true, confidence: 1d, Now),
+        CombatantStatus.Empty);
+
+    [Fact]
+    public void AFarmingPlan_WithNoObservedMobs_IsFarmingSkippedNoTarget_AndNeverTouchesInput()
+    {
+        StrategicPlan plan = new(
+            StrategicGoalKind.Farming,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.FarmingSkippedNoTarget, result.Dispatch);
+        Assert.Null(result.RecoverEvidence);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void AFarmingPlan_WithAnAttackableMobInRange_DispatchesToEngageCommand_UnderAutoplayAuthority()
+    {
+        // Player is at (0,0) (RunCycle's default); this mob sits well inside
+        // TargetSelectionPolicy.Default's 12-tile range and is alive/hostile,
+        // so TargetSelector.TrySelect must find it and Engage must fire.
+        StrategicPlan plan = new(
+            StrategicGoalKind.Farming,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+        EquatableArray<Mob> mobs = new(System.Collections.Immutable.ImmutableArray.Create(AttackableMob("777", x: 1f, y: 1f)));
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input, mobs: mobs);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Engaged, result.Dispatch);
+        Assert.NotNull(result.RecoverEvidence);
     }
 
     // ------------------------------------------------------- Run(...) argument guards

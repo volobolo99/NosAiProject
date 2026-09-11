@@ -1,0 +1,44 @@
+{
+  "contract_id": "C-306",
+  "file": "src/NosAi.Runtime/Tactical/AutoplayCommand.cs",
+  "purpose": "Collegare StrategicGoalKind.Farming (gia' calcolato da StrategyPlanner.AssessFarmingUrgency e gia' incluso nella lista signals di ExecuteOneCycle) al dispatch reale, oggi mancante: il case cade nel default e torna AutoplayDispatch.NotDispatchable. Sceglie un bersaglio con TargetSelector.TrySelect ed esegue un attacco base via EngageCommand.ExecuteOneRound.",
+  "preconditions": [
+    "ExecuteOneCycle ha gia' in scope EquatableArray<Mob> mobs e WorldPosition playerPosition come parametri del metodo.",
+    "StrategyPlanner.AssessFarmingUrgency e' gia' chiamato e il segnale 'farming' e' gia' aggiunto ai signals prima di SelectStrategicPlan: nessuna modifica li'.",
+    "TargetSelector.TrySelect, EngageCommand.ExecuteOneRound, CombatActionCandidate, StrategicGoalKind, StrategyPlanner, AutoplayCycleResult sono firme esistenti e NON alterabili."
+  ],
+  "changes": {
+    "enum_AutoplayDispatch_add_values": [
+      "Engaged = 6  // Dispatched to EngageCommand.ExecuteOneRound.",
+      "FarmingSkippedNoTarget = 7  // Farming was selected, but TargetSelector found no attackable target in range."
+    ],
+    "switch_case_add_in_ExecuteOneCycle": "case StrategicGoalKind.Farming: return DispatchFarming(mobs, playerPosition, keybinds, input, readVitals, verificationDelay, in authority, nowUtc, footprint, plan);",
+    "new_private_method_signature": "private static AutoplayCycleResult DispatchFarming(EquatableArray<Mob> mobs, WorldPosition playerPosition, KeybindMap keybinds, IInputBackend input, Func<PlayerVitalsReading?> readVitals, Action verificationDelay, in ActuationAuthority authority, DateTime nowUtc, ExplorationFootprint footprint, StrategicPlan plan)",
+    "new_private_method_body_contract": [
+      "1. Costruire IReadOnlyList<NosAi.Runtime.Autonomy.SelectableEntity> observed a partire da 'mobs': includere solo i Mob il cui Position e IsAlive sono noti (WorldFact con valore osservato) e IsAlive.Value == true; SelectableEntity.At si costruisce da WorldPosition (X,Y).",
+      "2. Costruire NosAi.Runtime.Autonomy.ClassifiedValue<MapPoint> per playerPosition come Live (il parametro arriva gia' come WorldPosition semplice, non come WorldFact: e' gia' noto quando ExecuteOneCycle viene chiamato).",
+      "3. Chiamare NosAi.Runtime.Autonomy.TargetSelector.TrySelect(observed, playerPositionClassified, nowUtc, policy: nuova TargetSelectionPolicy con i valori di default della struct, out TargetChoice? choice, out string failureReason). Nessun filtro isAttackable custom in questa fase (usare il default del parametro).",
+      "4. Se TrySelect ritorna false: return new AutoplayCycleResult(AutoplayDispatch.FarmingSkippedNoTarget, plan, null, null, footprint) -- footprint invariato, nessuna nuova evidence.",
+      "5. Se true: costruire un CombatActionCandidate(CombatActionKind.BasicAttack, target: <id del bersaglio scelto da choice, nel tipo EntityId che CombatActionCandidate.Target richiede -- verificare la forma esatta di TargetChoice per estrarre l'id, senza inventare un campo che non esiste>).",
+      "6. Chiamare CombatExecutionEvidence evidence = EngageCommand.ExecuteOneRound(candidate, keybinds, input, readVitals, verificationDelay, in authority, nowUtc).",
+      "7. return new AutoplayCycleResult(AutoplayDispatch.Engaged, plan, null, evidence, footprint) -- il quarto argomento posizionale e' lo stesso campo CombatExecutionEvidence? gia' usato da DispatchRecovery (RecoverEvidence): riusarlo, non aggiungere un campo nuovo al record."
+    ]
+  },
+  "constraints": [
+    "Vietato alterare le firme pubbliche esistenti di StrategyPlanner, TargetSelector, EngageCommand, CombatActionCandidate, StrategicGoalKind, AutoplayCycleResult, AutoplayCommand.ExecuteOneCycle.",
+    "Vietato usare CombatActionKind.UseSkill in questo contratto: i costi/range delle skill restano UNKNOWN nel decoder (fuori ambito, task separato).",
+    "Vietato introdurre nuove dipendenze NuGet o namespace esterni al progetto.",
+    "TargetSelector va referenziato con il nome pieno o un alias dedicato: NON aggiungere 'using NosAi.Runtime.Autonomy;' senza qualificare, perche' quel namespace dichiara anche un tipo Goal che collide con NosAi.Core.WorldModel.Goal gia' usato nel file (vedi l'alias CatalogueClassifier gia' presente in cima al file per lo stesso motivo).",
+    "Nessun placeholder, nessun TODO, nessun corpo vuoto: la funzione deve essere completa e compilabile.",
+    "Zero allocazioni superflue sul percorso: riusare i tipi esistenti, niente LINQ pesante se un ciclo semplice basta (coerente con lo stile del file)."
+  ],
+  "tests_required": [
+    "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs: nuovo test che verifica che, con mobs vuoto o nessun mob attaccabile nel raggio, ExecuteOneCycle con un plan che seleziona Farming restituisca AutoplayDispatch.FarmingSkippedNoTarget e non chiami EngageCommand.",
+    "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs: nuovo test che verifica che, con un Mob vivo e posizionato entro il raggio di default di TargetSelectionPolicy, ExecuteOneCycle con un plan che seleziona Farming restituisca AutoplayDispatch.Engaged con RecoverEvidence non nullo."
+  ],
+  "postconditions": [
+    "dotnet build sulla solution e' verde.",
+    "dotnet test su NosAi.Runtime.Tests e' verde, incluso i due nuovi test.",
+    "Nessuna firma pubblica esistente e' cambiata (verificabile con preflight_contract_check)."
+  ]
+}

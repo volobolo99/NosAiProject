@@ -121,7 +121,13 @@ public static class AutoplayCommand
         NotDispatchable = 4,
 
         /// <summary>Recovery was selected, but no recovery slot was configured.</summary>
-        RecoverySkippedNoSlot = 5
+        RecoverySkippedNoSlot = 5,
+
+        /// <summary>Dispatched to <see cref="EngageCommand.ExecuteOneRound"/>.</summary>
+        Engaged = 6,
+
+        /// <summary>Farming was selected, but <see cref="NosAi.Runtime.Autonomy.TargetSelector"/> found no attackable target in range.</summary>
+        FarmingSkippedNoTarget = 7
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -246,6 +252,11 @@ public static class AutoplayCommand
                     recoverSlot, keybinds, input, readVitals, verificationDelay,
                     in authority, nowUtc, footprint, plan, AutoplayDispatch.RecoverySkippedNoSlot);
 
+            case StrategicGoalKind.Farming:
+                return DispatchFarming(
+                    mobs, playerPosition, keybinds, input, readVitals, verificationDelay,
+                    in authority, nowUtc, footprint, plan);
+
             default:
                 // QuestUrgency/Progression/Farming/Optimization: named, never
                 // silently ignored, never substituted.
@@ -295,6 +306,51 @@ public static class AutoplayCommand
             in authority,
             nowUtc);
         return new AutoplayCycleResult(AutoplayDispatch.Recovered, plan, null, evidence, footprint);
+    }
+
+    /// <summary>
+    /// Sceglie un bersaglio con <see cref="NosAi.Runtime.Autonomy.TargetSelector.TrySelect"/> fra i
+    /// mobs osservati ed esegue un attacco base via <see cref="EngageCommand.ExecuteOneRound"/>;
+    /// <see cref="AutoplayDispatch.FarmingSkippedNoTarget"/> se nessun bersaglio valido.
+    /// </summary>
+    private static AutoplayCycleResult DispatchFarming(
+        EquatableArray<Mob> mobs,
+        WorldPosition playerPosition,
+        KeybindMap keybinds,
+        IInputBackend input,
+        Func<PlayerVitalsReading?> readVitals,
+        Action verificationDelay,
+        in ActuationAuthority authority,
+        DateTime nowUtc,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        var observed = new List<NosAi.Runtime.Autonomy.SelectableEntity>();
+        foreach (var mob in mobs)
+        {
+            if (mob.Position.HasValue && mob.IsAlive.HasValue && mob.IsAlive.Value)
+            {
+                observed.Add(new NosAi.Runtime.Autonomy.SelectableEntity(
+                    EntityId: long.Parse(mob.Id.Value, System.Globalization.CultureInfo.InvariantCulture),
+                    At: new MapPoint((int)mob.Position.Value.X, (int)mob.Position.Value.Y),
+                    HpRatio: null,
+                    ObservedAtUtc: nowUtc));
+            }
+        }
+
+        var playerPositionClassified = NosAi.Runtime.Contracts.ClassifiedValue<MapPoint>.Live(new MapPoint((int)playerPosition.X, (int)playerPosition.Y));
+        if (!NosAi.Runtime.Autonomy.TargetSelector.TrySelect(observed, playerPositionClassified, nowUtc, NosAi.Runtime.Autonomy.TargetSelectionPolicy.Default, out var choice, out _, isAttackable: null))
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.FarmingSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        var candidate = new CombatActionCandidate(
+            CombatActionKind.BasicAttack,
+            target: new EntityId(choice!.Entity.EntityId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+        CombatExecutionEvidence evidence = EngageCommand.ExecuteOneRound(candidate, keybinds, input, readVitals, verificationDelay, in authority, nowUtc);
+
+        return new AutoplayCycleResult(AutoplayDispatch.Engaged, plan, null, evidence, footprint);
     }
 
     /// <summary>
