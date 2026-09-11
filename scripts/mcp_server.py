@@ -86,17 +86,83 @@ def _costo_reale_usd(model_id: str) -> float:
 # STRUMENTI PER LA CATENA DI MONTAGGIO A ZERO DIFETTI
 # =====================================================================
 
+_ESTENSIONI_LINGUAGGIO = {".cs": "csharp", ".cpp": "cpp", ".hpp": "cpp", ".h": "cpp", ".py": "python"}
+
+_ISTRUZIONI_LINGUAGGIO = {
+    "csharp": (
+        "Il file bersaglio e' C# (.cs). Genera SOLO lo scheletro strutturale: namespace, "
+        "classi/interfacce, firme dei metodi e proprieta' con i tipi esatti del contratto, "
+        "corpi che sollevano 'throw new NotImplementedException();'. Nessuna logica interna."
+    ),
+    "cpp": (
+        "Il file bersaglio e' C++ (.hpp/.h). Genera SOLO l'header strutturale: include guard, "
+        "dichiarazioni di classi/struct e firme di funzione con i tipi esatti del contratto. "
+        "Nessuna implementazione."
+    ),
+    "python": (
+        "Il file bersaglio e' Python (.py). Genera SOLO lo scheletro strutturale: classi/funzioni "
+        "con type annotations e corpi che sollevano 'raise NotImplementedError'. Nessuna logica interna."
+    ),
+}
+
+_ISTRUZIONI_LINGUAGGIO_IGNOTO = (
+    "Non e' stato possibile determinare il linguaggio del file bersaglio dalle chiavi note "
+    "del contratto. Individualo dall'estensione dichiarata (.cs = C#, .cpp/.hpp/.h = C++, "
+    ".py = Python) e genera SOLO lo scheletro strutturale in quel linguaggio, con firme esatte "
+    "e corpi non implementati (throw new NotImplementedException(); in C#, raise "
+    "NotImplementedError in Python, nessun corpo in un header C++). Se il linguaggio non e' "
+    "davvero determinabile, fermati e dichiaralo invece di indovinare."
+)
+
+
+def _rileva_linguaggio_bersaglio(specifications_json: str) -> str | None:
+    """Determina il linguaggio del file bersaglio dal contratto di Fase 1. Cerca prima le
+    chiavi note ('file', 'target_file', 'file_bersaglio') in un JSON valido, poi un percorso
+    con estensione riconosciuta nel testo grezzo. Restituisce 'csharp', 'cpp', 'python' o
+    None se non determinabile: un contratto senza estensione riconoscibile non deve produrre
+    silenziosamente uno scheletro nel linguaggio sbagliato."""
+    percorso = None
+    try:
+        dati = json.loads(specifications_json)
+    except (json.JSONDecodeError, TypeError):
+        dati = None
+    if isinstance(dati, dict):
+        for chiave in ("file", "target_file", "file_bersaglio"):
+            valore = dati.get(chiave)
+            if isinstance(valore, str) and valore:
+                percorso = valore
+                break
+
+    if percorso is None:
+        match = re.search(r'["\']([\w./\\-]+\.(?:cs|cpp|hpp|h|py))["\']', specifications_json)
+        if match:
+            percorso = match.group(1)
+
+    if percorso is None:
+        return None
+    return _ESTENSIONI_LINGUAGGIO.get(Path(percorso).suffix.lower())
+
+
+def _prompt_scheletro(specifications_json: str) -> str:
+    """Costruisce il system prompt per local_generate_skeleton, specifico per il linguaggio
+    rilevato nel contratto. Funzione pura, separata dalla chiamata di rete, cosi' la
+    rilevazione del linguaggio resta testabile senza Ollama."""
+    linguaggio = _rileva_linguaggio_bersaglio(specifications_json)
+    istruzioni = _ISTRUZIONI_LINGUAGGIO.get(linguaggio, _ISTRUZIONI_LINGUAGGIO_IGNOTO)
+    return (
+        "Sei uno Skeleton Architect. " + istruzioni + " Mantieni rigore assoluto su firme, "
+        "tipi e allineamenti; nessuna API inventata, nessun segnaposto vago."
+    )
+
+
 @mcp.tool()
 def local_generate_skeleton(specifications_json: str) -> str:
     """
-    PASSO 1 (GRATIS - OLLAMA 7B): Genera lo scheletro formale (file .hpp o classi Python con firme).
+    PASSO 1 (GRATIS - OLLAMA 7B): Genera lo scheletro formale (C#, C++ o Python, in base al
+    file bersaglio dichiarato nel contratto) con le firme.
     Crea i punti di riferimento per i modelli programmatori senza sprecare token cloud.
     """
-    sys_prompt = (
-        "Sei uno Skeleton Architect. Genera SOLO lo scheletro strutturale del codice "
-        "(header C++ o file Python con type annotations e 'raise NotImplementedError'). "
-        "Non implementare gli algoritmi interni. Mantieni rigore assoluto su firme e allineamenti."
-    )
+    sys_prompt = _prompt_scheletro(specifications_json)
     payload = {
         "model": ROSTER["local_scaffold"],
         "prompt": f"{sys_prompt}\n\nSpecifiche tecniche (JSON):\n{specifications_json}",
@@ -193,6 +259,7 @@ def local_update_documentation(doc_payload_json: str) -> str:
     })
     return risposta
 
+@mcp.tool()
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
     Aggiorna lo stato di un contratto in contracts/ledger.json, ricalcola la
