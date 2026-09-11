@@ -119,6 +119,10 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-11
   - metrics: 15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli
   - note: Sostituisce regenerate_roadmap() che passava l'intero ledger dentro un prompt libero a un 7B locale: quel modello riportava domande gia' chiuse come ancora aperte e mischiava note del ledger (phase_mapping_note, signature_resolution_note) in righe di contratti a cui non appartenevano. Un rendering deterministico non puo' commettere quell'errore: ogni riga del Markdown e' copiata cosi' com'e' da un campo del ledger.
+| ORCH-005 | Rendering deterministico di CONTRACT_MAP.md (niente modello, niente parafrasi) | TEST_VERIFIED |
+  - updated: 2026-09-11
+  - metrics: render_contract_map_markdown implementata e collegata a update_contract_state (2 run Qwen3 Coder 30B, preflight APPROVED entrambe, costo totale $0.0046). 26 test verdi in tests/test_contract_ledger.py; suite Python completa 563 test invariata.
+  - note: docs/CONTRACT_MAP.md dichiara 'Fonte: contracts/ledger.json' ma e' mantenuto a mano da b3e614a ed e' rimasto disallineato per settimane (C-003/004/005/105/204/304/402/404 mostravano ancora DRAFT mentre il ledger li aveva gia' chiusi DROPPED/TEST_VERIFIED/VERIFIED). Stesso rimedio di ORCH-004 per MASTER_ROADMAP.md: ogni cella della tabella e' copiata cosi' com'e' da un campo del ledger, senza passare da un modello.
 
 ## Domande aperte
 

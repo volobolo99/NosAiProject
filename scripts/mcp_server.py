@@ -334,6 +334,56 @@ def render_roadmap_markdown(ledger: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_contract_map_markdown(ledger: dict) -> str:
+    """
+    Deterministic Markdown rendering of docs/CONTRACT_MAP.md from the contract ledger.
+    Pure function, no model call, no network, no filesystem access inside it.
+    """
+    def escape_pipe(text: str) -> str:
+        """Sostituisce ogni carattere pipe letterale '|' con la sequenza backslash-pipe '\\|'."""
+        if text is None:
+            return ""
+        return text.replace('|', '\\|')
+
+    lines: list[str] = []
+    lines.append('# NosAiProject — Mappa dei contratti')
+    lines.append('')
+    lines.append('Fonte: contracts/ledger.json. I gruppi legacy non sono numeri AP della roadmap.')
+    lines.append('Stati conservati dal ledger: non sono stati rivalidati eseguendo il runtime.')
+    lines.append('Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_TASKS.md).')
+    lines.append('')
+    lines.append('| CID | Fase prodotto | Contratto | Stato ledger | Firma | File | Test |')
+    lines.append('|---|---|---|---|---|---|---|')
+
+    for gate in ledger.get('gates', []):
+        for contract in gate.get('contracts', []):
+            product_phases = contract.get('product_phases') or []
+            if product_phases:
+                fase = ', '.join(product_phases)
+            else:
+                fase = 'Tooling trasversale'
+
+            cid = escape_pipe(contract.get('cid', ''))
+            title = escape_pipe(contract.get('title', ''))
+            status = escape_pipe(contract.get('status', ''))
+            signature = escape_pipe(contract.get('signature', ''))
+            target_file = escape_pipe(contract.get('target_file', ''))
+            test_file = escape_pipe(contract.get('test_file', ''))
+
+            lines.append(f'| {cid} | {fase} | {title} | {status} | {signature} | {target_file} | {test_file} |')
+
+    lines.append('')
+    lines.append('Contratti standalone MCP: [mcp-hub-001](../contracts/mcp-hub-001.json), [mcp-research-lab-001](../contracts/mcp-research-lab-001.json).')
+    lines.append("Non sono inclusi nei conteggi dei gruppi legacy. Il contratto Lab è DRAFT e i pacchetti PLANNED.")
+
+    signature_resolution_note = ledger.get('signature_resolution_note')
+    if signature_resolution_note:
+        lines.append('')
+        lines.append(signature_resolution_note)
+
+    return '\n'.join(lines) + '\n'
+
+
 @mcp.tool()
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
@@ -403,6 +453,13 @@ def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -
         try:
             content = render_roadmap_markdown(ledger)
             with open(PROJECT_ROOT / "docs" / "MASTER_ROADMAP.md", "w", encoding="utf-8") as f:
+                f.write(content)
+        except Exception:
+            pass
+
+        try:
+            content = render_contract_map_markdown(ledger)
+            with open(PROJECT_ROOT / "docs" / "CONTRACT_MAP.md", "w", encoding="utf-8") as f:
                 f.write(content)
         except Exception:
             pass
