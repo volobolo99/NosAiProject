@@ -119,6 +119,10 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-11
   - metrics: 15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli
   - note: Sostituisce regenerate_roadmap() che passava l'intero ledger dentro un prompt libero a un 7B locale: quel modello riportava domande gia' chiuse come ancora aperte e mischiava note del ledger (phase_mapping_note, signature_resolution_note) in righe di contratti a cui non appartenevano. Un rendering deterministico non puo' commettere quell'errore: ogni riga del Markdown e' copiata cosi' com'e' da un campo del ledger.
+| C-309 | Isolamento dei 5 tool MCP per ruolo: chiude il bypass di doc_agent.py e il portatore di ruolo mancante per preflight/diagnostics | TEST_VERIFIED |
+  - updated: 2026-09-12
+  - metrics: Suite Python completa verde dopo l'implementazione: tests/test_doc_agent_authorization.py nuovo (9 test), tests/test_doc_agent_local_result.py con fixture corretto. preflight_contract_check APPROVED. Generato a costo zero dal locale via scripts/code_agent.py (tier local, solo_funzioni).
+  - note: bdb6f5f aveva isolato per ruolo i 5 tool di scripts/mcp_server.py, ma lasciava due vie aperte: scripts/doc_agent.py produceva gli stessi risultati senza mai chiamare require_capability, e preflight_contract_check/deep_reasoner_solve_crash non comparivano nel tools: di nessun sub-agente configurato, quindi restavano raggiungibili solo dalla sessione root il cui employee_id proprio (employee.orchestrator_cto) non possiede ne' 'contracts' ne' 'diagnostics'.
 
 ## Domande aperte
 
