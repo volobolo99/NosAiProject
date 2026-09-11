@@ -52,3 +52,34 @@ def test_verify_rejects_resolved_placeholder_and_missing_link(tmp_path):
     assert any("does not exist" in item for item in report["errors"])
     assert any("missing from docs" in item for item in report["errors"])
 
+
+def _messaggio_valido(task_id: str) -> dict:
+    return {
+        "task_id": task_id, "objective": "o", "input": "i", "expected_output": "e",
+        "files": [], "dependencies": [], "risks": [], "required_tests": [],
+        "status": "pending", "model": "claude", "summary": "s", "confidence": 0.5,
+    }
+
+
+def test_verify_accepts_conformant_ai_task_packets(tmp_path):
+    _write_fixture(tmp_path)
+    (tmp_path / "docs" / "mcp").mkdir()
+    (tmp_path / "docs" / "mcp" / "AI_TASK_PACKETS.json").write_text(
+        json.dumps([_messaggio_valido("T-1")]), encoding="utf-8"
+    )
+    report = verify(tmp_path)
+    assert report["ok"] is True
+
+
+def test_verify_rejects_malformed_ai_task_packet(tmp_path):
+    _write_fixture(tmp_path)
+    (tmp_path / "docs" / "mcp").mkdir()
+    pacchetto = _messaggio_valido("T-2")
+    pacchetto["status"] = "quasi_finito"
+    (tmp_path / "docs" / "mcp" / "AI_TASK_PACKETS.json").write_text(
+        json.dumps([pacchetto]), encoding="utf-8"
+    )
+    report = verify(tmp_path)
+    assert report["ok"] is False
+    assert any("T-2" in item and "stato non ammesso" in item for item in report["errors"])
+

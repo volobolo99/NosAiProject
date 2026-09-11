@@ -25,6 +25,10 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from nosai.orchestration.local_result import validate_local_result
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 LOCAL_MODEL = os.getenv("NOSAI_LOCAL_MODEL", "qwen2.5-coder:7b")
 LEDGER = ROOT / "data" / "ai_task_ledger.jsonl"
@@ -292,13 +296,17 @@ def run(task: dict, dry_run: bool) -> dict:
         "checks": checks,
         "confidence": round(max(0.0, 1.0 - 0.25 * (attempts - 1) - 0.5 * bool(errors)), 2),
     }
+    schema_defects = validate_local_result(result)
+    if schema_defects:
+        result["status"] = "blocked"
+        result["missing_items"] = result["missing_items"] + schema_defects
     record(
         {
             "task_id": task.get("task_id", task["file"]),
             "model": LOCAL_MODEL,
             "calls": attempts,
             "estimated_cost_usd": 0.0,
-            "status": status,
+            "status": result["status"],
             "file": task["file"],
             "words": len(content.split()),
         }

@@ -16,6 +16,10 @@ Ogni nuovo tool deve dichiarare: input JSON versionato, output JSON versionato, 
 
 I 5 tool di `scripts/mcp_server.py` (`local_generate_skeleton`, `cloud_infill_implementation`, `preflight_contract_check`, `deep_reasoner_solve_crash`, `local_update_documentation`) richiedono ora un parametro obbligatorio `employee_id: str`. Ogni tool chiama `_autorizza(tool_name, employee_id)` come prima istruzione: consulta `TOOL_REQUIRED_CAPABILITY` (mappa tool → capability richiesta) e poi `nosai.mcp.enforcement.require_capability()`. Un `tool_name` non presente nella mappa solleva `KeyError`; un `employee_id` senza la capability richiesta solleva `PermissionError`. Mappa: `local_generate_skeleton` → `scaffold` (Documentation Agent, Coding Agent), `cloud_infill_implementation` → `coding` (Coding Agent), `preflight_contract_check` → `contracts` (Reviewer Agent, Product & Architecture Lead), `deep_reasoner_solve_crash` → `diagnostics` (Testing Agent), `local_update_documentation` → `documentation` (Documentation Agent). Test: `tests/test_mcp_server_skeleton.py`.
 
+## Validazione reale dei contratti di output
+
+`nosai/orchestration/local_result.py::validate_local_result(payload) -> list[str]` valida `schemas/local_result.schema.json`, stesso stile di `messages.py::validate_message`, senza dipendenza da `jsonschema` a runtime. `scripts/doc_agent.py::run()` la chiama prima di restituire il risultato: se ci sono difetti, degrada `status` a `blocked` e li accoda a `missing_items`, invece di dichiarare `completed` un risultato che non lo è davvero. `agent_message.schema.json` aveva già un validatore testato (`validate_message`) ma nessun punto vivo lo chiamava: `scripts/verify_mcp_contracts.py` ora valida ogni messaggio in `docs/mcp/AI_TASK_PACKETS.json` con `validate_message()`, l'unico punto dove `AgentMessage` tocca dati reali su disco. Test: `tests/test_local_result.py`, `tests/test_doc_agent_local_result.py`, `tests/test_contract_verifier.py`.
+
 ## Promozione
 
 `DRAFT → TESTED → AUDITED → SHADOW → PROMOTED`.
