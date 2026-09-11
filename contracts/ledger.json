@@ -599,7 +599,7 @@
           },
           "product_phases": [],
           "legacy_gate": 9,
-          "metrics": "pytest tests/test_function_index.py -q verde; suite Python completa invariata; collaudo end-to-end --write-tree su fixture C#/Python verificato manualmente"
+          "metrics": "CI reale verificata su GitHub Actions: primo run (34626562602) fallito per un bug reale nel drift-check (confrontava source_revision byte-per-byte, impossibile da matchare per un commit che si autoreferenzia); corretto e rirun (34626851749) verde in 15s. pytest tests/test_function_index.py -q verde; suite Python completa invariata."
         },
         {
           "cid": "ORCH-003",
