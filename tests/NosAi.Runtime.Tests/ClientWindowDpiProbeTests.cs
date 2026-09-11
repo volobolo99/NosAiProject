@@ -144,7 +144,7 @@ public sealed class ClientWindowDpiProbeTests
     /// and leaves with a non-zero code when it is not — even when no client window
     /// is there to compare a shape against.
     /// </summary>
-    [WindowsOnlyFact]
+    [InteractiveDesktopOnlyFact]
     public void ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable()
     {
         string directory = Path.Combine(Path.GetTempPath(), "nosai-window-probe-" + Guid.NewGuid().ToString("N"));
@@ -188,7 +188,7 @@ public sealed class ClientWindowDpiProbeTests
     /// distinct. PowerShell starts a new process with its own activation
     /// context, which is how the operator launches it too.
     /// </remarks>
-    [WindowsOnlyFact]
+    [InteractiveDesktopOnlyFact]
     public void TheApphostAndDotnetExecReportDifferentRegimes()
     {
         string assembly = typeof(ClientWindowDpiProbe).Assembly.Location;

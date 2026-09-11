@@ -1,0 +1,34 @@
+{
+  "contract_id": "interactive-desktop-only-fact-008",
+  "file": "tests/NosAi.Runtime.Tests/InteractiveDesktopOnlyFactAttribute.cs",
+  "scopo": "Dare un FactAttribute che skippa onestamente i test di regime DPI per-monitor quando l'ambiente non puo' esibire quel comportamento: non Windows, oppure un runner CI headless senza sessione desktop reale.",
+  "difetto_misurato_il_2026_09_11": "Il workflow GitHub Actions 'NosAi .NET (Windows)' (windows-latest, GitHub-hosted) fallisce in modo consistente (14+ run consecutivi dal 2026-09-10 19:57 al 2026-09-11 09:57) su due test di tests/NosAi.Runtime.Tests/ClientWindowDpiProbeTests.cs: ProbePrintsThatACalibrationFromAnotherRegimeIsNotUsable (attende 'NOT USABLE', ottiene 'Process DPI awareness: Unaware (unaware)') e TheApphostAndDotnetExecReportDifferentRegimes (attende 'permonitorv2', ottiene 'unaware'). Il commento XML del secondo test (righe 176-190) dice che il comportamento atteso e' stato misurato sulla macchina reale dell'operatore; sul runner CI Windows-hosted entrambe le vie di lancio (apphost e dotnet exec) riportano 'unaware', segno che quel runner non riproduce la virtualizzazione DPI per-monitor di una sessione desktop interattiva reale. WindowsOnlyFactAttribute esistente (tests/NosAi.Runtime.Tests/WindowsOnlyFactAttribute.cs) skippa solo quando !OperatingSystem.IsWindows(), quindi su un runner Windows reale questi due test girano e falliscono davvero: non e' quell'attributo a coprire questo caso.",
+  "precedente_nello_stesso_repository": "Commit 9211f77 'fix: honestly skip the remaining Windows-only Runtime.Tests failures' (2026-09-05) stabilisce la filosofia da seguire alla lettera: 'This skips, it does not weaken. [...] only the platform where the API does not exist is excused, and the skip reason says why.'",
+  "firma_e_struttura_richieste": {
+    "namespace": "NosAi.Runtime.Tests",
+    "using_richiesti": ["Xunit"],
+    "classe": "public sealed class InteractiveDesktopOnlyFactAttribute : FactAttribute",
+    "costruttore": "InteractiveDesktopOnlyFactAttribute() senza parametri",
+    "logica_del_costruttore": [
+      "Se !OperatingSystem.IsWindows(): imposta Skip con un messaggio che dice esplicitamente che il test esercita un regime DPI Windows-only.",
+      "Altrimenti, se Environment.GetEnvironmentVariable(\"GITHUB_ACTIONS\") == \"true\": imposta Skip con un messaggio che dice esplicitamente che il runner CI e' headless e non ha una sessione desktop interattiva con virtualizzazione DPI per-monitor reale.",
+      "Nei due casi il messaggio di Skip deve essere diverso e deve nominare la causa reale, non un messaggio generico condiviso.",
+      "In ogni altro caso (Windows reale, non CI) Skip resta null e il test gira normalmente."
+    ],
+    "commenti_xml_richiesti": "Un <summary> e un <remarks> nello stesso stile di WindowsOnlyFactAttribute.cs, che spieghino perche' esistono due condizioni distinte e citino il fatto misurato (runner CI Windows-hosted che riporta 'unaware' per entrambe le vie di lancio, mentre la macchina reale dell'operatore distingue permonitorv2/permonitor)."
+  },
+  "vincoli_di_governo": [
+    "Nessun altro file viene creato o modificato da questo contratto: solo tests/NosAi.Runtime.Tests/InteractiveDesktopOnlyFactAttribute.cs.",
+    "Non introdurre dipendenze esterne a Xunit e al BCL (System, System.Runtime).",
+    "Non modificare WindowsOnlyFactAttribute.cs.",
+    "Nessun placeholder, nessun TODO, nessun corpo vuoto: l'attributo deve essere completo e funzionante."
+  ],
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file e' nuovo: non esiste uno scheletro precedente da conservare oltre a quello che local_generate_skeleton produce da questo contratto. La firma della classe e del costruttore indicati sopra non e' negoziabile."
+  },
+  "postcondizioni_verificabili": [
+    "dotnet build su tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj compila senza errori.",
+    "Su questa macchina (Windows, nessuna variabile GITHUB_ACTIONS impostata) l'attributo non skippa nulla.",
+    "Con GITHUB_ACTIONS=true impostata nell'ambiente, un test decorato con [InteractiveDesktopOnlyFact] risulta Skipped con un messaggio che menziona l'assenza di sessione desktop reale."
+  ]
+}
