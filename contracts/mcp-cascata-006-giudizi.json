@@ -1,0 +1,60 @@
+{
+  "contract_id": "mcp-cascata-006-giudizi",
+  "parte_di": "mcp-cascata-006",
+  "file": "scripts/mcp_server.py",
+  "scopo": "La meta' di giudizio della cascata gratuita: quali gratuiti esistono e come si decide se un loro risultato e' accettabile. Nessuna rete.",
+  "difetto_misurato_il_2026_09_11": "tests/test_mcp_cascata.py esiste con 24 casi ma scripts/mcp_server.py non espone POLITICHE, PAUSA, chiama_groq, chiama_openrouter, chiama_gruppo, controlla_quota, giudizio_infill, giudizio_preflight ne' modelli_gratuiti. I test sono stati scritti prima dell'implementazione e mai chiusi.",
+  "vincoli_di_governo": [
+    "La qualita' non cala: un testo prodotto da un gratuito entra in produzione solo se supera lo stesso giudizio che si applicherebbe al pagato.",
+    "Il servizio non si interrompe: qualunque cosa combinino i gratuiti, il tool risponde.",
+    "Il tempo si spende solo dove rende: chi e' piu' rapido si prova per primo, e il budget chiude la cascata quando non conviene piu'.",
+    "DeepSeek non passa da OpenRouter: il divieto esistente in call_openrouter resta e non va allentato.",
+    "Nessuna funzione esistente viene rimossa o rinominata."
+  ],
+  "funzioni": {
+    "modelli_gratuiti": {
+      "firma": "def modelli_gratuiti() -> List[str]",
+      "comportamento": "Legge scripts/free_roster.json e restituisce gli identificativi validati, ordinati per latenza misurata crescente. I modelli Groq, riconoscibili dal prefisso groq:, sono i piu' rapidi misurati, sotto il secondo, e devono precedere TUTTI gli altri: nessun modello senza prefisso groq: puo' comparire prima di uno che lo ha. Nessun valore di ROSTER, che sono i modelli a pagamento, puo' comparire nella lista. Se il roster manca o non contiene validati, restituisce una lista vuota senza sollevare.",
+      "forma_del_roster_VINCOLANTE": {
+        "file": "scripts/free_roster.json",
+        "validati": "LISTA di oggetti, non un dizionario. Ogni oggetto ha le chiavi id, fornitore e sec_medi. L'identificativo sta in id e porta gia' il prefisso del fornitore quando serve, per esempio groq:openai/gpt-oss-120b oppure nex-agi/nex-n2.5-mini:free.",
+        "scartati": "DIZIONARIO da identificativo a motivo: non va incluso fra i gratuiti.",
+        "ordinamento": "per sec_medi crescente. Poiche' tutti i Groq misurati stanno sotto i 4 secondi e gli altri sopra gli 8, l'ordinamento per latenza soddisfa da solo il vincolo che i groq: precedano tutti gli altri. Verificarlo comunque: nessun identificativo senza prefisso groq: puo' comparire prima di uno che lo ha.",
+        "esclusione": "nessun valore di ROSTER, che sono i modelli a pagamento, entra nella lista."
+      }
+    },
+    "giudizio_infill": {
+      "firma": "def giudizio_infill(scheletro_e_contratto: str) -> Callable[[str], List[str]]",
+      "e_una_FABBRICA_non_un_giudizio": "ATTENZIONE: non restituisce una lista. Restituisce una FUNZIONE che prende il codice candidato e restituisce la lista dei suoi difetti. I test la usano cosi': giudizio = giudizio_infill(SCHELETRO); poi assert giudizio(codice) == [].",
+      "comportamento": "Riceve in una sola stringa lo scheletro e il contratto, come li riceve il tool cloud_infill_implementation. Estrae dalla stringa le firme delle funzioni, se ci sono. Restituisce un giudice che, dato il codice candidato, applica in questo ordine: 1) sintassi non valida, e allora si ferma; 2) firme alterate o allargate rispetto a quelle estratte dallo scheletro, compreso l'aggiunta di un parametro con valore predefinito, che e' un allargamento e va bocciata; 3) corpi che si limitano a sollevare NotImplementedError; 4) i segnaposto TODO, FIXME, XXX, con un messaggio che contenga la parola segnaposto oppure la parola trovata.",
+      "quando_le_firme_non_sono_estraibili": "Se la stringa in ingresso non e' Python, per esempio un JSON, l'estrazione delle firme restituisce un insieme vuoto e il confronto sulle firme si salta, MA i controlli 1, 3 e 4 restano attivi. Il test lo verifica: con un ingresso JSON, giudizio('def f():\n    return 1') deve dare lista vuota, e giudizio('def f():\n    raise NotImplementedError') deve dare almeno un difetto. Un giudizio che si arrende su un ingresso non Python valida il nulla."
+    },
+    "giudizio_preflight": {
+      "firma": "def giudizio_preflight(risposta: str) -> List[str]",
+      "comportamento": "Giudica la risposta di un pre-flight. Restituisce lista vuota quando la risposta e' un verdetto, e la lista dei difetti quando non lo e'. Un verdetto e' o l'approvazione, riconosciuta dalla parola APPROVED, o un elenco di difetti, riconoscibile da righe che iniziano con un trattino. Vanno bocciate: la risposta vuota o composta di soli spazi; la risposta che non approva e non elenca difetti, per esempio 'Non sono in grado di stabilirlo', perche' chi non decide non ha dato un verdetto."
+    }
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTE le funzioni dello scheletro piu' quelle nuove: il validatore rifiuta il file se una scompare. Le funzioni non elencate in implementare_o_creare vanno riportate carattere per carattere come stanno nello scheletro, compresi i decoratori @mcp.tool() dove presenti.",
+    "conservare_identiche": [
+      "call_openrouter",
+      "call_deepseek",
+      "local_generate_skeleton",
+      "cloud_infill_implementation",
+      "preflight_contract_check",
+      "deep_reasoner_solve_crash",
+      "local_update_documentation",
+      "update_contract_state"
+    ],
+    "implementare_o_creare": [
+      "modelli_gratuiti",
+      "giudizio_infill",
+      "giudizio_preflight"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_mcp_cascata.py",
+    "criterio": "I test esistono gia' e sono il criterio di accettazione: non vanno modificati."
+  },
+  "stato": "contratto_formulato"
+}

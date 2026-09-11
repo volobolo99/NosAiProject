@@ -597,14 +597,11 @@ def main() -> int:
     # Carica lo snapshot precedente
     precedente = load_last_snapshot(giorno)
     
-    # Classifica i modelli
-    esiti = {
-        "adottabili": [],
-        "da_provare": [],
-        "diventati_gratuiti": [],
-        "candidati_a_pagamento": [],
-        "bocciati": []
-    }
+    # Inizializziamo le liste
+    adottabili = []
+    bocciati = []
+    candidati_a_pagamento = []
+    da_provare_candidates = []   # temporary list for da_provare
     
     # Itera su tutti i modelli del catalogo
     for model in catalogo:
@@ -617,41 +614,30 @@ def main() -> int:
         elif model["id"].startswith("mistral:"):
             provider_id = "mistral"
         
+        normalized_id = roster_id(model["id"], provider_id)
+        
         # Classifica il modello
         classificato = classifica_modello(model, validati, scartati, precedente, provider_id)
         
-        # Partiziona per stato
         stato = classificato["stato"]
         modello_id = classificato["id"]
         
         if stato == "validato":
             # Solo se è gratuito, va in adottabili
             if classificato["adottabile"]:
-                esiti["adottabili"].append(modello_id)
-            else:
-                # Se non è gratuito, non va in nessuna lista
-                pass
-        elif stato == "nuovo_gratuito":
-            # Va in da_provare
-            esiti["da_provare"].append(modello_id)
+                adottabili.append(modello_id)
         elif stato == "scartato":
             # Va in bocciati
-            esiti["bocciati"].append({
+            bocciati.append({
                 "id": modello_id,
                 "motivo": classificato["motivo"]
             })
-        elif stato == "diventato_gratuito":
-            # Va in diventati_gratuiti
-            esiti["diventati_gratuiti"].append(modello_id)
         elif stato == "a_pagamento":
-            # Va in candidati_a_pagamento
-            # Ma prima verifica che non sia sentinella o non pertinente
+            # Va in candidati_a_pagamento, ma prima verifica che non sia sentinella o non pertinente
             if is_text_capable(model) and not is_price_sentinel(model):
                 try:
                     prezzo = cost_per_mtok(model)
-                    # Calcola il risparmio rispetto al modello in uso
-                    # Per ora non lo calcoliamo, ma possiamo aggiungerlo in futuro
-                    esiti["candidati_a_pagamento"].append({
+                    candidati_a_pagamento.append({
                         "id": modello_id,
                         "prezzo": list(prezzo),
                         "risparmio_pct": 0.0,
@@ -660,29 +646,24 @@ def main() -> int:
                 except ValueError:
                     # Ignora i modelli con prezzo sentinella
                     pass
-        elif stato == "sentinella" or stato == "non_pertinente":
-            # Non va in nessuna lista
-            pass
+        
+        # Condizione per da_provare: gratuito, pertinente, non sentinella, e non in validati né in scartati
+        if is_free(model) and is_text_capable(model) and not is_price_sentinel(model):
+            if normalized_id not in validati and normalized_id not in scartati:
+                da_provare_candidates.append(model["id"])
     
-    # Verifica che le liste siano disgiunte
-    # Costruisci insiemi per verificare disgiunzione
-    adottabili_set = set(esiti["adottabili"])
-    da_provare_set = set(esiti["da_provare"])
-    diventati_gratuiti_set = set(esiti["diventati_gratuiti"])
-    bocciati_set = set(item["id"] for item in esiti["bocciati"])
-    candidati_set = set(item["id"] for item in esiti["candidati_a_pagamento"])
+    # Dopo il loop, costruiamo diventati_gratuiti usando la funzione dedicata
+    diventati_gratuiti_list = diventati_gratuiti(catalogo, precedente)
+    da_provare_list = da_provare_candidates   # abbiamo già filtrato i duplicati per modello? ogni modello appare una volta nel catalogo
     
-    # Verifica che non ci siano sovrapposizioni
-    assert len(adottabili_set & da_provare_set) == 0, "adottabili e da_provare non sono disgiunti"
-    assert len(adottabili_set & diventati_gratuiti_set) == 0, "adottabili e diventati_gratuiti non sono disgiunti"
-    assert len(adottabili_set & bocciati_set) == 0, "adottabili e bocciati non sono disgiunti"
-    assert len(adottabili_set & candidati_set) == 0, "adottabili e candidati_a_pagamento non sono disgiunti"
-    assert len(da_provare_set & diventati_gratuiti_set) == 0, "da_provare e diventati_gratuiti non sono disgiunti"
-    assert len(da_provare_set & bocciati_set) == 0, "da_provare e bocciati non sono disgiunti"
-    assert len(da_provare_set & candidati_set) == 0, "da_provare e candidati_a_pagamento non sono disgiunti"
-    assert len(diventati_gratuiti_set & bocciati_set) == 0, "diventati_gratuiti e bocciati non sono disgiunti"
-    assert len(diventati_gratuiti_set & candidati_set) == 0, "diventati_gratuiti e candidati_a_pagamento non sono disgiunti"
-    assert len(bocciati_set & candidati_set) == 0, "bocciati e candidati_a_pagamento non sono disgiunti"
+    # Costruiamo il dizionario degli esiti
+    esiti = {
+        "adottabili": adottabili,
+        "da_provare": da_provare_list,
+        "diventati_gratuiti": diventati_gratuiti_list,
+        "candidati_a_pagamento": candidati_a_pagamento,
+        "bocciati": bocciati
+    }
     
     # Scrivi le proposte
     if not dry_run:

@@ -61,6 +61,15 @@ TIER_MODEL = {
     # Gratuito e piu' veloce dei modelli a pagamento: misurato dal banco su Groq.
     "gratis": "groq:openai/gpt-oss-120b",
     "gratis_rapido": "groq:qwen/qwen3.8-27b",
+    # I gratuiti Groq hanno una finestra di 6000 token al minuto complessivi:
+    # prompt piu' max_tokens la supera e Groq risponde 413. Per un file che va
+    # riemesso intero servono i gratuiti OpenRouter, che prendono 8192 di budget.
+    # Entrambi hanno superato i due banchi: vedi scripts/free_roster.json.
+    "gratis_grande": "nex-agi/nex-n2.5-mini:free",
+    "gratis_lento": "nvidia/nemotron-3-super-120b-a12b:free",
+    # Gratuito specializzato sul codice, 27 s misurati, banchi A e B pieni.
+    "gratis_codice": "cohere/north-mini-code:free",
+    "gratis_visione": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
     "simple": "deepseek-v4-flash",
     "complex": "qwen/qwen3-coder-30b-a3b-instruct",
 }
@@ -254,6 +263,76 @@ def dataclass_fields(source: str) -> dict:
             if campi:
                 found[node.name] = campi
     return found
+
+
+def _intervalli_funzioni(source: str):
+    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi."""
+    albero = ast.parse(source)
+    intervalli = {}
+    for nodo in albero.body:
+        if isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            inizio = min([nodo.lineno] + [d.lineno for d in nodo.decorator_list])
+            intervalli[nodo.name] = (inizio, nodo.end_lineno)
+    return intervalli
+
+
+def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
+    """Lo scheletro con le sole funzioni dichiarate sostituite da quelle della risposta.
+
+    Serve per i file troppo grandi da riemettere interi: su model_scout.py, 26.693
+    byte, l'uscita necessaria sfiorava il budget e il modello emetteva la sola
+    funzione cambiata, che il validatore respingeva come quindici funzioni scomparse.
+
+    Il perimetro e' l'incarico: cio' che il modello manda e non era dichiarato viene
+    ignorato. Il file risultante viene poi validato per intero come sempre, quindi
+    le garanzie non cambiano.
+    """
+    if not nomi:
+        return skeleton
+
+    nuove = _intervalli_funzioni(risposta)   # solleva SyntaxError se la risposta e' rotta
+    vecchie = _intervalli_funzioni(skeleton)
+
+    assenti_risposta = [n for n in nomi if n not in nuove]
+    if assenti_risposta:
+        raise ValueError(
+            "Funzioni dichiarate nell'incarico e assenti dalla risposta: "
+            + ", ".join(sorted(assenti_risposta)))
+    assenti_scheletro = [n for n in nomi if n not in vecchie]
+    if assenti_scheletro:
+        raise ValueError(
+            "Funzioni dichiarate nell'incarico e assenti dallo scheletro: "
+            + ", ".join(sorted(assenti_scheletro))
+            + ". La modifica parziale sostituisce, non aggiunge: per una funzione nuova "
+              "serve un incarico senza solo_funzioni.")
+
+    righe_vecchie = skeleton.splitlines(keepends=True)
+    righe_nuove = risposta.splitlines(keepends=True)
+
+    # Dal basso verso l'alto, cosi' gli indici delle righe ancora da sostituire
+    # non si spostano.
+    for nome in sorted(nomi, key=lambda n: vecchie[n][0], reverse=True):
+        da, a = vecchie[nome]
+        nda, na = nuove[nome]
+        blocco = righe_nuove[nda - 1:na]
+        if blocco and not blocco[-1].endswith("\n"):
+            blocco[-1] += "\n"
+        righe_vecchie[da - 1:a] = blocco
+
+    return "".join(righe_vecchie)
+
+
+def prompt_parziale(contract: str, nome_file: str, skeleton: str, nomi) -> str:
+    """Il prompt che chiede SOLO le funzioni dichiarate, non il file intero."""
+    elenco = ", ".join(nomi)
+    return (
+        "CONTRATTO:\n{}\n\n"
+        "FILE ESISTENTE ({}):\n{}\n\n"
+        "PERIMETRO: restituisci SOLO queste funzioni, complete e nella loro forma "
+        "definitiva: {}.\n"
+        "NON restituire il file intero. NON restituire le altre funzioni. Non "
+        "cambiare le firme. Il resto del file viene conservato automaticamente."
+    ).format(contract, nome_file, skeleton, elenco)
 
 
 def linguaggio_del_file(target: Path) -> str:
@@ -518,10 +597,15 @@ def run(task: dict, do_preflight: bool) -> dict:
     code = ""
     esito_preflight = ""
 
+    solo = list(task.get("solo_funzioni", []))
+
     for tentativo in range(1, MAX_ATTEMPTS + 1):
-        prompt = "CONTRATTO:\n{}\n\nSCHELETRO DA IMPLEMENTARE ({}):\n{}".format(
-            contract, task["file"], skeleton
-        )
+        if solo:
+            prompt = prompt_parziale(contract, task["file"], skeleton, solo)
+        else:
+            prompt = "CONTRATTO:\n{}\n\nSCHELETRO DA IMPLEMENTARE ({}):\n{}".format(
+                contract, task["file"], skeleton
+            )
         if contesto:
             prompt += "\n\nCONTESTO DI SOLA LETTURA:" + contesto
         if errors:
@@ -536,7 +620,14 @@ def run(task: dict, do_preflight: bool) -> dict:
         chiamate += 1
         costo += cost_of(model, usage)
         code = extract_code(testo)
-        errors = validate_implementation(code, skeleton, task)
+        if solo:
+            try:
+                code = innesta_funzioni(skeleton, code, solo)
+            except (SyntaxError, ValueError) as exc:
+                errors = ["Innesto parziale rifiutato: {}".format(exc)]
+                code = ""
+        if not (solo and errors):
+            errors = validate_implementation(code, skeleton, task)
 
         if not errors:
             target.write_text(code.rstrip() + "\n", encoding="utf-8")

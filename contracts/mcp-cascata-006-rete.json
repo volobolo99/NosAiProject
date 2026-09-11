@@ -1,0 +1,63 @@
+{
+  "contract_id": "mcp-cascata-006-rete",
+  "parte_di": "mcp-cascata-006",
+  "file": "scripts/mcp_server.py",
+  "scopo": "La meta' di rete della cascata: i due protocolli di chiamata, la lettura della quota e le politiche per tool.",
+  "difetto_misurato_il_2026_09_11": "tests/test_mcp_cascata.py esiste con 24 casi ma scripts/mcp_server.py non espone POLITICHE, PAUSA, chiama_groq, chiama_openrouter, chiama_gruppo, controlla_quota, giudizio_infill, giudizio_preflight ne' modelli_gratuiti. I test sono stati scritti prima dell'implementazione e mai chiusi.",
+  "vincoli_di_governo": [
+    "La qualita' non cala: un testo prodotto da un gratuito entra in produzione solo se supera lo stesso giudizio che si applicherebbe al pagato.",
+    "Il servizio non si interrompe: qualunque cosa combinino i gratuiti, il tool risponde.",
+    "Il tempo si spende solo dove rende: chi e' piu' rapido si prova per primo, e il budget chiude la cascata quando non conviene piu'.",
+    "DeepSeek non passa da OpenRouter: il divieto esistente in call_openrouter resta e non va allentato.",
+    "Nessuna funzione esistente viene rimossa o rinominata."
+  ],
+  "funzioni": {
+    "chiama_groq": {
+      "firma": "def chiama_groq(modello: str, messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]",
+      "comportamento": "Chiama UN SOLO modello su api.groq.com, togliendo il prefisso groq: dall'identificativo prima di mandarlo sul filo. Restituisce la coppia (testo, identificativo del modello che ha risposto). Solleva su qualunque guasto: e' il chiamante che decide se proseguire. Passa la risposta a controlla_quota prima di leggerne il corpo."
+    },
+    "chiama_openrouter": {
+      "firma": "def chiama_openrouter(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]",
+      "comportamento": "Chiama OpenRouter una volta sola per l'intero gruppo, usando l'array models del corpo, che accetta al massimo tre elementi, e il lucchetto provider.max_price a zero su prompt e completion. Restituisce (testo, modello che ha effettivamente risposto, letto dal campo model della risposta). Nessun identificativo con prefisso groq: puo' essere passato qui. Solleva su guasto. Passa la risposta a controlla_quota."
+    },
+    "chiama_gruppo": {
+      "firma": "def chiama_gruppo(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]",
+      "comportamento": "Due protocolli in un ordine vincolante. Primo: i modelli con prefisso groq:, uno per uno e nell'ordine in cui compaiono nel gruppo, tramite chiama_groq; il primo che risponde ferma tutto e OpenRouter non viene interpellato affatto. Secondo: i modelli restanti, cioe' quelli senza prefisso groq:, in UNA sola chiamata a chiama_openrouter. Se nessuno risponde solleva. Va chiamato tramite la ricerca del nome a livello di modulo, perche' i test sostituiscono chiama_groq e chiama_openrouter con monkeypatch."
+    },
+    "controlla_quota": {
+      "firma": "def controlla_quota(risposta) -> None",
+      "comportamento": "Legge lo stato di una risposta HTTP. Se e' 429 solleva free_first.LimiteRaggiunto con il campo attendi valorizzato dall'header retry-after convertito in float, oppure free_first.PAUSA_PREDEFINITA quando l'header manca. Per qualunque altro stato restituisce None. Una quota esaurita non e' un guasto: e' un'attesa."
+    }
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTE le funzioni dello scheletro piu' quelle nuove: il validatore rifiuta il file se una scompare. Le funzioni non elencate in implementare_o_creare vanno riportate carattere per carattere come stanno nello scheletro, compresi i decoratori @mcp.tool() dove presenti.",
+    "conservare_identiche": [
+      "call_openrouter",
+      "call_deepseek",
+      "local_generate_skeleton",
+      "cloud_infill_implementation",
+      "preflight_contract_check",
+      "deep_reasoner_solve_crash",
+      "local_update_documentation",
+      "update_contract_state",
+      "modelli_gratuiti",
+      "giudizio_infill",
+      "giudizio_preflight"
+    ],
+    "implementare_o_creare": [
+      "chiama_groq",
+      "chiama_openrouter",
+      "chiama_gruppo",
+      "controlla_quota"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_mcp_cascata.py",
+    "criterio": "I test esistono gia' e sono il criterio di accettazione: non vanno modificati."
+  },
+  "stato": "contratto_formulato",
+  "costanti_da_aggiungere": {
+    "PAUSA": "una sola istanza di free_first.Pausa per processo, creata a livello di modulo: il registro delle pause dei modelli in quota esaurita deve essere condiviso da tutte le chiamate.",
+    "POLITICHE": "dizionario dal nome del tool alla sua politica, con le chiavi cascata (bool), budget_secondi (float) e pagato (l'identificativo del modello a pagamento su cui ricadere). cloud_infill_implementation e preflight_contract_check hanno cascata True; deep_reasoner_solve_crash ha cascata False, perche' una diagnosi sbagliata ma plausibile supererebbe ogni giudizio automatico e senza un banco che la sappia misurare non si risparmia. Ogni politica con cascata True deve avere budget_secondi maggiore di zero e pagato non vuoto. Il budget di preflight_contract_check deve essere STRETTAMENTE MINORE di quello di cloud_infill_implementation, perche' il pagato del pre-flight risponde in poco piu' di un secondo."
+  }
+}
