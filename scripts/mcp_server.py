@@ -53,13 +53,19 @@ def record(entry: dict) -> None:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def _stima_costo_usd(model_id: str, testo_input: str, testo_output: str) -> float:
-    """Stima il costo in dollari da un conteggio di parole, non dai token reali:
-    call_openrouter, call_deepseek, chiama_groq e chiama_openrouter non
-    restituiscono il campo "usage" della risposta HTTP (esporlo ne cambierebbe
-    la firma, vincolata da contratti gia' chiusi). 1.3 token per parola e' una
-    approssimazione dichiarata, non una misura: la cifra vera resta nel
-    pannello di ogni provider. Vedi .claude/CLAUDE.md sezione 15."""
+# Il campo "usage" dell'ultima risposta HTTP letta da call_openrouter o
+# call_deepseek in QUESTO thread: un dizionario per thread, non uno globale,
+# cosi' due tool invocati su thread diversi non si scambiano i token dell'altro.
+_STATO_CHIAMATA = threading.local()
+
+
+def _costo_reale_usd(model_id: str) -> float:
+    """Costo reale in dollari dell'ultima chiamata di questo thread a
+    call_openrouter o call_deepseek, calcolato sui token effettivi che il
+    provider ha restituito nel campo "usage" della risposta (prompt_tokens,
+    completion_tokens), non su una stima. Zero se il modello non e' nel
+    listino (per esempio i modelli Ollama locali, sempre gratuiti) o se non
+    e' ancora avvenuta nessuna chiamata su questo thread."""
     try:
         prezzi = json.loads(
             (PROJECT_ROOT / "scripts" / "model_prices.json").read_text(encoding="utf-8")
@@ -69,9 +75,11 @@ def _stima_costo_usd(model_id: str, testo_input: str, testo_output: str) -> floa
     prezzo = prezzi.get(model_id)
     if not prezzo:
         return 0.0
-    token_input = len(testo_input.split()) * 1.3
-    token_output = len(testo_output.split()) * 1.3
-    costo = token_input * prezzo.get("input", 0.0) + token_output * prezzo.get("output", 0.0)
+    usage = getattr(_STATO_CHIAMATA, "usage", {})
+    costo = (
+        usage.get("prompt_tokens", 0) * prezzo.get("input", 0.0)
+        + usage.get("completion_tokens", 0) * prezzo.get("output", 0.0)
+    )
     return round(costo, 6)
 
 # =====================================================================
@@ -119,8 +127,9 @@ def cloud_infill_implementation(skeleton_and_contract: str) -> str:
     testo = call_openrouter(ROSTER["worker"], skeleton_and_contract, sys_prompt, temperature=0.1, max_tokens=8192)
     record({
         "task_id": "cloud_infill_implementation", "model": ROSTER["worker"],
-        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["worker"], skeleton_and_contract, testo),
-        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+        "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["worker"]),
+        "status": "completed", "file": "mcp_tool",
+        "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
@@ -139,8 +148,9 @@ def preflight_contract_check(contract_json: str, generated_code: str) -> str:
     testo = call_openrouter(ROSTER["preflight"], prompt, sys_prompt, temperature=0.0, max_tokens=1024)
     record({
         "task_id": "preflight_contract_check", "model": ROSTER["preflight"],
-        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["preflight"], prompt, testo),
-        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+        "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["preflight"]),
+        "status": "completed", "file": "mcp_tool",
+        "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
@@ -157,8 +167,9 @@ def deep_reasoner_solve_crash(error_context_json: str) -> str:
     testo = call_deepseek(ROSTER["auditor"], error_context_json, sys_prompt, temperature=0.6, max_tokens=12000)
     record({
         "task_id": "deep_reasoner_solve_crash", "model": ROSTER["auditor"],
-        "calls": 1, "estimated_cost_usd": _stima_costo_usd(ROSTER["auditor"], error_context_json, testo),
-        "status": "completed", "file": "mcp_tool", "words": len(testo.split()),
+        "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["auditor"]),
+        "status": "completed", "file": "mcp_tool",
+        "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
@@ -294,7 +305,9 @@ def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature:
     }
     r = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=120)
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"]
+    corpo = r.json()
+    _STATO_CHIAMATA.usage = corpo.get("usage", {})
+    return corpo["choices"][0]["message"]["content"]
 
 def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:
     if not DEEPSEEK_API_KEY:
@@ -318,7 +331,9 @@ def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: f
     }
     r = requests.post(DEEPSEEK_URL, headers=headers, json=payload, timeout=180)
     r.raise_for_status()
-    message = r.json()["choices"][0]["message"]
+    corpo = r.json()
+    _STATO_CHIAMATA.usage = corpo.get("usage", {})
+    message = corpo["choices"][0]["message"]
     content = message.get("content") or ""
     if not content.strip():
         # I modelli di ragionamento spendono il budget di max_tokens in
