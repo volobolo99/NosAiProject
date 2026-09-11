@@ -125,10 +125,22 @@ corpi delle funzioni: firme e tipi non sono alterabili. Il codice ottenuto si sa
 **Fase 4 — Pre-flight.** `preflight_contract_check` confronta contratto e file generato. Se risponde
 `APPROVED` si compila; se segnala discrepanze si chiede la correzione prima di qualsiasi build o test.
 
-**Fase 5 — Collaudo e circuit breaker.** Build ed esecuzione dei controlli (AddressSanitizer dove
-previsto, test .NET e Python). Se tutto è verde, `local_update_documentation` aggiorna la
-documentazione a costo zero e si esegue il commit. Se fallisce, lo stack trace va a
+**Fase 5 — Collaudo e circuit breaker.** Build ed esecuzione dei controlli: `dotnet build` più
+`dotnet test` per il C#, `pytest` per il Python. Se tutto è verde, `local_update_documentation`
+aggiorna la documentazione a costo zero e si esegue il commit. Se fallisce, lo stack trace va a
 `deep_reasoner_solve_crash`: massimo 3 tentativi di autoriparazione, poi rollback obbligatorio.
+
+AddressSanitizer **non** fa parte della Fase 5: deciso il 2026-09-11 con
+`docs/adr/ADR-0029-phase5-dotnet-pytest-no-native-branch.md`. Il progetto non ha codice nativo di
+prima mano — i soli `.cpp` e `.h` sono materiale di riferimento sotto `third_party/` e l'header di
+WinDivert — e l'accesso alla memoria del client avviene già in C# via `DllImport`. Il cancello
+strutturale del C# è il compilatore, che `build_check` di `scripts/code_agent.py` invoca sul
+`.csproj` del file modificato: se una firma cambia, i chiamanti non compilano. Se nascerà un modulo
+nativo di prima mano, ASan tornerà obbligatorio per quel modulo e l'ADR si riapre.
+
+La Fase 5 vale su entrambi i linguaggi: dal 2026-09-11 `scripts/code_agent.py` valida anche il C#
+con `tree_sitter`, e un incarico può dichiarare `solo_funzioni` per i file troppo grandi da
+riemettere interi.
 
 Lo stato di ogni contratto vive in `contracts/ledger.json` e si aggiorna con `update_contract_state`.
 

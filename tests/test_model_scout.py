@@ -377,6 +377,49 @@ def test_il_gratuito_ignoto_finisce_fra_i_da_provare(proposte_reali):
     assert "inclusionai/ling-3.0-flash-vl:free" not in _ids(proposte_reali["adottabili"])
 
 
+def test_un_gratuito_mai_provato_non_esce_dal_radar(tmp_path, monkeypatch):
+    """Il difetto misurato il 2026-09-11: da_provare si popolava dai soli
+    modelli comparsi oggi, quindi un gratuito presente da ieri e mai passato al
+    banco sparisce per sempre. Deve restare in elenco finche' non e' giudicato.
+    """
+    ignoto = _modello("inclusionai/ling-3.0-flash-vl:free", 0, 0)
+    catalogo = [ignoto]
+    storia = tmp_path / "storia"
+    monkeypatch.setattr(model_scout, "fetch_catalog", lambda timeout=60: catalogo)
+    monkeypatch.setattr(model_scout, "HISTORY_DIR", storia)
+    monkeypatch.setattr(model_scout, "REPORT_PATH", tmp_path / "r.md")
+
+    # Primo giorno: nessuno storico, il modello e' nuovo.
+    monkeypatch.setattr(model_scout, "PROPOSALS_PATH", tmp_path / "g1.json")
+    assert model_scout.main() == 0
+    g1 = json.loads((tmp_path / "g1.json").read_text(encoding="utf-8"))
+    assert ignoto["id"] in _ids(g1["da_provare"]), "il primo giorno deve comparire"
+
+    # Secondo giorno: lo storico lo conosce gia', e non e' ancora stato provato.
+    model_scout.save_snapshot(catalogo, "2026-09-11", storia)
+    monkeypatch.setattr(model_scout, "PROPOSALS_PATH", tmp_path / "g2.json")
+    assert model_scout.main() == 0
+    g2 = json.loads((tmp_path / "g2.json").read_text(encoding="utf-8"))
+    assert ignoto["id"] in _ids(g2["da_provare"]), (
+        "un gratuito non ancora giudicato resta da provare anche il giorno dopo")
+
+
+def test_diventato_gratuito_non_e_un_modello_nuovo(tmp_path, monkeypatch):
+    """La regola invertita: assente dallo snapshot di ieri significa nuovo, non
+    diventato gratuito. Confonderli fa sparire i nuovi dalla lista giusta.
+    """
+    catalogo = [_modello("mai/visto:free", 0, 0)]
+    monkeypatch.setattr(model_scout, "fetch_catalog", lambda timeout=60: catalogo)
+    monkeypatch.setattr(model_scout, "HISTORY_DIR", tmp_path / "storia")
+    monkeypatch.setattr(model_scout, "PROPOSALS_PATH", tmp_path / "p.json")
+    monkeypatch.setattr(model_scout, "REPORT_PATH", tmp_path / "r.md")
+    assert model_scout.main() == 0
+    d = json.loads((tmp_path / "p.json").read_text(encoding="utf-8"))
+    assert _ids(d["diventati_gratuiti"]) == set(), (
+        "senza storico nessun modello puo' essere diventato gratuito")
+    assert "mai/visto:free" in _ids(d["da_provare"])
+
+
 def test_il_validato_finisce_fra_gli_adottabili(proposte_reali):
     assert "nex-agi/nex-n2.5-mini:free" in _ids(proposte_reali["adottabili"])
 

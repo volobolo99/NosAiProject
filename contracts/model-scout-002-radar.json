@@ -1,0 +1,57 @@
+{
+  "contract_id": "model-scout-002-radar",
+  "parte_di": "model-scout-002",
+  "file": "scripts/model_scout.py",
+  "scopo": "Correggere due difetti nella partizione delle proposte: la regola invertita su diventati_gratuiti e la perdita dal radar dei gratuiti mai giudicati.",
+  "difetti_misurati_il_2026_09_11": [
+    "main usa 'assente dallo snapshot precedente' come segnale di diventato_gratuito. E' l'inversione esatta: un id assente da ieri e' NUOVO, non diventato gratuito. Con lo storico vuoto, inclusionai/ling-3.0-flash-vl:free finiva in diventati_gratuiti invece che in da_provare. La funzione diventati_gratuiti e' corretta: e' main che non la usa.",
+    "da_provare si popola solo dallo stato nuovo_gratuito, cioe' dai modelli comparsi oggi. Un gratuito presente da ieri e mai passato al banco esce dal radar e non viene piu' proposto. E' il contrario dello scopo del guardiano."
+  ],
+  "vincoli_di_governo": [
+    "da_provare deve contenere OGNI modello gratuito che non figura fra i validati ne' fra gli scartati del roster, indipendentemente da quando e' comparso. Finche' un gratuito non e' giudicato resta in elenco.",
+    "diventati_gratuiti e' un'informazione sul cambio di prezzo, non un contenitore che sottrae un modello a da_provare: un modello puo' stare in entrambi, ed e' l'informazione piu' utile, cioe' 'e' diventato gratuito e va ancora provato'.",
+    "adottabili e da_provare restano DISGIUNTI, e adottabile resta solo chi figura fra i validati.",
+    "Sentinella e non pertinenti restano fuori da adottabili, da_provare e candidati_a_pagamento.",
+    "Un modello a pagamento resta solo PROPOSTO, con richiede_consenso True."
+  ],
+  "modifiche_puntuali": {
+    "main": [
+      "Costruisci diventati_gratuiti chiamando la funzione diventati_gratuiti(catalogo, precedente), che e' gia' corretta, invece di dedurlo dallo stato del singolo modello.",
+      "Costruisci da_provare come: ogni voce del catalogo che e' gratuita oggi, e' pertinente, non e' sentinella, e il cui identificativo normalizzato non compare ne' fra i validati ne' fra gli scartati del roster. Non filtrare per novita'.",
+      "Lascia invariati adottabili, bocciati e candidati_a_pagamento.",
+      "Continua a restituire 0 e a non sollevare per una voce anomala."
+    ]
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTE le funzioni dello scheletro: il validatore rifiuta il file se una scompare. Modifica SOLO il corpo di main; ogni altra funzione va riportata carattere per carattere come sta nello scheletro.",
+    "conservare_identiche": [
+      "fetch_catalog",
+      "is_free",
+      "is_price_sentinel",
+      "cost_per_mtok",
+      "is_text_capable",
+      "load_roster",
+      "roster_id",
+      "classifica_modello",
+      "compare_to_roster",
+      "save_snapshot",
+      "load_last_snapshot",
+      "diventati_gratuiti",
+      "candidati_a_pagamento",
+      "scrivi_proposte",
+      "render_report"
+    ],
+    "implementare_o_creare": [
+      "main"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_model_scout.py",
+    "casi": [
+      "un gratuito mai provato resta in da_provare anche il giorno dopo, con lo storico che lo conosce",
+      "senza storico nessun modello risulta diventato gratuito, e un mai visto finisce in da_provare",
+      "restano veri tutti i casi di partizione gia' esistenti"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

@@ -40,6 +40,8 @@ class SecretStore:
         self.path.write_bytes(token)
 
     def upsert(self, provider_id: str, secret: str) -> SecretMetadata:
+        if not str(provider_id).strip():
+            raise ValueError("provider_id is required")
         if not secret or "\n" in secret:
             raise ValueError("secret must be a non-empty single-line value")
         data = self._load()

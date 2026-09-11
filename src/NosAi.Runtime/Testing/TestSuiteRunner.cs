@@ -59,7 +59,12 @@ public sealed class TestSuiteRunner
         var dir = new DirectoryInfo(start ?? AppContext.BaseDirectory);
         while (dir is not null)
         {
-            if (File.Exists(Path.Combine(dir.FullName, "CLAUDE.md")) &&
+            // I marcatori sono NosAi.sln piu' la cartella tests: due insieme, per non
+            // fermarsi a una cartella qualunque. Fino al 2026-09-11 il primo marcatore
+            // era CLAUDE.md, spostato in .claude/: il metodo restituiva sempre null e i
+            // cinque chiamanti ripiegavano sulla cartella di lancio. Un marcatore va
+            // scelto fra i file che non si spostano.
+            if (File.Exists(Path.Combine(dir.FullName, "NosAi.sln")) &&
                 Directory.Exists(Path.Combine(dir.FullName, "tests")))
                 return dir.FullName;
             dir = dir.Parent;

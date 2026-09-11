@@ -7,11 +7,26 @@ name = "nosai"
 version = "0.1.0"
 description = "NosAi clean architecture runtime"
 requires-python = ">=3.11"
-dependencies = ["cryptography>=43"]
+dependencies = ["cryptography>=43", "requests>=2.31", "python-dotenv>=1.0"]
 
 [project.optional-dependencies]
-test = ["pytest>=8"]
-mcp = ["mcp>=1.0"]
+test = ["pytest>=8", "jsonschema>=4"]
+# <2: scripts/mcp_server.py usa l'API v1 (mcp.server.fastmcp.FastMCP), rinominata
+# in mcp.server.mcpserver.MCPServer nella 2.x. Scoperto il 2026-09-11 quando la CI,
+# senza un'installazione precedente in cache, ha preso l'ultima 2.x e ha rotto la
+# raccolta di tests/test_mcp_cascata.py e tests/test_model_routing.py.
+mcp = ["mcp>=1.0,<2", "pydantic>=2"]
+# La catena a cinque fasi: scripts/code_agent.py valida il C# con tree_sitter, e
+# scripts/build_function_index.py indicizza Python, C# e PowerShell (.ps1 e'
+# mappato su "powershell" in build_function_index.py:37). Senza le grammatiche,
+# tests/test_function_index.py fallisce (o aborta la raccolta dell'intera suite,
+# a seconda di cosa manca): e' accaduto il 2026-09-11.
+chain = [
+    "tree-sitter>=0.23",
+    "tree-sitter-python>=0.23",
+    "tree-sitter-c-sharp>=0.23",
+    "tree-sitter-powershell>=0.26",
+]
 
 [project.scripts]
 nosai-dashboard = "nosai.dashboard.server:serve"

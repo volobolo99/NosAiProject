@@ -12,7 +12,7 @@
     {
       "gate": 0,
       "title": "Ambiente, test harness e bridge nativo",
-      "completion_pct": 50,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-001",
@@ -61,7 +61,7 @@
           "signature": "def run_asan_pipeline(target: str, timeout_s: int = 300) -> AsanReport",
           "struct_size": null,
           "test_file": "tests/test_asan_pipeline.py",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "NO_PARTIAL_STATE",
             "DETERMINISTIC"
@@ -71,7 +71,9 @@
           "product_phases": [
             "AP-00"
           ],
-          "legacy_gate": 0
+          "legacy_gate": 0,
+          "updated": "2026-09-11",
+          "metrics": "ADR-0029 del 2026-09-11: la FASE 5 si misura con dotnet build/test e pytest. Il progetto non ha codice nativo di prima mano (i soli .cpp/.h sono riferimento third_party e l'header WinDivert; il ledger stesso registra native: assente), e l'accesso alla memoria del client avviene in C# via DllImport. Un harness ASan non ha un soggetto su cui girare. Si riapre se nascera un modulo nativo di prima mano."
         },
         {
           "cid": "C-004",
@@ -80,7 +82,7 @@
           "signature": "def gatekeeper(paths: list[str]) -> GateResult",
           "struct_size": null,
           "test_file": "tests/test_gatekeeper.py",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "FAIL_CLOSED",
             "DETERMINISTIC"
@@ -89,7 +91,9 @@
           "product_phases": [
             "AP-00"
           ],
-          "legacy_gate": 0
+          "legacy_gate": 0,
+          "updated": "2026-09-11",
+          "metrics": "ADR-0029 del 2026-09-11: il gatekeeper dei test Python e il tests_command dell incarico, che scripts/code_agent.py esegue e il cui fallimento ripristina lo scheletro. Un secondo cancello duplicherebbe l autorita sullo stesso giudizio. Misurato nella sessione: 10 deleghe rifiutate proprio da quel meccanismo."
         },
         {
           "cid": "C-005",
@@ -98,7 +102,7 @@
           "signature": "def load_native(path: str | None = None) -> NativeHandle",
           "struct_size": null,
           "test_file": "tests/test_native_bridge.py",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
@@ -107,7 +111,9 @@
           "product_phases": [
             "AP-00"
           ],
-          "legacy_gate": 0
+          "legacy_gate": 0,
+          "updated": "2026-09-11",
+          "metrics": "ADR-0029 del 2026-09-11: non serve un bridge ctypes verso un modulo che non esiste. Se servira leggere memoria da Python, la strada e chiedere al runtime C# che la legge gia via DllImport (Win32ProcessAdapter, WinDivertPacketSource, ClientNetworkObserver), non aprire un secondo accesso allo stesso processo: due lettori della memoria di un client sono due modi di sbagliare. Coerente con ADR-0030, che assegna al C# la proprieta dello stato di gioco."
         },
         {
           "cid": "C-006",
@@ -134,7 +140,7 @@
     {
       "gate": 1,
       "title": "Intercettazione pacchetti, hook e parsing opcode",
-      "completion_pct": 70,
+      "completion_pct": 83,
       "contracts": [
         {
           "cid": "C-101",
@@ -266,7 +272,7 @@
     {
       "gate": 2,
       "title": "Dispatcher, correlazione entita' e sincronizzazione Python",
-      "completion_pct": 60,
+      "completion_pct": 75,
       "contracts": [
         {
           "cid": "C-201",
@@ -349,14 +355,16 @@
           ],
           "legacy_gate": 2,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "Blocco rimosso da ADR-0030 del 2026-09-11: il canale e ora dichiarato. Lo stato di gioco appartiene al runtime C#; nosai/ Python non ne tiene copia e non lo sincronizza. Il contratto cambia oggetto e si rimpicciolisce: non sincronizzare due world model, ma dichiarare due flussi asimmetrici. Primo, C# verso Python in sola aggiunta: telemetria e registro delle decisioni per evidenze e apprendimento, mai interrogato durante il ciclo di gioco quindi fuori dal percorso critico. Secondo, Python verso C# in ingresso: configurazione dei binding e delle politiche di costo, letta all avvio e su cambio dichiarato, non a ogni tick. Nessuno stato condiviso mutabile, nessun attraversamento del confine per tick."
         }
       ]
     },
     {
       "gate": 3,
       "title": "Decisione autonoma e recupero",
-      "completion_pct": 55,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-301",
@@ -422,7 +430,7 @@
           "signature": "da definire",
           "struct_size": null,
           "test_file": "da definire",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "DETERMINISTIC",
             "NO_PARTIAL_STATE"
@@ -433,7 +441,9 @@
           ],
           "legacy_gate": 3,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "ADR-0031 del 2026-09-11: nessuna macchina a stati esplicita. La domanda era mal posta: ADR-0028 ha misurato che Planner e Orchestrator NON sono nel percorso di esecuzione (ModuleReachability li dichiara Unreferenced per scelta datata), quindi non c e un autorita da duplicare. Il percorso vivo e StrategyPlanner piu il ciclo di Gate3. Una FSM inventata prima di un comportamento che la richieda fisserebbe una partizione degli stati scelta a tavolino, che e la parte che decide se la macchina dice il vero. Si riapre con un caso nominato, e un interblocco di sicurezza va costruito come guardia stretta, non come FSM generale."
         },
         {
           "cid": "C-305",
@@ -459,7 +469,7 @@
     {
       "gate": 4,
       "title": "Hardening, fuzzing e rilascio",
-      "completion_pct": 25,
+      "completion_pct": 50,
       "contracts": [
         {
           "cid": "C-401",

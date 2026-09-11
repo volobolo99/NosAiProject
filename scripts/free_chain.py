@@ -9,7 +9,10 @@ from pathlib import Path
 FREE_ROSTER_PATH = Path(__file__).resolve().parent / 'free_roster.json'
 LENTO_SECONDI = 200
 GRUPPO_MAX = 3
-PROVIDER_GUASTI = ['Novita']
+# Fornitori che rispondono 200 con contenuto vuoto e token fatturati.
+# Novita misurato il 2026-09-09 su qwen3-coder-30b; Nex AGI il 2026-09-11
+# su nex-n2.5-mini:free, con max_tokens=8192 consumati e nessun testo.
+PROVIDER_GUASTI = ['Novita', 'Nex AGI', 'Cohere']
 # Il roster elenca piu' fornitori: questo modulo parla solo con OpenRouter.
 FORNITORE_PREDEFINITO = 'openrouter'
 

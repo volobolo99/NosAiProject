@@ -91,7 +91,7 @@ def verify(root: Path | str) -> dict[str, Any]:
                 contract_ids.append(cid)
                 # A blocked DRAFT may intentionally point at a future file;
                 # every merged/tested contract must resolve all concrete paths.
-                allow_missing = str(contract.get("status", "")).upper() == "DRAFT" and bool(contract.get("blocker"))
+                allow_missing = str(contract.get("status", "")).upper() in ("DRAFT", "DROPPED") and bool(contract.get("blocker"))
                 for field in ("target_file", "test_file"):
                     _check_contract_file(
                         root,

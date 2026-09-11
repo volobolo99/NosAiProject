@@ -1,0 +1,55 @@
+{
+  "contract_id": "runtime-root-marker-005",
+  "file": "src/NosAi.Runtime/Testing/TestSuiteRunner.cs",
+  "scopo": "Rendere la scoperta della radice del repository indipendente da un file che si puo' spostare.",
+  "difetto_misurato_il_2026_09_11": "FindRepositoryRoot cerca CLAUDE.md nella radice, ma quel file e' stato spostato in .claude/. Il metodo restituisce quindi sempre null. Lo chiamano cinque punti del prodotto: Gate1BootstrapHost, che di conseguenza non inizializza la superficie di test del ControlPanel, e KeybindsCheck, CollectCommand, ScoutCommand e SingleStepCommand, che ripiegano su Directory.GetCurrentDirectory() e leggono calibrazione e keybind dalla cartella di lancio. E' esattamente il guess that would make every subsequent command run in the wrong directory che il commento del metodo dichiara di voler evitare. Nessun test copriva il metodo.",
+  "modifiche_puntuali": {
+    "FindRepositoryRoot": [
+      "Il marcatore diventa NosAi.sln, la radice canonica di un repository .NET, che non si sposta.",
+      "Il secondo controllo sulla presenza della cartella tests resta: due marcatori insieme evitano di fermarsi a una cartella qualunque.",
+      "Il contratto di ritorno non cambia: null quando la radice non si trova, mai una radice indovinata.",
+      "Non cambiare la firma: string? FindRepositoryRoot(string? start = null).",
+      "Aggiorna il commento XML spiegando quali sono i marcatori e perche' non e' piu' CLAUDE.md."
+    ]
+  },
+  "vincoli_di_governo": [
+    "Nessun altro metodo della classe viene modificato.",
+    "Il metodo non deve mai restituire una radice inventata: se i marcatori non si trovano, null."
+  ],
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTI i metodi che ha lo scheletro: il validatore rifiuta il file se uno scompare o se ne cambia una firma. Modifica SOLO il corpo di FindRepositoryRoot; ogni altro metodo va riportato carattere per carattere come sta nello scheletro. Non toccare namespace, using, modificatori di accesso ne' le altre classi del file.",
+    "conservare_identiche": [
+      "Compose",
+      "DiscoverDotNetAsync",
+      "DiscoverPythonAsync",
+      "FindTestAssembly",
+      "MapOutcome",
+      "NotAvailable",
+      "ParseJUnit",
+      "ParseTrx",
+      "PythonId",
+      "PythonIdFromNodeId",
+      "PythonSuiteOf",
+      "RunDotNetAsync",
+      "RunProcessAsync",
+      "RunPythonAsync",
+      "Tail",
+      "Trim",
+      "TryDelete"
+    ],
+    "implementare_o_creare": [
+      "FindRepositoryRoot"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/NosAi.Runtime.Tests/TestSuiteRunnerRootTests.cs",
+    "casi": [
+      "la radice si trova dalla cartella dell'assembly e contiene NosAi.sln e tests/",
+      "la radice si trova dalla cartella corrente",
+      "la radice non dipende da CLAUDE.md, che ora sta in .claude/",
+      "fuori da un repository restituisce null senza indovinare",
+      "le due strade di chiamata danno la stessa radice"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

@@ -1,0 +1,80 @@
+{
+  "contract_id": "code-agent-csharp-004",
+  "file": "scripts/code_agent.py",
+  "scopo": "Insegnare il C# alla catena a cinque fasi. Oggi validate_implementation parte da ast.parse(), il parser di Python, quindi su un file .cs solleva SyntaxError e la delega e' impossibile.",
+  "difetto_misurato_il_2026_09_11": "Il progetto ha 188.762 righe di C# e 24.214 di Python. La catena lavora solo sul Python, cioe' l'11%: nessun contratto ha mai avuto come bersaglio un file .cs, e non per scelta ma perche' il validatore non sa leggerli. Il prodotto, cioe' il runtime del gioco, non e' mai stato delegabile.",
+  "risorsa_gia_presente": "scripts/build_function_index.py dichiara la mappa .py verso python e .cs verso c_sharp, e usa tree_sitter. Le grammatiche tree-sitter-python e tree-sitter-c-sharp sono installate e verificate: estraggono class_declaration e method_declaration. Usare la stessa libreria, non introdurne un'altra.",
+  "vincoli_di_governo": [
+    "Il percorso Python non cambia comportamento: gli stessi ingressi devono dare gli stessi errori di prima. E' verificato da test_il_percorso_python_resta_intatto e test_firma_python_alterata_ancora_bocciata.",
+    "Nessuna funzione esistente viene rimossa o rinominata: import_check resta disponibile e funzionante.",
+    "Per il C# valgono le stesse regole del Python: una firma alterata, un tipo di ritorno alterato, un metodo o una classe scomparsi sono errori. Aggiungere un membro nuovo e' permesso.",
+    "Un corpo che solleva NotImplementedException non e' un'implementazione, come raise NotImplementedError in Python."
+  ],
+  "funzioni": {
+    "linguaggio_del_file": {
+      "firma": "def linguaggio_del_file(target: Path) -> str",
+      "comportamento": "Restituisce python per il suffisso .py e c_sharp per .cs. Per qualunque altro suffisso solleva ValueError: validare con il parser sbagliato e' peggio che fermarsi. La mappa e' la stessa di scripts/build_function_index.py."
+    },
+    "_firme_csharp": {
+      "firma": "def _firme_csharp(source: str) -> Dict[str, List[Tuple[str, str, str]]]",
+      "comportamento": "Analizza il C# con tree_sitter e la grammatica tree_sitter_c_sharp. Restituisce, per ogni nome di classe, struct o interfaccia dichiarata, la lista dei suoi membri come terne: nome del metodo, elenco dei parametri normalizzato, tipo di ritorno. L'elenco dei parametri va normalizzato togliendo gli spazi superflui, cosi' che una riformattazione non venga letta come firma alterata mentre uno scambio di tipi si'. Solleva SyntaxError se l'albero prodotto contiene nodi ERROR o nodi mancanti: e' cosi' che tree_sitter segnala la sintassi rotta."
+    },
+    "validate_implementation": {
+      "firma": "def validate_implementation(code: str, skeleton: str, task: dict)",
+      "firma_invariata_obbligatoria": "identica a oggi: e' chiamata da run e dai test esistenti",
+      "comportamento": "Smista su linguaggio_del_file(ROOT / task['file']). Per python esegue esattamente i controlli di oggi, senza alcuna modifica di comportamento. Per c_sharp confronta _firme_csharp(code) con _firme_csharp(skeleton) e segnala: sintassi non valida; classi scomparse, nominandole; metodi scomparsi, nominandoli; firme o tipi di ritorno alterati, nominando il metodo; corpi che sollevano NotImplementedException; i segnaposto di FORBIDDEN. Un membro presente nel codice e assente nello scheletro non e' un errore."
+    },
+    "build_check": {
+      "firma": "def build_check(target: Path) -> list",
+      "comportamento": "Smista per linguaggio. Per python delega a import_check(target), che resta invariata. Per c_sharp esegue dotnet build sul progetto .csproj che contiene il file, cercandolo risalendo le cartelle, con --nologo e verbosita' minima; restituisce una lista vuota se la compilazione riesce, altrimenti le righe di errore del compilatore. Il compilatore e' un controllo di firme piu' severo di qualunque confronto di alberi: se una firma cambia, i chiamanti non compilano."
+    },
+    "run": {
+      "firma": "def run(task: dict, do_preflight: bool) -> dict",
+      "firma_invariata_obbligatoria": "identica a oggi",
+      "comportamento": "Come oggi, con due differenze. Primo: al posto di import_check(target) chiama build_check(target). Secondo: sceglie il prompt di sistema in base al linguaggio, usando SYSTEM_PROMPT per il python e SYSTEM_PROMPT_CSHARP per il c_sharp."
+    }
+  },
+  "costanti_da_aggiungere": {
+    "LINGUAGGI": "dizionario con .py associato a python e .cs associato a c_sharp",
+    "SYSTEM_PROMPT_CSHARP": "copia di SYSTEM_PROMPT con l'ultima frase cambiata in modo che chieda il file C# completo invece del file Python completo, e che vieti di modificare namespace, modificatori di accesso e direttive using. SYSTEM_PROMPT resta invariato.",
+    "NON_IMPLEMENTATO_CS": "espressione regolare che riconosce throw new NotImplementedException"
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTE le funzioni dello scheletro piu' quelle nuove: validate_implementation rifiuta il file se una scompare. Le funzioni non elencate in implementare_o_creare vanno riportate carattere per carattere come stanno nello scheletro.",
+    "conservare_identiche": [
+      "call_model",
+      "budget_token",
+      "cost_of",
+      "extract_code",
+      "signatures",
+      "dataclass_fields",
+      "import_check",
+      "preflight",
+      "record",
+      "main"
+    ],
+    "implementare_o_creare": [
+      "linguaggio_del_file",
+      "_firme_csharp",
+      "validate_implementation",
+      "build_check",
+      "run"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_code_agent_csharp.py",
+    "casi": [
+      "il linguaggio si riconosce dal suffisso e un suffisso ignoto solleva ValueError",
+      "il percorso Python resta identico: conforme accettato, firma alterata bocciata",
+      "C# conforme accettato",
+      "C# con sintassi rotta bocciato",
+      "C# con un metodo scomparso bocciato, con il nome del metodo nell'errore",
+      "C# con firma o tipo di ritorno alterati bocciato, con il nome del metodo",
+      "C# con una classe scomparsa bocciato, con il nome della classe",
+      "C# che restituisce lo scheletro identico bocciato: NotImplementedException non e' implementazione",
+      "C# con un metodo privato aggiunto accettato",
+      "build_check e import_check esistono entrambe"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

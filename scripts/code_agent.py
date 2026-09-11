@@ -61,6 +61,15 @@ TIER_MODEL = {
     # Gratuito e piu' veloce dei modelli a pagamento: misurato dal banco su Groq.
     "gratis": "groq:openai/gpt-oss-120b",
     "gratis_rapido": "groq:qwen/qwen3.8-27b",
+    # I gratuiti Groq hanno una finestra di 6000 token al minuto complessivi:
+    # prompt piu' max_tokens la supera e Groq risponde 413. Per un file che va
+    # riemesso intero servono i gratuiti OpenRouter, che prendono 8192 di budget.
+    # Entrambi hanno superato i due banchi: vedi scripts/free_roster.json.
+    "gratis_grande": "nex-agi/nex-n2.5-mini:free",
+    "gratis_lento": "nvidia/nemotron-3-super-120b-a12b:free",
+    # Gratuito specializzato sul codice, 27 s misurati, banchi A e B pieni.
+    "gratis_codice": "cohere/north-mini-code:free",
+    "gratis_visione": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
     "simple": "deepseek-v4-flash",
     "complex": "qwen/qwen3-coder-30b-a3b-instruct",
 }
@@ -70,12 +79,32 @@ PREFLIGHT_MODEL = "google/gemini-2.5-flash-lite"
 FENCE = re.compile(r"`{3}[a-zA-Z]*\s*\n(.*?)\n\s*`{3}", re.S)
 FORBIDDEN = re.compile(r"\b(TODO|FIXME|XXX|pass\s*#\s*implementare)\b")
 
+# Suffisso -> grammatica, la stessa mappa di scripts/build_function_index.py.
+LINGUAGGI = {".py": "python", ".cs": "c_sharp"}
+
+# Il segnaposto del C#, equivalente di raise NotImplementedError.
+NON_IMPLEMENTATO_CS = re.compile(r"throw\s+new\s+NotImplementedException")
+
+# Letterali stringa Python, per escluderli dalla ricerca dei segnaposto: un
+# TODO dentro una stringa non e' un promemoria lasciato a meta', ed e' cosi'
+# che questo file bocciava se stesso quando lo si dava in pasto alla catena.
+STRINGHE = re.compile(r"(?:[rbuRBU]{0,2})('''|\"\"\"|'|\")(?:\\.|(?!\1).)*\1", re.S)
+
 SYSTEM_PROMPT = (
     "Sei un Senior Infiller. Ricevi il contratto di un modulo e il suo scheletro. "
     "Implementa TUTTI i corpi delle funzioni rispettando il contratto alla lettera. "
     "Le firme, i nomi, le annotazioni di tipo e l'ordine dei parametri non sono modificabili. "
     "Niente segnaposto, niente scorciatoie, niente dipendenze fuori da quelle dichiarate nel "
     "contratto. Restituisci il file Python completo e nient'altro."
+)
+
+SYSTEM_PROMPT_CSHARP = (
+    "Sei un Senior Infiller. Ricevi il contratto di un modulo e il suo scheletro. "
+    "Implementa TUTTI i corpi dei metodi rispettando il contratto alla lettera. "
+    "Le firme, i nomi, i tipi di ritorno e l'ordine dei parametri non sono modificabili. "
+    "Non modificare namespace, direttive using, modificatori di accesso ne' la gerarchia "
+    "delle classi. Niente segnaposto, niente scorciatoie, niente dipendenze fuori da quelle "
+    "dichiarate nel contratto. Restituisci il file C# completo e nient'altro."
 )
 
 
@@ -236,7 +265,199 @@ def dataclass_fields(source: str) -> dict:
     return found
 
 
+def _intervalli_funzioni(source: str):
+    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi."""
+    albero = ast.parse(source)
+    intervalli = {}
+    for nodo in albero.body:
+        if isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            inizio = min([nodo.lineno] + [d.lineno for d in nodo.decorator_list])
+            intervalli[nodo.name] = (inizio, nodo.end_lineno)
+    return intervalli
+
+
+def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
+    """Lo scheletro con le sole funzioni dichiarate sostituite da quelle della risposta.
+
+    Serve per i file troppo grandi da riemettere interi: su model_scout.py, 26.693
+    byte, l'uscita necessaria sfiorava il budget e il modello emetteva la sola
+    funzione cambiata, che il validatore respingeva come quindici funzioni scomparse.
+
+    Il perimetro e' l'incarico: cio' che il modello manda e non era dichiarato viene
+    ignorato. Il file risultante viene poi validato per intero come sempre, quindi
+    le garanzie non cambiano.
+    """
+    if not nomi:
+        return skeleton
+
+    nuove = _intervalli_funzioni(risposta)   # solleva SyntaxError se la risposta e' rotta
+    vecchie = _intervalli_funzioni(skeleton)
+
+    assenti_risposta = [n for n in nomi if n not in nuove]
+    if assenti_risposta:
+        raise ValueError(
+            "Funzioni dichiarate nell'incarico e assenti dalla risposta: "
+            + ", ".join(sorted(assenti_risposta)))
+    assenti_scheletro = [n for n in nomi if n not in vecchie]
+    if assenti_scheletro:
+        raise ValueError(
+            "Funzioni dichiarate nell'incarico e assenti dallo scheletro: "
+            + ", ".join(sorted(assenti_scheletro))
+            + ". La modifica parziale sostituisce, non aggiunge: per una funzione nuova "
+              "serve un incarico senza solo_funzioni.")
+
+    righe_vecchie = skeleton.splitlines(keepends=True)
+    righe_nuove = risposta.splitlines(keepends=True)
+
+    # Dal basso verso l'alto, cosi' gli indici delle righe ancora da sostituire
+    # non si spostano.
+    for nome in sorted(nomi, key=lambda n: vecchie[n][0], reverse=True):
+        da, a = vecchie[nome]
+        nda, na = nuove[nome]
+        blocco = righe_nuove[nda - 1:na]
+        if blocco and not blocco[-1].endswith("\n"):
+            blocco[-1] += "\n"
+        righe_vecchie[da - 1:a] = blocco
+
+    return "".join(righe_vecchie)
+
+
+def prompt_parziale(contract: str, nome_file: str, skeleton: str, nomi) -> str:
+    """Il prompt che chiede SOLO le funzioni dichiarate, non il file intero."""
+    elenco = ", ".join(nomi)
+    return (
+        "CONTRATTO:\n{}\n\n"
+        "FILE ESISTENTE ({}):\n{}\n\n"
+        "PERIMETRO: restituisci SOLO queste funzioni, complete e nella loro forma "
+        "definitiva: {}.\n"
+        "NON restituire il file intero. NON restituire le altre funzioni. Non "
+        "cambiare le firme. Il resto del file viene conservato automaticamente."
+    ).format(contract, nome_file, skeleton, elenco)
+
+
+def linguaggio_del_file(target: Path) -> str:
+    """Grammatica da usare per validare il file, dedotta dal suffisso.
+
+    Solleva ValueError su un suffisso ignoto: validare con il parser sbagliato
+    e' peggio che fermarsi, perche' produce un verdetto senza significato.
+    """
+    suffisso = Path(target).suffix.lower()
+    if suffisso not in LINGUAGGI:
+        raise ValueError("Nessuna grammatica per il suffisso {}".format(suffisso or "(nessuno)"))
+    return LINGUAGGI[suffisso]
+
+
+def _senza_stringhe(code: str) -> str:
+    """Il codice con i letterali stringa svuotati, per cercare i segnaposto.
+
+    Un TODO scritto dentro una stringa non e' un promemoria lasciato a meta': e'
+    dato. I commenti restano, quindi un vero "# TODO" viene ancora bocciato.
+    """
+    return STRINGHE.sub('""', code)
+
+
+def _firme_csharp(source: str):
+    """Per ogni classe C#, i suoi metodi come (nome, parametri, tipo di ritorno).
+
+    Usa tree_sitter con la grammatica c_sharp, la stessa scelta di
+    scripts/build_function_index.py. Solleva SyntaxError quando l'albero contiene
+    nodi ERROR o mancanti, che e' il modo in cui tree_sitter segnala la sintassi rotta.
+    """
+    import tree_sitter_c_sharp
+    from tree_sitter import Language, Parser
+
+    dati = source.encode("utf-8")
+    albero = Parser(Language(tree_sitter_c_sharp.language())).parse(dati)
+    if albero.root_node.has_error:
+        raise SyntaxError("C#: l'albero contiene nodi ERROR o mancanti")
+
+    def testo(nodo):
+        return dati[nodo.start_byte:nodo.end_byte].decode("utf-8", "replace")
+
+    def normalizza(valore):
+        return re.sub(r"\s+", " ", valore).strip()
+
+    def nome_di(nodo):
+        for figlio in nodo.children:
+            if figlio.type == "identifier":
+                return testo(figlio)
+        return "?"
+
+    def firma_metodo(nodo):
+        """Il nome del metodo e' l'identificatore seguito dalla lista parametri."""
+        figli = list(nodo.children)
+        for indice, figlio in enumerate(figli):
+            successivo = figli[indice + 1] if indice + 1 < len(figli) else None
+            if figlio.type == "identifier" and successivo is not None \
+                    and successivo.type == "parameter_list":
+                precedente = figli[indice - 1] if indice else None
+                ritorno = normalizza(testo(precedente)) if precedente is not None \
+                    and precedente.type not in ("modifier", "attribute_list") else ""
+                return testo(figlio), normalizza(testo(successivo)), ritorno
+        return nome_di(nodo), "", ""
+
+    CONTENITORI = (
+        "class_declaration", "struct_declaration",
+        "interface_declaration", "record_declaration",
+    )
+    risultato = {}
+
+    def visita(nodo, contenitore=None):
+        for figlio in nodo.children:
+            if figlio.type in CONTENITORI:
+                proprio = nome_di(figlio)
+                risultato.setdefault(proprio, [])
+                visita(figlio, proprio)
+            elif figlio.type == "method_declaration" and contenitore is not None:
+                risultato[contenitore].append(firma_metodo(figlio))
+                visita(figlio, contenitore)
+            else:
+                visita(figlio, contenitore)
+
+    visita(albero.root_node)
+    return risultato
+
+
+def _valida_csharp(code: str, skeleton: str, task: dict):
+    """Sul C# valgono le stesse regole del Python: si aggiunge e si riempie, non si toglie."""
+    errors = []
+    try:
+        ottenute = _firme_csharp(code)
+    except SyntaxError as exc:
+        return ["Sintassi C# non valida: {}".format(exc)]
+    attese = _firme_csharp(skeleton)
+
+    classi_mancanti = sorted(set(attese) - set(ottenute))
+    if classi_mancanti:
+        errors.append("Classi scomparse rispetto allo scheletro: " + ", ".join(classi_mancanti))
+
+    for classe in sorted(set(attese) & set(ottenute)):
+        membri_attesi = {m[0]: m for m in attese[classe]}
+        membri_ottenuti = {m[0]: m for m in ottenute[classe]}
+        mancanti = sorted(set(membri_attesi) - set(membri_ottenuti))
+        if mancanti:
+            errors.append("Metodi scomparsi da {}: {}".format(classe, ", ".join(mancanti)))
+        for metodo in sorted(set(membri_attesi) & set(membri_ottenuti)):
+            if membri_attesi[metodo] != membri_ottenuti[metodo]:
+                errors.append(
+                    "Firma alterata in {}.{}: atteso {} ottenuto {}".format(
+                        classe, metodo,
+                        membri_attesi[metodo][1:], membri_ottenuti[metodo][1:]))
+
+    consentiti = set(task.get("allow_stub", []))
+    if NON_IMPLEMENTATO_CS.search(code) and not consentiti:
+        errors.append("Corpi ancora non implementati: throw new NotImplementedException")
+
+    segnaposto = sorted({m.group(0) for m in FORBIDDEN.finditer(_senza_stringhe(code))})
+    if segnaposto:
+        errors.append("Segnaposto presenti nel codice: " + ", ".join(segnaposto))
+
+    return errors
+
+
 def validate_implementation(code: str, skeleton: str, task: dict):
+    if linguaggio_del_file(ROOT / task["file"]) == "c_sharp":
+        return _valida_csharp(code, skeleton, task)
     errors = []
     try:
         ast.parse(code)
@@ -282,11 +503,43 @@ def validate_implementation(code: str, skeleton: str, task: dict):
     if residui:
         errors.append("Corpi ancora non implementati: " + ", ".join(sorted(set(residui))))
 
-    segnaposto = sorted({m.group(0) for m in FORBIDDEN.finditer(code)})
+    segnaposto = sorted({m.group(0) for m in FORBIDDEN.finditer(_senza_stringhe(code))})
     if segnaposto:
         errors.append("Segnaposto presenti nel codice: " + ", ".join(segnaposto))
 
     return errors
+
+
+def build_check(target: Path) -> list:
+    """Verifica che il file appena scritto stia in piedi, secondo il suo linguaggio.
+
+    Sul Python delega a import_check. Sul C# compila il progetto che contiene il
+    file: il compilatore e' un controllo di firme piu' severo di qualunque
+    confronto di alberi, perche' se una firma cambia i chiamanti non compilano.
+    """
+    if linguaggio_del_file(target) == "python":
+        return import_check(target)
+
+    progetto = None
+    cartella = Path(target).resolve().parent
+    while cartella != cartella.parent:
+        trovati = sorted(cartella.glob("*.csproj"))
+        if trovati:
+            progetto = trovati[0]
+            break
+        cartella = cartella.parent
+    if progetto is None:
+        return ["Nessun .csproj trovato risalendo da " + str(target)]
+
+    proc = subprocess.run(
+        ["dotnet", "build", str(progetto), "--nologo", "-v", "q"],
+        cwd=str(ROOT), capture_output=True, text=True,
+    )
+    if proc.returncode == 0:
+        return []
+    righe = [r.strip() for r in (proc.stdout + proc.stderr).splitlines()
+             if ": error" in r or ": warning CS" in r]
+    return righe[:10] or ["dotnet build fallito senza righe di errore riconoscibili"]
 
 
 def import_check(target: Path) -> list:
@@ -344,10 +597,15 @@ def run(task: dict, do_preflight: bool) -> dict:
     code = ""
     esito_preflight = ""
 
+    solo = list(task.get("solo_funzioni", []))
+
     for tentativo in range(1, MAX_ATTEMPTS + 1):
-        prompt = "CONTRATTO:\n{}\n\nSCHELETRO DA IMPLEMENTARE ({}):\n{}".format(
-            contract, task["file"], skeleton
-        )
+        if solo:
+            prompt = prompt_parziale(contract, task["file"], skeleton, solo)
+        else:
+            prompt = "CONTRATTO:\n{}\n\nSCHELETRO DA IMPLEMENTARE ({}):\n{}".format(
+                contract, task["file"], skeleton
+            )
         if contesto:
             prompt += "\n\nCONTESTO DI SOLA LETTURA:" + contesto
         if errors:
@@ -356,15 +614,24 @@ def run(task: dict, do_preflight: bool) -> dict:
             prompt += "\n\nCodice rifiutato:\n" + code
 
         budget = budget_token(model)
-        testo, usage = call_model(model, prompt, SYSTEM_PROMPT, max_tokens=budget)
+        sistema = SYSTEM_PROMPT_CSHARP \
+            if linguaggio_del_file(ROOT / task["file"]) == "c_sharp" else SYSTEM_PROMPT
+        testo, usage = call_model(model, prompt, sistema, max_tokens=budget)
         chiamate += 1
         costo += cost_of(model, usage)
         code = extract_code(testo)
-        errors = validate_implementation(code, skeleton, task)
+        if solo:
+            try:
+                code = innesta_funzioni(skeleton, code, solo)
+            except (SyntaxError, ValueError) as exc:
+                errors = ["Innesto parziale rifiutato: {}".format(exc)]
+                code = ""
+        if not (solo and errors):
+            errors = validate_implementation(code, skeleton, task)
 
         if not errors:
             target.write_text(code.rstrip() + "\n", encoding="utf-8")
-            errors = import_check(target)
+            errors = build_check(target)
             if errors:
                 target.write_text(skeleton, encoding="utf-8")
 

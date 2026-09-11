@@ -129,7 +129,10 @@ public static class DeferredEvidence
         ArgumentException.ThrowIfNullOrWhiteSpace(record.TestId);
 
         // Reject ids that could write outside the evidence folder instead of silently normalizing them.
-        if (record.TestId.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+        // Path.GetInvalidFileNameChars() is host-dependent: on Linux it is only {'\0','/'}, which would
+        // let ids like "bad:id" through on the ubuntu-latest CI runner even though they are meant to be
+        // rejected everywhere. The set below is fixed regardless of host OS.
+        if (ContainsInvalidTestIdChar(record.TestId)
             || record.TestId.Contains('/')
             || record.TestId.Contains('\\')
             || record.TestId == "."
@@ -239,5 +242,21 @@ public static class DeferredEvidence
         }
 
         return record ?? throw new InvalidDataException($"evidence_unreadable:{pointer.EvidencePath}");
+    }
+
+    // Fixed set of characters a test id may never contain, independent of the host filesystem
+    // (Windows and Unix disagree on which of ':' '?' '|' etc. are invalid filename characters).
+    private static bool ContainsInvalidTestIdChar(string id)
+    {
+        const string Invalid = ":?|*\"<>";
+        foreach (char c in id)
+        {
+            if (c < 0x20 || c == 0x7F || Invalid.IndexOf(c) >= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

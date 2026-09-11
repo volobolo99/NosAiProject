@@ -18,7 +18,7 @@ jobs:
         # (e.g. cryptography); installing only pytest made collection fail.
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[test]"
+          python -m pip install -e ".[test,chain,mcp]"
       - name: Compile remaining Python packages
         # Inventory and marks: docs/INVENTARIO_PYTHON.md. COPERTO packages were
         # removed; compileall must still succeed on what is left.

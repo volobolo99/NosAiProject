@@ -86,7 +86,7 @@ public sealed class SkillCostAgainstCatalogueTests
     /// esattamente come la posizione nella classe suggerisce, ed è la prima
     /// ragione per credere che <c>COST</c> sia un costo.
     /// </remarks>
-    [NosTaleClientFact]
+    [NosAiVolumeFact]
     public void Il_catalogo_da_zero_ai_due_attacchi_base_e_un_costo_agli_altri()
     {
         GameReferenceLocation location = GameReferenceLocator.Locate();

@@ -111,3 +111,44 @@ def test_nessun_file_temporaneo_resta_sul_disco(ledger_env):
     mcp_server.update_contract_state("C-101", "MERGED")
 
     assert list(path.parent.glob("*.tmp")) == []
+
+
+# --- lo scopo abbandonato non e' lavoro incompleto -------------------------
+
+def test_un_contratto_abbandonato_esce_dal_denominatore(ledger_env):
+    """Misurato il 2026-09-11: done_count contava solo gli stati conclusi, ma i
+    DROPPED restavano nel denominatore. Il Gate 0 reale, con tre contratti
+    conclusi e tre abbandonati per decisione (ADR-0029), segnava 50% pur non
+    avendo piu' nulla di aperto, e non poteva piu' raggiungere il 100%.
+
+    Uno scopo rimosso per scelta non e' lavoro che manca: e' lavoro che non
+    serve. Contarlo come mancante rende la percentuale una misura sbagliata
+    proprio della domanda a cui deve rispondere.
+    """
+    mcp_server, path = ledger_env
+    mcp_server.update_contract_state("C-101", "MERGED")
+    mcp_server.update_contract_state("C-102", "DROPPED")
+
+    data = read(path)
+    assert data["gates"][0]["contracts"][1]["status"] == "DROPPED"
+    assert data["gates"][0]["completion_pct"] == 100, (
+        "un gate senza lavoro aperto e' completo: l'abbandonato non conta")
+
+
+def test_un_gate_tutto_abbandonato_e_completo(ledger_env):
+    mcp_server, path = ledger_env
+    mcp_server.update_contract_state("C-101", "DROPPED")
+    mcp_server.update_contract_state("C-102", "DROPPED")
+
+    assert read(path)["gates"][0]["completion_pct"] == 100
+
+
+def test_l_abbandono_non_gonfia_la_percentuale_se_resta_lavoro(ledger_env):
+    """Abbandonare non deve diventare un modo di far salire il numero: con un
+    contratto ancora aperto il gate resta incompleto."""
+    mcp_server, path = ledger_env
+    mcp_server.update_contract_state("C-101", "DROPPED")
+
+    assert read(path)["gates"][0]["completion_pct"] == 0, (
+        "C-102 e' ancora DRAFT: il gate non e' completo"
+    )
