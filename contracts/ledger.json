@@ -140,7 +140,7 @@
     {
       "gate": 1,
       "title": "Intercettazione pacchetti, hook e parsing opcode",
-      "completion_pct": 83,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-101",
@@ -232,7 +232,7 @@
           "signature": "da definire",
           "struct_size": null,
           "test_file": "da definire",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "BOUNDS_CHECKED",
             "THREAD_SAFE",
@@ -244,7 +244,9 @@
           ],
           "legacy_gate": 1,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "ADR-0032 del 2026-09-11: nessun hook di memoria o DLL injection nel client ora. Il canale di osservazione resta quello esistente (cattura di rete + lettura esterna di memoria via DllImport, gia' MERGED e testato). Si riapre con un caso nominato: un dato che quel canale non possa fornire in alcun modo."
         },
         {
           "cid": "C-106",
@@ -578,14 +580,55 @@
           },
           "product_phases": [],
           "legacy_gate": 9
+        },
+        {
+          "cid": "ORCH-002",
+          "title": "Drift-check CI per l'indice funzioni (manifest + shard)",
+          "target_file": "scripts/build_function_index.py; .github/workflows/function-index-check.yml",
+          "signature": "write_index_tree(output_directory: pathlib.Path, result: dict[str, Any], shard_size: int = 500) -> list[pathlib.Path]",
+          "struct_size": null,
+          "test_file": "tests/test_function_index.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-11",
+          "invariants": [
+            "DETERMINISTIC"
+          ],
+          "verification": {
+            "command": "python -m pytest tests/test_function_index.py -q; py -3.14 scripts/build_function_index.py <fixture.json> rev out --strict --write-tree (collaudo end-to-end manuale su fixture C#+Python)",
+            "last_result": "verde in questa sessione; suite Python completa (536+ test) invariata"
+          },
+          "product_phases": [],
+          "legacy_gate": 9,
+          "metrics": "pytest tests/test_function_index.py -q verde; suite Python completa invariata; collaudo end-to-end --write-tree su fixture C#/Python verificato manualmente"
+        },
+        {
+          "cid": "ORCH-003",
+          "title": "Edges di chiamata testuali (C#/Python) nell'indice funzioni, non un call graph semantico",
+          "target_file": "scripts/build_function_index.py",
+          "signature": "_call_edges(path: str, language: str, raw: bytes, tree: Any, line_offset: int, file_function_names: set[str]) -> list[dict[str, Any]]",
+          "struct_size": null,
+          "test_file": "tests/test_function_index.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-11",
+          "invariants": [
+            "NO_EXCEPTION_ON_UNRECOGNIZED_NODE"
+          ],
+          "verification": {
+            "command": "python -m pytest tests/test_function_index.py -q; collaudo end-to-end manuale su fixture C#+Python con risoluzione same-file verificata",
+            "last_result": "verde in questa sessione; schema_version v3, calls risolte correttamente su fixture C#/Python"
+          },
+          "product_phases": [],
+          "legacy_gate": 9,
+          "metrics": "pytest tests/test_function_index.py -q verde; schema v3 con calls risolte su fixture C#/Python, nessuna eccezione su nodi non riconosciuti"
         }
       ]
     }
   ],
   "domande_aperte": [
-    "C-003/C-004/C-005: la FASE 5 del protocollo presuppone codice nativo e ASan, che il progetto non ha. O si apre un ramo nativo, o quei tre contratti restano DRAFT per sempre e la FASE 5 va riscritta sugli stack reali (dotnet test, pytest).",
+    "C-003/C-004/C-005: RISOLTA da ADR-0029 del 2026-09-11 (docs/adr/ADR-0029-phase5-dotnet-pytest-no-native-branch.md) — nessun ramo nativo, la FASE 5 si misura con dotnet build/test e pytest, non con ASan. I tre contratti chiudono come scopi che non esistono (DROPPED).",
     "C-204: RISOLTA da ADR-0030 del 2026-09-11 (docs/adr/ADR-0030-csharp-owns-game-state-python-governs-models.md) — il runtime C# possiede lo stato di gioco, nosai/ Python governa i modelli. Due canali asimmetrici, implementati e testati (TEST_VERIFIED).",
-    "C-304: una FSM esplicita sostituisce Planner/Orchestrator o li affianca. Affiancarli senza dirlo creerebbe due autorita' di decisione."
+    "C-304: RISOLTA da ADR-0031 del 2026-09-11 (docs/adr/ADR-0031-no-explicit-fsm.md) — nessuna FSM esplicita: Planner/Orchestrator (HTN/GOAP) non sono nel percorso di esecuzione (ADR-0028), quindi non c'e' autorita' da duplicare. Il contratto chiude (DROPPED); si riapre con un caso nominato.",
+    "C-105: RISOLTA da ADR-0032 del 2026-09-11 (docs/adr/ADR-0032-no-memory-hook-yet.md) — nessun hook di memoria o DLL injection nel client ora; il canale resta rete + lettura esterna di memoria via DllImport. Si riapre con un caso nominato."
   ],
   "phase_mapping_note": "gates[].gate is a legacy grouping, NOT a product AP number. contracts[].product_phases maps to ROADMAP_ESECUTIVA. Existing status and verification are historical evidence, not revalidated by documentation reconciliation.",
   "signature_resolution_note": "C-103, C-104, C-106, C-203 and C-401 signatures were resolved from canonical source symbols on 2026-09-10. Status remains historical unless the linked verification command is executed."

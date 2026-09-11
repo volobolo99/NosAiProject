@@ -169,6 +169,57 @@ def _function_rows(path: str, language: str, raw: bytes, tree: Any, line_offset:
     return rows
 
 
+def _call_edges(
+    path: str,
+    language: str,
+    raw: bytes,
+    tree: Any,
+    line_offset: int,
+    file_function_names: set[str],
+) -> list[dict[str, Any]]:
+    """Best-effort static call edges for C# and Python only.
+
+    Text-match resolution against same-file names; no import or overload
+    resolution. Not a semantic call graph.
+    """
+
+    if language not in ("c_sharp", "python"):
+        return []
+    target_kind = "invocation_expression" if language == "c_sharp" else "call"
+    edges: list[dict[str, Any]] = []
+    stack = [tree.root_node]
+    while stack:
+        node = stack.pop()
+        if node.type == target_kind:
+            func_node = node.child_by_field_name("function")
+            if func_node is not None:
+                callee_text = func_node.text.decode("utf-8", errors="replace").strip()
+                caller_scope = None
+                ancestor = node.parent
+                while ancestor is not None:
+                    if ancestor.type in KINDS:
+                        name_node = ancestor.child_by_field_name("name")
+                        if name_node is not None:
+                            caller_scope = name_node.text.decode("utf-8", errors="replace")
+                        break
+                    ancestor = ancestor.parent
+                last_segment = callee_text.rsplit(".", 1)[-1] if callee_text else ""
+                resolved_to = None
+                if last_segment in file_function_names:
+                    resolved_to = {"path": path, "line": node.start_point.row + 1 + line_offset}
+                edges.append(
+                    {
+                        "path": path,
+                        "line": node.start_point.row + 1 + line_offset,
+                        "caller_scope": caller_scope,
+                        "callee_text": callee_text,
+                        "resolved_to": resolved_to,
+                    }
+                )
+        stack.extend(reversed(node.named_children))
+    return edges
+
+
 def generate(
     sources: Mapping[str, str],
     revision: str,
@@ -189,6 +240,7 @@ def generate(
     coverage: list[dict[str, Any]] = []
     parser_versions: dict[str, str] = {}
     all_errors: list[dict[str, Any]] = []
+    all_calls: list[dict[str, Any]] = []
 
     for path, source in sorted(((str(path), str(value)) for path, value in sources.items()), key=lambda item: item[0]):
         if any(fnmatch.fnmatch(path, pattern) for pattern in excluded):
@@ -213,6 +265,8 @@ def generate(
             section_rows = _function_rows(path, language, raw, tree, line_offset)
             rows.extend(section_rows)
             function_count += len(section_rows)
+            file_function_names = {row["name"] for row in section_rows if row["name"] != "<anonymous/accessor>"}
+            all_calls.extend(_call_edges(path, language, raw, tree, line_offset, file_function_names))
         file_errors.sort(key=lambda item: (item["line"], item["column"], item["node_type"]))
         coverage.append(
             {
@@ -228,11 +282,13 @@ def generate(
     rows.sort(key=lambda item: (item["path"], item["line"], item["kind"], item["name"], item["signature"]))
     coverage.sort(key=lambda item: item["path"])
     all_errors.sort(key=lambda item: (item["path"], item["line"], item["column"], item["node_type"]))
+    all_calls.sort(key=lambda item: (item["path"], item["line"]))
     result: dict[str, Any] = {
-        "schema_version": "nosai.function_index.v2",
+        "schema_version": "nosai.function_index.v3",
         "source_revision": str(revision),
         "coverage": coverage,
         "functions": rows,
+        "calls": all_calls,
         "parser_versions": parser_versions,
         "parse_errors": len(all_errors),
         "parse_error_details": all_errors,
@@ -243,6 +299,9 @@ def generate(
             "HTML inline scripts are indexed; external scripts must be indexed separately.",
             "Accessor and anonymous entries may lack a semantic name.",
             "Strict CI mode is required before declaring a snapshot complete.",
+            "Call edges (\"calls\") cover only C# and Python, and resolve only same-file name "
+            "matches by text: this is not a semantic call graph (no import resolution, no "
+            "overload resolution).",
         ],
     }
     if strict and all_errors:
@@ -265,6 +324,42 @@ def _load_sources(root: pathlib.Path) -> dict[str, str]:
     return sources
 
 
+def write_index_tree(output_directory: pathlib.Path, result: dict[str, Any], shard_size: int = 500) -> list[pathlib.Path]:
+    """Write ``result`` as a manifest plus per-root shards instead of one file.
+
+    Deterministic: calling this twice with the same ``result`` produces
+    byte-identical files, so a CI job can diff the output against what is
+    already committed under ``docs/function-index/``.
+    """
+
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    root_groups: dict[str, list[dict[str, Any]]] = {}
+    for row in result["functions"]:
+        parts = pathlib.Path(row["path"]).parts
+        root = parts[0] if len(parts) > 1 else "other"
+        root_groups.setdefault(root, []).append(row)
+
+    written: list[pathlib.Path] = []
+    manifest: dict[str, Any] = {key: value for key, value in result.items() if key != "functions"}
+    manifest["shards"] = []
+
+    for root in sorted(root_groups):
+        rows = root_groups[root]
+        for index, start in enumerate(range(0, len(rows), shard_size)):
+            shard = rows[start : start + shard_size]
+            filename = f"{root}-{index:03d}.json"
+            shard_path = output_directory / filename
+            shard_path.write_text(json.dumps(shard, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            written.append(shard_path)
+            manifest["shards"].append({"root": root, "file": filename, "count": len(shard)})
+
+    manifest_path = output_directory / "FUNCTION_INDEX.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    written.append(manifest_path)
+    return written
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("checkout", type=pathlib.Path, help="Git checkout or JSON path-to-source fixture")
@@ -272,8 +367,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("output_directory", type=pathlib.Path)
     parser.add_argument("--strict", action="store_true", help="fail when any parser error is found")
     parser.add_argument("--exclude", action="append", default=[], help="glob path to exclude (repeatable)")
+    parser.add_argument(
+        "--write-tree",
+        action="store_true",
+        help="write manifest + sharded function files instead of one monolithic JSON",
+    )
     args = parser.parse_args(argv)
     result = generate(_load_sources(args.checkout), args.revision, strict=args.strict, excluded_paths=args.exclude)
+    if args.write_tree:
+        written = write_index_tree(args.output_directory, result)
+        print(json.dumps({"files_written": len(written), "functions": len(result["functions"]), "parse_errors": result["parse_errors"]}))
+        return 0
     args.output_directory.mkdir(parents=True, exist_ok=True)
     (args.output_directory / "FUNCTION_INDEX.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"

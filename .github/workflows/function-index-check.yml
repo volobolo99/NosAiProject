@@ -1,0 +1,39 @@
+name: Function index check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tree-sitter grammars
+        run: |
+          pip install "tree-sitter==0.25.2" "tree-sitter-c-sharp==0.23.5" \
+            "tree-sitter-python==0.25.0" "tree-sitter-javascript==0.25.0" \
+            "tree-sitter-cpp==0.23.4" "tree-sitter-bash==0.25.1" \
+            "tree-sitter-powershell==0.26.4"
+
+      - name: Regenerate function index
+        run: python scripts/build_function_index.py . "${{ github.sha }}" /tmp/function-index-check --strict --write-tree
+
+      - name: Compare against committed index
+        run: |
+          set -e
+          if ! diff -rq /tmp/function-index-check docs/function-index/ >/dev/null 2>&1; then
+            echo "docs/function-index/ e' fuori sincrono: esegui"
+            echo "  python scripts/build_function_index.py . <SHA> docs/function-index --write-tree"
+            echo "e committa il risultato."
+            diff -rq /tmp/function-index-check docs/function-index/ || true
+            exit 1
+          fi
