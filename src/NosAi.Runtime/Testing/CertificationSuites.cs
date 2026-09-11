@@ -72,7 +72,10 @@ public static class CertificationSuites
             ScenarioStageTestRunner.RunAllTestsAsync),
 
         new("security", "--security-test", "Sessioni effimere e crittografia",
-            () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll()))
+            () => Task.FromResult(NosAi.Runtime.Security.EphemeralSessionTestRunner.RunAll())),
+
+        new("wire-fuzz", "--wire-fuzz-test", "Fuzzing del parsing header wire (C-402)",
+            () => Task.FromResult(WireProtocolFuzzTestRunner.RunAll()))
     };
 
     /// <summary>

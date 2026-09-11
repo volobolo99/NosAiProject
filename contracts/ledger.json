@@ -470,7 +470,7 @@
     {
       "gate": 4,
       "title": "Hardening, fuzzing e rilascio",
-      "completion_pct": 75,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-401",
@@ -500,7 +500,7 @@
           "signature": "da definire",
           "struct_size": null,
           "test_file": "da definire",
-          "status": "DRAFT",
+          "status": "TEST_VERIFIED",
           "invariants": [
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
@@ -511,7 +511,9 @@
           ],
           "legacy_gate": 4,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "Harness di fuzzing deterministico creato il 2026-09-11 (contratto contracts/wire-protocol-fuzz-harness-011.json): src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs, sei controlli su WireHeader.TryRead (src/NosAi.Protocol/WireProtocol.cs, non modificato) -- lunghezze troncate, round-trip su tutti i 256 valori di MessageType, round-trip sui valori limite di PayloadLength/SequenceNumber, 34 varianti di magic sbagliato, 255 versioni sbagliate, 50000 buffer generati/mutati con seed fisso 1337. Un difetto reale trovato dal collaudo (non dalla preflight, che aveva approvato): la logica di tre controlli era invertita (testava TryRead()==false come fallimento invece di successo), diagnosticato e corretto da deep_reasoner_solve_crash (DeepSeek) sull'evidenza reale di esecuzione, non per ispezione. Collegato alla tabella delle suite (--wire-fuzz-test) e a un Fact xUnit dedicato (WireProtocolFuzzTests.cs). Verificato: dotnet build 0 errori/0 avvisi, --wire-fuzz-test 6/6 PASS, dotnet test sulla suite .NET intera 2832/2841 (9 ignorati, 0 falliti, +1 rispetto alla baseline per il nuovo Fact)."
         },
         {
           "cid": "C-403",

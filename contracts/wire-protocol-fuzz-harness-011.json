@@ -1,0 +1,69 @@
+{
+  "contract_id": "wire-protocol-fuzz-harness-011",
+  "parte_di": "C-402 (Fuzzing sui pacchetti corrotti). Bersaglio: WireHeader.TryRead in src/NosAi.Protocol/WireProtocol.cs, l'unico parser di opcode del progetto (C-104, MERGED). Il progetto non ha codice nativo (ADR-0029): questo e' un harness .NET gestito, nessun ASan, nessuna dipendenza NuGet nuova oltre xUnit gia' presente nel progetto di test.",
+  "file": "src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs",
+  "scopo": "Harness di fuzzing deterministico e riproducibile per WireHeader.TryRead: verifica che il parser non lanci MAI eccezioni su nessun input, che un rifiuto non lasci mai uno stato parziale nell'header restituito, e che un'accettazione corrisponda sempre a una decodifica byte-esatta della sorgente. Segue lo stesso schema di ogni altra suite di certificazione del progetto (es. src/NosAi.Runtime/Security/EphemeralSessionTestRunner.cs): un metodo RunAll() sincrono che stampa PASS/FAIL per ogni controllo nominato e ritorna bool.",
+  "riferimento_di_stile_da_seguire": {
+    "file": "src/NosAi.Runtime/Security/EphemeralSessionTestRunner.cs",
+    "pattern": "public static partial class NomeTestRunner { public static bool RunAll() { Console.WriteLine(\"=== ... ===\"); bool allPassed = true; allPassed &= Run(\"nome del controllo\", MetodoDiControllo); ... Console.WriteLine(allPassed ? \"=== ... passed ===\" : \"=== ... FAILED ===\"); return allPassed; } private static bool Run(string name, Func<bool> check) { try { return Report(name, check(), null); } catch (Exception ex) { return Report(name, false, ex.GetType().Name + \": \" + ex.Message); } } private static bool Report(string name, bool passed, string? error) { Console.WriteLine(\"[\" + (passed ? \"PASS\" : \"FAIL\") + \"] \" + name + (error is null ? \"\" : \" [\" + error + \"]\")); return passed; } }",
+    "nota": "Replicare ESATTAMENTE Run e Report da questo file (stessa firma, stesso comportamento): try/catch attorno a ogni controllo nominato, cosi' un'eccezione dentro un controllo diventa un FAIL nominato invece di far crashare RunAll."
+  },
+  "firma_e_struttura_richieste": {
+    "namespace": "NosAi.Runtime.Testing",
+    "using_richiesti": ["System", "System.Buffers.Binary", "NosAi.Runtime.Gate1"],
+    "tipi": [
+      {
+        "nome": "WireProtocolFuzzTestRunner",
+        "forma": "public static partial class WireProtocolFuzzTestRunner",
+        "metodo_pubblico": "public static bool RunAll() — stampa \"=== Wire header fuzz (C-402) ===\", esegue i sei controlli sotto con Run(nome, metodo) esattamente nell'ordine elencato, poi stampa \"=== Wire header fuzz passed: <N> iterazioni seed=1337, nessun crash, nessuna violazione. ===\" se tutti passano, altrimenti \"=== Wire header fuzz FAILED. Vedi le righe FAIL sopra. ===\", ritorna allPassed",
+        "helper_condiviso_obbligatorio": "private static bool HeaderContractHolds(ReadOnlySpan<byte> source, out string? violation) — NON deve mai lanciare essa stessa. Chiama WireHeader.TryRead(source, out var header, out var error). Se TryRead ritorna false: la funzione ritorna true (il contratto tiene) SOLO se header.Equals(default(WireHeader)) ED error non e' null/vuoto; altrimenti violation = descrizione e ritorna false. Se TryRead ritorna true: la funzione ritorna true SOLO se TUTTE queste condizioni valgono, altrimenti violation = quale condizione e' fallita e ritorna false: (a) error e' null; (b) source.Length >= WireHeader.HeaderSize; (c) BinaryPrimitives.ReadUInt32BigEndian(source[0..4]) == WireHeader.ExpectedMagic; (d) source[4] == WireHeader.CurrentVersion; (e) header.MessageType == (NosAi.Runtime.Gate1.WireMessageType)source[5]; (f) header.PayloadLength == BinaryPrimitives.ReadUInt16BigEndian(source[6..8]); (g) header.SequenceNumber == BinaryPrimitives.ReadUInt32BigEndian(source[8..12]). Questo helper e' l'unico punto che conosce il contratto BOUNDS_CHECKED/NO_PARTIAL_STATE; ogni controllo sotto lo riusa, non lo riscrive.",
+        "controlli_richiesti_in_ordine": [
+          {
+            "nome_visualizzato": "Ogni lunghezza troncata sotto HeaderSize e' rifiutata come incomplete_header",
+            "metodo": "TestEveryTruncatedLengthIsRefusedAsIncompleteHeader",
+            "logica": "Per length da 0 a WireHeader.HeaderSize - 1 incluso, costruisci new byte[length] (contenuto qualunque, anche tutto a zero va bene perche' la lunghezza da sola basta a rifiutare), chiama WireHeader.TryRead. Ritorna false (fallimento del controllo) se una qualunque di queste lunghezze NON produce: TryRead che ritorna false, error esattamente \"incomplete_header\", header == default. Altrimenti ritorna true."
+          },
+          {
+            "nome_visualizzato": "Un header valido fa round-trip per ogni valore di byte di MessageType",
+            "metodo": "TestRoundTripsForEveryMessageTypeByteValue",
+            "logica": "Per ogni int b da 0 a 255: crea un WireHeader con MessageType=(WireMessageType)b, PayloadLength=0x1234, SequenceNumber=0xCAFEBABEu; alloca byte[WireHeader.HeaderSize], chiama header.WriteTo(buffer); chiama HeaderContractHolds(buffer, out violation) e verifica anche che TryRead(buffer, out var letto, out var errore) ritorni true con errore nullo e letto.MessageType/PayloadLength/SequenceNumber esattamente uguali a quelli scritti. Se una sola iterazione fallisce una di queste condizioni, ritorna false."
+          },
+          {
+            "nome_visualizzato": "Un header valido fa round-trip per i valori limite di PayloadLength e SequenceNumber",
+            "metodo": "TestRoundTripsForBoundaryPayloadAndSequenceValues",
+            "logica": "Per ogni combinazione di payloadLength in {0, 1, WireHeader.MaxPayloadLength} e sequenceNumber in {0u, 1u, uint.MaxValue} (9 combinazioni), MessageType fisso a WireMessageType.Heartbeat: stesso schema di scrittura/lettura/confronto esatto del controllo precedente. Una sola combinazione che fallisce fa fallire il controllo."
+          },
+          {
+            "nome_visualizzato": "Un magic number sbagliato e' sempre rifiutato",
+            "metodo": "TestWrongMagicIsAlwaysRefused",
+            "logica": "Costruisci un header valido (12 byte, versione e resto corretti) via WriteTo su un buffer temporaneo di riferimento con MessageType=Heartbeat, PayloadLength=1, SequenceNumber=1. Per ciascuno di questi magic sbagliati: 0x00000000u, 0xFFFFFFFFu, e uno per ogni bit del magic corretto capovolto (32 varianti, WireHeader.ExpectedMagic XOR (1u << i) per i da 0 a 31) — quindi 34 varianti totali: copia il buffer di riferimento, sovrascrivi i primi 4 byte con la variante di magic (BinaryPrimitives.WriteUInt32BigEndian), chiama TryRead. Ogni variante deve produrre: false, error \"invalid_magic\", header default. Una sola variante che non lo fa fa fallire il controllo. NOTA: se una variante di magic capovolto per coincidenza produce comunque WireHeader.ExpectedMagic (impossibile con XOR su un valore diverso da zero, ma verificalo), saltala.",
+            "vincolo_di_verifica": "0x00000000 e 0xFFFFFFFF non sono mai uguali a WireHeader.ExpectedMagic (0x4E4F5341), quindi la lista e' sempre di magic effettivamente sbagliati."
+          },
+          {
+            "nome_visualizzato": "Ogni versione diversa da CurrentVersion e' sempre rifiutata",
+            "metodo": "TestWrongVersionIsAlwaysRefused",
+            "logica": "Costruisci un header valido di riferimento come sopra (magic corretto, resto valido). Per ogni byte v da 0 a 255 con v != WireHeader.CurrentVersion (255 valori): copia il buffer, sovrascrivi byte[4] = (byte)v, chiama TryRead. Ognuno deve produrre: false, error \"unsupported_version\", header default. Una sola versione che non lo fa fa fallire il controllo."
+          },
+          {
+            "nome_visualizzato": "50000 buffer generati con seed fisso non fanno mai crashare il parser ne' violano il contratto",
+            "metodo": "TestSeededMutationFuzzNeverViolatesTheContract",
+            "logica": "var rng = new Random(1337) (seed letterale, MAI Random.Shared, cosi' l'esecuzione e' identica a ogni run). Per i da 0 a 49999: genera un buffer con questa strategia — se rng.Next(2) == 0, parti da un header valido casuale (MessageType=(WireMessageType)(byte)rng.Next(256), PayloadLength=(ushort)rng.Next(ushort.MaxValue + 1), SequenceNumber=(uint)rng.NextInt64(uint.MaxValue + 1L)) scritto con WriteTo in un buffer di HeaderSize + rng.Next(0, 33) byte, con i byte oltre l'header riempiti da rng.NextBytes su uno span dedicato; altrimenti (rng.Next(2) == 1) genera un buffer interamente casuale di lunghezza rng.Next(0, 65) con rng.NextBytes. Poi, con probabilita' 50% (rng.Next(2) == 0), muta da 0 a 3 byte a posizioni casuali del buffer (rng.Next(buffer.Length) se buffer.Length > 0, altrimenti nessuna mutazione) con valori casuali (rng.Next(256)). Avvolgi la chiamata a WireHeader.TryRead e a HeaderContractHolds SOLO per questa singola iterazione in un blocco try/catch locale (non lasciare propagare l'eccezione, altrimenti si perde il numero dell'iterazione): se lancia, stampa con Console.WriteLine l'indice dell'iterazione, la lunghezza del buffer e i suoi byte in esadecimale (Convert.ToHexString) e il messaggio dell'eccezione, poi il controllo ha fallito (segna un flag e interrompi il ciclo, non serve continuare). Se HeaderContractHolds ritorna false per un buffer che NON ha lanciato, stampa allo stesso modo l'indice, i byte esadecimali e la violazione riportata da HeaderContractHolds, poi il controllo ha fallito e interrompi il ciclo. Se il ciclo completa tutte le 50000 iterazioni senza che nessuna delle due condizioni di fallimento si verifichi, il controllo passa."
+          }
+        ]
+      }
+    ]
+  },
+  "vincoli_di_governo": [
+    "Solo questo file viene creato da questo contratto: nessuna modifica a src/NosAi.Protocol/WireProtocol.cs, a src/NosAi.Runtime/Testing/CertificationSuites.cs o a qualunque altro file esistente. Il collegamento alla tabella delle suite e il test xUnit di richiamo sono un passo di integrazione separato, successivo, fuori da questo contratto.",
+    "Nessuna dipendenza esterna oltre il BCL: niente pacchetti NuGet nuovi, niente riferimenti a xUnit in questo file (xUnit vive solo nel progetto di test, questo file vive in src/NosAi.Runtime che non lo referenzia).",
+    "Deterministico al 100%: unico seed ammesso e' il letterale 1337 passato a new Random(1337). Vietati Random.Shared, new Random() senza seed, DateTime.Now/UtcNow, Guid.NewGuid() o qualunque altra sorgente di non-determinismo nel corpo dei controlli — due esecuzioni con lo stesso codice devono produrre lo stesso output su Console, a parita' di WireHeader.TryRead.",
+    "Nessun placeholder/TODO/corpo vuoto/NotImplementedException.",
+    "Nessuna scrittura su disco, nessuna rete: il report e' solo Console.WriteLine, come ogni altra suite del progetto."
+  ],
+  "postcondizioni_verificabili": [
+    "dotnet build su src/NosAi.Runtime/NosAi.Runtime.csproj (configurazione Release) compila senza errori ne' warning.",
+    "WireProtocolFuzzTestRunner.RunAll() ritorna true quando eseguito contro l'attuale, corretta implementazione di WireHeader.TryRead (nessuna modifica a WireProtocol.cs).",
+    "Due esecuzioni consecutive di RunAll() nello stesso processo producono lo stesso valore di ritorno (true) e lo stesso conteggio di iterazioni riportato: nessuna dipendenza da timing o stato globale mutabile fra le chiamate.",
+    "Se WireHeader.TryRead venisse temporaneamente rotto per test (es. rimuovendo il controllo su source.Length < HeaderSize), almeno uno dei sei controlli deve fallire e RunAll() deve ritornare false: l'harness deve essere in grado di rilevare una violazione reale, non solo passare sempre."
+  ]
+}
