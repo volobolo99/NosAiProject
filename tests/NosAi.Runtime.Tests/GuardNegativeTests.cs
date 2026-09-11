@@ -35,7 +35,18 @@ public sealed class GuardNegativeTests
 
     public GuardNegativeTests(ITestOutputHelper output) => _output = output;
 
-    private static readonly TimeSpan Patience = TimeSpan.FromSeconds(5);
+    // A ceiling, not a delay: ExpectRefusalAsync returns the moment the channel
+    // has dropped the peer, so this is only ever spent when something is
+    // actually wrong, and raising it costs nothing on the green path. Five
+    // seconds was the same thin margin GuardAdmissionTests.cs measured against
+    // 2700+ tests competing for one machine (Patience raised there to 30s on
+    // 2026-09-08); this file's own GuardNegativeTests cases were seen failing
+    // under the same full-suite contention, always transient, always clean on
+    // an isolated rerun (task_7729ef9e, fourth occurrence by C-404's evidence
+    // run on 2026-09-11). What this does NOT claim: that it fixes the suite's
+    // flakiness. That is contention across the suite, not a deadline in this
+    // file -- see GuardAdmissionTests.cs for the measurement.
+    private static readonly TimeSpan Patience = TimeSpan.FromSeconds(30);
 
     private sealed record Harness(
         GuardAiNetworkChannel Channel,
