@@ -29,6 +29,7 @@ jobs:
       # nested more than one level deep and reports success. Mirrors ci.yml so the
       # two workflows discover the same set.
       - name: Run every .NET test project
+        id: dotnet_tests
         shell: bash
         run: |
           mapfile -t tests < <(find . -name '*Tests.csproj' -type f -not -path './.git/*')
@@ -38,10 +39,29 @@ jobs:
           fi
           for test_project in "${tests[@]}"; do
             echo "== $test_project =="
-            dotnet test "$test_project" --configuration Release
+            dotnet test "$test_project" --configuration Release --logger "console;verbosity=detailed" --logger trx --results-directory "$GITHUB_WORKSPACE/TestResults/$(basename "$test_project" .csproj)"
           done
 
-      # The runtime's own --gateN-test suites are deliberately NOT run here. They
+      # The runtime's own --gateN-test suites are not additional required gates here. They
       # declare themselves "Local only", and some (DXGI perception) touch a display
       # a headless runner does not have, so forcing them into CI would produce false
       # failures — the opposite of what a gate is for. They stay a local check.
+
+      # Run Gate 1 alone only to expose its named checks after a suite failure.
+      # This is diagnostic evidence: it cannot replace or clear the failed suite.
+      - name: Diagnose Gate 1 after a test failure
+        if: ${{ failure() && steps.dotnet_tests.outcome == 'failure' }}
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p TestResults
+          dotnet src/NosAi.Runtime/bin/Release/net8.0-windows/NosAi.Runtime.dll --gate1-test 2>&1 | tee TestResults/gate1-diagnostic.log
+
+      - name: Preserve Windows test evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-test-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/
+          if-no-files-found: warn
+          retention-days: 7

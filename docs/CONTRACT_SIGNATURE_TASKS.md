@@ -22,19 +22,17 @@ ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 
 | CID | Primo percorso di ricerca | Consegna richiesta |
 |---|---|---|
-| C-105 | da definire | Decisione sul perimetro di hook memoria/DLL, contratto e test; nessuna implementazione implicita |
 | C-201 | da confermare fra i 16 sorgenti che citano dispatch | Simbolo canonico, firma completa, tipi/unità/errori, test e revisione del contratto |
 | C-202 | src/NosAi.Core/WorldModel/ | Perimetro pubblico per correlazione identificativi, firma, test e revisione |
-| C-204 | da definire | ADR sulla proprietà dello stato C# o Python, schema di sincronizzazione e test round-trip |
 | C-301 | da confermare fra i 4 sorgenti che citano HTN | Simbolo canonico, firma completa e test |
 | C-302 | da confermare fra i 5 sorgenti che citano GOAP | Simbolo canonico, firma completa e test |
 | C-303 | da confermare fra i 30 sorgenti che citano Orchestrator | Unica implementazione canonica, firma e test |
-| C-304 | da definire | Decisione se FSM sostituisce o affianca Planner/Orchestrator, ADR e test |
 | C-305 | da confermare fra i 44 sorgenti che citano recovery o reconnect | Simbolo canonico, firma completa e test |
-| C-402 | da definire | Corpus, harness di fuzzing, limiti e report riproducibile |
 | C-403 | src/NosAi.Security/ | Perimetro pubblico della superficie di sicurezza, firma e test |
 
-C-003/C-004/C-005 hanno firme proposte ma non equivalgono a implementazioni verificate.
+C-003/C-004/C-005 sono DROPPED secondo ADR-0029; C-105 secondo ADR-0032 e C-304 secondo ADR-0031. Non richiedono nuove firme o implementazioni finche le decisioni restano valide.
+
+C-204 ha firma RESOLVED nel ledger dal 2026-09-11 (RoleBindingConfiguration e DecisionTelemetryWriter, ADR-0030). C-402 ha firma `public static bool WireProtocolFuzzTestRunner.RunAll()`, confrontata con il sorgente e i consumatori `WireProtocolFuzzTests`/`CertificationSuites`. Le prove storiche sono nel ledger; questo riallineamento non dichiara una nuova esecuzione .NET.
 C-404 è una procedura di rilascio con firma n/a, non una funzione mancante.
 
 ## Criterio di chiusura

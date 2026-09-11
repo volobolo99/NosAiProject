@@ -215,3 +215,13 @@ Regola: ogni intervento deve aggiungere una voce con:
 - Prossimo passo: incarico dimostrativo in cartella temporanea (procedura in
   `tools/deepseek-mcp/README.md`), poi il primo blocco reale. Lavoro notturno non
   avviato.
+
+## 2026-09-11 — Riallineamento contratti e diagnosi CI Windows (Codex)
+
+**Obiettivo:** registrare lo stato osservato su dfa6aef e rendere diagnosticabile il fallimento di Gate1SuitePasses.
+
+**File toccati:** `.github/workflows/dotnet-windows.yml` (logger dettagliato, TRX, artifact e diagnosi Gate 1 dopo fallimento); `contracts/ledger.json` (C-105 DROPPED per ADR-0032, C-304 gate coerente con ADR-0031, C-402 firma/file/test reali, ricalcolo Gate 1); `docs/CONTRACT_MAP.md` (26 righe riallineate al ledger); `docs/CONTRACT_SIGNATURE_TASKS.md` (decisioni chiuse fuori dalla coda delle firme); `docs/REMAINING_WORK.md` (R-001 riaperto e C-402 non piu indicato come aperto in R-004); `docs/agents/EXECUTION_QUEUE.md` (prossimo incarico esplicito); `docs/WORKLOG.md` (questa registrazione).
+
+**Perche:** le chiusure documentali precedenti non descrivevano l'ultima CI; alcune decisioni e consegne gia completate risultavano ancora da implementare.
+
+**Verifica:** verificatore strutturale strict: 26 contratti, zero errori/avvisi; 12 test esistenti del verificatore e ledger passati. Nessun sorgente applicativo modificato. La CI Windows corrente ha build verde e 1 test Runtime fallito (run 34595632045). Il nuovo workflow raccoglie prove e non sostituisce il fallimento originale con un rerun verde. .NET non disponibile nel container; nessuna nuova verifica del client Windows o del gameplay dichiarata.
