@@ -246,6 +246,54 @@ public static class StrategyPlanner
     }
 
     /// <summary>
+    /// Collect urgency: whether an observed drop has a known position and is reachable or
+    /// nearby. Deliberately simple, without a dedicated planner module: the question is
+    /// presence and distance, not the drop's economic value, which no source in this
+    /// project states honestly today.
+    /// </summary>
+    /// <param name="player">The player as currently modelled.</param>
+    /// <param name="drops">This cycle's known drops.</param>
+    /// <param name="maxRangeTiles">How far a drop may be and still count as in reach.</param>
+    /// <returns>The collect signal, or <see langword="null"/> when the player's own position is unknown.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="player"/> is null.</exception>
+    public static StrategicSignal? AssessCollectUrgency(Player player, EquatableArray<Drop> drops, double maxRangeTiles = 12.0)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!player.Position.HasValue)
+            return null;
+
+        bool anyKnown = false;
+        bool anyInRange = false;
+
+        foreach (Drop drop in drops)
+        {
+            if (drop.Position.HasValue)
+            {
+                anyKnown = true;
+                float dx = drop.Position.Value.X - player.Position.Value.X;
+                float dy = drop.Position.Value.Y - player.Position.Value.Y;
+                double distance = Math.Sqrt((double)(dx * dx + dy * dy));
+
+                if (distance <= maxRangeTiles)
+                {
+                    anyInRange = true;
+                    break;
+                }
+            }
+        }
+
+        var (urgency, reason) = (anyInRange, anyKnown) switch
+        {
+            (true, _) => (1.0, "drop_in_reach"),
+            (false, true) => (0.5, "drop_out_of_reach"),
+            (false, false) => (0.0, "no_viable_drop")
+        };
+
+        return new StrategicSignal(StrategicGoalKind.Collect, urgency, reason);
+    }
+
+    /// <summary>
     /// Optimization urgency from AP-07's loadout view: whether there is a gear change worth
     /// making, and whether the gear was ever read at all.
     /// </summary>
