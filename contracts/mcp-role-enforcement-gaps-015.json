@@ -1,0 +1,33 @@
+{
+  "contract_id": "C-309",
+  "file": "scripts/doc_agent.py",
+  "companion_files": [
+    ".claude/agents/revisore.md",
+    ".claude/agents/verificatore.md"
+  ],
+  "depends_on": "isolamento dei 5 tool MCP per ruolo, commit bdb6f5f (nosai/mcp/enforcement.require_capability, scripts/mcp_server.py._autorizza, TOOL_REQUIRED_CAPABILITY)",
+  "purpose": "Chiudere due lacune nell'isolamento per ruolo introdotto in bdb6f5f: (1) scripts/doc_agent.py produce scheletri e documenti sul disco senza mai chiamare require_capability, quindi lo stesso risultato che il tool MCP local_generate_skeleton/local_update_documentation autorizza per ruolo resta raggiungibile senza controllo passando dal CLI; (2) preflight_contract_check (capability 'contracts', employee.reviewer) e deep_reasoner_solve_crash (capability 'diagnostics', employee.testing) non compaiono nel tools: di nessun sub-agente configurato in .claude/agents/, quindi sono chiamabili solo dalla sessione root, il cui employee_id proprio (employee.orchestrator_cto) non possiede ne' 'contracts' ne' 'diagnostics': se dichiarasse la propria identita' reale invece del ruolo che sta impersonando, require_capability la bloccherebbe.",
+  "changes": {
+    "doc_agent_new_field": "Il campo 'employee_id: str' diventa obbligatorio in ogni oggetto dell'incarico JSON passato a scripts/doc_agent.py.",
+    "doc_agent_new_function": "def _autorizza_incarico(task: dict) -> None -- deriva capability_richiesta da task.get('format'): 'python' o 'python_test' -> 'scaffold', altrimenti -> 'documentation'. Se task.get('employee_id') e' vuoto o assente solleva PermissionError('employee_id mancante nell'incarico'). Altrimenti chiama nosai.mcp.enforcement.require_capability(employee_id, capability_richiesta) -- riusa la funzione gia' esistente, nessun secondo sistema di enforcement.",
+    "doc_agent_run_integration": "run(task, dry_run) chiama _autorizza_incarico(task) come primissima istruzione, dentro un try/except che cattura (PermissionError, RoleEnforcementError) e ritorna lo stesso schema di risultato oggi usato per status='blocked' (missing_items=[str(exc)], checks tutti False, confidence 0.0, requirements_satisfied=[]), senza chiamare call_local e senza scrivere in data/ai_task_ledger.jsonl un costo diverso da zero.",
+    "agents_frontmatter_add_tool": "Aggiungere mcp__orchestrator__preflight_contract_check a tools: di .claude/agents/revisore.md e mcp__orchestrator__deep_reasoner_solve_crash a tools: di .claude/agents/verificatore.md; aggiungere in entrambi una riga che impone l'employee_id fisso del proprio ruolo stabile in ogni chiamata a quel tool."
+  },
+  "constraints": [
+    "Non toccare require_capability ne' TOOL_REQUIRED_CAPABILITY in scripts/mcp_server.py: si riusa la stessa funzione, non se ne crea una seconda.",
+    "Nessun default permissivo nuovo: un incarico senza employee_id blocca, non passa silenzioso come oggi.",
+    "I file .claude/agents/*.md sono configurazione/documentazione, non codice applicativo: la modifica ai due frontmatter e al testo va al modello locale (local_update_documentation), non scritta da Claude.",
+    "Non alterare le firme di build_prompt, call_local, validate, record: solo run() e la nuova funzione privata cambiano."
+  ],
+  "tests_required": [
+    "Incarico senza employee_id -> status 'blocked', missing_items contiene il motivo, nessuna chiamata di rete a Ollama.",
+    "employee_id con la capability giusta (es. employee.documentation su un incarico format='markdown') -> procede fino a call_local (mockabile).",
+    "employee_id senza la capability richiesta (es. employee.security su un incarico format='python') -> status 'blocked' col messaggio di RoleEnforcementError.",
+    "Lettura dei frontmatter di revisore.md e verificatore.md che confermi la presenza rispettivamente di mcp__orchestrator__preflight_contract_check e mcp__orchestrator__deep_reasoner_solve_crash fra i tools."
+  ],
+  "postconditions": [
+    "python -m pytest tests/ -q e' verde, inclusi i test nuovi.",
+    "Nessuna chiamata esistente a doc_agent.py con employee_id gia' presente cambia comportamento oltre al controllo aggiunto.",
+    "preflight_contract_check e deep_reasoner_solve_crash risultano nel tools: di un sub-agente il cui employee_id dichiarato ne possiede la capability richiesta."
+  ]
+}
