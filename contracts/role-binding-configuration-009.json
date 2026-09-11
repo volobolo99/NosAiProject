@@ -1,0 +1,58 @@
+{
+  "contract_id": "role-binding-configuration-009",
+  "parte_di": "C-204 (Sincronizzazione fra runtime C# e nosai/ Python), canale 2 di ADR-0030: Python -> C# in ingresso, configurazione letta all'avvio e su cambio dichiarato, mai a ogni tick",
+  "file": "src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs",
+  "scopo": "Lettore C# del file che nosai/mcp/bindings.py scrive come export compatibile: quale modello (primario/fallback) e' assegnato a quale ruolo/dipendente, per uso futuro da parte del C# quando dovra' scegliere se delegare un compito a un modello esterno. Non decide nulla da solo: espone il dato, letto una volta, non ricontrollato per ogni tick.",
+  "fatti_verificati_sul_lato_python": {
+    "scrittore": "nosai/mcp/bindings.py:163-175, metodo _sync_legacy_json(), invocato da stage/propose (riga 107), promote (riga 146) e rollback (riga 160) — mai su un semplice GET",
+    "path_scritto": "data/mcp/role_bindings.json (relativo alla radice del repository)",
+    "scrittura_atomica": "file temporaneo + rename, mai una scrittura in-place: sicuro da leggere senza lock anche mentre Python riscrive",
+    "schema_esatto": {
+      "schema_version": "mcp.role_bindings.v2",
+      "state_revision": "int",
+      "bindings": "oggetto: chiave = employee_id (stringa), valore = record RoleBinding",
+      "proposals": "oggetto: chiave = proposal_id, valore = proposta in shadow mode — IGNORATO da questo contratto, e' stato interno di Python, il C# non lo legge"
+    },
+    "record_RoleBinding_python": "nosai/mcp/bindings.py:27-37 — employee_id: str, primary_model: str, fallback_models: tuple[str,...], state: str = 'active', version: int = 1, proposal_id: str|None, updated_at: str, candidate_digest: str, author_id: str",
+    "stato_su_disco_oggi": "il file NON esiste ancora (nessuna promozione di binding e' mai avvenuta in questa sessione): Load deve trattare l'assenza del file come stato normale, non come errore"
+  },
+  "firma_e_struttura_richieste": {
+    "namespace": "NosAi.Runtime.Configuration",
+    "tipi": [
+      {
+        "nome": "RoleBinding",
+        "forma": "public sealed record RoleBinding(string EmployeeId, string PrimaryModel, IReadOnlyList<string> FallbackModels, string State, int Version)",
+        "note": "Solo i campi che servono al C# oggi: EmployeeId, PrimaryModel, FallbackModels, State, Version. ProposalId/UpdatedAt/CandidateDigest/AuthorId NON servono al C# e non vanno modellati: sono stato interno di governance Python."
+      },
+      {
+        "nome": "RoleBindingConfiguration",
+        "membri": [
+          "public int StateRevision { get; }",
+          "public IReadOnlyDictionary<string, RoleBinding> Bindings { get; }",
+          "public static RoleBindingConfiguration Empty { get; } — StateRevision 0, Bindings vuoto",
+          "public static RoleBindingConfiguration Load(string path) — legge e valida il file",
+          "public RoleBinding? TryGetBinding(string employeeId) — null se assente"
+        ]
+      }
+    ]
+  },
+  "comportamento_richiesto_di_Load": [
+    "File.Exists(path) == false -> restituisce Empty. Questo E' il caso normale finche' nessun binding e' mai stato promosso in Python: non e' un errore e non deve loggare come tale.",
+    "File presente, schema_version diverso da 'mcp.role_bindings.v2' -> lancia InvalidDataException con messaggio che nomina il valore di schema_version trovato e quello atteso. Un file con uno schema che il C# non conosce non va interpretato alla cieca.",
+    "File presente, JSON non parsabile o struttura mancante di 'bindings'/'state_revision' -> lancia InvalidDataException con messaggio che nomina il campo mancante.",
+    "File presente e valido -> Bindings contiene tutte le voci di 'bindings' mappate a RoleBinding (mappatura via System.Text.Json.Serialization.JsonPropertyName su employee_id, primary_model, fallback_models, state, version), 'proposals' viene ignorato senza errore.",
+    "Load non fa mai retry, non fa polling, non tiene una connessione aperta: e' una lettura singola, chiamata all'avvio o su richiesta esplicita di ricaricare, mai dentro il ciclo di gioco per tick."
+  ],
+  "vincoli_di_governo": [
+    "Solo questo file viene creato.",
+    "Nessuna dipendenza esterna oltre System.Text.Json e il BCL.",
+    "Nessun placeholder/TODO/corpo vuoto.",
+    "Il C# non usa questo dato per decidere azioni di gioco: ADR-0030 e' esplicito che il C# non sceglie quale modello usare. Questo contratto espone solo il dato letto, non aggiunge logica decisionale."
+  ],
+  "postcondizioni_verificabili": [
+    "dotnet build su tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj (che referenzia NosAi.Runtime) compila senza errori.",
+    "Load su un path inesistente restituisce Empty senza eccezioni.",
+    "Load su un file fixture con lo schema esatto sopra descritto (comprese chiavi snake_case) popola Bindings correttamente, incluso il caso di fallback_models con piu' voci e con zero voci.",
+    "Load su un file fixture con schema_version sbagliato lancia InvalidDataException con un messaggio che cita il valore trovato."
+  ]
+}
