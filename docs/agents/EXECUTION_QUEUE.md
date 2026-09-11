@@ -18,6 +18,16 @@ Questa coda resta la fonte del prossimo incarico. I pacchetti LAB sono definiti 
 contracts/mcp-research-lab-001.json e si attivano ai gate indicati nella mappa,
 senza reimpostare le voci DONE o trattare gli stati documentali come prove runtime.
 
+## Verifica corrente — 2026-09-11
+
+| ID | Fase | Task | Esecutore | Dipende da | Comando / evidenza | Stato |
+|---|---|---|---|---|---|---|
+| Q-200 | AP-00 | R-001: identificare il controllo interno di Gate1SuitePasses che fallisce su Windows e verificare la correzione | Testing/Reviewer secondo AGENTS.md | report Windows | .github/workflows/dotnet-windows.yml; run 34595632045; nessuna causa ancora dimostrata | PENDING |
+| Q-201 | Trasversale | Allineare ledger, mappa contratti e firme alle ADR-0031/0032 e al fuzzing C-402 | Codex | sorgenti e decisioni su dfa6aef | scripts/verify_mcp_contracts.py --strict; 12 test contract verifier/ledger passati | DONE — verifica strutturale, nessuna nuova certificazione gameplay |
+
+Per R-101..R-106 e i pacchetti MCP ancora aperti usare [REMAINING_WORK.md](../REMAINING_WORK.md).
+I report storici sotto non certificano automaticamente il commit corrente.
+
 ## Coda attiva (AP-00 → AP-10)
 
 | ID | Fase | Task | Esecutore | Dipende da | Comando | Stato |

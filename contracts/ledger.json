@@ -140,7 +140,7 @@
     {
       "gate": 1,
       "title": "Intercettazione pacchetti, hook e parsing opcode",
-      "completion_pct": 83,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-101",
@@ -232,19 +232,21 @@
           "signature": "da definire",
           "struct_size": null,
           "test_file": "da definire",
-          "status": "DRAFT",
+          "status": "DROPPED",
           "invariants": [
             "BOUNDS_CHECKED",
             "THREAD_SAFE",
             "FAIL_CLOSED"
           ],
-          "blocker": "Solo 8 sorgenti citano 'hook' e nessuno realizza un hook di memoria o DLL. Serve decidere se questa strada si apre davvero: cambia il confine tecnico del prodotto.",
+          "blocker": "Implementazione fuori perimetro secondo ADR-0032; riaprire soltanto con un dato necessario e un gap osservabile documentato.",
           "product_phases": [
             "AP-02"
           ],
           "legacy_gate": 1,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Non implementare: docs/adr/ADR-0032-no-memory-hook-yet.md. La firma resta non definita per scelta, non lavoro attivo.",
+          "updated": "2026-09-11",
+          "metrics": "ADR-0032 accettato: nessun hook memoria o DLL injection ora. Chiusura per decisione, non implementazione verificata."
         },
         {
           "cid": "C-106",
@@ -436,13 +438,13 @@
             "DETERMINISTIC",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero sorgenti contengono FSM o StateMachine. La decisione oggi passa da Planner (51 sorgenti) e Orchestrator (30): introdurre una FSM accanto a questi duplicherebbe l'autorita' di decisione. Serve dire se sostituisce o affianca.",
+          "blocker": "Implementazione fuori perimetro secondo ADR-0031; riaprire soltanto con un comportamento concreto documentato.",
           "product_phases": [
             "AP-08"
           ],
           "legacy_gate": 3,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "implementation_gate": "Non implementare: docs/adr/ADR-0031-no-explicit-fsm.md. Nessuna firma richiesta finche la decisione resta valida.",
           "updated": "2026-09-11",
           "metrics": "ADR-0031 del 2026-09-11: nessuna macchina a stati esplicita. La domanda era mal posta: ADR-0028 ha misurato che Planner e Orchestrator NON sono nel percorso di esecuzione (ModuleReachability li dichiara Unreferenced per scelta datata), quindi non c e un autorita da duplicare. Il percorso vivo e StrategyPlanner piu il ciclo di Gate3. Una FSM inventata prima di un comportamento che la richieda fisserebbe una partizione degli stati scelta a tavolino, che e la parte che decide se la macchina dice il vero. Si riapre con un caso nominato, e un interblocco di sicurezza va costruito come guardia stretta, non come FSM generale."
         },
@@ -496,24 +498,25 @@
         {
           "cid": "C-402",
           "title": "Fuzzing sui pacchetti corrotti",
-          "target_file": "da definire",
-          "signature": "da definire",
+          "target_file": "src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs",
+          "signature": "public static bool WireProtocolFuzzTestRunner.RunAll()",
           "struct_size": null,
-          "test_file": "da definire",
+          "test_file": "tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs",
           "status": "TEST_VERIFIED",
           "invariants": [
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104.",
+          "blocker": null,
           "product_phases": [
             "AP-10"
           ],
           "legacy_gate": 4,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Firma verificata sul sorgente e sui consumatori WireProtocolFuzzTests e CertificationSuites; evidenza di esecuzione precedente conservata in metrics, non rieseguita localmente in questa sessione.",
           "updated": "2026-09-11",
-          "metrics": "Harness di fuzzing deterministico creato il 2026-09-11 (contratto contracts/wire-protocol-fuzz-harness-011.json): src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs, sei controlli su WireHeader.TryRead (src/NosAi.Protocol/WireProtocol.cs, non modificato) -- lunghezze troncate, round-trip su tutti i 256 valori di MessageType, round-trip sui valori limite di PayloadLength/SequenceNumber, 34 varianti di magic sbagliato, 255 versioni sbagliate, 50000 buffer generati/mutati con seed fisso 1337. Un difetto reale trovato dal collaudo (non dalla preflight, che aveva approvato): la logica di tre controlli era invertita (testava TryRead()==false come fallimento invece di successo), diagnosticato e corretto da deep_reasoner_solve_crash (DeepSeek) sull'evidenza reale di esecuzione, non per ispezione. Collegato alla tabella delle suite (--wire-fuzz-test) e a un Fact xUnit dedicato (WireProtocolFuzzTests.cs). Verificato: dotnet build 0 errori/0 avvisi, --wire-fuzz-test 6/6 PASS, dotnet test sulla suite .NET intera 2832/2841 (9 ignorati, 0 falliti, +1 rispetto alla baseline per il nuovo Fact)."
+          "metrics": "Harness di fuzzing deterministico creato il 2026-09-11 (contratto contracts/wire-protocol-fuzz-harness-011.json): src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs, sei controlli su WireHeader.TryRead (src/NosAi.Protocol/WireProtocol.cs, non modificato) -- lunghezze troncate, round-trip su tutti i 256 valori di MessageType, round-trip sui valori limite di PayloadLength/SequenceNumber, 34 varianti di magic sbagliato, 255 versioni sbagliate, 50000 buffer generati/mutati con seed fisso 1337. Un difetto reale trovato dal collaudo (non dalla preflight, che aveva approvato): la logica di tre controlli era invertita (testava TryRead()==false come fallimento invece di successo), diagnosticato e corretto da deep_reasoner_solve_crash (DeepSeek) sull'evidenza reale di esecuzione, non per ispezione. Collegato alla tabella delle suite (--wire-fuzz-test) e a un Fact xUnit dedicato (WireProtocolFuzzTests.cs). Verificato: dotnet build 0 errori/0 avvisi, --wire-fuzz-test 6/6 PASS, dotnet test sulla suite .NET intera 2832/2841 (9 ignorati, 0 falliti, +1 rispetto alla baseline per il nuovo Fact).",
+          "signature_resolved_at": "2026-09-11"
         },
         {
           "cid": "C-403",
