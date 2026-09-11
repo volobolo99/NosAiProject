@@ -277,7 +277,7 @@ internal static class PerceptionProbe
         var mp = FormatBar(observation.MpBar);
         var numbers = observation.Hp.Current.HasValue
             ? $"HP {observation.Hp.Current.Value}/{observation.Hp.Maximum.Value} DERIVED"
-            : $"HP/MP numerici UNKNOWN · {observation.Hp.Current.FailureReason ?? "ocr_glyphs_not_trained"}";
+            : $"HP/MP numerici UNKNOWN · {observation.Hp.Current.FailureReason ?? "unclassified"}";
         var fallback = window.Window is null ? " " + FullscreenFallbackNote : "";
         return $"DXGI LIVE {frame.Width}x{frame.Height}. HP barra {hp}; MP barra {mp}. {numbers}. Non entra nello snapshot Gate 1.{fallback}";
     }

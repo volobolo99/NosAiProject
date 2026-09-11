@@ -275,6 +275,10 @@ public partial class MainWindow : Window
         ApplyTarget();
         ApplyInventoryPanelRoi();
         _lastSnapshot = snapshot;
+        // La rete del client si rileva da sola: il PID arriva qui a ogni giro, e
+        // finche' l'endpoint manca o il client cambia vale la pena chiederlo. Un
+        // valore digitato dall'operatore non viene mai toccato.
+        RefreshEndpointAutoDetect();
         ApplyMode();
         SidebarState.Text = _session.IsLive ? snapshot.RuntimeStatus.ToUpperInvariant() : "OFFLINE";
         SidebarDetail.Text = _session.Detail ?? snapshot.Warning;
@@ -1554,6 +1558,89 @@ public partial class MainWindow : Window
     {
         StatusBarText.Text = text;
         _log.Operator(text);
+    }
+
+    /// <summary>
+    /// T-14 (AP-05 parte 2): registra il filo cominciando prima del login.
+    /// Il runtime parte in modalita' --record-wire --await-client: attende che
+    /// il processo del client compaia e che la sua prima connessione di gioco
+    /// sia osservabile, poi registra su quell'endpoint. Il pannello non aggancia
+    /// nulla per conto suo: lancia il comando e mostra il suo rapporto.
+    /// </summary>
+    /// <remarks>
+    /// La cattura comincia dall'aggancio della connessione, non dall'avvio del
+    /// client: i pacchetti scambiati prima dell'aggancio non ci sono, e il
+    /// runtime lo dichiara quando comincia a registrare. Il pannello ripete il
+    /// limite prima che l'operatore prema (testo della card) e mostra a fine
+    /// corsa il file, i pacchetti e l'attesa prima dell'aggancio, letti dalle
+    /// righe che il comando stampa.
+    /// </remarks>
+    private async void OnRecordPreLoginWire(object sender, RoutedEventArgs e)
+    {
+        if (_busy)
+        {
+            Status("Un'operazione è già in corso.");
+            return;
+        }
+
+        if (!int.TryParse(PreLoginCaptureSeconds.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds)
+            || seconds <= 0 || seconds > 3600)
+        {
+            PreLoginCaptureSummary.Text = "Durata non valida: un intero di secondi fra 1 e 3600.";
+            return;
+        }
+
+        var dll = ResolveRuntimeDll();
+        if (dll is null)
+        {
+            Status("Runtime non compilato. Vai su Certificazione e premi Compila runtime.");
+            return;
+        }
+
+        string stem = string.Create(CultureInfo.InvariantCulture, $"prelogin_{DateTime.Now:yyyyMMdd_HHmmss}");
+        PreLoginCaptureButton.IsEnabled = false;
+        PreLoginCaptureSummary.Text =
+            "Registrazione dal login in corso: chiudi il client se e' aperto, poi aprilo, accedi ed entra in gioco. "
+            + $"La cattura comincia da sola quando il runtime aggancia la connessione, dura {seconds} s, e non contiene i pacchetti scambiati prima dell'aggancio.";
+        string? waitedLine = null;
+        string? packetsLine = null;
+        try
+        {
+            var result = await RunToolAsync(
+                "dotnet", $"\"{dll}\" --record-wire --await-client data/{stem}.noscap --watch {seconds}",
+                "Registrazione dal login", pairing: false,
+                onLine: line =>
+                {
+                    if (waitedLine is null && line.StartsWith("waited before attach:", StringComparison.Ordinal))
+                        waitedLine = line.Trim();
+                    if (packetsLine is null && line.Contains(" packets -> ", StringComparison.Ordinal))
+                        packetsLine = line.Trim();
+                });
+
+            if (result.ExitCode != 0)
+            {
+                PreLoginCaptureSummary.Text = result.Output.Contains("access_denied_run_elevated", StringComparison.Ordinal)
+                    ? "Registrazione non riuscita: serve amministratore. Riavvia il pannello come amministratore e ripeti."
+                    : $"Registrazione non riuscita (uscita {result.ExitCode}). Motivo nel Diario.";
+                return;
+            }
+
+            string packets = packetsLine is not null
+                ? packetsLine[..packetsLine.IndexOf(" packets ->", StringComparison.Ordinal)].Trim()
+                : "nel Diario";
+            string waited = waitedLine ?? "attesa nel Diario";
+            PreLoginCaptureSummary.Text = $"Cattura scritta: data/{stem}.noscap — pacchetti: {packets}; {waited}.";
+            _log.Operator($"Registrazione dal login {stem} completata: {packets} pacchetti.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.Error("Registrazione dal login fallita.", ex);
+            PreLoginCaptureSummary.Text = $"Registrazione fallita: {ex.Message}";
+        }
+        finally
+        {
+            PreLoginCaptureButton.IsEnabled = true;
+        }
     }
 
     private async Task ShutdownAsync()

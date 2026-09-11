@@ -64,7 +64,7 @@ export async function chatCompletion({
     temperature = 0,
     maxTokens = undefined,
     maxRetries = 2,
-    requestTimeoutMs = 300000,
+    requestTimeoutMs = 600000,
     signal,
     fetchImpl = globalThis.fetch,
     sleepImpl = sleep,
