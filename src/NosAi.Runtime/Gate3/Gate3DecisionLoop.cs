@@ -53,15 +53,29 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
     /// </remarks>
     private readonly PredictionCalibrationStore? _calibrationStore;
 
+    /// <summary>
+    /// Canale 1 di ADR-0030 (C# -> Python, in uscita, solo append): dove ogni
+    /// ciclo completato viene registrato per evidenze e apprendimento. Assente e'
+    /// un caso normale -- nessun consumatore Python collegato -- e allora il
+    /// ciclo funziona esattamente come prima, senza scrivere nulla.
+    /// </summary>
+    private readonly IDecisionTelemetrySink? _telemetry;
+
     /// <param name="calibrationStore">
     /// Dove la calibrazione appresa viene riletta all'avvio e riscritta alla
     /// chiusura. Assente e' un caso normale -- il volume dedicato puo' non essere
     /// collegato -- e allora il ciclo funziona come prima, imparando e
     /// dimenticando, senza fingere di ricordare.
     /// </param>
-    public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null, PredictionCalibrationStore? calibrationStore = null)
+    /// <param name="telemetry">
+    /// Dove ogni <see cref="Gate3LoopCycle"/> viene registrato per il canale 1 di
+    /// ADR-0030. Assente e' un caso normale: il ciclo non scrive nulla e si
+    /// comporta esattamente come prima che questo canale esistesse.
+    /// </param>
+    public Gate3DecisionLoop(IWorldStateSource source, Gate3ExecutionOrchestrator orchestrator, IRuntimeLogger logger, TimeSpan? interval = null, TimeProvider? clock = null, ICognitiveObservabilitySink? cognitive = null, PredictionCalibrationStore? calibrationStore = null, IDecisionTelemetrySink? telemetry = null)
     {
         _calibrationStore = calibrationStore;
+        _telemetry = telemetry;
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -126,6 +140,7 @@ public sealed class Gate3DecisionLoop : IAsyncDisposable
         var cycle = new Gate3LoopCycle(now, result.Outcome, result.Summary, result.SelectedAction, state.Hp, state.MaxHp, state.Mp, state.HasTarget, state.AgeAt(now), result.Outcome is CycleOutcome.Confirmed or CycleOutcome.Unverified or CycleOutcome.Failed);
         lock (_gate) { _last = cycle; _cycles++; _outcomes[result.Outcome] = _outcomes.GetValueOrDefault(result.Outcome) + 1; }
         CycleCompleted?.Invoke(cycle);
+        _telemetry?.Append(cycle);
         return cycle;
     }
 

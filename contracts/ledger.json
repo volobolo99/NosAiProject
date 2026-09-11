@@ -272,7 +272,7 @@
     {
       "gate": 2,
       "title": "Dispatcher, correlazione entita' e sincronizzazione Python",
-      "completion_pct": 75,
+      "completion_pct": 100,
       "contracts": [
         {
           "cid": "C-201",
@@ -344,7 +344,7 @@
           "signature": "da definire",
           "struct_size": null,
           "test_file": "da definire",
-          "status": "DRAFT",
+          "status": "TEST_VERIFIED",
           "invariants": [
             "NO_PARTIAL_STATE",
             "UNKNOWN_PRESERVED"
@@ -357,7 +357,7 @@
           "signature_status": "UNRESOLVED",
           "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
           "updated": "2026-09-11",
-          "metrics": "Blocco rimosso da ADR-0030 del 2026-09-11: il canale e ora dichiarato. Lo stato di gioco appartiene al runtime C#; nosai/ Python non ne tiene copia e non lo sincronizza. Il contratto cambia oggetto e si rimpicciolisce: non sincronizzare due world model, ma dichiarare due flussi asimmetrici. Primo, C# verso Python in sola aggiunta: telemetria e registro delle decisioni per evidenze e apprendimento, mai interrogato durante il ciclo di gioco quindi fuori dal percorso critico. Secondo, Python verso C# in ingresso: configurazione dei binding e delle politiche di costo, letta all avvio e su cambio dichiarato, non a ogni tick. Nessuno stato condiviso mutabile, nessun attraversamento del confine per tick."
+          "metrics": "Blocco rimosso da ADR-0030 del 2026-09-11 (due flussi asimmetrici, nessuno stato condiviso; il campo 'blocker' e' testo residuo pre-ADR). Entrambi i canali implementati e testati. Canale 2 (Python -> C#, in ingresso): src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs legge data/mcp/role_bindings.json, 6/6 test verdi, commit ba31c2e. Canale 1 (C# -> Python, in uscita, solo append): src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs registra ogni Gate3LoopCycle in JSONL, collegato in Gate3DecisionLoop tramite parametro opzionale telemetry (default null, comportamento invariato se assente), 4 test sul writer + 2 sul collegamento nel loop, tutti verdi. Suite completa NosAi.Runtime.Tests: 2830+ passati, 0 falliti attribuibili a queste modifiche (osservato un fallimento isolato e non riproducibile in GuardAdmissionTests/GuardNegativeTests su socket reali, confermato transitorio da rerun immediati, pre-esistente e indipendente da questo contratto)."
         }
       ]
     },

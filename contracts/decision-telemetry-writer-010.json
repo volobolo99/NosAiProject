@@ -1,0 +1,48 @@
+{
+  "contract_id": "decision-telemetry-writer-010",
+  "parte_di": "C-204 (Sincronizzazione fra runtime C# e nosai/ Python), canale 1 di ADR-0030: C# -> Python in uscita, solo append, mai richiesto durante il ciclo di gioco",
+  "file": "src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs",
+  "scopo": "Registrare in append-only ogni ciclo di decisione Gate3 (Gate3LoopCycle) su un file che nosai/ Python potra' leggere per evidenze e apprendimento. Nessuna decisione presa da questa classe, nessuna lettura, solo scrittura di cio' che e' gia' accaduto.",
+  "punto_di_innesto_verificato": {
+    "file": "src/NosAi.Runtime/Gate3/Gate3DecisionLoop.cs",
+    "metodo": "public async Task<Gate3LoopCycle> RunOnceAsync(CancellationToken cancellationToken = default), righe 91-130",
+    "riga_esatta": "126-129: var cycle = new Gate3LoopCycle(...); lock (_gate) { _last = cycle; ... } CycleCompleted?.Invoke(cycle); return cycle;",
+    "motivo_della_scelta": "Gate3LoopCycle e' gia' completamente calcolato a questo punto, per OGNI esito del ciclo (Confirmed/Unverified/Failed/ExecutionDisabled/NoCandidate), non solo per le azioni eseguite. Il percorso Observe->Plan->Simulate->Rank->Guard e' sincrono in memoria fino a questo punto (nessun I/O), quindi loggare qui non introduce latenza nel percorso di sicurezza. Non tocca in alcun modo Gate3Runtime.cs (il metodo di 280+ righe che decide l'azione): questo e' additivo nel chiamante, non nella logica di decisione.",
+    "pattern_esistente_da_seguire": "Il costruttore di Gate3DecisionLoop (righe 62-73) ha gia' collaboratori opzionali nullable con default a comportamento invariato se assenti (es. PredictionCalibrationStore? calibrationStore, riga 54-61, commento: 'Assente e' un caso normale'). Il nuovo sink va aggiunto con la STESSA convenzione: parametro opzionale, default null, nessun cambiamento di comportamento per i chiamanti/test esistenti che non lo passano."
+  },
+  "firma_e_struttura_richieste": {
+    "namespace": "NosAi.Runtime.Observability",
+    "tipi": [
+      {
+        "nome": "IDecisionTelemetrySink",
+        "forma": "public interface IDecisionTelemetrySink { void Append(Gate3LoopCycle cycle); }",
+        "note": "Interfaccia per permettere ai test di Gate3DecisionLoop di passare un finto sink senza toccare il disco."
+      },
+      {
+        "nome": "DecisionTelemetryWriter",
+        "forma": "public sealed class DecisionTelemetryWriter : IDecisionTelemetrySink",
+        "costruttore": "public DecisionTelemetryWriter(string path, IRuntimeLogger logger) — path e logger non null (ArgumentNullException se lo sono)",
+        "metodo_Append": [
+          "Serializza cycle in una riga JSON con campi snake_case: at_utc (ISO 8601 UTC), outcome (cycle.Outcome.ToString()), summary (cycle.Summary), selected_action (cycle.SelectedAction.ToString()), would_have_acted (cycle.WouldHaveActed)",
+          "Crea la cartella del path se non esiste (Directory.CreateDirectory su Path.GetDirectoryName)",
+          "Fa File.AppendAllText(path, riga + newline) sotto un lock privato dell'istanza, per sicurezza da chiamate concorrenti sulla stessa istanza",
+          "L'INTERO corpo del metodo e' avvolto in try/catch(Exception): in caso di fallimento (disco pieno, permessi, ecc.) chiama logger.Error(...) e ritorna normalmente. Append non deve MAI lanciare un'eccezione al chiamante: un guasto di telemetria non puo' fermare o alterare il ciclo di decisione."
+        ]
+      }
+    ]
+  },
+  "vincoli_di_governo": [
+    "Solo questo file viene creato da questo contratto.",
+    "Nessuna dipendenza esterna oltre System.Text.Json e il BCL.",
+    "Nessun placeholder/TODO/corpo vuoto.",
+    "Append e' sincrono, non asincrono: non introdurre Task/async in questa classe, il chiamante (Gate3DecisionLoop.RunOnceAsync) non deve attendere I/O di telemetria.",
+    "Non modificare Gate3DecisionLoop.cs, Gate3Runtime.cs o qualunque altro file: quella parte e' un contratto separato, successivo, dopo che questa classe e' testata da sola."
+  ],
+  "postcondizioni_verificabili": [
+    "dotnet build su tests/NosAi.Runtime.Tests/NosAi.Runtime.Tests.csproj compila senza errori ne' warning.",
+    "Append su un path in una cartella non ancora esistente la crea e scrive la riga.",
+    "Append due volte sullo stesso path produce due righe JSONL distinte, non sovrascrive.",
+    "Ogni riga scritta e' JSON valido con le chiavi snake_case elencate sopra.",
+    "Append con un path non scrivibile (es. una directory al posto del file, o permessi negati) non lancia: il chiamante prosegue normalmente."
+  ]
+}

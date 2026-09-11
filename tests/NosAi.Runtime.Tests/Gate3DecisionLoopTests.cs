@@ -244,6 +244,49 @@ public sealed class Gate3DecisionLoopTests
         Assert.False(planned.WouldHaveActed);
     }
 
+    [Fact]
+    public async Task A_completed_cycle_reaches_the_telemetry_sink_when_one_is_configured()
+    {
+        var sink = new RecordingTelemetrySink();
+        DateTime now = DateTime.UtcNow;
+        var state = new Gate3WorldState(
+            ClassifiedValue<int>.Live(7305, now),
+            ClassifiedValue<int>.Live(7305, now),
+            ClassifiedValue<int>.Live(1420, now),
+            ClassifiedValue<bool>.Unknown("target_state_not_on_the_wire"),
+            ClassifiedValue<bool>.Unknown("combat_state_not_on_the_wire"));
+
+        await using var loop = new Gate3DecisionLoop(
+            new FixedWorldStateSource(state), new Gate3ExecutionOrchestrator(), new NullRuntimeLogger(),
+            telemetry: sink);
+
+        Gate3LoopCycle cycle = await loop.RunOnceAsync();
+
+        Gate3LoopCycle recorded = Assert.Single(sink.Recorded);
+        Assert.Equal(cycle, recorded);
+    }
+
+    [Fact]
+    public async Task No_telemetry_sink_configured_behaves_exactly_as_before()
+    {
+        // Il canale e' opzionale per costruzione: nessun sink non deve cambiare
+        // in nulla il comportamento del ciclo (ADR-0030, canale 1).
+        Gate3LoopCycle cycle = await RunOne(new Gate3WorldState(
+            ClassifiedValue<int>.Live(7305, DateTime.UtcNow),
+            ClassifiedValue<int>.Live(7305, DateTime.UtcNow),
+            ClassifiedValue<int>.Live(1420, DateTime.UtcNow),
+            ClassifiedValue<bool>.Unknown("target_state_not_on_the_wire"),
+            ClassifiedValue<bool>.Unknown("combat_state_not_on_the_wire")));
+
+        Assert.Equal(CycleOutcome.NoCandidate, cycle.Outcome);
+    }
+
+    private sealed class RecordingTelemetrySink : IDecisionTelemetrySink
+    {
+        public List<Gate3LoopCycle> Recorded { get; } = new();
+        public void Append(Gate3LoopCycle cycle) => Recorded.Add(cycle);
+    }
+
     private static async Task<Gate3LoopCycle> RunOne(Gate3WorldState state)
     {
         await using var loop = new Gate3DecisionLoop(
