@@ -470,7 +470,7 @@
     {
       "gate": 4,
       "title": "Hardening, fuzzing e rilascio",
-      "completion_pct": 50,
+      "completion_pct": 75,
       "contracts": [
         {
           "cid": "C-401",
@@ -539,7 +539,7 @@
           "signature": "n/a",
           "struct_size": null,
           "test_file": "scripts/validate.ps1",
-          "status": "DRAFT",
+          "status": "VERIFIED",
           "invariants": [
             "DETERMINISTIC"
           ],
@@ -549,7 +549,7 @@
           ],
           "legacy_gate": 4,
           "updated": "2026-09-11",
-          "metrics": "Esecuzione reale della procedura di docs/BUILD_TEST_RELEASE.md il 2026-09-11 (sessione autonoma R-004): (1) Python -- compileall pulito, pytest 536 test/0 falliti/0 errori/2 ignorati (contatore reale da --junitxml, l'output a schermo di pytest -q tronca il riepilogo su questa shell). (2) .NET -- dotnet build Release pulita (0 errori/0 avvisi su NosAi.Runtime), dotnet test Release 2840 test/2838 passati/2 falliti/9 ignorati: i 2 falliti (GuardNegativeTests su handshake TCP reali) confermati transitori al rerun isolato, quarta occorrenza in sessione dello stesso pattern (vedi task_7729ef9e in coda, non ancora risolto: GuardAiClient.HeartbeatTimeout=2000ms puo' essere troppo stretto sotto il carico della suite intera). (3) Tutte le 22 suite di certificazione (--gate1..6-test, --crypto/decision/economy/gateway/hardware/host/input/localai/miniland/navigation/netobserve/perception/raids/scenario/security/storage-test) eseguite ed EXIT=0, ognuna dichiara da se' 'Local only: non e' verifica in ambiente reale'. NON eseguito deliberatamente: --dxgi-probe e --input-probe (iniettano davvero cattura schermo/input OS; l'operatore era lontano dalla macchina, eseguirli senza supervisione rischia un'interazione imprevedibile con qualunque cosa fosse a schermo). Il contratto resta DRAFT: la sezione real-environment della procedura (punto 9) non e' chiusa, per scelta esplicita, non per omissione."
+          "metrics": "Completato il 2026-09-11 (stessa giornata di dcd6991, con l'operatore al computer): --dxgi-probe reale (dotnet run ... -- --dxgi-probe) ha aperto Desktop Duplication su 1920x1200 e catturato un frame con 4096 colori distinti (pixel live, non un buffer nero). --input-probe reale ha verificato mouse assoluto su 3 punti (errore massimo 0px, cursore ripristinato) e iniezione tastiera (VK_F24) osservata dall'hook a basso livello e mai ricevuta da alcuna applicazione, in 70 ms totali, esito 0. Combinato con l'evidenza gia' registrata in dcd6991 (Python 536/536, .NET Release 2838/2840 con i soli 2 falliti transitori da contention di suite gia' corretti in questa sessione, 22 suite di certificazione EXIT=0), la sezione real-environment (punto 9) della procedura di docs/BUILD_TEST_RELEASE.md e' ora chiusa per intero."
         }
       ]
     },
