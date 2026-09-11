@@ -12,7 +12,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import doc_agent  # noqa: E402
 from nosai.orchestration.local_result import validate_local_result  # noqa: E402
 
-TASK = {"file": "docs/example.md", "purpose": "prova", "format": "markdown", "min_words": 1, "max_words": 700}
+TASK = {
+    "file": "docs/example.md",
+    "purpose": "prova",
+    "format": "markdown",
+    "min_words": 1,
+    "max_words": 700,
+    "employee_id": "employee.documentation",
+}
 
 
 def test_run_produce_un_risultato_conforme_allo_schema(monkeypatch):
