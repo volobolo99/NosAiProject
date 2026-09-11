@@ -16,8 +16,7 @@ Questo catalogo distingue l’identità professionale dal modello che la esegue.
 |---|---|---|---|---|
 | `employee.orchestrator_cto` | Orchestrator/CTO | architettura, scomposizione, routing e approvazione | Claude | Qwen3 Coder 30B |
 | `employee.mcp_chief` | MCP Chief | salute continua dell’Hub, ottimizzazione, proposte, promozione e rollback dei binding | Claude | Qwen3 Coder 30B, DeepSeek V4 Flash |
-| `employee.product_manager` | Product Manager | requisiti, roadmap e criteri di accettazione | Qwen2.5 Coder 7B locale | Claude |
-| `employee.game_ai_architect` | Game AI Architect | confini cognitivi, ADR e invarianti | Claude | Qwen3 Coder 30B |
+| `employee.product_architect` | Product & Architecture Lead | requisiti, roadmap, criteri di accettazione, confini cognitivi, ADR e invarianti | Claude | Qwen3 Coder 30B |
 | `employee.perception` | Perception Agent | cattura, OCR/CV e classificazione osservazioni | Gemini Flash Lite | Qwen3 Coder 30B, Qwen2.5 locale |
 | `employee.world_model` | World Model Agent | fusione sensori, temporalità e identità entità | Qwen3 Coder 30B | DeepSeek V4 Flash |
 | `employee.planning` | Planning Agent | HTN/GOAP, navigazione e replanning | Qwen3 Coder 30B | DeepSeek V4 Flash |
@@ -29,6 +28,7 @@ Questo catalogo distingue l’identità professionale dal modello che la esegue.
 | `employee.security` | Security Agent | minacce, segreti, permessi e revisioni sensibili | Claude | DeepSeek V4 Flash |
 | `employee.reviewer` | Reviewer Agent | revisione indipendente prima dell’integrazione | Claude | DeepSeek V4 Flash |
 | `employee.documentation` | Documentation Agent | documenti canonici, changelog, mappe e riepiloghi | Qwen2.5 Coder 7B locale | DeepSeek V4 Flash |
+| `employee.model_scout` | Model Scout | sorveglianza quotidiana del catalogo modelli e dei prezzi; non può promuovere binding né adottare modelli a pagamento | gpt-oss-20b | nex-n2.5-mini, Qwen2.5 Coder 7B locale |
 
 ## Cosa è stabile e cosa è sostituibile
 

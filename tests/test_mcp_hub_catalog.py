@@ -38,8 +38,7 @@ MODELLI_A_PAGAMENTO = {
 PRIMARI_ATTESI = {
     "employee.orchestrator_cto": "claude",
     "employee.mcp_chief": "claude",
-    "employee.product_manager": "qwen2.5-coder:7b",
-    "employee.game_ai_architect": "claude",
+    "employee.product_architect": "claude",
     "employee.perception": "gemini-2.5-flash-lite",
     "employee.world_model": "qwen3-coder-30b",
     "employee.planning": "qwen3-coder-30b",
@@ -245,7 +244,7 @@ PRIMARIO_A_PAGAMENTO_MAX = {
 }
 CITA_UN_PAGATO_MAX = {
     "employee.action", "employee.coding", "employee.decision", "employee.documentation",
-    "employee.game_ai_architect", "employee.mcp_chief", "employee.memory",
+    "employee.product_architect", "employee.mcp_chief", "employee.memory",
     "employee.orchestrator_cto", "employee.perception", "employee.planning",
     "employee.reviewer", "employee.security", "employee.testing", "employee.world_model",
 }
