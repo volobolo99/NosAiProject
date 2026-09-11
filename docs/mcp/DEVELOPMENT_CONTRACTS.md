@@ -12,6 +12,10 @@ Ogni nuovo tool deve dichiarare: input JSON versionato, output JSON versionato, 
 
 `nosai/mcp/enforcement.py` espone `require_capability(employee_id, capability, *, employees=DEFAULT_EMPLOYEE_ROLES)`, chiamata come prima istruzione di `InferenceGateway.infer()` (`nosai/mcp/inference.py`). Solleva `RoleEnforcementError` se la capability richiesta è in `employee.forbidden` o non è in `employee.capabilities`. Prima di questa funzione, `capabilities`/`forbidden` erano letti solo da `RoleArchitect.verify_employee_catalog()` come controllo statico del catalogo, mai applicati a runtime: `mcp_infer` è ora fail-closed per ogni chiamata che dichiara un ruolo. Limite noto e deliberato: se `employee_id` o `capability` sono vuoti, la funzione non fa nulla — le chiamate che non dichiarano un ruolo restano permissive. Test: `tests/test_mcp_enforcement.py`, `tests/test_mcp_hub_inference.py`.
 
+## Isolamento dei 5 tool del protocollo per ruolo
+
+I 5 tool di `scripts/mcp_server.py` (`local_generate_skeleton`, `cloud_infill_implementation`, `preflight_contract_check`, `deep_reasoner_solve_crash`, `local_update_documentation`) richiedono ora un parametro obbligatorio `employee_id: str`. Ogni tool chiama `_autorizza(tool_name, employee_id)` come prima istruzione: consulta `TOOL_REQUIRED_CAPABILITY` (mappa tool → capability richiesta) e poi `nosai.mcp.enforcement.require_capability()`. Un `tool_name` non presente nella mappa solleva `KeyError`; un `employee_id` senza la capability richiesta solleva `PermissionError`. Mappa: `local_generate_skeleton` → `scaffold` (Documentation Agent, Coding Agent), `cloud_infill_implementation` → `coding` (Coding Agent), `preflight_contract_check` → `contracts` (Reviewer Agent, Product & Architecture Lead), `deep_reasoner_solve_crash` → `diagnostics` (Testing Agent), `local_update_documentation` → `documentation` (Documentation Agent). Test: `tests/test_mcp_server_skeleton.py`.
+
 ## Promozione
 
 `DRAFT → TESTED → AUDITED → SHADOW → PROMOTED`.

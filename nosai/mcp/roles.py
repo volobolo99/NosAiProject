@@ -115,7 +115,7 @@ DEFAULT_EMPLOYEE_ROLES = (
         "implementation inside an assigned ownership set",
         ("implementation", "refactoring", "unit tests"),
         "gpt-oss-120b", ("qwen3-coder-30b", "deepseek-v4-flash"),
-        ("coding", "testing", "debugging"),
+        ("coding", "testing", "debugging", "scaffold"),
         ("architecture_override", "protected_path_write"),
     ),
     EmployeeRole(
@@ -147,7 +147,7 @@ DEFAULT_EMPLOYEE_ROLES = (
         "canonical documentation and routing indexes",
         ("docs", "changelog", "contract map", "summaries"),
         "qwen2.5-coder:7b", ("nex-n2.5-mini", "deepseek-v4-flash"),
-        ("documentation", "indexing", "provenance"),
+        ("documentation", "indexing", "provenance", "scaffold"),
         ("code_execution", "secret_export"),
     ),
     EmployeeRole(

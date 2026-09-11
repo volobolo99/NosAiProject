@@ -2,6 +2,7 @@ import os
 import json
 import re
 import requests
+import sys
 import threading
 from datetime import date
 from dotenv import load_dotenv
@@ -11,6 +12,11 @@ from typing import List, Dict, Tuple, Sequence, Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from nosai.mcp.enforcement import RoleEnforcementError, require_capability
 
 mcp = FastMCP("orchestrator")
 
@@ -81,6 +87,31 @@ def _costo_reale_usd(model_id: str) -> float:
         + usage.get("completion_tokens", 0) * prezzo.get("output", 0.0)
     )
     return round(costo, 6)
+
+# =====================================================================
+# ISOLAMENTO DEI TOOL PER RUOLO
+# =====================================================================
+
+TOOL_REQUIRED_CAPABILITY: dict[str, str] = {
+    "local_generate_skeleton": "scaffold",
+    "cloud_infill_implementation": "coding",
+    "preflight_contract_check": "contracts",
+    "deep_reasoner_solve_crash": "diagnostics",
+    "local_update_documentation": "documentation",
+}
+
+
+def _autorizza(tool_name: str, employee_id: str) -> None:
+    """Fail-closed sul dizionario e sul ruolo: un tool non censito o un ruolo
+    senza la capability richiesta bloccano la chiamata prima di ogni I/O."""
+    capability_richiesta = TOOL_REQUIRED_CAPABILITY.get(tool_name)
+    if capability_richiesta is None:
+        raise KeyError(f"tool non censito in TOOL_REQUIRED_CAPABILITY: {tool_name}")
+    try:
+        require_capability(employee_id, capability_richiesta)
+    except RoleEnforcementError as exc:
+        raise PermissionError(f"{employee_id} non e' autorizzato a chiamare {tool_name}: {exc}") from exc
+
 
 # =====================================================================
 # STRUMENTI PER LA CATENA DI MONTAGGIO A ZERO DIFETTI
@@ -156,12 +187,13 @@ def _prompt_scheletro(specifications_json: str) -> str:
 
 
 @mcp.tool()
-def local_generate_skeleton(specifications_json: str) -> str:
+def local_generate_skeleton(specifications_json: str, employee_id: str) -> str:
     """
     PASSO 1 (GRATIS - OLLAMA 7B): Genera lo scheletro formale (C#, C++ o Python, in base al
     file bersaglio dichiarato nel contratto) con le firme.
     Crea i punti di riferimento per i modelli programmatori senza sprecare token cloud.
     """
+    _autorizza("local_generate_skeleton", employee_id)
     sys_prompt = _prompt_scheletro(specifications_json)
     payload = {
         "model": ROSTER["local_scaffold"],
@@ -175,16 +207,17 @@ def local_generate_skeleton(specifications_json: str) -> str:
     record({
         "task_id": "local_generate_skeleton", "model": ROSTER["local_scaffold"],
         "calls": 1, "estimated_cost_usd": 0.0, "status": "completed",
-        "file": "mcp_tool", "words": len(risposta.split()),
+        "file": "mcp_tool", "words": len(risposta.split()), "employee_id": employee_id,
     })
     return risposta
 
 @mcp.tool()
-def cloud_infill_implementation(skeleton_and_contract: str) -> str:
+def cloud_infill_implementation(skeleton_and_contract: str, employee_id: str) -> str:
     """
     PASSO 2 (LOW COST - QWEN3 30B): Riceve lo scheletro e il contratto, riempiendo solo la logica interna.
     Non tocca firme o interfacce predefinite.
     """
+    _autorizza("cloud_infill_implementation", employee_id)
     sys_prompt = (
         "Sei il Senior Infiller. Ricevi uno scheletro strutturale e il contratto di funzionamento. "
         "Devi implementare TUTTI i corpi delle funzioni nel rispetto assoluto dei vincoli di memoria e firme. "
@@ -194,17 +227,18 @@ def cloud_infill_implementation(skeleton_and_contract: str) -> str:
     record({
         "task_id": "cloud_infill_implementation", "model": ROSTER["worker"],
         "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["worker"]),
-        "status": "completed", "file": "mcp_tool",
+        "status": "completed", "file": "mcp_tool", "employee_id": employee_id,
         "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
 @mcp.tool()
-def preflight_contract_check(contract_json: str, generated_code: str) -> str:
+def preflight_contract_check(contract_json: str, generated_code: str, employee_id: str) -> str:
     """
     PASSO 3 (ULTRA-FAST - GEMINI FLASH): Controlla discrepanze prima della compilazione.
     Individua buffer non controllati, violazioni di tipi o firme alterate in 1 secondo.
     """
+    _autorizza("preflight_contract_check", employee_id)
     sys_prompt = (
         "Sei il Controllore di Qualità di Pre-Flight. Verifica se il codice generato rispetta il contratto "
         "e i limiti di memoria. Rispondi 'APPROVED' se è impeccabile, oppure elenca in modo sintetico "
@@ -215,17 +249,18 @@ def preflight_contract_check(contract_json: str, generated_code: str) -> str:
     record({
         "task_id": "preflight_contract_check", "model": ROSTER["preflight"],
         "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["preflight"]),
-        "status": "completed", "file": "mcp_tool",
+        "status": "completed", "file": "mcp_tool", "employee_id": employee_id,
         "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
 @mcp.tool()
-def deep_reasoner_solve_crash(error_context_json: str) -> str:
+def deep_reasoner_solve_crash(error_context_json: str, employee_id: str) -> str:
     """
     PASSO 4 (DEBUG PROFONDO - DEEPSEEK R1): Risolve crash di memoria ASan o deadlock logici.
     Invocato SOLO se i test falliscono.
     """
+    _autorizza("deep_reasoner_solve_crash", employee_id)
     sys_prompt = (
         "Sei il Principal Systems & Memory Security Engineer. Analizza il crash nativo o la violazione di invarianti. "
         "Identifica l'errore logico o di puntatore e fornisci la correzione chirurgica in C++ o Python."
@@ -234,16 +269,17 @@ def deep_reasoner_solve_crash(error_context_json: str) -> str:
     record({
         "task_id": "deep_reasoner_solve_crash", "model": ROSTER["auditor"],
         "calls": 1, "estimated_cost_usd": _costo_reale_usd(ROSTER["auditor"]),
-        "status": "completed", "file": "mcp_tool",
+        "status": "completed", "file": "mcp_tool", "employee_id": employee_id,
         "usage": getattr(_STATO_CHIAMATA, "usage", {}),
     })
     return testo
 
 @mcp.tool()
-def local_update_documentation(doc_payload_json: str) -> str:
+def local_update_documentation(doc_payload_json: str, employee_id: str) -> str:
     """
     PASSO 5 (GRATIS - OLLAMA 7B): Aggiorna roadmap, changelog e commenti sui pacchetti senza spendere token cloud.
     """
+    _autorizza("local_update_documentation", employee_id)
     payload = {
         "model": ROSTER["local_scaffold"],
         "prompt": f"Sei un Technical Writer. Aggiorna la documentazione/roadmap in Markdown basandoti su questi dati:\n{doc_payload_json}",
@@ -255,7 +291,7 @@ def local_update_documentation(doc_payload_json: str) -> str:
     record({
         "task_id": "local_update_documentation", "model": ROSTER["local_scaffold"],
         "calls": 1, "estimated_cost_usd": 0.0, "status": "completed",
-        "file": "mcp_tool", "words": len(risposta.split()),
+        "file": "mcp_tool", "words": len(risposta.split()), "employee_id": employee_id,
     })
     return risposta
 

@@ -10,6 +10,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import mcp_server
@@ -67,3 +69,31 @@ def test_prompt_senza_linguaggio_determinabile_chiede_di_fermarsi_invece_di_indo
     contratto = json.dumps({"scopo": "nessun file citato"})
     prompt = mcp_server._prompt_scheletro(contratto)
     assert "fermati e dichiaralo" in prompt
+
+
+# --- isolamento dei 5 tool per ruolo (_autorizza) --------------------------------
+
+def test_tool_required_capability_copre_i_cinque_tool_del_protocollo():
+    assert set(mcp_server.TOOL_REQUIRED_CAPABILITY) == {
+        "local_generate_skeleton", "cloud_infill_implementation",
+        "preflight_contract_check", "deep_reasoner_solve_crash",
+        "local_update_documentation",
+    }
+
+
+def test_autorizza_permette_il_ruolo_con_la_capability_giusta():
+    mcp_server._autorizza("local_generate_skeleton", "employee.documentation")
+    mcp_server._autorizza("cloud_infill_implementation", "employee.coding")
+    mcp_server._autorizza("preflight_contract_check", "employee.reviewer")
+    mcp_server._autorizza("deep_reasoner_solve_crash", "employee.testing")
+    mcp_server._autorizza("local_update_documentation", "employee.documentation")
+
+
+def test_autorizza_blocca_un_ruolo_senza_la_capability():
+    with pytest.raises(PermissionError):
+        mcp_server._autorizza("cloud_infill_implementation", "employee.testing")
+
+
+def test_autorizza_blocca_un_tool_non_censito():
+    with pytest.raises(KeyError):
+        mcp_server._autorizza("tool_inventato", "employee.coding")
