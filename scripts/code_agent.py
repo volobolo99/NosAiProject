@@ -545,9 +545,23 @@ def build_check(target: Path) -> list:
 def import_check(target: Path) -> list:
     """Importa il modulo in un processo separato: un errore di import non deve
     contaminare questo processo."""
-    modulo = ".".join(target.relative_to(ROOT).with_suffix("").parts)
+    parti = target.relative_to(ROOT).with_suffix("").parts
+    if all(p.isidentifier() for p in parti):
+        comando = "import {}".format(".".join(parti))
+    else:
+        # Una cartella come tools/open-webui/ non e' un identificatore Python
+        # valido (il trattino e' l'operatore di sottrazione): "import a.b-c.d"
+        # e' un SyntaxError che non ha niente a che fare col file caricato,
+        # come misurato il 2026-09-11 su tools/open-webui/nosai_free_router.py.
+        # Si carica direttamente dal percorso, che non ha questo vincolo.
+        comando = (
+            "import importlib.util; "
+            "spec = importlib.util.spec_from_file_location('_import_check_target', r'{}'); "
+            "modulo = importlib.util.module_from_spec(spec); "
+            "spec.loader.exec_module(modulo)"
+        ).format(str(target))
     proc = subprocess.run(
-        [sys.executable, "-c", "import {}".format(modulo)],
+        [sys.executable, "-c", comando],
         cwd=str(ROOT),
         capture_output=True,
         text=True,
