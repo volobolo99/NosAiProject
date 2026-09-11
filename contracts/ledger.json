@@ -656,6 +656,24 @@
           "product_phases": [],
           "legacy_gate": 9,
           "metrics": "15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli"
+        },
+        {
+          "cid": "ORCH-005",
+          "title": "Rendering deterministico di CONTRACT_MAP.md (niente modello, niente parafrasi)",
+          "target_file": "scripts/mcp_server.py",
+          "signature": "render_contract_map_markdown(ledger: dict) -> str",
+          "struct_size": null,
+          "test_file": "tests/test_contract_ledger.py",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "NO_MODEL_CALL",
+            "VERBATIM_FIELDS"
+          ],
+          "note": "docs/CONTRACT_MAP.md dichiara 'Fonte: contracts/ledger.json' ma e' mantenuto a mano da b3e614a ed e' rimasto disallineato per settimane (C-003/004/005/105/204/304/402/404 mostravano ancora DRAFT mentre il ledger li aveva gia' chiusi DROPPED/TEST_VERIFIED/VERIFIED). Stesso rimedio di ORCH-004 per MASTER_ROADMAP.md: ogni cella della tabella e' copiata cosi' com'e' da un campo del ledger, senza passare da un modello.",
+          "product_phases": [],
+          "legacy_gate": 9,
+          "updated": "2026-09-11",
+          "metrics": "render_contract_map_markdown implementata e collegata a update_contract_state (2 run Qwen3 Coder 30B, preflight APPROVED entrambe, costo totale $0.0046). 26 test verdi in tests/test_contract_ledger.py; suite Python completa 563 test invariata."
         }
       ]
     }

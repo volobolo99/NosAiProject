@@ -1,0 +1,85 @@
+{
+  "contract_id": "contract-map-render-012",
+  "cid": "ORCH-005",
+  "file": "scripts/mcp_server.py",
+  "scopo": "docs/CONTRACT_MAP.md dichiara 'Fonte: contracts/ledger.json' ma e' mantenuto a mano ed e' rimasto disallineato dal ledger per settimane. render_contract_map_markdown(ledger) genera quel documento direttamente dal ledger, sullo stesso modello deterministico di render_roadmap_markdown (righe 262-334 dello stesso file): nessuna chiamata a un modello, nessuna parafrasi, ogni cella della tabella e' copiata cosi' com'e' da un campo del ledger. update_contract_state la richiama insieme a render_roadmap_markdown cosi' che anche CONTRACT_MAP.md si rigeneri automaticamente a ogni cambiamento di stato.",
+  "funzioni": {
+    "render_contract_map_markdown": {
+      "firma": "def render_contract_map_markdown(ledger: dict) -> str",
+      "nuova": true,
+      "posizione": "subito dopo la fine della funzione render_roadmap_markdown esistente (che termina con 'return \"\\n\".join(lines) + \"\\n\"'), prima della riga bianca che precede '@mcp.tool()\\ndef update_contract_state'. Funzione pura di modulo, NON decorata con @mcp.tool() (esattamente come render_roadmap_markdown): nessuna chiamata di rete, nessun accesso al filesystem dentro questa funzione.",
+      "comportamento": [
+        "Costruisce una lista di righe di testo 'lines' e alla fine restituisce '\\n'.join(lines) + '\\n', esattamente come fa render_roadmap_markdown.",
+        "Le prime righe sono FISSE, verbatim, identiche ogni volta (non derivano da alcun campo del ledger):",
+        "  lines.append('# NosAiProject — Mappa dei contratti')",
+        "  lines.append('')",
+        "  lines.append('Fonte: contracts/ledger.json. I gruppi legacy non sono numeri AP della roadmap.')",
+        "  lines.append('Stati conservati dal ledger: non sono stati rivalidati eseguendo il runtime.')",
+        "  lines.append('Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_TASKS.md).')",
+        "  lines.append('')",
+        "  lines.append('| CID | Fase prodotto | Contratto | Stato ledger | Firma | File | Test |')",
+        "  lines.append('|---|---|---|---|---|---|---|')",
+        "Poi itera ledger.get('gates', []) e per ciascun gate itera gate.get('contracts', []), esattamente come fa render_roadmap_markdown con lo stesso doppio ciclo (nessun ordinamento aggiuntivo: l'ordine e' quello del ledger).",
+        "Per ogni contratto del ciclo, calcola 'fase': product_phases = contract.get('product_phases') or []; se product_phases e' una lista non vuota, fase = ', '.join(product_phases) (unione con virgola e spazio, per esempio ['AP-02','AP-09'] -> 'AP-02, AP-09'); se product_phases e' vuota o assente, fase = 'Tooling trasversale' (stringa letterale fissa: e' il caso dei contratti ORCH-* del gate 9, che non appartengono a una fase prodotto).",
+        "Poi appende UNA riga di tabella con esattamente questo formato, una cella per campo, MAI omettendo una colonna anche se il campo manca dal contratto (in quel caso la cella e' una stringa vuota):",
+        "  '| {cid} | {fase} | {title} | {status} | {signature} | {target_file} | {test_file} |'",
+        "  dove cid=contract.get('cid',''), title=contract.get('title',''), status=contract.get('status',''), signature=contract.get('signature',''), target_file=contract.get('target_file',''), test_file=contract.get('test_file','').",
+        "IMPORTANTE, invariante di correttezza della tabella: ognuno di questi 7 valori (cid, fase, title, status, signature, target_file, test_file), PRIMA di essere inserito nella riga, deve passare da una piccola funzione di escaping che sostituisce ogni carattere pipe letterale '|' con la sequenza a due caratteri backslash-pipe '\\|' (str.replace('|', chr(92)+'|')): senza questo passaggio una firma come 'def load_native(path: str | None = None) -> NativeHandle' (che contiene una pipe vera) spezzerebbe la riga della tabella Markdown in due colonne in piu'. Il valore None diventa stringa vuota prima dell'escaping (mai la stringa letterale 'None').",
+        "status NON deve mai essere ricalcolato, dedotto o corretto rispetto a quanto scritto nel ledger: e' una copia letterale del campo 'status' del contratto, qualunque esso sia (DRAFT, MERGED, DROPPED, TEST_VERIFIED, VERIFIED, ...). Lo stesso vale per signature, target_file e test_file: nessuna euristica, nessuna inferenza dal campo 'metrics' o da altri campi.",
+        "Dopo l'ultimo contratto dell'ultimo gate, appende una riga vuota e poi queste DUE righe FISSE, verbatim, identiche ogni volta (i due contratti standalone mcp-hub-001 e mcp-research-lab-001 vivono in contracts/*.json fuori da contracts/ledger.json, quindi non sono raggiungibili iterando ledger['gates']):",
+        "  lines.append('Contratti standalone MCP: [mcp-hub-001](../contracts/mcp-hub-001.json), [mcp-research-lab-001](../contracts/mcp-research-lab-001.json).')",
+        "  lines.append(\"Non sono inclusi nei conteggi dei gruppi legacy. Il contratto Lab è DRAFT e i pacchetti PLANNED.\")",
+        "Infine, SOLO SE ledger.get('signature_resolution_note') e' un valore non vuoto (troncato/verificato con un semplice 'if signature_resolution_note:'), appende una riga vuota seguita da UNA riga contenente esattamente quel valore, senza prefisso, senza traduzione, senza parafrasi (copia verbatim dal campo del ledger, in qualunque lingua sia scritto): lines.append(''); lines.append(signature_resolution_note). Se il campo e' assente o vuoto, queste due righe non vengono aggiunte."
+      ],
+      "esempio_input_output": {
+        "ledger": {
+          "gates": [
+            {
+              "gate": 0,
+              "contracts": [
+                {
+                  "cid": "C-005",
+                  "title": "Bridge ctypes verso il modulo nativo",
+                  "status": "DROPPED",
+                  "signature": "def load_native(path: str | None = None) -> NativeHandle",
+                  "target_file": "nosai/bridge/native.py",
+                  "test_file": "tests/test_native_bridge.py",
+                  "product_phases": ["AP-00"]
+                }
+              ]
+            }
+          ]
+        },
+        "riga_di_tabella_attesa": "| C-005 | AP-00 | Bridge ctypes verso il modulo nativo | DROPPED | def load_native(path: str \\| None = None) -> NativeHandle | nosai/bridge/native.py | tests/test_native_bridge.py |"
+      }
+    }
+  },
+  "funzione_da_modificare_run2": {
+    "update_contract_state": {
+      "firma": "def update_contract_state(contract_id: str, new_state: str, metrics: str = \"\") -> str",
+      "modificabile": "SOLO il corpo della funzione annidata regenerate_roadmap(), definita dentro update_contract_state poco prima della riga 'threading.Thread(target=regenerate_roadmap, daemon=True).start()'. Nessun'altra riga di update_contract_state cambia: non il calcolo di completion_pct, non la scrittura del ledger, non il valore o il formato della stringa restituita alla fine (quella che inizia con '[CID: ').",
+      "comportamento_richiesto": [
+        "regenerate_roadmap() oggi contiene un solo blocco try/except che chiama render_roadmap_markdown(ledger) e scrive il risultato in PROJECT_ROOT / 'docs' / 'MASTER_ROADMAP.md'. Quel blocco resta IDENTICO, invariato.",
+        "Subito dopo quel blocco (ancora dentro regenerate_roadmap, ancora nello stesso thread), aggiungi un SECONDO blocco try/except, indipendente dal primo, che chiama render_contract_map_markdown(ledger) e scrive il risultato in PROJECT_ROOT / 'docs' / 'CONTRACT_MAP.md', con lo stesso stile del primo blocco (open(..., 'w', encoding='utf-8'); f.write(contenuto); except Exception: pass).",
+        "I due blocchi devono essere indipendenti: se la scrittura di MASTER_ROADMAP.md solleva un'eccezione, quella di CONTRACT_MAP.md deve comunque essere tentata (e viceversa). Per questo servono DUE try/except separati, non uno che avvolge entrambe le scritture.",
+        "Non toccare la firma di regenerate_roadmap() (nessun parametro), non rinominarla, non spostare la chiamata a threading.Thread."
+      ]
+    }
+  },
+  "vincoli": [
+    "Nessuna chiamata di rete, nessuna chiamata a un modello, nessun accesso al filesystem dentro render_contract_map_markdown: e' una funzione pura ledger:dict -> str, esattamente come render_roadmap_markdown.",
+    "Non deve mai solleva un'eccezione su un ledger minimale o vuoto: render_contract_map_markdown({}) deve restituire lo stesso risultato di render_contract_map_markdown({'gates': []}); un contratto privo di uno qualsiasi dei campi (title, status, signature, target_file, test_file, product_phases) produce una cella vuota per quel campo, mai un KeyError o AttributeError.",
+    "Non modificare render_roadmap_markdown, ne' alcun'altra funzione del file: questo incarico tocca solo la nuova funzione render_contract_map_markdown.",
+    "Nessun segnaposto, nessun TODO, nessuna funzione ausiliaria non richiesta qui: se serve una piccola funzione di escaping interna (per esempio una funzione annidata o un helper a livello di modulo), va bene, ma il suo unico compito e' la sostituzione della pipe descritta sopra."
+  ],
+  "postcondizioni": [
+    "render_contract_map_markdown(ledger) inizia con la riga '# NosAiProject — Mappa dei contratti'.",
+    "Il blocco di intestazione della tabella e' esattamente '| CID | Fase prodotto | Contratto | Stato ledger | Firma | File | Test |' seguito dalla riga di separatori '|---|---|---|---|---|---|---|'.",
+    "Ogni contratto di ogni gate del ledger produce esattamente una riga di tabella, nell'ordine in cui compare nel ledger.",
+    "Il valore della colonna 'Stato ledger' e' sempre identico, carattere per carattere, al campo status del contratto nel ledger passato in ingresso.",
+    "Una pipe letterale in qualunque campo del contratto compare nell'output come '\\|', mai come '|' nudo dentro una cella.",
+    "Le due righe sui contratti standalone MCP e, quando presente, la nota finale con signature_resolution_note compaiono dopo l'ultima riga di tabella."
+  ],
+  "test_di_accettazione": "python -m pytest tests/test_contract_ledger.py -k contract_map -q",
+  "status": "contratto_formulato"
+}
