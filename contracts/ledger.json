@@ -386,7 +386,9 @@
           ],
           "legacy_gate": 3,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: SequenceRoutine e SelectorRoutine in src/NosAi.Core/Planning/DeterministicRoutine.cs, PlannerGoalStack in src/NosAi.Core/Planning/PlannerGoalStack.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi; nessun test individua questi simboli per nome, la copertura verde riguarda l'insieme dei 4 file in tests/NosAi.Core.Tests/Planning/ (ADR-0028)."
         },
         {
           "cid": "C-302",
@@ -404,7 +406,9 @@
           ],
           "legacy_gate": 3,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: DeterministicGoapPlanner in src/NosAi.Core/Planning/Goap/DeterministicGoapPlanner.cs, testato in tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi."
         },
         {
           "cid": "C-303",
@@ -423,7 +427,9 @@
           ],
           "legacy_gate": 3,
           "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md"
+          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "updated": "2026-09-11",
+          "metrics": "Simbolo esatto individuato il 2026-09-11: NosAiOrchestrator in nosai/core/orchestrator.py, testato in tests/test_orchestrator.py. Codice Python vivo: usato come dipendenza del costruttore da ClosedLoopRuntime in nosai/runtime/closed_loop.py, e da nosai/runtime/orchestrator_bridge.py e nosai/tactical/combat_engine.py. Non appartiene allo strato C# di ADR-0028 (LexicographicOrchestrator in src/NosAi.Core/Planning/, deliberatamente non collegato): ruolo concettuale simile, percorso opposto."
         },
         {
           "cid": "C-304",

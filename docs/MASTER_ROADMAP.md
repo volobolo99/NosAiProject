@@ -65,9 +65,15 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
 | CID | Titolo | Stato |
 |---|---|---|
 | C-301 | Pianificazione gerarchica HTN | MERGED |
+  - updated: 2026-09-11
+  - metrics: ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: SequenceRoutine e SelectorRoutine in src/NosAi.Core/Planning/DeterministicRoutine.cs, PlannerGoalStack in src/NosAi.Core/Planning/PlannerGoalStack.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi; nessun test individua questi simboli per nome, la copertura verde riguarda l'insieme dei 4 file in tests/NosAi.Core.Tests/Planning/ (ADR-0028).
   - note: ADR-0028 discute se il livello HTN/GOAP resta o si rimuove: leggerlo prima di estendere.
 | C-302 | Pianificazione GOAP | MERGED |
+  - updated: 2026-09-11
+  - metrics: ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: DeterministicGoapPlanner in src/NosAi.Core/Planning/Goap/DeterministicGoapPlanner.cs, testato in tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi.
 | C-303 | Orchestratore strategico | MERGED |
+  - updated: 2026-09-11
+  - metrics: Simbolo esatto individuato il 2026-09-11: NosAiOrchestrator in nosai/core/orchestrator.py, testato in tests/test_orchestrator.py. Codice Python vivo: usato come dipendenza del costruttore da ClosedLoopRuntime in nosai/runtime/closed_loop.py, e da nosai/runtime/orchestrator_bridge.py e nosai/tactical/combat_engine.py. Non appartiene allo strato C# di ADR-0028 (LexicographicOrchestrator in src/NosAi.Core/Planning/, deliberatamente non collegato): ruolo concettuale simile, percorso opposto.
 | C-304 | Macchina a stati finiti esplicita | DROPPED |
   - updated: 2026-09-11
   - metrics: ADR-0031 del 2026-09-11: nessuna macchina a stati esplicita. La domanda era mal posta: ADR-0028 ha misurato che Planner e Orchestrator NON sono nel percorso di esecuzione (ModuleReachability li dichiara Unreferenced per scelta datata), quindi non c e un autorita da duplicare. Il percorso vivo e StrategyPlanner piu il ciclo di Gate3. Una FSM inventata prima di un comportamento che la richieda fisserebbe una partizione degli stati scelta a tavolino, che e la parte che decide se la macchina dice il vero. Si riapre con un caso nominato, e un interblocco di sicurezza va costruito come guardia stretta, non come FSM generale.
