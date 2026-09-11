@@ -7,7 +7,7 @@ from datetime import date
 from dotenv import load_dotenv
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
-from typing import List, Dict, Tuple, Sequence
+from typing import List, Dict, Tuple, Sequence, Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
@@ -287,7 +287,7 @@ def modelli_gratuiti() -> list[str]:
     
     return groq_modelli + altri_modelli
 
-def giudizio_infill(scheletro_e_contratto: str) -> callable[[str], list[str]]:
+def giudizio_infill(scheletro_e_contratto: str) -> Callable[[str], list[str]]:
     """Riceve in una sola stringa lo scheletro e il contratto, come li riceve il tool cloud_infill_implementation."""
     def giudice(codice_candidato: str) -> list[str]:
         difetti = []
