@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "modelId": "nosai-yolov8",
+  "family": "yolov8-detection",
+  "format": "onnx",
+  "status": "contract-only",
+  "modelFile": "nosai-yolov8.onnx",
+  "input": {
+    "name": "images",
+    "width": 640,
+    "height": 640,
+    "layout": "NCHW",
+    "channels": 3,
+    "channelOrder": "RGB",
+    "pixelScale": 0.0039215686
+  },
+  "output": {
+    "layout": "[1,channels,candidates] or [1,candidates,channels]",
+    "boxEncoding": "cxcywh",
+    "coordinates": "normalized"
+  },
+  "inference": {
+    "confidenceThreshold": 0.35,
+    "maxDetections": 128
+  },
+  "classes": ["player", "mob", "npc", "drop", "portal", "interactable"],
+  "provenance": {
+    "modelHashSha256": null,
+    "trainedDataset": null,
+    "validationReport": null,
+    "note": "Runtime contract only. A real authorized model and provenance are required before production verification."
+  }
+}
