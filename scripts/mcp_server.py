@@ -339,7 +339,8 @@ def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -
     """
     Aggiorna lo stato di un contratto in contracts/ledger.json, ricalcola la
     percentuale del suo Gate e rigenera docs/MASTER_ROADMAP.md in background
-    con il 7B locale. Nessuna chiamata a pagamento.
+    con la funzione deterministica render_roadmap_markdown(ledger): nessun
+    modello, nessuna chiamata di rete, nessuna chiamata a pagamento.
     """
     if new_state not in VALID_STATES:
         return f"ERROR: stato non valido '{new_state}'. Ammessi: {', '.join(VALID_STATES)}"
