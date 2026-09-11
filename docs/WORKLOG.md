@@ -148,11 +148,7 @@ Regola: ogni intervento deve aggiungere una voce con:
 - Creato preprocessing deterministico BGRA -> RGB NCHW con resize nearest-neighbour.
 - Aggiunto `TryCreate` fail-closed con reason code per modello mancante/input assente/runtime initialization/IO/access.
 - Creato `EmptyOnnxDetectionDecoder` che restituisce zero detection finché non viene installato un decoder/model spec valido.
-- Aggiunti test per:
-  - modello mancante;
-  - ordine canali RGB/NCHW;
-  - resize deterministico;
-  - decoder vuoto che non fabbrica detection.
+- Aggiunti test per modello mancante, ordine canali RGB/NCHW, resize deterministico e decoder vuoto.
 - Estesa la certification suite Perception con check ONNX fail-closed.
 
 **Stato**
@@ -161,7 +157,6 @@ Regola: ogni intervento deve aggiungere una voce con:
 - Manca volutamente il decoder di una specifica architettura di detector e un modello validato.
 - Prossimo passo: model manifest + decoder specifico benchmarkabile, senza rendere il modello obbligatorio.
 
----
 
 ## 2026-09-08 — Collegamento MCP locale Claude → DeepSeek (`tools/deepseek-mcp`)
 
@@ -170,48 +165,48 @@ Regola: ogni intervento deve aggiungere una voce con:
 - `tools/deepseek-mcp/test/{helpers,config,sandbox,workerTools,deepseekClient,agentLoop,server}.*.mjs` — creati.
 - `tools/deepseek-mcp/scripts/{check-connection,check-registration}.mjs` — creati.
 - `tools/deepseek-mcp/{package.json,README.md}` — creati.
-- `.mcp.json` — creato (ambito progetto, server `deepseek`).
-- `.gitignore` — aggiunto `node_modules/`.
+- `.mcp.json` — creato.
+- `.gitignore` — aggiornato.
 - `docs/INDICE_REPO.md`, `docs/WORKLOG.md` — aggiornati.
 
 **Perché**
-- Gli incarichi a DeepSeek passavano per copia-incolla manuale in Cursor: nessuna
-  tracciabilità di cosa fosse stato realmente scritto su disco, nessun perimetro
-  applicato dal programma.
-- Un blocco `docs/agents/phases/**` dichiara file di proprietà dell'agente: quel
-  perimetro ora è applicato dal codice, non dalla buona volontà del lavoratore.
+- Gli incarichi a DeepSeek passavano per copia-incolla manuale in Cursor: nessuna tracciabilità di cosa fosse stato realmente scritto su disco, nessun perimetro applicato dal programma.
 
 **Cosa è stato fatto**
-- Server MCP su stdio (`@modelcontextprotocol/server` 2.0.0, Node ≥ 20) con un
-  solo strumento `delegate_to_deepseek`.
-- Ciclo di tool-call verso l'API ufficiale DeepSeek (superficie OpenAI-compatibile):
-  il lavoratore cerca, legge, scrive e modifica file; una risposta di solo testo
-  non conta come implementazione e viene contestata dal ciclo.
-- Confinamento: ogni percorso è risolto attraverso link e giunzioni **prima** del
-  controllo di contenimento; `.git`, `node_modules`, `bin`, `obj` sempre negati.
-- Nessuna shell al lavoratore: build e test restano a Claude.
-- Nessuna delega ricorsiva: nessuno strumento la espone, e il server rifiuta di
-  operare se avviato con `NOSAI_DEEPSEEK_DELEGATION_ACTIVE=1`.
-- Modello da `DEEPSEEK_MODEL`, ammessi `deepseek-v4-flash` (default) e
-  `deepseek-v4-pro`; qualunque altro valore è un errore, mai una sostituzione, e
-  non esiste ripiego automatico su `pro` dopo un fallimento.
-- Rendiconto: modifiche reali su disco per confronto SHA-256 prima/dopo, chiamate
-  rifiutate, errori, token dichiarati dall'API. I token sono consumo riportato,
-  non un tetto di spesa garantito.
-- Tetti: giri API, chiamate strumento, scadenza complessiva, ritenti per chiamata.
-  `report_done` è esente dal tetto sulle chiamate, altrimenti una delega che
-  esaurisce il budget non potrebbe più chiudersi con un rapporto.
+- Server MCP su stdio con delega confinata e rendicontata verso DeepSeek.
+- Nessuna shell al lavoratore; build/test restano al coordinatore.
+- Tetti di giri API, tool call, timeout e retry.
+- Rendiconto delle modifiche reali tramite SHA-256.
 
 **Stato**
 - IMPLEMENTATO e VERIFICATO su `main`.
-- 100 test locali verdi con API simulata (`npm test`).
-- Registrazione stdio verificata con il comando esatto di `.mcp.json`
-  (`node scripts/check-registration.mjs`).
-- Una richiesta reale minima riuscita: `GET /models` elenca `deepseek-v4-flash`,
-  `deepseek-v4-pro`, `deepseek-v4-flash-vision-exp`; la completion ha risposto
-  `"pronto"` con `finish_reason: stop`, modello `deepseek-v4-flash`, 147 token.
-- Manca: l'approvazione del server di progetto e una sessione nuova di Claude
-  Code perché `delegate_to_deepseek` sia richiamabile.
-- Prossimo passo: incarico dimostrativo in cartella temporanea (procedura in
-  `tools/deepseek-mcp/README.md`), poi il primo blocco reale. Lavoro notturno non
-  avviato.
+
+
+## 2026-09-11 — Perception: model contract + YOLOv8 decoder
+
+**Obiettivo:** chiudere il passo successivo della boundary ONNX: definire un contratto versionato per il modello e installare un decoder concreto e benchmarkabile, mantenendo il modello opzionale e senza promuovere dati sintetici a evidenza reale.
+
+**File toccati**
+- `src/NosAi.Runtime/Perception/YoloV8DetectionDecoder.cs` — creato.
+- `models/perception/nosai-yolov8.manifest.json` — creato.
+- `tests/NosAi.Runtime.Tests/YoloV8DetectionDecoderTests.cs` — creato.
+- `docs/WORKLOG.md` — aggiornato.
+
+**Perché**
+- L'adapter ONNX esistente aveva già separato inferenza e decoder, ma mancava una prima implementazione concreta.
+- Senza manifest non era esplicito quali input/output e classi il runtime si aspettasse.
+- Il progetto non deve mai considerare un modello non validato come asset produttivo.
+
+**Cosa è stato fatto**
+- Aggiunto `YoloV8DetectionDecoder` per i layout ONNX comuni `[1,channels,candidates]` e `[1,candidates,channels]`.
+- Gestiti `cx,cy,w,h`, coordinate normalizzate o pixel, soglia di confidenza e limite massimo di detection.
+- Ordinamento deterministico per confidenza/area.
+- Output senza informazione HP non viene trasformato in una falsa percentuale: `HpRatio` resta `NaN` come valore di assenza informativa nell'attuale contract.
+- Aggiunto manifest versionato con input 640x640 RGB/NCHW, classi NosAi iniziali e campi di provenienza obbligatori da completare.
+- Aggiunti test per entrambi i layout, scaling, soglia e comportamento fail-closed sull'HP.
+
+**Stato**
+- IMPLEMENTATO sul branch `feat/perception-model-contract`.
+- Verifica automatica CI/build non eseguita da questo ambiente: il commit va validato dal workflow del repository prima del merge.
+- **Non VERIFIED come ML reale**: manca ancora `nosai-yolov8.onnx` addestrato/validato e relativo report di provenienza.
+- Prossimo passo: acquisire dataset/replay reali autorizzati, addestrare o selezionare un modello, calcolare SHA-256, compilare la provenance e collegare il manifest all'AutoSet/provider selection.
