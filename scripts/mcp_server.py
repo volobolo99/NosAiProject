@@ -86,17 +86,40 @@ def _costo_reale_usd(model_id: str) -> float:
 # STRUMENTI PER LA CATENA DI MONTAGGIO A ZERO DIFETTI
 # =====================================================================
 
-@mcp.tool()
-def local_generate_skeleton(specifications_json: str) -> str:
-    """
-    PASSO 1 (GRATIS - OLLAMA 7B): Genera lo scheletro formale (file .hpp o classi Python con firme).
-    Crea i punti di riferimento per i modelli programmatori senza sprecare token cloud.
-    """
-    sys_prompt = (
+def _skeleton_system_prompt(specifications_json: str) -> str:
+    """Sceglie il system prompt dello Skeleton Architect in base all'estensione
+    del campo "file" nelle specifiche: il progetto ha 564 sorgenti C# contro 78
+    Python (ADR-0030), quindi un contratto senza questa distinzione produceva
+    sempre uno scheletro Python anche per i moduli .cs."""
+    PROMPT_GENERICO = (
         "Sei uno Skeleton Architect. Genera SOLO lo scheletro strutturale del codice "
         "(header C++ o file Python con type annotations e 'raise NotImplementedError'). "
         "Non implementare gli algoritmi interni. Mantieni rigore assoluto su firme e allineamenti."
     )
+    PROMPT_CSHARP = (
+        "Sei uno Skeleton Architect per C#/.NET. Genera SOLO lo scheletro strutturale C# "
+        "(namespace, using corretti, classi o record con le firme dei metodi a tipi espliciti). "
+        "Il corpo di ogni metodo deve essere 'throw new NotImplementedException();'. "
+        "Non implementare la logica interna. Mantieni rigore assoluto su firme, namespace e tipi."
+    )
+    try:
+        data = json.loads(specifications_json)
+        if isinstance(data, dict) and "file" in data:
+            if Path(data["file"]).suffix.lower() == ".cs":
+                return PROMPT_CSHARP
+    except Exception:
+        pass
+    return PROMPT_GENERICO
+
+
+@mcp.tool()
+def local_generate_skeleton(specifications_json: str) -> str:
+    """
+    PASSO 1 (GRATIS - OLLAMA 7B): Genera lo scheletro formale (file .hpp, classi Python
+    o classi C# con firme, a seconda dell'estensione dichiarata in "file").
+    Crea i punti di riferimento per i modelli programmatori senza sprecare token cloud.
+    """
+    sys_prompt = _skeleton_system_prompt(specifications_json)
     payload = {
         "model": ROSTER["local_scaffold"],
         "prompt": f"{sys_prompt}\n\nSpecifiche tecniche (JSON):\n{specifications_json}",

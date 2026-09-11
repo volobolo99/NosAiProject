@@ -46,3 +46,7 @@
 
 - Aggiunto il sottosistema governato `nosai/mcp/` con policy offline-first, routing provider, simulazione deterministica, learning online→offline, secret store cifrato, audit redatto, Direttore/Auditor e registro ruoli.
 - Aggiunti gli entrypoint `scripts/mcp_hub_server.py` e `scripts/mcp_dashboard_server.py`, il pannello locale e i contratti `mcp-hub-001@1.0.0`.
+
+### Catena di produzione
+
+- **Aggiunto supporto per diverse estensioni nel `local_generate_skeleton`**: Implementata la funzione `_skeleton_system_prompt` che sceglie il system prompt in base all'estensione del campo "file". Questo consente di generare correttamente uno scheletro C#/.NET per i contratti .cs, mantenendo il comportamento invariato per gli altri linguaggi come Python, C++, C e C++ header. La nuova implementazione è stata testata con 7 test e non ha causato regressioni.
