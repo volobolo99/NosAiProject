@@ -6,9 +6,9 @@
 
 | ID | Attività | Dipendenze | Evidenza di chiusura |
 |---|---|---|---|
-| R-001 | Rendere verdi le GitHub Actions e acquisire i log dei job falliti | accesso ai log/runner | run `NosAi CI` e Windows completate senza failure oppure failure spiegata e registrata |
-| R-002 | Decidere quale stack possiede lo stato canonico (C# o Python) | C-204 | ADR accettato, schema di sincronizzazione, test di round-trip e ownership esplicita |
-| R-003 | Verificare l’esecuzione reale del MCP Director → worker → Auditor | MCP Hub, policy, provider | replay di un task in shadow mode, handoff valido, veto/rollback dimostrati |
+| R-001 | ~~Rendere verdi le GitHub Actions e acquisire i log dei job falliti~~ — **chiuso 2026-09-11** | accesso ai log/runner | `NosAi CI` e `NosAi .NET (Windows)` verdi su main (commit dac9ec6); i due test DPI falliti erano un runner CI headless senza sessione desktop reale (`InteractiveDesktopOnlyFactAttribute`), non un bug applicativo |
+| R-002 | ~~Decidere quale stack possiede lo stato canonico (C# o Python)~~ — **chiuso 2026-09-11** | C-204 | ADR-0030 accettato; C-204 `TEST_VERIFIED` nel ledger (gate 2 → 100%) con entrambi i canali implementati e testati (commit ba31c2e, b3aceb8) |
+| R-003 | Verificare l’esecuzione reale del MCP Director → worker → Auditor — **parziale, 2026-09-11** | MCP Hub, policy, provider | Fatto: handoff valido e veto/rollback registrati su `AuditLog` reale, replay deterministico di `run_simulation` (tests/test_mcp_hub_director_auditor_e2e.py, 7/7 verdi). Resta aperto: l'anello "worker" (esecuzione reale di un modello tramite `mcp_infer`) non è mai stato esercitato in un test end-to-end insieme a Director/Auditor |
 | R-004 | Chiudere la specifica di rilascio end-to-end | C-404 | build pulita, test, artefatti e checklist registrati |
 
 ## Priorità P1 — colmare i blocchi funzionali
