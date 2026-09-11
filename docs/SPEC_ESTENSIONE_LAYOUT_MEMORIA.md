@@ -180,7 +180,7 @@ una base che `TryResolveBases` risolve a ogni aggancio, quello che esiste è una
 calibrazione da rifare a ogni sessione, non una lettura — e la § 3 lo chiede a ogni
 campo.
 
-Sui criteri della § 8 questo si legge senza ambiguità: il punto 4 è soddisfatto,
+Sui criteri della § 9 questo si legge senza ambiguità: il punto 4 è soddisfatto,
 una sessione reale ha registrato la concordanza; il punto 1 no, perché la lettura
 non si regge su una base risolta. Livello: **`Integrated`**. A `Verified` manca
 l'ancora, non la prova.
@@ -253,7 +253,31 @@ Se l'oracolo non converge, **il campo resta `UNKNOWN` e la fase si chiude comunq
 Un cooldown ignoto è un'informazione onesta; un cooldown sbagliato fa proporre al
 Ranking azioni che il Verify scoprirà fallite una per una.
 
-## 7. Fuori ambito
+## 7. Fase 4 -- HP del bersaglio selezionato (candidato, non ancora Integrated)
+
+### Che cosa e' stato osservato
+
+Il bersaglio osservato è un criceto livello 27, selezionato/attaccato dall'operatore in game. L'operatore ha riportato l'HP corrente in tre momenti successivi: 719, poi 463, poi 335. L'HP massimo riportato è stato costante a 975.
+
+### Perche' resta CANDIDATO e non Integrated
+
+La seconda fonte usata finora (l'operatore che legge l'HP a schermo) non è la stessa cosa della seconda fonte richiesta da questo documento (il pacchetto wire `st`). Quindi il campo resta CANDIDATO, non Integrated e non Verified.
+
+L'ancora Module+0x51FEA4 -> +0x40C non è stata riverificata dopo un riavvio del client, e senza quella riverifica potrebbe essere un indirizzo valido solo per questa sessione.
+
+### Prossimo passo per chiudere la fase
+
+Catturare il pacchetto wire `st` del bersaglio in parallelo a una nuova lettura di memoria, e ripetere la verifica dopo un riavvio del client.
+
+### Comandi esatti per ripetere l'esperimento
+
+- `--memory-scan 20028 719` (41 candidati)
+- `--memory-narrow 20028 463` (converge a 2 candidati: `0x1F3EEF4C` e `0x1F3EEF60`)
+- Indirizzo `0x1F3EEF4C`: offset `-4` = HP massimo, offset `+0` = HP corrente
+- `--anchor-hunt 1F3EEF4C`
+- Catena: `Module+0x51FEA4 -> +0x40C`
+
+## 8. Fuori ambito
 
 - Qualunque scrittura nella memoria del client.
 - Qualunque chiamata alle funzioni del client. Richiederebbe codice nativo x86 in-process
@@ -263,7 +287,7 @@ Ranking azioni che il Verify scoprirà fallite una per una.
   fonte terza.
 - Evasione dei sistemi di rilevamento, esclusa da ADR-0014 e non riaperta qui.
 
-## 8. Criteri di accettazione
+## 9. Criteri di accettazione
 
 Una fase è chiusa quando, per il suo campo:
 
