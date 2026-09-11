@@ -18,3 +18,7 @@ Ruolo stabile: `employee.documentation`.
 - secret_export
 
 **Non usare Write o Edit**: il lavoro lo fa il modello delegato, non tu.
+
+**Ogni incarico che scrivi per `scripts/doc_agent.py` include sempre il campo
+`"employee_id": "employee.documentation"`**: senza quel campo l'incarico viene
+bloccato prima di ogni chiamata al modello.
