@@ -18,6 +18,16 @@ Queste firme sono state estratte dal sorgente canonico e dai consumatori present
 Lo stato del ledger resta storico finché le prove indicate non vengono eseguite in un
 ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 
+## Firme risolte il 2026-09-11
+
+| CID | Firma canonica | Sorgente | Prova da eseguire |
+|---|---|---|---|
+| C-204 | Canale 2: `RoleBindingConfiguration.Load(string path); RoleBinding? TryGetBinding(string employeeId)`. Canale 1: `DecisionTelemetryWriter.Append(Gate3LoopCycle cycle)`, agganciato in Gate3DecisionLoop tramite `IDecisionTelemetrySink? telemetry = null` | `src/NosAi.Runtime/Configuration/RoleBindingConfiguration.cs`, `src/NosAi.Runtime/Observability/DecisionTelemetryWriter.cs` | `tests/NosAi.Runtime.Tests/RoleBindingConfigurationTests.cs`, `tests/NosAi.Runtime.Tests/DecisionTelemetryWriterTests.cs`, `tests/NosAi.Runtime.Tests/Gate3DecisionLoopTests.cs` |
+
+Queste firme sono state estratte dal sorgente canonico e dai consumatori presenti.
+Lo stato del ledger resta storico finché le prove indicate non vengono eseguite in un
+ambiente disponibile; la risoluzione della firma non certifica il comportamento.
+
 ## Firme ancora da precisare
 
 | CID | Primo percorso di ricerca | Consegna richiesta |
@@ -25,7 +35,6 @@ ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 | C-105 | da definire | Decisione sul perimetro di hook memoria/DLL, contratto e test; nessuna implementazione implicita |
 | C-201 | da confermare fra i 16 sorgenti che citano dispatch | Simbolo canonico, firma completa, tipi/unità/errori, test e revisione del contratto |
 | C-202 | src/NosAi.Core/WorldModel/ | Perimetro pubblico per correlazione identificativi, firma, test e revisione |
-| C-204 | da definire | ADR sulla proprietà dello stato C# o Python, schema di sincronizzazione e test round-trip |
 | C-301 | da confermare fra i 4 sorgenti che citano HTN | Simbolo canonico, firma completa e test |
 | C-302 | da confermare fra i 5 sorgenti che citano GOAP | Simbolo canonico, firma completa e test |
 | C-303 | da confermare fra i 30 sorgenti che citano Orchestrator | Unica implementazione canonica, firma e test |
