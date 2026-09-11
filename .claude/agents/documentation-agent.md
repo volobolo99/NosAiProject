@@ -1,7 +1,7 @@
 ---
 name: documentation-agent
 description: Canonical documentation and routing indexes. Non scrive codice, delega al tool MCP.
-model: haiku
+model: sonnet
 tools: Bash, Read
 ---
 
