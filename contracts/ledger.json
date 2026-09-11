@@ -280,23 +280,23 @@
           "cid": "C-201",
           "sid": "S-EVT-01",
           "title": "Dispatcher thread-safe degli eventi",
-          "target_file": "da confermare fra i 16 sorgenti che citano dispatch",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Runtime/Gate2/Gate2Runtime.cs",
+          "signature": "sealed class BoundedEventBus : IAsyncDisposable; BoundedEventBus(int capacity = 5000); bool TryPublish(RuntimeEvent runtimeEvent); void Subscribe(Action<RuntimeEvent> subscriber); async ValueTask DisposeAsync(); private async Task DispatchLoopAsync()",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Runtime.Tests/Gate2Tests.cs",
           "status": "MERGED",
           "invariants": [
             "THREAD_SAFE",
             "ZERO_ALLOC_LOOP",
             "NO_PARTIAL_STATE"
           ],
-          "note": "Il contratto va riscritto con la firma esatta prima di toccare il codice.",
           "product_phases": [
             "AP-01"
           ],
           "legacy_gate": 2,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: BoundedEventBus in src/NosAi.Runtime/Gate2/Gate2Runtime.cs:90, thread-safe (Channel<RuntimeEvent> bounded con SingleReader=true/SingleWriter=false, ConcurrentBag<Action<RuntimeEvent>> per i subscriber, contatori aggiornati con Interlocked). Dispatch loop asincrono senza allocazioni (DispatchLoopAsync, righe 151-167: WaitToReadAsync + TryRead + foreach sui subscriber). Nel percorso live: istanziata in Gate2RuntimeEngine (riga 547) ed esposta come property EventBus; Gate2IntegratedEngine la compone nella pipeline observation batch -> world model fold -> bounded event bus -> WAL persistence. Test dedicati: TestEventBusDroppingAsync e TestEventBusSecurityInvariant in Gate2Runtime.cs, invocati da tests/NosAi.Runtime.Tests/Gate2Tests.cs via Gate2TestRunner. Candidato escluso: NetworkWorldFeed (Perception/Network/NetworkWorldFeed.cs) usa una List non thread-safe e distribuzione diretta sincrona, non un bus limitato."
         },
@@ -304,10 +304,10 @@
           "cid": "C-202",
           "sid": "S-ENT-01",
           "title": "Correlazione degli identificativi di entita'",
-          "target_file": "src/NosAi.Core/WorldModel/",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Core/WorldModel/Identifiers.cs; src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs",
+          "signature": "readonly record struct EntityId(string Value); private static EquatableArray<Mob> WorldModelTemporalEnricher.EnrichMobs(EquatableArray<Mob> previous, EquatableArray<Mob> current, DateTime nowUtc, TimeSpan maxAge, TimeSpan maxObservationGap)",
           "struct_size": null,
-          "test_file": "tests/NosAi.Core.Tests/",
+          "test_file": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs; tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs",
           "status": "MERGED",
           "invariants": [
             "UNKNOWN_PRESERVED",
@@ -318,8 +318,9 @@
             "AP-01"
           ],
           "legacy_gate": 2,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11, in due parti coerenti col titolo \"correlazione degli identificativi\": (1) EntityId, struct in src/NosAi.Core/WorldModel/Identifiers.cs:10, la chiave primitiva deterministica usata come Dictionary<EntityId,Mob> in tutto il World Model; preserva Unknown via DataSourceKind invece di inventare un default. (2) La correlazione vera e propria e' WorldModelTemporalEnricher.EnrichMobs (src/NosAi.Core/WorldModel/Temporal/WorldModelTemporalEnricher.cs:47): costruisce il dizionario delle entita' del ciclo precedente per EntityId e le confronta con quelle nuove, marcando \"no_prior_sighting_of_this_entity\" quando non trova corrispondenza invece di inventarla. GameplayObservationProjector.ProjectEntities (src/NosAi.Runtime/WorldModel/Fusion/GameplayObservationProjector.cs:350) e' il punto che deriva l'EntityId dalla SelectableEntity osservata in rete. Test dedicati: tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs e tests/NosAi.Core.Tests/WorldModel/Temporal/WorldModelTemporalEnricherDeterminismAndDuplicateIdTests.cs. Gap noto e documentato dal test stesso (riga 181, \"DocumentedGap\"): con EntityId duplicati nel ciclo precedente, il matching prende quello che compare per ultimo nella lista, comportamento accettato ma non garantito univoco."
         },
@@ -376,10 +377,10 @@
         {
           "cid": "C-301",
           "title": "Pianificazione gerarchica HTN",
-          "target_file": "da confermare fra i 4 sorgenti che citano HTN",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Core/Planning/DeterministicRoutine.cs; src/NosAi.Core/Planning/PlannerGoalStack.cs",
+          "signature": "sealed class SequenceRoutine : IRoutineNode; SequenceRoutine(IReadOnlyList<IRoutineNode> children); sealed class SelectorRoutine : IRoutineNode; SelectorRoutine(IReadOnlyList<IRoutineNode> children); bool Evaluate(in PlannerWorldState state); sealed class PlannerGoalStack; PlannerGoalStack(int capacity = 8); bool TryPush(PlannerGoalId goal, GoalClass cls, long nowUnixMs); bool TryPop()",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Core.Tests/Planning/",
           "status": "MERGED",
           "invariants": [
             "DETERMINISTIC"
@@ -389,18 +390,19 @@
             "AP-08"
           ],
           "legacy_gate": 3,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: SequenceRoutine e SelectorRoutine in src/NosAi.Core/Planning/DeterministicRoutine.cs, PlannerGoalStack in src/NosAi.Core/Planning/PlannerGoalStack.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi; nessun test individua questi simboli per nome, la copertura verde riguarda l'insieme dei 4 file in tests/NosAi.Core.Tests/Planning/ (ADR-0028)."
         },
         {
           "cid": "C-302",
           "title": "Pianificazione GOAP",
-          "target_file": "da confermare fra i 5 sorgenti che citano GOAP",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Core/Planning/Goap/DeterministicGoapPlanner.cs",
+          "signature": "sealed class DeterministicGoapPlanner; DeterministicGoapPlanner(IReadOnlyList<GoapAction> actions, int maxNodes = 256); bool TryPlan(ReadOnlySpan<GoapFact> initial, ReadOnlySpan<GoapFact> goal, Span<PlanStep> output, out int count, out FaultCode fault)",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs",
           "status": "MERGED",
           "invariants": [
             "DETERMINISTIC"
@@ -409,16 +411,17 @@
             "AP-08"
           ],
           "legacy_gate": 3,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "ADR-0034 del 2026-09-11 (docs/adr/ADR-0034-htn-goap-close-under-adr-0028.md): applica la decisione di ADR-0028 (opzione C, 2026-09-07). Simbolo esatto: DeterministicGoapPlanner in src/NosAi.Core/Planning/Goap/DeterministicGoapPlanner.cs, testato in tests/NosAi.Core.Tests/Planning/DeterministicGoapPlannerTests.cs. Layer deliberatamente non collegato al percorso di esecuzione finche' AP-08 non richiede pianificazione a piu' passi."
         },
         {
           "cid": "C-303",
           "title": "Orchestratore strategico",
-          "target_file": "da confermare fra i 30 sorgenti che citano Orchestrator",
-          "signature": "da confermare",
+          "target_file": "nosai/core/orchestrator.py",
+          "signature": "class NosAiOrchestrator: def __init__(self, provider, safety_gate: SafetyGate | None = None, action_manager: CoordinatedActionManager | None = None, action_ranker: TacticalActionRanker | None = None) -> None; def tick(self, world_state: WorldState, goal: Goal, world_model: WorldModel | None = None) -> TickResult",
           "struct_size": null,
           "test_file": "tests/test_orchestrator.py",
           "status": "MERGED",
@@ -430,8 +433,9 @@
             "AP-08"
           ],
           "legacy_gate": 3,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: NosAiOrchestrator in nosai/core/orchestrator.py, testato in tests/test_orchestrator.py. Codice Python vivo: usato come dipendenza del costruttore da ClosedLoopRuntime in nosai/runtime/closed_loop.py, e da nosai/runtime/orchestrator_bridge.py e nosai/tactical/combat_engine.py. Non appartiene allo strato C# di ADR-0028 (LexicographicOrchestrator in src/NosAi.Core/Planning/, deliberatamente non collegato): ruolo concettuale simile, percorso opposto."
         },
@@ -461,10 +465,10 @@
         {
           "cid": "C-305",
           "title": "Recupero dopo disconnessione",
-          "target_file": "da confermare fra i 44 sorgenti che citano recovery o reconnect",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Runtime/Safety/RecoveryController.cs",
+          "signature": "enum RecoveryStrategy : byte { Retry, Replan, DegradedReplan, Cooling, HaltAndAlert }; enum RecoveryState : byte { Closed, Throttled, Halted, Probing }; sealed class RecoveryController; RecoveryController(TrustBoundary trustBoundary, int maxRetries = 2, TimeProvider? clock = null, int windowSize = DefaultWindowSize, int probeSuccessesToClose = DefaultProbeSuccessesToClose, TimeSpan? baseCooldown = null, TimeSpan? maxCooldown = null)",
           "struct_size": null,
-          "test_file": "da confermare",
+          "test_file": "tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs",
           "status": "MERGED",
           "invariants": [
             "FAIL_CLOSED",
@@ -474,8 +478,9 @@
             "AP-08"
           ],
           "legacy_gate": 3,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: RecoveryController in src/NosAi.Runtime/Safety/RecoveryController.cs:104, con gli enum RecoveryStrategy (Retry/Replan/DegradedReplan/Cooling/HaltAndAlert) e RecoveryState (Closed/Throttled/Halted/Probing). E' il circuit breaker del ciclo decisionale (finestra sliding di fallimenti, escalation ladder, Halted = FAIL_CLOSED, transizioni atomiche = NO_PARTIAL_STATE), coerente col titolo del Gate 3 \"Decisione autonoma e recupero\" e con product_phases AP-08. Usato da Gate3ExecutionOrchestrator (Gate3Runtime.cs:1113, esposto come property Recovery a riga 1126); src/NosAi.Core/Safety/RetryBudgetContracts.cs:6 lo dichiara esplicitamente \"the authoritative one\". Test dedicati: tests/NosAi.Runtime.Tests/RecoveryCircuitBreakerTests.cs. Distinto da GuardReconnectPolicy (src/NosAi.GuardClient/GuardReconnectPolicy.cs:34): quella e' la policy di reconnect a livello di trasporto/socket del Guard client (Gate 1, backoff esponenziale, nessuna sliding window), usata da GuardConnectionService; il nome del contratto (\"disconnessione\") ricorda quella, ma l'invariante e il Gate collocano il contratto sul circuit breaker decisionale, non sul socket."
         }
@@ -532,10 +537,10 @@
         {
           "cid": "C-403",
           "title": "Superficie di sicurezza del runtime",
-          "target_file": "src/NosAi.Security/",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Security/CapabilityValidator.cs; src/NosAi.Security/FrameCodec.cs; src/NosAi.Security/SequenceGuard.cs; src/NosAi.Security/NoiseSession.cs; src/NosAi.Security/FrameOpCode.cs",
+          "signature": "sealed class HmacCapabilityValidator : ICapabilityValidator; HmacCapabilityValidator(ReadOnlySpan<byte> rootKey); CapabilityVerdict Validate(in CapabilityToken token, PipelineStage stage, uint requestedScope, long nowUnixMs); sealed class FrameTagCalculator : IDisposable; FrameTagCalculator(ReadOnlySpan<byte> sessionKey); static class FrameCodec; static int FrameCodec.Encode(byte opCode, uint sequence, ReadOnlySpan<byte> payload, FrameTagCalculator tagCalculator, Span<byte> destination); static bool FrameCodec.TryDecode(ReadOnlySpan<byte> frame, FrameTagCalculator tagCalculator, out NosFrameHeader header, out ReadOnlySpan<byte> payload, out FaultCode fault); sealed class SlidingWindowSequenceGuard; SlidingWindowSequenceGuard(int windowBits = 1024); bool TryAccept(uint sequence); sealed class NoiseXxSession : INoiseSession; NoiseXxSession(bool initiator, byte[] localStaticPrivateKey); int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> destination); int ReadMessage(ReadOnlySpan<byte> message, Span<byte> destination); enum FrameOpCode : byte",
           "struct_size": null,
-          "test_file": "tests/test_crypto_auth.py",
+          "test_file": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs; tests/NosAi.Core.Tests/FrameCodecTests.cs",
           "status": "MERGED",
           "invariants": [
             "FAIL_CLOSED"
@@ -545,8 +550,9 @@
             "AP-10"
           ],
           "legacy_gate": 4,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto individuato il 2026-09-11: \"superficie di sicurezza\" e' l'intero namespace src/NosAi.Security/ (5 controlli, tutti FAIL_CLOSED - negano per default su qualsiasi anomalia), non un singolo file: (1) HmacCapabilityValidator in CapabilityValidator.cs, validazione CapBAC; (2) FrameCodec/FrameTagCalculator in FrameCodec.cs, integrita' del frame; (3) SlidingWindowSequenceGuard in SequenceGuard.cs, protezione replay (finestra 1024-bit); (4) NoiseXxSession in NoiseSession.cs, handshake/transport Noise_XX_25519_ChaChaPoly_SHA256, Failed e' terminale; (5) FrameOpCode in FrameOpCode.cs, set chiuso di opcode. Unico consumer: src/NosAi.Host/NosAiHost.cs (riferimenti puntuali a righe 72-454). Test C# dedicati per 2 dei 5: tests/NosAi.Core.Tests/CapabilityValidatorTests.cs (8 test) e tests/NosAi.Core.Tests/FrameCodecTests.cs (9 test); SlidingWindowSequenceGuard e NoiseXxSession non hanno un file di test dedicato, solo esercizio indiretto via NosAiHost. Il test_file precedente del ledger (tests/test_crypto_auth.py) e' un refuso: testa nosai.network.crypto_auth.NosAiCryptoAuthManager, modulo Python lato client, non questo namespace C# - stesso tipo di errore gia' trovato e corretto per C-303. Distinto da C-401 (src/NosAi.Protocol/SessionCipher.cs, gia' RESOLVED): key exchange diverso (P-256 ECDH vs X25519), cipher diverso (AES-GCM vs ChaCha20Poly1305), livello diverso (sessione vs frame)."
         },
@@ -667,5 +673,5 @@
     "C-105: RISOLTA da ADR-0032 del 2026-09-11 (docs/adr/ADR-0032-no-memory-hook-yet.md) — nessun hook di memoria o DLL injection nel client ora; il canale resta rete + lettura esterna di memoria via DllImport. Si riapre con un caso nominato."
   ],
   "phase_mapping_note": "gates[].gate is a legacy grouping, NOT a product AP number. contracts[].product_phases maps to ROADMAP_ESECUTIVA. Existing status and verification are historical evidence, not revalidated by documentation reconciliation.",
-  "signature_resolution_note": "C-103, C-104, C-106, C-203 and C-401 signatures were resolved from canonical source symbols on 2026-09-10. Status remains historical unless the linked verification command is executed."
+  "signature_resolution_note": "C-103, C-104, C-106, C-203 and C-401 signatures were resolved from canonical source symbols on 2026-09-10. C-201, C-202, C-301, C-302, C-303, C-305 and C-403 followed on 2026-09-11, from source symbols already named in each contract's metrics field. Status remains historical unless the linked verification command is executed."
 }
