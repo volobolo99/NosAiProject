@@ -18,6 +18,16 @@ Queste firme sono state estratte dal sorgente canonico e dai consumatori present
 Lo stato del ledger resta storico finché le prove indicate non vengono eseguite in un
 ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 
+## Firme risolte il 2026-09-11
+
+| CID | Firma canonica | Sorgente | Prova da eseguire |
+|---|---|---|---|
+| C-402 | `static bool WireProtocolFuzzTestRunner.RunAll()` | `src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs` | `tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs` |
+| C-403 | `HmacCapabilityValidator(ReadOnlySpan<byte>); Validate(in CapabilityToken, PipelineStage, uint, long); FrameCodec.Encode(byte, uint, ReadOnlySpan<byte>, FrameTagCalculator, Span<byte>); FrameCodec.TryDecode(ReadOnlySpan<byte>, FrameTagCalculator, out NosFrameHeader, out ReadOnlySpan<byte>, out FaultCode); SlidingWindowSequenceGuard(int = 1024).TryAccept(uint); NoiseXxSession(bool, byte[]).WriteMessage/ReadMessage/Rekey/DeriveFrameSessionKey; enum FrameOpCode` | `src/NosAi.Security/CapabilityValidator.cs`, `src/NosAi.Security/FrameCodec.cs`, `src/NosAi.Security/SequenceGuard.cs`, `src/NosAi.Security/NoiseSession.cs`, `src/NosAi.Security/FrameOpCode.cs` | `tests/NosAi.Core.Tests/CapabilityValidatorTests.cs`, `tests/NosAi.Core.Tests/FrameCodecTests.cs`, `tests/NosAi.Core.Tests/SequenceGuardTests.cs`, `tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs`, `tests/NosAi.Core.Tests/NoiseSessionTests.cs` |
+
+Queste firme sono state estratte dal sorgente canonico e dai consumatori presenti,
+stessa disciplina delle firme del 2026-09-10.
+
 ## Firme ancora da precisare
 
 | CID | Primo percorso di ricerca | Consegna richiesta |
@@ -31,8 +41,6 @@ ambiente disponibile; la risoluzione della firma non certifica il comportamento.
 | C-303 | da confermare fra i 30 sorgenti che citano Orchestrator | Unica implementazione canonica, firma e test |
 | C-304 | da definire | Decisione se FSM sostituisce o affianca Planner/Orchestrator, ADR e test |
 | C-305 | da confermare fra i 44 sorgenti che citano recovery o reconnect | Simbolo canonico, firma completa e test |
-| C-402 | da definire | Corpus, harness di fuzzing, limiti e report riproducibile |
-| C-403 | src/NosAi.Security/ | Perimetro pubblico della superficie di sicurezza, firma e test |
 
 C-003/C-004/C-005 hanno firme proposte ma non equivalgono a implementazioni verificate.
 C-404 è una procedura di rilascio con firma n/a, non una funzione mancante.

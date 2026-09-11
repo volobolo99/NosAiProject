@@ -28,8 +28,8 @@ Per firme mancanti consultare [CONTRACT_SIGNATURE_TASKS.md](CONTRACT_SIGNATURE_T
 | C-304 | AP-08 | Macchina a stati finiti esplicita | DRAFT | da definire | da definire | da definire |
 | C-305 | AP-08 | Recupero dopo disconnessione | MERGED | da confermare | da confermare fra i 44 sorgenti che citano recovery o reconnect | da confermare |
 | C-401 | AP-00, AP-10 | Cifratura di sessione e autenticazione | MERGED | `SessionCipher.ForRuntime(ReadOnlySpan<byte>); ForPhone(ReadOnlySpan<byte>); SealFrameInto(Span<byte>, WireMessageType, uint, ReadOnlySpan<byte>); TryOpenFrame(ReadOnlySpan<byte>, ReadOnlySpan<byte>, out byte[], out string?)` | src/NosAi.Protocol/SessionCipher.cs | tests/NosAi.Runtime.Tests/SessionCipherTests.cs; tests/test_session_cipher.py |
-| C-402 | AP-10 | Fuzzing sui pacchetti corrotti | DRAFT | da definire | da definire | da definire |
-| C-403 | AP-00, AP-10 | Superficie di sicurezza del runtime | MERGED | da confermare | src/NosAi.Security/ | tests/test_crypto_auth.py |
+| C-402 | AP-10 | Fuzzing sui pacchetti corrotti | TEST_VERIFIED | `static bool WireProtocolFuzzTestRunner.RunAll()` | src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs | tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs |
+| C-403 | AP-00, AP-10 | Superficie di sicurezza del runtime | MERGED | `HmacCapabilityValidator(ReadOnlySpan<byte>); Validate(in CapabilityToken, PipelineStage, uint, long); FrameCodec.Encode(...); FrameCodec.TryDecode(...); SlidingWindowSequenceGuard(int = 1024).TryAccept(uint); NoiseXxSession(bool, byte[]).WriteMessage/ReadMessage/Rekey/DeriveFrameSessionKey; enum FrameOpCode` | src/NosAi.Security/CapabilityValidator.cs; src/NosAi.Security/FrameCodec.cs; src/NosAi.Security/SequenceGuard.cs; src/NosAi.Security/NoiseSession.cs; src/NosAi.Security/FrameOpCode.cs | tests/NosAi.Core.Tests/CapabilityValidatorTests.cs; tests/NosAi.Core.Tests/FrameCodecTests.cs; tests/NosAi.Core.Tests/SequenceGuardTests.cs; tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs; tests/NosAi.Core.Tests/NoiseSessionTests.cs |
 | C-404 | AP-10 | Procedura di rilascio verificata | DRAFT | n/a | docs/BUILD_TEST_RELEASE.md | scripts/validate.ps1 |
 | ORCH-001 | Tooling trasversale | Routing per costo, registro dei consumi, messaggi fra agenti | TEST_VERIFIED | route_task(kind: TaskKind) -> ModelRoute | nosai/orchestration/routing.py | tests/test_orchestration.py |
 | ORCH-002 | Tooling trasversale | Drift-check CI per l'indice funzioni (manifest + shard) | TEST_VERIFIED | `write_index_tree(output_directory: pathlib.Path, result: dict[str, Any], shard_size: int = 500) -> list[pathlib.Path]` | scripts/build_function_index.py; .github/workflows/function-index-check.yml | tests/test_function_index.py |
@@ -41,3 +41,4 @@ Non sono inclusi nei conteggi dei gruppi legacy. Il contratto Lab è DRAFT e i p
 
 
 Firme risolte il 2026-09-10 dal sorgente canonico: C-103, C-104, C-106, C-203 e C-401. Il campo Stato resta quello storico del ledger finché i comandi di verifica non vengono rieseguiti.
+Firme risolte il 2026-09-11 dal sorgente canonico: C-402 e C-403.

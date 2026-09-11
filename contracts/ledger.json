@@ -510,32 +510,32 @@
         {
           "cid": "C-402",
           "title": "Fuzzing sui pacchetti corrotti",
-          "target_file": "da definire",
-          "signature": "da definire",
+          "target_file": "src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs",
+          "signature": "static bool WireProtocolFuzzTestRunner.RunAll()",
           "struct_size": null,
-          "test_file": "da definire",
+          "test_file": "tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs",
           "status": "TEST_VERIFIED",
           "invariants": [
             "BOUNDS_CHECKED",
             "NO_PARTIAL_STATE"
           ],
-          "blocker": "Zero occorrenze di fuzz nel repository. Il bersaglio naturale e' il parsing opcode di C-104.",
           "product_phases": [
             "AP-10"
           ],
           "legacy_gate": 4,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
           "metrics": "Simbolo esatto (i campi target_file/signature/blocker del ledger erano rimasti a \"da definire\"/al blocker pre-harness): src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs, static bool WireProtocolFuzzTestRunner.RunAll(), sei controlli deterministici su WireHeader.TryRead (src/NosAi.Protocol/WireProtocol.cs, non modificato) con seed fisso 1337. Test dedicato: tests/NosAi.Runtime.Tests/WireProtocolFuzzTests.cs. Il blocker \"zero occorrenze di fuzz nel repository\" non e' piu' vero dal 2026-09-11: l'harness esiste, --wire-fuzz-test 6/6 PASS, dotnet test 2832/2841 (9 ignorati, 0 falliti). Nessun lavoro nuovo in questo aggiornamento: solo la registrazione dei simboli gia' costruiti nella sessione precedente."
         },
         {
           "cid": "C-403",
           "title": "Superficie di sicurezza del runtime",
-          "target_file": "src/NosAi.Security/",
-          "signature": "da confermare",
+          "target_file": "src/NosAi.Security/CapabilityValidator.cs; src/NosAi.Security/FrameCodec.cs; src/NosAi.Security/SequenceGuard.cs; src/NosAi.Security/NoiseSession.cs; src/NosAi.Security/FrameOpCode.cs",
+          "signature": "HmacCapabilityValidator(ReadOnlySpan<byte> rootKey); CapabilityVerdict Validate(in CapabilityToken token, PipelineStage stage, uint requestedScope, long nowUnixMs) -- CapabilityValidator.cs. int FrameCodec.Encode(byte opCode, uint sequence, ReadOnlySpan<byte> payload, FrameTagCalculator tagCalculator, Span<byte> destination); bool FrameCodec.TryDecode(ReadOnlySpan<byte> frame, FrameTagCalculator tagCalculator, out NosFrameHeader header, out ReadOnlySpan<byte> payload, out FaultCode fault) -- FrameCodec.cs. SlidingWindowSequenceGuard(int windowBits = 1024); bool TryAccept(uint sequence) -- SequenceGuard.cs. NoiseXxSession(bool initiator, byte[] localStaticPrivateKey); int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> destination); int ReadMessage(ReadOnlySpan<byte> message, Span<byte> destination); void Rekey(); byte[] DeriveFrameSessionKey() -- NoiseSession.cs. enum FrameOpCode : byte { Heartbeat, PresentCapability, CapabilityDecision, Disconnect, Rekey } -- FrameOpCode.cs",
           "struct_size": null,
-          "test_file": "tests/test_crypto_auth.py",
+          "test_file": "tests/NosAi.Core.Tests/CapabilityValidatorTests.cs; tests/NosAi.Core.Tests/FrameCodecTests.cs; tests/NosAi.Core.Tests/SequenceGuardTests.cs; tests/NosAi.Core.Tests/SequenceGuardPolicyTests.cs; tests/NosAi.Core.Tests/NoiseSessionTests.cs",
           "status": "MERGED",
           "invariants": [
             "FAIL_CLOSED"
@@ -545,10 +545,11 @@
             "AP-10"
           ],
           "legacy_gate": 4,
-          "signature_status": "UNRESOLVED",
-          "implementation_gate": "Resolve exact symbol, versioned signature and acceptance tests before implementation; see docs/CONTRACT_SIGNATURE_TASKS.md",
+          "signature_status": "RESOLVED",
+          "implementation_gate": "Signature extracted from canonical source and linked consumers; behavior still requires the listed tests and runtime evidence.",
+          "signature_resolved_at": "2026-09-11",
           "updated": "2026-09-11",
-          "metrics": "Simbolo esatto individuato il 2026-09-11: \"superficie di sicurezza\" e' l'intero namespace src/NosAi.Security/ (5 controlli, tutti FAIL_CLOSED - negano per default su qualsiasi anomalia), non un singolo file: (1) HmacCapabilityValidator in CapabilityValidator.cs, validazione CapBAC; (2) FrameCodec/FrameTagCalculator in FrameCodec.cs, integrita' del frame; (3) SlidingWindowSequenceGuard in SequenceGuard.cs, protezione replay (finestra 1024-bit); (4) NoiseXxSession in NoiseSession.cs, handshake/transport Noise_XX_25519_ChaChaPoly_SHA256, Failed e' terminale; (5) FrameOpCode in FrameOpCode.cs, set chiuso di opcode. Unico consumer: src/NosAi.Host/NosAiHost.cs (riferimenti puntuali a righe 72-454). Test C# dedicati per 2 dei 5: tests/NosAi.Core.Tests/CapabilityValidatorTests.cs (8 test) e tests/NosAi.Core.Tests/FrameCodecTests.cs (9 test); SlidingWindowSequenceGuard e NoiseXxSession non hanno un file di test dedicato, solo esercizio indiretto via NosAiHost. Il test_file precedente del ledger (tests/test_crypto_auth.py) e' un refuso: testa nosai.network.crypto_auth.NosAiCryptoAuthManager, modulo Python lato client, non questo namespace C# - stesso tipo di errore gia' trovato e corretto per C-303. Distinto da C-401 (src/NosAi.Protocol/SessionCipher.cs, gia' RESOLVED): key exchange diverso (P-256 ECDH vs X25519), cipher diverso (AES-GCM vs ChaCha20Poly1305), livello diverso (sessione vs frame)."
+          "metrics": "Simbolo esatto individuato il 2026-09-11: \"superficie di sicurezza\" e' l'intero namespace src/NosAi.Security/ (5 controlli, tutti FAIL_CLOSED - negano per default su qualsiasi anomalia), non un singolo file: (1) HmacCapabilityValidator in CapabilityValidator.cs, validazione CapBAC; (2) FrameCodec/FrameTagCalculator in FrameCodec.cs, integrita' del frame; (3) SlidingWindowSequenceGuard in SequenceGuard.cs, protezione replay (finestra 1024-bit); (4) NoiseXxSession in NoiseSession.cs, handshake/transport Noise_XX_25519_ChaChaPoly_SHA256, Failed e' terminale; (5) FrameOpCode in FrameOpCode.cs, set chiuso di opcode. Unico consumer: src/NosAi.Host/NosAiHost.cs (riferimenti puntuali a righe 72-454). Il ledger diceva 'Test C# dedicati per 2 dei 5... SlidingWindowSequenceGuard e NoiseXxSession non hanno un file di test dedicato': falso, corretto qui il 2026-09-11 verificando il sorgente. Tutti e 4 i tipi con logica propria hanno test dedicati: tests/NosAi.Core.Tests/CapabilityValidatorTests.cs (8 test), tests/NosAi.Core.Tests/FrameCodecTests.cs (9 test), tests/NosAi.Core.Tests/SequenceGuardTests.cs (9 test) + SequenceGuardPolicyTests.cs (4 test) per SlidingWindowSequenceGuard, tests/NosAi.Core.Tests/NoiseSessionTests.cs (8 test) per NoiseXxSession; risalgono al 2026-09-01/07, quindi l'affermazione era gia' sbagliata quando scritta, non un cambiamento successivo. Solo FrameOpCode (enum chiuso di 5 valori) non ha un file di test proprio, esercitato indirettamente via tests/NosAi.Core.Tests/TransportLoopTests.cs e NosAiHost.cs. Il test_file precedente del ledger (tests/test_crypto_auth.py) era un refuso: testa nosai.network.crypto_auth.NosAiCryptoAuthManager, modulo Python lato client, non questo namespace C# - stesso tipo di errore gia' trovato e corretto per C-303. Distinto da C-401 (src/NosAi.Protocol/SessionCipher.cs, gia' RESOLVED): key exchange diverso (P-256 ECDH vs X25519), cipher diverso (AES-GCM vs ChaCha20Poly1305), livello diverso (sessione vs frame)."
         },
         {
           "cid": "C-404",
