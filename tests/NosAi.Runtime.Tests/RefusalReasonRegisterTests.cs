@@ -43,8 +43,6 @@ public sealed class RefusalReasonRegisterTests
                 "mai prodotto: StepGuardChain.CheckAuthority restituisce direttamente il delegato, la costante non è usata",
             ["no_target_selected"] =
                 "mai prodotto come costante: il letterale vive solo in NetworkWorldFeed, la costante non è usata",
-            ["unequip_slot_not_resolved"] =
-                "mai prodotto: ramo difensivo in UnequipExecutor.Unequip; Confirmed/Load esigono una calibrazione con ogni slot dichiarato e Resolve non può mancare lo slot richiesto (i casi non calibrati sono già rifiutati prima con NotCalibratedReason)",
 
             // --- irraggiungibili: il ramo vive nel RunWindows privato e la --------
             // --- composizione restituisce sempre un backend gated (ADR-0003) -------
