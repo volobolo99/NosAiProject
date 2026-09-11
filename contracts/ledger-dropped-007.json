@@ -1,0 +1,52 @@
+{
+  "contract_id": "ledger-dropped-007",
+  "file": "scripts/mcp_server.py",
+  "scopo": "Escludere dal calcolo della completezza i contratti abbandonati per decisione.",
+  "difetto_misurato_il_2026_09_11": "done_count conta solo gli stati di DONE_STATES, ma i contratti DROPPED restano nel denominatore. Il Gate 0 reale, dopo ADR-0029, ha tre contratti conclusi (C-001 MERGED, C-002 MERGED, C-006 TEST_VERIFIED) e tre abbandonati per decisione (C-003, C-004, C-005 DROPPED): non ha piu' nulla di aperto e segna 50%, e non potra' mai raggiungere il 100%. Uno scopo rimosso per scelta non e' lavoro che manca.",
+  "vincoli_di_governo": [
+    "Abbandonare non deve diventare un modo di far salire il numero: se resta anche un solo contratto ne' concluso ne' abbandonato, il gate non e' completo.",
+    "Un gate i cui contratti sono tutti abbandonati e' completo: non ha lavoro aperto.",
+    "Un gate senza contratti non deve far sollevare una divisione per zero.",
+    "DONE_STATES non cambia: un DROPPED non e' concluso, e' fuori perimetro. Le due nozioni restano distinte."
+  ],
+  "modifiche_puntuali": {
+    "update_contract_state": [
+      "Il denominatore diventa il numero di contratti del gate che NON sono in stato DROPPED.",
+      "Il numeratore resta il numero di contratti con stato in DONE_STATES.",
+      "Se il denominatore e' zero, cioe' ogni contratto del gate e' abbandonato oppure il gate e' vuoto, la percentuale e' 100 e non si divide per zero.",
+      "Tutto il resto della funzione resta identico: validazione dello stato, scrittura atomica via file temporaneo, rigenerazione della roadmap in un thread, stringa di ritorno."
+    ]
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Modifica SOLO il corpo di update_contract_state. La firma non cambia.",
+    "conservare_identiche": [
+      "local_generate_skeleton",
+      "cloud_infill_implementation",
+      "preflight_contract_check",
+      "deep_reasoner_solve_crash",
+      "local_update_documentation",
+      "call_openrouter",
+      "call_deepseek",
+      "modelli_gratuiti",
+      "giudizio_infill",
+      "giudizio_preflight",
+      "chiama_groq",
+      "chiama_openrouter",
+      "chiama_gruppo",
+      "controlla_quota"
+    ],
+    "implementare_o_creare": [
+      "update_contract_state"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_contract_ledger.py",
+    "casi": [
+      "un contratto abbandonato esce dal denominatore: 1 concluso e 1 abbandonato danno 100",
+      "un gate tutto abbandonato e' completo: 100",
+      "l'abbandono non gonfia la percentuale se resta lavoro aperto: 1 abbandonato e 1 in DRAFT danno 0",
+      "restano veri i sette casi preesistenti, compreso 1 concluso su 2 in DRAFT che da' 50"
+    ]
+  },
+  "stato": "contratto_formulato"
+}

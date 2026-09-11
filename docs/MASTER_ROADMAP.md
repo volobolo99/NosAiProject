@@ -1,60 +1,37 @@
-# NosAiProject — MASTER ROADMAP
+### Panoramica del Progetto
 
-Generata da `contracts/ledger.json`. Vocabolario dei tag: `docs/PROTOCOL_TOKENS.md`.
-Non si modifica a mano: la rigenera `update_contract_state` a ogni cambio di stato.
+Il progetto sembra essere una vasta orchestrazione di vari componenti e funzionalità, suddivisi in diversi fasi (product phases) e porte (gates). Ogni componente ha un'implementazione e test associati, ma ci sono alcune domande aperte e note di riferimento che richiedono ulteriore attenzione. Ecco una panoramica dettagliata:
 
-**Conteggio ledger al 2026-09-09: 18 contratti chiusi su 26.** Per stato dettagliato consultare `docs/CONTRACT_MAP.md`; questa pagina resta una vista generata.
+### Fasi e Porte
 
-### Gate 0: Ambiente, test harness e bridge nativo (50%)
+1. **Gate 3: Implementazione e Verifica**
+   - **Status**: Varia da MERGED a DROPPED.
+   - **Dominio**: Implementazione di componenti fondamentali come la conferma di una segnatura, l'orchestratore strategico, il recupero dopo disconnessione, e altre funzionalità.
+   - **Note**: Alcune domande aperte e note di riferimento, come la FASE 5 del protocollo che dipende da codice nativo, la definizione del canale di comunicazione tra il runtime C# e il Python, e la gestione di possibili FSM in affiancamento o sostituzione di Planner/Orchestrator.
 
-- [x] **C-001** Build e suite .NET riproducibili
-- [x] **C-002** Suite Python e CI
-- [ ] **C-003** Harness AddressSanitizer
-  - **Blocker**: `scripts/run_asan_pipeline.py` non esiste; la FASE 5 lo invoca
-- [ ] **C-004** Gatekeeper dei test Python
-  - **Blocker**: `scripts/gatekeeper.py` non esiste; la FASE 5 lo invoca
-- [ ] **C-005** Bridge ctypes verso il modulo nativo
-  - **Blocker**: nessun modulo nativo da caricare
-- [x] **C-006** Instradamento dei modelli: DeepSeek nativo, mai da OpenRouter
+2. **Gate 4: Hardening, Fuzzing e Rilascio**
+   - **Status**: 25% completato.
+   - **Dominio**: Implementazione di funzionalità di sicurezza avanzata e processo di rilascio verificato.
+   - **Note**: Prima priorità sono l'implementazione della cifratura di sessione e autenticazione e la procedura di rilascio verificata. La fuzzing e altre funzionalità sono in fase di progettazione o draft.
 
-### Gate 1: Intercettazione pacchetti, hook e parsing opcode (70%)
+3. **Gate 9: Tooling di Orchestrazione Multi-Modello**
+   - **Status**: 100% completato.
+   - **Dominio**: Implementazione di funzionalità di routing, registro dei consumi, e messaggi fra agenti.
+   - **Note**: La funzionalità di routing è stata verificata passando i test.
 
-- [x] **C-101** Sorgente di pacchetti astratta
-- [x] **C-102** Cattura live via WinDivert
-- [x] **C-103** Motore di cattura del traffico di gioco
-- [x] **C-104** Parsing e registro degli opcode
-- [ ] **C-105** Hook di memoria o DLL nel client
-  - **Blocker**: nessun hook realizzato; cambia il confine tecnico del prodotto
-- [x] **C-106** Replay deterministico di una cattura
+### Domande Aperte
 
-### Gate 2: Dispatcher, correlazione entità e sincronizzazione Python (60%)
+1. **C-003/C-004/C-005**: La FASE 5 del protocollo richiede codice nativo e ASan, che il progetto non ha. Si può aprire un ramo nativo o quei tre contratti restano DRAFT per sempre e la FASE 5 va riscritta sugli stack reali (dotnet test, pytest).
 
-- [x] **C-201** Dispatcher thread-safe degli eventi
-- [x] **C-202** Correlazione degli identificativi di entità
-- [x] **C-203** Fusione delle osservazioni nel World Model
-- [ ] **C-204** Sincronizzazione fra runtime C# e `nosai/` Python
-  - **Blocker**: nessun canale dichiarato fra i due stack
+2. **C-204**: È necessario decidere quale stack possiede lo stato di gioco, il runtime C# o nosai/Python. Finché non è deciso, il canale fra i due non si può progettare.
 
-### Gate 3: Decisione autonoma e recupero (55%)
+3. **C-304**: Una FSM esplicita sostituisce Planner/Orchestrator o li affianca. Affiancarli senza dirlo creerebbe due autorità di decisione.
 
-- [x] **C-301** Pianificazione gerarchica HTN
-- [x] **C-302** Pianificazione GOAP
-- [x] **C-303** Orchestratore strategico
-- [ ] **C-304** Macchina a stati finiti esplicita
-  - **Blocker**: zero sorgenti con FSM; duplicherebbe l'autorità di Planner e Orchestrator
-- [x] **C-305** Recupero dopo disconnessione
+### Note di Riferimento
 
-### Gate 4: Hardening, fuzzing e rilascio (25%)
+- **Fasi di Prodotti**: Le porte (gates) non sono direttamente mappate alle fasi di prodotto (product phases). Le fasi di prodotto sono gestite tramite il campo `product_phases` nei contratti.
+- **Risolutione delle Segnature**: Le segnature delle funzioni chiave come C-103, C-104, C-106, C-203 e C-401 sono state risolte da fonti canoni. Lo stato attuale delle segnature è storico a meno che il comando di verifica associato non venga eseguito.
 
-- [x] **C-401** Cifratura di sessione e autenticazione
-- [ ] **C-402** Fuzzing sui pacchetti corrotti
-  - **Blocker**: zero occorrenze di fuzz nel repository
-- [x] **C-403** Superficie di sicurezza del runtime
-- [ ] **C-404** Procedura di rilascio verificata
-  - **Blocker**: manca l'esecuzione end-to-end che la chiuda
+### Conclusione
 
-## Domande aperte
-
-- La FASE 5 presuppone codice nativo e ASan che il progetto non ha: o si apre un ramo nativo, o la FASE 5 va riscritta su `dotnet test` e `pytest`.
-- Quale stack possiede lo stato di gioco: il runtime C# o `nosai/` Python.
-- Una FSM esplicita sostituisce Planner e Orchestrator o li affianca.
+Il progetto è in fase di implementazione e verifica con alcune aree ancora in fase di progettazione o draft. Le domande aperte e note di riferimento indicano che ci sono ancora alcuni passaggi che devono essere completati per rendere il progetto funzionale e pronto per la produzione.

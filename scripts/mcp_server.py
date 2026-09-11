@@ -115,7 +115,6 @@ def local_update_documentation(doc_payload_json: str) -> str:
     r.raise_for_status()
     return r.json().get("response", "")
 
-@mcp.tool()
 def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -> str:
     """
     Aggiorna lo stato di un contratto in contracts/ledger.json, ricalcola la
@@ -153,8 +152,21 @@ def update_contract_state(contract_id: str, new_state: str, metrics: str = "") -
     if metrics:
         contract["metrics"] = metrics
 
+    # Calcolo della percentuale di completamento del gate
+    # Il denominatore: numero di contratti del gate che NON sono in stato DROPPED
+    non_dropped_contracts = [c for c in owning_gate["contracts"] if c["status"] != "DROPPED"]
+    total_non_dropped = len(non_dropped_contracts)
+    
+    # Il numeratore: numero di contratti con stato in DONE_STATES
     done_count = sum(1 for c in owning_gate["contracts"] if c["status"] in DONE_STATES)
-    owning_gate["completion_pct"] = round(100 * done_count / len(owning_gate["contracts"]))
+    
+    if total_non_dropped == 0:
+        # Ogni contratto del gate è abbandonato oppure il gate è vuoto
+        completion_pct = 100
+    else:
+        completion_pct = round(100 * done_count / total_non_dropped)
+    
+    owning_gate["completion_pct"] = completion_pct
 
     tmp_path = ledger_path.with_suffix(".json.tmp")
     try:
