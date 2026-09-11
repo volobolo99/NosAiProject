@@ -29,11 +29,42 @@ jobs:
 
       - name: Compare against committed index
         run: |
-          set -e
-          if ! diff -rq /tmp/function-index-check docs/function-index/ >/dev/null 2>&1; then
-            echo "docs/function-index/ e' fuori sincrono: esegui"
-            echo "  python scripts/build_function_index.py . <SHA> docs/function-index --write-tree"
-            echo "e committa il risultato."
-            diff -rq /tmp/function-index-check docs/function-index/ || true
-            exit 1
-          fi
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          generated = pathlib.Path("/tmp/function-index-check")
+          committed = pathlib.Path("docs/function-index")
+
+          gen_files = {p.name for p in generated.glob("*.json")}
+          com_files = {p.name for p in committed.glob("*.json")}
+          if gen_files != com_files:
+              print("File set mismatch:", gen_files.symmetric_difference(com_files))
+              sys.exit(1)
+
+          # source_revision is declarative (the generator does not resolve or
+          # verify it, see docs/FUNCTION_INDEX.md): a commit can never declare
+          # its own hash before it exists, so a manifest regenerated on HEAD
+          # and then committed always has source_revision == the *parent*
+          # commit. Excluded from the byte-for-byte comparison for that reason.
+          mismatches = []
+          for name in sorted(gen_files):
+              gen_path, com_path = generated / name, committed / name
+              if name == "FUNCTION_INDEX.json":
+                  gen_data = json.loads(gen_path.read_text(encoding="utf-8"))
+                  com_data = json.loads(com_path.read_text(encoding="utf-8"))
+                  gen_data.pop("source_revision", None)
+                  com_data.pop("source_revision", None)
+                  if gen_data != com_data:
+                      mismatches.append(name)
+              elif gen_path.read_bytes() != com_path.read_bytes():
+                  mismatches.append(name)
+
+          if mismatches:
+              print("docs/function-index/ e' fuori sincrono (oltre a source_revision):", mismatches)
+              print("Esegui: python scripts/build_function_index.py . <SHA> docs/function-index --write-tree")
+              print("e committa il risultato.")
+              sys.exit(1)
+          print("Function index in sync (source_revision escluso: e' dichiarativo, non verificabile contro il proprio commit).")
+          PY
