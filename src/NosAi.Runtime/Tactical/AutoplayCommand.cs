@@ -127,7 +127,13 @@ public static class AutoplayCommand
         Engaged = 6,
 
         /// <summary>Farming was selected, but <see cref="NosAi.Runtime.Autonomy.TargetSelector"/> found no attackable target in range.</summary>
-        FarmingSkippedNoTarget = 7
+        FarmingSkippedNoTarget = 7,
+
+        /// <summary>Dispatched to <see cref="CollectCommand.ExecuteOneRound"/>.</summary>
+        Collected = 8,
+
+        /// <summary>Collect was selected, but no drop with a known position was observed, or the current gameplay observation was unavailable.</summary>
+        CollectSkippedNoTarget = 9
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -206,7 +212,10 @@ public static class AutoplayCommand
         Func<PositionReading?> readPosition,
         Action<MovementExecutionEvidence>? onEvidence,
         in ActuationAuthority authority,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        EntityId playerId,
+        EquatableArray<Drop> drops,
+        GameplayObservation? gameplay)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -257,8 +266,13 @@ public static class AutoplayCommand
                     mobs, playerPosition, keybinds, input, readVitals, verificationDelay,
                     in authority, nowUtc, footprint, plan);
 
+            case StrategicGoalKind.Collect:
+                return DispatchCollect(
+                    drops, playerPosition, playerId, gameplay, in grid, view, controller, chain, executor,
+                    readPosition, in authority, nowUtc, footprint, plan);
+
             default:
-                // QuestUrgency/Progression/Farming/Optimization: named, never
+                // QuestUrgency/Progression/Optimization: named, never
                 // silently ignored, never substituted.
                 return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null, footprint);
         }
@@ -354,6 +368,80 @@ public static class AutoplayCommand
     }
 
     /// <summary>
+    /// Walks to the nearest drop with a known position and reports the item count observed
+    /// immediately before and after (both from this cycle's single gameplay observation, since
+    /// this loop reads once per cycle rather than around the walk the way the standalone
+    /// <c>--collect</c> command does): <see cref="AutoplayDispatch.CollectSkippedNoTarget"/> when
+    /// no drop has a known position or the gameplay observation is unavailable.
+    /// </summary>
+    private static AutoplayCycleResult DispatchCollect(
+        EquatableArray<Drop> drops,
+        WorldPosition playerPosition,
+        EntityId playerId,
+        GameplayObservation? gameplay,
+        in MapGrid grid,
+        OccupancyView view,
+        PathWalkController controller,
+        StepGuardChain chain,
+        SingleStepExecutor executor,
+        Func<PositionReading?> readPosition,
+        in ActuationAuthority authority,
+        DateTime nowUtc,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        if (gameplay is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.CollectSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        Drop? nearestDrop = null;
+        double minDistance = double.MaxValue;
+
+        foreach (var drop in drops)
+        {
+            if (drop.Position.HasValue)
+            {
+                double dx = drop.Position.Value.X - playerPosition.X;
+                double dy = drop.Position.Value.Y - playerPosition.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearestDrop = drop;
+                }
+            }
+        }
+
+        if (nearestDrop is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.CollectSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        MapPoint destination = new MapPoint((int)nearestDrop.Position.Value.X, (int)nearestDrop.Position.Value.Y);
+        MapPoint origin = new MapPoint((int)playerPosition.X, (int)playerPosition.Y);
+
+        (WalkRun walk, WorldFact<int> beforeCount, WorldFact<int> afterCount) = CollectCommand.ExecuteOneRound(
+            destination,
+            origin,
+            nearestDrop.Item,
+            in grid,
+            view,
+            controller,
+            chain,
+            executor,
+            in authority,
+            readPosition,
+            gameplay,
+            gameplay,
+            playerId,
+            nowUtc);
+
+        Console.Write(walk.Text);
+        return new AutoplayCycleResult(AutoplayDispatch.Collected, plan, null, null, footprint);
+    }
+
+    /// <summary>
     /// Console entry for <c>--autoplay [--cycles &lt;n&gt;]
     /// [--recover-slot &lt;slot&gt;]</c>.
     /// </summary>
@@ -414,6 +502,25 @@ public static class AutoplayCommand
         return GameplayObservationProjector
             .Project(observation, playerId, cycle, nowUtc, classifier.Classify)
             .Mobs;
+    }
+
+    /// <summary>
+    /// This cycle's known drops, projected the same way <see cref="ObserveMobs"/> projects
+    /// mobs -- empty (not Unknown) when no gameplay observation is available this cycle.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private static EquatableArray<Drop> ObserveDrops(
+        GameplayObservation? observation,
+        EntityId playerId,
+        long cycle,
+        DateTime nowUtc)
+    {
+        if (observation is null)
+            return EquatableArray<Drop>.Empty;
+
+        return GameplayObservationProjector
+            .Project(observation, playerId, cycle, nowUtc)
+            .Drops;
     }
 
     /// <summary>
@@ -607,6 +714,7 @@ public static class AutoplayCommand
                 // differently, describing a character that never existed in either instant.
                 GameplayObservation? gameplay = entityFeed?.Gateway.Capture().Gameplay;
                 EquatableArray<Mob> cycleMobs = ObserveMobs(gameplay, entityClassifier, entityPlayerId, cycle, now);
+                EquatableArray<Drop> cycleDrops = ObserveDrops(gameplay, entityPlayerId, cycle, now);
 
                 var healthResource = new Resource(
                     ResourceKind.Health,
@@ -653,6 +761,11 @@ public static class AutoplayCommand
                 // instead of deciding blind and meeting the mobs afterwards.
                 StrategicSignal? farming = StrategyPlanner.AssessFarmingUrgency(playerFacts, cycleMobs);
 
+                // Same reasoning as farming above: observed before the plan, from the same
+                // per-cycle reading, so the goal is chosen knowing whether there is anything
+                // to pick up.
+                StrategicSignal? collect = StrategyPlanner.AssessCollectUrgency(playerFacts, cycleDrops);
+
                 // The slot an item would occupy is a catalogue fact, not a wire one, so the
                 // lookup is the real Item.dat reader when the catalogue opened and a lookup
                 // that answers "unknown" when it did not — never a guessed slot.
@@ -682,6 +795,10 @@ public static class AutoplayCommand
                 // Last on purpose: ties are broken by list order, and adding farming must not
                 // take a goal away from the three signals that already decided this loop.
                 if (farming is not null) signals.Add(farming);
+
+                // Right after farming, same reasoning: it must not outrank Recovery/Survival/
+                // Exploration, but it can compete with farming on equal footing.
+                if (collect is not null) signals.Add(collect);
 
                 // Last of all: it scores lowest by design, and it must never take a tie from a
                 // goal measuring a real deficit.
@@ -758,7 +875,10 @@ public static class AutoplayCommand
                             recordedAtUtc: now);
                     },
                     in authority,
-                    now);
+                    now,
+                    entityPlayerId,
+                    cycleDrops,
+                    gameplay);
 
                 // Carry this cycle's footprint forward regardless of what was
                 // dispatched -- only the Exploration branch actually changes it,

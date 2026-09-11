@@ -10,6 +10,7 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Tactical;
 using Xunit;
@@ -99,6 +100,8 @@ public sealed class AutoplayCommandTests
             WorldFact<bool>.Derived(true, confidence: 1d, Now),
             Now);
 
+    private static readonly EntityId TestPlayerId = new("test-player");
+
     private static AutoplayCommand.AutoplayCycleResult RunCycle(
         StrategicPlan plan,
         int? recoverSlot = RecoverSlot,
@@ -106,7 +109,9 @@ public sealed class AutoplayCommandTests
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
         PlayerVitalsReading? after = null,
-        EquatableArray<Mob>? mobs = null)
+        EquatableArray<Mob>? mobs = null,
+        EquatableArray<Drop>? drops = null,
+        GameplayObservation? gameplay = null)
     {
         ExplorationFootprint footprint = FullyExploredFootprint();
         return RunCycleWithMap(
@@ -118,7 +123,9 @@ public sealed class AutoplayCommandTests
             keybinds,
             before,
             after,
-            mobs);
+            mobs,
+            drops,
+            gameplay);
     }
 
     private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap(
@@ -130,7 +137,9 @@ public sealed class AutoplayCommandTests
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
         PlayerVitalsReading? after = null,
-        EquatableArray<Mob>? mobs = null)
+        EquatableArray<Mob>? mobs = null,
+        EquatableArray<Drop>? drops = null,
+        GameplayObservation? gameplay = null)
     {
         RecordingInput recording = input ?? new RecordingInput();
         var reads = new Queue<PlayerVitalsReading?>(new[] { before, after });
@@ -155,7 +164,10 @@ public sealed class AutoplayCommandTests
             readPosition: () => null,
             onEvidence: null,
             in AutoplayAuthority,
-            Now);
+            Now,
+            TestPlayerId,
+            drops ?? EquatableArray<Drop>.Empty,
+            gameplay);
     }
 
     // ------------------------------------------------------------- Idle
@@ -400,6 +412,55 @@ public sealed class AutoplayCommandTests
 
         Assert.Equal(AutoplayCommand.AutoplayDispatch.Engaged, result.Dispatch);
         Assert.NotNull(result.RecoverEvidence);
+    }
+
+    // ------------------------------------------------------------ Collect branch
+
+    [Fact]
+    public void ACollectPlan_WithNoGameplayObservation_IsCollectSkippedNoTarget_AndNeverTouchesInput()
+    {
+        StrategicPlan plan = new(
+            StrategicGoalKind.Collect,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+
+        // gameplay defaults to null: DispatchCollect cannot build before/after without it.
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.CollectSkippedNoTarget, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void ACollectPlan_WithADropInReach_DispatchesToCollectCommand_UnderAutoplayAuthority()
+    {
+        // Player is at (0,0) (RunCycle's default); this ground item sits a few
+        // tiles away and carries a real gameplay observation, so DispatchCollect
+        // has both a target and the observation it needs for before/after.
+        StrategicPlan plan = new(
+            StrategicGoalKind.Collect,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+        GameplayObservation gameplay = GameplayObservation.Unobserved("test", Now) with
+        {
+            GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Live(
+                new[] { new GroundItem(Vnum: 42, DropId: 99, X: 3, Y: 4, Amount: 1, OwnerId: 0, Now, NosAi.Runtime.Contracts.DataSourceKind.Live) },
+                Now)
+        };
+        EquatableArray<Drop> drops = EquatableArray<Drop>.From(new[]
+        {
+            new Drop(
+                new EntityId("99"),
+                new ItemId("42"),
+                WorldFact<WorldPosition>.Live(new WorldPosition(3f, 4f), 1d, Now),
+                WorldFact<int>.Live(1, 1d, Now))
+        });
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input, gameplay: gameplay, drops: drops);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Collected, result.Dispatch);
     }
 
     // ------------------------------------------------------- Run(...) argument guards

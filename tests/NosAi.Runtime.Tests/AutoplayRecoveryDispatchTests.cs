@@ -123,7 +123,10 @@ public sealed class AutoplayRecoveryDispatchTests
             readPosition: () => null,
             onEvidence: null,
             in AutoplayAuthority,
-            Now);
+            Now,
+            playerId: new EntityId("test-player"),
+            drops: EquatableArray<Drop>.Empty,
+            gameplay: null);
     }
 
     private static StrategicPlan RecoveryPlan() =>
