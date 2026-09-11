@@ -246,6 +246,81 @@
               Intenti che KeybindsCheck elenca come configurati, e intenti scoperti col loro nome. Un intento mancante si disegna come mancante, non come riga vuota. Il pannello non scrive il file.
             </TextBlock>
             <ItemsControl x:Name="KeybindsFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="CONFERMA UN TASTO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  Un tasto dichiarato e' un'ipotesi presa dai default del gioco, non una misura: il client consegna gli slot rapidi vuoti e li riempi tu.
+                  Finche' resta dichiarato viene letto, elencato e RIFIUTATO alla pressione con keybind_not_confirmed, e la catena di combattimento si ferma li'.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,8" TextWrapping="Wrap">
+                  Confermare non e' spuntare una casella: premi il tasto in gioco, guarda l'effetto (MP che scendono, HP che salgono, il pacchetto sr che nomina lo slot), e scrivi qui che cosa hai visto. Senza osservazione la conferma viene rifiutata.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Intento" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="KeybindIntent" Width="140" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Tasto, da 1 a 254" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="KeybindVirtualKey" Width="70" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="KeybindReloadButton" Style="{StaticResource GhostButton}" Content="Rileggi" Click="OnReloadKeybinds"/>
+                </StackPanel>
+                <TextBlock Text="Che cosa hai osservato" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4"/>
+                <TextBox x:Name="KeybindObservation" Margin="0,0,0,8" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="46"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                <Button x:Name="KeybindConfirmButton" Style="{StaticResource PrimaryButton}" Content="Conferma il tasto"
+                        HorizontalAlignment="Left" Click="OnConfirmKeybind" Margin="0,0,0,8"/>
+                <TextBlock x:Name="KeybindSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna conferma in questa sessione."/>
+                <TextBox x:Name="KeybindOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="90" MaxHeight="200" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-13 — CATENA DI COMBATTIMENTO SUL CLIENT VIVO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Servono client in gioco, WinDivert, e questo pannello avviato come amministratore.
+                  2) Premi &quot;Tasti confermati&quot;: l'id abilita' che serve sotto e' l'intento skill confermato, non il vnum.
+                  3) Con il personaggio fermo accanto a dei mostri, premi &quot;Rapporto combattimento&quot;.
+                  4) Fatti colpire da un mostro e ripremi: l'ostilita' si stabilisce solo da un colpo subito.
+                  5) Prendi un id da una riga engage con would_act=True, mettilo qui sotto e premi &quot;Ingaggia&quot;.
+                  6) Allontanati oltre la portata mentre i round girano: devono rifiutare senza fermarsi.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,6" TextWrapping="Wrap">
+                  Senza amministratore ogni passo rifiuta con un motivo nominato, e quel rifiuto non e' evidenza di nulla: non chiude la prova.
+                </TextBlock>
+                <TextBlock x:Name="CombatChainElevation" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8" Text="Elevazione non ancora verificata."/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Button x:Name="CheckKeybindsButton" Style="{StaticResource GhostButton}" Content="Tasti confermati" Click="OnCheckKeybinds" Margin="0,0,8,0"/>
+                  <Button x:Name="CombatReportButton" Style="{StaticResource PrimaryButton}" Content="Rapporto combattimento" Click="OnCombatReport"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Bersaglio" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageTargetId" Width="150" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Abilita'" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageSkillId" Width="110" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Round" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="EngageRounds" Width="60" Text="3" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="EngageTargetButton" Style="{StaticResource PrimaryButton}" Content="Ingaggia" Click="OnEngageTarget"/>
+                </StackPanel>
+                <TextBlock x:Name="CombatChainSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna prova in questa sessione."/>
+                <TextBox x:Name="CombatChainOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="120" MaxHeight="260" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
@@ -410,6 +485,39 @@
 
             <TextBlock Margin="0,8,0,8" FontWeight="SemiBold">Hardware osservato</TextBlock>
             <ItemsControl x:Name="HardwareFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardLabel}" Text="T-09 — CALIBRA IL RIQUADRO BERSAGLIO"/>
+                    <TextBlock Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" Text="1) Seleziona un bersaglio nel gioco.&#10;2) Premi &quot;Cattura ritaglio&quot;.&#10;3) Guarda l'immagine qui sotto: se non e' il riquadro bersaglio, cambia le quattro frazioni e ricattura.&#10;4) Quando e' giusto, premi &quot;Registra calibrazione&quot;.&#10;5) Premi &quot;Rileggi stato bersaglio&quot; con il bersaglio selezionato, poi deselezionato."/>
+                    <TextBlock Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" Text="Le quattro caselle sono frazioni dell'area client: ogni valore va da 0 a 1, in proporzione alla larghezza o all'altezza della finestra del gioco."/>
+                    <Image x:Name="TargetCropImage" Stretch="Uniform" MaxHeight="220" HorizontalAlignment="Left" Margin="0,8,0,4"/>
+                    <TextBlock x:Name="TargetCropInfo" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8" Text="Nessun ritaglio in questa sessione."/>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="X" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiX" Grid.Row="0" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.40"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Y" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiY" Grid.Row="1" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.06"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="W" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiW" Grid.Row="2" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.20"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="H" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TargetRoiH" Grid.Row="3" Grid.Column="1" Width="110" HorizontalAlignment="Left" Text="0.02"/>
+                    </Grid>
+                    <Button x:Name="CaptureTargetCropButton" Style="{StaticResource PrimaryButton}" Content="Cattura ritaglio" Click="OnCaptureTargetCrop" Margin="0,0,0,6"/>
+                    <Button x:Name="RegisterTargetRoiButton" Style="{StaticResource PrimaryButton}" Content="Registra calibrazione" Click="OnRegisterTargetRoi" Margin="0,0,0,6"/>
+                    <Button x:Name="RereadTargetStateButton" Style="{StaticResource GhostButton}" Content="Rileggi stato bersaglio" Click="OnRereadTargetState" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="TargetRoiSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Text="Nessuna calibrazione in questa sessione."/>
+                </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
@@ -444,6 +552,31 @@
                      BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="8"
                      Text="Qui compaiono, dopo la registrazione, gli id che il filo ha detto e le righe del catalogo che contengono le parole della tua nota. Accostarli non e' provarli: serve che lo stesso id e lo stesso testo tornino insieme almeno due volte."/>
 
+            <!-- T-14: una cattura che cominci prima del login. Il bottone usa la
+                 modalita' di attesa del runtime (opzione await-client): il runtime attende il
+                 processo del client e la sua prima connessione di gioco, poi
+                 registra dall'aggancio in poi. Nessun comando da digitare. -->
+            <Border Style="{StaticResource CardChrome}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-14 — REGISTRA DAL LOGIN (PRIMA DEL COLLEGAMENTO)"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Chiudi il client NosTale. 2) Premi &quot;Registra dal login&quot;. 3) Apri il client, accedi ed entra in gioco. 4) Lascia correre qualche secondo. La registrazione comincia e finisce da sola.
+                </TextBlock>
+                <TextBlock Foreground="{StaticResource WarnBrush}" Margin="0,0,0,10" TextWrapping="Wrap">
+                  Limite: la cattura comincia quando la registrazione aggancia la connessione del client — i pacchetti scambiati prima dell'aggancio non sono catturati.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Durata (s)" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0"/>
+                  <TextBox x:Name="PreLoginCaptureSeconds" Width="70" Text="120" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="PreLoginCaptureButton" Style="{StaticResource PrimaryButton}" Content="Registra dal login" Click="OnRecordPreLoginWire"/>
+                </StackPanel>
+                <TextBlock x:Name="PreLoginCaptureSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="Nessuna registrazione in questa sessione."/>
+              </StackPanel>
+            </Border>
+
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Salute API</TextBlock>
             <ItemsControl x:Name="HealthFields" ItemTemplate="{StaticResource FieldTemplate}"/>
             <TextBlock Margin="0,16,0,8" FontWeight="SemiBold">Registro eventi</TextBlock>
@@ -456,6 +589,36 @@
           <StackPanel>
             <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,0,12" TextWrapping="Wrap">Ciclo Gate 3 sullo snapshot canonico. ActingEnabled=false è la politica sicura (ADR-0016): decide, non agisce. In modalità COLLEGATO il ciclo vive in un altro processo e questa vista è UNKNOWN, non zero. Gli esiti si elencano per tipo: NoWorldState, NoCandidate e RefusedStaleInput non sono lo stesso fallimento.</TextBlock>
             <ItemsControl x:Name="DecisionFields" ItemTemplate="{StaticResource FieldTemplate}"/>
+            <Border Style="{StaticResource CardChrome}" Margin="0,16,0,14">
+              <StackPanel>
+                <TextBlock Style="{StaticResource CardLabel}" Text="T-08 — CICLO DI DECISIONE SUL CLIENT VIVO"/>
+                <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,4,0,6" TextWrapping="Wrap">
+                  1) Client in gioco e endpoint rilevato in Impostazioni.
+                  2) Premi &quot;Avvia ciclo&quot;: parte l'host Gate 1 con l'osservazione attaccata, e resta in ascolto.
+                  3) Guarda le righe scorrere: il ciclo comincia a NoWorldState e deve passare a una decisione su letture LIVE.
+                  4) Premi &quot;Ferma&quot; quando hai visto abbastanza. Fermare non e' un errore.
+                </TextBlock>
+                <TextBlock x:Name="DecideExpectation" Foreground="{StaticResource WarnBrush}" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="ExecutionDisabled a valle del Safety Gate e' l'esito atteso, non un guasto: l'input resta disabilitato per politica."/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Endpoint" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="DecideEndpoint" Width="170" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <TextBlock Text="Intervallo (ms)" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0"/>
+                  <TextBox x:Name="DecideIntervalMs" Width="80" Text="5000" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                           BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6,4"/>
+                  <Button x:Name="DecideStartButton" Style="{StaticResource PrimaryButton}" Content="Avvia ciclo" Click="OnStartDecideCycle" Margin="0,0,8,0"/>
+                  <Button x:Name="DecideStopButton" Style="{StaticResource GhostButton}" Content="Ferma" Click="OnStopDecideCycle" IsEnabled="False"/>
+                </StackPanel>
+                <TextBlock x:Name="DecideSummary" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,6" Text="Nessuna corsa in questa sessione."/>
+                <TextBox x:Name="DecideOutput" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                         MinHeight="140" MaxHeight="300" FontFamily="Consolas"
+                         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
+                         BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="6"/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
 
@@ -494,8 +657,10 @@
             <Label Content="Endpoint osservazione gioco (host:porta, vuoto = spento)" Foreground="{StaticResource MutedBrush}" Margin="0,12,0,0"/>
             <DockPanel>
               <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Rileva endpoint" Click="OnDetectObserveGame" Margin="8,0,0,0"/>
-              <TextBox x:Name="SettingObserveGame"/>
+              <TextBox x:Name="SettingObserveGame" TextChanged="OnEndpointTextChanged"/>
             </DockPanel>
+            <TextBlock x:Name="EndpointProvenance" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                       Margin="0,4,0,0" Text="Nessun endpoint rilevato."/>
             <CheckBox x:Name="SettingRunDecisionLoop" Content="Avvia il ciclo di decisione Gate 3 (decide, non agisce)" Margin="0,12,0,0"/>
             <Label Content="Intervallo decisione (ms)" Foreground="{StaticResource MutedBrush}"/>
             <TextBox x:Name="SettingDecisionIntervalMs"/>

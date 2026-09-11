@@ -79,9 +79,15 @@ tools/windivert/probe/bin/
 tools/windivert/probe/obj/
 
 # Worktree e stato degli agenti (contiene copie complete del repository).
-# Eccezione: CLAUDE.md e la fonte di verita delle regole operative e va versionato.
+# `.claude/*` invece di `.claude/`: git non riammette un file se la CARTELLA
+# padre e' esclusa, quindi la forma con lo slash finale rendeva impossibile
+# versionare qualunque cosa qui dentro.
 .claude/*
+# Eccezione: CLAUDE.md e la fonte di verita delle regole operative e va versionato.
 !.claude/CLAUDE.md
+# Le definizioni degli agenti sono configurazione di progetto, non impostazioni
+# di una macchina: descrivono ruoli che valgono per chiunque apra il repository.
+!.claude/agents/
 
 # WinDivert: i binari sono versionati di proposito, con LICENSE e VERSION accanto,
 # perche' ogni macchina compili senza scaricarli a mano. third_party/windivert/README.md

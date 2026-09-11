@@ -20,7 +20,15 @@ namespace NosAi.Runtime.Tests;
 /// </remarks>
 public sealed class GuardAiClientTests
 {
-    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+    // Only ever used through Deadline() as a cancellation ceiling: no assertion
+    // in this file compares elapsed time, so raising it cannot weaken anything.
+    //
+    // Raised on 2026-09-08 after ManyRapidHeartbeats... failed under full-suite
+    // load while passing 8/8 alone. It was not enough: the same test failed again
+    // at 45 s, so the cause here is contention, not this ceiling. Left raised
+    // because it is harmless, and recorded so the next reader does not mistake it
+    // for a fix that worked.
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(45);
 
     private sealed class Channel : IAsyncDisposable
     {
