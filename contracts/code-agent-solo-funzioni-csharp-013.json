@@ -1,0 +1,85 @@
+{
+  "contract_id": "code-agent-solo-funzioni-csharp-013",
+  "file": "scripts/code_agent.py",
+  "scopo": "Insegnare il C# al meccanismo solo_funzioni. Oggi _intervalli_funzioni usa solo ast.parse(), il parser di Python, quindi su una risposta o uno scheletro C# solleva sempre SyntaxError: qualunque incarico con solo_funzioni su un file .cs fallisce per tutti e 3 i tentativi.",
+  "difetto_misurato_il_2026_09_11": "Lanciando python scripts/code_agent.py su un incarico reale (contratto C-306, file src/NosAi.Runtime/Tactical/AutoplayCommand.cs) con solo_funzioni, i 3 tentativi sono falliti tutti con 'Innesto parziale rifiutato: invalid syntax (<unknown>, line 1)'. Il contratto code-agent-csharp-004 aveva gia' insegnato il C# a validate_implementation e build_check, ma non a _intervalli_funzioni/innesta_funzioni: il meccanismo per i file troppo grandi da riemettere interi, descritto in .claude/CLAUDE.md paragrafo 7, resta quindi impraticabile su ogni file .cs, cioe' sull'89% del progetto in righe di codice.",
+  "risorsa_gia_presente": "_firme_csharp in scripts/code_agent.py (riga 359) usa gia' tree_sitter_c_sharp e tree_sitter.Parser/Language per leggere il C#, e la sua funzione interna firma_metodo individua il nome di un metodo cercando un nodo 'identifier' seguito da un nodo 'parameter_list' fra i figli diretti del method_declaration. Questa stessa grammatica e la stessa regola di riconoscimento del nome vanno riusate, non reinventate: un tipo di ritorno non primitivo (es. 'public Foo Bar()') e' anch'esso un nodo 'identifier', quindi il nome del metodo si riconosce solo dalla posizione, non dal tipo di nodo. linguaggio_del_file (riga 338) deduce gia' il linguaggio dal suffisso del file bersaglio.",
+  "vincoli_di_governo": [
+    "Il percorso Python non cambia comportamento: _intervalli_funzioni e innesta_funzioni chiamate senza indicare il linguaggio (o con linguaggio='python') si comportano esattamente come oggi. E' verificato dai test esistenti in tests/test_code_agent_parziale.py, che non vanno toccati e devono restare tutti verdi.",
+    "_firme_csharp e _intervalli_csharp devono riconoscere il nome di un metodo con la STESSA regola (identifier seguito da parameter_list, non il primo identifier). Se le due funzioni divergessero, validate_implementation e innesta_funzioni lavorerebbero su nomi diversi per lo stesso metodo: e' per questo che la ricerca del nome va estratta in una funzione condivisa, non duplicata.",
+    "Nessuna funzione esistente viene rimossa o rinominata. _firme_csharp mantiene la sua firma esterna 'def _firme_csharp(source: str):' e il suo comportamento osservabile (stessi errori sugli stessi input): cambia solo come firma_metodo trova il nome al proprio interno, delegandolo alla funzione condivisa.",
+    "Se, nel file C# passato a _intervalli_csharp, il nome di un metodo dichiarato in solo_funzioni compare piu' di una volta (overload, o stesso nome in classi diverse), _intervalli_csharp solleva ValueError elencando i nomi ambigui: un innesto che scegliesse una delle due posizioni in silenzio sarebbe un bug difficile da diagnosticare, non una funzionalita'.",
+    "_intervalli_csharp restituisce intervalli di riga per i soli nodi method_declaration, la stessa categoria di membro che _firme_csharp valida: se domani un altro tipo di membro (costruttore, proprieta') dovesse diventare innestabile, va deciso in un contratto successivo, non aggiunto qui in silenzio."
+  ],
+  "funzioni": {
+    "_identificatore_metodo_csharp": {
+      "firma": "def _identificatore_metodo_csharp(nodo)",
+      "comportamento": "Funzione nuova, condivisa fra _firme_csharp e _intervalli_csharp. Riceve un nodo tree_sitter di tipo method_declaration. Scorre i suoi figli diretti (nodo.children) con l'indice; il nome del metodo e' il primo nodo di tipo 'identifier' immediatamente seguito, nella lista dei figli, da un nodo di tipo 'parameter_list'. Se lo trova restituisce la terna (nodo_identificatore, nodo_parameter_list, indice_nella_lista_children). Se non lo trova restituisce None: non deve mai sollevare eccezioni, il chiamante decide cosa fare dell'assenza."
+    },
+    "_firme_csharp": {
+      "firma": "def _firme_csharp(source: str):",
+      "firma_invariata_obbligatoria": "identica a oggi: e' chiamata da validate_implementation e dai test esistenti in tests/test_code_agent_csharp.py",
+      "comportamento": "Comportamento osservabile identico a oggi per ogni input gia' coperto dai test esistenti. Cambia solo l'interno della funzione locale firma_metodo: invece di ripetere la ricerca 'identifier seguito da parameter_list', chiama _identificatore_metodo_csharp(nodo). Se il risultato e' None, si comporta come oggi quando la ricerca fallisce: restituisce (nome_di(nodo), '', ''). Se il risultato non e' None, usa l'indice restituito per individuare il nodo precedente (per il tipo di ritorno, con la stessa esclusione di 'modifier' e 'attribute_list' gia' presente) esattamente come fa oggi il codice esistente."
+    },
+    "_intervalli_csharp": {
+      "firma": "def _intervalli_csharp(source: str):",
+      "comportamento": "Funzione nuova. Analizza source con tree_sitter e la grammatica tree_sitter_c_sharp, con lo stesso parsing di _firme_csharp (Parser(Language(tree_sitter_c_sharp.language())).parse(source.encode('utf-8'))). Se albero.root_node.has_error, solleva SyntaxError con un messaggio che include 'C#' (stesso stile di _firme_csharp). Altrimenti percorre l'intero albero e, per ogni nodo di tipo method_declaration ovunque si trovi (dentro classi, struct, interface, record, a qualunque profondita' di annidamento), chiama _identificatore_metodo_csharp(nodo). Se il risultato non e' None, il nome del metodo e' il testo del nodo identificatore (decodificato utf-8 dal sorgente originale) e il suo intervallo e' (nodo.start_point.row + 1, nodo.end_point.row + 1): il nodo method_declaration include gia' i suoi eventuali attribute_list come figli diretti, quindi non serve un calcolo separato per i decoratori come nel ramo Python. Se un nome si presenta piu' di una volta, va raccolto in un insieme di nomi ambigui invece di sovrascrivere la voce precedente nel dizionario; al termine della visita, se l'insieme dei nomi ambigui non e' vuoto, solleva ValueError con il messaggio 'Nomi di metodo ambigui, presenti piu' volte nel file: ' seguito dai nomi ordinati e separati da virgola. Se non ci sono ambiguita' restituisce il dizionario nome -> (riga_inizio, riga_fine)."
+    },
+    "_intervalli_funzioni": {
+      "firma": "def _intervalli_funzioni(source: str, linguaggio: str = 'python'):",
+      "comportamento": "Se linguaggio == 'c_sharp', restituisce _intervalli_csharp(source). Altrimenti (compreso il valore di default 'python') si comporta esattamente come il codice esistente: ast.parse(source), poi per ogni nodo di tipo FunctionDef o AsyncFunctionDef nel body di primo livello dell'albero, l'intervallo (min fra la riga del nodo e le righe dei suoi decoratori, riga di fine del nodo). Nessun cambiamento di comportamento sul ramo Python rispetto a oggi."
+    },
+    "innesta_funzioni": {
+      "firma": "def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = 'python') -> str:",
+      "comportamento": "Identico al codice esistente in ogni dettaglio (perimetro dichiarato, ordine dal basso verso l'alto, messaggi di errore per funzioni assenti dalla risposta o dallo scheletro, gestione della lista nomi vuota), con l'unica differenza che le due chiamate interne diventano _intervalli_funzioni(risposta, linguaggio) e _intervalli_funzioni(skeleton, linguaggio) invece di _intervalli_funzioni(risposta) e _intervalli_funzioni(skeleton). Il valore di default 'python' mantiene invariati tutti i chiamanti esistenti che non passano il quarto argomento, inclusi i test in tests/test_code_agent_parziale.py."
+    },
+    "run": {
+      "firma": "def run(task: dict, do_preflight: bool) -> dict",
+      "firma_invariata_obbligatoria": "identica a oggi",
+      "comportamento": "Identico al codice esistente, con questa differenza: subito dopo aver calcolato 'target' e 'skeleton' (o comunque prima del ciclo dei tentativi), calcola una sola volta lingua = linguaggio_del_file(ROOT / task['file']) e la riusa per tutto il resto della funzione. Il punto che oggi sceglie il prompt di sistema con 'linguaggio_del_file(ROOT / task[\"file\"]) == \"c_sharp\"' usa lingua invece di richiamare linguaggio_del_file una seconda volta. La chiamata 'code = innesta_funzioni(skeleton, code, solo)' diventa 'code = innesta_funzioni(skeleton, code, solo, lingua)'. Nessun altro comportamento di run cambia."
+    }
+  },
+  "regola_di_conservazione_VINCOLANTE": {
+    "istruzione": "Il file deve contenere TUTTE le funzioni dello scheletro piu' quelle nuove: validate_implementation rifiuta il file se una scompare. Le funzioni non elencate in implementare_o_creare vanno riportate carattere per carattere come stanno nello scheletro.",
+    "conservare_identiche": [
+      "call_model",
+      "budget_token",
+      "cost_of",
+      "extract_code",
+      "signatures",
+      "dataclass_fields",
+      "prompt_parziale",
+      "linguaggio_del_file",
+      "_senza_stringhe",
+      "_valida_csharp",
+      "validate_implementation",
+      "build_check",
+      "import_check",
+      "preflight",
+      "record",
+      "main"
+    ],
+    "implementare_o_creare": [
+      "_identificatore_metodo_csharp",
+      "_firme_csharp",
+      "_intervalli_csharp",
+      "_intervalli_funzioni",
+      "innesta_funzioni",
+      "run"
+    ]
+  },
+  "test_obbligatori": {
+    "file": "tests/test_code_agent_parziale.py",
+    "casi": [
+      "innesta_funzioni su C# con un metodo bersaglio dichiarato sostituisce solo quel metodo e conserva gli altri membri della classe",
+      "innesta_funzioni su C# con la risposta a sintassi rotta solleva SyntaxError",
+      "innesta_funzioni su C# con un nome dichiarato e assente dalla risposta solleva ValueError con il nome",
+      "innesta_funzioni su C# con un nome dichiarato e assente dallo scheletro solleva ValueError con il nome",
+      "innesta_funzioni su C# con un nome di metodo presente in due classi diverse solleva ValueError che nomina l'ambiguita', senza innestare in silenzio nella posizione sbagliata",
+      "innesta_funzioni su C# con un metodo che ha un tipo di ritorno non primitivo (una classe custom) riconosce comunque il nome giusto del metodo, non il tipo",
+      "innesta_funzioni chiamata senza il quarto argomento continua a comportarsi come oggi sul Python (regressione dei test gia' esistenti)"
+    ]
+  },
+  "stato": "TEST_VERIFIED",
+  "evidenza": "Registrato come ORCH-005 in contracts/ledger.json. Suite Python 577 passati/2 skip/0 falliti (tests/test_code_agent_parziale.py contiene gli 8 test C# nuovi). Collaudo reale: incarico solo_funzioni su un file .cs con un metodo NotImplementedException, delegato a deepseek-v4-flash, completato al primo tentativo, preflight APPROVED, dotnet build 0 errori; file di collaudo rimosso dopo la verifica. dotnet build NosAi.sln -c Release pulito."
+}

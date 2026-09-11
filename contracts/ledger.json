@@ -656,6 +656,27 @@
           "product_phases": [],
           "legacy_gate": 9,
           "metrics": "15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli"
+        },
+        {
+          "cid": "ORCH-005",
+          "title": "solo_funzioni di code_agent.py esteso al C# (tree_sitter, non ast.parse)",
+          "target_file": "scripts/code_agent.py",
+          "signature": "def _intervalli_funzioni(source: str, linguaggio: str = 'python'); def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = 'python') -> str",
+          "struct_size": null,
+          "test_file": "tests/test_code_agent_parziale.py",
+          "status": "TEST_VERIFIED",
+          "updated": "2026-09-11",
+          "invariants": [
+            "DETERMINISTIC",
+            "FAIL_CLOSED"
+          ],
+          "verification": {
+            "command": "python -m pytest tests/ -q",
+            "last_result": "577 passed, 2 skipped, 0 falliti in questa sessione"
+          },
+          "product_phases": [],
+          "legacy_gate": 9,
+          "metrics": "Contratto contracts/code-agent-solo-funzioni-csharp-013.json. _intervalli_funzioni/innesta_funzioni ora accettano C# via tree_sitter (nuove _identificatore_metodo_csharp e _intervalli_csharp, _firme_csharp aggiornata per condividere il riconoscimento del nome). Percorso Python invariato. Collaudo reale: incarico solo_funzioni su .cs delegato a deepseek-v4-flash, completato al primo tentativo, preflight APPROVED, dotnet build 0 errori. Suite Python 577 passati/2 skip/0 falliti; dotnet build NosAi.sln -c Release pulito."
         }
       ]
     }

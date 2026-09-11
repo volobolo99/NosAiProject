@@ -119,6 +119,9 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-11
   - metrics: 15 test verdi in tests/test_contract_ledger.py; suite Python completa (551 test) invariata; verificato a mano su ledger reale che tutte le domande_aperte risultano fedeli
   - note: Sostituisce regenerate_roadmap() che passava l'intero ledger dentro un prompt libero a un 7B locale: quel modello riportava domande gia' chiuse come ancora aperte e mischiava note del ledger (phase_mapping_note, signature_resolution_note) in righe di contratti a cui non appartenevano. Un rendering deterministico non puo' commettere quell'errore: ogni riga del Markdown e' copiata cosi' com'e' da un campo del ledger.
+| ORCH-005 | solo_funzioni di code_agent.py esteso al C# (tree_sitter, non ast.parse) | TEST_VERIFIED |
+  - updated: 2026-09-11
+  - metrics: Contratto contracts/code-agent-solo-funzioni-csharp-013.json. _intervalli_funzioni/innesta_funzioni ora accettano C# via tree_sitter (nuove _identificatore_metodo_csharp e _intervalli_csharp, _firme_csharp aggiornata per condividere il riconoscimento del nome). Percorso Python invariato. Collaudo reale: incarico solo_funzioni su .cs delegato a deepseek-v4-flash, completato al primo tentativo, preflight APPROVED, dotnet build 0 errori. Suite Python 577 passati/2 skip/0 falliti; dotnet build NosAi.sln -c Release pulito.
 
 ## Domande aperte
 

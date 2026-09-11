@@ -119,3 +119,107 @@ def test_il_prompt_parziale_chiede_solo_le_funzioni_dichiarate():
 def test_senza_solo_funzioni_il_comportamento_non_cambia():
     """Chi non dichiara il perimetro continua a ricevere il file intero."""
     assert code_agent.innesta_funzioni(SCHELETRO, SCHELETRO, []) == SCHELETRO
+
+
+def test_innesta_funzioni_senza_quarto_argomento_resta_python():
+    """Il quarto argomento e' opzionale: i chiamanti che non lo passano non cambiano."""
+    unito = code_agent.innesta_funzioni(SCHELETRO, SOLO_BERSAGLIO, ["bersaglio"])
+    assert "return valore.upper()" in unito
+
+
+# --- solo_funzioni su C# ----------------------------------------------------
+# Criterio di accettazione del contratto code-agent-solo-funzioni-csharp-013.
+# Misurato il 2026-09-11: _intervalli_funzioni usava solo ast.parse(), quindi su
+# una risposta o uno scheletro C# sollevava sempre SyntaxError e il meccanismo
+# solo_funzioni era impraticabile su ogni file .cs.
+
+SCHELETRO_CS = """using System;
+
+namespace NosAi.Runtime.Testing;
+
+public class Esempio
+{
+    public void Prima()
+    {
+        Console.WriteLine("resta come sta");
+    }
+
+    public string Bersaglio(string valore)
+    {
+        throw new NotImplementedException();
+    }
+
+    public int Dopo(int b)
+    {
+        return b + 1;
+    }
+}
+"""
+
+SOLO_BERSAGLIO_CS = """    public string Bersaglio(string valore)
+    {
+        return valore.ToUpperInvariant();
+    }
+"""
+
+
+def test_innesta_funzioni_csharp_sostituisce_un_metodo_e_conserva_gli_altri():
+    unito = code_agent.innesta_funzioni(
+        SCHELETRO_CS, SOLO_BERSAGLIO_CS, ["Bersaglio"], "c_sharp")
+    assert "public void Prima()" in unito
+    assert "public int Dopo(int b)" in unito
+    assert "return valore.ToUpperInvariant();" in unito
+    assert "throw new NotImplementedException();" not in unito
+    assert "namespace NosAi.Runtime.Testing;" in unito
+
+
+def test_innesta_funzioni_csharp_risposta_con_sintassi_rotta_solleva():
+    rotto = "    public string Bersaglio(string valore)\n    {\n        return valore\n"
+    with pytest.raises(SyntaxError):
+        code_agent.innesta_funzioni(SCHELETRO_CS, rotto, ["Bersaglio"], "c_sharp")
+
+
+def test_innesta_funzioni_csharp_nome_assente_dalla_risposta_solleva():
+    with pytest.raises(ValueError) as exc:
+        code_agent.innesta_funzioni(
+            SCHELETRO_CS, SOLO_BERSAGLIO_CS, ["Bersaglio", "Mancante"], "c_sharp")
+    assert "Mancante" in str(exc.value)
+
+
+def test_innesta_funzioni_csharp_nome_assente_dallo_scheletro_solleva():
+    nuova = "    public int Aggiunta(int x)\n    {\n        return x;\n    }\n"
+    with pytest.raises(ValueError) as exc:
+        code_agent.innesta_funzioni(SCHELETRO_CS, nuova, ["Aggiunta"], "c_sharp")
+    assert "Aggiunta" in str(exc.value)
+
+
+def test_innesta_funzioni_csharp_nome_ambiguo_in_due_classi_solleva():
+    """Un innesto che scegliesse una delle due posizioni in silenzio sarebbe un bug
+    difficile da diagnosticare: deve fermarsi e nominare l'ambiguita'."""
+    due_classi = SCHELETRO_CS + (
+        "\npublic class Altra\n{\n"
+        "    public string Bersaglio(string valore)\n"
+        "    {\n        throw new NotImplementedException();\n    }\n}\n"
+    )
+    with pytest.raises(ValueError) as exc:
+        code_agent.innesta_funzioni(due_classi, SOLO_BERSAGLIO_CS, ["Bersaglio"], "c_sharp")
+    assert "Bersaglio" in str(exc.value)
+
+
+def test_intervalli_csharp_riconosce_il_nome_con_tipo_di_ritorno_non_primitivo():
+    """Il tipo di ritorno 'Foo' e' anch'esso un nodo identifier: il nome del
+    metodo deve restare 'Costruisci', non il tipo."""
+    sorgente = (
+        "namespace N;\n\n"
+        "public class Fabbrica\n{\n"
+        "    public Foo Costruisci(int x)\n"
+        "    {\n        return new Foo(x);\n    }\n}\n"
+    )
+    intervalli = code_agent._intervalli_funzioni(sorgente, "c_sharp")
+    assert "Costruisci" in intervalli
+    assert "Foo" not in intervalli
+
+
+def test_intervalli_funzioni_csharp_delega_a_intervalli_csharp():
+    intervalli = code_agent._intervalli_funzioni(SCHELETRO_CS, "c_sharp")
+    assert set(intervalli) == {"Prima", "Bersaglio", "Dopo"}

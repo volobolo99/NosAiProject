@@ -265,8 +265,15 @@ def dataclass_fields(source: str) -> dict:
     return found
 
 
-def _intervalli_funzioni(source: str):
-    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi."""
+def _intervalli_funzioni(source: str, linguaggio: str = "python"):
+    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi.
+
+    Sul C# delega a _intervalli_csharp, definita piu' sotto insieme a _firme_csharp
+    perche' condividono la stessa grammatica tree_sitter.
+    """
+    if linguaggio == "c_sharp":
+        return _intervalli_csharp(source)
+
     albero = ast.parse(source)
     intervalli = {}
     for nodo in albero.body:
@@ -276,7 +283,7 @@ def _intervalli_funzioni(source: str):
     return intervalli
 
 
-def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
+def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = "python") -> str:
     """Lo scheletro con le sole funzioni dichiarate sostituite da quelle della risposta.
 
     Serve per i file troppo grandi da riemettere interi: su model_scout.py, 26.693
@@ -290,8 +297,8 @@ def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
     if not nomi:
         return skeleton
 
-    nuove = _intervalli_funzioni(risposta)   # solleva SyntaxError se la risposta e' rotta
-    vecchie = _intervalli_funzioni(skeleton)
+    nuove = _intervalli_funzioni(risposta, linguaggio)   # solleva SyntaxError se rotta
+    vecchie = _intervalli_funzioni(skeleton, linguaggio)
 
     assenti_risposta = [n for n in nomi if n not in nuove]
     if assenti_risposta:
@@ -356,6 +363,75 @@ def _senza_stringhe(code: str) -> str:
     return STRINGHE.sub('""', code)
 
 
+def _identificatore_metodo_csharp(nodo):
+    """Il nodo identificatore del nome di un metodo, seguito dalla sua lista parametri.
+
+    Condivisa da _firme_csharp e _intervalli_csharp: un tipo di ritorno non
+    primitivo (es. "public Foo Bar()") e' anch'esso un nodo tree_sitter di tipo
+    'identifier', quindi il nome del metodo si riconosce solo dalla posizione
+    (subito prima di un parameter_list), non dal tipo di nodo. Le due funzioni
+    devono concordare su questa regola, altrimenti innesto e validazione
+    lavorerebbero su nomi diversi per lo stesso metodo. Restituisce None senza
+    sollevare eccezioni quando non trova il pattern: il chiamante decide cosa
+    fare dell'assenza.
+    """
+    figli = list(nodo.children)
+    for indice, figlio in enumerate(figli):
+        successivo = figli[indice + 1] if indice + 1 < len(figli) else None
+        if figlio.type == "identifier" and successivo is not None \
+                and successivo.type == "parameter_list":
+            return figlio, successivo, indice
+    return None
+
+
+def _intervalli_csharp(source: str):
+    """Per ogni metodo C#, ovunque annidato, le righe che occupa.
+
+    Stessa grammatica di _firme_csharp e stessa regola di riconoscimento del
+    nome (_identificatore_metodo_csharp): un method_declaration include gia' i
+    suoi eventuali attribute_list come figli diretti, quindi l'intervallo non
+    richiede un calcolo separato per i decoratori come nel ramo Python.
+
+    Riconosce anche local_function_statement, non solo method_declaration:
+    misurato che un metodo inviato "nudo" (senza la classe attorno, la stessa
+    forma con cui prompt_parziale chiede le funzioni Python) e' analizzato da
+    tree_sitter_c_sharp come funzione locale di un top-level program, non come
+    metodo di una classe. La struttura dei figli diretti e' la stessa
+    (modifier, tipo di ritorno, identifier, parameter_list, block), quindi
+    _identificatore_metodo_csharp riconosce il nome allo stesso modo in
+    entrambi i casi.
+    """
+    import tree_sitter_c_sharp
+    from tree_sitter import Language, Parser
+
+    dati = source.encode("utf-8")
+    albero = Parser(Language(tree_sitter_c_sharp.language())).parse(dati)
+    if albero.root_node.has_error:
+        raise SyntaxError("C#: l'albero contiene nodi ERROR o mancanti")
+
+    intervalli = {}
+    ambigui = set()
+
+    def visita(nodo):
+        for figlio in nodo.children:
+            if figlio.type in ("method_declaration", "local_function_statement"):
+                trovato = _identificatore_metodo_csharp(figlio)
+                if trovato is not None:
+                    identificatore, _, _ = trovato
+                    nome = dati[identificatore.start_byte:identificatore.end_byte].decode(
+                        "utf-8", "replace")
+                    if nome in intervalli:
+                        ambigui.add(nome)
+                    intervalli[nome] = (figlio.start_point.row + 1, figlio.end_point.row + 1)
+            visita(figlio)
+
+    visita(albero.root_node)
+    if ambigui:
+        raise ValueError(
+            "Nomi di metodo ambigui, presenti piu' volte nel file: " + ", ".join(sorted(ambigui)))
+    return intervalli
+
+
 def _firme_csharp(source: str):
     """Per ogni classe C#, i suoi metodi come (nome, parametri, tipo di ritorno).
 
@@ -385,16 +461,15 @@ def _firme_csharp(source: str):
 
     def firma_metodo(nodo):
         """Il nome del metodo e' l'identificatore seguito dalla lista parametri."""
+        trovato = _identificatore_metodo_csharp(nodo)
+        if trovato is None:
+            return nome_di(nodo), "", ""
+        figlio, successivo, indice = trovato
         figli = list(nodo.children)
-        for indice, figlio in enumerate(figli):
-            successivo = figli[indice + 1] if indice + 1 < len(figli) else None
-            if figlio.type == "identifier" and successivo is not None \
-                    and successivo.type == "parameter_list":
-                precedente = figli[indice - 1] if indice else None
-                ritorno = normalizza(testo(precedente)) if precedente is not None \
-                    and precedente.type not in ("modifier", "attribute_list") else ""
-                return testo(figlio), normalizza(testo(successivo)), ritorno
-        return nome_di(nodo), "", ""
+        precedente = figli[indice - 1] if indice else None
+        ritorno = normalizza(testo(precedente)) if precedente is not None \
+            and precedente.type not in ("modifier", "attribute_list") else ""
+        return testo(figlio), normalizza(testo(successivo)), ritorno
 
     CONTENITORI = (
         "class_declaration", "struct_declaration",
@@ -612,6 +687,7 @@ def run(task: dict, do_preflight: bool) -> dict:
     esito_preflight = ""
 
     solo = list(task.get("solo_funzioni", []))
+    lingua = linguaggio_del_file(ROOT / task["file"])
 
     for tentativo in range(1, MAX_ATTEMPTS + 1):
         if solo:
@@ -628,15 +704,14 @@ def run(task: dict, do_preflight: bool) -> dict:
             prompt += "\n\nCodice rifiutato:\n" + code
 
         budget = budget_token(model)
-        sistema = SYSTEM_PROMPT_CSHARP \
-            if linguaggio_del_file(ROOT / task["file"]) == "c_sharp" else SYSTEM_PROMPT
+        sistema = SYSTEM_PROMPT_CSHARP if lingua == "c_sharp" else SYSTEM_PROMPT
         testo, usage = call_model(model, prompt, sistema, max_tokens=budget)
         chiamate += 1
         costo += cost_of(model, usage)
         code = extract_code(testo)
         if solo:
             try:
-                code = innesta_funzioni(skeleton, code, solo)
+                code = innesta_funzioni(skeleton, code, solo, lingua)
             except (SyntaxError, ValueError) as exc:
                 errors = ["Innesto parziale rifiutato: {}".format(exc)]
                 code = ""
