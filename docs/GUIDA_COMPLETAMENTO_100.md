@@ -201,12 +201,13 @@ lo abilita direttamente o indirettamente.
 - **Evidenza:** uno snapshot `WorldModelSnapshot.Mobs` non vuoto durante una sessione live.
 
 ### P11 — T-05: confermare i vitali LIVE (non solo CACHED) su sessione in corso
-⚪ RICHIEDE L'OPERATORE — 🟢 indipendente da P10, può correre in parallelo
+✅ CHIUSO il 2026-09-12
 
 - **Ruolo:** `employee.perception` + operatore.
 - **Riferimento:** `docs/TEST_RIMANDATI.md` T-05.
-- **Evidenza:** stessa lettura vitali confermata `LIVE` su un client in esecuzione, non solo
-  su una registrazione.
+- **Evidenza:** `--decide --observe-game 79.110.84.175:4005 --decide-interval-ms 5000` su
+  sessione reale in corso registra `Game observation attached. endpoint=... source=LIVE`
+  (consenso esplicito dell'operatore per l'automazione sul client vivo).
 
 ### P12 — T-06/T-07: latenza Gate 1 PC↔telefono su hardware reale
 ⚪ RICHIEDE L'OPERATORE + telefono Guard reale in rete locale — 🟢 indipendente dagli altri
@@ -218,13 +219,16 @@ passi di questa fase
   di CI (102 ms osservati su GitHub Actions non sono questa misura).
 
 ### P13 — T-08: `--decide --observe-game` su sessione viva
-⚪ RICHIEDE L'OPERATORE — 🔴 più significativo dopo P10 (altrimenti non c'è nulla da decidere)
+🟡 EVIDENZA PARZIALE il 2026-09-12 — resta aperto un solo punto
 
 - **Ruolo:** `employee.decision` + operatore.
 - **Riferimento:** `docs/TEST_RIMANDATI.md` T-08.
-- **Evidenza attesa:** `ExecutionDisabled` è l'esito corretto (l'effettore resta
+- **Evidenza attesa:** `ExecutionDisabled`-equivalente è l'esito corretto (l'effettore resta
   `DisabledActionEffector` per policy di sicurezza), non un guasto — non aspettarsi
-  un'azione eseguita.
+  un'azione eseguita. **Confermato:** ciclo avviato (`Gate 3 decision loop started`),
+  `acting=False`, `authority_live_input_not_armed`. **Non confermato:** la transizione da
+  `NoWorldState` a una decisione — nessun mostro nei paraggi durante la finestra di prova;
+  richiede rieseguire vicino a un'entità reale (si intreccia con P10/T-13).
 
 ### P14 — T-16: collegare gli id `sayi`/`msgi` sul filo al testo visto a schermo
 ⚪ RICHIEDE L'OPERATORE — 🟢 indipendente
@@ -256,8 +260,9 @@ P10); prima di allora non c'è nulla di osservabile su cui costruire l'esecuzion
 - **Ruolo:** `employee.action` implementa, `employee.security` rivede (tocca
   `CommitPointValidator`/`ActuationScope`, superficie di sicurezza).
 - **Riferimento:** `docs/REMAINING_WORK.md` R-104; `docs/agents/phases/AP-07/*_STATUS.md`.
-- **Evidenza:** primitive di azione, verifica prima/dopo, test negativi; calibrazione
-  `bag-panel-roi` fisicamente prodotta (lo strumento C-313 esiste già, la calibrazione no).
+- **Evidenza:** primitive di azione, verifica prima/dopo, test negativi. Calibrazione
+  `bag-panel-roi` **prodotta il 2026-09-12** su client vivo (`data/perception/bag-panel-roi.calibration`,
+  24 slot, area client 1024x768) — resta da fare la parte Safety Gate/`--optimization-gesture`.
 
 ### P17 — R-103/AP-05: bridging `EngageCommand` → `CommitPointValidator`/`ActuationScope`
 🔴 BLOCCATO da P10
