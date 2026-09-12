@@ -696,6 +696,17 @@ def run(task: dict, do_preflight: bool) -> dict:
             prompt += "\n".join("- " + e for e in errors)
             prompt += "\n\nCodice rifiutato:\n" + code
 
+        # Azzerato solo ORA, dopo essere stato letto per il feedback del prompt:
+        # un tentativo il cui innesto riesce non deve ereditare l'errore del
+        # tentativo precedente. Prima di questa riga, un innesto riuscito al
+        # tentativo N saltava validate_implementation (riga sotto: "if not (solo
+        # and errors)") perche' errors era ancora quello, non azzerato, del
+        # tentativo N-1 -- osservato su C-310: il tentativo 2 rispondeva con
+        # prosa invece di codice (rifiutato per sintassi), il tentativo 3
+        # produceva codice valido, ma l'esito finale restava quello del
+        # tentativo 2.
+        errors = []
+
         budget = budget_token(model)
         sistema = SYSTEM_PROMPT_CSHARP \
             if linguaggio_del_file(ROOT / task["file"]) == "c_sharp" else SYSTEM_PROMPT

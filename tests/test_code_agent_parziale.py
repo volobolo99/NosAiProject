@@ -266,3 +266,34 @@ def test_run_con_solo_funzioni_su_file_csharp_non_fallisce_piu_per_innesto(monke
 
     assert not any("Innesto parziale rifiutato" in e for e in risultato["missing_items"])
     assert risultato["status"] == "completed"
+
+
+def test_run_non_eredita_l_errore_di_un_tentativo_precedente(monkeypatch, tmp_path):
+    """Trovato su C-310 reale: al tentativo 2 il modello rispondeva con prosa
+    invece di codice (innesto rifiutato per sintassi), al tentativo 3 con
+    codice valido -- ma errors non veniva mai azzerato a inizio tentativo,
+    quindi un innesto riuscito al tentativo N ereditava l'errore, ancora non
+    svuotato, del tentativo N-1, saltava validate_implementation (la guardia
+    'if not (solo and errors)') e il risultato finale restava quello vecchio."""
+    target = tmp_path / "Esempio.cs"
+    target.write_text(SCHELETRO_CS, encoding="utf-8")
+    contract_file = tmp_path / "contratto.json"
+    contract_file.write_text("{}", encoding="utf-8")
+
+    risposte = iter(["questo non e' codice, e' prosa che descrive cosa fa il metodo", SOLO_BERSAGLIO_CS])
+    monkeypatch.setattr(code_agent, "call_model", lambda model, prompt, sistema, max_tokens: (next(risposte), {}))
+    monkeypatch.setattr(code_agent, "build_check", lambda path: [])
+    monkeypatch.setattr(code_agent, "record", lambda entry: None)
+
+    task = {
+        "task_id": "prova-csharp-due-tentativi",
+        "file": str(target.relative_to(code_agent.ROOT)) if target.is_relative_to(code_agent.ROOT) else str(target),
+        "contract_file": str(contract_file.relative_to(code_agent.ROOT)) if contract_file.is_relative_to(code_agent.ROOT) else str(contract_file),
+        "tier": "local",
+        "solo_funzioni": ["Bersaglio"],
+    }
+
+    risultato = code_agent.run(task, do_preflight=False)
+
+    assert risultato["status"] == "completed", risultato["missing_items"]
+    assert risultato["missing_items"] == []
