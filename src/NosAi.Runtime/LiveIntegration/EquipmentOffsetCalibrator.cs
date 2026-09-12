@@ -193,10 +193,28 @@ namespace NosAi.LiveIntegration
                 // Read the first equipment state
                 Console.WriteLine("Round 1: wait for a real change in equipment (equip or unequip something)");
                 WornEquipment? lastEquip = null;
+                // The client's own equip/unequip actions publish `eq`, confirmed
+                // empirically on a live client on 2026-09-12 -- `equip` never arrived
+                // during ordinary play (cross-checked against Rutherther/NosSmooth's
+                // independent packet definitions: `eq` carries exactly the ten
+                // visually-rendered slots in a fixed order -- Hat, Armor, MainWeapon,
+                // SecondaryWeapon, Mask, Fairy, CostumeSuit, CostumeHat, WeaponSkin,
+                // WingSkin -- while `equip` carries the full slot-id-addressed set with
+                // rarity/upgrade detail and is sent on a different, rarer trigger this
+                // session did not identify). This calibrator only needs ONE consistent
+                // numbering to search memory with, and `eq` is the one the client
+                // actually sends during ordinary play.
+                //
+                // The stride-4 contiguous-array hypothesis this file searches for was
+                // tried live against a real client on 2026-09-12 and did NOT hold: the
+                // wire confirmed a real change, an anchor was picked, memory was
+                // scanned, and zero addresses held the array. Per this contract, no
+                // second attempt with a guessed stride follows a negative result --
+                // that is the honest boundary of what this module proves.
                 Func<WornEquipment?> readLatestEquip = () =>
                 {
                     NetworkObservationReport report = observer.ObservePending();
-                    if (report.Equipment is { Opcode: EquipmentWireOpcode.Equip } equip)
+                    if (report.Equipment is { Opcode: EquipmentWireOpcode.Eq } equip)
                         lastEquip = equip;
                     return lastEquip;
                 };
