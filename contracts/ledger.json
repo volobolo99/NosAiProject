@@ -151,6 +151,23 @@
           "note": "Riusa Win32InputBackend (click fisico via SendInput) e DxgiDesktopDuplicationSource (cattura schermo), gia' pubblici in NosAi.Runtime: nessuna seconda implementazione di input/cattura. Non tocca ADR-0003 (il gate di sicurezza del gameplay): pilota solo la finestra del ControlPanel, non il client di gioco.",
           "product_phases": [],
           "legacy_gate": 0
+        },
+        {
+          "cid": "C-008",
+          "title": "Driver di test end-to-end sul client di gioco reale: unequip autonomo via CLI di produzione",
+          "target_file": "tests/NosAi.Runtime.LiveGameplayTests/UnequipLiveTests.cs",
+          "signature": "public sealed class UnequipLiveTests { [Fact] public async Task Unequip_EmitsAndVerifiesViaWire() }",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.LiveGameplayTests/UnequipLiveTests.cs",
+          "status": "VERIFIED",
+          "updated": "2026-09-12",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "note": "Zero codice di attuazione nuovo: invoca via ToolRunner (riuso di NosAi.ControlPanel.ToolRunner, stesso helper di MainWindow.xaml.cs) il comando gia' in produzione 'dotnet NosAi.Runtime.dll --unequip Weapon --gesture single --arm-input', che passa per la catena autorizzata da ADR-0003 (GatedInputBackend -> CommitPointValidator -> ActuationAuthority.Commanded -> UnequipExecutor). Nessun bypass, nessuna seconda via di attuazione. Rifiuta onestamente (Assert.Fail nominato) se il client non e' in esecuzione o la dll Release non e' compilata; non presuppone un esito specifico del filo (Confirmed/StillWorn), solo che il click sia stato emesso.",
+          "product_phases": [],
+          "legacy_gate": 0,
+          "metrics": "Percorso reale verificato in tre run consecutivi con l'operatore al client vivo (2026-09-12): (1) gioco in background -> rifiuto onesto 'client_window_not_located'; (2) gioco in primo piano -> finestra trovata, cattura di rete aperta, cursore mosso sul pixel calibrato corretto, rifiuto onesto 'unequip_no_equip_reading'; (3) stesso esito con inventario aperto. Causa isolata leggendo UnequipExecutor.cs: il comando standalone legge il pacchetto equip una sola volta, istantaneamente, senza attendere; quel pacchetto arriva solo da un vero equip/unequip lato client, oggi generabile solo da un umano per il percorso standalone (--equip/--unequip aprono una cattura di rete propria, invariato da C-312, che ha risolto il caso solo dentro il loop di autoplay riusando l'osservazione gia' condivisa dal ciclo). Limite dichiarato, non risolto qui. dotnet build NosAi.sln pulito, 0 errori. Nessun infilling cloud: riuso integrale di codice di produzione gia' verificato (evidenza C-404), zero logica nuova oltre invocazione del processo e asserzioni; scritto direttamente perche' i test sono responsabilita' di Claude (sezione 14 CLAUDE.md)."
         }
       ]
     },
