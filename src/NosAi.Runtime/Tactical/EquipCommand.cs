@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Runtime.Versioning;
+using System.Threading;
 using NosAi.Core.WorldModel;
 using NosAi.LiveIntegration;
 using NosAi.LiveIntegration.Capture;
@@ -40,6 +41,19 @@ public class EquipCommand
     public const int ExitNotConfirmed = 2;
     public const int ExitRefused = 3;
     public const int ExitUsage = 4;
+
+    /// <summary>
+    /// How long to poll the wire for an <c>ivn</c> naming the requested item before
+    /// refusing with <see cref="ItemNotInInventoryReason"/>. The client sends
+    /// <c>ivn</c> only on a change to that slot, never a full list on request, so a
+    /// single instantaneous read sees nothing for an item that has been sitting
+    /// still in the bag -- this window gives a real one a chance to be observed
+    /// without inventing a resync the protocol does not have.
+    /// </summary>
+    public static readonly TimeSpan BagSlotSearchWindow = TimeSpan.FromSeconds(3);
+
+    /// <summary>How often the wire is re-read while <see cref="BagSlotSearchWindow"/> is open.</summary>
+    public static readonly TimeSpan BagSlotPollInterval = TimeSpan.FromMilliseconds(100);
 
     public static string? TryParse(string[] args, out ItemId? item, out EquipmentSlot? slot, out EquipGesture? gesture, out int? verifyMs, out bool armInput)
     {
@@ -209,15 +223,29 @@ public class EquipCommand
                 new ScopedGameTrafficFilter(endpoint),
                 new NosTaleWorldProtocolDecoder());
 
-            NetworkObservationReport bagReport = observer.ObservePending();
+            // `ivn` is a delta the client sends only when a bag slot changes, never a
+            // full list on request: a single ObservePending() the instant this
+            // observer opens sees nothing unless a change happens to land in that
+            // exact packet backlog. Polling for a short window gives an item that
+            // is genuinely in the bag a real chance to be seen without inventing a
+            // resync the protocol does not have.
             int? bagSlotIndex = null;
-            foreach (InventorySlotReading inventorySlot in bagReport.InventorySlots)
+            long bagSearchStarted = System.Diagnostics.Stopwatch.GetTimestamp();
+            while (bagSlotIndex is null
+                && System.Diagnostics.Stopwatch.GetElapsedTime(bagSearchStarted) < BagSlotSearchWindow)
             {
-                if (inventorySlot.Vnum.ToString(CultureInfo.InvariantCulture) == item.Value)
+                NetworkObservationReport bagReport = observer.ObservePending();
+                foreach (InventorySlotReading inventorySlot in bagReport.InventorySlots)
                 {
-                    bagSlotIndex = inventorySlot.Slot;
-                    break;
+                    if (inventorySlot.Vnum.ToString(CultureInfo.InvariantCulture) == item.Value)
+                    {
+                        bagSlotIndex = inventorySlot.Slot;
+                        break;
+                    }
                 }
+
+                if (bagSlotIndex is null)
+                    Thread.Sleep(BagSlotPollInterval);
             }
 
             if (bagSlotIndex is null)

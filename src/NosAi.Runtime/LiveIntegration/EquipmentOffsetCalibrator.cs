@@ -47,69 +47,102 @@ namespace NosAi.LiveIntegration
             return true;
         }
 
-        public static List<EquipmentArrayHit> KeepMatchingArray(IReadOnlyList<IntPtr> anchorAddresses, int anchorSlot, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int?> readInt32)
-        {
-            var survivors = new List<EquipmentArrayHit>();
-            
-            foreach (IntPtr anchorAddress in anchorAddresses)
-            {
-                IntPtr baseAddress = new IntPtr(anchorAddress.ToInt64() - (anchorSlot * 4));
-                bool isValid = true;
-                
-                foreach (var kvp in expectedSlotVnums)
-                {
-                    int slot = kvp.Key;
-                    int expectedVnum = kvp.Value;
-                    IntPtr slotAddress = new IntPtr(baseAddress.ToInt64() + (slot * 4));
-                    int? actualVnum = readInt32(slotAddress);
-                    
-                    if (actualVnum is null || actualVnum != expectedVnum)
-                    {
-                        isValid = false;
-                        break;
-                    }
-                }
-                
-                if (isValid)
-                {
-                    survivors.Add(new EquipmentArrayHit(baseAddress, expectedSlotVnums));
-                }
-            }
-            
-            return survivors;
-        }
+        /// <summary>Bytes read to each side of an anchor hit while searching for the rest of the known values nearby.</summary>
+        public const int SearchWindowBytes = 512;
 
-        public static List<EquipmentArrayHit> Confirm(IReadOnlyList<EquipmentArrayHit> previous, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int?> readInt32)
+public static List<EquipmentArrayHit> KeepMatchingArray(IReadOnlyList<IntPtr> anchorAddresses, int anchorSlot, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int, byte[]?> readWindow)
+{
+    var survivors = new List<EquipmentArrayHit>();
+    
+    foreach (IntPtr anchorAddress in anchorAddresses)
+    {
+        long windowStartPtr = anchorAddress.ToInt64() - SearchWindowBytes;
+        IntPtr windowStart = new IntPtr(windowStartPtr);
+        
+        byte[]? window = readWindow(windowStart, SearchWindowBytes * 2);
+        if (window is null)
+            continue;
+            
+        bool isValid = true;
+        foreach (var kvp in expectedSlotVnums)
         {
-            var survivors = new List<EquipmentArrayHit>();
+            int slot = kvp.Key;
+            int vnum = kvp.Value;
             
-            foreach (var hit in previous)
+            // Skip the anchor slot
+            if (slot == anchorSlot)
+                continue;
+                
+            if (!ContainsValueAtEitherWidth(window, vnum))
             {
-                bool isValid = true;
-                IntPtr baseAddress = hit.BaseAddress;
-                
-                foreach (var kvp in expectedSlotVnums)
-                {
-                    int slot = kvp.Key;
-                    int expectedVnum = kvp.Value;
-                    IntPtr slotAddress = new IntPtr(baseAddress.ToInt64() + (slot * 4));
-                    int? actualVnum = readInt32(slotAddress);
-                    
-                    if (actualVnum is null || actualVnum != expectedVnum)
-                    {
-                        isValid = false;
-                        break;
-                    }
-                }
-                
-                if (isValid)
-                {
-                    survivors.Add(hit);
-                }
+                isValid = false;
+                break;
             }
-            
-            return survivors;
         }
+        
+        if (isValid)
+            survivors.Add(new EquipmentArrayHit(anchorAddress, expectedSlotVnums));
+    }
+    
+    return survivors;
+}
+
+public static List<EquipmentArrayHit> Confirm(IReadOnlyList<EquipmentArrayHit> previous, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int, byte[]?> readWindow)
+{
+    var survivors = new List<EquipmentArrayHit>();
+    
+    foreach (var hit in previous)
+    {
+        IntPtr anchorAddress = hit.BaseAddress;
+        long windowStartPtr = anchorAddress.ToInt64() - SearchWindowBytes;
+        IntPtr windowStart = new IntPtr(windowStartPtr);
+        
+        byte[]? window = readWindow(windowStart, SearchWindowBytes * 2);
+        if (window is null)
+            continue;
+            
+        bool isValid = true;
+        foreach (var kvp in expectedSlotVnums)
+        {
+            int slot = kvp.Key;
+            int vnum = kvp.Value;
+            
+            if (!ContainsValueAtEitherWidth(window, vnum))
+            {
+                isValid = false;
+                break;
+            }
+        }
+        
+        if (isValid)
+            survivors.Add(new EquipmentArrayHit(hit.BaseAddress, expectedSlotVnums));
+    }
+    
+    return survivors;
+}
+
+        /// <summary>Whether <paramref name="value"/> appears anywhere in <paramref name="window"/>, as a 4-byte or (when it fits) 2-byte little-endian value.</summary>
+private static bool ContainsValueAtEitherWidth(byte[] window, int value)
+{
+    byte[] as32 = BitConverter.GetBytes(value);
+    for (int i = 0; i + 4 <= window.Length; i += 2)
+    {
+        if (window[i] == as32[0] && window[i + 1] == as32[1] && window[i + 2] == as32[2] && window[i + 3] == as32[3])
+            return true;
+    }
+    
+    if (value >= short.MinValue && value <= short.MaxValue)
+    {
+        byte[] as16 = BitConverter.GetBytes((short)value);
+        for (int i = 0; i + 2 <= window.Length; i += 2)
+        {
+            if (window[i] == as16[0] && window[i + 1] == as16[1])
+                return true;
+        }
+    }
+    
+    return false;
+}
 
         public static bool CanConfirm(ImmutableDictionary<int, int> before, ImmutableDictionary<int, int> after)
         {
@@ -244,14 +277,14 @@ namespace NosAi.LiveIntegration
                 }
 
                 // Scan for the anchor value
-                Func<IntPtr, int?> readInt32 = address =>
+                Func<IntPtr, int, byte[]?> readWindow = (address, length) =>
                 {
-                    MemoryReadResult result = session.Reader.Read(address, sizeof(int));
-                    return result.Ok ? BitConverter.ToInt32(result.Bytes) : null;
+                    MemoryReadResult result = session.Reader.Read(address, length);
+                    return result.Ok ? result.Bytes : null;
                 };
 
                 MemoryScanner.ScanResult scan = MemoryScanner.Scan(session.Reader, anchorVnum);
-                var matchingAddresses = KeepMatchingArray(scan.Addresses, anchorSlot, firstSlotVnums, readInt32);
+                var matchingAddresses = KeepMatchingArray(scan.Addresses, anchorSlot, firstSlotVnums, readWindow);
 
                 if (matchingAddresses.Count == 0)
                 {
@@ -289,7 +322,7 @@ namespace NosAi.LiveIntegration
                     return 1;
                 }
 
-                var survivors = Confirm(matchingAddresses, secondSlotVnums, readInt32);
+                var survivors = Confirm(matchingAddresses, secondSlotVnums, readWindow);
                 if (Verdict(survivors) is { } verdict)
                 {
                     Console.WriteLine($"[REFUSED] {verdict}");

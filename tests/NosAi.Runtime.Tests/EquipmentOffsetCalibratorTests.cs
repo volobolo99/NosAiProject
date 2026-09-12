@@ -45,28 +45,115 @@ public sealed class EquipmentOffsetCalibratorTests
         Assert.False(found);
     }
 
-    [Fact]
-    public void KeepMatchingArray_KeepsOnlyAddressesWhereEverySlotMatches()
+    /// <summary>A sparse byte-addressable fake memory, for testing a window read without a real process.</summary>
+    private sealed class FakeMemory
     {
-        // Two array bases at 0x1000 and 0x2000, each 18 slots of 4 bytes.
-        // Only the base at 0x1000 actually holds slot 0 = 100 AND slot 5 = 42.
-        var memory = new Dictionary<long, int>
+        private readonly Dictionary<long, byte> _bytes = new();
+
+        public void WriteInt32(long address, int value)
         {
-            [0x1000 + 0 * 4] = 100,
-            [0x1000 + 5 * 4] = 42,
-            [0x2000 + 0 * 4] = 100,
-            [0x2000 + 5 * 4] = 999, // mismatch: this base must be rejected
-        };
-        Func<IntPtr, int?> readInt32 = addr => memory.TryGetValue(addr.ToInt64(), out int v) ? v : null;
+            byte[] bytes = BitConverter.GetBytes(value);
+            for (int i = 0; i < bytes.Length; i++)
+                _bytes[address + i] = bytes[i];
+        }
+
+        public void WriteInt16(long address, short value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            for (int i = 0; i < bytes.Length; i++)
+                _bytes[address + i] = bytes[i];
+        }
+
+        public byte[] ReadWindow(IntPtr address, int length)
+        {
+            var window = new byte[length];
+            for (int i = 0; i < length; i++)
+                window[i] = _bytes.TryGetValue(address.ToInt64() + i, out byte b) ? b : (byte)0;
+            return window;
+        }
+    }
+
+    [Fact]
+    public void KeepMatchingArray_KeepsOnlyAnchorsWhereEveryOtherKnownValueIsNearby()
+    {
+        // Anchor vnum 100 (slot 0) was found by the scan at both 0x1000 and 0x2000.
+        // Only near 0x1000 does the other known value (slot 5 = 42) actually sit
+        // somewhere in the search window; near 0x2000 it is simply not there.
+        var memory = new FakeMemory();
+        memory.WriteInt32(0x1000 + 20, 42);
+        memory.WriteInt32(0x2000 + 20, 999); // unrelated value: must not satisfy slot 5
 
         var expected = new Dictionary<int, int> { [0] = 100, [5] = 42 }.ToImmutableDictionary();
-        // Anchor addresses are where slot 0 (the anchor slot) was found: base + 0.
         var anchorAddresses = new List<IntPtr> { new(0x1000), new(0x2000) };
 
-        List<EquipmentArrayHit> hits = EquipmentOffsetCalibrator.KeepMatchingArray(anchorAddresses, anchorSlot: 0, expected, readInt32);
+        List<EquipmentArrayHit> hits = EquipmentOffsetCalibrator.KeepMatchingArray(
+            anchorAddresses, anchorSlot: 0, expected, memory.ReadWindow);
 
         Assert.Single(hits);
         Assert.Equal(new IntPtr(0x1000), hits[0].BaseAddress);
+    }
+
+    [Fact]
+    public void KeepMatchingArray_FindsAKnownValueStoredAsA2ByteShort()
+    {
+        // WeaponSkin/WingSkin are declared `short` on the wire (Rutherther/NosSmooth's
+        // InEquipmentSubPacket), so a matching field in memory may be 2 bytes wide
+        // instead of 4 like every other slot.
+        var memory = new FakeMemory();
+        memory.WriteInt16(0x1000 + 20, 12345);
+
+        var expected = new Dictionary<int, int> { [0] = 100, [8] = 12345 }.ToImmutableDictionary();
+
+        List<EquipmentArrayHit> hits = EquipmentOffsetCalibrator.KeepMatchingArray(
+            new List<IntPtr> { new(0x1000) }, anchorSlot: 0, expected, memory.ReadWindow);
+
+        Assert.Single(hits);
+    }
+
+    [Fact]
+    public void KeepMatchingArray_NullWindow_SkipsThatCandidate()
+    {
+        var expected = new Dictionary<int, int> { [0] = 100 }.ToImmutableDictionary();
+        Func<IntPtr, int, byte[]?> readWindow = (_, _) => null;
+
+        List<EquipmentArrayHit> hits = EquipmentOffsetCalibrator.KeepMatchingArray(
+            new List<IntPtr> { new(0x1000) }, anchorSlot: 0, expected, readWindow);
+
+        Assert.Empty(hits);
+    }
+
+    [Fact]
+    public void Confirm_KeepsSurvivorOnlyWhenNewValuesAreAlsoNearby()
+    {
+        var memory = new FakeMemory();
+        memory.WriteInt32(0x1000 + 20, 77); // the new round's value for slot 5
+
+        var previous = new List<EquipmentArrayHit>
+        {
+            new(new IntPtr(0x1000), ImmutableDictionary<int, int>.Empty),
+        };
+        var expected = new Dictionary<int, int> { [0] = 100, [5] = 77 }.ToImmutableDictionary();
+        memory.WriteInt32(0x1000 + 40, 100);
+
+        List<EquipmentArrayHit> survivors = EquipmentOffsetCalibrator.Confirm(previous, expected, memory.ReadWindow);
+
+        Assert.Single(survivors);
+        Assert.Equal(new IntPtr(0x1000), survivors[0].BaseAddress);
+    }
+
+    [Fact]
+    public void Confirm_ValueNoLongerNearby_DropsTheSurvivor()
+    {
+        var memory = new FakeMemory(); // deliberately empty: nothing matches
+        var previous = new List<EquipmentArrayHit>
+        {
+            new(new IntPtr(0x1000), ImmutableDictionary<int, int>.Empty),
+        };
+        var expected = new Dictionary<int, int> { [0] = 100 }.ToImmutableDictionary();
+
+        List<EquipmentArrayHit> survivors = EquipmentOffsetCalibrator.Confirm(previous, expected, memory.ReadWindow);
+
+        Assert.Empty(survivors);
     }
 
     [Fact]
