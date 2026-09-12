@@ -880,6 +880,23 @@
           "legacy_gate": 9,
           "updated": "2026-09-12",
           "metrics": "6/6 test nuovi verdi (tests/test_role_binding_prune.py), suite Python completa senza regressioni, preflight APPROVED su entrambi i file, commit 20936fd"
+        },
+        {
+          "cid": "C-316",
+          "title": "Watchdog periodico del MCP Chief (R-208)",
+          "target_file": "nosai/mcp/chief_watchdog.py",
+          "signature": "def run_health_tick(chief, log_path, *, now=None) -> dict[str, Any]",
+          "struct_size": null,
+          "test_file": "tests/test_mcp_chief_watchdog.py",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "note": "run_health_tick chiama solo chief.health_check() (mai un metodo mutante) e appende un record JSONL schema mcp.chief.watchdog.v1; read_recent_ticks rilegge le ultime N righe in ordine cronologico. scripts/mcp_chief_watchdog.py e' il CLI (--tail N). Un bug reale trovato in revisione manuale (ModelRouter.from_config chiamato senza l'argomento 'policy', che avrebbe fatto fallire ogni invocazione reale) e' stato corretto dopo aver scritto un test che lo riproduceva isolando ROOT/load_config dal vero data/mcp/. Non sostituisce chief.health_check(): lo osserva soltanto.",
+          "product_phases": [],
+          "legacy_gate": 9,
+          "updated": "2026-09-12",
+          "metrics": "6/6 test verdi, preflight APPROVED, commit 51f472d"
         }
       ]
     },
@@ -959,6 +976,26 @@
           "legacy_gate": 7,
           "updated": "2026-09-12",
           "metrics": "test in CombatPlannerTests.cs sulla sola generazione candidati/hard constraints"
+        },
+        {
+          "cid": "C-317",
+          "title": "SceneManagerFinder: strumento diagnostico standalone per il puntatore scene manager",
+          "target_file": "src/NosAi.Runtime/LiveIntegration/SceneManagerFinder.cs",
+          "signature": "public static int Run(string? candidatePath = null)",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/SceneManagerFinderTests.cs",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED",
+            "NO_PARTIAL_WRITE"
+          ],
+          "note": "NosTaleClientLayout.SceneManagerSignature e' un pattern di 25 byte gia' documentato come inaffidabile (ha risolto 0xFFFFFFFF filler sul client live il 2026-09-03). Questo contratto scansiona le regioni di memoria del modulo cercando un dword che superi sia il controllo strutturale esistente (TryConfirmSceneManager) sia un oracolo di autoidentita': la lista Player del candidato deve contenere l'entity id del personaggio, letto fresco nella stessa passata. File nuovo, indipendente: nessun chiamante esistente toccato (SceneManagerSignature, TryResolveScene, WalkCommand, ScoutCommand, Program.cs) per istruzione esplicita dell'operatore -- resta uno strumento di ricerca, non integrato nella pipeline di produzione senza conferma separata. Eseguito live contro il client NosTale in esecuzione il 2026-09-12: nessun candidato ha superato l'oracolo di autoidentita' in questa passata. Non e' un successo da dichiarare: lo strumento e' verificato (test strutturali verdi, nessuna regressione sulla suite completa) ma non ha ancora risolto un puntatore durevole. Sblocca (quando risolvera' un candidato, con conferma esplicita dell'operatore) T-13 in docs/TEST_RIMANDATI.md.",
+          "product_phases": [
+            "AP-05"
+          ],
+          "legacy_gate": 7,
+          "updated": "2026-09-12",
+          "metrics": "5/5 test verdi, suite completa 2915/0, preflight APPROVED, commit c5ce629"
         }
       ]
     },

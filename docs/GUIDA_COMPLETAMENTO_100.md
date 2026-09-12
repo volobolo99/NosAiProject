@@ -56,7 +56,8 @@ primi perché C-315 in particolare ha già dimostrato di bloccare qualunque modi
 futura a `scripts/code_agent.py`.
 
 ### P1 — C-315: riconoscere i metodi di classe nell'innesto parziale Python
-🟡 APERTO — IN CORSO IN QUESTA SESSIONE
+✅ CHIUSO il 2026-09-12 — `innesta_funzioni` riallinea l'indentazione al bersaglio con
+`textwrap.dedent`/`textwrap.indent` (commit `d17afb2`), C-315 `TEST_VERIFIED` nel ledger
 
 - **Cosa:** `_intervalli_funzioni()` in `scripts/code_agent.py:270` oggi vede solo le
   funzioni di primo livello; deve camminare anche dentro le classi (metodi), con dedent dei
@@ -77,7 +78,8 @@ futura a `scripts/code_agent.py`.
   docstring di `_senza_stringhe`.
 
 ### P2 — C-314: potatura automatica dei binding orfani
-🔴 BLOCCATO da P1
+✅ CHIUSO il 2026-09-12 — `prune_unknown_bindings()` implementato e collegato a
+`RoleBindingRegistry.__init__` (commit `20936fd`), C-314 `TEST_VERIFIED` nel ledger
 
 - **Cosa:** `McpStateStore.prune_unknown_bindings()` in `nosai/mcp/state.py:179` (scheletro
   già presente, corpo `NotImplementedError`) e l'integrazione in
