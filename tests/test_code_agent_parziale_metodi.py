@@ -50,6 +50,12 @@ SOLO_BERSAGLIO = '''    @staticmethod
         return valore * 3
 '''
 
+SOLO_BERSAGLIO_INDENTATO_MALE = '''@staticmethod
+def bersaglio(valore: int) -> int:
+    """Metodo da sostituire."""
+    return valore * 3
+'''
+
 SCHELETRO_CHIUSURA = '''from __future__ import annotations
 
 
@@ -155,3 +161,20 @@ def test_innesta_il_corpo_di_un_metodo_e_conserva_il_resto():
 def test_una_sorgente_rotta_continua_a_sollevare_syntaxerror():
     with pytest.raises(SyntaxError):
         code_agent._intervalli_funzioni("class Rotta:\n    def x(self) ->\n")
+
+
+def test_un_metodo_reso_alla_base_sbagliata_viene_reindentato():
+    """C-314: il modello ha reso ``prune_unknown_bindings`` come funzione di
+    modulo (indentazione 0) mentre lo scheletro lo dichiarava come metodo
+    (indentazione 4): l'innesto grezzo produceva un IndentationError. Qui la
+    stessa forma di errore e' riprodotta su un bersaglio piu' piccolo.
+    """
+    unito = code_agent.innesta_funzioni(SCHELETRO_METODI, SOLO_BERSAGLIO_INDENTATO_MALE, ["bersaglio"])
+
+    assert "return valore * 3" in unito
+    assert "return valore * 2" in unito
+    assert "return len(valore)" in unito
+    riga_corpo = next(r for r in unito.splitlines() if "return valore * 3" in r)
+    assert riga_corpo.startswith("        return valore * 3")
+    compilato = compile(unito, "<innesto>", "exec")
+    assert compilato is not None

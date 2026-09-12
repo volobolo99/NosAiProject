@@ -357,9 +357,26 @@ def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = "pyth
         blocco = righe_nuove[nda - 1:na]
         if blocco and not blocco[-1].endswith("\n"):
             blocco[-1] += "\n"
+        # Un metodo di classe e una funzione di modulo hanno basi di
+        # indentazione diverse (4 spazi contro 0): il modello a volte
+        # restituisce il corpo alla base sbagliata, valido in isolamento ma
+        # rotto una volta innestato. Si riallinea alla base dello scheletro,
+        # non a quella dichiarata dal modello: dedent toglie l'indentazione
+        # comune (preservando la struttura relativa interna), indent
+        # riapplica quella del bersaglio.
+        if blocco:
+            indent_atteso = righe_vecchie[da - 1][:_lunghezza_indentazione(righe_vecchie[da - 1])]
+            indent_ricevuto = blocco[0][:_lunghezza_indentazione(blocco[0])]
+            if indent_ricevuto != indent_atteso:
+                blocco = textwrap.indent(textwrap.dedent("".join(blocco)), indent_atteso).splitlines(keepends=True)
         righe_vecchie[da - 1:a] = blocco
 
     return "".join(righe_vecchie)
+
+
+def _lunghezza_indentazione(riga: str) -> int:
+    """Quanti spazi iniziali precedono il primo carattere non di spaziatura."""
+    return len(riga) - len(riga.lstrip(" "))
 
 
 def prompt_parziale(contract: str, nome_file: str, skeleton: str, nomi) -> str:
