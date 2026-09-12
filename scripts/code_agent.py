@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
 import time
 from pathlib import Path
 
@@ -86,8 +87,10 @@ LINGUAGGI = {".py": "python", ".cs": "c_sharp"}
 NON_IMPLEMENTATO_CS = re.compile(r"throw\s+new\s+NotImplementedException")
 
 # Letterali stringa Python, per escluderli dalla ricerca dei segnaposto: un
-# TODO dentro una stringa non e' un promemoria lasciato a meta', ed e' cosi'
-# che questo file bocciava se stesso quando lo si dava in pasto alla catena.
+# segnaposto scritto dentro una stringa non e' un promemoria lasciato a meta',
+# ed e' cosi' che questo file bocciava se stesso quando lo si dava in pasto
+# alla catena (il commento stesso, non uno spuntato dal modello, cadeva sotto
+# FORBIDDEN perche' un commento non e' una stringa e non viene ripulito).
 STRINGHE = re.compile(r"(?:[rbuRBU]{0,2})('''|\"\"\"|'|\")(?:\\.|(?!\1).)*\1", re.S)
 
 SYSTEM_PROMPT = (
@@ -265,15 +268,47 @@ def dataclass_fields(source: str) -> dict:
     return found
 
 
-def _intervalli_funzioni(source: str):
-    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi."""
-    albero = ast.parse(source)
-    intervalli = {}
+def _intervalli_funzioni(source: str) -> dict[str, tuple[int, int]]:
+    """Per ogni funzione di primo livello e metodo dentro una classe, le righe
+    che occupa, decoratori inclusi.
+
+    Un nome che esiste sia come funzione di modulo sia come metodo di una
+    classe risolve sulla funzione di modulo: non e' un'ambiguita'. Lo stesso
+    nome di metodo su due classi diverse lo e', e solleva ValueError. Le
+    chiusure (funzioni dentro un'altra funzione) non si raccolgono: si
+    cammina solo dentro le ClassDef, mai dentro il body di una funzione.
+    """
+    testo = source
+    prima_riga_non_vuota = next((riga for riga in testo.splitlines() if riga.strip()), "")
+    if prima_riga_non_vuota[:1] in (" ", "\t"):
+        testo = textwrap.dedent(testo)
+
+    albero = ast.parse(testo)
+    di_modulo: dict[str, tuple[int, int]] = {}
+    di_metodo: dict[str, tuple[int, int]] = {}
+    classe_del_metodo: dict[str, str] = {}
+
+    def cammina_classe(nodo_classe: ast.ClassDef, nome_classe: str) -> None:
+        for figlio in nodo_classe.body:
+            if isinstance(figlio, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                vista_su = classe_del_metodo.get(figlio.name)
+                if vista_su is not None and vista_su != nome_classe:
+                    raise ValueError(
+                        "Nome di metodo ambiguo fra piu' classi: " + figlio.name)
+                classe_del_metodo[figlio.name] = nome_classe
+                inizio = min([figlio.lineno] + [d.lineno for d in figlio.decorator_list])
+                di_metodo[figlio.name] = (inizio, figlio.end_lineno)
+            elif isinstance(figlio, ast.ClassDef):
+                cammina_classe(figlio, figlio.name)
+
     for nodo in albero.body:
         if isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef)):
             inizio = min([nodo.lineno] + [d.lineno for d in nodo.decorator_list])
-            intervalli[nodo.name] = (inizio, nodo.end_lineno)
-    return intervalli
+            di_modulo[nodo.name] = (inizio, nodo.end_lineno)
+        elif isinstance(nodo, ast.ClassDef):
+            cammina_classe(nodo, nodo.name)
+
+    return {**di_metodo, **di_modulo}
 
 
 def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = "python") -> str:
@@ -355,8 +390,9 @@ def linguaggio_del_file(target: Path) -> str:
 def _senza_stringhe(code: str) -> str:
     """Il codice con i letterali stringa svuotati, per cercare i segnaposto.
 
-    Un TODO scritto dentro una stringa non e' un promemoria lasciato a meta': e'
-    dato. I commenti restano, quindi un vero "# TODO" viene ancora bocciato.
+    Un segnaposto scritto dentro una stringa non e' un promemoria lasciato a
+    meta': e' dato. I commenti restano, quindi un vero segnaposto scritto
+    come commento viene ancora bocciato.
     """
     return STRINGHE.sub('""', code)
 
