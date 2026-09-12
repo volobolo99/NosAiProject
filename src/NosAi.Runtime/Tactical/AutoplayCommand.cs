@@ -480,14 +480,13 @@ public static class AutoplayCommand
     }
 
     /// <summary>
-    /// <see cref="StrategicGoalKind.Optimization"/>'s decision half: pick the
-    /// <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> to act on and resolve its
-    /// item to a current bag slot in <see cref="Player.Inventory"/>. Returns
-    /// <see cref="AutoplayDispatch.OptimizationCandidateReady"/> once both are known, or
-    /// <see cref="AutoplayDispatch.OptimizationSkippedNoCandidate"/> when there is no candidate or its
-    /// item is not currently observed in inventory. Does not click anything: see
-    /// <see cref="AutoplayDispatch.OptimizationCandidateReady"/>'s own remarks for why the live action
-    /// is not dispatched from here yet.
+    /// <see cref="StrategicGoalKind.Optimization"/>'s full dispatch (C-312): picks the
+    /// <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> to act on, resolves its item
+    /// to a current bag slot in <see cref="Player.Inventory"/>, and -- when <paramref name="optimizationGesture"/>
+    /// is configured -- clicks it via <see cref="EquipExecutor.Equip"/> and reports the verified outcome.
+    /// <see cref="AutoplayDispatch.OptimizationSkippedNoCandidate"/> when there is no candidate or its item
+    /// is not currently observed in inventory; <see cref="AutoplayDispatch.OptimizationSkippedNoGesture"/>
+    /// when a candidate is ready but no gesture was configured.
     /// </summary>
     private static AutoplayCycleResult DispatchOptimization(
         Player playerFacts,
@@ -533,7 +532,22 @@ public static class AutoplayCommand
         }
 
         int bagSlotIndex = matched.SlotIndex.Value;
-        return new AutoplayCycleResult(AutoplayDispatch.OptimizationCandidateReady, plan, null, null, footprint);
+
+        if (optimizationGesture is not { } gesture)
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoGesture, plan, null, null, footprint);
+
+        var request = new EquipRequest(candidate.Item!.Value, candidate.Slot!.Value, bagSlotIndex, gesture);
+        EquipReport report = equipExecutor.Equip(request, calibration, in authority, readLatestEquip);
+
+        if (!report.Emitted)
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationRefused, plan, null, null, footprint);
+
+        return report.Verification.Outcome switch
+        {
+            EquipOutcome.Confirmed => new AutoplayCycleResult(AutoplayDispatch.Optimized, plan, null, null, footprint),
+            EquipOutcome.NotConfirmed => new AutoplayCycleResult(AutoplayDispatch.OptimizationNotConfirmed, plan, null, null, footprint),
+            _ => new AutoplayCycleResult(AutoplayDispatch.OptimizationRefused, plan, null, null, footprint)
+        };
     }
 
     /// <summary>

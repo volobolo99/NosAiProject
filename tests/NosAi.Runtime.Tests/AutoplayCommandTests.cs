@@ -538,18 +538,71 @@ public sealed class AutoplayCommandTests
     }
 
     [Fact]
-    public void AnOptimizationPlan_WithACandidateAtAKnownBagSlot_IsOptimizationCandidateReady()
+    public void AnOptimizationPlan_WithACandidateReady_ButNoGestureConfigured_IsOptimizationSkippedNoGesture()
     {
+        // C-312: a candidate ready to click is not enough on its own -- nobody
+        // has verified which gesture equips an arbitrary item (same principle
+        // as UnequipCommand's own --gesture), so without --optimization-gesture
+        // configured no click is emitted on a guess.
         ItemId itemId = new("1234");
         Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: true);
         Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
         RecordingInput input = new();
 
         AutoplayCommand.AutoplayCycleResult result = RunCycle(
-            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot);
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot,
+            optimizationGesture: null);
 
-        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationCandidateReady, result.Dispatch);
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoGesture, result.Dispatch);
         Assert.Empty(input.Presses);
+    }
+
+    /// <summary>A calibration covering exactly <paramref name="bagSlotIndex"/>, at the
+    /// same client size <paramref name="readGeometry"/> below states.</summary>
+    private static BagPanelRoiCalibration OneSlotCalibration(int bagSlotIndex, int width = 1024, int height = 768) =>
+        BagPanelRoiCalibration.Confirmed(
+            new Dictionary<int, InventorySlotRoi> { [bagSlotIndex] = new(0.5, 0.5, 0.02, 0.02) },
+            width, height, Now);
+
+    private static GeometryStamp StatedGeometry(IntPtr window, int width = 1024, int height = 768) => new(
+        new GeometryEpoch(window, new PixelRect(0, 0, width, height), 96, 0xABCD),
+        new DateTimeOffset(Now));
+
+    [Fact]
+    public void AnOptimizationPlan_WithAConfiguredGesture_ClicksAndReportsTheConfirmedOutcome()
+    {
+        ItemId itemId = new("1234");
+        const int bagSlotIndex = 5;
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: true, slotIndex: bagSlotIndex);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+
+        var recorder = new RecordingInputBackend();
+        var executor = new EquipExecutor(
+            new GatedInputBackend(recorder, () => RuntimeSafetyPolicy.SafeDefault with { LiveInputEnabled = true }),
+            () => (IntPtr)0x7300,
+            readGeometry: w => StatedGeometry(w),
+            verificationWindow: TimeSpan.FromMilliseconds(40),
+            pollInterval: TimeSpan.FromMilliseconds(2));
+
+        // Baseline is empty (nothing worn yet); after the click the wire shows
+        // the item's vnum in Weapon: this is what Confirmed asserts on.
+        var readings = new Queue<WornEquipmentReading?>(new WornEquipmentReading?[]
+        {
+            null,
+            new WornEquipmentReading(
+                new[] { new WornEquipmentSlot((int)EquipmentSlot.Weapon, 1234) }, EquipmentWireOpcode.Equip)
+        });
+
+        RecordingInput input = new();
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot,
+            optimizationGesture: EquipGesture.Single,
+            equipExecutor: executor,
+            calibration: OneSlotCalibration(bagSlotIndex),
+            readLatestEquip: () => readings.Count > 0 ? readings.Dequeue() : null);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Optimized, result.Dispatch);
+        Assert.Contains("click:Left", recorder.Events);
     }
 
     [Fact]
