@@ -738,6 +738,25 @@ public static class Program
             return NosAi.LiveIntegration.PlayerVitalsCalibrator.Run(endpoint, roundSeconds);
         }
 
+        // Same idea as --calibrate-vitals, for the equipment array instead of a
+        // single (max, current) pair: the wire's own `equip` packet is the truth
+        // to search memory for, because the packet arrives only on a real change
+        // and never on request (UnequipExecutor documents the same limit).
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.EquipmentOffsetCalibrator.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            var equipmentRoundSeconds = 20;
+            int equipmentWatchAt = Array.FindIndex(args, a => string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            if (equipmentWatchAt >= 0
+                && equipmentWatchAt + 1 < args.Length
+                && int.TryParse(args[equipmentWatchAt + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int equipmentPerRound)
+                && equipmentPerRound > 0)
+            {
+                equipmentRoundSeconds = equipmentPerRound;
+            }
+
+            return NosAi.LiveIntegration.EquipmentOffsetCalibrator.Run(equipmentRoundSeconds);
+        }
+
         // What points at an address, so a calibrated heap address can become a
         // distance from something the runtime resolves again on every read. A
         // reboot killed one confirmed address during this work; that is the whole
@@ -1268,7 +1287,7 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--calibrate-equipment", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
             "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--equip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--optimization-gesture", "--route", "--calibrate-inventory-panel", "--calibrate-bag-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };

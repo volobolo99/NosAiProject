@@ -131,6 +131,15 @@ public sealed class RefusalReasonRegisterTests
                 "richiede il processo client reale: EquipCommand.RunWindows risolve il BagSlotIndex leggendo InventorySlots dal filo",
             ["bag_slot_index_not_in_calibrated_range"] =
                 "mai prodotto: BagPanelRoiCalibration.Resolve omette lo slot mancante dal dizionario invece di restituire questa costante",
+
+            // --- EquipmentOffsetCalibrator (C-009): le funzioni pure sono testate, ---
+            // --- ma Run() richiede un client reale e un vero cambiamento di --------
+            // --- equipaggiamento dentro la finestra di ascolto: non riproducibile ---
+            // --- in modo deterministico da un unit test -----------------------------
+            ["calibrate_equipment_no_equip_reading"] =
+                "richiede un client reale e un vero cambiamento di equipaggiamento entro la finestra di ascolto (ramo Run, EquipmentOffsetCalibrator)",
+            ["calibrate_equipment_feed_unavailable"] =
+                "richiede il processo client reale e il filo aperto: ramo Run, connessione di gioco o WinDivert non disponibili (stesso motivo di unequip_equip_feed_unavailable)",
         };
 
     /// <summary>
