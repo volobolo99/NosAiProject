@@ -205,12 +205,19 @@ def budget_token(model: str) -> int:
     DeepSeek ragiona prima di rispondere e serve un budget piu' largo del solo
     output. Groq applica un limite di 6000 token al minuto e rifiuta in partenza
     una richiesta il cui max_tokens, sommato al prompt, lo supererebbe.
+
+    Il ripiano generico era 8192: su C-315 (scripts/code_agent.py, 812 righe)
+    Qwen3 Coder 30B ha ignorato "restituisci solo questa funzione" e riscritto
+    il file intero, troncando a "unterminated string literal" proprio a quella
+    soglia. Verificato con max_tokens=20000 che il modello completa senza
+    troncare: il tetto non costa di piu' se il modello non lo usa tutto, quindi
+    resta alto per ogni fornitore che non ha un limite al minuto da rispettare.
     """
     if model.startswith(GROQ_PREFISSO):
         return 3500
     if model.startswith("deepseek"):
         return 16000
-    return 8192
+    return 20000
 
 
 def cost_of(model: str, usage: dict) -> float:
