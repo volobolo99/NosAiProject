@@ -64,7 +64,7 @@ from nosai.mcp.unified_server import (  # noqa: F401
     TOOL_REQUIRED_CAPABILITY,
     PAUSA,
     POLITICHE,
-    # Nuova infrastruttura
+    # Nuova infrastruttura P0-P2
     CircuitBreaker,
     CBState,
     TaskRegistry,
@@ -74,6 +74,11 @@ from nosai.mcp.unified_server import (  # noqa: F401
     ToolDefinition,
     TOOL_REGISTRY,
     VCAMP_BUNDLES,
+    # P3
+    SemanticCache,
+    AgentRegistry,
+    _begin_call,
+    get_current_nonce,
 )
 
 

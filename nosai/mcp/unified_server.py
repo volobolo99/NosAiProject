@@ -3,6 +3,7 @@
 Sostituisce scripts/mcp_server.py (orchestrator) e nosai/mcp/server.py (hub)
 in un unico FastMCP. Aggiunge P0-P2: CircuitBreaker, TaskRegistry,
 ObservabilityEmitter, ExactMatchCache, ToolDefinition registry, vMCP bundle scoping.
+P3: Stateless core (nonce per call), SemanticCache L2 (TF-IDF cosine), A2A discovery.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import enum
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import sqlite3
@@ -398,6 +400,177 @@ class ExactMatchCache:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# P3 — STATELESS CORE (nonce per call)
+# ═══════════════════════════════════════════════════════════════════════════
+
+_call_ctx = threading.local()
+
+
+def _begin_call() -> str:
+    """Genera nonce UUID per la chiamata corrente, salva in thread-local."""
+    nonce = str(uuid.uuid4())
+    _call_ctx.nonce = nonce
+    return nonce
+
+
+def get_current_nonce() -> str:
+    """Restituisce il nonce della chiamata corrente (stringa vuota se non inizializzato)."""
+    return getattr(_call_ctx, "nonce", "")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# P3 — SEMANTIC CACHE L2 (TF-IDF cosine, nessuna dipendenza esterna)
+# ═══════════════════════════════════════════════════════════════════════════
+
+class SemanticCache:
+    """Cache L2 semantic-match su SQLite. TF-IDF cosine similarity. Default threshold 0.85."""
+
+    def __init__(self, db_path: Path, ttl_seconds: int = 86400, threshold: float = 0.85) -> None:
+        self._path = db_path
+        self._ttl = ttl_seconds
+        self._threshold = threshold
+        self._lock = threading.RLock()
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connect() as conn:
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS semantic_cache "
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT, payload_text TEXT NOT NULL, "
+                "tf_vector TEXT NOT NULL, result TEXT NOT NULL, created_at REAL NOT NULL)"
+            )
+
+    def _connect(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self._path, timeout=10, isolation_level=None)
+        conn.execute("PRAGMA journal_mode=WAL")
+        return conn
+
+    @staticmethod
+    def _tokenize(text: str) -> List[str]:
+        return re.findall(r'\w+', text.lower())
+
+    @staticmethod
+    def _tf_vector(tokens: List[str]) -> Dict[str, float]:
+        if not tokens:
+            return {}
+        total = len(tokens)
+        counts: Dict[str, int] = {}
+        for t in tokens:
+            counts[t] = counts.get(t, 0) + 1
+        return {k: v / total for k, v in counts.items()}
+
+    @staticmethod
+    def _cosine(v1: Dict[str, float], v2: Dict[str, float]) -> float:
+        keys = set(v1) | set(v2)
+        dot = sum(v1.get(k, 0.0) * v2.get(k, 0.0) for k in keys)
+        m1 = math.sqrt(sum(x * x for x in v1.values()))
+        m2 = math.sqrt(sum(x * x for x in v2.values()))
+        if m1 == 0.0 or m2 == 0.0:
+            return 0.0
+        return dot / (m1 * m2)
+
+    def get(self, payload: str, threshold: Optional[float] = None) -> Optional[str]:
+        thr = threshold if threshold is not None else self._threshold
+        query_vec = self._tf_vector(self._tokenize(payload))
+        if not query_vec:
+            return None
+        now = time.time()
+        with self._lock, self._connect() as conn:
+            rows = conn.execute(
+                "SELECT tf_vector, result, created_at FROM semantic_cache"
+            ).fetchall()
+        best_sim = 0.0
+        best_result: Optional[str] = None
+        for tf_json, result, created_at in rows:
+            if now - created_at > self._ttl:
+                continue
+            try:
+                stored_vec: Dict[str, float] = json.loads(tf_json)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            sim = self._cosine(query_vec, stored_vec)
+            if sim > best_sim:
+                best_sim = sim
+                best_result = result
+        return best_result if best_sim >= thr else None
+
+    def put(self, payload: str, result: str) -> None:
+        tf_json = json.dumps(self._tf_vector(self._tokenize(payload)), ensure_ascii=False)
+        now = time.time()
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                "INSERT INTO semantic_cache (payload_text, tf_vector, result, created_at) "
+                "VALUES (?, ?, ?, ?)",
+                (payload, tf_json, result, now),
+            )
+
+    def evict_expired(self) -> int:
+        cutoff = time.time() - self._ttl
+        with self._lock, self._connect() as conn:
+            cursor = conn.execute(
+                "DELETE FROM semantic_cache WHERE created_at < ?", (cutoff,)
+            )
+            return cursor.rowcount
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# P3 — AGENT REGISTRY (A2A Discovery)
+# ═══════════════════════════════════════════════════════════════════════════
+
+class AgentRegistry:
+    """Registry A2A in-memory: registrazione, discovery, heartbeat. Thread-safe."""
+
+    HEARTBEAT_TTL: float = 300.0
+
+    def __init__(self) -> None:
+        self._agents: Dict[str, dict] = {}
+        self._lock = threading.RLock()
+
+    def register(
+        self,
+        agent_id: str,
+        capabilities: List[str],
+        endpoint: str = "",
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> dict:
+        entry: dict = {
+            "agent_id": agent_id,
+            "capabilities": list(capabilities),
+            "endpoint": endpoint,
+            "metadata": metadata or {},
+            "registered_at": time.time(),
+            "last_seen": time.time(),
+            "status": "active",
+        }
+        with self._lock:
+            self._agents[agent_id] = entry
+        return dict(entry)
+
+    def heartbeat(self, agent_id: str) -> dict:
+        with self._lock:
+            if agent_id not in self._agents:
+                raise KeyError(f"agent_id sconosciuto: {agent_id}")
+            self._agents[agent_id]["last_seen"] = time.time()
+            self._agents[agent_id]["status"] = "active"
+            return dict(self._agents[agent_id])
+
+    def deregister(self, agent_id: str) -> None:
+        with self._lock:
+            self._agents.pop(agent_id, None)
+
+    def discover(self, required_capability: str = "") -> List[dict]:
+        now = time.time()
+        with self._lock:
+            agents = [dict(v) for v in self._agents.values()]
+        active = [a for a in agents if now - a["last_seen"] <= self.HEARTBEAT_TTL]
+        if not required_capability:
+            return active
+        return [a for a in active if required_capability in a["capabilities"]]
+
+    def list_all(self) -> List[dict]:
+        with self._lock:
+            return [dict(v) for v in self._agents.values()]
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # P2 — TOOL DEFINITION REGISTRY
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -440,6 +613,10 @@ TOOL_REGISTRY: List[ToolDefinition] = [
     ToolDefinition("tasks_get", "Recupera stato task asincrono", ToolRisk.SAFE, ["*"], False, False),
     ToolDefinition("tasks_update", "Aggiorna progresso task", ToolRisk.SAFE, ["*"], False, False),
     ToolDefinition("tasks_cancel", "Cancella task in coda", ToolRisk.SAFE, ["*"], False, False),
+    ToolDefinition("a2a_register", "Registra agente nel registry A2A", ToolRisk.SAFE, ["*"], False, False),
+    ToolDefinition("a2a_discover", "Scopre agenti con una capability richiesta", ToolRisk.SAFE, ["*"], False, False),
+    ToolDefinition("a2a_heartbeat", "Aggiorna last_seen di un agente registrato", ToolRisk.SAFE, ["*"], False, False),
+    ToolDefinition("a2a_deregister", "Rimuove agente dal registry A2A", ToolRisk.SAFE, ["*"], False, False),
 ]
 
 
@@ -853,6 +1030,8 @@ _circuit_breaker = CircuitBreaker(thresholds=CB_THRESHOLDS, cooldowns=CB_COOLDOW
 _task_registry = TaskRegistry()
 _obs = ObservabilityEmitter()
 _cache = ExactMatchCache(PROJECT_ROOT / "data" / "mcp_cache.db")
+_semantic_cache = SemanticCache(PROJECT_ROOT / "data" / "mcp_semantic_cache.db")
+_agent_registry = AgentRegistry()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -916,10 +1095,14 @@ def cloud_infill_implementation(skeleton_and_contract: str, employee_id: str) ->
 def preflight_contract_check(contract_json: str, generated_code: str, employee_id: str) -> str:
     """PASSO 3 (ULTRA-FAST - GEMINI FLASH): Controlla discrepanze prima della compilazione."""
     _autorizza("preflight_contract_check", employee_id)
+    _begin_call()
     cache_key = contract_json + "|||" + generated_code
     cached = _cache.get(cache_key)
     if cached is not None:
         return cached
+    sem_cached = _semantic_cache.get(cache_key)
+    if sem_cached is not None:
+        return sem_cached
     sys_prompt = (
         "Sei il Controllore di Qualità di Pre-Flight. Verifica se il codice generato rispetta il contratto "
         "e i limiti di memoria. Rispondi 'APPROVED' se è impeccabile, oppure elenca in modo sintetico "
@@ -941,6 +1124,7 @@ def preflight_contract_check(contract_json: str, generated_code: str, employee_i
         "usage": usage,
     })
     _cache.put(cache_key, testo)
+    _semantic_cache.put(cache_key, testo)
     return testo
 
 
@@ -1260,6 +1444,48 @@ def create_unified_server(config_path: Path | str | None = None):
             return json.dumps(_task_registry.cancel(task_id), ensure_ascii=False)
         except KeyError as exc:
             return json.dumps({"error": str(exc)}, ensure_ascii=False)
+
+    # ── A2A Discovery tools (P3) ──────────────────────────────────────────
+
+    @server.tool()
+    def a2a_register(agent_id: str, capabilities_json: str, endpoint: str = "", metadata_json: str = "{}") -> str:
+        """Registra un agente nel registry A2A con le sue capabilities."""
+        try:
+            caps = json.loads(capabilities_json)
+            meta = json.loads(metadata_json)
+        except (json.JSONDecodeError, TypeError) as exc:
+            return json.dumps({"error": f"JSON non valido: {exc}"}, ensure_ascii=False)
+        entry = _agent_registry.register(agent_id, caps, endpoint, meta)
+        return json.dumps(entry, ensure_ascii=False)
+
+    @server.tool()
+    def a2a_discover(required_capability: str = "") -> str:
+        """Restituisce gli agenti attivi (last_seen < 300s). Filtra per capability se specificata."""
+        agents = _agent_registry.discover(required_capability)
+        return json.dumps({"agents": agents, "count": len(agents)}, ensure_ascii=False)
+
+    @server.tool()
+    def a2a_heartbeat(agent_id: str) -> str:
+        """Aggiorna last_seen di un agente registrato per mantenerlo attivo."""
+        try:
+            entry = _agent_registry.heartbeat(agent_id)
+            return json.dumps(entry, ensure_ascii=False)
+        except KeyError as exc:
+            return json.dumps({"error": str(exc)}, ensure_ascii=False)
+
+    @server.tool()
+    def a2a_deregister(agent_id: str) -> str:
+        """Rimuove un agente dal registry A2A."""
+        _agent_registry.deregister(agent_id)
+        return json.dumps({"removed": agent_id}, ensure_ascii=False)
+
+    # Auto-registra questo server nel registry A2A
+    _agent_registry.register(
+        agent_id="nosai-mcp-unified",
+        capabilities=[td.name for td in TOOL_REGISTRY],
+        endpoint="stdio",
+        metadata={"version": "P3", "server": "FastMCP"},
+    )
 
     # ── Resource ──────────────────────────────────────────────────────────
 
