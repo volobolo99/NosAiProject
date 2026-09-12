@@ -27,6 +27,10 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <!-- Inferenza GGUF locale reale per LocalAiInferenceEngine (C-320): CUDA12
+         perche' la RTX 5060 Laptop verificata ha 8151 MiB VRAM reali via nvidia-smi. -->
+    <PackageReference Include="LLamaSharp" Version="0.27.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.27.0" />
   </ItemGroup>
 
   <ItemGroup>

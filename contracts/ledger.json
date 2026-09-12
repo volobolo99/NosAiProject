@@ -634,6 +634,25 @@
           "updated": "2026-09-12",
           "note": "Aperto perche' l'operatore ha chiesto di procedere con la calibrazione bag-panel-roi al client, e verificato che lo strumento per farlo non esisteva: C-312 aveva costruito solo il formato del file (BagPanelRoiCalibration.Confirmed/Load/Save/Resolve), non il probe interattivo -- lo stesso ruolo che InventoryPanelCalibrationProbe/--calibrate-inventory-panel gia' hanno per l'equipaggiamento (T-12, 2026-09-06). Speculare a quel probe, ma NON tutto-o-niente: la borsa scorre, quindi BagPanelRoiCalibration.Confirmed (gia' cosi' da C-312) accetta un numero qualunque di slot (almeno uno), mai un conteggio fisso di 18 come i EquipmentSlot dichiarati.",
           "metrics": "Scheletro locale (local_generate_skeleton, costo zero, corretto a mano solo per lo stile del namespace file-scoped). Infilling locale (code_agent.py): 2 tentativi bloccati da un falso positivo del confronto firme (spazio spurio dopo la parentesi su firme multi-riga) e una costante AcquireAttempts dimenticata dal modello -- materializzato a mano dal codice altrimenti corretto del tentativo rifiutato, dopo averlo letto per intero. HudCropWriter guadagna TrySaveBagPanelPreview/BagPanelPreviewFileName senza toccare l'esistente (preview separata dall'inventario, cosi' calibrare un pannello non sovrascrive l'altro). --calibrate-bag-panel collegato in Program.cs, stesso schema di --calibrate-inventory-panel ma senza il conteggio fisso di token. 13 nuovi test in BagPanelCalibrationProbeTests.cs, tutti verdi. preflight_contract_check APPROVED. Suite completa: 3894 test .NET (0 falliti, 10 ignorati). Lo strumento e' pronto ma la calibrazione vera resta ineseguibile senza un client reale: quello e' il passo successivo, quando l'operatore e' al client (come gia' per T-12)."
+        },
+        {
+          "cid": "C-320",
+          "title": "LocalAiInferenceEngine carica un modello GGUF reale via LLamaSharp al posto dello stub precedente",
+          "target_file": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+          "signature": "Task<bool> LocalAiInferenceEngine.LoadModelToVramAsync(CancellationToken token = default); Task<AiInferenceResult> LocalAiInferenceEngine.GenerateDecisionIntentAsync(string systemObjective, string currentObservedState, double currentGpuTemperatureCelsius = 68.0, CancellationToken token = default)",
+          "struct_size": null,
+          "test_file": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs (LocalAiInferenceTestRunner, invocato da tests/NosAi.Runtime.Tests/SubsystemSuiteTests.cs)",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "product_phases": [
+            "AP-08"
+          ],
+          "legacy_gate": 3,
+          "updated": "2026-09-12",
+          "note": "Aperto perche' LocalAiInferenceEngine era uno stub mascherato da implementazione (violazione diretta della regola di CLAUDE.md): GenerateDecisionIntentAsync restituiva sempre il fallback deterministico, nessun peso GGUF veniva mai caricato. Sostituito con inferenza reale via LLamaSharp 0.27.0 (LLamaWeights.LoadFromFileAsync + StatelessExecutor), GpuLayerCount selezionato dall'hardware (999 su DirectML_NvidiaGpu via CUDA12, 0 su CpuAmdRyzenAvx512), rifiuto fail-closed immediato per file GGUF assente o per HardwareComputeDevice.NpuRyzenAi (non ancora supportata) controllato PRIMA di acquisire il semaforo di caricamento, senza eccezioni. Deviazione dichiarata dal protocollo standard: l'infilling ricevuto da cloud_infill_implementation ha alterato senza autorizzazione un test gia' esistente e non in scope (TestPromptSanitizationAndInjectionBlock), rimuovendo i tag <|im_start|>/<|im_end|> e introducendo un bug logico che lo avrebbe fatto fallire sempre. Rilevato con un diff automatico (originale vs output ricevuto, non un audit riga per riga) e ripristinato a mano al testo originale esatto prima della scrittura su disco.",
+          "metrics": "Filiera Fase 1-5: contratto -> scheletro (locale) -> infilling (cloud_infill_implementation, employee.coding) -> preflight_contract_check APPROVED (employee.reviewer) -> build 0 errori -> LocalAiInferenceTestRunner esteso da 6 a 8 test con Test 7 (fail-closed su file GGUF assente) e Test 8 (fail-closed su HardwareComputeDevice.NpuRyzenAi, file GGUF realmente presente su disco per dimostrare che il rifiuto precede ogni tentativo di caricamento pesi): 8/8 PASS. Modello verificato: Phi-3-mini-4k-instruct-q4.gguf (~2.3GB), scaricato e verificato su disco con consenso esplicito dell'operatore. Limiti dichiarati e non risolti qui: nessun test della suite carica realmente il modello su GPU per un'inferenza end-to-end (un caricamento da 2.3GB in ogni run della suite dotnet test, che include 500+ altri test, sarebbe troppo oneroso per l'esecuzione regolare); il modulo non ha ancora alcun chiamante nel game loop reale, quindi l'inferenza reale non e' ancora usata dal motore decisionale in produzione."
         }
       ]
     },
