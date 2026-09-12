@@ -31,6 +31,19 @@ public static class TargetFrameReader
     /// </summary>
     public const double MinPresentConfidence = 0.86;
 
+    /// <summary>
+    /// Frazione minima di pixel scuri richiesta sulla prima riga e sull'ultima
+    /// riga del crop perche' si consideri presente il bordo/cornice scura del
+    /// riquadro bersaglio (ADR-0018 follow-up, 2026-09-12): un fondo di gioco
+    /// caldo/uniforme (terreno) soddisfa la stessa famiglia di colore di una
+    /// barra piena, ma non ha mai la cornice scura che il client disegna sempre
+    /// intorno al riquadro bersaglio reale.
+    /// </summary>
+    private const double MinBorderDarkRatio = 0.6;
+
+    /// <summary>Un pixel conta come bordo scuro solo se i tre canali BGR sono tutti sotto questa soglia.</summary>
+    private const int BorderDarkChannelMax = 60;
+
     /// <summary>Legge la regione del riquadro bersaglio da un buffer BGRA.</summary>
     /// <param name="bgra">Pixel della sola ROI, quattro byte per pixel.</param>
     public static TargetFrameReading Read(ReadOnlySpan<byte> bgra, int width, int height)
@@ -66,7 +79,55 @@ public static class TargetFrameReader
         if (ratio is < 0 or > 1)
             return Unreadable("ratio_out_of_range");
 
+        // A warm, uniform background (NosTale's dirt/sand terrain) clears
+        // HudBarFillReader's RedOrGreen predicate just as cleanly as a full bar,
+        // and is one run per column too, so the fill measurement alone cannot
+        // tell them apart. The real target frame always draws a dark border
+        // above and below the bar; terrain never does. Found live 2026-09-12:
+        // a crop of bare terrain read Present at 100% once the target was
+        // deselected.
+        if (!HasDarkFrameBorder(bgra, width, height))
+            return new TargetFrameReading(TargetFrameState.Absent, null, measure.Confidence, null);
+
         return new TargetFrameReading(TargetFrameState.Present, ratio, measure.Confidence, null);
+    }
+
+    /// <summary>
+    /// Vero se almeno <see cref="MinBorderDarkRatio"/> dei pixel sulla riga
+    /// y=0 e sulla riga y=height-1 hanno tutti e tre i canali B,G,R minori o
+    /// uguali a <see cref="BorderDarkChannelMax"/>. Il canale alfa non conta.
+    /// </summary>
+    private static bool HasDarkFrameBorder(ReadOnlySpan<byte> bgra, int width, int height)
+    {
+        int darkPixels = 0;
+        int totalPixels = 0;
+
+        for (int x = 0; x < width; x++)
+        {
+            int i = x * 4;
+            byte b = bgra[i];
+            byte g = bgra[i + 1];
+            byte r = bgra[i + 2];
+            if (b <= BorderDarkChannelMax && g <= BorderDarkChannelMax && r <= BorderDarkChannelMax)
+                darkPixels++;
+            totalPixels++;
+        }
+
+        if (height > 1)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int i = ((height - 1) * width + x) * 4;
+                byte b = bgra[i];
+                byte g = bgra[i + 1];
+                byte r = bgra[i + 2];
+                if (b <= BorderDarkChannelMax && g <= BorderDarkChannelMax && r <= BorderDarkChannelMax)
+                    darkPixels++;
+                totalPixels++;
+            }
+        }
+
+        return totalPixels > 0 && (double)darkPixels / totalPixels >= MinBorderDarkRatio;
     }
 
     private static TargetFrameReading Unreadable(string reason)

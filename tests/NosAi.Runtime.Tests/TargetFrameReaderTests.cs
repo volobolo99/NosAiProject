@@ -31,6 +31,26 @@ public sealed class TargetFrameReaderTests
         Assert.InRange(reading.HpRatio!.Value, 0.5 - HalfBarTolerance, 0.5 + HalfBarTolerance);
     }
 
+    /// <summary>
+    /// Reproduces the false Present found live on 2026-09-12: a warm, uniform
+    /// background (NosTale's dirt/sand terrain) satisfies <c>RedOrGreen</c> just
+    /// as cleanly as a full bar does, and has exactly one run per column, so
+    /// <see cref="HudBarFillReader"/> alone reads it as a bar at 100%. The target
+    /// frame's dark border is what a real client always draws around the bar and
+    /// terrain never does; a crop with none must not be trusted as Present.
+    /// </summary>
+    [Fact]
+    public void Warm_background_without_frame_border_is_absent_not_present()
+    {
+        byte[] bgra = WarmBackground(Width, Height);
+
+        TargetFrameReading reading = TargetFrameReader.Read(bgra, Width, Height);
+
+        Assert.Equal(TargetFrameState.Absent, reading.State);
+        Assert.Null(reading.HpRatio);
+        Assert.Null(reading.FailureReason);
+    }
+
     [Fact]
     public void Black_region_is_absent_not_unreadable()
     {
@@ -169,13 +189,40 @@ public sealed class TargetFrameReaderTests
         Assert.Null(reading.HpRatio);
     }
 
+    /// <summary>
+    /// A bar crop as the real client actually draws one: a dark frame border on
+    /// the top and bottom row, fill in between. The border rows never carry fill,
+    /// on purpose -- they are what tells a real bar apart from a warm background
+    /// that happens to pass the colour test (<see cref="WarmBackground"/>).
+    /// </summary>
     private static byte[] SolidBar(int width, int height, int fillThrough)
+    {
+        var bgra = new byte[width * height * 4];
+        for (var y = 1; y < height - 1; y++)
+        {
+            for (var x = 0; x < fillThrough; x++)
+                WriteFill(bgra, width, x, y);
+        }
+
+        return bgra;
+    }
+
+    /// <summary>
+    /// Uniform warm terrain colour (measured order of magnitude from the live
+    /// crop that triggered this contract): high red, mid green, low blue. It
+    /// clears <see cref="HudBarFillReader.MatchesHue"/>'s RedOrGreen predicate
+    /// exactly like bar fill does, and being one flat colour it is one run per
+    /// column too -- nothing about the fill pattern alone tells it apart from a
+    /// full bar. Unlike <see cref="SolidBar"/>, the border rows carry the same
+    /// warm colour as the rest: there is no frame here because there is no box.
+    /// </summary>
+    private static byte[] WarmBackground(int width, int height)
     {
         var bgra = new byte[width * height * 4];
         for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < fillThrough; x++)
-                WriteFill(bgra, width, x, y);
+            for (var x = 0; x < width; x++)
+                WriteWarm(bgra, width, x, y);
         }
 
         return bgra;
@@ -206,6 +253,16 @@ public sealed class TargetFrameReaderTests
         bgra[i] = 0;
         bgra[i + 1] = 200;
         bgra[i + 2] = 40;
+        bgra[i + 3] = 255;
+    }
+
+    /// <summary>BGR order, matching <see cref="WriteFill"/>: high red, mid green, low blue.</summary>
+    private static void WriteWarm(byte[] bgra, int width, int x, int y)
+    {
+        var i = (y * width + x) * 4;
+        bgra[i] = 60;
+        bgra[i + 1] = 140;
+        bgra[i + 2] = 180;
         bgra[i + 3] = 255;
     }
 }
