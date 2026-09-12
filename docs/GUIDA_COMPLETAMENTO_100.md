@@ -316,8 +316,8 @@ dipende da loro. Possono partire quando un `employee.mcp_chief` è libero.
 ✅ **CHIUSO** — verificato in questa sessione (2026-09-12): `scripts/free_first.py:1-281` è
 implementato integralmente (nessun `NotImplementedError`), `tests/test_free_first.py` ha 21
 test verdi che coprono fallback, quota 429/pause, budget esaurito e giudizio di qualità.
-`docs/REMAINING_WORK.md` riga 33 non è ancora stata aggiornata a chiuso: farlo nel prossimo
-passaggio di manutenzione documentale.
+`docs/REMAINING_WORK.md` riga 33 è già allineata: la voce R-205 vi risulta chiusa
+con lo stesso strikethrough e la stessa data.
 
 - **Riferimento:** `docs/REMAINING_WORK.md` R-205; `scripts/free_first.py`,
   `tests/test_free_first.py`.
@@ -330,10 +330,11 @@ append-only, nessuna mutazione (verificato con un chief fittizio). 15 test verdi
 - **Ruolo:** `employee.mcp_chief`.
 - **Riferimento:** `docs/REMAINING_WORK.md` R-208, `contracts/mcp-chief-watchdog-023.json`.
 - **Evidenza:** report di health tick e raccomandazioni su replay reali, senza
-  auto-mutazioni non autorizzate. **Resta come lavoro futuro, non bloccante:** questo
-  chiude solo l'osservazione ripetibile — collegare `run_health_tick` a uno scheduler
-  reale (Task Scheduler di Windows o `mcp__scheduled-tasks__*`) resta da fare quando
-  serve un tick automatico invece che a comando.
+  auto-mutazioni non autorizzate. Scheduler reale collegato il 2026-09-12: il task
+  `mcp-chief-watchdog-tick` (cron `0 * * * *`, ogni ora) esegue `scripts/mcp_chief_watchdog.py`
+  e appende un record a `data/mcp/chief_watchdog.jsonl`. Resta un gap distinto, non toccato
+  da questo: `provider_health` riporta solo lo stato operational/non-operational, non una
+  latenza misurata.
 
 ---
 
