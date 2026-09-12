@@ -93,8 +93,8 @@ futura a `scripts/code_agent.py`.
   costruzione del registro con l'elenco completo dei ruoli.
 
 ### P3 — Alzare il tetto di `budget_token()` per i file grandi
-🟢 APERTO — nessuna dipendenza, ma non urgente finché P1/P2 restano chiusi con l'aggiramento
-manuale già verificato in sessione (budget esteso a 20000 solo per quella chiamata)
+✅ CHIUSO il 2026-09-12 — `budget_token()` per i tier non-Groq/DeepSeek è ora 20000
+(commit `e8b09c1`), test aggiornato, suite completa senza regressioni
 
 - **Cosa:** `budget_token()` in `scripts/code_agent.py` restituisce 8192 per ogni modello non
   Groq/DeepSeek, indipendentemente dalla dimensione del file bersaglio. Misurato in sessione:
@@ -110,7 +110,8 @@ manuale già verificato in sessione (budget esteso a 20000 solo per quella chiam
   che P1/P2 (o un incarico equivalente su un file grande) passano senza aggiramenti manuali.
 
 ### P4 — Registrare C-314 e C-315 (e l'eventuale P3) nel ledger
-🔴 BLOCCATO da P1, P2
+✅ CHIUSO il 2026-09-12 — C-314 e C-315 `TEST_VERIFIED` nel ledger (gate 9 -> 100%),
+`docs/MASTER_ROADMAP.md` rigenerato
 
 - **Cosa:** `update_contract_state` per ciascun CID, cosicché `docs/MASTER_ROADMAP.md` smetta
   di ignorarli.
@@ -120,8 +121,9 @@ manuale già verificato in sessione (budget esteso a 20000 solo per quella chiam
   `TEST_VERIFIED`; `docs/MASTER_ROADMAP.md` rigenerato.
 
 ### P5 — Colmare il buco di bookkeeping AP-03..AP-09 nel ledger
-🟢 APERTO — indipendente da P1-P4, ma logicamente viene dopo per non aggiungere rumore mentre
-la catena è instabile
+✅ CHIUSO il 2026-09-12 — Gate 5 (AP-03), 6 (AP-04), 7 (AP-05), 8 (AP-06), 10 (AP-07),
+11 (AP-08), 12 (AP-09) aperti nel ledger, un CID a testa con target/test_file verificati
+nel sorgente e nota che riporta i gap dichiarati in ciascun `*_STATUS.md` (commit `c5d3c53`)
 
 - **Cosa:** il ledger e `docs/MASTER_ROADMAP.md` oggi coprono solo i Gate 0-4 e 9
   (infrastruttura, tutti al 100%). Le fasi di prodotto AP-03 (Map Reconstruction), AP-04
@@ -319,12 +321,17 @@ passaggio di manutenzione documentale.
   `tests/test_free_first.py`.
 
 ### P21 — R-208: watchdog periodico del MCP Chief in ambiente operativo
-🟢 APERTO
+✅ CHIUSO il 2026-09-12 — C-316: `nosai/mcp/chief_watchdog.py` (run_health_tick,
+read_recent_ticks) + `scripts/mcp_chief_watchdog.py` (CLI, `--tail N`); log JSONL
+append-only, nessuna mutazione (verificato con un chief fittizio). 15 test verdi.
 
 - **Ruolo:** `employee.mcp_chief`.
-- **Riferimento:** `docs/REMAINING_WORK.md` R-208.
+- **Riferimento:** `docs/REMAINING_WORK.md` R-208, `contracts/mcp-chief-watchdog-023.json`.
 - **Evidenza:** report di health tick e raccomandazioni su replay reali, senza
-  auto-mutazioni non autorizzate.
+  auto-mutazioni non autorizzate. **Resta come lavoro futuro, non bloccante:** questo
+  chiude solo l'osservazione ripetibile — collegare `run_health_tick` a uno scheduler
+  reale (Task Scheduler di Windows o `mcp__scheduled-tasks__*`) resta da fare quando
+  serve un tick automatico invece che a comando.
 
 ---
 
