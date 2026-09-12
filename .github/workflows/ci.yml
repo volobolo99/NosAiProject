@@ -61,6 +61,6 @@ jobs:
             echo "No .NET test projects found; skipping."
           else
             for test_project in "${tests[@]}"; do
-              dotnet test "$test_project" --configuration Release
+              dotnet test "$test_project" --configuration Release --filter "Category!=UiAutopilot"
             done
           fi

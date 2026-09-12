@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>NosAi.ControlPanel.UiTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UI Automation client wrappers: shipped with the Windows Desktop shared
+         framework (pulled in by UseWPF), not a NuGet package. -->
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationTypes" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reuses Win32InputBackend (real SendInput click) and
+         DxgiDesktopDuplicationSource (real screen capture): both public,
+         already shipped for gameplay. This project does not add a second
+         input/capture implementation. -->
+    <ProjectReference Include="..\..\src\NosAi.Runtime\NosAi.Runtime.csproj" />
+    <ProjectReference Include="..\..\src\NosAi.ControlPanel\NosAi.ControlPanel.csproj" />
+  </ItemGroup>
+</Project>
