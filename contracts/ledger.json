@@ -863,6 +863,23 @@
           "legacy_gate": 9,
           "updated": "2026-09-12",
           "metrics": "27/27 test target verdi, suite Python completa senza regressioni, preflight APPROVED, commit 7b6507e"
+        },
+        {
+          "cid": "C-314",
+          "title": "Potatura dei binding orfani dal registro ruoli MCP",
+          "target_file": "nosai/mcp/state.py",
+          "signature": "def prune_unknown_bindings(self, known_employee_ids: Iterable[str]) -> list[str]",
+          "struct_size": null,
+          "test_file": "tests/test_role_binding_prune.py",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "note": "RoleBindingRegistry.__init__ chiamava solo ensure_default_bindings (solo inserimenti): un ruolo rimosso da DEFAULT_EMPLOYEE_ROLES (fusione product_manager+game_ai_architect in product_architect) lasciava una riga orfana che mcp_role_catalog elencava e propose/choose rifiutavano con KeyError. prune_unknown_bindings cancella le righe orfane con due salvaguardie (insieme noto vuoto, o cancellazione che svuoterebbe la tabella) e __init__ la chiama dopo ensure_default_bindings. Incarico diviso in due file con un solo test condiviso: due passate (gratis_lento) hanno fallito riscrivendo il file intero o troncando; su Qwen3 Coder 30B (consenso operatore gia' registrato per C-315) un tentativo ha rivelato un bug reale in innesta_funzioni (indentazione di metodo sbagliata, corretto separatamente) e uno un difetto di sequenziamento dell'incarico (le due modifiche non potevano superare insieme un test che le richiede entrambe, se validate un file alla volta); risolto separando il gate di test fra le due passate.",
+          "product_phases": [],
+          "legacy_gate": 9,
+          "updated": "2026-09-12",
+          "metrics": "6/6 test nuovi verdi (tests/test_role_binding_prune.py), suite Python completa senza regressioni, preflight APPROVED su entrambi i file, commit 20936fd"
         }
       ]
     }

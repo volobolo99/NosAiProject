@@ -1,0 +1,34 @@
+{
+  "contract_id": "C-315",
+  "file": "scripts/code_agent.py",
+  "depends_on": "innesto parziale C# (C-311, _intervalli_funzioni_csharp) e innesto parziale Python (_intervalli_funzioni, innesta_funzioni)",
+  "purpose": "_intervalli_funzioni guarda solo albero.body, cioe' le funzioni di primo livello. Ogni metodo dentro una classe e' invisibile, quindi un incarico con solo_funzioni su un metodo Python fallisce sempre con 'Funzioni dichiarate nell'incarico e assenti dallo scheletro', anche quando il metodo esiste. Il rilevatore C# gia' cammina tutto l'albero (C-311): il Python e' l'unico rimasto indietro, e questo blocca ogni modifica parziale a nosai/mcp/*.py, dove quasi tutto e' un metodo. Osservato il 2026-09-12 sull'incarico C-314.",
+  "changes": {
+    "intervalli_funzioni_walk": "def _intervalli_funzioni(source: str) -> dict[str, tuple[int, int]] -- oltre alle funzioni di primo livello raccoglie i metodi, cioe' le FunctionDef e AsyncFunctionDef che sono figlie dirette del body di una ClassDef, a qualunque profondita' di annidamento delle classi. Chiave: il nome semplice della funzione. Valore: (prima_riga, ultima_riga) 1-based, dove prima_riga include i decoratori, esattamente come oggi.",
+    "intervalli_funzioni_frammento_rientrato": "Il prompt parziale chiede al modello le sole funzioni, quindi la risposta puo' essere un metodo rientrato senza la classe che lo contiene, che ast.parse rifiuta con IndentationError. Prima di analizzare, se la prima riga non vuota della sorgente comincia con uno spazio o una tabulazione, si analizza una copia passata a textwrap.dedent. dedent non aggiunge ne' toglie righe, quindi i numeri di riga restituiti restano validi sulla sorgente originale, che e' quella da cui innesta_funzioni copia il testo. E' lo stesso perimetro gia' concesso al C# da _intervalli_funzioni_csharp."
+  },
+  "constraints": [
+    "Le funzioni annidate dentro un'altra funzione (chiusure) NON si raccolgono: scripts/code_agent.py ne contiene diverse con lo stesso nome, e raccoglierle farebbe fallire per ambiguita' file che oggi funzionano.",
+    "Precedenza al primo livello: se un nome esiste sia come funzione di modulo sia come metodo di una classe, vince la funzione di modulo e non e' un'ambiguita'.",
+    "Due metodi con lo stesso nome in due classi diverse sono un'ambiguita': si solleva ValueError e il messaggio contiene il nome ambiguo. E' la stessa regola gia' applicata da _intervalli_funzioni_csharp.",
+    "La firma resta _intervalli_funzioni(source), il tipo di ritorno resta un dizionario nome -> (inizio, fine), e innesta_funzioni non si tocca: continua a chiamare questo rilevatore senza sapere come e' fatto.",
+    "Nessuna dipendenza nuova: basta il modulo ast gia' importato.",
+    "Una sorgente sintatticamente rotta continua a sollevare SyntaxError da ast.parse, come oggi.",
+    "textwrap va importato in cima al modulo se non c'e' gia': e' libreria standard, non una dipendenza nuova."
+  ],
+  "tests_required": [
+    "Un metodo dentro una classe compare fra gli intervalli, con l'intervallo che copre la sola definizione del metodo.",
+    "Un metodo decorato parte dalla riga del decoratore.",
+    "Le funzioni di primo livello continuano a comparire.",
+    "Un nome presente sia come funzione di modulo sia come metodo risolve sulla funzione di modulo e non solleva.",
+    "Lo stesso nome di metodo in due classi diverse solleva ValueError e il messaggio contiene il nome.",
+    "Una chiusura definita dentro una funzione non compare fra gli intervalli.",
+    "innesta_funzioni sostituisce il corpo di un metodo dentro una classe e lascia intatti gli altri metodi e le funzioni di modulo.",
+    "innesta_funzioni accetta una risposta che contiene il solo metodo rientrato, senza la classe che lo racchiude."
+  ],
+  "postconditions": [
+    "python -m pytest tests/test_code_agent_parziale.py -q resta verde, compresi i test nuovi.",
+    "python -m pytest tests/ -q resta verde.",
+    "Un incarico con solo_funzioni su un metodo Python arriva all'innesto invece di essere rifiutato come funzione assente dallo scheletro."
+  ]
+}

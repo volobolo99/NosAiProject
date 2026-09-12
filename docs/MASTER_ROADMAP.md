@@ -164,6 +164,10 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-12
   - metrics: 27/27 test target verdi, suite Python completa senza regressioni, preflight APPROVED, commit 7b6507e
   - note: _intervalli_funzioni camminava solo albero.body (funzioni di primo livello): ogni incarico con solo_funzioni su un metodo Python falliva sempre con 'assente dallo scheletro', anche quando il metodo esisteva -- osservato il 2026-09-12 sull'incarico C-314. Ora cammina anche dentro le ClassDef a qualunque profondita', con textwrap.dedent per i frammenti rientrati, precedenza alla funzione di modulo sull'omonimo metodo, e ValueError se lo stesso nome di metodo compare su due classi diverse. innesta_funzioni non e' stata toccata.
+| C-314 | Potatura dei binding orfani dal registro ruoli MCP | TEST_VERIFIED |
+  - updated: 2026-09-12
+  - metrics: 6/6 test nuovi verdi (tests/test_role_binding_prune.py), suite Python completa senza regressioni, preflight APPROVED su entrambi i file, commit 20936fd
+  - note: RoleBindingRegistry.__init__ chiamava solo ensure_default_bindings (solo inserimenti): un ruolo rimosso da DEFAULT_EMPLOYEE_ROLES (fusione product_manager+game_ai_architect in product_architect) lasciava una riga orfana che mcp_role_catalog elencava e propose/choose rifiutavano con KeyError. prune_unknown_bindings cancella le righe orfane con due salvaguardie (insieme noto vuoto, o cancellazione che svuoterebbe la tabella) e __init__ la chiama dopo ensure_default_bindings. Incarico diviso in due file con un solo test condiviso: due passate (gratis_lento) hanno fallito riscrivendo il file intero o troncando; su Qwen3 Coder 30B (consenso operatore gia' registrato per C-315) un tentativo ha rivelato un bug reale in innesta_funzioni (indentazione di metodo sbagliata, corretto separatamente) e uno un difetto di sequenziamento dell'incarico (le due modifiche non potevano superare insieme un test che le richiede entrambe, se validate un file alla volta); risolto separando il gate di test fra le due passate.
 
 ## Domande aperte
 
