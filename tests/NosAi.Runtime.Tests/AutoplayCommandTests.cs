@@ -113,7 +113,11 @@ public sealed class AutoplayCommandTests
         EquatableArray<Drop>? drops = null,
         GameplayObservation? gameplay = null,
         Player? playerFacts = null,
-        Func<ItemId, EquipmentSlot?>? resolveSlot = null)
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null,
+        EquipExecutor? equipExecutor = null,
+        BagPanelRoiCalibration? calibration = null,
+        EquipGesture? optimizationGesture = null,
+        Func<WornEquipmentReading?>? readLatestEquip = null)
     {
         ExplorationFootprint footprint = FullyExploredFootprint();
         return RunCycleWithMap(
@@ -129,7 +133,11 @@ public sealed class AutoplayCommandTests
             drops,
             gameplay,
             playerFacts,
-            resolveSlot);
+            resolveSlot,
+            equipExecutor,
+            calibration,
+            optimizationGesture,
+            readLatestEquip);
     }
 
     /// <summary>A <see cref="Player"/> with no facts observed, for tests whose
@@ -161,7 +169,11 @@ public sealed class AutoplayCommandTests
         EquatableArray<Drop>? drops = null,
         GameplayObservation? gameplay = null,
         Player? playerFacts = null,
-        Func<ItemId, EquipmentSlot?>? resolveSlot = null)
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null,
+        EquipExecutor? equipExecutor = null,
+        BagPanelRoiCalibration? calibration = null,
+        EquipGesture? optimizationGesture = null,
+        Func<WornEquipmentReading?>? readLatestEquip = null)
     {
         RecordingInput recording = input ?? new RecordingInput();
         var reads = new Queue<PlayerVitalsReading?>(new[] { before, after });
@@ -191,7 +203,13 @@ public sealed class AutoplayCommandTests
             drops ?? EquatableArray<Drop>.Empty,
             gameplay,
             playerFacts ?? EmptyPlayerFacts(),
-            resolveSlot ?? (_ => null));
+            resolveSlot ?? (_ => null),
+            equipExecutor ?? new EquipExecutor(
+                new GatedInputBackend(recording, () => RuntimeSafetyPolicy.SafeDefault with { LiveInputEnabled = true }),
+                () => IntPtr.Zero),
+            calibration ?? BagPanelRoiCalibration.Uncalibrated,
+            optimizationGesture,
+            readLatestEquip ?? (() => null));
     }
 
     // ------------------------------------------------------------- Idle

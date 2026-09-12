@@ -322,6 +322,14 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.UnequipCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Tactical.UnequipCommand.Run(args);
 
+        // The opposite click (C-312): move a bagged item into an equipment slot,
+        // verify on the wire (`equip`) that the slot now carries the item's own
+        // vnum. Same shape as --unequip: an operator-declared --gesture (no
+        // --right here, Equip never uses it), --arm-input required, one click
+        // per invocation.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.EquipCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Tactical.EquipCommand.Run(args);
+
         // One collect round (or --watch <n> rounds): walk to an operator-named
         // position and verify one Collect objective by reading the player's own
         // inventory count of the named vnum before and after the walk (wire ivn
@@ -406,7 +414,21 @@ public static class Program
                 ? parsedSlot
                 : null;
 
-            return NosAi.Runtime.Tactical.AutoplayCommand.Run(cycles, recoverSlot);
+            // No default: a guessed gesture is a blind click on an item nobody
+            // has verified equips with it (same principle as --gesture on the
+            // standalone --equip command). Unset means Optimization is skipped,
+            // never attempted on a guess.
+            int gestureFlag = Array.FindIndex(args, a => string.Equals(a, "--optimization-gesture", StringComparison.OrdinalIgnoreCase));
+            NosAi.Runtime.Tactical.EquipGesture? optimizationGesture = gestureFlag >= 0 && gestureFlag + 1 < args.Length
+                ? args[gestureFlag + 1].ToLowerInvariant() switch
+                {
+                    "single" => NosAi.Runtime.Tactical.EquipGesture.Single,
+                    "double" => NosAi.Runtime.Tactical.EquipGesture.Double,
+                    _ => (NosAi.Runtime.Tactical.EquipGesture?)null
+                }
+                : null;
+
+            return NosAi.Runtime.Tactical.AutoplayCommand.Run(cycles, recoverSlot, optimizationGesture);
         }
 
         // Which intents the operator bound, and which the runtime can ask for
@@ -1215,7 +1237,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--equip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--optimization-gesture", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };
 
     private static int RunDxgiProbe()

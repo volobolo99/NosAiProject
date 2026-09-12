@@ -138,7 +138,13 @@ public sealed class AutoplayRecoveryDispatchTests
                 WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
                 WorldFact<EquatableArray<InventoryItem>>.Unknown("test_player_not_read", Now),
                 WorldFact<EquatableArray<EquipmentItem>>.Unknown("test_player_not_read", Now)),
-            resolveSlot: _ => null);
+            resolveSlot: _ => null,
+            equipExecutor: new EquipExecutor(
+                new GatedInputBackend(recording, () => RuntimeSafetyPolicy.SafeDefault with { LiveInputEnabled = true }),
+                () => IntPtr.Zero),
+            calibration: BagPanelRoiCalibration.Uncalibrated,
+            optimizationGesture: null,
+            readLatestEquip: () => null);
     }
 
     private static StrategicPlan RecoveryPlan() =>

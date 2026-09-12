@@ -139,20 +139,28 @@ public static class AutoplayCommand
         CollectSkippedNoTarget = 9,
 
         /// <summary>
-        /// A <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> was found and its item
-        /// is currently observed in <see cref="Player.Inventory"/> at a known bag slot: the decision is
-        /// made, but the live click is not dispatched from here yet. Reading a fresh
-        /// <see cref="WornEquipment"/> to verify the click (the same shape <see cref="EquipExecutor.Equip"/>
-        /// needs) requires a <c>GameTrafficObserver</c> scoped to this session's endpoint, the way
-        /// <see cref="EquipCommand"/> opens one standalone; <c>RunWindowsCore</c>'s own per-cycle
-        /// <c>GameplayObservation</c> does not carry the entity id that type constructs from, and a second
-        /// concurrent observer on the same capture is not something this contract designed. See C-310's
-        /// declared limitation.
+        /// Superseded by C-312: a candidate used to stop here, decision made but no click emitted (see
+        /// C-310's declared limitation, resolved once <see cref="GameplayObservation.Equipment"/> was
+        /// recognised as already carrying everything <see cref="EquipExecutor.Equip"/> needs, without a
+        /// second <c>GameTrafficObserver</c>). Production code no longer returns this value -- kept only
+        /// so the enum's numbering never shifts under an already-published member.
         /// </summary>
         OptimizationCandidateReady = 10,
 
         /// <summary>No <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> was available, or the candidate's item is not currently in <see cref="Player.Inventory"/>, or its bag slot falls outside the calibrated range.</summary>
-        OptimizationSkippedNoCandidate = 11
+        OptimizationSkippedNoCandidate = 11,
+
+        /// <summary>The click was emitted and confirmed: <see cref="EquipExecutor.Verify"/> saw the expected vnum in the target slot within the verification window.</summary>
+        Optimized = 12,
+
+        /// <summary>The click was emitted, but the verification window elapsed without the expected vnum appearing in the target slot.</summary>
+        OptimizationNotConfirmed = 13,
+
+        /// <summary><see cref="EquipExecutor.Equip"/> refused before or without emitting a click (calibration missing, bag slot out of the calibrated range, geometry or session window unavailable).</summary>
+        OptimizationRefused = 14,
+
+        /// <summary>A candidate was ready, but no <c>--optimization-gesture</c> was configured: no click is emitted on a guessed gesture. Same principle as <see cref="SurvivalSkippedNoSlot"/>/<see cref="RecoverySkippedNoSlot"/> for a missing <c>--recover-slot</c>.</summary>
+        OptimizationSkippedNoGesture = 15
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -236,7 +244,11 @@ public static class AutoplayCommand
         EquatableArray<Drop> drops,
         GameplayObservation? gameplay,
         Player playerFacts,
-        Func<ItemId, EquipmentSlot?> resolveSlot)
+        Func<ItemId, EquipmentSlot?> resolveSlot,
+        EquipExecutor equipExecutor,
+        BagPanelRoiCalibration calibration,
+        EquipGesture? optimizationGesture,
+        Func<WornEquipmentReading?> readLatestEquip)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -293,7 +305,9 @@ public static class AutoplayCommand
                     readPosition, in authority, nowUtc, footprint, plan);
 
             case StrategicGoalKind.Optimization:
-                return DispatchOptimization(playerFacts, resolveSlot, footprint, plan);
+                return DispatchOptimization(
+                    playerFacts, resolveSlot, equipExecutor, calibration, optimizationGesture,
+                    readLatestEquip, in authority, footprint, plan);
 
             default:
                 // QuestUrgency/Progression: named, never silently ignored,
@@ -478,6 +492,11 @@ public static class AutoplayCommand
     private static AutoplayCycleResult DispatchOptimization(
         Player playerFacts,
         Func<ItemId, EquipmentSlot?> resolveSlot,
+        EquipExecutor equipExecutor,
+        BagPanelRoiCalibration calibration,
+        EquipGesture? optimizationGesture,
+        Func<WornEquipmentReading?> readLatestEquip,
+        in ActuationAuthority authority,
         ExplorationFootprint footprint,
         StrategicPlan plan)
     {
@@ -519,9 +538,9 @@ public static class AutoplayCommand
 
     /// <summary>
     /// Console entry for <c>--autoplay [--cycles &lt;n&gt;]
-    /// [--recover-slot &lt;slot&gt;]</c>.
+    /// [--recover-slot &lt;slot&gt;] [--optimization-gesture single|double]</c>.
     /// </summary>
-    public static int Run(int cycles = 1, int? recoverSlot = null)
+    public static int Run(int cycles = 1, int? recoverSlot = null, EquipGesture? optimizationGesture = null)
     {
         // A requested cycle count above MaxCycles is refused cleanly, never
         // silently clamped -- the operator must ask again with a smaller
@@ -540,7 +559,7 @@ public static class AutoplayCommand
             return WalkCommand.ExitAbandoned;
         }
 
-        return RunWindows(cycles, recoverSlot);
+        return RunWindows(cycles, recoverSlot, optimizationGesture);
     }
 
     /// <summary>
@@ -607,7 +626,7 @@ public static class AutoplayCommand
     /// keybinds once -- then loop cycles, reading live facts and dispatching.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    private static int RunWindows(int cycles, int? recoverSlot)
+    private static int RunWindows(int cycles, int? recoverSlot, EquipGesture? optimizationGesture)
     {
         RuntimeComponents components = RuntimeComposition.CreateSafe();
         if (components.InputBackend is not GatedInputBackend gated)
@@ -643,6 +662,15 @@ public static class AutoplayCommand
                           ?? Directory.GetCurrentDirectory();
             ScreenProjectionCalibration calibration = ScreenProjectionCalibration.Load(
                 Path.Combine(repo, ScreenProjectionCalibration.RelativePath), out _);
+
+            // Loaded once for the whole invocation, same lifetime as `calibration`
+            // above: the bag panel does not move between cycles any more than the
+            // screen projection does. Uncalibrated (file absent) is not a refusal
+            // here -- EquipExecutor itself refuses per-request against it, the same
+            // fail-closed shape InventoryPanelRoiCalibration already uses.
+            BagPanelRoiCalibration bagCalibration = BagPanelRoiCalibration.Load(
+                Path.Combine(repo, BagPanelRoiCalibration.RelativePath), out _);
+            var equipExecutor = new EquipExecutor(gated, () => window.Handle);
 
             ClientMemorySession attached = session!;
             var projection = new CalibratedScreenProjection(
@@ -708,6 +736,20 @@ public static class AutoplayCommand
                 LiveObservationScope.TryOpen(processId, out string? entityFeedFailure);
             if (entityFeed is null)
                 Console.WriteLine($"[WARN] entity_feed_unavailable:{entityFeedFailure} -- il ranker delle frontiere resta cieco al rischio");
+
+            // EquipExecutor.Verify's own polling source: it re-reads this same
+            // shared entityFeed on every poll during its verification window,
+            // exactly like the per-cycle `gameplay` capture above -- never a
+            // second GameTrafficObserver (C-312's resolved_limitation). Null
+            // when there is no entity feed at all, which Verify treats as
+            // "nothing observed", not as a crash.
+            Func<WornEquipmentReading?> readLatestEquip = () =>
+            {
+                if (entityFeed is null)
+                    return null;
+                ClassifiedValue<WornEquipmentReading> reading = entityFeed.Gateway.Capture().Gameplay.Equipment;
+                return reading.HasValue ? reading.Value : null;
+            };
 
             // Without the catalogue nothing is established as a monster and the
             // projection yields no mobs, so opening it is only worth attempting
@@ -956,7 +998,11 @@ public static class AutoplayCommand
                     cycleDrops,
                     gameplay,
                     playerFacts,
-                    resolveSlot);
+                    resolveSlot,
+                    equipExecutor,
+                    bagCalibration,
+                    optimizationGesture,
+                    readLatestEquip);
 
                 // Carry this cycle's footprint forward regardless of what was
                 // dispatched -- only the Exploration branch actually changes it,
@@ -979,6 +1025,10 @@ public static class AutoplayCommand
 
                     case AutoplayDispatch.RecoverySkippedNoSlot:
                         Console.WriteLine($"[WARN] recovery urgent but no --recover-slot configured, skipping this cycle");
+                        break;
+
+                    case AutoplayDispatch.OptimizationSkippedNoGesture:
+                        Console.WriteLine($"[WARN] optimization candidate ready but no --optimization-gesture configured, skipping this cycle");
                         break;
 
                     case AutoplayDispatch.NotDispatchable:
