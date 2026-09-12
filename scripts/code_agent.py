@@ -276,7 +276,7 @@ def _intervalli_funzioni(source: str):
     return intervalli
 
 
-def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
+def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = "python") -> str:
     """Lo scheletro con le sole funzioni dichiarate sostituite da quelle della risposta.
 
     Serve per i file troppo grandi da riemettere interi: su model_scout.py, 26.693
@@ -286,12 +286,17 @@ def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
     Il perimetro e' l'incarico: cio' che il modello manda e non era dichiarato viene
     ignorato. Il file risultante viene poi validato per intero come sempre, quindi
     le garanzie non cambiano.
+
+    ``linguaggio`` sceglie quale rilevatore di intervalli usare: "python" (default,
+    ast.parse) o "c_sharp" (tree_sitter, _intervalli_funzioni_csharp). Il default
+    mantiene invariata ogni chiamata esistente, incluse quelle nei test.
     """
     if not nomi:
         return skeleton
 
-    nuove = _intervalli_funzioni(risposta)   # solleva SyntaxError se la risposta e' rotta
-    vecchie = _intervalli_funzioni(skeleton)
+    rileva = _intervalli_funzioni_csharp if linguaggio == "c_sharp" else _intervalli_funzioni
+    nuove = rileva(risposta)   # solleva SyntaxError se la risposta e' rotta
+    vecchie = rileva(skeleton)
 
     assenti_risposta = [n for n in nomi if n not in nuove]
     if assenti_risposta:
@@ -410,6 +415,58 @@ def _firme_csharp(source: str):
                 visita(figlio, proprio)
             elif figlio.type == "method_declaration" and contenitore is not None:
                 risultato[contenitore].append(firma_metodo(figlio))
+                visita(figlio, contenitore)
+            else:
+                visita(figlio, contenitore)
+
+    visita(albero.root_node)
+    return risultato
+
+
+def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]]:
+    """Per ogni method_declaration dentro un contenitore C# (classe/struct/interface/record),
+    ovunque si trovi nell'albero (dentro un namespace, annidato), il nome del metodo mappato
+    alle righe 1-based (start_line, end_line) che occupa. Equivalente C# di _intervalli_funzioni
+    (Python, ast.parse), usato da innesta_funzioni quando il linguaggio bersaglio e' C#."""
+    import tree_sitter_c_sharp
+    from tree_sitter import Language, Parser
+
+    dati = source.encode("utf-8")
+    albero = Parser(Language(tree_sitter_c_sharp.language())).parse(dati)
+    if albero.root_node.has_error:
+        raise SyntaxError("C#: l'albero contiene nodi ERROR o mancanti")
+
+    def testo(nodo):
+        return dati[nodo.start_byte:nodo.end_byte].decode("utf-8", "replace")
+
+    def nome_di(nodo):
+        for figlio in nodo.children:
+            if figlio.type == "identifier":
+                return testo(figlio)
+        return "?"
+
+    CONTENITORI = ("class_declaration", "struct_declaration", "interface_declaration", "record_declaration")
+    risultato: dict[str, tuple[int, int]] = {}
+
+    # Un frammento restituito senza la classe che lo racchiude (lo stesso
+    # perimetro gia' concesso in Python, dove "solo la funzione" e' legale a
+    # livello di modulo) non e' sintassi C# valida di per se': tree_sitter lo
+    # analizza come local_function_statement invece di method_declaration.
+    # Lo si accetta comunque, con lo stesso trattamento: il controllo di
+    # ambiguita' sotto resta la stessa rete di sicurezza in entrambi i casi.
+    METODI = ("method_declaration", "local_function_statement")
+
+    def visita(nodo, contenitore=None):
+        for figlio in nodo.children:
+            if figlio.type in CONTENITORI:
+                visita(figlio, nome_di(figlio))
+            elif figlio.type in METODI:
+                nome = nome_di(figlio)
+                inizio = figlio.start_point.row + 1
+                fine = figlio.end_point.row + 1
+                if nome in risultato:
+                    raise ValueError("metodo ambiguo, presente in piu' di un contenitore: " + nome)
+                risultato[nome] = (inizio, fine)
                 visita(figlio, contenitore)
             else:
                 visita(figlio, contenitore)
@@ -636,7 +693,7 @@ def run(task: dict, do_preflight: bool) -> dict:
         code = extract_code(testo)
         if solo:
             try:
-                code = innesta_funzioni(skeleton, code, solo)
+                code = innesta_funzioni(skeleton, code, solo, linguaggio_del_file(ROOT / task["file"]))
             except (SyntaxError, ValueError) as exc:
                 errors = ["Innesto parziale rifiutato: {}".format(exc)]
                 code = ""
