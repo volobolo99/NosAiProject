@@ -59,6 +59,7 @@ Se l’evidenza dipende da un client Windows, provider online, GPU o hardware no
 
 ## Collegamenti
 
+- Sequenza operativa unica per ruolo (fino al 100%): `docs/GUIDA_COMPLETAMENTO_100.md`
 - Mappa contratti: `docs/CONTRACT_MAP.md`
 - Mappa sistema: `docs/SYSTEM_MAP.md`
 - Coordinamento agenti: `docs/AGENT_COORDINATION.md`
