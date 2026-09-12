@@ -66,7 +66,7 @@ public static class SceneManagerFinder
                             string absoluteAddress = ((IntPtr)operand).ToString("X");
                             Console.WriteLine($"0x{offsetFromModule:X} 0x{absoluteAddress}");
                             string candidateLine = $"0x{offsetFromModule:X}";
-                            string directory = Path.GetDirectoryName(candidatePath ?? CandidatePath);
+                            string? directory = Path.GetDirectoryName(candidatePath ?? CandidatePath);
                             if (!string.IsNullOrEmpty(directory))
                                 Directory.CreateDirectory(directory);
                             File.WriteAllText(candidatePath ?? CandidatePath, candidateLine);
