@@ -304,11 +304,14 @@ Questi due passi non dipendono da nessuno degli step sopra e nessuno degli step 
 dipende da loro. Possono partire quando un `employee.mcp_chief` è libero.
 
 ### P20 — R-205: completare la cascata free-first del MCP
-🟢 APERTO
+✅ **CHIUSO** — verificato in questa sessione (2026-09-12): `scripts/free_first.py:1-281` è
+implementato integralmente (nessun `NotImplementedError`), `tests/test_free_first.py` ha 21
+test verdi che coprono fallback, quota 429/pause, budget esaurito e giudizio di qualità.
+`docs/REMAINING_WORK.md` riga 33 non è ancora stata aggiornata a chiuso: farlo nel prossimo
+passaggio di manutenzione documentale.
 
-- **Ruolo:** `employee.mcp_chief`.
-- **Riferimento:** `docs/REMAINING_WORK.md` R-205; `scripts/free_first.py`, `docs/mcp/`.
-- **Evidenza:** test provider, fallback, quote, timeout e funzionamento reale.
+- **Riferimento:** `docs/REMAINING_WORK.md` R-205; `scripts/free_first.py`,
+  `tests/test_free_first.py`.
 
 ### P21 — R-208: watchdog periodico del MCP Chief in ambiente operativo
 🟢 APERTO
