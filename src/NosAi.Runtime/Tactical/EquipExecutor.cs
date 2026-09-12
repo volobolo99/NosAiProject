@@ -67,7 +67,7 @@ public sealed class EquipExecutor
         _pollInterval = pollInterval;
     }
 
-    public EquipReport Equip(EquipRequest request, BagPanelRoiCalibration calibration, in ActuationAuthority authority, Func<WornEquipment?> readLatestEquip, CancellationToken cancellationToken = default)
+    public EquipReport Equip(EquipRequest request, BagPanelRoiCalibration calibration, in ActuationAuthority authority, Func<WornEquipmentReading?> readLatestEquip, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
@@ -78,7 +78,7 @@ public sealed class EquipExecutor
         throw new NotImplementedException();
     }
 
-    private EquipVerification Verify(ItemId item, EquipmentSlot targetSlot, WornEquipment baseline, Func<WornEquipment?> readLatestEquip, CancellationToken cancellationToken)
+    private EquipVerification Verify(ItemId item, EquipmentSlot targetSlot, WornEquipmentReading baseline, Func<WornEquipmentReading?> readLatestEquip, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
