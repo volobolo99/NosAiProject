@@ -38,7 +38,7 @@ jobs:
           fi
           for test_project in "${tests[@]}"; do
             echo "== $test_project =="
-            dotnet test "$test_project" --configuration Release --filter "Category!=UiAutopilot"
+            dotnet test "$test_project" --configuration Release
           done
 
       # The runtime's own --gateN-test suites are deliberately NOT run here. They

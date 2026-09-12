@@ -28,9 +28,7 @@ if ($testProjects.Count -eq 0) {
     Write-Host 'No .NET test projects found; skipping .NET tests.'
 } else {
     foreach ($project in $testProjects) {
-        # Category=UiAutopilot pilota mouse fisico e finestre vere (tests/NosAi.ControlPanel.UiTests):
-        # esclusa dalla corsa generale, si lancia a mano con --filter Category=UiAutopilot.
-        dotnet test $project.FullName --configuration Release --filter "Category!=UiAutopilot"
+        dotnet test $project.FullName --configuration Release
         Assert-LastExitCode "dotnet test $($project.Name)"
     }
 }
