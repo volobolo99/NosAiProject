@@ -180,6 +180,34 @@ def test_intervalli_funzioni_csharp_trova_metodi_dentro_un_namespace():
     assert righe[fine - 1].strip() == "}"
 
 
+# Trovato su AutoplayCommand.cs reale (C-310): un metodo il cui tipo di ritorno
+# non e' primitivo (qui "Risultato") ha DUE identifier diretti nei children del
+# suo method_declaration -- il tipo di ritorno e il vero nome. Un rilevatore che
+# prende "il primo identifier" cattura il tipo di ritorno, non il nome del
+# metodo, e nel caso reale quel tipo di ritorno era anche il nome di un record
+# esistente altrove nello stesso file: "metodo ambiguo, presente in piu' di un
+# contenitore" per un file che non ha alcuna vera ambiguita'.
+SCHELETRO_CS_TIPO_DI_RITORNO_NON_PRIMITIVO = '''namespace NosAi.Runtime.Tactical
+{
+    public sealed record Risultato(int Valore);
+
+    public class AutoplayCommand
+    {
+        public static Risultato Bersaglio(int a)
+        {
+            return new Risultato(a);
+        }
+    }
+}
+'''
+
+
+def test_intervalli_funzioni_csharp_non_confonde_il_tipo_di_ritorno_col_nome():
+    intervalli = code_agent._intervalli_funzioni_csharp(SCHELETRO_CS_TIPO_DI_RITORNO_NON_PRIMITIVO)
+    assert "Bersaglio" in intervalli
+    assert "Risultato" not in intervalli
+
+
 def test_innesta_funzioni_csharp_sostituisce_un_metodo_e_conserva_gli_altri():
     unito = code_agent.innesta_funzioni(SCHELETRO_CS, SOLO_BERSAGLIO_CS, ["Bersaglio"], "c_sharp")
     assert "return a * 2;" in unito

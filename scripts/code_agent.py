@@ -445,6 +445,18 @@ def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]]:
                 return testo(figlio)
         return "?"
 
+    def nome_metodo(nodo):
+        """Il nome del metodo e' l'identificatore seguito dalla lista parametri
+        (stessa regola di _firme_csharp.firma_metodo): il primo identifier di un
+        method_declaration e' spesso il TIPO DI RITORNO, non il nome, quando quel
+        tipo non e' primitivo (es. "AutoplayCycleResult ExecuteOneCycle(...)")."""
+        figli = list(nodo.children)
+        for indice, figlio in enumerate(figli):
+            successivo = figli[indice + 1] if indice + 1 < len(figli) else None
+            if figlio.type == "identifier" and successivo is not None and successivo.type == "parameter_list":
+                return testo(figlio)
+        return nome_di(nodo)
+
     CONTENITORI = ("class_declaration", "struct_declaration", "interface_declaration", "record_declaration")
     risultato: dict[str, tuple[int, int]] = {}
 
@@ -461,7 +473,7 @@ def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]]:
             if figlio.type in CONTENITORI:
                 visita(figlio, nome_di(figlio))
             elif figlio.type in METODI:
-                nome = nome_di(figlio)
+                nome = nome_metodo(figlio)
                 inizio = figlio.start_point.row + 1
                 fine = figlio.end_point.row + 1
                 if nome in risultato:
