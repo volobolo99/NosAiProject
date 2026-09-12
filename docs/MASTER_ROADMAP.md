@@ -160,6 +160,10 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-12
   - metrics: 17 test in tests/test_code_agent_parziale.py (10 preesistenti invariati, 7 nuovi per il ramo C#). Due bug del locale corretti a mano: apostrofo non escapato in stringa (SyntaxError reale), ricerca metodi limitata ai figli diretti della radice (non trovava mai un metodo reale, tutte le classi del progetto stanno in un namespace). preflight_contract_check APPROVED. Suite Python completa verde.
   - note: innesta_funzioni usava ast.parse (Python puro): su un file .cs sollevava sempre SyntaxError, quindi solo_funzioni respingeva ogni incarico C# con 'Innesto parziale rifiutato' anche su codice valido, nonostante .claude/CLAUDE.md sezione 7 dichiari gia' che solo_funzioni copre entrambi i linguaggi. Prerequisito pratico per completare C-310 su AutoplayCommand.cs senza riemetterlo per intero.
+| C-315 | Innesto parziale Python riconosce i metodi di classe | TEST_VERIFIED |
+  - updated: 2026-09-12
+  - metrics: 27/27 test target verdi, suite Python completa senza regressioni, preflight APPROVED, commit 7b6507e
+  - note: _intervalli_funzioni camminava solo albero.body (funzioni di primo livello): ogni incarico con solo_funzioni su un metodo Python falliva sempre con 'assente dallo scheletro', anche quando il metodo esisteva -- osservato il 2026-09-12 sull'incarico C-314. Ora cammina anche dentro le ClassDef a qualunque profondita', con textwrap.dedent per i frammenti rientrati, precedenza alla funzione di modulo sull'omonimo metodo, e ValueError se lo stesso nome di metodo compare su due classi diverse. innesta_funzioni non e' stata toccata.
 
 ## Domande aperte
 
