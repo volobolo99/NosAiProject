@@ -1,0 +1,33 @@
+{
+  "contract_id": "C-314",
+  "file": "nosai/mcp/state.py",
+  "companion_files": [
+    "nosai/mcp/bindings.py"
+  ],
+  "depends_on": "registro dei binding su SQLite (McpStateStore.ensure_default_bindings, McpStateStore.migrate_json, RoleBindingRegistry.__init__, RoleBindingRegistry._sync_legacy_json)",
+  "purpose": "ensure_default_bindings inserisce le righe mancanti e non ne rimuove nessuna. Quando un ruolo esce da DEFAULT_EMPLOYEE_ROLES la sua riga resta nella tabella bindings per sempre: mcp_role_catalog la elenca, ma propose e choose sollevano KeyError('unknown employee_id') perche' _require_employee guarda il codice e non il registro. E' successo con il contratto role-unification-012, che ha fuso employee.product_manager ed employee.game_ai_architect in employee.product_architect: i due orfani sono stati rimossi a mano il 2026-09-12. Questo contratto rende la potatura automatica, cosi' la prossima rimozione di un ruolo non lascia macerie.",
+  "changes": {
+    "state_new_method": "def prune_unknown_bindings(self, known_employee_ids: Iterable[str]) -> list[str] -- metodo di McpStateStore. Rimuove dalla tabella bindings le righe il cui employee_id non compare fra quelli noti e restituisce gli employee_id rimossi, ordinati alfabeticamente. Non rimuove nulla e restituisce [] in due casi di salvaguardia: (a) l'insieme dei noti e' vuoto dopo aver scartato le stringhe vuote; (b) la cancellazione lascerebbe la tabella con zero righe. Usa self._lock e self._connect() come gli altri metodi, apre la transazione con BEGIN IMMEDIATE, e legge gli employee_id da cancellare con una SELECT prima della DELETE, perche' il valore di ritorno e' l'elenco effettivo dei rimossi.",
+    "bindings_init_integration": "RoleBindingRegistry.__init__ chiama self.state.prune_unknown_bindings(self._employees.keys()) subito dopo self.state.ensure_default_bindings(...) e assegna il risultato a self.pruned_employee_ids. Se l'elenco non e' vuoto chiama self._sync_legacy_json(), perche' l'export JSON contiene gli stessi orfani. Se e' vuoto non tocca il file."
+  },
+  "constraints": [
+    "La salvaguardia sulla tabella vuota non e' facoltativa: con zero righe migrate_json reimporta il vecchio data/mcp/role_bindings.json e gli orfani tornerebbero al primo avvio.",
+    "Nessuna firma esistente cambia: ensure_default_bindings, migrate_json, get_binding, list_bindings, stage_binding, promote_binding e rollback_binding restano identiche.",
+    "prune_unknown_bindings non scrive log, non stampa e non solleva se non trova nulla da rimuovere: restituisce [].",
+    "Nessuna dipendenza nuova: sqlite3, threading e le import gia' presenti in nosai/mcp/state.py bastano.",
+    "La potatura riguarda la sola tabella bindings. Le proposte, le prove e la tabella observations non si toccano: sono cronologia."
+  ],
+  "tests_required": [
+    "Una riga orfana scritta a mano nella tabella sparisce alla costruzione di RoleBindingRegistry, e pruned_employee_ids la elenca.",
+    "Le righe dei ruoli vivi sopravvivono alla potatura e conservano primary_model e fallback_models.",
+    "L'export JSON riallineato non contiene piu' l'orfano.",
+    "Un insieme di noti vuoto non cancella niente e restituisce [].",
+    "Una potatura che svuoterebbe la tabella non cancella niente e restituisce [].",
+    "Senza orfani prune_unknown_bindings restituisce [] e pruned_employee_ids e' vuoto."
+  ],
+  "postconditions": [
+    "python -m pytest tests/ -q resta verde, compresi i test nuovi di tests/test_role_binding_prune.py.",
+    "Il numero di righe della tabella bindings coincide sempre con il numero di ruoli in DEFAULT_EMPLOYEE_ROLES dopo la costruzione del registro con l'elenco completo dei ruoli.",
+    "Costruire il registro con un sottoinsieme dei ruoli non svuota il registro reale: la salvaguardia sulla tabella vuota lo impedisce."
+  ]
+}

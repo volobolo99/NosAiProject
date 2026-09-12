@@ -176,6 +176,62 @@ class McpStateStore:
             connection.commit()
         return inserted
 
+    def prune_unknown_bindings(self, known_employee_ids: Iterable[str]) -> list[str]:
+            """Remove binding rows whose employee_id has no role definition left.
+
+            ``ensure_default_bindings`` only inserts, so a role removed from
+            ``DEFAULT_EMPLOYEE_ROLES`` leaves an orphan row that the catalog lists
+            and every lookup rejects. Returns the removed employee_ids, sorted.
+
+            Two safeguards return ``[]`` without touching the table: an empty set of
+            known ids, and a deletion that would leave the table with no rows at all
+            (``migrate_json`` would then re-import the legacy JSON on next start).
+            """
+            # Filtra le stringhe vuote e crea un set per ricerca efficiente
+            known = {eid for eid in known_employee_ids if eid}
+            if not known:
+                return []
+
+            with self._lock, self._connect() as connection:
+                connection.execute("BEGIN IMMEDIATE")
+
+                # Conta le righe attuali
+                total_rows = connection.execute("SELECT COUNT(*) FROM bindings").fetchone()[0]
+
+                # Se non ci sono righe, non fare nulla
+                if total_rows == 0:
+                    connection.rollback()
+                    return []
+
+                # Trova gli employee_id da rimuovere
+                rows_to_remove = connection.execute(
+                    "SELECT employee_id FROM bindings WHERE employee_id NOT IN ({})".format(
+                        ",".join("?" * len(known))
+                    ),
+                    tuple(known)
+                ).fetchall()
+
+                # Se la cancellazione lascerebbe la tabella vuota, non fare nulla
+                if len(rows_to_remove) >= total_rows:
+                    connection.rollback()
+                    return []
+
+                # Estrai gli employee_id da rimuovere
+                removed_ids = [row[0] for row in rows_to_remove]
+
+                # Esegui la cancellazione
+                if removed_ids:
+                    connection.execute(
+                        "DELETE FROM bindings WHERE employee_id IN ({})".format(
+                            ",".join("?" * len(removed_ids))
+                        ),
+                        removed_ids
+                    )
+                    self._bump_revision(connection)
+
+                connection.commit()
+                return sorted(removed_ids)
+
     def stage_binding(self, proposal: Mapping[str, Any], expected_revision: int | None = None) -> dict[str, Any]:
         required = ("proposal_id", "employee_id", "primary_model", "fallback_models", "candidate_digest", "author_id")
         if any(name not in proposal for name in required):

@@ -43,20 +43,23 @@ class RoleBindingRegistry:
     REQUIRED_EVIDENCE = ("tests", "shadow", "audit")
 
     def __init__(
-        self,
-        path: Path | str,
-        employees: Iterable[EmployeeRole] = DEFAULT_EMPLOYEE_ROLES,
-        evidence_authority: EvidenceAuthority | None = None,
-        state_store: McpStateStore | None = None,
-    ):
-        self.path = Path(path)
-        self._lock = threading.RLock()
-        self._employees = {employee.employee_id: employee for employee in employees}
-        self.evidence = evidence_authority or EvidenceAuthority(self.path.parent / "evidence")
-        state_path = self.path.with_suffix(".sqlite3")
-        self.state = state_store or McpStateStore(state_path)
-        self.state.migrate_json(self.path)
-        self.state.ensure_default_bindings(self._employees.values())
+            self,
+            path: Path | str,
+            employees: Iterable[EmployeeRole] = DEFAULT_EMPLOYEE_ROLES,
+            evidence_authority: EvidenceAuthority | None = None,
+            state_store: McpStateStore | None = None,
+        ):
+            self.path = Path(path)
+            self._lock = threading.RLock()
+            self._employees = {employee.employee_id: employee for employee in employees}
+            self.evidence = evidence_authority or EvidenceAuthority(self.path.parent / "evidence")
+            state_path = self.path.with_suffix(".sqlite3")
+            self.state = state_store or McpStateStore(state_path)
+            self.state.migrate_json(self.path)
+            self.state.ensure_default_bindings(self._employees.values())
+            self.pruned_employee_ids = self.state.prune_unknown_bindings(self._employees.keys())
+            if self.pruned_employee_ids:
+                self._sync_legacy_json()
 
     def get(self, employee_id: str) -> dict:
         with self._lock:
