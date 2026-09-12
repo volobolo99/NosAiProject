@@ -846,6 +846,23 @@
           "legacy_gate": 9,
           "updated": "2026-09-12",
           "metrics": "17 test in tests/test_code_agent_parziale.py (10 preesistenti invariati, 7 nuovi per il ramo C#). Due bug del locale corretti a mano: apostrofo non escapato in stringa (SyntaxError reale), ricerca metodi limitata ai figli diretti della radice (non trovava mai un metodo reale, tutte le classi del progetto stanno in un namespace). preflight_contract_check APPROVED. Suite Python completa verde."
+        },
+        {
+          "cid": "C-315",
+          "title": "Innesto parziale Python riconosce i metodi di classe",
+          "target_file": "scripts/code_agent.py",
+          "signature": "def _intervalli_funzioni(source: str) -> dict[str, tuple[int, int]]",
+          "struct_size": null,
+          "test_file": "tests/test_code_agent_parziale_metodi.py",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "note": "_intervalli_funzioni camminava solo albero.body (funzioni di primo livello): ogni incarico con solo_funzioni su un metodo Python falliva sempre con 'assente dallo scheletro', anche quando il metodo esisteva -- osservato il 2026-09-12 sull'incarico C-314. Ora cammina anche dentro le ClassDef a qualunque profondita', con textwrap.dedent per i frammenti rientrati, precedenza alla funzione di modulo sull'omonimo metodo, e ValueError se lo stesso nome di metodo compare su due classi diverse. innesta_funzioni non e' stata toccata.",
+          "product_phases": [],
+          "legacy_gate": 9,
+          "updated": "2026-09-12",
+          "metrics": "27/27 test target verdi, suite Python completa senza regressioni, preflight APPROVED, commit 7b6507e"
         }
       ]
     }
