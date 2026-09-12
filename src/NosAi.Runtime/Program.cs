@@ -180,6 +180,39 @@ public static class Program
             return NosAi.Runtime.Perception.InventoryPanelCalibrationProbe.Run(slots: panelRois);
         }
 
+        // C-313: the bag scrolls, so BagPanelRoiCalibration is never all-or-
+        // nothing like the equipment panel above -- any number of slot tokens
+        // (at least one) is a valid calibration, or none at all to report the
+        // current state.
+        if (args.Any(a => string.Equals(a, "--calibrate-bag-panel", StringComparison.OrdinalIgnoreCase)))
+        {
+            int bagPanelFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--calibrate-bag-panel", StringComparison.OrdinalIgnoreCase));
+            int bagPanelTokenCount = args.Length - (bagPanelFlag + 1);
+
+            var bagPanelTokens = new string[bagPanelTokenCount];
+            for (int i = 0; i < bagPanelTokenCount; i++)
+                bagPanelTokens[i] = args[bagPanelFlag + 1 + i];
+
+            if (bagPanelTokenCount == 0)
+            {
+                // Zero tokens: only report the current calibration state.
+                return NosAi.Runtime.Perception.BagPanelCalibrationProbe.Run(slots: null);
+            }
+
+            if (!NosAi.Runtime.Perception.BagPanelCalibrationProbe.TryParseSlots(
+                    bagPanelTokens, out IReadOnlyDictionary<int,
+                        NosAi.Runtime.Perception.InventorySlotRoi>? bagPanelRois, out string? bagPanelReason))
+            {
+                Console.Error.WriteLine($"[REFUSED] {bagPanelReason}");
+                Console.Error.WriteLine("  --calibrate-bag-panel requires at least one slot token, each "
+                    + "'<slotIndex>:<x>,<y>,<w>,<h>' as fractions of the client area.");
+                return 1;
+            }
+
+            return NosAi.Runtime.Perception.BagPanelCalibrationProbe.Run(slots: bagPanelRois);
+        }
+
         // Physical client rect, window DPI, monitor handle, epoch, the process's
         // actual awareness mode, and whether the stored calibration can be applied
         // under that regime. Non-zero when it cannot.
@@ -1237,7 +1270,7 @@ public static class Program
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
             "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--equip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--optimization-gesture", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--equip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--optimization-gesture", "--route", "--calibrate-inventory-panel", "--calibrate-bag-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };
 
     private static int RunDxgiProbe()
