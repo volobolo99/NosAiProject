@@ -223,16 +223,23 @@ passi di questa fase
   di CI (102 ms osservati su GitHub Actions non sono questa misura).
 
 ### P13 — T-08: `--decide --observe-game` su sessione viva
-🟡 EVIDENZA PARZIALE il 2026-09-12 — resta aperto un solo punto
+✅ CHIUSO il 2026-09-12
 
 - **Ruolo:** `employee.decision` + operatore.
 - **Riferimento:** `docs/TEST_RIMANDATI.md` T-08.
-- **Evidenza attesa:** `ExecutionDisabled`-equivalente è l'esito corretto (l'effettore resta
-  `DisabledActionEffector` per policy di sicurezza), non un guasto — non aspettarsi
-  un'azione eseguita. **Confermato:** ciclo avviato (`Gate 3 decision loop started`),
-  `acting=False`, `authority_live_input_not_armed`. **Non confermato:** la transizione da
-  `NoWorldState` a una decisione — nessun mostro nei paraggi durante la finestra di prova;
-  richiede rieseguire vicino a un'entità reale (si intreccia con P10/T-13).
+- **Evidenza:** `ExecutionDisabled`-equivalente è l'esito corretto (l'effettore resta
+  `DisabledActionEffector` per policy di sicurezza), non un guasto. Ciclo avviato
+  (`Gate 3 decision loop started`), `acting=False`, `authority_live_input_not_armed`.
+  **Rieseguito con il personaggio vicino a un mostro:** `--combat-report` conferma
+  `mobs: 1 observed, 1 known alive, 1 positioned` (non ancora ostile); `/api/gate1`
+  mostra `client.attached=true` e `gameplayBaseline` con `hp/maxHp/mp` tutti `LIVE`
+  e 112 entità classificate `Monster` sulle 118 in cache. Il binario live non espone
+  l'esito per ciclo (nessun log né telemetria cablati su `--decide`), quindi la
+  transizione si legge dal codice sorgente: `HasVitals` vero fa ritornare
+  `Gate1SnapshotWorldStateSource.ReadAsync` `Gate3WorldState.FromObservation(...)`
+  invece di `Unobserved(...)` — `NoWorldState` non vale più. `hasTarget=False` tiene
+  l'esito del ciclo su `NoCandidate`, atteso senza ostilità stabilita. Dettaglio completo
+  in `docs/TEST_RIMANDATI.md` T-08.
 
 ### P14 — T-16: collegare gli id `sayi`/`msgi` sul filo al testo visto a schermo
 ⚪ RICHIEDE L'OPERATORE — 🟢 indipendente
