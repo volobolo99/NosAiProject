@@ -123,6 +123,10 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - updated: 2026-09-12
   - metrics: Suite Python completa verde dopo l'implementazione: tests/test_doc_agent_authorization.py nuovo (9 test), tests/test_doc_agent_local_result.py con fixture corretto. preflight_contract_check APPROVED. Generato a costo zero dal locale via scripts/code_agent.py (tier local, solo_funzioni).
   - note: bdb6f5f aveva isolato per ruolo i 5 tool di scripts/mcp_server.py, ma lasciava due vie aperte: scripts/doc_agent.py produceva gli stessi risultati senza mai chiamare require_capability, e preflight_contract_check/deep_reasoner_solve_crash non comparivano nel tools: di nessun sub-agente configurato, quindi restavano raggiungibili solo dalla sessione root il cui employee_id proprio (employee.orchestrator_cto) non possiede ne' 'contracts' ne' 'diagnostics'.
+| C-311 | Innesto parziale C# in scripts/code_agent.py (tree_sitter, non ast) | TEST_VERIFIED |
+  - updated: 2026-09-12
+  - metrics: 17 test in tests/test_code_agent_parziale.py (10 preesistenti invariati, 7 nuovi per il ramo C#). Due bug del locale corretti a mano: apostrofo non escapato in stringa (SyntaxError reale), ricerca metodi limitata ai figli diretti della radice (non trovava mai un metodo reale, tutte le classi del progetto stanno in un namespace). preflight_contract_check APPROVED. Suite Python completa verde.
+  - note: innesta_funzioni usava ast.parse (Python puro): su un file .cs sollevava sempre SyntaxError, quindi solo_funzioni respingeva ogni incarico C# con 'Innesto parziale rifiutato' anche su codice valido, nonostante .claude/CLAUDE.md sezione 7 dichiari gia' che solo_funzioni copre entrambi i linguaggi. Prerequisito pratico per completare C-310 su AutoplayCommand.cs senza riemetterlo per intero.
 
 ## Domande aperte
 
