@@ -9,6 +9,8 @@ using NosAi.Runtime.Autonomy;
 using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
+using NosAi.Runtime.Safety;
+using NosAi.Runtime.Security;
 using NosAi.Storage;
 
 namespace NosAi.Runtime.Tactical;
@@ -212,6 +214,16 @@ public static class EngageCommand
     /// only the live shell's own choice of what to inject.
     /// </remarks>
     private const int VerificationDelayMs = 350;
+
+    /// <summary>
+    /// Reported when the input backend is not armed.
+    /// </summary>
+    public const string ArmInputOption = "--arm-input";
+
+    /// <summary>
+    /// Reported when the input backend is not armed.
+    /// </summary>
+    public const string InputNotArmedReason = "engage_input_not_armed";
 
     /// <summary>
     /// Executes and verifies one <c>UseSkill</c> act. Every non-<c>UseSkill</c>
@@ -454,6 +466,19 @@ public static class EngageCommand
     [SupportedOSPlatform("windows")]
     private static int RunWindows(string targetEntityId, string skillId, int rounds)
     {
+        RuntimeComponents components = RuntimeComposition.CreateSafe();
+        return ExecuteEngagement(targetEntityId, skillId, rounds, components);
+    }
+
+    /// <summary>
+    /// The live composition, mirroring <c>ScoutCommand</c>/<c>PlayerVitalsProbe</c>'s
+    /// shape: attach to the running client, load the operator's keybinds, take the
+    /// gated input backend from <see cref="RuntimeComposition.CreateSafe"/>, then
+    /// drive <see cref="ExecuteOneRound"/>.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private static int ExecuteEngagement(string targetEntityId, string skillId, int rounds, RuntimeComponents components)
+    {
         var candidate = new CombatActionCandidate(
             CombatActionKind.UseSkill,
             target: new EntityId(targetEntityId),
@@ -474,7 +499,6 @@ public static class EngageCommand
                 return WalkCommand.ExitAbandoned;
             }
 
-            RuntimeComponents components = RuntimeComposition.CreateSafe();
             if (components.InputBackend is not GatedInputBackend gated)
             {
                 Console.WriteLine($"[REFUSED] {UngatedBackendReason}");
@@ -587,6 +611,49 @@ public static class EngageCommand
             // Every round ran and none confirmed a resource cost.
             return 1;
         }
+    }
+
+    /// <summary>
+    /// Public entry point for <c>--engage &lt;targetEntityId&gt; &lt;skillId&gt;</c>
+    /// with <c>--arm-input</c> support.
+    /// </summary>
+    public static int RunArmed(string targetEntityId, string skillId, int rounds, bool armInput)
+    {
+        if (string.IsNullOrWhiteSpace(targetEntityId) || string.IsNullOrWhiteSpace(skillId) || rounds < 1)
+        {
+            Console.WriteLine($"[REFUSED] {InvalidArgumentsReason}");
+            return WalkCommand.ExitAbandoned;
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            Console.WriteLine($"[REFUSED] {NotWindowsReason}");
+            return WalkCommand.ExitAbandoned;
+        }
+
+        return RunWindowsArmed(targetEntityId, skillId, rounds, armInput);
+    }
+
+    /// <summary>
+    /// Private entry point for <c>--engage &lt;targetEntityId&gt; &lt;skillId&gt;</c>
+    /// with <c>--arm-input</c> support.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private static int RunWindowsArmed(string targetEntityId, string skillId, int rounds, bool armInput)
+    {
+        RuntimeComponents components = RuntimeComposition.CreateSafe();
+        if (armInput)
+        {
+            AuthorizationDecision armed = components.Safety.Set(
+                SecurityPrincipal.Operator, SafetySwitch.LiveInput, true, "engage_command");
+            if (!armed.Allowed)
+            {
+                Console.WriteLine($"[REFUSED] {InputNotArmedReason}:{armed.Reason}");
+                return WalkCommand.ExitAbandoned;
+            }
+        }
+
+        return ExecuteEngagement(targetEntityId, skillId, rounds, components);
     }
 
     /// <summary>One evidence line per round, in the same spirit as SingleStepCommand.Format.</summary>

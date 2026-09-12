@@ -1,0 +1,23 @@
+{
+  "contract_id": "C-322B",
+  "file": "src/NosAi.Runtime/Program.cs",
+  "depends_on": ["C-322"],
+  "purpose": "Contratto compagno di C-322 (contracts/engage-arm-input-025.json), scoperto necessario perche' il pre-flight economico (preflight_contract_check) legge il testo intero del contract_file passato e, quando quel testo descrive in dettaglio la ristrutturazione interna di EngageCommand.cs (RunWindows/ExecuteEngagement/RunArmed a righe 454-539 nel file ORIGINALE, prima della riscrittura), lo confonde con un requisito applicabile anche al file Program.cs in lavorazione e segnala 'Firma alterata: EngageCommand.cs:454-539' anche se Program.cs non tocca in alcun modo quelle righe. C-322 resta il contratto architetturale completo e gia' implementato lato EngageCommand.cs (RunArmed/RunWindowsArmed/ExecuteEngagement, ArmInputOption, InputNotArmedReason gia' presenti nel file). Questo contratto C-322B copre SOLO il piccolo cambiamento residuo in Program.cs, gia' descritto in C-322.changes.program_cs_dispatch, con un testo scarno per non confondere il pre-flight.",
+  "changes": {
+    "program_cs_dispatch": "Nel blocco esistente di dispatch di --engage in Program.cs (dentro il metodo Main, righe ~312-339), dopo il calcolo di engageRounds, aggiungere 'bool engageArmInput = args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.EngageCommand.ArmInputOption, StringComparison.OrdinalIgnoreCase));' e sostituire la riga finale 'return NosAi.Runtime.Tactical.EngageCommand.Run(targetEntityId, skillId, engageRounds);' con 'return NosAi.Runtime.Tactical.EngageCommand.RunArmed(targetEntityId, skillId, engageRounds, engageArmInput);' (RunArmed con armInput:false e' gia' comportamentalmente identico a Run, per contratto C-322). Nessun'altra riga del metodo Main va toccata: ne' altri rami di dispatch (--equip, --unequip, --click-target, --walk, --scout, --collect, --recover, --autoplay, --step), ne' l'elenco globale dei flag noti (--arm-input e' gia' presente li', riga ~1292)."
+  },
+  "constraints": [
+    "Solo il blocco di dispatch di --engage dentro Main cambia; nessun'altra riga di Program.cs va alterata.",
+    "EngageCommand.ArmInputOption e EngageCommand.RunArmed esistono gia' (contratto C-322, gia' implementato): non ridefinirli, non modificare EngageCommand.cs.",
+    "Nessun nuovo metodo, nessuna nuova classe, nessuna firma di Main alterata: Main resta 'public static async Task<int> Main(string[] args)'."
+  ],
+  "tests_required": [
+    "dotnet build sull'intera solution: nessuna regressione di compilazione.",
+    "dotnet test su NosAi.Runtime.Tests --filter FullyQualifiedName~EngageCommandTests: nessuna regressione."
+  ],
+  "postconditions": [
+    "dotnet build pulito.",
+    "Il dispatch di --engage senza --arm-input resta comportamentalmente identico a oggi (RunArmed con armInput:false delega a Run-equivalente).",
+    "Il dispatch di --engage con --arm-input arma SafetySwitch.LiveInput sulla stessa istanza di RuntimeComponents usata per eseguire i round, per contratto C-322."
+  ]
+}
