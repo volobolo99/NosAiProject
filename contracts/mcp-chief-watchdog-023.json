@@ -1,0 +1,33 @@
+{
+  "contract_id": "C-316",
+  "file": "nosai/mcp/chief_watchdog.py",
+  "companion_files": [
+    "scripts/mcp_chief_watchdog.py"
+  ],
+  "depends_on": "McpChief.health_check (nosai/mcp/chief.py), ModelRouter.from_config e load_config (nosai/mcp/router.py, nosai/mcp/config.py)",
+  "purpose": "docs/mcp/CHIEF_RUNBOOK.md descrive il ciclo del watchdog come una chiamata manuale a mcp_chief_health: nessun processo lo ripete nel tempo, quindi non esiste uno storico dei tick di salute ne' un modo per osservare una degradazione fra un'ispezione manuale e l'altra (R-208, docs/REMAINING_WORK.md). Questo contratto aggiunge un tick osservabile e ripetibile: chiama health_check(), appende un record compatto a un log append-only, e non chiama mai un metodo che muta stato (promote_binding, rollback_binding, propose_improvement, audit_proposal, activate_network). E' osservazione, non esecuzione: il Chief non e' un'autorita' di esecuzione (nosai/mcp/chief.py, McpChief.authority) e questo modulo non le' aggiunge nessuna.",
+  "changes": {
+    "watchdog_module": "nosai/mcp/chief_watchdog.py, nuovo file. def run_health_tick(chief: McpChief, log_path: Path | str, *, now: str | None = None) -> dict[str, Any]: chiama chief.health_check(), costruisce un record {'schema_version': 'mcp.chief.watchdog.v1', 'ticked_at': <ISO 8601 UTC, da now se dato altrimenti datetime.now(timezone.utc).isoformat()>, 'status': health['status'], 'failed_checks': health['failed_checks'], 'recommendations': health['recommendations'], 'provider_health': health['checks'].get('provider_health')}, crea le cartelle padre di log_path se mancanti, appende il record come una riga JSON (json.dumps, ensure_ascii=False) terminata da newline, e lo restituisce. def read_recent_ticks(log_path: Path | str, limit: int = 20) -> list[dict[str, Any]]: legge log_path riga per riga, ignora le righe vuote, decodifica ogni riga come JSON, e restituisce le ultime `limit` in ordine cronologico (la piu' vecchia delle restituite per prima, la piu' recente per ultima); se log_path non esiste restituisce [] senza sollevare.",
+    "watchdog_cli": "scripts/mcp_chief_watchdog.py, nuovo file. Un unico argomento posizionale opzionale --tail N (default assente): senza --tail costruisce policy/router/chief con lo stesso schema di nosai/mcp/server.py (load_config, McpPolicy(), ModelRouter.from_config, McpChief(Path(config['role_bindings_path']).parent, bindings=router.role_bindings, router=router)), chiama run_health_tick con log_path=data/mcp/chief_watchdog.jsonl, stampa su stdout il record con json.dumps(..., ensure_ascii=False) e termina con exit code 0 se status='healthy', 1 se 'degraded'. Con --tail N chiama read_recent_ticks(data/mcp/chief_watchdog.jsonl, N) e stampa la lista, exit code sempre 0."
+  },
+  "constraints": [
+    "run_health_tick non chiama mai promote_binding, rollback_binding, propose_improvement, audit_proposal, activate_network o qualunque altro metodo che scrive proposte/binding/policy: solo health_check() e observe_health indirettamente tramite health_check gia' esistente. Nessuna mutazione nuova.",
+    "Nessuna firma esistente in nosai/mcp/chief.py, nosai/mcp/health.py, nosai/mcp/state.py cambia.",
+    "Il log e' append-only: run_health_tick non riscrive mai le righe precedenti, solo aggiunge in coda.",
+    "Nessuna dipendenza nuova: json, pathlib, datetime gia' nello stdlib bastano.",
+    "scripts/mcp_chief_watchdog.py non richiede rete ne' credenziali per funzionare quando router e' None o senza provider abilitati: health_check() gia' gestisce router assente (nosai/mcp/chief.py righe 65-83)."
+  ],
+  "tests_required": [
+    "run_health_tick scrive un record con tutte le chiavi attese e lo restituisce identico a quanto scritto su disco.",
+    "Due chiamate successive appendono due righe distinte, non sovrascrivono la prima.",
+    "read_recent_ticks su un file assente restituisce [] senza sollevare.",
+    "read_recent_ticks rispetta il limite e l'ordine cronologico (la piu' vecchia prima) quando le righe sul disco sono piu' del limite richiesto.",
+    "Un McpChief con self.authority['direct_execution'] False (il default) produce comunque un tick: la mancanza di autorita' esecutiva non e' un errore per l'osservazione.",
+    "run_health_tick non chiama ne' promote_binding ne' rollback_binding ne' propose_improvement sull'istanza McpChief passata (verificabile con un chief fittizio i cui metodi mutanti sollevano se invocati)."
+  ],
+  "postconditions": [
+    "python -m pytest tests/ -q resta verde, compresi i test nuovi di tests/test_mcp_chief_watchdog.py.",
+    "python scripts/mcp_chief_watchdog.py eseguito due volte di seguito produce due righe nel log e non modifica contracts/ledger.json, data/mcp/role_bindings.json o data/mcp/state.sqlite3.",
+    "python scripts/mcp_chief_watchdog.py --tail 5 dopo alcune esecuzioni restituisce una lista non vuota, in ordine cronologico."
+  ]
+}
