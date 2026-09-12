@@ -169,6 +169,69 @@ _Generato automaticamente da `update_contract_state` a partire da `contracts/led
   - metrics: 6/6 test nuovi verdi (tests/test_role_binding_prune.py), suite Python completa senza regressioni, preflight APPROVED su entrambi i file, commit 20936fd
   - note: RoleBindingRegistry.__init__ chiamava solo ensure_default_bindings (solo inserimenti): un ruolo rimosso da DEFAULT_EMPLOYEE_ROLES (fusione product_manager+game_ai_architect in product_architect) lasciava una riga orfana che mcp_role_catalog elencava e propose/choose rifiutavano con KeyError. prune_unknown_bindings cancella le righe orfane con due salvaguardie (insieme noto vuoto, o cancellazione che svuoterebbe la tabella) e __init__ la chiama dopo ensure_default_bindings. Incarico diviso in due file con un solo test condiviso: due passate (gratis_lento) hanno fallito riscrivendo il file intero o troncando; su Qwen3 Coder 30B (consenso operatore gia' registrato per C-315) un tentativo ha rivelato un bug reale in innesta_funzioni (indentazione di metodo sbagliata, corretto separatamente) e uno un difetto di sequenziamento dell'incarico (le due modifiche non potevano superare insieme un test che le richiede entrambe, se validate un file alla volta); risolto separando il gate di test fra le due passate.
 
+## Gate 5 — AP-03 - Map Reconstruction (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-501 | MapObservationBatch + MapReconstructionFusion.Merge + MapGridObservationProjector | MERGED |
+  - updated: 2026-09-12
+  - metrics: 5+8+7 test (MapObservationBatch, MapReconstructionFusion.Merge incluso un test di determinismo end-to-end, MapGridObservationProjector)
+  - note: AP-03 (Map Reconstruction). Unica fonte reale: la griglia statica del client (NosAi.Runtime.Navigation.MapGrid, estratta dagli archivi reali via MapGridExtractor), gia' reale e gia' testata prima di questa fase. MapObservationBatch (evidenza tile/portali per una passata) + MapReconstructionFusion.Merge (unione last-write-wins per coordinata/id, bounds monotoni, idempotente) + MapGridObservationProjector (bridge MapGrid -> MapObservationBatch, un Tile per cella, sempre classificato Cached mai Live, nessun portale generato: la griglia non porta identita'/destinazione dei portali). Nessuna classificazione Mob/NPC/oggetti da visione: stesso blocco ML/dati di AP-02, non riaffrontato qui. Vedi docs/agents/phases/AP-03/AP-03_STATUS.md.
+
+## Gate 6 — AP-04 - Exploration & Navigation (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-601 | ExplorationContracts + ExplorationPlanner (footprint, ranking frontiera, NavigationPlan) | MERGED |
+  - updated: 2026-09-12
+  - metrics: test in ExplorationPlannerTests.cs; --scout consegnato e testato da DeepSeek (commit 1891e7d, d011815, 7080fcd)
+  - note: AP-04 (Exploration & Navigation). ExplorationContracts + MovementExecutionContracts (ExplorationFootprint, FrontierCandidate, NavigationWaypoint, NavigationPlan) + ExplorationPlanner (footprint, ranking frontiera, NavigationPlan a singolo waypoint, stessa mappa). Routing multi-mappa via portali esplicitamente rimandato: nessuna fonte dati reale (vedi docs/agents/phases/AP-04/AP-04_A1_STATUS.md). Comando operatore --scout (MovementVerificationProjector) consegnato da DeepSeek dopo indagine su Gate3Runtime che ha trovato candidate generation chiusa/hardcoded e nessun effettore reale per MoveToPosition. Vedi docs/agents/phases/AP-04/AP-04_STATUS.md.
+
+## Gate 7 — AP-05 - Combat Intelligence (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-701 | CombatContracts + CombatPlanner (candidate generation + hard constraints, parziale) | MERGED |
+  - updated: 2026-09-12
+  - metrics: test in CombatPlannerTests.cs sulla sola generazione candidati/hard constraints
+  - note: AP-05 (Combat Intelligence). CombatContracts (CombatActionKind, CombatActionCandidate, CombatConstraintCheck, CombatSimulationResult, ComboStep/ComboPlan) + CombatPlanner parziale: GenerateCandidates/CheckHardConstraints da dati reali (Player.Skills/Cooldowns x Mob in range). Simulazione/combo/apprendimento cross-sessione deliberatamente non affrontati: nessun dato reale di danno/costo skill in AP-01. Verifica combattimento scelta come solo-vitali-player (onesta ma parziale: conferma il costo risorsa, non il colpo sul bersaglio) per non restare bloccati indefinitamente sul gap OCR/ONNX. Vedi docs/agents/phases/AP-05/AP-05_STATUS.md.
+
+## Gate 8 — AP-06 - Quest Intelligence (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-801 | QuestGraphContracts/QuestGraphPlanner + CollectCommand (--collect, verifica di rete live) | MERGED |
+  - updated: 2026-09-12
+  - metrics: 7 test (CollectCommandTests.cs) + audit indipendente (AP-06_A5_AUDIT.md), un difetto trovato e corretto in A6
+  - note: AP-06 (Quest Intelligence). QuestGraphContracts/QuestGraphPlanner (grafo quest tipizzato) + CollectCommand (--collect <x> <y> <vnum> [<requiredCount>] [--watch <n>], consegnato da DeepSeek): cammina via WalkCommand.Execute riusato, verifica via cattura di rete live reale (LiveScope + GameplayObservationProjector + AssessCollectProgress prima/dopo). Unico obiettivo quest con canale dati reale indipendente dal gap OCR/ML. Audit indipendente (AP-06_A5_AUDIT.md) ha trovato e corretto un difetto (Run non gestiva un argomento vuoto). Limite condiviso non introdotto da questa consegna: OccupancyView sempre null, si rifiuterebbe al primo passo contro un client reale senza un feed di occupazione live. Vedi docs/agents/phases/AP-06/AP-06_STATUS.md.
+
+## Gate 10 — AP-07 - Equipment / Loadout (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-1001 | LoadoutContracts (9 dimensioni DoD) + LoadoutPlanner.GenerateEquipCandidates | MERGED |
+  - updated: 2026-09-12
+  - metrics: test in LoadoutContractsTests.cs; verificato nel sorgente il 2026-09-07 che LoadoutPlanner.GenerateEquipCandidates e' chiamato da LoadoutReportCommand.cs
+  - note: AP-07 (Equipment/Loadout). LoadoutContracts: LoadoutActionKind (Equip/Unequip/Upgrade), LoadoutActionCandidate, LoadoutConstraintCheck, LoadoutEvaluation (le nove dimensioni esatte della DoD: DPS, survivability, resource efficiency, sinergie, enemy-specific performance, movement/utility, costo upgrade, opportunity cost, quest relevance). LoadoutPlanner.GenerateEquipCandidates esiste e viene chiamato da LoadoutReportCommand.cs (verificato nel sorgente il 2026-09-07, nota di revisione in AP-07_A1_STATUS.md che corregge lo stato dichiarato al momento della scrittura). Dipende solo da InventoryItem/EquipmentItem/EquipmentSlot/Player (AP-01, gia' Integrated) e da EnrichedQuestObjective/QuestGraphPlanner (AP-06, Present). Il bridging verso il Safety Gate per equip/unequip/upgrade reale resta aperto (vedi P16 in docs/GUIDA_COMPLETAMENTO_100.md). Vedi docs/agents/phases/AP-07/AP-07_A1_STATUS.md.
+
+## Gate 11 — AP-08 - Strategic Autonomy (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-1101 | StrategyContracts/StrategyPlanner (3/7 StrategicGoalKind con dati reali) + AutoplayCommand (--autoplay) | MERGED |
+  - updated: 2026-09-12
+  - metrics: 13 test (AutoplayCommandTests.cs) + audit indipendente
+  - note: AP-08 (Strategic Autonomy). StrategyContracts/StrategyPlanner: 3 dei 7 StrategicGoalKind valutabili oggi con dati reali (Survival, QuestUrgency, Exploration); gli altri 4 non hanno un assessor per mancanza di dati reali. AutoplayCommand (--autoplay [--cycles <n>] [--recover-slot <slot>], consegnato da DeepSeek): ExecuteOneCycle (puro, testabile) sceglie al piu' uno tra ScoutCommand.ExecuteOneRound/RecoverCommand.ExecuteOneRound da StrategyPlanner.SelectStrategicPlan. Limiti rigidi imposti dall'operatore: solo Survival/Exploration dispatchati, tetto di 20 cicli mai clampato, autorita' sempre --autoplay, nessun bypass Guard/Safety. HTN/GOAP restano non affrontati (dipendono da gap di esecuzione ancora aperti, coerente con ADR-0031: nessuna FSM esplicita). Vedi docs/agents/phases/AP-08/AP-08_STATUS.md e AP-08_A1_STATUS.md.
+
+## Gate 12 — AP-09 - Memory / Adaptive Knowledge (100%)
+
+| CID | Titolo | Stato |
+|---|---|---|
+| C-1201 | AdaptiveKnowledgeContracts + FileSystemAdaptiveKnowledgeStore + AdaptiveKnowledgeIngestionEngine + KnowledgeStrategyBridge | MERGED |
+  - updated: 2026-09-12
+  - metrics: test in AdaptiveKnowledgeStoreTests.cs e AdaptiveKnowledgeIngestionEngineTests.cs
+  - note: AP-09 (Memory/Adaptive Knowledge). Scoperta preliminare: a differenza di AP-04..AP-08 questa fase non parte da zero. Memory/AdaptiveKnowledgeContracts.cs (KnowledgeScope: 7 valori Universal/Progression/Class/Specialist/Context/Character/Environment; KnowledgeStatus: 7 stati del lifecycle Discovered..Deprecated), FileSystemAdaptiveKnowledgeStore (store reale su filesystem, scrittura atomica file temp+move), InMemoryStore/MemoryTypes (rifiuta un record con provenance Unknown a meno che non sia esplicitamente Reasoning), Knowledge/AdaptiveKnowledgeIngestionEngine (ForbiddenMarkers rifiuta fonti che menzionano gm/admin/server database/packet injection/exploit/hack/dupe/bot prima che una candidate knowledge venga salvata; EvidenceKnowledgeValidator promuove Candidate->Tested->Validated->Verified solo con evidenza osservata indipendentemente), KnowledgeStrategyBridge (AdaptiveStrategyMemory interroga lo store per obiettivo, filtra solo Validated/Verified). Presente fin dal primo commit dell'attuale main: non scritto nella sessione AP-00->AP-08. Vedi docs/agents/phases/AP-09/AP-09_A1_STATUS.md.
+
 ## Domande aperte
 
 - C-003/C-004/C-005: RISOLTA da ADR-0029 del 2026-09-11 (docs/adr/ADR-0029-phase5-dotnet-pytest-no-native-branch.md) — nessun ramo nativo, la FASE 5 si misura con dotnet build/test e pytest, non con ASan. I tre contratti chiudono come scopi che non esistono (DROPPED).
