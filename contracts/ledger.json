@@ -996,6 +996,25 @@
           "legacy_gate": 7,
           "updated": "2026-09-12",
           "metrics": "5/5 test verdi, suite completa 2915/0, preflight APPROVED, commit c5ce629"
+        },
+        {
+          "cid": "C-318",
+          "title": "TargetFrameReader richiede una cornice scura prima di leggere Present (corregge il falso Present su terreno caldo, ADR-0018 follow-up)",
+          "target_file": "src/NosAi.Runtime/Perception/TargetFrameReader.cs",
+          "signature": "public static TargetFrameReading Read(ReadOnlySpan<byte> bgra, int width, int height)",
+          "struct_size": null,
+          "test_file": "tests/NosAi.Runtime.Tests/TargetFrameReaderTests.cs; tests/NosAi.Runtime.Tests/ScreenTargetFrameSourceTests.cs; tests/NosAi.Runtime.Tests/Perception/TargetRoiAutoCalibratorTests.cs",
+          "status": "TEST_VERIFIED",
+          "invariants": [
+            "FAIL_CLOSED"
+          ],
+          "note": "Difetto trovato dal vivo il 2026-09-12: un crop di terreno caldo/uniforme soddisfaceva la stessa famiglia di colore RedOrGreen e lo stesso pattern a un run per colonna di una barra bersaglio piena, quindi HudBarFillReader da solo leggeva Present al 100% con il bersaglio deselezionato. Il client disegna sempre una cornice scura sopra e sotto la barra bersaglio reale, il terreno mai: TargetFrameReader ora richiede la cornice scura (HasDarkFrameBorder, controllo indipendente dal colore) prima di fidarsi di un crop a piena tinta, altrimenti declassa a Absent; i rami no_bar_signature e Unreadable restano intatti, a preservare ADR-0016. Non ancora riverificato dal vivo sul client reale con un bersaglio selezionato e poi deselezionato: resta un passo aperto.",
+          "product_phases": [
+            "AP-05"
+          ],
+          "legacy_gate": 7,
+          "updated": "2026-09-12",
+          "metrics": "build Release 0 errori 0 warning; suite completa NosAi.Runtime.Tests 2925/2925 dopo il fix (l'unico fallimento di un run precedente, GuardAiClientTests sull'heartbeat pooled, confermato flaky in isolamento e non correlato al fix); commit 4cf9378"
         }
       ]
     },
