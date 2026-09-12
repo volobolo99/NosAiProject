@@ -111,7 +111,9 @@ public sealed class AutoplayCommandTests
         PlayerVitalsReading? after = null,
         EquatableArray<Mob>? mobs = null,
         EquatableArray<Drop>? drops = null,
-        GameplayObservation? gameplay = null)
+        GameplayObservation? gameplay = null,
+        Player? playerFacts = null,
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null)
     {
         ExplorationFootprint footprint = FullyExploredFootprint();
         return RunCycleWithMap(
@@ -125,8 +127,26 @@ public sealed class AutoplayCommandTests
             after,
             mobs,
             drops,
-            gameplay);
+            gameplay,
+            playerFacts,
+            resolveSlot);
     }
+
+    /// <summary>A <see cref="Player"/> with no facts observed, for tests whose
+    /// selected goal never reaches <see cref="StrategicGoalKind.Optimization"/>'s
+    /// dispatch and so never inspects it.</summary>
+    private static Player EmptyPlayerFacts() =>
+        new(
+            TestPlayerId,
+            WorldFact<WorldPosition>.Unknown("test_player_not_read", Now),
+            WorldFact<float>.Unknown("test_player_not_read", Now),
+            WorldFact<bool>.Unknown("test_player_not_read", Now),
+            WorldFact<MapId>.Unknown("test_player_not_read", Now),
+            CombatantStatus.Empty,
+            WorldFact<EquatableArray<Skill>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<InventoryItem>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Unknown("test_player_not_read", Now));
 
     private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap(
         StrategicPlan plan,
@@ -139,7 +159,9 @@ public sealed class AutoplayCommandTests
         PlayerVitalsReading? after = null,
         EquatableArray<Mob>? mobs = null,
         EquatableArray<Drop>? drops = null,
-        GameplayObservation? gameplay = null)
+        GameplayObservation? gameplay = null,
+        Player? playerFacts = null,
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null)
     {
         RecordingInput recording = input ?? new RecordingInput();
         var reads = new Queue<PlayerVitalsReading?>(new[] { before, after });
@@ -167,7 +189,9 @@ public sealed class AutoplayCommandTests
             Now,
             TestPlayerId,
             drops ?? EquatableArray<Drop>.Empty,
-            gameplay);
+            gameplay,
+            playerFacts ?? EmptyPlayerFacts(),
+            resolveSlot ?? (_ => null));
     }
 
     // ------------------------------------------------------------- Idle
@@ -356,7 +380,6 @@ public sealed class AutoplayCommandTests
 
     [Theory]
     [InlineData(StrategicGoalKind.Progression)]
-    [InlineData(StrategicGoalKind.Optimization)]
     public void EveryUndispatchedGoalKind_IsNotDispatchable_ByName_NeverSubstituted(StrategicGoalKind kind)
     {
         StrategicPlan plan = new(kind, WorldFact<bool>.Derived(true, confidence: 1d, Now), Now);
@@ -461,6 +484,82 @@ public sealed class AutoplayCommandTests
         AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input, gameplay: gameplay, drops: drops);
 
         Assert.Equal(AutoplayCommand.AutoplayDispatch.Collected, result.Dispatch);
+    }
+
+    // -------------------------------------------------------- Optimization branch
+
+    private static readonly StrategicPlan OptimizationPlan = new(
+        StrategicGoalKind.Optimization, WorldFact<bool>.Derived(true, confidence: 1d, Now), Now);
+
+    /// <summary>A <see cref="Player"/> whose inventory carries one item that
+    /// <paramref name="resolveSlot"/> (built alongside) maps to
+    /// <see cref="EquipmentSlot.Weapon"/>, with nothing currently equipped -- the
+    /// minimum <see cref="NosAi.Core.WorldModel.Loadout.LoadoutPlanner.GenerateEmptySlotCandidates"/>
+    /// needs to propose a candidate.</summary>
+    private static Player PlayerWithOneEquipCandidate(ItemId itemId, bool slotIndexKnown, int slotIndex = 5)
+    {
+        InventoryItem stack = new(
+            itemId,
+            WorldFact<string>.Unknown("item_name_catalog_not_available", Now),
+            WorldFact<int>.Live(1, 1d, Now),
+            slotIndexKnown
+                ? WorldFact<int>.Live(slotIndex, 1d, Now)
+                : WorldFact<int>.Unknown("test_bag_slot_not_read", Now));
+
+        return new Player(
+            TestPlayerId,
+            WorldFact<WorldPosition>.Live(new WorldPosition(0, 0), 1d, Now),
+            WorldFact<float>.Unknown("test_player_not_read", Now),
+            WorldFact<bool>.Unknown("test_player_not_read", Now),
+            WorldFact<MapId>.Unknown("test_player_not_read", Now),
+            CombatantStatus.Empty,
+            WorldFact<EquatableArray<Skill>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.From(new[] { stack }), 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithACandidateAtAKnownBagSlot_IsOptimizationCandidateReady()
+    {
+        ItemId itemId = new("1234");
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: true);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationCandidateReady, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithNoResolvableCandidate_IsOptimizationSkippedNoCandidate()
+    {
+        // EmptyPlayerFacts() has Inventory Unknown: GenerateEmptySlotCandidates
+        // returns nothing to propose without a read inventory.
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(OptimizationPlan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoCandidate, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithACandidateWhoseBagSlotIsNotRead_IsOptimizationSkippedNoCandidate()
+    {
+        ItemId itemId = new("1234");
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: false);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoCandidate, result.Dispatch);
+        Assert.Empty(input.Presses);
     }
 
     // ------------------------------------------------------- Run(...) argument guards

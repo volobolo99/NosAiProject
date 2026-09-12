@@ -1,8 +1,10 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Runtime.Versioning;
 using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
+using NosAi.Core.WorldModel.Loadout;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.Core.WorldModel.Strategy;
@@ -14,6 +16,7 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
 using NosAi.Storage;
@@ -133,7 +136,23 @@ public static class AutoplayCommand
         Collected = 8,
 
         /// <summary>Collect was selected, but no drop with a known position was observed, or the current gameplay observation was unavailable.</summary>
-        CollectSkippedNoTarget = 9
+        CollectSkippedNoTarget = 9,
+
+        /// <summary>
+        /// A <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> was found and its item
+        /// is currently observed in <see cref="Player.Inventory"/> at a known bag slot: the decision is
+        /// made, but the live click is not dispatched from here yet. Reading a fresh
+        /// <see cref="WornEquipment"/> to verify the click (the same shape <see cref="EquipExecutor.Equip"/>
+        /// needs) requires a <c>GameTrafficObserver</c> scoped to this session's endpoint, the way
+        /// <see cref="EquipCommand"/> opens one standalone; <c>RunWindowsCore</c>'s own per-cycle
+        /// <c>GameplayObservation</c> does not carry the entity id that type constructs from, and a second
+        /// concurrent observer on the same capture is not something this contract designed. See C-310's
+        /// declared limitation.
+        /// </summary>
+        OptimizationCandidateReady = 10,
+
+        /// <summary>No <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> was available, or the candidate's item is not currently in <see cref="Player.Inventory"/>, or its bag slot falls outside the calibrated range.</summary>
+        OptimizationSkippedNoCandidate = 11
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -215,7 +234,9 @@ public static class AutoplayCommand
         DateTime nowUtc,
         EntityId playerId,
         EquatableArray<Drop> drops,
-        GameplayObservation? gameplay)
+        GameplayObservation? gameplay,
+        Player playerFacts,
+        Func<ItemId, EquipmentSlot?> resolveSlot)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -271,9 +292,12 @@ public static class AutoplayCommand
                     drops, playerPosition, playerId, gameplay, in grid, view, controller, chain, executor,
                     readPosition, in authority, nowUtc, footprint, plan);
 
+            case StrategicGoalKind.Optimization:
+                return DispatchOptimization(playerFacts, resolveSlot, footprint, plan);
+
             default:
-                // QuestUrgency/Progression/Optimization: named, never
-                // silently ignored, never substituted.
+                // QuestUrgency/Progression: named, never silently ignored,
+                // never substituted.
                 return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null, footprint);
         }
     }
@@ -439,6 +463,58 @@ public static class AutoplayCommand
 
         Console.Write(walk.Text);
         return new AutoplayCycleResult(AutoplayDispatch.Collected, plan, null, null, footprint);
+    }
+
+    /// <summary>
+    /// <see cref="StrategicGoalKind.Optimization"/>'s decision half: pick the
+    /// <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> to act on and resolve its
+    /// item to a current bag slot in <see cref="Player.Inventory"/>. Returns
+    /// <see cref="AutoplayDispatch.OptimizationCandidateReady"/> once both are known, or
+    /// <see cref="AutoplayDispatch.OptimizationSkippedNoCandidate"/> when there is no candidate or its
+    /// item is not currently observed in inventory. Does not click anything: see
+    /// <see cref="AutoplayDispatch.OptimizationCandidateReady"/>'s own remarks for why the live action
+    /// is not dispatched from here yet.
+    /// </summary>
+    private static AutoplayCycleResult DispatchOptimization(
+        Player playerFacts,
+        Func<ItemId, EquipmentSlot?> resolveSlot,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        var candidates = LoadoutPlanner.GenerateEmptySlotCandidates(playerFacts, resolveSlot);
+        if (candidates.Count == 0)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        var candidate = candidates[0];
+        if (!playerFacts.Inventory.HasValue)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        InventoryItem? matched = null;
+        foreach (InventoryItem stack in playerFacts.Inventory.Value)
+        {
+            if (stack.Id == candidate.Item)
+            {
+                matched = stack;
+                break;
+            }
+        }
+
+        if (matched is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        if (!matched.SlotIndex.HasValue)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        int bagSlotIndex = matched.SlotIndex.Value;
+        return new AutoplayCycleResult(AutoplayDispatch.OptimizationCandidateReady, plan, null, null, footprint);
     }
 
     /// <summary>
@@ -878,7 +954,9 @@ public static class AutoplayCommand
                     now,
                     entityPlayerId,
                     cycleDrops,
-                    gameplay);
+                    gameplay,
+                    playerFacts,
+                    resolveSlot);
 
                 // Carry this cycle's footprint forward regardless of what was
                 // dispatched -- only the Exploration branch actually changes it,

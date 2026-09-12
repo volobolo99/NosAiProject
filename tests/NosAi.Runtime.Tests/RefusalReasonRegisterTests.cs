@@ -119,6 +119,16 @@ public sealed class RefusalReasonRegisterTests
 
             // --- ciclo autoplay ----------------------------------------------------
             ["autoplay_cycles_exceeds_max"] = "richiede un ciclo autoplay oltre il massimo configurato",
+
+            // --- EquipCommand/EquipExecutor/BagPanelRoiCalibration (C-310): scheletro --
+            // --- di Fase 2, i corpi che emetterebbero queste reason sono ancora ---------
+            // --- throw new NotImplementedException(); nessun percorso le produce oggi --
+            ["equip_requires_item"] = "mai prodotto: EquipCommand.TryParse e' ancora uno scheletro (throw NotImplementedException)",
+            ["equip_ambiguous_item"] = "mai prodotto: EquipCommand.TryParse e' ancora uno scheletro (throw NotImplementedException)",
+            ["equip_invalid_item"] = "mai prodotto: EquipCommand.TryParse e' ancora uno scheletro (throw NotImplementedException)",
+            ["equip_item_not_in_inventory"] = "mai prodotto: EquipCommand.RunWindows e' ancora uno scheletro (throw NotImplementedException)",
+            ["equip_bag_slot_not_resolved"] = "mai prodotto: EquipExecutor.Equip e' ancora uno scheletro (throw NotImplementedException)",
+            ["bag_slot_index_not_in_calibrated_range"] = "mai prodotto: BagPanelRoiCalibration.Resolve e' ancora uno scheletro (throw NotImplementedException)",
         };
 
     /// <summary>

@@ -126,7 +126,19 @@ public sealed class AutoplayRecoveryDispatchTests
             Now,
             playerId: new EntityId("test-player"),
             drops: EquatableArray<Drop>.Empty,
-            gameplay: null);
+            gameplay: null,
+            playerFacts: new Player(
+                new EntityId("test-player"),
+                WorldFact<WorldPosition>.Unknown("test_player_not_read", Now),
+                WorldFact<float>.Unknown("test_player_not_read", Now),
+                WorldFact<bool>.Unknown("test_player_not_read", Now),
+                WorldFact<MapId>.Unknown("test_player_not_read", Now),
+                CombatantStatus.Empty,
+                WorldFact<EquatableArray<Skill>>.Unknown("test_player_not_read", Now),
+                WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
+                WorldFact<EquatableArray<InventoryItem>>.Unknown("test_player_not_read", Now),
+                WorldFact<EquatableArray<EquipmentItem>>.Unknown("test_player_not_read", Now)),
+            resolveSlot: _ => null);
     }
 
     private static StrategicPlan RecoveryPlan() =>
