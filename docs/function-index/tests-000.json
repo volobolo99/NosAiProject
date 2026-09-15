@@ -3366,6 +3366,132 @@
     "category": "test"
   },
   {
+    "path": "tests/NosAi.ControlPanel.UiTests/NavigationUiTests.cs",
+    "line": 14,
+    "kind": "method_declaration",
+    "name": "ClickingClientNav_ChangesPageTitle",
+    "scope": "NosAi.ControlPanel.UiTests.NavigationUiTests",
+    "signature": "[Fact] [Trait(\"Category\", \"UiAutopilot\")] public void ClickingClientNav_ChangesPageTitle()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/NavigationUiTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "FindRepoRoot",
+    "scope": "NosAi.ControlPanel.UiTests.NavigationUiTests",
+    "signature": "private static string? FindRepoRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/NavigationUiTests.cs",
+    "line": 61,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "NosAi.ControlPanel.UiTests.NavigationUiTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 21,
+    "kind": "method_declaration",
+    "name": "SetForegroundWindow",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "[DllImport(\"user32.dll\")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool SetForegroundWindow(IntPtr hWnd);",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 32,
+    "kind": "constructor_declaration",
+    "name": "UiAutopilot",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "private UiAutopilot(Process? process, bool ownsProcess, AutomationElement window, DxgiDesktopDuplicationSource? capture)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "TryLaunch",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public static bool TryLaunch(string exePath, TimeSpan startupTimeout, out UiAutopilot? autopilot, out UiAutopilotUnavailable? unavailable)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 78,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "TryAttach",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public static bool TryAttach(string processName, TimeSpan timeout, out UiAutopilot? autopilot, out UiAutopilotUnavailable? unavailable)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 132,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 159,
+    "kind": "method_declaration",
+    "name": "TryFindByAutomationId",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public bool TryFindByAutomationId(string automationId, TimeSpan timeout, out AutomationElement? element)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "TryClickPhysical",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public bool TryClickPhysical(AutomationElement element)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 203,
+    "kind": "method_declaration",
+    "name": "GetName",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public string GetName(AutomationElement element)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "TryCaptureWindowScreenshot",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public bool TryCaptureWindowScreenshot(out byte[]? pngBytes)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.ControlPanel.UiTests/UiAutopilot.cs",
+    "line": 271,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "NosAi.ControlPanel.UiTests.UiAutopilot",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Core.Tests/ActionOutcomeLedgerStoreTests.cs",
     "line": 20,
     "kind": "constructor_declaration",
@@ -4371,132 +4497,6 @@
     "name": "SavingTheSameMapIdTwice_OverwritesRatherThanDuplicating",
     "scope": "MapModelStoreTests",
     "signature": "[Fact] public void SavingTheSameMapIdTwice_OverwritesRatherThanDuplicating()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
-    "line": 186,
-    "kind": "method_declaration",
-    "name": "ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
-    "scope": "MapModelStoreTests",
-    "signature": "[Fact] public void ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
-    "line": 209,
-    "kind": "method_declaration",
-    "name": "ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection",
-    "scope": "MapModelStoreTests",
-    "signature": "[Fact] public void ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
-    "line": 218,
-    "kind": "method_declaration",
-    "name": "ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds",
-    "scope": "MapModelStoreTests",
-    "signature": "[Fact] public void ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
-    "line": 236,
-    "kind": "method_declaration",
-    "name": "ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce",
-    "scope": "MapModelStoreTests",
-    "signature": "[Fact] public void ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 9,
-    "kind": "method_declaration",
-    "name": "NewCategories_AreDefined",
-    "scope": "MemoryTypeExtensionTests",
-    "signature": "[Theory] [InlineData(MemoryType.Spatial)] [InlineData(MemoryType.Combat)] [InlineData(MemoryType.Quest)] [InlineData(MemoryType.Character)] [InlineData(MemoryType.Failure)] public void NewCategories_AreDefined(MemoryType kind)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 20,
-    "kind": "method_declaration",
-    "name": "OriginalCategories_KeepTheirNumericValues",
-    "scope": "MemoryTypeExtensionTests",
-    "signature": "[Fact] public void OriginalCategories_KeepTheirNumericValues()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 35,
-    "kind": "method_declaration",
-    "name": "BuildEntry",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "private static ActionOutcomeLedgerEntry BuildEntry(string context, ActionOutcome outcome)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "BuildUnknownEntry",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "private static ActionOutcomeLedgerEntry BuildUnknownEntry(string context, string reason)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 41,
-    "kind": "method_declaration",
-    "name": "Predict_EmptyLedger_ReturnsZeroCountsAndNullRate",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_EmptyLedger_ReturnsZeroCountsAndNullRate()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 53,
-    "kind": "method_declaration",
-    "name": "Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 72,
-    "kind": "method_declaration",
-    "name": "Predict_OnlyInProgressEntries_RateStaysNull",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_OnlyInProgressEntries_RateStaysNull()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 87,
-    "kind": "method_declaration",
-    "name": "Predict_MixedOutcomes_ComputesRateFromSettledOnly",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_MixedOutcomes_ComputesRateFromSettledOnly()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 107,
-    "kind": "method_declaration",
-    "name": "Predict_IgnoresEntriesForOtherContexts",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_IgnoresEntriesForOtherContexts()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
-    "line": 122,
-    "kind": "method_declaration",
-    "name": "Predict_ContextMatchIsOrdinal_CaseSensitive",
-    "scope": "LocalOutcomeSimulatorTests",
-    "signature": "[Fact] public void Predict_ContextMatchIsOrdinal_CaseSensitive()",
     "category": "test"
   }
 ]

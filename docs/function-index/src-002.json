@@ -1288,7 +1288,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyContracts.cs",
-    "line": 61,
+    "line": 64,
     "kind": "method_declaration",
     "name": "Unselected",
     "scope": "StrategicPlan",
@@ -1351,7 +1351,16 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 261,
+    "line": 259,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency",
+    "scope": "StrategyPlanner",
+    "signature": "public static StrategicSignal? AssessCollectUrgency(Player player, EquatableArray<Drop> drops, double maxRangeTiles = 12.0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
+    "line": 309,
     "kind": "method_declaration",
     "name": "AssessOptimizationUrgency",
     "scope": "StrategyPlanner",
@@ -1360,7 +1369,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 315,
+    "line": 363,
     "kind": "method_declaration",
     "name": "AssessProgressionUrgency",
     "scope": "StrategyPlanner",
@@ -1369,7 +1378,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 337,
+    "line": 385,
     "kind": "method_declaration",
     "name": "SelectStrategicPlan",
     "scope": "StrategyPlanner",
@@ -1378,7 +1387,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 354,
+    "line": 402,
     "kind": "method_declaration",
     "name": "TryGetFraction",
     "scope": "StrategyPlanner",
@@ -4488,15 +4497,6 @@
     "name": "TrySelect",
     "scope": "TargetSelector",
     "signature": "public static bool TrySelect( IReadOnlyList<SelectableEntity> observed, ClassifiedValue<MapPoint> playerPosition, DateTime nowUtc, TargetSelectionPolicy policy, out TargetChoice? choice, out string failureReason, Func<SelectableEntity, bool>? isAttackable = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
-    "line": 302,
-    "kind": "method_declaration",
-    "name": "Distance",
-    "scope": "TargetSelector",
-    "signature": "private static double Distance(MapPoint a, MapPoint b)",
     "category": "project"
   }
 ]

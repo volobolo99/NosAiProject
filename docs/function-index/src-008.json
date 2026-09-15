@@ -1,5 +1,356 @@
 [
   {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 36,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureHealthPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 37,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureHealthPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 39,
+    "kind": "constructor_declaration",
+    "name": "CaptureHealthPolicy",
+    "scope": "CaptureHealthPolicy",
+    "signature": "public CaptureHealthPolicy( int minimumSamples = 20, double degradedDropRatio = 0.25, double unhealthyDropRatio = 0.60, double degradedFailureRatio = 0.50, double unhealthyFailureRatio = 0.90)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "CaptureHealthPolicy",
+    "signature": "public CaptureHealthSnapshot Evaluate( long successfulAcquisitions, long publishedFrames, long droppedFrames, long acquireFailures)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "CaptureHealthPolicy",
+    "signature": "private static CaptureHealthSnapshot Snapshot( CaptureHealthState state, string reason, long successfulAcquisitions, long publishedFrames, long droppedFrames, long acquireFailures, double dropRatio, double failureRatio)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "ValidateRatio",
+    "scope": "CaptureHealthPolicy",
+    "signature": "private static void ValidateRatio(double value, string name)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 52,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "public static int Run(string? processName = null, string? calibrationPath = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 80,
+    "kind": "method_declaration",
+    "name": "CalibrationIsUsable",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "public static bool CalibrationIsUsable( ScreenProjectionCalibration calibration, DpiAwarenessRegime regime, GeometryShape? liveShape, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "RunWindows",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(string? processName, string? calibrationPath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 175,
+    "kind": "method_declaration",
+    "name": "ReportCalibration",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "private static void ReportCalibration( string path, ScreenProjectionCalibration stored, bool usable, string? whyNot)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 192,
+    "kind": "method_declaration",
+    "name": "TryFindWindow",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(string? processName, out ClientWindow window, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 249,
+    "kind": "method_declaration",
+    "name": "ReportDisplayScale",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static void ReportDisplayScale()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "GetDpiForWindow",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern uint GetDpiForWindow(IntPtr hwnd);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 305,
+    "kind": "method_declaration",
+    "name": "MonitorFromWindow",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 309,
+    "kind": "method_declaration",
+    "name": "GetDC",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr GetDC(IntPtr hwnd);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 313,
+    "kind": "method_declaration",
+    "name": "ReleaseDC",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
+    "line": 317,
+    "kind": "method_declaration",
+    "name": "GetDeviceCaps",
+    "scope": "ClientWindowDpiProbe",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"gdi32.dll\")] private static extern int GetDeviceCaps(IntPtr hdc, int index);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 46,
+    "kind": "method_declaration",
+    "name": "TryFind",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static ClientWindow? TryFind(int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 53,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClientWindowLocator",
+    "signature": "(handle, _) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 101,
+    "kind": "method_declaration",
+    "name": "EnumWindows",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\", SetLastError = true)] private static extern bool EnumWindows(EnumProc callback, IntPtr parameter);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 105,
+    "kind": "method_declaration",
+    "name": "GetWindowThreadProcessId",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern uint GetWindowThreadProcessId(IntPtr handle, out uint processId);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "IsWindowVisible",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool IsWindowVisible(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 113,
+    "kind": "method_declaration",
+    "name": "IsIconic",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool IsIconic(IntPtr handle);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 117,
+    "kind": "method_declaration",
+    "name": "GetClientRect",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool GetClientRect(IntPtr handle, out Rect rect);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "ClientToScreen",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool ClientToScreen(IntPtr handle, ref Point point);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "GetClassNameW",
+    "scope": "ClientWindowLocator",
+    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\", CharSet = CharSet.Unicode)] private static extern int GetClassNameW(IntPtr handle, StringBuilder name, int capacity);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 10,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IObjectDetector",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 12,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "IObjectDetector",
+    "signature": "IReadOnlyList<Detection> Detect(CaptureFrame frame);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 21,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "IObjectTracker",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 23,
+    "kind": "method_declaration",
+    "name": "Track",
+    "scope": "IObjectTracker",
+    "signature": "IReadOnlyList<TrackedEntity> Track(IReadOnlyList<Detection> detections, double deltaSeconds);",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DelegateObjectDetector",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 36,
+    "kind": "constructor_declaration",
+    "name": "DelegateObjectDetector",
+    "scope": "DelegateObjectDetector",
+    "signature": "public DelegateObjectDetector( Func<CaptureFrame, IReadOnlyList<Detection>> detect, string name = \"delegate-detector\")",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 44,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "DelegateObjectDetector",
+    "signature": "public IReadOnlyList<Detection> Detect(CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
+    "line": 59,
+    "kind": "method_declaration",
+    "name": "Detect",
+    "scope": "NullObjectDetector",
+    "signature": "public IReadOnlyList<Detection> Detect(CaptureFrame frame)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 50,
+    "kind": "constructor_declaration",
+    "name": "DialogRoiCalibration",
+    "scope": "DialogRoiCalibration",
+    "signature": "private DialogRoiCalibration( bool isCalibrated, double x, double y, double width, double height, int clientWidth, int clientHeight, DateTime? calibratedAtUtc, double baselineMeanB, double baselineMeanG, double baselineMeanR)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 77,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 80,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 83,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
+    "line": 86,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "DialogRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
     "line": 89,
     "kind": "accessor_declaration",
@@ -640,7 +991,16 @@
   },
   {
     "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
-    "line": 129,
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "TrySaveBagPanelPreview",
+    "scope": "HudCropWriter",
+    "signature": "public static string? TrySaveBagPanelPreview(string? repoRoot, CaptureFrame frame, PixelRect panelArea)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "line": 152,
     "kind": "method_declaration",
     "name": "WriteBmp",
     "scope": "HudCropWriter",
@@ -4137,366 +4497,6 @@
     "name": "get",
     "scope": "ScreenProjectionCalibration",
     "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 385,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 406,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 418,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 421,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 424,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 441,
-    "kind": "method_declaration",
-    "name": "TrySolve",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "public static bool TrySolve( IReadOnlyList<ScreenProjectionSample> samples, int clientWidth, int clientHeight, DateTime calibratedAtUtc, out ScreenProjectionCalibration calibration, out string? failureReason, DpiAwarenessRegime? regime = null, uint clientDpi = 0, int discardedSamples = 0)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 470,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 471,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 501,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 501,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 502,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 502,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 511,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "static s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 513,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "static s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 653,
-    "kind": "method_declaration",
-    "name": "ProjectDelta",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "public (double X, double Y)? ProjectDelta(MapPoint mapDelta)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 676,
-    "kind": "method_declaration",
-    "name": "Load",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "public static ScreenProjectionCalibration Load(string path, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 780,
-    "kind": "method_declaration",
-    "name": "Save",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "public void Save(string path)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 819,
-    "kind": "method_declaration",
-    "name": "SolveComponent",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static (double A, double B, double C) SolveComponent( IReadOnlyList<ScreenProjectionSample> samples, double meanX, double meanY, double sxx, double sxy, double syy, double determinant, Func<ScreenProjectionSample, int> screen)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 829,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "s =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 865,
-    "kind": "method_declaration",
-    "name": "TrySolvePerspective",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool TrySolvePerspective( IReadOnlyList<ScreenProjectionSample> samples, out double[]? coefficients, out double varianceFactorX, out double varianceFactorY)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 936,
-    "kind": "method_declaration",
-    "name": "TryInvertDiagonal",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool TryInvertDiagonal(double[,] normal, out double forA, out double forE)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 964,
-    "kind": "method_declaration",
-    "name": "TrySolveInPlace",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool TrySolveInPlace(double[,] matrix, out double[] solution)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 1018,
-    "kind": "method_declaration",
-    "name": "WorstTiles",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool WorstTiles( IReadOnlyList<ScreenProjectionSample> samples, double a, double b, double c, double d, double e, double f, double g, double h, out double worstTiles, out double worstPixels, out int worstIndex)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 1071,
-    "kind": "method_declaration",
-    "name": "AnchorIsInside",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool AnchorIsInside(double x, double y, int clientWidth, int clientHeight)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 1074,
-    "kind": "method_declaration",
-    "name": "TryNumber",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "private static bool TryNumber(string field, out double value)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 88,
-    "kind": "method_declaration",
-    "name": "RunSample",
-    "scope": "ScreenProjectionProbe",
-    "signature": "public static int RunSample(string? repoRoot, int mapX, int mapY, string? processName = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 107,
-    "kind": "method_declaration",
-    "name": "RunSolve",
-    "scope": "ScreenProjectionProbe",
-    "signature": "public static int RunSolve(string? repoRoot, Action<string>? report = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 109,
-    "kind": "local_function_statement",
-    "name": "Say",
-    "scope": "ScreenProjectionProbe",
-    "signature": "void Say(string line = \"\")",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 179,
-    "kind": "method_declaration",
-    "name": "RunClear",
-    "scope": "ScreenProjectionProbe",
-    "signature": "public static int RunClear(string? repoRoot, Action<string>? report = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 181,
-    "kind": "local_function_statement",
-    "name": "Say",
-    "scope": "ScreenProjectionProbe",
-    "signature": "void Say(string line = \"\")",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 219,
-    "kind": "method_declaration",
-    "name": "NameTheOddOneOut",
-    "scope": "ScreenProjectionProbe",
-    "signature": "private static void NameTheOddOneOut( IReadOnlyList<ScreenProjectionSample> samples, int clientWidth, int clientHeight, Action<string> say)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 228,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionProbe",
-    "signature": "(_, i) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 250,
-    "kind": "method_declaration",
-    "name": "ReadSamples",
-    "scope": "ScreenProjectionProbe",
-    "signature": "private static List<ScreenProjectionSample> ReadSamples( string path, out int clientWidth, out int clientHeight, out uint clientDpi, Action<string>? report = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 254,
-    "kind": "local_function_statement",
-    "name": "Say",
-    "scope": "ScreenProjectionProbe",
-    "signature": "void Say(string line = \"\")",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 318,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionProbe",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 319,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionProbe",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 321,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ScreenProjectionProbe",
-    "signature": "x =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionProbe.cs",
-    "line": 340,
-    "kind": "method_declaration",
-    "name": "TryClientArea",
-    "scope": "ScreenProjectionProbe",
-    "signature": "private static bool TryClientArea(string? processName, out PixelRect area, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
-    "line": 61,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "ScreenProjectionWatcher",
-    "signature": "public static int Run( int seconds, int wanted, string? repoRoot = null, Action<string>? report = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionWatcher.cs",
-    "line": 64,
-    "kind": "local_function_statement",
-    "name": "Say",
-    "scope": "ScreenProjectionWatcher",
-    "signature": "void Say(string line = \"\")",
     "category": "project"
   }
 ]

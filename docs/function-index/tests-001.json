@@ -1,5 +1,131 @@
 [
   {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ConstructingTheStore_AppliesAndVerifiesTheWalFullSynchronousBusyTimeoutPolicy()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_OnAnEmptyStore_ReturnsAnEmptyCollection()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 218,
+    "kind": "method_declaration",
+    "name": "ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_AfterSavingTwoDifferentMaps_ReturnsBothIds()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/MapModelStoreTests.cs",
+    "line": 236,
+    "kind": "method_declaration",
+    "name": "ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce",
+    "scope": "MapModelStoreTests",
+    "signature": "[Fact] public void ListMapIds_AfterSavingTheSameIdTwice_StillListsItExactlyOnce()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 9,
+    "kind": "method_declaration",
+    "name": "NewCategories_AreDefined",
+    "scope": "MemoryTypeExtensionTests",
+    "signature": "[Theory] [InlineData(MemoryType.Spatial)] [InlineData(MemoryType.Combat)] [InlineData(MemoryType.Quest)] [InlineData(MemoryType.Character)] [InlineData(MemoryType.Failure)] public void NewCategories_AreDefined(MemoryType kind)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 20,
+    "kind": "method_declaration",
+    "name": "OriginalCategories_KeepTheirNumericValues",
+    "scope": "MemoryTypeExtensionTests",
+    "signature": "[Fact] public void OriginalCategories_KeepTheirNumericValues()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "BuildEntry",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "private static ActionOutcomeLedgerEntry BuildEntry(string context, ActionOutcome outcome)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "BuildUnknownEntry",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "private static ActionOutcomeLedgerEntry BuildUnknownEntry(string context, string reason)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Predict_EmptyLedger_ReturnsZeroCountsAndNullRate",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_EmptyLedger_ReturnsZeroCountsAndNullRate()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_UnknownOutcomeEntries_CountedSeparately_NeverAsSettledOrInProgress()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 72,
+    "kind": "method_declaration",
+    "name": "Predict_OnlyInProgressEntries_RateStaysNull",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_OnlyInProgressEntries_RateStaysNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "Predict_MixedOutcomes_ComputesRateFromSettledOnly",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_MixedOutcomes_ComputesRateFromSettledOnly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 107,
+    "kind": "method_declaration",
+    "name": "Predict_IgnoresEntriesForOtherContexts",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_IgnoresEntriesForOtherContexts()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/Memory/ActionOutcomeLedgerTests.cs",
+    "line": 122,
+    "kind": "method_declaration",
+    "name": "Predict_ContextMatchIsOrdinal_CaseSensitive",
+    "scope": "LocalOutcomeSimulatorTests",
+    "signature": "[Fact] public void Predict_ContextMatchIsOrdinal_CaseSensitive()",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Core.Tests/Memory/AdaptiveKnowledgeStoreTests.cs",
     "line": 8,
     "kind": "method_declaration",
@@ -4371,132 +4497,6 @@
     "name": "APortalIsNeverTreatedAsBidirectional_TheReturnTripNeedsItsOwnObservedPortal",
     "scope": "MultiMapRoutePlannerTests",
     "signature": "[Fact] public void APortalIsNeverTreatedAsBidirectional_TheReturnTripNeedsItsOwnObservedPortal()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
-    "line": 169,
-    "kind": "method_declaration",
-    "name": "WhenTwoRoutesExist_TheShorterHopCountWins",
-    "scope": "MultiMapRoutePlannerTests",
-    "signature": "[Fact] public void WhenTwoRoutesExist_TheShorterHopCountWins()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
-    "line": 196,
-    "kind": "method_declaration",
-    "name": "ARouteThatWouldRevisitAMap_DoesNotLoopForever",
-    "scope": "MultiMapRoutePlannerTests",
-    "signature": "[Fact] public void ARouteThatWouldRevisitAMap_DoesNotLoopForever()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
-    "line": 217,
-    "kind": "method_declaration",
-    "name": "TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan",
-    "scope": "MultiMapRoutePlannerTests",
-    "signature": "[Fact] public void TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 8,
-    "kind": "method_declaration",
-    "name": "EntityId_RejectsNullOrWhitespace",
-    "scope": "IdentifiersTests",
-    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void EntityId_RejectsNullOrWhitespace(string? value)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 14,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 17,
-    "kind": "method_declaration",
-    "name": "EntityId_ToString_ReturnsTheValue",
-    "scope": "IdentifiersTests",
-    "signature": "[Fact] public void EntityId_ToString_ReturnsTheValue()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 24,
-    "kind": "method_declaration",
-    "name": "EntityId_SameValue_AreEqual",
-    "scope": "IdentifiersTests",
-    "signature": "[Fact] public void EntityId_SameValue_AreEqual()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 30,
-    "kind": "method_declaration",
-    "name": "MapId_RejectsNullOrWhitespace",
-    "scope": "IdentifiersTests",
-    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void MapId_RejectsNullOrWhitespace(string? value)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 36,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 39,
-    "kind": "method_declaration",
-    "name": "EveryOtherIdType_RejectsNullOrEmpty",
-    "scope": "IdentifiersTests",
-    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] public void EveryOtherIdType_RejectsNullOrEmpty(string? value)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 44,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 45,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 46,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
-    "line": 47,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "IdentifiersTests",
-    "signature": "() =>",
     "category": "test"
   }
 ]

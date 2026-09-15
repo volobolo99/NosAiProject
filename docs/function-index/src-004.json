@@ -1,6 +1,33 @@
 [
   {
     "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "ProtectedPathFor",
+    "scope": "RuntimeIdentity",
+    "signature": "public static string ProtectedPathFor(string privatePath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 100,
+    "kind": "method_declaration",
+    "name": "PublicPathFor",
+    "scope": "RuntimeIdentity",
+    "signature": "public static string PublicPathFor(string privatePath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 103,
+    "kind": "method_declaration",
+    "name": "SiblingOf",
+    "scope": "RuntimeIdentity",
+    "signature": "private static string SiblingOf(string privatePath, string defaultPath)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
     "line": 136,
     "kind": "method_declaration",
     "name": "LoadOrCreate",
@@ -4470,33 +4497,6 @@
     "name": "TestForgedTokenRejection",
     "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
     "signature": "private static bool TestForgedTokenRejection()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 467,
-    "kind": "method_declaration",
-    "name": "TestGuardPolicyBoundaries",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestGuardPolicyBoundaries()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 484,
-    "kind": "method_declaration",
-    "name": "TestClosedLoopSimulatedSuccessAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static async Task<bool> TestClosedLoopSimulatedSuccessAsync()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 493,
-    "kind": "method_declaration",
-    "name": "TestClosedLoopDiscrepancyRecoveryAsync",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static async Task<bool> TestClosedLoopDiscrepancyRecoveryAsync()",
     "category": "project"
   }
 ]
