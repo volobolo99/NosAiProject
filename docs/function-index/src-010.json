@@ -1,6 +1,33 @@
 [
   {
     "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
+    "line": 341,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClickTargetCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
+    "line": 350,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "ClickTargetCommand",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
+    "line": 379,
+    "kind": "method_declaration",
+    "name": "DescribeById",
+    "scope": "ClickTargetCommand",
+    "signature": "private static string DescribeById(SelectableEntity entity, long id)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
     "line": 390,
     "kind": "method_declaration",
     "name": "DescribeVerification",
@@ -163,7 +190,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 236,
+    "line": 248,
     "kind": "method_declaration",
     "name": "ExecuteOneRound",
     "scope": "EngageCommand",
@@ -172,7 +199,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 276,
+    "line": 288,
     "kind": "method_declaration",
     "name": "Run",
     "scope": "EngageCommand",
@@ -181,7 +208,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 316,
+    "line": 328,
     "kind": "method_declaration",
     "name": "JudgeTarget",
     "scope": "EngageCommand",
@@ -190,7 +217,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 380,
+    "line": 392,
     "kind": "method_declaration",
     "name": "DescribeUnfitPicture",
     "scope": "EngageCommand",
@@ -199,7 +226,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 443,
+    "line": 455,
     "kind": "method_declaration",
     "name": "DescribeTargetRefusal",
     "scope": "EngageCommand",
@@ -208,7 +235,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 454,
+    "line": 466,
     "kind": "method_declaration",
     "name": "RunWindows",
     "scope": "EngageCommand",
@@ -217,7 +244,16 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 485,
+    "line": 479,
+    "kind": "method_declaration",
+    "name": "ExecuteEngagement",
+    "scope": "EngageCommand",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int ExecuteEngagement(string targetEntityId, string skillId, int rounds, RuntimeComponents components)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+    "line": 509,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "EngageCommand",
@@ -226,7 +262,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 548,
+    "line": 572,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "EngageCommand",
@@ -235,7 +271,25 @@
   },
   {
     "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-    "line": 593,
+    "line": 620,
+    "kind": "method_declaration",
+    "name": "RunArmed",
+    "scope": "EngageCommand",
+    "signature": "public static int RunArmed(string targetEntityId, string skillId, int rounds, bool armInput)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+    "line": 641,
+    "kind": "method_declaration",
+    "name": "RunWindowsArmed",
+    "scope": "EngageCommand",
+    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindowsArmed(string targetEntityId, string skillId, int rounds, bool armInput)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+    "line": 660,
     "kind": "method_declaration",
     "name": "PrintEvidence",
     "scope": "EngageCommand",

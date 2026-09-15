@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/RuntimeIdentityTests.cs",
+    "line": 38,
+    "kind": "method_declaration",
+    "name": "AFirstRunWrapsTheKeyAndLeavesNoPlaintext",
+    "scope": "RuntimeIdentityTests",
+    "signature": "[WindowsOnlyFact] public void AFirstRunWrapsTheKeyAndLeavesNoPlaintext()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/RuntimeIdentityTests.cs",
     "line": 52,
     "kind": "method_declaration",
     "name": "TheIdentitySurvivesARestartUnchanged",
@@ -4488,15 +4497,6 @@
     "name": "get",
     "scope": "SingleStepCommandTests.ProjectionStandIn",
     "signature": "get;",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/SingleStepCommandTests.cs",
-    "line": 52,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "SingleStepCommandTests.ProjectionStandIn",
-    "signature": "set;",
     "category": "test"
   }
 ]

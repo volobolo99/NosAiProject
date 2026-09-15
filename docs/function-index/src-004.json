@@ -1,6 +1,24 @@
 [
   {
     "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 93,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "RuntimeIdentity",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
+    "line": 93,
+    "kind": "accessor_declaration",
+    "name": "init",
+    "scope": "RuntimeIdentity",
+    "signature": "private init;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
     "line": 96,
     "kind": "method_declaration",
     "name": "ProtectedPathFor",
@@ -4479,24 +4497,6 @@
     "name": "TestRsaChallengeSingleUse",
     "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
     "signature": "private static bool TestRsaChallengeSingleUse()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 431,
-    "kind": "method_declaration",
-    "name": "TestActionTokenIssuerAndTokenConsumption",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestActionTokenIssuerAndTokenConsumption()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
-    "line": 447,
-    "kind": "method_declaration",
-    "name": "TestForgedTokenRejection",
-    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
-    "signature": "private static bool TestForgedTokenRejection()",
     "category": "project"
   }
 ]

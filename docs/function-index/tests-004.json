@@ -1990,7 +1990,16 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 381,
+    "line": 389,
+    "kind": "method_declaration",
+    "name": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+    "scope": "EngageCommandTests",
+    "signature": "[Theory] [InlineData(\" \", \"201\", 1, false)] [InlineData(\"mob-1\", \"\", 1, false)] [InlineData(\"mob-1\", \"201\", 0, false)] [InlineData(\"\", \"\", 0, true)] [InlineData(\" \", \"201\", 1, true)] [InlineData(\"mob-1\", \"\", 1, true)] [InlineData(\"mob-1\", \"201\", 0, true)] public void RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient( string targetEntityId, string skillId, int rounds, bool armInput)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+    "line": 419,
     "kind": "method_declaration",
     "name": "TheRuntimeWiresTheEngageFlag",
     "scope": "EngageCommandTests",
@@ -1999,7 +2008,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 400,
+    "line": 438,
     "kind": "method_declaration",
     "name": "TheTwoTargetRefusalReasons_AreDistinctNamedIdentifiers",
     "scope": "EngageCommandTests",
@@ -2008,7 +2017,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 421,
+    "line": 459,
     "kind": "method_declaration",
     "name": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
     "scope": "EngageCommandTests",
@@ -2017,7 +2026,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 464,
+    "line": 502,
     "kind": "method_declaration",
     "name": "MobObservedAt",
     "scope": "EngageCommandTests",
@@ -2026,7 +2035,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 472,
+    "line": 510,
     "kind": "method_declaration",
     "name": "SkillOn",
     "scope": "EngageCommandTests",
@@ -2035,7 +2044,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 479,
+    "line": 517,
     "kind": "method_declaration",
     "name": "ARecentlyObservedTarget_IsFitToDecideFrom",
     "scope": "EngageCommandTests",
@@ -2044,7 +2053,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 496,
+    "line": 534,
     "kind": "method_declaration",
     "name": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
     "scope": "EngageCommandTests",
@@ -2053,7 +2062,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 514,
+    "line": 552,
     "kind": "method_declaration",
     "name": "AClosedSafetyGate_RefusesTheRound",
     "scope": "EngageCommandTests",
@@ -2062,7 +2071,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 536,
+    "line": 574,
     "kind": "method_declaration",
     "name": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
     "scope": "EngageCommandTests",
@@ -2071,7 +2080,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 553,
+    "line": 591,
     "kind": "method_declaration",
     "name": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
     "scope": "EngageCommandTests",
@@ -2080,7 +2089,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 570,
+    "line": 608,
     "kind": "method_declaration",
     "name": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
     "scope": "EngageCommandTests",
@@ -2089,7 +2098,7 @@
   },
   {
     "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-    "line": 596,
+    "line": 634,
     "kind": "method_declaration",
     "name": "RepositoryRoot",
     "scope": "EngageCommandTests",
@@ -4488,15 +4497,6 @@
     "name": "<anonymous/accessor>",
     "scope": "SkillCatalogueTests",
     "signature": "t =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/GameData/SkillCatalogueTests.cs",
-    "line": 25,
-    "kind": "method_declaration",
-    "name": "A_real_vnum_resolves_and_a_missing_one_does_not_resemble_it",
-    "scope": "SkillCatalogueTests",
-    "signature": "[NosTaleClientFact] public void A_real_vnum_resolves_and_a_missing_one_does_not_resemble_it()",
     "category": "test"
   }
 ]

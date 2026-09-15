@@ -1,6 +1,24 @@
 [
   {
     "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
+    "line": 82,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "TargetSelectionPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
+    "line": 170,
+    "kind": "method_declaration",
+    "name": "TrySelect",
+    "scope": "TargetSelector",
+    "signature": "public static bool TrySelect( IReadOnlyList<SelectableEntity> observed, ClassifiedValue<MapPoint> playerPosition, DateTime nowUtc, TargetSelectionPolicy policy, out TargetChoice? choice, out string failureReason, Func<SelectableEntity, bool>? isAttackable = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
     "line": 302,
     "kind": "method_declaration",
     "name": "Distance",
@@ -4479,24 +4497,6 @@
     "name": "RuntimeIdentity",
     "scope": "RuntimeIdentity",
     "signature": "private RuntimeIdentity(RSA key)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 93,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "RuntimeIdentity",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Gate1/RuntimeIdentity.cs",
-    "line": 93,
-    "kind": "accessor_declaration",
-    "name": "init",
-    "scope": "RuntimeIdentity",
-    "signature": "private init;",
     "category": "project"
   }
 ]

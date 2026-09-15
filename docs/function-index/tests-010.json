@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/SingleStepCommandTests.cs",
+    "line": 52,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "SingleStepCommandTests.ProjectionStandIn",
+    "signature": "set;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/SingleStepCommandTests.cs",
     "line": 54,
     "kind": "method_declaration",
     "name": "TryProject",
@@ -4488,15 +4497,6 @@
     "name": "AScopeRefusedByTheGate_IsNotAttempted_AndTheWindowNeverOpens",
     "scope": "UnequipExecutorTests",
     "signature": "[Fact] public void AScopeRefusedByTheGate_IsNotAttempted_AndTheWindowNeverOpens()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/UnequipExecutorTests.cs",
-    "line": 200,
-    "kind": "method_declaration",
-    "name": "ASlotNotCurrentlyWorn_IsRefused_BeforeEmitting",
-    "scope": "UnequipExecutorTests",
-    "signature": "[Fact] public void ASlotNotCurrentlyWorn_IsRefused_BeforeEmitting()",
     "category": "test"
   }
 ]

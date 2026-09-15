@@ -1,6 +1,24 @@
 [
   {
     "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 431,
+    "kind": "method_declaration",
+    "name": "TestActionTokenIssuerAndTokenConsumption",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestActionTokenIssuerAndTokenConsumption()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 447,
+    "kind": "method_declaration",
+    "name": "TestForgedTokenRejection",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestForgedTokenRejection()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
     "line": 467,
     "kind": "method_declaration",
     "name": "TestGuardPolicyBoundaries",
@@ -4479,24 +4497,6 @@
     "name": "TryToPoint",
     "scope": "NetworkGameplayProvider",
     "signature": "private static bool TryToPoint(double x, double y, out MapPoint point)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
-    "line": 1004,
-    "kind": "method_declaration",
-    "name": "Classify",
-    "scope": "NetworkGameplayProvider",
-    "signature": "private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime at)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
-    "line": 1028,
-    "kind": "method_declaration",
-    "name": "Observe",
-    "scope": "UnavailableGameplayProvider",
-    "signature": "public GameplayObservation Observe()",
     "category": "project"
   }
 ]

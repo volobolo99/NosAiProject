@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/HaltDiagnosticsTests.cs",
+    "line": 18,
+    "kind": "constructor_declaration",
+    "name": "HaltDiagnosticsTests",
+    "scope": "HaltDiagnosticsTests",
+    "signature": "public HaltDiagnosticsTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/HaltDiagnosticsTests.cs",
     "line": 24,
     "kind": "method_declaration",
     "name": "Dispose",
@@ -4488,15 +4497,6 @@
     "name": "DimensionsThatOverflowAreRefusedRatherThanWrapped",
     "scope": "MapGridTests",
     "signature": "[Fact] public void DimensionsThatOverflowAreRefusedRatherThanWrapped()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/MapGridTests.cs",
-    "line": 206,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MapGridTests",
-    "signature": "() =>",
     "category": "test"
   }
 ]

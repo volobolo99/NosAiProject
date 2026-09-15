@@ -1,6 +1,24 @@
 [
   {
     "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 345,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
+    "line": 366,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ScreenProjectionCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
     "line": 385,
     "kind": "accessor_declaration",
     "name": "get",
@@ -1324,7 +1342,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 346,
+    "line": 338,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1333,7 +1351,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 355,
+    "line": 347,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1342,7 +1360,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 363,
+    "line": 356,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1351,7 +1369,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 371,
+    "line": 364,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1360,7 +1378,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 373,
+    "line": 372,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1369,7 +1387,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 389,
+    "line": 374,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1378,7 +1396,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 405,
+    "line": 390,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1387,7 +1405,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 407,
+    "line": 406,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1396,7 +1414,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 416,
+    "line": 408,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1405,7 +1423,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 436,
+    "line": 417,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1414,7 +1432,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 438,
+    "line": 437,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1423,7 +1441,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 444,
+    "line": 439,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1432,7 +1450,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 454,
+    "line": 445,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1441,7 +1459,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 470,
+    "line": 455,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1450,7 +1468,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 473,
+    "line": 471,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1459,7 +1477,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 476,
+    "line": 474,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1468,7 +1486,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 493,
+    "line": 477,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1477,7 +1495,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 499,
+    "line": 494,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1486,7 +1504,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 508,
+    "line": 500,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1495,7 +1513,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 514,
+    "line": 509,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1504,7 +1522,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 516,
+    "line": 515,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1513,7 +1531,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 530,
+    "line": 517,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1522,7 +1540,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 542,
+    "line": 531,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1531,7 +1549,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 561,
+    "line": 543,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1540,7 +1558,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 563,
+    "line": 562,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1549,7 +1567,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 570,
+    "line": 564,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1558,7 +1576,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 586,
+    "line": 571,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1567,7 +1585,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 589,
+    "line": 587,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1576,7 +1594,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 594,
+    "line": 590,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1585,7 +1603,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 598,
+    "line": 595,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1594,7 +1612,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 605,
+    "line": 599,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1603,7 +1621,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 618,
+    "line": 606,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1612,7 +1630,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 620,
+    "line": 619,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1621,7 +1639,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 635,
+    "line": 621,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1630,7 +1648,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 637,
+    "line": 636,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1639,7 +1657,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 640,
+    "line": 638,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1648,7 +1666,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 647,
+    "line": 641,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1657,7 +1675,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 659,
+    "line": 648,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1666,7 +1684,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 661,
+    "line": 660,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1675,7 +1693,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 671,
+    "line": 662,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1684,7 +1702,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 684,
+    "line": 672,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1693,7 +1711,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 695,
+    "line": 685,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1702,7 +1720,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 697,
+    "line": 696,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1711,7 +1729,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 704,
+    "line": 698,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1720,7 +1738,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 720,
+    "line": 705,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1729,7 +1747,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 722,
+    "line": 721,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1738,7 +1756,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 729,
+    "line": 723,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1747,7 +1765,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 745,
+    "line": 730,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1756,7 +1774,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 748,
+    "line": 746,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1765,7 +1783,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 764,
+    "line": 749,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1774,7 +1792,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 766,
+    "line": 765,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1783,7 +1801,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 773,
+    "line": 767,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1792,7 +1810,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 784,
+    "line": 774,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1801,7 +1819,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 786,
+    "line": 785,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1810,7 +1828,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 803,
+    "line": 787,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1819,7 +1837,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 805,
+    "line": 804,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1828,7 +1846,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 844,
+    "line": 806,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1837,7 +1855,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 846,
+    "line": 845,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1846,7 +1864,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 864,
+    "line": 847,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1855,7 +1873,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 900,
+    "line": 865,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1864,7 +1882,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 909,
+    "line": 901,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1873,7 +1891,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 918,
+    "line": 910,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1882,7 +1900,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 938,
+    "line": 919,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1891,7 +1909,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 944,
+    "line": 939,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1900,7 +1918,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 955,
+    "line": 945,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1909,7 +1927,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 969,
+    "line": 956,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1918,7 +1936,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 976,
+    "line": 970,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1927,7 +1945,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 983,
+    "line": 977,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1936,7 +1954,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 990,
+    "line": 984,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1945,7 +1963,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 998,
+    "line": 991,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1954,7 +1972,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1005,
+    "line": 999,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1963,7 +1981,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1015,
+    "line": 1006,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1972,7 +1990,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1030,
+    "line": 1016,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1981,7 +1999,16 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1048,
+    "line": 1031,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "Program",
+    "signature": "a =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Program.cs",
+    "line": 1049,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "Program",
@@ -1990,7 +2017,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1097,
+    "line": 1098,
     "kind": "local_function_statement",
     "name": "AttachedProcessId",
     "scope": "Program",
@@ -1999,7 +2026,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1159,
+    "line": 1160,
     "kind": "local_function_statement",
     "name": "ResolveMap",
     "scope": "Program",
@@ -2008,7 +2035,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1267,
+    "line": 1268,
     "kind": "method_declaration",
     "name": "TryParseWindow",
     "scope": "Program",
@@ -2017,7 +2044,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1280,
+    "line": 1281,
     "kind": "method_declaration",
     "name": "FormatClassified",
     "scope": "Program",
@@ -2026,7 +2053,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1295,
+    "line": 1296,
     "kind": "method_declaration",
     "name": "RunDxgiProbe",
     "scope": "Program",
@@ -2035,7 +2062,7 @@
   },
   {
     "path": "src/NosAi.Runtime/Program.cs",
-    "line": 1343,
+    "line": 1344,
     "kind": "method_declaration",
     "name": "ReadEnvironment",
     "scope": "Program",
@@ -4470,33 +4497,6 @@
     "name": "<anonymous/accessor>",
     "scope": "ClickTargetCommand",
     "signature": "e =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
-    "line": 341,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ClickTargetCommand",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
-    "line": 350,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ClickTargetCommand",
-    "signature": "() =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Tactical/ClickTargetCommand.cs",
-    "line": 379,
-    "kind": "method_declaration",
-    "name": "DescribeById",
-    "scope": "ClickTargetCommand",
-    "signature": "private static string DescribeById(SelectableEntity entity, long id)",
     "category": "project"
   }
 ]

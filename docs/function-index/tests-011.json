@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/UnequipExecutorTests.cs",
+    "line": 200,
+    "kind": "method_declaration",
+    "name": "ASlotNotCurrentlyWorn_IsRefused_BeforeEmitting",
+    "scope": "UnequipExecutorTests",
+    "signature": "[Fact] public void ASlotNotCurrentlyWorn_IsRefused_BeforeEmitting()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/UnequipExecutorTests.cs",
     "line": 218,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
@@ -4488,15 +4497,6 @@
     "name": "<anonymous/accessor>",
     "scope": "WorldModelFusionLoopMapWiringTests",
     "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
-    "line": 229,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "WorldModelFusionLoopMapWiringTests",
-    "signature": "_ =>",
     "category": "test"
   }
 ]

@@ -1,6 +1,24 @@
 [
   {
     "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 34,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureHealthPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
+    "line": 35,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "CaptureHealthPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
     "line": 36,
     "kind": "accessor_declaration",
     "name": "get",
@@ -4475,24 +4493,6 @@
   {
     "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
     "line": 335,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 345,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ScreenProjectionCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ScreenProjectionCalibration.cs",
-    "line": 366,
     "kind": "accessor_declaration",
     "name": "get",
     "scope": "ScreenProjectionCalibration",

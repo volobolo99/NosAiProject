@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/Perception/ScreenVitalsCaptureTests.cs",
+    "line": 127,
+    "kind": "method_declaration",
+    "name": "Capture_AfterDispose_ThrowsObjectDisposedException",
+    "scope": "ScreenVitalsCaptureTests",
+    "signature": "[Fact] public void Capture_AfterDispose_ThrowsObjectDisposedException()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/Perception/ScreenVitalsCaptureTests.cs",
     "line": 130,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
@@ -4488,15 +4497,6 @@
     "name": "Dispose",
     "scope": "RuntimeIdentityTests",
     "signature": "public void Dispose()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/RuntimeIdentityTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "AFirstRunWrapsTheKeyAndLeavesNoPlaintext",
-    "scope": "RuntimeIdentityTests",
-    "signature": "[WindowsOnlyFact] public void AFirstRunWrapsTheKeyAndLeavesNoPlaintext()",
     "category": "test"
   }
 ]

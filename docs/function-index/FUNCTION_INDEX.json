@@ -1,6 +1,6 @@
 {
   "schema_version": "nosai.function_index.v3",
-  "source_revision": "f83f74f",
+  "source_revision": "cfc077a",
   "coverage": [
     {
       "path": "nosai/__init__.py",
@@ -2294,7 +2294,7 @@
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
       "language": "c_sharp",
-      "functions": 32,
+      "functions": 34,
       "parse_errors": 0,
       "errors": []
     },
@@ -4037,7 +4037,7 @@
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "language": "c_sharp",
-      "functions": 110,
+      "functions": 111,
       "parse_errors": 0,
       "errors": []
     },
@@ -4205,7 +4205,7 @@
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "language": "c_sharp",
-      "functions": 9,
+      "functions": 12,
       "parse_errors": 0,
       "errors": []
     },
@@ -5857,7 +5857,7 @@
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
       "language": "c_sharp",
-      "functions": 43,
+      "functions": 44,
       "parse_errors": 0,
       "errors": []
     },
@@ -73928,305 +73928,226 @@
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 45,
+      "line": 48,
       "caller_scope": "SanitizeText",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 47,
+      "line": 50,
       "caller_scope": "SanitizeText",
       "callee_text": "ControlTokenRegex.Replace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 48,
+      "line": 51,
       "caller_scope": "SanitizeText",
       "callee_text": "sanitized.Contains",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 48,
+      "line": 51,
       "caller_scope": "SanitizeText",
       "callee_text": "Regex.Replace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 48,
+      "line": 51,
       "caller_scope": "SanitizeText",
       "callee_text": "Regex.Escape",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 49,
+      "line": 52,
       "caller_scope": "SanitizeText",
       "callee_text": "sanitized.Trim",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 51,
+      "line": 54,
       "caller_scope": "ContainsActiveInjection",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 51,
+      "line": 54,
       "caller_scope": "ContainsActiveInjection",
       "callee_text": "DangerousPhrases.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 51,
+      "line": 54,
       "caller_scope": null,
       "callee_text": "input.Contains",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 60,
+      "line": 63,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 61,
+      "line": 64,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "JsonExtractorRegex.Match",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 65,
+      "line": 68,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "JsonDocument.Parse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 66,
+      "line": 69,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "root.TryGetProperty",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 66,
+      "line": 69,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 66,
+      "line": 69,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "propAction.GetString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 67,
+      "line": 70,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "propAction.GetString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 68,
+      "line": 71,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "root.TryGetProperty",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 68,
+      "line": 71,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "pTarget.GetString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 69,
+      "line": 72,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "root.TryGetProperty",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 69,
+      "line": 72,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "pX.GetInt32",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 70,
+      "line": 73,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "root.TryGetProperty",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 70,
+      "line": 73,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "pY.GetInt32",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 71,
+      "line": 74,
       "caller_scope": "TryParseAndValidate",
       "callee_text": "root.TryGetProperty",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 71,
-      "caller_scope": "TryParseAndValidate",
-      "callee_text": "pSkill.GetInt32",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 72,
-      "caller_scope": "TryParseAndValidate",
-      "callee_text": "root.TryGetProperty",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 72,
-      "caller_scope": "TryParseAndValidate",
-      "callee_text": "pConf.GetDouble",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 73,
-      "caller_scope": "TryParseAndValidate",
-      "callee_text": "root.TryGetProperty",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 73,
-      "caller_scope": "TryParseAndValidate",
-      "callee_text": "pRat.GetString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
       "line": 74,
       "caller_scope": "TryParseAndValidate",
+      "callee_text": "pSkill.GetInt32",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 75,
+      "caller_scope": "TryParseAndValidate",
+      "callee_text": "root.TryGetProperty",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 75,
+      "caller_scope": "TryParseAndValidate",
+      "callee_text": "pConf.GetDouble",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 76,
+      "caller_scope": "TryParseAndValidate",
+      "callee_text": "root.TryGetProperty",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 76,
+      "caller_scope": "TryParseAndValidate",
+      "callee_text": "pRat.GetString",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 77,
+      "caller_scope": "TryParseAndValidate",
       "callee_text": "Math.Clamp",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 85,
+      "line": 88,
       "caller_scope": "AddEntry",
       "callee_text": "_buffer.Dequeue",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 85,
+      "line": 88,
       "caller_scope": "AddEntry",
       "callee_text": "_buffer.Enqueue",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 85,
+      "line": 88,
       "caller_scope": "AddEntry",
       "callee_text": "CapBacPromptSanitizer.SanitizeText",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 85
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 86,
-      "caller_scope": "GetRecentHistory",
-      "callee_text": "_buffer.ToList",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.AppendLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "CapBacPromptSanitizer.SanitizeText",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 87
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.AppendLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.AppendLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.AppendLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "CapBacPromptSanitizer.SanitizeText",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 87
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.AppendLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 87,
-      "caller_scope": "BuildFormattedPromptContext",
-      "callee_text": "sb.ToString",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 88,
-      "caller_scope": "Clear",
-      "callee_text": "_buffer.Clear",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
         "line": 88
@@ -74234,485 +74155,670 @@
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 94,
-      "caller_scope": "SandboxedToolRegistry",
-      "callee_text": "RegisterDefaultTools",
+      "line": 89,
+      "caller_scope": "GetRecentHistory",
+      "callee_text": "_buffer.ToList",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.AppendLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "CapBacPromptSanitizer.SanitizeText",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 94
+        "line": 90
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 96,
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.AppendLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.AppendLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.AppendLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "CapBacPromptSanitizer.SanitizeText",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 90
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.AppendLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 90,
+      "caller_scope": "BuildFormattedPromptContext",
+      "callee_text": "sb.ToString",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 91,
+      "caller_scope": "Clear",
+      "callee_text": "_buffer.Clear",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 91
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 97,
+      "caller_scope": "SandboxedToolRegistry",
+      "callee_text": "RegisterDefaultTools",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 97
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 99,
       "caller_scope": "TryExecuteTool",
       "callee_text": "_tools.TryGetValue",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 96,
+      "line": 99,
       "caller_scope": "TryExecuteTool",
       "callee_text": "toolFunc",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 97,
+      "line": 100,
       "caller_scope": null,
       "callee_text": "_tools.Keys.ToImmutableArray",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 103,
+      "line": 109,
       "caller_scope": null,
       "callee_text": "Interlocked.Read",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 105,
+      "line": 118,
       "caller_scope": "LoadModelToVramAsync",
-      "callee_text": "Task.Delay(35, token).ConfigureAwait",
+      "callee_text": "File.Exists",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 105,
+      "line": 128,
       "caller_scope": "LoadModelToVramAsync",
-      "callee_text": "Task.Delay",
+      "callee_text": "_loadSemaphore.WaitAsync(token).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 128,
+      "caller_scope": "LoadModelToVramAsync",
+      "callee_text": "_loadSemaphore.WaitAsync",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 148,
+      "caller_scope": "LoadModelToVramAsync",
+      "callee_text": "LLamaWeights.LoadFromFileAsync(modelParams).ConfigureAwait",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 148,
+      "caller_scope": "LoadModelToVramAsync",
+      "callee_text": "LLamaWeights.LoadFromFileAsync",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 166,
+      "caller_scope": "LoadModelToVramAsync",
+      "callee_text": "_loadSemaphore.Release",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 171,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "Stopwatch.StartNew",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 172,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "Guid.NewGuid",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 175,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "GenerateDeterministicFallback",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 175
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 177,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "CapBacPromptSanitizer.ContainsActiveInjection",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 177
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 178,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "GenerateDeterministicFallback",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 178
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 182,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "LoadModelToVramAsync(token).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 182,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "LoadModelToVramAsync",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 182
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
-      "caller_scope": "GenerateDecisionIntentAsync",
-      "callee_text": "_contextBuffer.BuildFormattedPromptContext",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
-      "caller_scope": "GenerateDecisionIntentAsync",
-      "callee_text": "Task.Delay(20, token).ConfigureAwait",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
-      "caller_scope": "GenerateDecisionIntentAsync",
-      "callee_text": "Task.Delay",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
-      "caller_scope": "GenerateDecisionIntentAsync",
-      "callee_text": "_validator.TryParseAndValidate",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 185,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "GenerateDeterministicFallback",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 185
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 189,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "_contextBuffer.BuildFormattedPromptContext",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 189
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 203,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "_executor!.InferAsync(prompt, inferenceParams, token).ConfigureAwait",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 203,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "_executor!.InferAsync",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 205,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "sb.Append",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 209,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "sb.ToString",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 210,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "_validator.TryParseAndValidate",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 210
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 212,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "GenerateDeterministicFallback",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 212
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 215,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "sw.Stop",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 216,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "Interlocked.Increment",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 106,
+      "line": 217,
       "caller_scope": "GenerateDecisionIntentAsync",
       "callee_text": "_contextBuffer.AddEntry",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 106
+        "line": 217
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 109,
+      "line": 219,
+      "caller_scope": "GenerateDecisionIntentAsync",
+      "callee_text": "_weights!.Tokenize",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 228,
+      "caller_scope": "UnloadModelFromVramAsync",
+      "callee_text": "_weights?.Dispose",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 234,
       "caller_scope": "DisposeAsync",
       "callee_text": "UnloadModelFromVramAsync().ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 109,
+      "line": 234,
       "caller_scope": "DisposeAsync",
       "callee_text": "UnloadModelFromVramAsync",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 109
+        "line": 234
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 109,
+      "line": 234,
       "caller_scope": "DisposeAsync",
       "callee_text": "_contextBuffer.Clear",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 109
+        "line": 234
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTest",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTest",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTest",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTest",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTestAsync",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "RunTest",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 114
+        "line": 239
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 114,
+      "line": 239,
+      "caller_scope": "RunAllTestsAsync",
+      "callee_text": "RunTestAsync",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 239
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 239,
+      "caller_scope": "RunAllTestsAsync",
+      "callee_text": "RunTestAsync",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 239
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 239,
       "caller_scope": "RunAllTestsAsync",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 117,
+      "line": 242,
       "caller_scope": "RunTest",
       "callee_text": "Report",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 117
+        "line": 242
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 117,
+      "line": 242,
       "caller_scope": "RunTest",
       "callee_text": "f",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 118,
+      "line": 243,
       "caller_scope": "RunTest",
       "callee_text": "Report",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 118
+        "line": 243
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 118,
+      "line": 243,
       "caller_scope": "RunTest",
       "callee_text": "ex.GetType",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 123,
+      "line": 248,
       "caller_scope": "RunTestAsync",
       "callee_text": "Report",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 123
+        "line": 248
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 123,
+      "line": 248,
       "caller_scope": "RunTestAsync",
       "callee_text": "f().ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 123,
+      "line": 248,
       "caller_scope": "RunTestAsync",
       "callee_text": "f",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 124,
+      "line": 249,
       "caller_scope": "RunTestAsync",
       "callee_text": "Report",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 124
+        "line": 249
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 124,
+      "line": 249,
       "caller_scope": "RunTestAsync",
       "callee_text": "ex.GetType",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 139,
+      "line": 264,
       "caller_scope": "Report",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 143,
+      "line": 268,
       "caller_scope": "TestPromptSanitizationAndInjectionBlock",
       "callee_text": "CapBacPromptSanitizer.SanitizeText",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 143
+        "line": 268
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 143,
+      "line": 268,
       "caller_scope": "TestPromptSanitizationAndInjectionBlock",
       "callee_text": "sanitized.Contains",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 143,
+      "line": 268,
       "caller_scope": "TestPromptSanitizationAndInjectionBlock",
       "callee_text": "sanitized.Contains",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 143,
+      "line": 268,
       "caller_scope": "TestPromptSanitizationAndInjectionBlock",
       "callee_text": "CapBacPromptSanitizer.ContainsActiveInjection",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 143
+        "line": 268
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 144,
+      "line": 269,
       "caller_scope": "TestStructuredJsonOutputValidation",
       "callee_text": "v.TryParseAndValidate",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 144
+        "line": 269
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 145,
+      "line": 270,
       "caller_scope": "TestContextRingBufferTrimming",
       "callee_text": "b.AddEntry",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 145
+        "line": 270
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 145,
+      "line": 270,
       "caller_scope": "TestContextRingBufferTrimming",
       "callee_text": "b.AddEntry",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 145
+        "line": 270
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 145,
+      "line": 270,
       "caller_scope": "TestContextRingBufferTrimming",
       "callee_text": "b.AddEntry",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 145
+        "line": 270
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 145,
+      "line": 270,
       "caller_scope": "TestContextRingBufferTrimming",
       "callee_text": "b.GetRecentHistory",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 145
+        "line": 270
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 146,
+      "line": 271,
       "caller_scope": "TestSandboxedToolQuery",
       "callee_text": "r.TryExecuteTool",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 146
+        "line": 271
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 147,
+      "line": 272,
       "caller_scope": "TestThermalCircuitBreakerFallbackAsync",
       "callee_text": "e.GenerateDecisionIntentAsync",
       "resolved_to": {
         "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-        "line": 147
+        "line": 272
       }
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 148,
+      "line": 273,
       "caller_scope": "TestLocalAiSecurityInvariant",
       "callee_text": "typeof(LocalAiInferenceEngine).GetMethod",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-      "line": 148,
+      "line": 273,
       "caller_scope": "TestLocalAiSecurityInvariant",
       "callee_text": "nameof",
       "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 278,
+      "caller_scope": "TestLoadModelFailsClosedWhenFileMissingAsync",
+      "callee_text": "e.LoadModelToVramAsync",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 278
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+      "line": 285,
+      "caller_scope": "TestLoadModelFailsClosedForUnsupportedNpuAsync",
+      "callee_text": "e.LoadModelToVramAsync",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+        "line": 285
+      }
     },
     {
       "path": "src/NosAi.Runtime/Adapters/NosTaleGameAdapter.cs",
@@ -167322,105 +167428,112 @@
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 338,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Tactical.EngageCommand.Run",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 346,
-      "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 346,
+      "line": 338,
       "caller_scope": null,
       "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 339,
+      "caller_scope": "Main",
+      "callee_text": "NosAi.Runtime.Tactical.EngageCommand.RunArmed",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 347,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Tactical.ClickTargetCommand.Run",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 355,
-      "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 355,
+      "line": 347,
       "caller_scope": null,
       "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 348,
+      "caller_scope": "Main",
+      "callee_text": "NosAi.Runtime.Tactical.ClickTargetCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 356,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Tactical.UnequipCommand.Run",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 363,
-      "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 363,
+      "line": 356,
       "caller_scope": null,
       "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 357,
+      "caller_scope": "Main",
+      "callee_text": "NosAi.Runtime.Tactical.UnequipCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 364,
       "caller_scope": "Main",
+      "callee_text": "args.Any",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 364,
+      "caller_scope": null,
+      "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 365,
+      "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Tactical.EquipCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 371,
+      "line": 372,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 371,
+      "line": 372,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 373,
+      "line": 374,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 374,
+      "line": 375,
       "caller_scope": null,
       "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 376,
-      "caller_scope": "Main",
-      "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
@@ -167432,380 +167545,380 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 379,
+      "line": 378,
+      "caller_scope": "Main",
+      "callee_text": "int.TryParse",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 380,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 385,
+      "line": 386,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 389,
+      "line": 390,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 390,
+      "line": 391,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 392,
+      "line": 393,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 397,
+      "line": 398,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.CollectCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 405,
+      "line": 406,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 405,
+      "line": 406,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 407,
+      "line": 408,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 408,
+      "line": 409,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 410,
+      "line": 411,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 412,
+      "line": 413,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 416,
+      "line": 417,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 417,
+      "line": 418,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 419,
+      "line": 420,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 424,
+      "line": 425,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Tactical.RecoverCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 436,
+      "line": 437,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 436,
+      "line": 437,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 438,
+      "line": 439,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 438,
+      "line": 439,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 440,
+      "line": 441,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 444,
+      "line": 445,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 444,
+      "line": 445,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 446,
+      "line": 447,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 454,
+      "line": 455,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 454,
+      "line": 455,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 456,
+      "line": 457,
       "caller_scope": "Main",
       "callee_text": "args[gestureFlag + 1].ToLowerInvariant",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 464,
+      "line": 465,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Tactical.AutoplayCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 470,
+      "line": 471,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 470,
+      "line": 471,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 471,
+      "line": 472,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.LowLevel.KeybindsCheck.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 473,
+      "line": 474,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 473,
+      "line": 474,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 474,
+      "line": 475,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.MapGridExtractor.RunExtract",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 476,
+      "line": 477,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 477,
+      "line": 478,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 481,
+      "line": 482,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 483,
+      "line": 484,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 487,
+      "line": 488,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.MapGridExtractor.RunInfo",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 493,
+      "line": 494,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 493,
+      "line": 494,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 494,
+      "line": 495,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.MapGridCheck.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 499,
+      "line": 500,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 499,
+      "line": 500,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 500,
+      "line": 501,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.MapIdFinder.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 508,
+      "line": 509,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 508,
+      "line": 509,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 509,
+      "line": 510,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.TargetChainProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 514,
+      "line": 515,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 514,
+      "line": 515,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 516,
+      "line": 517,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 517,
+      "line": 518,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 519,
-      "caller_scope": "Main",
-      "callee_text": "int.TryParse",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
       "line": 520,
       "caller_scope": "Main",
-      "callee_text": "float.TryParse",
+      "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
@@ -167817,58 +167930,58 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 523,
+      "line": 522,
+      "caller_scope": "Main",
+      "callee_text": "float.TryParse",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 524,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 527,
+      "line": 528,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.RouteProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 530,
+      "line": 531,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 530,
+      "line": 531,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 535,
+      "line": 536,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.TargetIdFinder.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 542,
+      "line": 543,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 543,
+      "line": 544,
       "caller_scope": null,
       "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 547,
-      "caller_scope": "Main",
-      "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
@@ -167880,42 +167993,35 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 550,
+      "line": 549,
+      "caller_scope": "Main",
+      "callee_text": "int.TryParse",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 551,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 555,
+      "line": 556,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Perception.ScreenProjectionProbe.RunSample",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 561,
+      "line": 562,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 561,
-      "caller_scope": null,
-      "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 563,
-      "caller_scope": "Main",
-      "callee_text": "args.Any",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 563,
+      "line": 562,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
@@ -167924,222 +168030,222 @@
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 564,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Perception.ScreenProjectionAutoCalibrator.Run",
+      "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 570,
-      "caller_scope": "Main",
-      "callee_text": "Array.FindIndex",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 571,
+      "line": 564,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 575,
+      "line": 565,
+      "caller_scope": "Main",
+      "callee_text": "NosAi.Runtime.Perception.ScreenProjectionAutoCalibrator.Run",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 571,
+      "caller_scope": "Main",
+      "callee_text": "Array.FindIndex",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 572,
+      "caller_scope": null,
+      "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 576,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 582,
+      "line": 583,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Perception.ScreenProjectionWatcher.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 586,
+      "line": 587,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 586,
+      "line": 587,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 587,
+      "line": 588,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Perception.ScreenProjectionProbe.RunSolve",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 589,
+      "line": 590,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 589,
+      "line": 590,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 590,
+      "line": 591,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Perception.ScreenProjectionProbe.RunClear",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 594,
+      "line": 595,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 595,
+      "line": 596,
       "caller_scope": null,
       "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 598,
-      "caller_scope": "Main",
-      "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 599,
+      "caller_scope": "Main",
+      "callee_text": "Array.FindIndex",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 600,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 601,
+      "line": 602,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 605,
+      "line": 606,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 606,
+      "line": 607,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 608,
+      "line": 609,
       "caller_scope": "Main",
       "callee_text": "long.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 612,
+      "line": 613,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.PlayerObjectProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 618,
+      "line": 619,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 618,
+      "line": 619,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 620,
+      "line": 621,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 621,
+      "line": 622,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 622,
+      "line": 623,
       "caller_scope": "Main",
       "callee_text": "args[flag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 625,
+      "line": 626,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.EntityNameProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 635,
+      "line": 636,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 635,
+      "line": 636,
       "caller_scope": null,
       "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 637,
-      "caller_scope": "Main",
-      "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 638,
-      "caller_scope": null,
-      "callee_text": "string.Equals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 640,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 640,
+      "line": 639,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
@@ -168148,874 +168254,881 @@
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 641,
       "caller_scope": "Main",
-      "callee_text": "args[outAt + 1].StartsWith",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 647,
-      "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 647,
+      "line": 641,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 650,
+      "line": 642,
+      "caller_scope": "Main",
+      "callee_text": "args[outAt + 1].StartsWith",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 648,
+      "caller_scope": "Main",
+      "callee_text": "Array.FindIndex",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 648,
+      "caller_scope": null,
+      "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 651,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 656,
+      "line": 657,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.Capture.AwaitClientCaptureCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 659,
+      "line": 660,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 659,
+      "line": 660,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 661,
+      "line": 662,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 662,
+      "line": 663,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 663,
+      "line": 664,
       "caller_scope": "Main",
       "callee_text": "args[flag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 666,
+      "line": 667,
       "caller_scope": "Main",
       "callee_text": "args[flag + 2].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 671,
+      "line": 672,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 671,
+      "line": 672,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 674,
+      "line": 675,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 684,
+      "line": 685,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 684,
+      "line": 685,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 687,
+      "line": 688,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.Capture.WireRecorder.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 695,
+      "line": 696,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 695,
+      "line": 696,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 697,
+      "line": 698,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 698,
+      "line": 699,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 699,
+      "line": 700,
       "caller_scope": "Main",
       "callee_text": "args[flag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 704,
+      "line": 705,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 704,
+      "line": 705,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 707,
+      "line": 708,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 713,
+      "line": 714,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.Capture.LiveWireMonitor.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 720,
+      "line": 721,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 720,
+      "line": 721,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 722,
+      "line": 723,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 723,
+      "line": 724,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 724,
+      "line": 725,
       "caller_scope": "Main",
       "callee_text": "args[flag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 729,
+      "line": 730,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 729,
+      "line": 730,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 732,
+      "line": 733,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 738,
+      "line": 739,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.PlayerVitalsCalibrator.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 745,
+      "line": 746,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 745,
+      "line": 746,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 748,
+      "line": 749,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 748,
+      "line": 749,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 751,
+      "line": 752,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 757,
+      "line": 758,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.EquipmentOffsetCalibrator.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 764,
+      "line": 765,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 764,
+      "line": 765,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 766,
+      "line": 767,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 767,
+      "line": 768,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 768,
+      "line": 769,
       "caller_scope": "Main",
       "callee_text": "args[flag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 773,
+      "line": 774,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 773,
+      "line": 774,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 774,
+      "line": 775,
       "caller_scope": "Main",
       "callee_text": "TryParseWindow",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Program.cs",
-        "line": 774
+        "line": 775
       }
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 777,
+      "line": 778,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.PointerAnchorHunter.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 784,
+      "line": 785,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 784,
+      "line": 785,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 786,
+      "line": 787,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 787,
+      "line": 788,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 789,
+      "line": 790,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 792,
+      "line": 793,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 797,
+      "line": 798,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.SkillCooldownSweep.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 803,
+      "line": 804,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 803,
+      "line": 804,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 805,
+      "line": 806,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 806,
+      "line": 807,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 812,
+      "line": 813,
       "caller_scope": "Main",
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 814,
+      "line": 815,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 825,
+      "line": 826,
       "caller_scope": "Main",
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 827,
+      "line": 828,
       "caller_scope": "Main",
       "callee_text": "TryParseWindow",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Program.cs",
-        "line": 827
+        "line": 828
       }
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 834,
+      "line": 835,
       "caller_scope": "Main",
       "callee_text": "args[i].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 838,
+      "line": 839,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.PlayerVitalsProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 844,
+      "line": 845,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 844,
+      "line": 845,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 846,
+      "line": 847,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 847,
+      "line": 848,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 849,
+      "line": 850,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 852,
+      "line": 853,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 857,
+      "line": 858,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Navigation.SkillCooldownProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 864,
+      "line": 865,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 865,
+      "line": 866,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 869,
+      "line": 870,
       "caller_scope": "Main",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 871,
+      "line": 872,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 875,
+      "line": 876,
       "caller_scope": "Main",
       "callee_text": "File.Exists",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 877,
+      "line": 878,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 882,
-      "caller_scope": "Main",
-      "callee_text": "GameReferenceLocator.TryOpen",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 883,
       "caller_scope": "Main",
-      "callee_text": "Console.Error.WriteLine",
+      "callee_text": "GameReferenceLocator.TryOpen",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 885,
+      "line": 884,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 889,
+      "line": 886,
+      "caller_scope": "Main",
+      "callee_text": "Console.Error.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 890,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.WorldReplayCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 893,
+      "line": 894,
       "caller_scope": "Main",
       "callee_text": "catalog?.Dispose",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 900,
+      "line": 901,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 900,
+      "line": 901,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 901,
+      "line": 902,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.ReferenceInfoCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 909,
+      "line": 910,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 909,
+      "line": 910,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 910,
+      "line": 911,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Tactical.LoadoutReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 918,
+      "line": 919,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 919,
+      "line": 920,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 929,
+      "line": 930,
       "caller_scope": "Main",
       "callee_text": "args[combatReportIndex + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 932,
+      "line": 933,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Tactical.CombatReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 938,
+      "line": 939,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 938,
+      "line": 939,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 939,
+      "line": 940,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.ClientUpdateCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 944,
+      "line": 945,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 945,
+      "line": 946,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 949,
+      "line": 950,
       "caller_scope": "Main",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 951,
+      "line": 952,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 955,
+      "line": 956,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 956,
+      "line": 957,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 958,
+      "line": 959,
       "caller_scope": "Main",
       "callee_text": "int.TryParse",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 962,
+      "line": 963,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.DecideReplayCommand.RunAsync(recording, cycles).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 962,
+      "line": 963,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.DecideReplayCommand.RunAsync",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 969,
+      "line": 970,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 969,
+      "line": 970,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 970,
+      "line": 971,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.WireInspectCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 976,
+      "line": 977,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 976,
+      "line": 977,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 977,
+      "line": 978,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.OutcomeReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 983,
+      "line": 984,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 983,
+      "line": 984,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 984,
+      "line": 985,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.LearningReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 990,
+      "line": 991,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 990,
+      "line": 991,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 991,
+      "line": 992,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.SkillReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 998,
+      "line": 999,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 998,
+      "line": 999,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 999,
+      "line": 1000,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Observability.MonsterReportCommand.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1005,
+      "line": 1006,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1006,
-      "caller_scope": null,
-      "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
@@ -169034,166 +169147,166 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1010,
+      "line": 1009,
+      "caller_scope": null,
+      "callee_text": "string.Equals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1011,
       "caller_scope": "Main",
       "callee_text": "NosAi.LiveIntegration.MemoryScanProbe.Run",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1015,
+      "line": 1016,
       "caller_scope": "Main",
       "callee_text": "Array.FindIndex",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1015,
+      "line": 1016,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1018,
+      "line": 1019,
       "caller_scope": "Main",
       "callee_text": "args[eventLogFlag + 1].StartsWith",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1021,
+      "line": 1022,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Gate2.EventLogDiagnostics.Inspect",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1022,
+      "line": 1023,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1022,
+      "line": 1023,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Gate2.EventLogDiagnostics.Describe",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1030,
+      "line": 1031,
       "caller_scope": "Main",
       "callee_text": "args.Any",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1030,
+      "line": 1031,
       "caller_scope": null,
       "callee_text": "string.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1031,
+      "line": 1032,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Operator.HaltCli.RunAsync(\n                NosAi.Runtime.Operator.HaltCli.PortFromArgs(args)).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1031,
+      "line": 1032,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Operator.HaltCli.RunAsync",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1032,
+      "line": 1033,
       "caller_scope": "Main",
       "callee_text": "NosAi.Runtime.Operator.HaltCli.PortFromArgs",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1038,
+      "line": 1039,
       "caller_scope": "Main",
       "callee_text": "Gate1HostOptionsLoader.Load",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1038,
+      "line": 1039,
       "caller_scope": "Main",
       "callee_text": "ReadEnvironment",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Program.cs",
-        "line": 1038
+        "line": 1039
       }
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1042,
+      "line": 1043,
       "caller_scope": "Main",
       "callee_text": "logger.Error",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1051,
+      "line": 1052,
       "caller_scope": null,
       "callee_text": "cts.Cancel",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1056,
+      "line": 1057,
       "caller_scope": "Main",
       "callee_text": "host.StartAsync(cts.Token).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1056,
+      "line": 1057,
       "caller_scope": "Main",
       "callee_text": "host.StartAsync",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1067,
+      "line": 1068,
       "caller_scope": "Main",
       "callee_text": "logger.Error",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1068,
+      "line": 1069,
       "caller_scope": "Main",
       "callee_text": "Console.Error.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1075,
+      "line": 1076,
       "caller_scope": "Main",
       "callee_text": "logger.Error",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1099,
+      "line": 1100,
       "caller_scope": "AttachedProcessId",
       "callee_text": "host.Capture",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1112,
-      "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot",
       "resolved_to": null
     },
     {
@@ -169207,28 +169320,28 @@
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1114,
       "caller_scope": "Main",
-      "callee_text": "Directory.GetCurrentDirectory",
+      "callee_text": "NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1115,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Perception.TargetRoiCalibration.Load",
+      "callee_text": "Directory.GetCurrentDirectory",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1116,
       "caller_scope": "Main",
-      "callee_text": "Path.Combine",
+      "callee_text": "NosAi.Runtime.Perception.TargetRoiCalibration.Load",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1127,
+      "line": 1117,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot",
+      "callee_text": "Path.Combine",
       "resolved_to": null
     },
     {
@@ -169242,119 +169355,119 @@
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1129,
       "caller_scope": "Main",
-      "callee_text": "Directory.GetCurrentDirectory",
+      "callee_text": "NosAi.Runtime.Testing.TestSuiteRunner.FindRepositoryRoot",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1130,
       "caller_scope": "Main",
-      "callee_text": "NosAi.Runtime.Perception.DialogRoiCalibration.Load",
+      "callee_text": "Directory.GetCurrentDirectory",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
       "line": 1131,
       "caller_scope": "Main",
+      "callee_text": "NosAi.Runtime.Perception.DialogRoiCalibration.Load",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1132,
+      "caller_scope": "Main",
       "callee_text": "Path.Combine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1160,
+      "line": 1161,
       "caller_scope": "ResolveMap",
       "callee_text": "mapReconstruction!.Resolve",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1171,
+      "line": 1172,
       "caller_scope": "Main",
       "callee_text": "GameReferenceLocator.TryFindDedicatedDataDirectory",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1175,
+      "line": 1176,
       "caller_scope": "Main",
       "callee_text": "GameReferenceLocator.LocateIn",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1176,
+      "line": 1177,
       "caller_scope": "Main",
       "callee_text": "GameReferenceDatabase.Open",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1177,
+      "line": 1178,
       "caller_scope": "Main",
       "callee_text": "ClientUpdateCommand.RunDetailed",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1181,
+      "line": 1182,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1182,
+      "line": 1183,
       "caller_scope": "Main",
       "callee_text": "Console.Write",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1188,
+      "line": 1189,
       "caller_scope": "Main",
       "callee_text": "logger.Error",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1209,
+      "line": 1210,
       "caller_scope": "Main",
       "callee_text": "GameReferenceLocator.TryOpen",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1210,
+      "line": 1211,
       "caller_scope": "Main",
       "callee_text": "logger.Warning",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1224,
+      "line": 1225,
       "caller_scope": "Main",
       "callee_text": "TimeSpan.FromMilliseconds",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1229,
+      "line": 1230,
       "caller_scope": "Main",
       "callee_text": "fusion?.Start",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1231,
-      "caller_scope": "Main",
-      "callee_text": "host.Capture",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
       "line": 1232,
       "caller_scope": "Main",
-      "callee_text": "Console.WriteLine",
+      "callee_text": "host.Capture",
       "resolved_to": null
     },
     {
@@ -169373,65 +169486,45 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1237,
+      "line": 1235,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1240,
+      "line": 1238,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1246,
+      "line": 1241,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1248,
+      "line": 1247,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1248,
+      "line": 1249,
+      "caller_scope": "Main",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1249,
       "caller_scope": "Main",
       "callee_text": "snapshot.Client.Availability.Source.ToWire",
       "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1249,
-      "caller_scope": "Main",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1249,
-      "caller_scope": "Main",
-      "callee_text": "FormatClassified",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/Program.cs",
-        "line": 1249
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1249,
-      "caller_scope": "Main",
-      "callee_text": "FormatClassified",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/Program.cs",
-        "line": 1249
-      }
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
@@ -169479,6 +169572,16 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1251,
+      "caller_scope": "Main",
+      "callee_text": "FormatClassified",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Program.cs",
+        "line": 1251
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
       "line": 1252,
       "caller_scope": "Main",
       "callee_text": "Console.WriteLine",
@@ -169503,44 +169606,47 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1257,
+      "line": 1253,
+      "caller_scope": "Main",
+      "callee_text": "FormatClassified",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Program.cs",
+        "line": 1253
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1254,
+      "caller_scope": "Main",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1258,
       "caller_scope": "Main",
       "callee_text": "Task.Delay(Timeout.Infinite, cts.Token).ConfigureAwait",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1257,
+      "line": 1258,
       "caller_scope": "Main",
       "callee_text": "Task.Delay",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1270,
+      "line": 1271,
       "caller_scope": "TryParseWindow",
       "callee_text": "string.IsNullOrWhiteSpace",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1273,
+      "line": 1274,
       "caller_scope": "TryParseWindow",
       "callee_text": "text.StartsWith",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1274,
-      "caller_scope": "TryParseWindow",
-      "callee_text": "int.TryParse",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1274,
-      "caller_scope": "TryParseWindow",
-      "callee_text": "text.AsSpan",
       "resolved_to": null
     },
     {
@@ -169552,30 +169658,37 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1283,
+      "line": 1275,
+      "caller_scope": "TryParseWindow",
+      "callee_text": "text.AsSpan",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1276,
+      "caller_scope": "TryParseWindow",
+      "callee_text": "int.TryParse",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1284,
       "caller_scope": "FormatClassified",
       "callee_text": "field.Source.ToWire",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1297,
-      "caller_scope": "RunDxgiProbe",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Program.cs",
       "line": 1298,
       "caller_scope": "RunDxgiProbe",
-      "callee_text": "NosAi.Runtime.Perception.DxgiDesktopDuplicationSource.TryCreate",
+      "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1300,
+      "line": 1299,
       "caller_scope": "RunDxgiProbe",
-      "callee_text": "Console.WriteLine",
+      "callee_text": "NosAi.Runtime.Perception.DxgiDesktopDuplicationSource.TryCreate",
       "resolved_to": null
     },
     {
@@ -169587,70 +169700,77 @@
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1307,
+      "line": 1302,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1310,
+      "line": 1308,
+      "caller_scope": "RunDxgiProbe",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Program.cs",
+      "line": 1311,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "capture.TryAcquire",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1313,
+      "line": 1314,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Thread.Sleep",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1322,
+      "line": 1323,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "sampled.Add",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1327,
+      "line": 1328,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1327,
+      "line": 1328,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "frame.Source.ToWire",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1331,
+      "line": 1332,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1336,
+      "line": 1337,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Thread.Sleep",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1338,
+      "line": 1339,
       "caller_scope": "RunDxgiProbe",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Program.cs",
-      "line": 1346,
+      "line": 1347,
       "caller_scope": "ReadEnvironment",
       "callee_text": "Environment.GetEnvironmentVariables",
       "resolved_to": null
@@ -177521,79 +177641,37 @@
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 245,
+      "line": 257,
       "caller_scope": "ExecuteOneRound",
       "callee_text": "ArgumentNullException.ThrowIfNull",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 246,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "ArgumentNullException.ThrowIfNull",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 247,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "ArgumentNullException.ThrowIfNull",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 248,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "ArgumentNullException.ThrowIfNull",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 249,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "ArgumentNullException.ThrowIfNull",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 252,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "CombatExecutionEvidence.NotAttempted",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 255,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "CombatExecutionEvidence.NotAttempted",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "line": 258,
       "caller_scope": "ExecuteOneRound",
-      "callee_text": "keybinds.TryGet",
+      "callee_text": "ArgumentNullException.ThrowIfNull",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "line": 259,
       "caller_scope": "ExecuteOneRound",
-      "callee_text": "CombatExecutionEvidence.NotAttempted",
+      "callee_text": "ArgumentNullException.ThrowIfNull",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 260,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "ArgumentNullException.ThrowIfNull",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "line": 261,
       "caller_scope": "ExecuteOneRound",
-      "callee_text": "readVitals",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 262,
-      "caller_scope": "ExecuteOneRound",
-      "callee_text": "input.KeyPress",
+      "callee_text": "ArgumentNullException.ThrowIfNull",
       "resolved_to": null
     },
     {
@@ -177605,117 +177683,118 @@
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 266,
+      "line": 267,
       "caller_scope": "ExecuteOneRound",
-      "callee_text": "verificationDelay",
+      "callee_text": "CombatExecutionEvidence.NotAttempted",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 267,
+      "line": 270,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "keybinds.TryGet",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 271,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "CombatExecutionEvidence.NotAttempted",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 273,
       "caller_scope": "ExecuteOneRound",
       "callee_text": "readVitals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 269,
+      "line": 274,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "input.KeyPress",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 276,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "CombatExecutionEvidence.NotAttempted",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 278,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "verificationDelay",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 279,
+      "caller_scope": "ExecuteOneRound",
+      "callee_text": "readVitals",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 281,
       "caller_scope": "ExecuteOneRound",
       "callee_text": "NosAi.Runtime.WorldModel.Fusion.CombatVerificationProjector.Project",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 278,
+      "line": 290,
       "caller_scope": "Run",
       "callee_text": "string.IsNullOrWhiteSpace",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 278,
-      "caller_scope": "Run",
-      "callee_text": "string.IsNullOrWhiteSpace",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 280,
-      "caller_scope": "Run",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 284,
-      "caller_scope": "Run",
-      "callee_text": "OperatingSystem.IsWindows",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 286,
-      "caller_scope": "Run",
-      "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "line": 290,
       "caller_scope": "Run",
+      "callee_text": "string.IsNullOrWhiteSpace",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 292,
+      "caller_scope": "Run",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 296,
+      "caller_scope": "Run",
+      "callee_text": "OperatingSystem.IsWindows",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 298,
+      "caller_scope": "Run",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 302,
+      "caller_scope": "Run",
       "callee_text": "RunWindows",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 290
+        "line": 302
       }
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 324,
+      "line": 336,
       "caller_scope": "JudgeTarget",
       "callee_text": "observer.TryObserve",
       "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 326,
-      "caller_scope": "JudgeTarget",
-      "callee_text": "CombatExecutionEvidence.NotAttempted",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 330,
-      "caller_scope": "JudgeTarget",
-      "callee_text": "CombatPlanner.CheckTargetConstraints",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 331,
-      "caller_scope": "JudgeTarget",
-      "callee_text": "DescribeTargetRefusal",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 331
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 332,
-      "caller_scope": "JudgeTarget",
-      "callee_text": "CombatExecutionEvidence.NotAttempted",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 337,
-      "caller_scope": "JudgeTarget",
-      "callee_text": "DescribeUnfitPicture",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 337
-      }
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
@@ -177726,268 +177805,395 @@
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 389,
+      "line": 342,
+      "caller_scope": "JudgeTarget",
+      "callee_text": "CombatPlanner.CheckTargetConstraints",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 343,
+      "caller_scope": "JudgeTarget",
+      "callee_text": "DescribeTargetRefusal",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 343
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 344,
+      "caller_scope": "JudgeTarget",
+      "callee_text": "CombatExecutionEvidence.NotAttempted",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 349,
+      "caller_scope": "JudgeTarget",
+      "callee_text": "DescribeUnfitPicture",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 349
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 350,
+      "caller_scope": "JudgeTarget",
+      "callee_text": "CombatExecutionEvidence.NotAttempted",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 401,
       "caller_scope": "DescribeUnfitPicture",
       "callee_text": "mob.Id.Equals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 405,
+      "line": 417,
       "caller_scope": "DescribeUnfitPicture",
       "callee_text": "string.Create",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 418,
+      "line": 430,
       "caller_scope": "DescribeUnfitPicture",
       "callee_text": "Guard.IsAllowed",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 421,
+      "line": 433,
       "caller_scope": "DescribeUnfitPicture",
       "callee_text": "string.Create",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 446,
+      "line": 458,
       "caller_scope": "DescribeTargetRefusal",
       "callee_text": "string.Join",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 462,
-      "caller_scope": "RunWindows",
-      "callee_text": "ClientMemorySession.TryAttach",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 464,
-      "caller_scope": "RunWindows",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 470,
-      "caller_scope": "RunWindows",
-      "callee_text": "KeybindsCheck.ResolvePath",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 471,
-      "caller_scope": "RunWindows",
-      "callee_text": "KeybindMap.TryLoad",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 473,
-      "caller_scope": "RunWindows",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 477,
+      "line": 469,
       "caller_scope": "RunWindows",
       "callee_text": "RuntimeComposition.CreateSafe",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 480,
+      "line": 470,
       "caller_scope": "RunWindows",
+      "callee_text": "ExecuteEngagement",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 470
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 487,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "ClientMemorySession.TryAttach",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 489,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 486,
+      "line": 495,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "KeybindsCheck.ResolvePath",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 496,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "KeybindMap.TryLoad",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 498,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 504,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 510,
       "caller_scope": null,
       "callee_text": "attached.TryReadPlayerVitals",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 493,
-      "caller_scope": "RunWindows",
+      "line": 517,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "ActuationAuthority.Commanded",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 499,
-      "caller_scope": "RunWindows",
+      "line": 523,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "ActionOutcomeLedgerStore.TryOpenFromVolume",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 501,
-      "caller_scope": "RunWindows",
+      "line": 525,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 507,
-      "caller_scope": "RunWindows",
+      "line": 531,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "LiveCombatObserver.TryOpen",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 510,
-      "caller_scope": "RunWindows",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 519,
-      "caller_scope": "RunWindows",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 523,
-      "caller_scope": "RunWindows",
-      "callee_text": "Console.WriteLine",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 523,
-      "caller_scope": "RunWindows",
-      "callee_text": "string.Create",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 526,
-      "caller_scope": "RunWindows",
-      "callee_text": "TimeProvider.System.GetUtcNow",
-      "resolved_to": null
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 533,
-      "caller_scope": "RunWindows",
-      "callee_text": "JudgeTarget",
-      "resolved_to": {
-        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 533
-      }
-    },
-    {
-      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 535,
-      "caller_scope": "RunWindows",
+      "line": 534,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
       "line": 543,
-      "caller_scope": "RunWindows",
-      "callee_text": "ExecuteOneRound",
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 547,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 547,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "string.Create",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 550,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "TimeProvider.System.GetUtcNow",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 557,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "JudgeTarget",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 543
+        "line": 557
       }
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 548,
+      "line": 559,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 567,
+      "caller_scope": "ExecuteEngagement",
+      "callee_text": "ExecuteOneRound",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 567
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 572,
       "caller_scope": null,
       "callee_text": "Thread.Sleep",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 552,
-      "caller_scope": "RunWindows",
+      "line": 576,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "PrintEvidence",
       "resolved_to": {
         "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-        "line": 552
+        "line": 576
       }
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 554,
-      "caller_scope": "RunWindows",
+      "line": 578,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "NosAi.Runtime.WorldModel.Fusion.ActionOutcomeRecorder.RecordCombat",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 556,
-      "caller_scope": "RunWindows",
+      "line": 580,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Guid.NewGuid().ToString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 556,
-      "caller_scope": "RunWindows",
+      "line": 580,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Guid.NewGuid",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 584,
-      "caller_scope": "RunWindows",
+      "line": 608,
+      "caller_scope": "ExecuteEngagement",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 595,
+      "line": 622,
+      "caller_scope": "RunArmed",
+      "callee_text": "string.IsNullOrWhiteSpace",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 622,
+      "caller_scope": "RunArmed",
+      "callee_text": "string.IsNullOrWhiteSpace",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 624,
+      "caller_scope": "RunArmed",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 628,
+      "caller_scope": "RunArmed",
+      "callee_text": "OperatingSystem.IsWindows",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 630,
+      "caller_scope": "RunArmed",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 634,
+      "caller_scope": "RunArmed",
+      "callee_text": "RunWindowsArmed",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 634
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 644,
+      "caller_scope": "RunWindowsArmed",
+      "callee_text": "RuntimeComposition.CreateSafe",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 647,
+      "caller_scope": "RunWindowsArmed",
+      "callee_text": "components.Safety.Set",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 651,
+      "caller_scope": "RunWindowsArmed",
+      "callee_text": "Console.WriteLine",
+      "resolved_to": null
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 656,
+      "caller_scope": "RunWindowsArmed",
+      "callee_text": "ExecuteEngagement",
+      "resolved_to": {
+        "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+        "line": 656
+      }
+    },
+    {
+      "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
+      "line": 662,
       "caller_scope": "PrintEvidence",
       "callee_text": "ArgumentNullException.ThrowIfNull",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 597,
+      "line": 664,
       "caller_scope": "PrintEvidence",
       "callee_text": "evidence.ResourceObserved?.ToString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 599,
+      "line": 666,
       "caller_scope": "PrintEvidence",
       "callee_text": "evidence.Before.Value.ToString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 602,
+      "line": 669,
       "caller_scope": "PrintEvidence",
       "callee_text": "evidence.After.Value.ToString",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 606,
+      "line": 673,
       "caller_scope": "PrintEvidence",
       "callee_text": "Console.WriteLine",
       "resolved_to": null
     },
     {
       "path": "src/NosAi.Runtime/Tactical/EngageCommand.cs",
-      "line": 606,
+      "line": 673,
       "caller_scope": "PrintEvidence",
       "callee_text": "string.Create",
       "resolved_to": null
@@ -260747,456 +260953,405 @@
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 384,
+      "line": 402,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "Console.SetOut",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 406,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "EngageCommand.RunArmed",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 410,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "Console.SetOut",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 413,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "Assert.Equal",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 414,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "Assert.Contains",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 414,
+      "caller_scope": "RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient",
+      "callee_text": "captured.ToString",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 422,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "RepositoryRoot",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 384
+        "line": 422
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 385,
+      "line": 423,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "File.ReadAllText",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 385,
+      "line": 423,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "Path.Combine",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 387,
+      "line": 425,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "Assert.Contains",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 388,
+      "line": 426,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "Assert.Contains",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 389,
+      "line": 427,
       "caller_scope": "TheRuntimeWiresTheEngageFlag",
       "callee_text": "Assert.Contains",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 403,
+      "line": 441,
       "caller_scope": "TheTwoTargetRefusalReasons_AreDistinctNamedIdentifiers",
       "callee_text": "Assert.Equal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 404,
+      "line": 442,
       "caller_scope": "TheTwoTargetRefusalReasons_AreDistinctNamedIdentifiers",
       "callee_text": "Assert.Equal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 405,
+      "line": 443,
       "caller_scope": "TheTwoTargetRefusalReasons_AreDistinctNamedIdentifiers",
       "callee_text": "Assert.NotEqual",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 436,
+      "line": 474,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<WorldPosition>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 437,
+      "line": 475,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<float>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 438,
+      "line": 476,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<bool>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 439,
+      "line": 477,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<MapId>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 441,
+      "line": 479,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<EquatableArray<Skill>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 442,
+      "line": 480,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<EquatableArray<Cooldown>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 443,
+      "line": 481,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<EquatableArray<InventoryItem>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 444,
+      "line": 482,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<EquatableArray<EquipmentItem>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 448,
+      "line": 486,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<WorldPosition>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 449,
+      "line": 487,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<string>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 450,
+      "line": 488,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<bool>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 450,
+      "line": 488,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<bool>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 451,
+      "line": 489,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<bool>.Derived",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 451,
+      "line": 489,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "WorldFact<bool>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 454,
+      "line": 492,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "CombatPlanner.CheckTargetConstraints",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 455,
+      "line": 493,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "EquatableArray<Mob>.From",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 457,
+      "line": 495,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "Assert.Equal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 457,
+      "line": 495,
       "caller_scope": "TheRefusalStringNamesEveryViolationTheVerdictCarried",
       "callee_text": "EngageCommand.DescribeTargetRefusal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 466,
+      "line": 504,
       "caller_scope": "MobObservedAt",
       "callee_text": "WorldFact<WorldPosition>.Cached",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 467,
+      "line": 505,
       "caller_scope": "MobObservedAt",
       "callee_text": "WorldFact<string>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 468,
+      "line": 506,
       "caller_scope": "MobObservedAt",
       "callee_text": "WorldFact<bool>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 469,
+      "line": 507,
       "caller_scope": "MobObservedAt",
       "callee_text": "WorldFact<bool>.Derived",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 482,
+      "line": 520,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "EngageCommand.DescribeUnfitPicture",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 483,
+      "line": 521,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "SkillOn",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 483
+        "line": 521
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 484,
+      "line": 522,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "EquatableArray<Mob>.From",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 484,
+      "line": 522,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "MobObservedAt",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 484
+        "line": 522
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 484,
+      "line": 522,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "GuardNow.AddSeconds",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 488,
+      "line": 526,
       "caller_scope": "ARecentlyObservedTarget_IsFitToDecideFrom",
       "callee_text": "Assert.Null",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 499,
+      "line": 537,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "EngageCommand.DescribeUnfitPicture",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 500,
+      "line": 538,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "SkillOn",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 500
+        "line": 538
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 501,
+      "line": 539,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "EquatableArray<Mob>.From",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 501,
+      "line": 539,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "MobObservedAt",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 501
+        "line": 539
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 501,
+      "line": 539,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "GuardNow.AddSeconds",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 505,
+      "line": 543,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "Assert.NotNull",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 506,
+      "line": 544,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "Assert.StartsWith",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 507,
+      "line": 545,
       "caller_scope": "APositionOlderThanTheBound_RefusesAndSaysHowOld",
       "callee_text": "Assert.Contains",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 517,
+      "line": 555,
       "caller_scope": "AClosedSafetyGate_RefusesTheRound",
       "callee_text": "EngageCommand.DescribeUnfitPicture",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 518,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "SkillOn",
-      "resolved_to": {
-        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 518
-      }
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 519,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "EquatableArray<Mob>.From",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 519,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "MobObservedAt",
-      "resolved_to": {
-        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 519
-      }
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 519,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "GuardNow.AddSeconds",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 523,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "Assert.NotNull",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 524,
-      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
-      "callee_text": "Assert.Contains",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 539,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "EngageCommand.DescribeUnfitPicture",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 540,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "SkillOn",
-      "resolved_to": {
-        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 540
-      }
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 541,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "EquatableArray<Mob>.From",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 541,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "MobObservedAt",
-      "resolved_to": {
-        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 541
-      }
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 541,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "GuardNow.AddSeconds",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 545,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "Assert.NotNull",
-      "resolved_to": null
-    },
-    {
-      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 546,
-      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
-      "callee_text": "Assert.Contains",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
       "line": 556,
-      "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
-      "callee_text": "EngageCommand.DescribeUnfitPicture",
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "SkillOn",
+      "resolved_to": {
+        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+        "line": 556
+      }
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 557,
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "EquatableArray<Mob>.From",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
       "line": 557,
-      "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
-      "callee_text": "SkillOn",
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "MobObservedAt",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
         "line": 557
@@ -261204,129 +261359,222 @@
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 558,
+      "line": 557,
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "GuardNow.AddSeconds",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 561,
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "Assert.NotNull",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 562,
+      "caller_scope": "AClosedSafetyGate_RefusesTheRound",
+      "callee_text": "Assert.Contains",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 577,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "EngageCommand.DescribeUnfitPicture",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 578,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "SkillOn",
+      "resolved_to": {
+        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+        "line": 578
+      }
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 579,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "EquatableArray<Mob>.From",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 579,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "MobObservedAt",
+      "resolved_to": {
+        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+        "line": 579
+      }
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 579,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "GuardNow.AddSeconds",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 583,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "Assert.NotNull",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 584,
+      "caller_scope": "APositionBelowTheConfidenceThreshold_RefusesTheRound",
+      "callee_text": "Assert.Contains",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 594,
+      "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
+      "callee_text": "EngageCommand.DescribeUnfitPicture",
+      "resolved_to": null
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 595,
+      "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
+      "callee_text": "SkillOn",
+      "resolved_to": {
+        "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+        "line": 595
+      }
+    },
+    {
+      "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
+      "line": 596,
       "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
       "callee_text": "EquatableArray<Mob>.From",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 558,
+      "line": 596,
       "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
       "callee_text": "MobObservedAt",
       "resolved_to": {
         "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-        "line": 558
+        "line": 596
       }
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 558,
+      "line": 596,
       "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
       "callee_text": "GuardNow.AddSeconds",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 562,
+      "line": 600,
       "caller_scope": "ATargetMissingFromTheList_IsNamedAsADisagreement_NotAsAStalePosition",
       "callee_text": "Assert.Equal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 579,
+      "line": 617,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<WorldPosition>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 580,
+      "line": 618,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<float>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 581,
+      "line": 619,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<bool>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 582,
+      "line": 620,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<MapId>.Unknown",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 584,
+      "line": 622,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<EquatableArray<Skill>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 585,
+      "line": 623,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<EquatableArray<Cooldown>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 586,
+      "line": 624,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<EquatableArray<InventoryItem>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 587,
+      "line": 625,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "WorldFact<EquatableArray<EquipmentItem>>.Live",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 589,
+      "line": 627,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "CombatPlanner.CheckTargetConstraints",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 592,
+      "line": 630,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "Assert.Equal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 592,
+      "line": 630,
       "caller_scope": "AnEntityIdNamingNothingObserved_IsRefusedAsTargetNotFound",
       "callee_text": "EngageCommand.DescribeTargetRefusal",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 599,
+      "line": 637,
       "caller_scope": "RepositoryRoot",
       "callee_text": "File.Exists",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 599,
+      "line": 637,
       "caller_scope": "RepositoryRoot",
       "callee_text": "Path.Combine",
       "resolved_to": null
     },
     {
       "path": "tests/NosAi.Runtime.Tests/EngageCommandTests.cs",
-      "line": 601,
+      "line": 639,
       "caller_scope": "RepositoryRoot",
       "callee_text": "Assert.True",
       "resolved_to": null
@@ -424353,7 +424601,7 @@
     {
       "root": "src",
       "file": "src-010.json",
-      "count": 475
+      "count": 481
     },
     {
       "root": "tests",
@@ -424423,7 +424671,7 @@
     {
       "root": "tests",
       "file": "tests-013.json",
-      "count": 337
+      "count": 338
     },
     {
       "root": "third_party",

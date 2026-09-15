@@ -1,6 +1,15 @@
 [
   {
     "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 229,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
     "line": 239,
     "kind": "method_declaration",
     "name": "MapSource_ThatThrows_LogsTheFaultWithoutStoppingSubsequentTicks",
@@ -4488,15 +4497,6 @@
     "name": "test_chief_requires_independent_evidence_before_promoting_binding",
     "scope": "",
     "signature": "def test_chief_requires_independent_evidence_before_promoting_binding(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_chief_watchdog.py",
-    "line": 19,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "_ChiefFinto",
-    "signature": "def __init__(self, status=\"healthy\", failed_checks=None, recommendations=None, provider_health=None):",
     "category": "test"
   }
 ]
