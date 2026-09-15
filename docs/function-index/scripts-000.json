@@ -154,7 +154,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 114,
+    "line": 117,
     "kind": "function_definition",
     "name": "call_model",
     "scope": "",
@@ -163,7 +163,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 199,
+    "line": 202,
     "kind": "function_definition",
     "name": "budget_token",
     "scope": "",
@@ -172,7 +172,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 213,
+    "line": 223,
     "kind": "function_definition",
     "name": "cost_of",
     "scope": "",
@@ -181,7 +181,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 227,
+    "line": 237,
     "kind": "function_definition",
     "name": "extract_code",
     "scope": "",
@@ -190,7 +190,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 234,
+    "line": 244,
     "kind": "function_definition",
     "name": "signatures",
     "scope": "",
@@ -199,7 +199,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 239,
+    "line": 249,
     "kind": "function_definition",
     "name": "walk",
     "scope": "signatures",
@@ -208,7 +208,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 252,
+    "line": 262,
     "kind": "function_definition",
     "name": "dataclass_fields",
     "scope": "",
@@ -217,25 +217,43 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 268,
+    "line": 278,
     "kind": "function_definition",
     "name": "_intervalli_funzioni",
     "scope": "",
-    "signature": "def _intervalli_funzioni(source: str):",
+    "signature": "def _intervalli_funzioni(source: str) -> dict[str, tuple[int, int]]:",
     "category": "project"
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 279,
+    "line": 298,
+    "kind": "function_definition",
+    "name": "cammina_classe",
+    "scope": "_intervalli_funzioni",
+    "signature": "def cammina_classe(nodo_classe: ast.ClassDef, nome_classe: str) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 321,
     "kind": "function_definition",
     "name": "innesta_funzioni",
     "scope": "",
-    "signature": "def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:",
+    "signature": "def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = \"python\") -> str:",
     "category": "project"
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 325,
+    "line": 384,
+    "kind": "function_definition",
+    "name": "_lunghezza_indentazione",
+    "scope": "",
+    "signature": "def _lunghezza_indentazione(riga: str) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 389,
     "kind": "function_definition",
     "name": "prompt_parziale",
     "scope": "",
@@ -244,7 +262,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 338,
+    "line": 402,
     "kind": "function_definition",
     "name": "linguaggio_del_file",
     "scope": "",
@@ -253,7 +271,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 350,
+    "line": 414,
     "kind": "function_definition",
     "name": "_senza_stringhe",
     "scope": "",
@@ -262,7 +280,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 359,
+    "line": 424,
     "kind": "function_definition",
     "name": "_firme_csharp",
     "scope": "",
@@ -271,7 +289,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 374,
+    "line": 439,
     "kind": "function_definition",
     "name": "testo",
     "scope": "_firme_csharp",
@@ -280,7 +298,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 377,
+    "line": 442,
     "kind": "function_definition",
     "name": "normalizza",
     "scope": "_firme_csharp",
@@ -289,7 +307,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 380,
+    "line": 445,
     "kind": "function_definition",
     "name": "nome_di",
     "scope": "_firme_csharp",
@@ -298,7 +316,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 386,
+    "line": 451,
     "kind": "function_definition",
     "name": "firma_metodo",
     "scope": "_firme_csharp",
@@ -307,7 +325,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 405,
+    "line": 470,
     "kind": "function_definition",
     "name": "visita",
     "scope": "_firme_csharp",
@@ -316,7 +334,52 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 421,
+    "line": 486,
+    "kind": "function_definition",
+    "name": "_intervalli_funzioni_csharp",
+    "scope": "",
+    "signature": "def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 499,
+    "kind": "function_definition",
+    "name": "testo",
+    "scope": "_intervalli_funzioni_csharp",
+    "signature": "def testo(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 502,
+    "kind": "function_definition",
+    "name": "nome_di",
+    "scope": "_intervalli_funzioni_csharp",
+    "signature": "def nome_di(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 508,
+    "kind": "function_definition",
+    "name": "nome_metodo",
+    "scope": "_intervalli_funzioni_csharp",
+    "signature": "def nome_metodo(nodo):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 531,
+    "kind": "function_definition",
+    "name": "visita",
+    "scope": "_intervalli_funzioni_csharp",
+    "signature": "def visita(nodo, contenitore=None):",
+    "category": "project"
+  },
+  {
+    "path": "scripts/code_agent.py",
+    "line": 550,
     "kind": "function_definition",
     "name": "_valida_csharp",
     "scope": "",
@@ -325,7 +388,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 458,
+    "line": 587,
     "kind": "function_definition",
     "name": "validate_implementation",
     "scope": "",
@@ -334,7 +397,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 513,
+    "line": 642,
     "kind": "function_definition",
     "name": "build_check",
     "scope": "",
@@ -343,7 +406,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 545,
+    "line": 674,
     "kind": "function_definition",
     "name": "import_check",
     "scope": "",
@@ -352,7 +415,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 575,
+    "line": 704,
     "kind": "function_definition",
     "name": "preflight",
     "scope": "",
@@ -361,7 +424,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 592,
+    "line": 721,
     "kind": "function_definition",
     "name": "record",
     "scope": "",
@@ -370,7 +433,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 598,
+    "line": 727,
     "kind": "function_definition",
     "name": "run",
     "scope": "",
@@ -379,7 +442,7 @@
   },
   {
     "path": "scripts/code_agent.py",
-    "line": 709,
+    "line": 849,
     "kind": "function_definition",
     "name": "main",
     "scope": "",
@@ -397,7 +460,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 41,
+    "line": 47,
     "kind": "function_definition",
     "name": "build_prompt",
     "scope": "",
@@ -406,7 +469,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 74,
+    "line": 80,
     "kind": "function_definition",
     "name": "call_local",
     "scope": "",
@@ -415,7 +478,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 89,
+    "line": 95,
     "kind": "function_definition",
     "name": "strip_fence",
     "scope": "",
@@ -424,7 +487,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 95,
+    "line": 101,
     "kind": "function_definition",
     "name": "validate_python_skeleton",
     "scope": "",
@@ -433,7 +496,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 156,
+    "line": 162,
     "kind": "function_definition",
     "name": "validate",
     "scope": "",
@@ -442,7 +505,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 253,
+    "line": 259,
     "kind": "function_definition",
     "name": "record",
     "scope": "",
@@ -451,7 +514,16 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 259,
+    "line": 265,
+    "kind": "function_definition",
+    "name": "_autorizza_incarico",
+    "scope": "",
+    "signature": "def _autorizza_incarico(task: dict) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/doc_agent.py",
+    "line": 276,
     "kind": "function_definition",
     "name": "run",
     "scope": "",
@@ -460,7 +532,7 @@
   },
   {
     "path": "scripts/doc_agent.py",
-    "line": 309,
+    "line": 360,
     "kind": "function_definition",
     "name": "main",
     "scope": "",
@@ -603,89 +675,62 @@
     "category": "project"
   },
   {
-    "path": "scripts/mcp_server.py",
-    "line": 47,
+    "path": "scripts/generate_claude_agents.py",
+    "line": 28,
     "kind": "function_definition",
-    "name": "record",
+    "name": "_frontmatter",
     "scope": "",
-    "signature": "def record(entry: dict) -> None:",
+    "signature": "def _frontmatter(employee_id: str, spec: dict, purpose: str) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/generate_claude_agents.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "_corpo",
+    "scope": "",
+    "signature": "def _corpo(employee_id: str, spec: dict, capabilities: tuple, forbidden: tuple) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/generate_claude_agents.py",
+    "line": 58,
+    "kind": "function_definition",
+    "name": "generate",
+    "scope": "",
+    "signature": "def generate(employees=DEFAULT_EMPLOYEE_ROLES, agents_dir: Path | None = None) -> list[Path]:",
+    "category": "project"
+  },
+  {
+    "path": "scripts/mcp_chief_watchdog.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "main",
+    "scope": "",
+    "signature": "def main(argv: \"list[str] | None\" = None) -> int:",
     "category": "project"
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 62,
+    "line": 89,
     "kind": "function_definition",
-    "name": "_costo_reale_usd",
+    "name": "call_deepseek",
     "scope": "",
-    "signature": "def _costo_reale_usd(model_id: str) -> float:",
+    "signature": "def call_deepseek( model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096, ) -> str:",
     "category": "project"
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 118,
+    "line": 126,
     "kind": "function_definition",
-    "name": "_rileva_linguaggio_bersaglio",
+    "name": "chiama_gruppo",
     "scope": "",
-    "signature": "def _rileva_linguaggio_bersaglio(specifications_json: str) -> str | None:",
+    "signature": "def chiama_gruppo( gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float, ) -> Tuple[str, str]:",
     "category": "project"
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 146,
-    "kind": "function_definition",
-    "name": "_prompt_scheletro",
-    "scope": "",
-    "signature": "def _prompt_scheletro(specifications_json: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 159,
-    "kind": "function_definition",
-    "name": "local_generate_skeleton",
-    "scope": "",
-    "signature": "def local_generate_skeleton(specifications_json: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 183,
-    "kind": "function_definition",
-    "name": "cloud_infill_implementation",
-    "scope": "",
-    "signature": "def cloud_infill_implementation(skeleton_and_contract: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 203,
-    "kind": "function_definition",
-    "name": "preflight_contract_check",
-    "scope": "",
-    "signature": "def preflight_contract_check(contract_json: str, generated_code: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 224,
-    "kind": "function_definition",
-    "name": "deep_reasoner_solve_crash",
-    "scope": "",
-    "signature": "def deep_reasoner_solve_crash(error_context_json: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 243,
-    "kind": "function_definition",
-    "name": "local_update_documentation",
-    "scope": "",
-    "signature": "def local_update_documentation(doc_payload_json: str) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 263,
+    "line": 149,
     "kind": "function_definition",
     "name": "update_contract_state",
     "scope": "",
@@ -694,119 +739,11 @@
   },
   {
     "path": "scripts/mcp_server.py",
-    "line": 326,
+    "line": 193,
     "kind": "function_definition",
-    "name": "regenerate_roadmap",
+    "name": "_regen",
     "scope": "update_contract_state",
-    "signature": "def regenerate_roadmap():",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 352,
-    "kind": "function_definition",
-    "name": "call_openrouter",
-    "scope": "",
-    "signature": "def call_openrouter(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 379,
-    "kind": "function_definition",
-    "name": "call_deepseek",
-    "scope": "",
-    "signature": "def call_deepseek(model_id: str, prompt: str, system_prompt: str, temperature: float = 0.1, max_tokens: int = 4096) -> str:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 415,
-    "kind": "function_definition",
-    "name": "modelli_gratuiti",
-    "scope": "",
-    "signature": "def modelli_gratuiti() -> list[str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 439,
-    "kind": "function_definition",
-    "name": "giudizio_infill",
-    "scope": "",
-    "signature": "def giudizio_infill(scheletro_e_contratto: str) -> Callable[[str], list[str]]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 441,
-    "kind": "function_definition",
-    "name": "giudice",
-    "scope": "giudizio_infill",
-    "signature": "def giudice(codice_candidato: str) -> list[str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 534,
-    "kind": "function_definition",
-    "name": "giudizio_preflight",
-    "scope": "",
-    "signature": "def giudizio_preflight(risposta: str) -> list[str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 566,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "Pausa",
-    "signature": "def __init__(self):",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 568,
-    "kind": "function_definition",
-    "name": "__call__",
-    "scope": "Pausa",
-    "signature": "def __call__(self, secondi):",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 590,
-    "kind": "function_definition",
-    "name": "chiama_groq",
-    "scope": "",
-    "signature": "def chiama_groq(modello: str, messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 619,
-    "kind": "function_definition",
-    "name": "chiama_openrouter",
-    "scope": "",
-    "signature": "def chiama_openrouter(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 655,
-    "kind": "function_definition",
-    "name": "chiama_gruppo",
-    "scope": "",
-    "signature": "def chiama_gruppo(gruppo: Sequence[str], messaggi: List[Dict[str, str]], max_tokens: int, temperatura: float) -> Tuple[str, str]:",
-    "category": "project"
-  },
-  {
-    "path": "scripts/mcp_server.py",
-    "line": 682,
-    "kind": "function_definition",
-    "name": "controlla_quota",
-    "scope": "",
-    "signature": "def controlla_quota(risposta) -> None:",
+    "signature": "def _regen():",
     "category": "project"
   },
   {
@@ -973,7 +910,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 23,
+    "line": 28,
     "kind": "function_definition",
     "name": "_load_json",
     "scope": "",
@@ -982,7 +919,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 33,
+    "line": 38,
     "kind": "function_definition",
     "name": "_paths",
     "scope": "",
@@ -991,7 +928,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 39,
+    "line": 44,
     "kind": "function_definition",
     "name": "_is_concrete_path",
     "scope": "",
@@ -1000,7 +937,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 45,
+    "line": 50,
     "kind": "function_definition",
     "name": "_check_contract_file",
     "scope": "",
@@ -1009,7 +946,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 62,
+    "line": 67,
     "kind": "function_definition",
     "name": "verify",
     "scope": "",
@@ -1018,7 +955,7 @@
   },
   {
     "path": "scripts/verify_mcp_contracts.py",
-    "line": 150,
+    "line": 169,
     "kind": "function_definition",
     "name": "main",
     "scope": "",

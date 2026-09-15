@@ -1,5 +1,221 @@
 [
   {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 667,
+    "kind": "method_declaration",
+    "name": "FormatCandidates",
+    "scope": "MapIdFinder",
+    "signature": "internal static string FormatCandidates( IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
+    "line": 689,
+    "kind": "method_declaration",
+    "name": "SaveCandidates",
+    "scope": "MapIdFinder",
+    "signature": "private static void SaveCandidates( string path, IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "NotAttempted",
+    "scope": "MovementVerification",
+    "signature": "public static MovementVerification NotAttempted(string reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 153,
+    "kind": "constructor_declaration",
+    "name": "MovementVerifier",
+    "scope": "MovementVerifier",
+    "signature": "public MovementVerifier( TimeSpan? window = null, TimeSpan? tolerance = null, TimeSpan? pollInterval = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 190,
+    "kind": "method_declaration",
+    "name": "Verify",
+    "scope": "MovementVerifier",
+    "signature": "public MovementVerification Verify( MapPoint from, MapPoint to, DateTime emittedAtUtc, Func<PositionReading?> readPosition, CancellationToken cancellationToken = default)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
+    "line": 259,
+    "kind": "method_declaration",
+    "name": "Result",
+    "scope": "MovementVerifier",
+    "signature": "private static MovementVerification Result( MovementOutcome outcome, string? detail, MapPoint? observed, long started, int accepted)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
+    "line": 155,
+    "kind": "method_declaration",
+    "name": "Evaluate",
+    "scope": "OccupancyFreshness",
+    "signature": "public static OccupancyVerdict Evaluate( MapPoint destination, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "Refuse",
+    "scope": "OccupancyFreshness",
+    "signature": "private static OccupancyVerdict Refuse(string reason, DynamicOccupancy occupancy, TimeSpan? age)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 112,
+    "kind": "method_declaration",
+    "name": "Admit",
+    "scope": "PathRevalidation",
+    "signature": "public static PathAdmission Admit(in MapGrid grid, IReadOnlyList<MapPoint> path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 186,
+    "kind": "method_declaration",
+    "name": "Revalidate",
+    "scope": "PathRevalidation",
+    "signature": "public static SegmentRevalidation Revalidate( in MapGrid grid, MapPoint from, MapPoint to, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 244,
+    "kind": "method_declaration",
+    "name": "IsAdjacent",
+    "scope": "PathRevalidation",
+    "signature": "public static bool IsAdjacent(MapPoint a, MapPoint b)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
+    "line": 258,
+    "kind": "method_declaration",
+    "name": "ToCells",
+    "scope": "PathRevalidation",
+    "signature": "public static IReadOnlyList<MapPoint> ToCells(ImmutableArray<GridPoint> waypoints)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 121,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "ReplanPolicy",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 191,
+    "kind": "constructor_declaration",
+    "name": "PathWalkController",
+    "scope": "PathWalkController",
+    "signature": "public PathWalkController(ReplanPolicy? policy = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 209,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 209,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 215,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 215,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 218,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "PathWalkController",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 218,
+    "kind": "accessor_declaration",
+    "name": "set",
+    "scope": "PathWalkController",
+    "signature": "private set;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 228,
+    "kind": "method_declaration",
+    "name": "TryStart",
+    "scope": "PathWalkController",
+    "signature": "public bool TryStart( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 276,
+    "kind": "method_declaration",
+    "name": "Next",
+    "scope": "PathWalkController",
+    "signature": "public WalkDecision Next( in MapGrid grid, MapPoint observedPosition, in OccupancyView view, DateTime nowUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 341,
+    "kind": "method_declaration",
+    "name": "NoteStepOutcome",
+    "scope": "PathWalkController",
+    "signature": "public void NoteStepOutcome(in MovementVerification verification)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
+    "line": 395,
+    "kind": "method_declaration",
+    "name": "TryAdoptReplan",
+    "scope": "PathWalkController",
+    "signature": "public bool TryAdoptReplan( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
     "line": 436,
     "kind": "method_declaration",
@@ -4041,6 +4257,159 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "TryParseSlots",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "public static bool TryParseSlots(IReadOnlyList<string> tokens, out IReadOnlyDictionary<int, InventorySlotRoi> rois, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 73,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "public static int Run(string? repoRoot = null, string processName = \"NostaleClientX\", IReadOnlyDictionary<int, InventorySlotRoi>? slots = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "ReportCalibrationState",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "private static void ReportCalibrationState(string path, IReadOnlyDictionary<int, InventorySlotRoi>? proposed, PixelRect area)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 179,
+    "kind": "method_declaration",
+    "name": "TryParseOne",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "private static bool TryParseOne(string token, out int slot, out InventorySlotRoi roi, out string? reason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "AcquireFrame",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "private static CaptureFrame? AcquireFrame(DxgiDesktopDuplicationSource capture)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+    "line": 230,
+    "kind": "method_declaration",
+    "name": "WritePreview",
+    "scope": "BagPanelCalibrationProbe",
+    "signature": "private static void WritePreview(string repoRoot, CaptureFrame frame, PixelRect area)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 18,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 19,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 20,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 21,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 23,
+    "kind": "constructor_declaration",
+    "name": "BagPanelRoiCalibration",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "private BagPanelRoiCalibration( bool isCalibrated, IReadOnlyDictionary<int, InventorySlotRoi> rois, int clientWidth, int clientHeight, DateTime? calibratedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 37,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "Confirmed",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "public static BagPanelRoiCalibration Confirmed(IReadOnlyDictionary<int, InventorySlotRoi> rois, int clientWidth, int clientHeight, DateTime calibratedAtUtc)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 69,
+    "kind": "method_declaration",
+    "name": "Load",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "public static BagPanelRoiCalibration Load(string path, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 151,
+    "kind": "method_declaration",
+    "name": "Save",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "public void Save(string path)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 181,
+    "kind": "method_declaration",
+    "name": "TryFraction",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "private static bool TryFraction(string field, out double value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Perception/BagPanelRoiCalibration.cs",
+    "line": 184,
+    "kind": "method_declaration",
+    "name": "Resolve",
+    "scope": "BagPanelRoiCalibration",
+    "signature": "public IReadOnlyDictionary<int, PixelRect>? Resolve(PixelRect clientArea)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/Perception/CalibratedScreenProjection.cs",
     "line": 133,
     "kind": "constructor_declaration",
@@ -4127,375 +4496,6 @@
     "kind": "accessor_declaration",
     "name": "get",
     "scope": "CaptureHealthPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 34,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CaptureHealthPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 35,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CaptureHealthPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 36,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CaptureHealthPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 37,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "CaptureHealthPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 39,
-    "kind": "constructor_declaration",
-    "name": "CaptureHealthPolicy",
-    "scope": "CaptureHealthPolicy",
-    "signature": "public CaptureHealthPolicy( int minimumSamples = 20, double degradedDropRatio = 0.25, double unhealthyDropRatio = 0.60, double degradedFailureRatio = 0.50, double unhealthyFailureRatio = 0.90)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 63,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "CaptureHealthPolicy",
-    "signature": "public CaptureHealthSnapshot Evaluate( long successfulAcquisitions, long publishedFrames, long droppedFrames, long acquireFailures)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 98,
-    "kind": "method_declaration",
-    "name": "Snapshot",
-    "scope": "CaptureHealthPolicy",
-    "signature": "private static CaptureHealthSnapshot Snapshot( CaptureHealthState state, string reason, long successfulAcquisitions, long publishedFrames, long droppedFrames, long acquireFailures, double dropRatio, double failureRatio)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/CaptureHealth.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "ValidateRatio",
-    "scope": "CaptureHealthPolicy",
-    "signature": "private static void ValidateRatio(double value, string name)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 52,
-    "kind": "method_declaration",
-    "name": "Run",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "public static int Run(string? processName = null, string? calibrationPath = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 80,
-    "kind": "method_declaration",
-    "name": "CalibrationIsUsable",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "public static bool CalibrationIsUsable( ScreenProjectionCalibration calibration, DpiAwarenessRegime regime, GeometryShape? liveShape, out string? refusalReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 121,
-    "kind": "method_declaration",
-    "name": "RunWindows",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static int RunWindows(string? processName, string? calibrationPath)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 175,
-    "kind": "method_declaration",
-    "name": "ReportCalibration",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "private static void ReportCalibration( string path, ScreenProjectionCalibration stored, bool usable, string? whyNot)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 192,
-    "kind": "method_declaration",
-    "name": "TryFindWindow",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static bool TryFindWindow(string? processName, out ClientWindow window, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 249,
-    "kind": "method_declaration",
-    "name": "ReportDisplayScale",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] private static void ReportDisplayScale()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 301,
-    "kind": "method_declaration",
-    "name": "GetDpiForWindow",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern uint GetDpiForWindow(IntPtr hwnd);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 305,
-    "kind": "method_declaration",
-    "name": "MonitorFromWindow",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 309,
-    "kind": "method_declaration",
-    "name": "GetDC",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern IntPtr GetDC(IntPtr hwnd);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 313,
-    "kind": "method_declaration",
-    "name": "ReleaseDC",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowDpiProbe.cs",
-    "line": 317,
-    "kind": "method_declaration",
-    "name": "GetDeviceCaps",
-    "scope": "ClientWindowDpiProbe",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"gdi32.dll\")] private static extern int GetDeviceCaps(IntPtr hdc, int index);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 46,
-    "kind": "method_declaration",
-    "name": "TryFind",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] public static ClientWindow? TryFind(int processId, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 53,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "ClientWindowLocator",
-    "signature": "(handle, _) =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 101,
-    "kind": "method_declaration",
-    "name": "EnumWindows",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\", SetLastError = true)] private static extern bool EnumWindows(EnumProc callback, IntPtr parameter);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 105,
-    "kind": "method_declaration",
-    "name": "GetWindowThreadProcessId",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern uint GetWindowThreadProcessId(IntPtr handle, out uint processId);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "IsWindowVisible",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool IsWindowVisible(IntPtr handle);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 113,
-    "kind": "method_declaration",
-    "name": "IsIconic",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool IsIconic(IntPtr handle);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 117,
-    "kind": "method_declaration",
-    "name": "GetClientRect",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool GetClientRect(IntPtr handle, out Rect rect);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 121,
-    "kind": "method_declaration",
-    "name": "ClientToScreen",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\")] private static extern bool ClientToScreen(IntPtr handle, ref Point point);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/ClientWindowLocator.cs",
-    "line": 125,
-    "kind": "method_declaration",
-    "name": "GetClassNameW",
-    "scope": "ClientWindowLocator",
-    "signature": "[SupportedOSPlatform(\"windows\")] [DllImport(\"user32.dll\", CharSet = CharSet.Unicode)] private static extern int GetClassNameW(IntPtr handle, StringBuilder name, int capacity);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 10,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "IObjectDetector",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 12,
-    "kind": "method_declaration",
-    "name": "Detect",
-    "scope": "IObjectDetector",
-    "signature": "IReadOnlyList<Detection> Detect(CaptureFrame frame);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 21,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "IObjectTracker",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 23,
-    "kind": "method_declaration",
-    "name": "Track",
-    "scope": "IObjectTracker",
-    "signature": "IReadOnlyList<TrackedEntity> Track(IReadOnlyList<Detection> detections, double deltaSeconds);",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 34,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "DelegateObjectDetector",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 36,
-    "kind": "constructor_declaration",
-    "name": "DelegateObjectDetector",
-    "scope": "DelegateObjectDetector",
-    "signature": "public DelegateObjectDetector( Func<CaptureFrame, IReadOnlyList<Detection>> detect, string name = \"delegate-detector\")",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 44,
-    "kind": "method_declaration",
-    "name": "Detect",
-    "scope": "DelegateObjectDetector",
-    "signature": "public IReadOnlyList<Detection> Detect(CaptureFrame frame)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DetectionContracts.cs",
-    "line": 59,
-    "kind": "method_declaration",
-    "name": "Detect",
-    "scope": "NullObjectDetector",
-    "signature": "public IReadOnlyList<Detection> Detect(CaptureFrame frame)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
-    "line": 50,
-    "kind": "constructor_declaration",
-    "name": "DialogRoiCalibration",
-    "scope": "DialogRoiCalibration",
-    "signature": "private DialogRoiCalibration( bool isCalibrated, double x, double y, double width, double height, int clientWidth, int clientHeight, DateTime? calibratedAtUtc, double baselineMeanB, double baselineMeanG, double baselineMeanR)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
-    "line": 77,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "DialogRoiCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
-    "line": 80,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "DialogRoiCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
-    "line": 83,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "DialogRoiCalibration",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Perception/DialogRoiCalibration.cs",
-    "line": 86,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "DialogRoiCalibration",
     "signature": "get;",
     "category": "project"
   }

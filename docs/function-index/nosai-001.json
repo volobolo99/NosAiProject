@@ -1,5 +1,896 @@
 [
   {
+    "path": "nosai/runtime/recovery.py",
+    "line": 63,
+    "kind": "function_definition",
+    "name": "reset",
+    "scope": "RecoveryController",
+    "signature": "def reset(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/recovery.py",
+    "line": 67,
+    "kind": "function_definition",
+    "name": "_default_strategy",
+    "scope": "RecoveryController",
+    "signature": "def _default_strategy(reason: str, attempt: int) -> str:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/recovery.py",
+    "line": 75,
+    "kind": "function_definition",
+    "name": "_requested_mode",
+    "scope": "RecoveryController",
+    "signature": "def _requested_mode(strategy: str) -> str | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/resources.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "ResourceManager",
+    "signature": "def __init__(self, snapshot_provider: Callable[[], ResourceSnapshot] | None = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/resources.py",
+    "line": 20,
+    "kind": "function_definition",
+    "name": "snapshot",
+    "scope": "ResourceManager",
+    "signature": "def snapshot(self) -> ResourceSnapshot:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/resources.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "can_run_local",
+    "scope": "ResourceManager",
+    "signature": "def can_run_local(self, min_vram_mb: int = 512, max_temperature_c: float = 85.0) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/resources.py",
+    "line": 27,
+    "kind": "function_definition",
+    "name": "budget_ok",
+    "scope": "ResourceManager",
+    "signature": "def budget_ok(self, max_power_w: float) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 20,
+    "kind": "function_definition",
+    "name": "checkpoint",
+    "scope": "AgentSession",
+    "signature": "def checkpoint(self, **state: Any) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "transition",
+    "scope": "AgentSession",
+    "signature": "def transition(self, status: str) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "start",
+    "scope": "AgentSession",
+    "signature": "def start(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "pause",
+    "scope": "AgentSession",
+    "signature": "def pause(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 36,
+    "kind": "function_definition",
+    "name": "complete",
+    "scope": "AgentSession",
+    "signature": "def complete(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "fail",
+    "scope": "AgentSession",
+    "signature": "def fail(self, reason: str) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 45,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "SessionManager",
+    "signature": "def __init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 48,
+    "kind": "function_definition",
+    "name": "create",
+    "scope": "SessionManager",
+    "signature": "def create(self, goal: str = \"\") -> AgentSession:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 53,
+    "kind": "function_definition",
+    "name": "get",
+    "scope": "SessionManager",
+    "signature": "def get(self, session_id: str) -> AgentSession:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "stop",
+    "scope": "SessionManager",
+    "signature": "def stop(self, session_id: str) -> AgentSession:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session.py",
+    "line": 61,
+    "kind": "function_definition",
+    "name": "resume",
+    "scope": "SessionManager",
+    "signature": "def resume(self, session_id: str) -> AgentSession:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session_protocol.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "SequenceGuard",
+    "signature": "def __init__(self):",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/session_protocol.py",
+    "line": 19,
+    "kind": "function_definition",
+    "name": "accept",
+    "scope": "SequenceGuard",
+    "signature": "def accept(self, message: SessionMessage) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/state.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "WorldStateStore",
+    "signature": "def __init__(self, initial: WorldState):",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/state.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "current",
+    "scope": "WorldStateStore",
+    "signature": "def current(self) -> VersionedWorldState:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/state.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "apply",
+    "scope": "WorldStateStore",
+    "signature": "def apply(self, update: PerceptionWorldUpdate) -> VersionedWorldState:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/state.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "history",
+    "scope": "WorldStateStore",
+    "signature": "def history(self) -> tuple[VersionedWorldState, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/timeouts.py",
+    "line": 11,
+    "kind": "function_definition",
+    "name": "run_with_timeout",
+    "scope": "",
+    "signature": "def run_with_timeout(operation: Callable[[], T], timeout_seconds: float = 0.2) -> T:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/tools.py",
+    "line": 15,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "ToolRegistry",
+    "signature": "def __init__(self):",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/tools.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "register",
+    "scope": "ToolRegistry",
+    "signature": "def register(self, spec: ToolSpec) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/tools.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "get",
+    "scope": "ToolRegistry",
+    "signature": "def get(self, name: str) -> ToolSpec:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/tools.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "names",
+    "scope": "ToolRegistry",
+    "signature": "def names(self) -> tuple[str, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/trust.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "allows",
+    "scope": "TrustPolicy",
+    "signature": "def allows(self, tier: TrustTier) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/trust.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "TrustBoundary",
+    "signature": "def __init__(self, policy: TrustPolicy | None = None):",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/trust.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "authorize",
+    "scope": "TrustBoundary",
+    "signature": "def authorize(self, tier: TrustTier, guard_allowed: bool = False, safety_allowed: bool = False) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 28,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "RuntimeWatchdog",
+    "signature": "def __init__(self, policy: WatchdogPolicy | None = None, on_trip: Callable[[str], None] | None = None, on_mode_change: Callable[[WatchdogMode, str], None] | None = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "effective_runtime_ms",
+    "scope": "RuntimeWatchdog",
+    "signature": "def effective_runtime_ms(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "effective_actions",
+    "scope": "RuntimeWatchdog",
+    "signature": "def effective_actions(self) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "before_action",
+    "scope": "RuntimeWatchdog",
+    "signature": "def before_action(self) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 58,
+    "kind": "function_definition",
+    "name": "after_action",
+    "scope": "RuntimeWatchdog",
+    "signature": "def after_action(self, success: bool) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "set_mode",
+    "scope": "RuntimeWatchdog",
+    "signature": "def set_mode(self, mode: WatchdogMode, reason: str = \"\") -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 79,
+    "kind": "function_definition",
+    "name": "enter_recovery",
+    "scope": "RuntimeWatchdog",
+    "signature": "def enter_recovery(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 82,
+    "kind": "function_definition",
+    "name": "enter_cooling",
+    "scope": "RuntimeWatchdog",
+    "signature": "def enter_cooling(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "resume",
+    "scope": "RuntimeWatchdog",
+    "signature": "def resume(self, mode: WatchdogMode = WatchdogMode.NORMAL) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 90,
+    "kind": "function_definition",
+    "name": "elapsed_ms",
+    "scope": "RuntimeWatchdog",
+    "signature": "def elapsed_ms(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 93,
+    "kind": "function_definition",
+    "name": "trip",
+    "scope": "RuntimeWatchdog",
+    "signature": "def trip(self, reason: str) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/runtime/watchdog.py",
+    "line": 101,
+    "kind": "function_definition",
+    "name": "reset",
+    "scope": "RuntimeWatchdog",
+    "signature": "def reset(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/health.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "check_storage",
+    "scope": "",
+    "signature": "def check_storage(path: Path) -> StorageHealth:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 14,
+    "kind": "function_definition",
+    "name": "project",
+    "scope": "NosAiStoragePaths",
+    "signature": "def project(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 18,
+    "kind": "function_definition",
+    "name": "app",
+    "scope": "NosAiStoragePaths",
+    "signature": "def app(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 22,
+    "kind": "function_definition",
+    "name": "runtime",
+    "scope": "NosAiStoragePaths",
+    "signature": "def runtime(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "models",
+    "scope": "NosAiStoragePaths",
+    "signature": "def models(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "data",
+    "scope": "NosAiStoragePaths",
+    "signature": "def data(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 34,
+    "kind": "function_definition",
+    "name": "db",
+    "scope": "NosAiStoragePaths",
+    "signature": "def db(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "state",
+    "scope": "NosAiStoragePaths",
+    "signature": "def state(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "evidence",
+    "scope": "NosAiStoragePaths",
+    "signature": "def evidence(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 46,
+    "kind": "function_definition",
+    "name": "exports",
+    "scope": "NosAiStoragePaths",
+    "signature": "def exports(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "cache",
+    "scope": "NosAiStoragePaths",
+    "signature": "def cache(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 54,
+    "kind": "function_definition",
+    "name": "logs",
+    "scope": "NosAiStoragePaths",
+    "signature": "def logs(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 58,
+    "kind": "function_definition",
+    "name": "temp",
+    "scope": "NosAiStoragePaths",
+    "signature": "def temp(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 62,
+    "kind": "function_definition",
+    "name": "backups",
+    "scope": "NosAiStoragePaths",
+    "signature": "def backups(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "config",
+    "scope": "NosAiStoragePaths",
+    "signature": "def config(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 70,
+    "kind": "function_definition",
+    "name": "tools",
+    "scope": "NosAiStoragePaths",
+    "signature": "def tools(self) -> Path:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/paths.py",
+    "line": 73,
+    "kind": "function_definition",
+    "name": "ensure_layout",
+    "scope": "NosAiStoragePaths",
+    "signature": "def ensure_layout(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/sqlite_policy.py",
+    "line": 19,
+    "kind": "function_definition",
+    "name": "configure_connection",
+    "scope": "",
+    "signature": "def configure_connection(conn: sqlite3.Connection, policy: SqlitePolicy | None = None) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/sqlite_policy.py",
+    "line": 34,
+    "kind": "function_definition",
+    "name": "initialize_database_file",
+    "scope": "",
+    "signature": "def initialize_database_file(conn: sqlite3.Connection) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/sqlite_policy.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "checkpoint",
+    "scope": "",
+    "signature": "def checkpoint(conn: sqlite3.Connection, mode: str = \"TRUNCATE\") -> tuple[int, int, int]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/volume.py",
+    "line": 24,
+    "kind": "function_definition",
+    "name": "paths",
+    "scope": "NosAiVolume",
+    "signature": "def paths(self) -> NosAiStoragePaths:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/volume.py",
+    "line": 27,
+    "kind": "function_definition",
+    "name": "validate",
+    "scope": "NosAiVolume",
+    "signature": "def validate(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/volume.py",
+    "line": 42,
+    "kind": "function_definition",
+    "name": "prepare",
+    "scope": "NosAiVolume",
+    "signature": "def prepare(self) -> NosAiStoragePaths:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/volume.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "_windows_volume_label",
+    "scope": "",
+    "signature": "def _windows_volume_label(path: Path) -> str | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/storage/volume.py",
+    "line": 74,
+    "kind": "function_definition",
+    "name": "find_nosai_volume",
+    "scope": "",
+    "signature": "def find_nosai_volume(label: str = DEFAULT_LABEL) -> NosAiVolume:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 44,
+    "kind": "function_definition",
+    "name": "__post_init__",
+    "scope": "EffectSpec",
+    "signature": "def __post_init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 77,
+    "kind": "function_definition",
+    "name": "__post_init__",
+    "scope": "ActionSpec",
+    "signature": "def __post_init__(self) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 91,
+    "kind": "function_definition",
+    "name": "occupancy_s",
+    "scope": "ActionSpec",
+    "signature": "def occupancy_s(self) -> float:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 96,
+    "kind": "function_definition",
+    "name": "is_survival",
+    "scope": "ActionSpec",
+    "signature": "def is_survival(self) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 113,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "ActionBook",
+    "signature": "def __init__(self, specs: tuple[ActionSpec, ...] | list[ActionSpec]) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 123,
+    "kind": "function_definition",
+    "name": "__getitem__",
+    "scope": "ActionBook",
+    "signature": "def __getitem__(self, action_id: str) -> ActionSpec:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 126,
+    "kind": "function_definition",
+    "name": "__contains__",
+    "scope": "ActionBook",
+    "signature": "def __contains__(self, action_id: object) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 129,
+    "kind": "function_definition",
+    "name": "__iter__",
+    "scope": "ActionBook",
+    "signature": "def __iter__(self) -> Iterator[ActionSpec]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 132,
+    "kind": "function_definition",
+    "name": "__len__",
+    "scope": "ActionBook",
+    "signature": "def __len__(self) -> int:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 136,
+    "kind": "function_definition",
+    "name": "ids",
+    "scope": "ActionBook",
+    "signature": "def ids(self) -> tuple[str, ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/action_model.py",
+    "line": 139,
+    "kind": "function_definition",
+    "name": "get",
+    "scope": "ActionBook",
+    "signature": "def get(self, action_id: str) -> ActionSpec | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 73,
+    "kind": "function_definition",
+    "name": "_ratio",
+    "scope": "",
+    "signature": "def _ratio(value: float | None, maximum: float | None) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 115,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "StochasticCombatEngine",
+    "signature": "def __init__( self, book: ActionBook, matrix: StochasticTransitionMatrix | None = None, clock: ShadowCooldownClock | None = None, interrupt_model: InterruptModel | None = None, monitor: BurstMonitor | None = None, evaluator: ThreatEvaluator | None = None, search_config: SearchConfig | None = None, threat_weights: ThreatWeights | None = None, recovery_action_id: str | None = None, recover_budget_s: float = DEFAULT_RECOVER_BUDGET_S, escape_budget_s: float = DEFAULT_ESCAPE_BUDGET_S, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 160,
+    "kind": "function_definition",
+    "name": "note_execution",
+    "scope": "StochasticCombatEngine",
+    "signature": "def note_execution(self, action_id: str, at: float) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 164,
+    "kind": "function_definition",
+    "name": "reconcile_cooldown",
+    "scope": "StochasticCombatEngine",
+    "signature": "def reconcile_cooldown(self, action_id: str, observed_ready: bool, at: float) -> float | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 168,
+    "kind": "function_definition",
+    "name": "note_effect_outcome",
+    "scope": "StochasticCombatEngine",
+    "signature": "def note_effect_outcome( self, action_id: str, target_class: str | None, applied: bool, weight: float = 1.0, ) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 185,
+    "kind": "function_definition",
+    "name": "evaluate",
+    "scope": "StochasticCombatEngine",
+    "signature": "def evaluate(self, observation: CombatObservation) -> CombatFrame:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 274,
+    "kind": "function_definition",
+    "name": "decide",
+    "scope": "StochasticCombatEngine",
+    "signature": "def decide(self, world_state: WorldState, goal: Goal) -> Decision:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 296,
+    "kind": "function_definition",
+    "name": "last_frame",
+    "scope": "StochasticCombatEngine",
+    "signature": "def last_frame(self) -> CombatFrame | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 301,
+    "kind": "function_definition",
+    "name": "_remember",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _remember(self, frame: CombatFrame, world: WorldState) -> None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 305,
+    "kind": "function_definition",
+    "name": "_retarget_recommendation",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _retarget_recommendation( self, threats: tuple[ThreatScore, ...], world: WorldState ) -> object | None:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 325,
+    "kind": "function_definition",
+    "name": "_commitable_actions",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _commitable_actions( self, readiness: tuple[Readiness, ...], world: WorldState, now: float, observation: CombatObservation, ) -> tuple[tuple[str, ...], tuple[tuple[str, str], ...]]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 377,
+    "kind": "function_definition",
+    "name": "_sim_cooldowns",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _sim_cooldowns(self, readiness: tuple[Readiness, ...]) -> tuple[tuple[str, float], ...]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 396,
+    "kind": "function_definition",
+    "name": "_incoming_dps",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _incoming_dps( self, observation: CombatObservation, survival: SurvivalVerdict ) -> tuple[float, DataSource]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 409,
+    "kind": "function_definition",
+    "name": "_survival_frame",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _survival_frame( self, observation: CombatObservation, survival: SurvivalVerdict, threats: tuple[ThreatScore, ...], retarget: object | None, readiness: tuple[Readiness, ...], ) -> CombatFrame:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/combat_engine.py",
+    "line": 455,
+    "kind": "function_definition",
+    "name": "_combat_frame",
+    "scope": "StochasticCombatEngine",
+    "signature": "def _combat_frame( self, observation: CombatObservation, survival: SurvivalVerdict, threats: tuple[ThreatScore, ...], retarget: object | None, readiness: tuple[Readiness, ...], result: SearchResult, risk_source: DataSource, withheld: tuple[tuple[str, str], ...], target_hp_known: bool, ) -> CombatFrame:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/play_ai.py",
+    "line": 22,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "PlayAiEngine",
+    "signature": "def __init__(self, recovery_threshold: float = 0.35):",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/play_ai.py",
+    "line": 26,
+    "kind": "function_definition",
+    "name": "evaluate_tick",
+    "scope": "PlayAiEngine",
+    "signature": "def evaluate_tick(self, world: WorldState) -> Optional[UtilityAction]:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 52,
+    "kind": "function_definition",
+    "name": "is_ready",
+    "scope": "Readiness",
+    "signature": "def is_ready(self) -> bool:",
+    "category": "project"
+  },
+  {
+    "path": "nosai/tactical/scheduling.py",
+    "line": 65,
+    "kind": "function_definition",
+    "name": "mean_absolute_drift_s",
+    "scope": "ClockDiagnostics",
+    "signature": "def mean_absolute_drift_s(self) -> float | None:",
+    "category": "project"
+  },
+  {
     "path": "nosai/tactical/scheduling.py",
     "line": 83,
     "kind": "function_definition",

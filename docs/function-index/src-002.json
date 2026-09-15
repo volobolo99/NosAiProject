@@ -1288,7 +1288,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyContracts.cs",
-    "line": 61,
+    "line": 64,
     "kind": "method_declaration",
     "name": "Unselected",
     "scope": "StrategicPlan",
@@ -1351,7 +1351,16 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 261,
+    "line": 259,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency",
+    "scope": "StrategyPlanner",
+    "signature": "public static StrategicSignal? AssessCollectUrgency(Player player, EquatableArray<Drop> drops, double maxRangeTiles = 12.0)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
+    "line": 309,
     "kind": "method_declaration",
     "name": "AssessOptimizationUrgency",
     "scope": "StrategyPlanner",
@@ -1360,7 +1369,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 315,
+    "line": 363,
     "kind": "method_declaration",
     "name": "AssessProgressionUrgency",
     "scope": "StrategyPlanner",
@@ -1369,7 +1378,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 337,
+    "line": 385,
     "kind": "method_declaration",
     "name": "SelectStrategicPlan",
     "scope": "StrategyPlanner",
@@ -1378,7 +1387,7 @@
   },
   {
     "path": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
-    "line": 354,
+    "line": 402,
     "kind": "method_declaration",
     "name": "TryGetFraction",
     "scope": "StrategyPlanner",
@@ -3871,7 +3880,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 43,
+    "line": 46,
     "kind": "method_declaration",
     "name": "SanitizeText",
     "scope": "NosAi.AI.LocalInference.CapBacPromptSanitizer",
@@ -3880,7 +3889,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 51,
+    "line": 54,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.CapBacPromptSanitizer",
@@ -3889,7 +3898,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 51,
+    "line": 54,
     "kind": "method_declaration",
     "name": "ContainsActiveInjection",
     "scope": "NosAi.AI.LocalInference.CapBacPromptSanitizer",
@@ -3898,7 +3907,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 57,
+    "line": 60,
     "kind": "method_declaration",
     "name": "TryParseAndValidate",
     "scope": "NosAi.AI.LocalInference.StructuredJsonOutputValidator",
@@ -3907,7 +3916,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 84,
+    "line": 87,
     "kind": "constructor_declaration",
     "name": "ContextRingBuffer",
     "scope": "NosAi.AI.LocalInference.ContextRingBuffer",
@@ -3916,7 +3925,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 85,
+    "line": 88,
     "kind": "method_declaration",
     "name": "AddEntry",
     "scope": "NosAi.AI.LocalInference.ContextRingBuffer",
@@ -3925,7 +3934,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 86,
+    "line": 89,
     "kind": "method_declaration",
     "name": "GetRecentHistory",
     "scope": "NosAi.AI.LocalInference.ContextRingBuffer",
@@ -3934,7 +3943,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 87,
+    "line": 90,
     "kind": "method_declaration",
     "name": "BuildFormattedPromptContext",
     "scope": "NosAi.AI.LocalInference.ContextRingBuffer",
@@ -3943,7 +3952,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 88,
+    "line": 91,
     "kind": "method_declaration",
     "name": "Clear",
     "scope": "NosAi.AI.LocalInference.ContextRingBuffer",
@@ -3952,7 +3961,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 94,
+    "line": 97,
     "kind": "constructor_declaration",
     "name": "SandboxedToolRegistry",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -3961,7 +3970,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
+    "line": 98,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -3970,7 +3979,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
+    "line": 98,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -3979,7 +3988,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
+    "line": 98,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -3988,7 +3997,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
+    "line": 98,
     "kind": "lambda_expression",
     "name": "<anonymous/accessor>",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -3997,7 +4006,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 95,
+    "line": 98,
     "kind": "method_declaration",
     "name": "RegisterDefaultTools",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -4006,7 +4015,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 96,
+    "line": 99,
     "kind": "method_declaration",
     "name": "TryExecuteTool",
     "scope": "NosAi.AI.LocalInference.SandboxedToolRegistry",
@@ -4015,7 +4024,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 104,
+    "line": 110,
     "kind": "constructor_declaration",
     "name": "LocalAiInferenceEngine",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4024,7 +4033,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 105,
+    "line": 111,
     "kind": "method_declaration",
     "name": "LoadModelToVramAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4033,7 +4042,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 106,
+    "line": 169,
     "kind": "method_declaration",
     "name": "GenerateDecisionIntentAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4042,7 +4051,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 107,
+    "line": 222,
     "kind": "method_declaration",
     "name": "GenerateDeterministicFallback",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4051,7 +4060,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 108,
+    "line": 223,
     "kind": "method_declaration",
     "name": "UnloadModelFromVramAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4060,7 +4069,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 109,
+    "line": 234,
     "kind": "method_declaration",
     "name": "DisposeAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceEngine",
@@ -4069,7 +4078,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 114,
+    "line": 239,
     "kind": "method_declaration",
     "name": "RunAllTestsAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4078,7 +4087,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 115,
+    "line": 240,
     "kind": "method_declaration",
     "name": "RunTest",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4087,7 +4096,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 121,
+    "line": 246,
     "kind": "method_declaration",
     "name": "RunTestAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4096,7 +4105,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 136,
+    "line": 261,
     "kind": "method_declaration",
     "name": "Report",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4105,7 +4114,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 143,
+    "line": 268,
     "kind": "method_declaration",
     "name": "TestPromptSanitizationAndInjectionBlock",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4114,7 +4123,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 144,
+    "line": 269,
     "kind": "method_declaration",
     "name": "TestStructuredJsonOutputValidation",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4123,7 +4132,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 145,
+    "line": 270,
     "kind": "method_declaration",
     "name": "TestContextRingBufferTrimming",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4132,7 +4141,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 146,
+    "line": 271,
     "kind": "method_declaration",
     "name": "TestSandboxedToolQuery",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4141,7 +4150,7 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 147,
+    "line": 272,
     "kind": "method_declaration",
     "name": "TestThermalCircuitBreakerFallbackAsync",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
@@ -4150,11 +4159,29 @@
   },
   {
     "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
-    "line": 148,
+    "line": 273,
     "kind": "method_declaration",
     "name": "TestLocalAiSecurityInvariant",
     "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
     "signature": "private static bool TestLocalAiSecurityInvariant()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 274,
+    "kind": "method_declaration",
+    "name": "TestLoadModelFailsClosedWhenFileMissingAsync",
+    "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
+    "signature": "private static async Task<bool> TestLoadModelFailsClosedWhenFileMissingAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/AI/LocalInference/LocalAiInferenceEngine.cs",
+    "line": 281,
+    "kind": "method_declaration",
+    "name": "TestLoadModelFailsClosedForUnsupportedNpuAsync",
+    "scope": "NosAi.AI.LocalInference.LocalAiInferenceTestRunner",
+    "signature": "private static async Task<bool> TestLoadModelFailsClosedForUnsupportedNpuAsync()",
     "category": "project"
   },
   {
@@ -4470,33 +4497,6 @@
     "name": "IsSpecialNonMonsterEntity",
     "scope": "TargetEstablishment",
     "signature": "private static bool IsSpecialNonMonsterEntity(GameReferenceDatabase catalogue, int vnum)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
-    "line": 82,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "TargetSelectionPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
-    "line": 170,
-    "kind": "method_declaration",
-    "name": "TrySelect",
-    "scope": "TargetSelector",
-    "signature": "public static bool TrySelect( IReadOnlyList<SelectableEntity> observed, ClassifiedValue<MapPoint> playerPosition, DateTime nowUtc, TargetSelectionPolicy policy, out TargetChoice? choice, out string failureReason, Func<SelectableEntity, bool>? isAttackable = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Autonomy/TargetSelector.cs",
-    "line": 302,
-    "kind": "method_declaration",
-    "name": "Distance",
-    "scope": "TargetSelector",
-    "signature": "private static double Distance(MapPoint a, MapPoint b)",
     "category": "project"
   }
 ]

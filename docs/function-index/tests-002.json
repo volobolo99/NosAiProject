@@ -1,5 +1,131 @@
 [
   {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "WhenTwoRoutesExist_TheShorterHopCountWins",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void WhenTwoRoutesExist_TheShorterHopCountWins()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 196,
+    "kind": "method_declaration",
+    "name": "ARouteThatWouldRevisitAMap_DoesNotLoopForever",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void ARouteThatWouldRevisitAMap_DoesNotLoopForever()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Exploration/MultiMapRoutePlannerTests.cs",
+    "line": 217,
+    "kind": "method_declaration",
+    "name": "TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan",
+    "scope": "MultiMapRoutePlannerTests",
+    "signature": "[Fact] public void TwoCallsWithTheSameInputs_ProduceTheIdenticalPlan()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 8,
+    "kind": "method_declaration",
+    "name": "EntityId_RejectsNullOrWhitespace",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void EntityId_RejectsNullOrWhitespace(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 14,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 17,
+    "kind": "method_declaration",
+    "name": "EntityId_ToString_ReturnsTheValue",
+    "scope": "IdentifiersTests",
+    "signature": "[Fact] public void EntityId_ToString_ReturnsTheValue()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "EntityId_SameValue_AreEqual",
+    "scope": "IdentifiersTests",
+    "signature": "[Fact] public void EntityId_SameValue_AreEqual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "MapId_RejectsNullOrWhitespace",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] [InlineData(\" \")] public void MapId_RejectsNullOrWhitespace(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 36,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 39,
+    "kind": "method_declaration",
+    "name": "EveryOtherIdType_RejectsNullOrEmpty",
+    "scope": "IdentifiersTests",
+    "signature": "[Theory] [InlineData(null)] [InlineData(\"\")] public void EveryOtherIdType_RejectsNullOrEmpty(string? value)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 44,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 45,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 46,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
+    "line": 47,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "IdentifiersTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
     "path": "tests/NosAi.Core.Tests/WorldModel/IdentifiersTests.cs",
     "line": 48,
     "kind": "lambda_expression",
@@ -2237,7 +2363,7 @@
     "kind": "method_declaration",
     "name": "BuildPlayer",
     "scope": "StrategyPlannerTests",
-    "signature": "private static Player BuildPlayer(double? currentHp = null, double? maxHp = null)",
+    "signature": "private static Player BuildPlayer(double? currentHp = null, double? maxHp = null, WorldPosition? position = null)",
     "category": "test"
   },
   {
@@ -2427,6 +2553,51 @@
     "name": "SelectStrategicPlan_TiedUrgency_PicksTheFirstOne",
     "scope": "StrategyPlannerTests",
     "signature": "[Fact] public void SelectStrategicPlan_TiedUrgency_PicksTheFirstOne()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+    "line": 283,
+    "kind": "method_declaration",
+    "name": "BuildDrop",
+    "scope": "StrategyPlannerTests",
+    "signature": "private static Drop BuildDrop(WorldPosition? position)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+    "line": 289,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency_UnknownPlayerPosition_ReturnsNull",
+    "scope": "StrategyPlannerTests",
+    "signature": "[Fact] public void AssessCollectUrgency_UnknownPlayerPosition_ReturnsNull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+    "line": 301,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency_NoDropEverPositioned_ReportsNoViableDrop",
+    "scope": "StrategyPlannerTests",
+    "signature": "[Fact] public void AssessCollectUrgency_NoDropEverPositioned_ReportsNoViableDrop()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+    "line": 315,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency_DropInRange_ScoresFull",
+    "scope": "StrategyPlannerTests",
+    "signature": "[Fact] public void AssessCollectUrgency_DropInRange_ScoresFull()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Core.Tests/WorldModel/Strategy/StrategyPlannerTests.cs",
+    "line": 329,
+    "kind": "method_declaration",
+    "name": "AssessCollectUrgency_DropOutOfRange_ScoresHalfRatherThanNothing",
+    "scope": "StrategyPlannerTests",
+    "signature": "[Fact] public void AssessCollectUrgency_DropOutOfRange_ScoresHalfRatherThanNothing()",
     "category": "test"
   },
   {
@@ -3228,6 +3399,33 @@
     "name": "ChangingOneNestedFact_BreaksEquality",
     "scope": "WorldModelSnapshotTests",
     "signature": "[Fact] public void ChangingOneNestedFact_BreaksEquality()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.LiveGameplayTests/UnequipLiveTests.cs",
+    "line": 22,
+    "kind": "method_declaration",
+    "name": "Unequip_EmitsAndVerifiesViaWire",
+    "scope": "UnequipLiveTests",
+    "signature": "[Fact] public async Task Unequip_EmitsAndVerifiesViaWire()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.LiveGameplayTests/UnequipLiveTests.cs",
+    "line": 30,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "UnequipLiveTests",
+    "signature": "name =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.LiveGameplayTests/UnequipLiveTests.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "FindRepoRoot",
+    "scope": "UnequipLiveTests",
+    "signature": "private static string? FindRepoRoot()",
     "category": "test"
   },
   {
@@ -4299,204 +4497,6 @@
     "name": "An_unobserved_state_says_why_for_the_aggressor_too",
     "scope": "AttackerFromWireTests",
     "signature": "[Fact] public void An_unobserved_state_says_why_for_the_aggressor_too()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 338,
-    "kind": "method_declaration",
-    "name": "Chain",
-    "scope": "AttackerFromWireTests",
-    "signature": "private static (ScriptedSource Wire, StubClock Clock, NetworkGameplayProvider Provider) Chain()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 341,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "AttackerFromWireTests",
-    "signature": "() =>",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 350,
-    "kind": "method_declaration",
-    "name": "GetUtcNow",
-    "scope": "AttackerFromWireTests.StubClock",
-    "signature": "public override DateTimeOffset GetUtcNow()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 351,
-    "kind": "method_declaration",
-    "name": "Advance",
-    "scope": "AttackerFromWireTests.StubClock",
-    "signature": "public void Advance(TimeSpan by)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 358,
-    "kind": "constructor_declaration",
-    "name": "ScriptedSource",
-    "scope": "AttackerFromWireTests.ScriptedSource",
-    "signature": "public ScriptedSource(Func<DateTime> clock)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 361,
-    "kind": "method_declaration",
-    "name": "Send",
-    "scope": "AttackerFromWireTests.ScriptedSource",
-    "signature": "public void Send(string line, DateTime? capturedUtc = null)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 364,
-    "kind": "method_declaration",
-    "name": "TryObserve",
-    "scope": "AttackerFromWireTests.ScriptedSource",
-    "signature": "public bool TryObserve(out ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 375,
-    "kind": "constructor_declaration",
-    "name": "ListSource",
-    "scope": "AttackerFromWireTests.ListSource",
-    "signature": "public ListSource(params ObservedPacket[] packets)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AttackerFromWireTests.cs",
-    "line": 378,
-    "kind": "method_declaration",
-    "name": "TryObserve",
-    "scope": "AttackerFromWireTests.ListSource",
-    "signature": "public bool TryObserve(out ObservedPacket packet)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 22,
-    "kind": "constructor_declaration",
-    "name": "AutonomyPipelineTests",
-    "scope": "AutonomyPipelineTests",
-    "signature": "public AutonomyPipelineTests(ITestOutputHelper output)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 24,
-    "kind": "method_declaration",
-    "name": "NewGate",
-    "scope": "AutonomyPipelineTests",
-    "signature": "private static ActionTokenIssuer NewGate(TrustTier tier = TrustTier.Tier4_FullAutonomous)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 27,
-    "kind": "method_declaration",
-    "name": "Candidate",
-    "scope": "AutonomyPipelineTests",
-    "signature": "private static ActionCandidate Candidate( ActionType type = ActionType.UseBasicAttack, TrustTier required = TrustTier.Tier1_Assisted)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 38,
-    "kind": "method_declaration",
-    "name": "TargetFor",
-    "scope": "AutonomyPipelineTests",
-    "signature": "private static ActionTarget TargetFor(ActionType type)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 48,
-    "kind": "method_declaration",
-    "name": "Outcome",
-    "scope": "AutonomyPipelineTests",
-    "signature": "private static PredictedOutcome Outcome(Guid id, float risk = 0.1f)",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 53,
-    "kind": "method_declaration",
-    "name": "AnExpiredTokenIsRefusedEvenThoughItsSignatureIsGenuine",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void AnExpiredTokenIsRefusedEvenThoughItsSignatureIsGenuine()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 84,
-    "kind": "method_declaration",
-    "name": "AFreshTokenFromThisGateIsAccepted",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void AFreshTokenFromThisGateIsAccepted()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 95,
-    "kind": "method_declaration",
-    "name": "ATokenFromAnotherGateIsRefused",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void ATokenFromAnotherGateIsRefused()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 109,
-    "kind": "method_declaration",
-    "name": "ATamperedSignatureIsRefused",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void ATamperedSignatureIsRefused()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 143,
-    "kind": "method_declaration",
-    "name": "ATokenDoesNotValidateACandidateWhoseTargetWasRebound",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void ATokenDoesNotValidateACandidateWhoseTargetWasRebound()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 166,
-    "kind": "method_declaration",
-    "name": "TheIssuedLifetimeIsTheOneTheGateDeclares",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void TheIssuedLifetimeIsTheOneTheGateDeclares()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 180,
-    "kind": "method_declaration",
-    "name": "ATokenIsSpentExactlyOnce",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void ATokenIsSpentExactlyOnce()",
-    "category": "test"
-  },
-  {
-    "path": "tests/NosAi.Runtime.Tests/AutonomyPipelineTests.cs",
-    "line": 191,
-    "kind": "method_declaration",
-    "name": "OnlyOneOfManyRacingThreadsSpendsTheToken",
-    "scope": "AutonomyPipelineTests",
-    "signature": "[Fact] public void OnlyOneOfManyRacingThreadsSpendsTheToken()",
     "category": "test"
   }
 ]

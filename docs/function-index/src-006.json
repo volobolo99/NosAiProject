@@ -1,5 +1,158 @@
 [
   {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 1004,
+    "kind": "method_declaration",
+    "name": "Classify",
+    "scope": "NetworkGameplayProvider",
+    "signature": "private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime at)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
+    "line": 1028,
+    "kind": "method_declaration",
+    "name": "Observe",
+    "scope": "UnavailableGameplayProvider",
+    "signature": "public GameplayObservation Observe()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 43,
+    "kind": "constructor_declaration",
+    "name": "LiveObservationGateway",
+    "scope": "LiveObservationGateway",
+    "signature": "public LiveObservationGateway( RealClientConnector client, IGameplayProvider gameplay)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 51,
+    "kind": "method_declaration",
+    "name": "Capture",
+    "scope": "LiveObservationGateway",
+    "signature": "public LiveObservationSnapshot Capture()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
+    "line": 63,
+    "kind": "method_declaration",
+    "name": "ObserveGameplaySafely",
+    "scope": "LiveObservationGateway",
+    "signature": "private GameplayObservation ObserveGameplaySafely()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 64,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "LiveObservationScope",
+    "signature": "get;",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 66,
+    "kind": "constructor_declaration",
+    "name": "LiveObservationScope",
+    "scope": "LiveObservationScope",
+    "signature": "private LiveObservationScope( SessionAuth auth, RealClientConnector client, ReassembledObservationSource observationSource, IGameplayProvider provider)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 79,
+    "kind": "method_declaration",
+    "name": "TryOpen",
+    "scope": "LiveObservationScope",
+    "signature": "public static LiveObservationScope? TryOpen(int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "NewPublicKeyPem",
+    "scope": "LiveObservationScope",
+    "signature": "private static string NewPublicKeyPem()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "LiveObservationScope",
+    "signature": "public void Dispose()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 18,
+    "kind": "method_declaration",
+    "name": "Contains",
+    "scope": "MapDimensions",
+    "signature": "public bool Contains(int x, int y)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "ReadPosition",
+    "scope": "IPlayerPositionProvider",
+    "signature": "ClassifiedValue<MapPoint> ReadPosition();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 126,
+    "kind": "constructor_declaration",
+    "name": "MemoryGameplayProvider",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public MemoryGameplayProvider( Func<ProcessMemoryReader?> reader, Func<(IntPtr Base, long Size)?> module, Func<long?> expectedCharacterId, Func<int?>? movementSpeed = null, Func<MapDimensions?>? mapBounds = null, TimeProvider? clock = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 137,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryGameplayProvider",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 138,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "MemoryGameplayProvider",
+    "signature": "static () =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 143,
+    "kind": "method_declaration",
+    "name": "ReadPosition",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public ClassifiedValue<MapPoint> ReadPosition()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "IsPlausibleCoordinate",
+    "scope": "MemoryGameplayProvider",
+    "signature": "public static bool IsPlausibleCoordinate(int value)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
     "line": 242,
     "kind": "method_declaration",
@@ -1206,6 +1359,33 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.Runtime/LiveIntegration/SceneManagerFinder.cs",
+    "line": 11,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "SceneManagerFinder",
+    "signature": "public static int Run(string? candidatePath = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/SceneManagerFinder.cs",
+    "line": 33,
+    "kind": "local_function_statement",
+    "name": "InModule",
+    "scope": "SceneManagerFinder",
+    "signature": "bool InModule(MemoryRegion region)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/SceneManagerFinder.cs",
+    "line": 86,
+    "kind": "method_declaration",
+    "name": "PlayerListContainsEntity",
+    "scope": "SceneManagerFinder",
+    "signature": "internal static bool PlayerListContainsEntity(ProcessMemoryReader reader, IntPtr sceneCandidate, int entityId)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/LiveIntegration/TargetAwareGameplayProvider.cs",
     "line": 52,
     "kind": "constructor_declaration",
@@ -1230,6 +1410,42 @@
     "name": "Read",
     "scope": "ITargetFrameSource",
     "signature": "TargetFrameObservation Read();",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetMemorySource.cs",
+    "line": 21,
+    "kind": "constructor_declaration",
+    "name": "TargetMemorySource",
+    "scope": "TargetMemorySource",
+    "signature": "public TargetMemorySource(TryAttachClientMemorySession? attach = null)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetMemorySource.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Read",
+    "scope": "TargetMemorySource",
+    "signature": "public TargetPointerReading? Read(int? clientProcessId)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetMemorySource.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "FailureReason",
+    "scope": "TargetMemorySource",
+    "signature": "public string? FailureReason()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/TargetMemorySource.cs",
+    "line": 67,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "TargetMemorySource",
+    "signature": "public void Dispose()",
     "category": "project"
   },
   {
@@ -4281,222 +4497,6 @@
     "name": "TryParseHit",
     "scope": "MapIdFinder",
     "signature": "private static bool TryParseHit(string line, out MapIdHit hit)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
-    "line": 667,
-    "kind": "method_declaration",
-    "name": "FormatCandidates",
-    "scope": "MapIdFinder",
-    "signature": "internal static string FormatCandidates( IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MapIdFinder.cs",
-    "line": 689,
-    "kind": "method_declaration",
-    "name": "SaveCandidates",
-    "scope": "MapIdFinder",
-    "signature": "private static void SaveCandidates( string path, IReadOnlyList<MapIdHit> hits, int passes, int restarts, int processId, int playerX, int playerY)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
-    "line": 90,
-    "kind": "method_declaration",
-    "name": "NotAttempted",
-    "scope": "MovementVerification",
-    "signature": "public static MovementVerification NotAttempted(string reason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
-    "line": 153,
-    "kind": "constructor_declaration",
-    "name": "MovementVerifier",
-    "scope": "MovementVerifier",
-    "signature": "public MovementVerifier( TimeSpan? window = null, TimeSpan? tolerance = null, TimeSpan? pollInterval = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
-    "line": 190,
-    "kind": "method_declaration",
-    "name": "Verify",
-    "scope": "MovementVerifier",
-    "signature": "public MovementVerification Verify( MapPoint from, MapPoint to, DateTime emittedAtUtc, Func<PositionReading?> readPosition, CancellationToken cancellationToken = default)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/MovementVerifier.cs",
-    "line": 259,
-    "kind": "method_declaration",
-    "name": "Result",
-    "scope": "MovementVerifier",
-    "signature": "private static MovementVerification Result( MovementOutcome outcome, string? detail, MapPoint? observed, long started, int accepted)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
-    "line": 155,
-    "kind": "method_declaration",
-    "name": "Evaluate",
-    "scope": "OccupancyFreshness",
-    "signature": "public static OccupancyVerdict Evaluate( MapPoint destination, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/OccupancyFreshness.cs",
-    "line": 219,
-    "kind": "method_declaration",
-    "name": "Refuse",
-    "scope": "OccupancyFreshness",
-    "signature": "private static OccupancyVerdict Refuse(string reason, DynamicOccupancy occupancy, TimeSpan? age)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
-    "line": 112,
-    "kind": "method_declaration",
-    "name": "Admit",
-    "scope": "PathRevalidation",
-    "signature": "public static PathAdmission Admit(in MapGrid grid, IReadOnlyList<MapPoint> path)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
-    "line": 186,
-    "kind": "method_declaration",
-    "name": "Revalidate",
-    "scope": "PathRevalidation",
-    "signature": "public static SegmentRevalidation Revalidate( in MapGrid grid, MapPoint from, MapPoint to, in OccupancyView view, DateTime nowUtc, TimeSpan? maxViewAge = null, TimeSpan? maxSightingAge = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
-    "line": 244,
-    "kind": "method_declaration",
-    "name": "IsAdjacent",
-    "scope": "PathRevalidation",
-    "signature": "public static bool IsAdjacent(MapPoint a, MapPoint b)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathRevalidation.cs",
-    "line": 258,
-    "kind": "method_declaration",
-    "name": "ToCells",
-    "scope": "PathRevalidation",
-    "signature": "public static IReadOnlyList<MapPoint> ToCells(ImmutableArray<GridPoint> waypoints)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 121,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "ReplanPolicy",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 191,
-    "kind": "constructor_declaration",
-    "name": "PathWalkController",
-    "scope": "PathWalkController",
-    "signature": "public PathWalkController(ReplanPolicy? policy = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 209,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "PathWalkController",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 209,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "PathWalkController",
-    "signature": "private set;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 215,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "PathWalkController",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 215,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "PathWalkController",
-    "signature": "private set;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 218,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "PathWalkController",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 218,
-    "kind": "accessor_declaration",
-    "name": "set",
-    "scope": "PathWalkController",
-    "signature": "private set;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 228,
-    "kind": "method_declaration",
-    "name": "TryStart",
-    "scope": "PathWalkController",
-    "signature": "public bool TryStart( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 276,
-    "kind": "method_declaration",
-    "name": "Next",
-    "scope": "PathWalkController",
-    "signature": "public WalkDecision Next( in MapGrid grid, MapPoint observedPosition, in OccupancyView view, DateTime nowUtc)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 341,
-    "kind": "method_declaration",
-    "name": "NoteStepOutcome",
-    "scope": "PathWalkController",
-    "signature": "public void NoteStepOutcome(in MovementVerification verification)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/Navigation/PathWalkController.cs",
-    "line": 395,
-    "kind": "method_declaration",
-    "name": "TryAdoptReplan",
-    "scope": "PathWalkController",
-    "signature": "public bool TryAdoptReplan( in MapGrid grid, IReadOnlyList<MapPoint> path, MapPoint observedPosition, out string? refusalReason)",
     "category": "project"
   }
 ]

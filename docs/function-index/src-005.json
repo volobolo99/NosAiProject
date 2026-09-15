@@ -1,6 +1,51 @@
 [
   {
     "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 431,
+    "kind": "method_declaration",
+    "name": "TestActionTokenIssuerAndTokenConsumption",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestActionTokenIssuerAndTokenConsumption()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 447,
+    "kind": "method_declaration",
+    "name": "TestForgedTokenRejection",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestForgedTokenRejection()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 467,
+    "kind": "method_declaration",
+    "name": "TestGuardPolicyBoundaries",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static bool TestGuardPolicyBoundaries()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 484,
+    "kind": "method_declaration",
+    "name": "TestClosedLoopSimulatedSuccessAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static async Task<bool> TestClosedLoopSimulatedSuccessAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
+    "line": 493,
+    "kind": "method_declaration",
+    "name": "TestClosedLoopDiscrepancyRecoveryAsync",
+    "scope": "NosAi.Runtime.Gate6.Gate6ReleaseCertifier",
+    "signature": "private static async Task<bool> TestClosedLoopDiscrepancyRecoveryAsync()",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/Gate6/Gate6Runtime.cs",
     "line": 510,
     "kind": "method_declaration",
     "name": "TestThermalWatchdogFailClosed",
@@ -3582,6 +3627,114 @@
     "category": "project"
   },
   {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 24,
+    "kind": "method_declaration",
+    "name": "KeepOnlyNonZero",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static ImmutableDictionary<int, int> KeepOnlyNonZero(NosAi.Runtime.Perception.Network.WornEquipment reading)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 35,
+    "kind": "method_declaration",
+    "name": "TryPickAnchor",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static bool TryPickAnchor(ImmutableDictionary<int, int> slotVnums, out int anchorSlot, out int anchorVnum)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "KeepMatchingArray",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static List<EquipmentArrayHit> KeepMatchingArray(IReadOnlyList<IntPtr> anchorAddresses, int anchorSlot, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int, byte[]?> readWindow)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 90,
+    "kind": "method_declaration",
+    "name": "Confirm",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static List<EquipmentArrayHit> Confirm(IReadOnlyList<EquipmentArrayHit> previous, ImmutableDictionary<int, int> expectedSlotVnums, Func<IntPtr, int, byte[]?> readWindow)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 125,
+    "kind": "method_declaration",
+    "name": "ContainsValueAtEitherWidth",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "private static bool ContainsValueAtEitherWidth(byte[] window, int value)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 147,
+    "kind": "method_declaration",
+    "name": "CanConfirm",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static bool CanConfirm(ImmutableDictionary<int, int> before, ImmutableDictionary<int, int> after)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 161,
+    "kind": "method_declaration",
+    "name": "UnchangedReason",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static string? UnchangedReason(ImmutableDictionary<int, int> before, ImmutableDictionary<int, int> after)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 169,
+    "kind": "method_declaration",
+    "name": "Verdict",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "public static string? Verdict(IReadOnlyList<EquipmentArrayHit> survivors)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 180,
+    "kind": "method_declaration",
+    "name": "Run",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "[SupportedOSPlatform(\"windows\")] public static int Run(int seconds = 20)",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 247,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "() =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 280,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "(address, length) =>",
+    "category": "project"
+  },
+  {
+    "path": "src/NosAi.Runtime/LiveIntegration/EquipmentOffsetCalibrator.cs",
+    "line": 339,
+    "kind": "method_declaration",
+    "name": "TryFindWindow",
+    "scope": "NosAi.LiveIntegration.EquipmentOffsetCalibrator",
+    "signature": "private static bool TryFindWindow(out NosAi.Runtime.Perception.ClientWindow window, out int processId, out string? failureReason)",
+    "category": "project"
+  },
+  {
     "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
     "line": 83,
     "kind": "accessor_declaration",
@@ -4344,159 +4497,6 @@
     "name": "TryToPoint",
     "scope": "NetworkGameplayProvider",
     "signature": "private static bool TryToPoint(double x, double y, out MapPoint point)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
-    "line": 1004,
-    "kind": "method_declaration",
-    "name": "Classify",
-    "scope": "NetworkGameplayProvider",
-    "signature": "private static ClassifiedValue<T> Classify<T>(T value, DataSourceKind source, DateTime at)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/GameplayProvider.cs",
-    "line": 1028,
-    "kind": "method_declaration",
-    "name": "Observe",
-    "scope": "UnavailableGameplayProvider",
-    "signature": "public GameplayObservation Observe()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
-    "line": 43,
-    "kind": "constructor_declaration",
-    "name": "LiveObservationGateway",
-    "scope": "LiveObservationGateway",
-    "signature": "public LiveObservationGateway( RealClientConnector client, IGameplayProvider gameplay)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
-    "line": 51,
-    "kind": "method_declaration",
-    "name": "Capture",
-    "scope": "LiveObservationGateway",
-    "signature": "public LiveObservationSnapshot Capture()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationGateway.cs",
-    "line": 63,
-    "kind": "method_declaration",
-    "name": "ObserveGameplaySafely",
-    "scope": "LiveObservationGateway",
-    "signature": "private GameplayObservation ObserveGameplaySafely()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
-    "line": 64,
-    "kind": "accessor_declaration",
-    "name": "get",
-    "scope": "LiveObservationScope",
-    "signature": "get;",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
-    "line": 66,
-    "kind": "constructor_declaration",
-    "name": "LiveObservationScope",
-    "scope": "LiveObservationScope",
-    "signature": "private LiveObservationScope( SessionAuth auth, RealClientConnector client, ReassembledObservationSource observationSource, IGameplayProvider provider)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
-    "line": 79,
-    "kind": "method_declaration",
-    "name": "TryOpen",
-    "scope": "LiveObservationScope",
-    "signature": "public static LiveObservationScope? TryOpen(int processId, out string? failureReason)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
-    "line": 125,
-    "kind": "method_declaration",
-    "name": "NewPublicKeyPem",
-    "scope": "LiveObservationScope",
-    "signature": "private static string NewPublicKeyPem()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/LiveObservationScope.cs",
-    "line": 131,
-    "kind": "method_declaration",
-    "name": "Dispose",
-    "scope": "LiveObservationScope",
-    "signature": "public void Dispose()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 18,
-    "kind": "method_declaration",
-    "name": "Contains",
-    "scope": "MapDimensions",
-    "signature": "public bool Contains(int x, int y)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 30,
-    "kind": "method_declaration",
-    "name": "ReadPosition",
-    "scope": "IPlayerPositionProvider",
-    "signature": "ClassifiedValue<MapPoint> ReadPosition();",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 126,
-    "kind": "constructor_declaration",
-    "name": "MemoryGameplayProvider",
-    "scope": "MemoryGameplayProvider",
-    "signature": "public MemoryGameplayProvider( Func<ProcessMemoryReader?> reader, Func<(IntPtr Base, long Size)?> module, Func<long?> expectedCharacterId, Func<int?>? movementSpeed = null, Func<MapDimensions?>? mapBounds = null, TimeProvider? clock = null)",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 137,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MemoryGameplayProvider",
-    "signature": "static () =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 138,
-    "kind": "lambda_expression",
-    "name": "<anonymous/accessor>",
-    "scope": "MemoryGameplayProvider",
-    "signature": "static () =>",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 143,
-    "kind": "method_declaration",
-    "name": "ReadPosition",
-    "scope": "MemoryGameplayProvider",
-    "signature": "public ClassifiedValue<MapPoint> ReadPosition()",
-    "category": "project"
-  },
-  {
-    "path": "src/NosAi.Runtime/LiveIntegration/MemoryGameplayProvider.cs",
-    "line": 239,
-    "kind": "method_declaration",
-    "name": "IsPlausibleCoordinate",
-    "scope": "MemoryGameplayProvider",
-    "signature": "public static bool IsPlausibleCoordinate(int value)",
     "category": "project"
   }
 ]

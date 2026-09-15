@@ -237,11 +237,13 @@ def test_update_contract_state_scrive_la_roadmap_dal_ledger_reale(tmp_path, monk
 
     import time
 
+    roadmap_path = tmp_path / "docs" / "MASTER_ROADMAP.md"
+    content = ""
     for _ in range(50):
-        roadmap_path = tmp_path / "docs" / "MASTER_ROADMAP.md"
         if roadmap_path.exists():
-            break
+            content = roadmap_path.read_text(encoding="utf-8")
+            if content:
+                break
         time.sleep(0.02)
-    content = roadmap_path.read_text(encoding="utf-8")
     assert "C-304: RISOLTA da ADR-0031 — nessuna FSM esplicita." in content
     assert "| C-101 |" in content and "MERGED" in content

@@ -1,5 +1,1382 @@
 [
   {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 229,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 239,
+    "kind": "method_declaration",
+    "name": "MapSource_ThatThrows_LogsTheFaultWithoutStoppingSubsequentTicks",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "[Fact] public void MapSource_ThatThrows_LogsTheFaultWithoutStoppingSubsequentTicks()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 245,
+    "kind": "local_function_statement",
+    "name": "MapSource",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "MapModel MapSource(WorldModelSnapshot snapshot)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 251,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 258,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "e =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 261,
+    "kind": "method_declaration",
+    "name": "MapSource_ThatThrows_StillIncrementsVersionAndRaisesSnapshotFused",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "[Fact] public void MapSource_ThatThrows_StillIncrementsVersionAndRaisesSnapshotFused()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 266,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 268,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "_ =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopMapWiringTests.cs",
+    "line": 270,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopMapWiringTests",
+    "signature": "s =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 25,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WorldModelFusionLoopTests.RecordingLogger",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 26,
+    "kind": "method_declaration",
+    "name": "Info",
+    "scope": "WorldModelFusionLoopTests.RecordingLogger",
+    "signature": "public void Info(string message, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "Warning",
+    "scope": "WorldModelFusionLoopTests.RecordingLogger",
+    "signature": "public void Warning(string message, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 28,
+    "kind": "method_declaration",
+    "name": "Error",
+    "scope": "WorldModelFusionLoopTests.RecordingLogger",
+    "signature": "public void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "AttachedClient",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "private static ClientBaselineSnapshot AttachedClient()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 49,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "private static Gate1CanonicalSnapshot Snapshot(GameplayObservation? gameplay)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 60,
+    "kind": "method_declaration",
+    "name": "ObservationAt",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "private static GameplayObservation ObservationAt(int x, int y, DateTime atUtc)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "Constructor_RejectsNullSourceOrLogger",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void Constructor_RejectsNullSourceOrLogger()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 79,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 81,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 82,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 85,
+    "kind": "method_declaration",
+    "name": "Constructor_RejectsNonPositiveInterval",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Theory] [InlineData(0)] [InlineData(-1)] public void Constructor_RejectsNonPositiveInterval(int milliseconds)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 90,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 91,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 96,
+    "kind": "method_declaration",
+    "name": "FirstTick_WithNoKnownPosition_ProducesUnknownPositionAndVelocity_NeverAFabricatedDefault",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void FirstTick_WithNoKnownPosition_ProducesUnknownPositionAndVelocity_NeverAFabricatedDefault()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 99,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 111,
+    "kind": "method_declaration",
+    "name": "TwoConsecutiveTicks_WithDifferentPositions_DeriveNonZeroVelocity",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void TwoConsecutiveTicks_WithDifferentPositions_DeriveNonZeroVelocity()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 114,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 128,
+    "kind": "method_declaration",
+    "name": "TwoConsecutiveTicks_WithTheSamePosition_DeriveZeroVelocity_NotUnknown",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void TwoConsecutiveTicks_WithTheSamePosition_DeriveZeroVelocity_NotUnknown()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 131,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 146,
+    "kind": "method_declaration",
+    "name": "AbsentGameplayProvider_FallsBackToUnobserved_NeverFabricatesAPlayerState",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void AbsentGameplayProvider_FallsBackToUnobserved_NeverFabricatesAPlayerState()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 149,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 160,
+    "kind": "method_declaration",
+    "name": "AbsentGameplayProvider_PrefersTheSnapshotsOwnReasonOverTheLiteral",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void AbsentGameplayProvider_PrefersTheSnapshotsOwnReasonOverTheLiteral()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 181,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 189,
+    "kind": "method_declaration",
+    "name": "Version_GrowsMonotonically_AcrossTicks",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void Version_GrowsMonotonically_AcrossTicks()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 192,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 204,
+    "kind": "method_declaration",
+    "name": "Current_StartsAtUnknown_BeforeAnyTick",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void Current_StartsAtUnknown_BeforeAnyTick()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 207,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 213,
+    "kind": "method_declaration",
+    "name": "RunOnce_UpdatesCurrent_AndRaisesSnapshotFused_WithTheSameResult",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void RunOnce_UpdatesCurrent_AndRaisesSnapshotFused_WithTheSameResult()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 216,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 218,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "s =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 227,
+    "kind": "method_declaration",
+    "name": "RunOnce_RejectsNullSnapshot",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public void RunOnce_RejectsNullSnapshot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 230,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 231,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 236,
+    "kind": "method_declaration",
+    "name": "Start_TicksThroughTheSuppliedSource_AndStopsCleanlyOnDispose",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public async Task Start_TicksThroughTheSuppliedSource_AndStopsCleanlyOnDispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 241,
+    "kind": "local_function_statement",
+    "name": "Source",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "Gate1CanonicalSnapshot Source()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 262,
+    "kind": "method_declaration",
+    "name": "Start_ASourceThatThrows_SkipsTheCycle_AndKeepsPumping",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "[Fact] public async Task Start_ASourceThatThrows_SkipsTheCycle_AndKeepsPumping()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 267,
+    "kind": "local_function_statement",
+    "name": "Source",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "Gate1CanonicalSnapshot Source()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopTests.cs",
+    "line": 283,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopTests",
+    "signature": "m =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 29,
+    "kind": "accessor_declaration",
+    "name": "get",
+    "scope": "WorldModelFusionLoopVisualWiringTests.RecordingLogger",
+    "signature": "get;",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 30,
+    "kind": "method_declaration",
+    "name": "Info",
+    "scope": "WorldModelFusionLoopVisualWiringTests.RecordingLogger",
+    "signature": "public void Info(string message, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 31,
+    "kind": "method_declaration",
+    "name": "Warning",
+    "scope": "WorldModelFusionLoopVisualWiringTests.RecordingLogger",
+    "signature": "public void Warning(string message, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "Error",
+    "scope": "WorldModelFusionLoopVisualWiringTests.RecordingLogger",
+    "signature": "public void Error(string message, Exception? exception = null, IReadOnlyDictionary<string, object?>? properties = null)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 36,
+    "kind": "method_declaration",
+    "name": "AttachedClient",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "private static ClientBaselineSnapshot AttachedClient()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 53,
+    "kind": "method_declaration",
+    "name": "Snapshot",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "private static Gate1CanonicalSnapshot Snapshot(GameplayObservation? gameplay)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 65,
+    "kind": "method_declaration",
+    "name": "VitalsOnly",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "private static GameplayObservation VitalsOnly( int hp, int maxHp, int mp, int maxMp, DateTime atUtc, Func<int, DateTime, ClassifiedValue<int>> classify)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 77,
+    "kind": "method_declaration",
+    "name": "FindResource",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "private static Resource FindResource(WorldModelSnapshot snapshot, ResourceKind kind)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 78,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 81,
+    "kind": "method_declaration",
+    "name": "ScreenVitals",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "private static VisualObservation ScreenVitals(int hp, int maxHp, int mp, int maxMp, DateTime atUtc)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 105,
+    "kind": "method_declaration",
+    "name": "NoVisualSource_LeavesResourcesExactlyAsTheNetworkChannelProjectedThem",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void NoVisualSource_LeavesResourcesExactlyAsTheNetworkChannelProjectedThem()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 108,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 109,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 121,
+    "kind": "method_declaration",
+    "name": "NoVisualSource_ProducesTheSameResultAsBeforeThisParameterExisted",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void NoVisualSource_ProducesTheSameResultAsBeforeThisParameterExisted()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 127,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 129,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 130,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 140,
+    "kind": "method_declaration",
+    "name": "VisualSource_WithFresherScreenReading_WinsOverAStaleCachedNetworkReading",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_WithFresherScreenReading_WinsOverAStaleCachedNetworkReading()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 149,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 152,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 152,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 163,
+    "kind": "method_declaration",
+    "name": "VisualSource_LiveNetworkReading_StillBeatsAFreshScreenReading",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_LiveNetworkReading_StillBeatsAFreshScreenReading()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 168,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 179,
+    "kind": "method_declaration",
+    "name": "VisualSource_IsInvokedExactlyOncePerRunOnceCall",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_IsInvokedExactlyOncePerRunOnceCall()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 183,
+    "kind": "local_function_statement",
+    "name": "Visual",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "VisualObservation Visual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 190,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 191,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 201,
+    "kind": "method_declaration",
+    "name": "VisualSource_ThatThrows_NeverFailsRunOnce_AndKeepsTheNetworkResult",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_ThatThrows_NeverFailsRunOnce_AndKeepsTheNetworkResult()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 204,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 207,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 209,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 219,
+    "kind": "method_declaration",
+    "name": "VisualSource_ThatThrows_LogsTheFaultWithoutStoppingSubsequentTicks",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_ThatThrows_LogsTheFaultWithoutStoppingSubsequentTicks()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 222,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 225,
+    "kind": "local_function_statement",
+    "name": "Visual",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "VisualObservation Visual()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 231,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 238,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "e =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 241,
+    "kind": "method_declaration",
+    "name": "VisualSource_ThatThrows_StillIncrementsVersionAndRaisesSnapshotFused",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "[Fact] public void VisualSource_ThatThrows_StillIncrementsVersionAndRaisesSnapshotFused()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 244,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "(v, t) =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 246,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 248,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldModel/Fusion/WorldModelFusionLoopVisualWiringTests.cs",
+    "line": 250,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldModelFusionLoopVisualWiringTests",
+    "signature": "s =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 25,
+    "kind": "constructor_declaration",
+    "name": "WorldReplayCommandTests",
+    "scope": "WorldReplayCommandTests",
+    "signature": "public WorldReplayCommandTests()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 27,
+    "kind": "method_declaration",
+    "name": "Dispose",
+    "scope": "WorldReplayCommandTests",
+    "signature": "public void Dispose()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 32,
+    "kind": "method_declaration",
+    "name": "TheRuntimeWiresTheWorldReplayFlag",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void TheRuntimeWiresTheWorldReplayFlag()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 40,
+    "kind": "method_declaration",
+    "name": "AnEmptyContractPrintsZeroAndDoesNotFail",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void AnEmptyContractPrintsZeroAndDoesNotFail()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 66,
+    "kind": "method_declaration",
+    "name": "AMissingFileIsNonZero",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void AMissingFileIsNonZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 76,
+    "kind": "method_declaration",
+    "name": "AnUnreadableFileIsNonZero",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void AnUnreadableFileIsNonZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 87,
+    "kind": "method_declaration",
+    "name": "AnEntityRowNamesVnumAbsenceExplicitly",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void AnEntityRowNamesVnumAbsenceExplicitly()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 97,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldReplayCommandTests",
+    "signature": "e =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 101,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldReplayCommandTests",
+    "signature": "e =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 109,
+    "kind": "method_declaration",
+    "name": "DisplayNameIsUsedWhenTheCatalogKnowsTheVnum",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void DisplayNameIsUsedWhenTheCatalogKnowsTheVnum()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "PostConditionContractsArePrintedWhenTheWireCarriesThem",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void PostConditionContractsArePrintedWhenTheWireCarriesThem()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 155,
+    "kind": "method_declaration",
+    "name": "AReadableEmptyFileExitsZero",
+    "scope": "WorldReplayCommandTests",
+    "signature": "[Fact] public void AReadableEmptyFileExitsZero()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 165,
+    "kind": "method_declaration",
+    "name": "Recording",
+    "scope": "WorldReplayCommandTests",
+    "signature": "private static Func<IPacketSource> Recording(params byte[][] bodies)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 175,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WorldReplayCommandTests",
+    "signature": "() =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 178,
+    "kind": "method_declaration",
+    "name": "TcpPacket",
+    "scope": "WorldReplayCommandTests",
+    "signature": "private static byte[] TcpPacket(uint seq, ReadOnlySpan<byte> body)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 195,
+    "kind": "method_declaration",
+    "name": "Encoded",
+    "scope": "WorldReplayCommandTests",
+    "signature": "private static byte[] Encoded(string line)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 209,
+    "kind": "method_declaration",
+    "name": "Chunks",
+    "scope": "WorldReplayCommandTests",
+    "signature": "private static IEnumerable<string> Chunks(string text, int size)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WorldReplayCommandTests.cs",
+    "line": 215,
+    "kind": "method_declaration",
+    "name": "RepositoryRoot",
+    "scope": "WorldReplayCommandTests",
+    "signature": "private static string RepositoryRoot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 37,
+    "kind": "method_declaration",
+    "name": "Packet",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "private static ObservedPacket Packet(string line, DateTime? at = null, DataSourceKind source = DataSourceKind.Live)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 41,
+    "kind": "method_declaration",
+    "name": "Identified",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "private static NosTaleWorldProtocolDecoder Identified()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 55,
+    "kind": "method_declaration",
+    "name": "The_eq_line_yields_the_worn_slots_and_the_minus_one_positions_produce_none",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Fact] public void The_eq_line_yields_the_worn_slots_and_the_minus_one_positions_produce_none()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 84,
+    "kind": "method_declaration",
+    "name": "The_first_equip_line_yields_nine_slots_with_slot_zero_first",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Fact] public void The_first_equip_line_yields_nine_slots_with_slot_zero_first()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 98,
+    "kind": "method_declaration",
+    "name": "An_equip_group_with_vnum_zero_produces_no_slot",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Fact] public void An_equip_group_with_vnum_zero_produces_no_slot()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 113,
+    "kind": "method_declaration",
+    "name": "Fields_after_the_vnum_are_ignored",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Fact] public void Fields_after_the_vnum_are_ignored()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 131,
+    "kind": "method_declaration",
+    "name": "A_malformed_equipment_packet_is_refused_whole",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Theory] [InlineData(\"equip 25 0 x.262.5.2.0.0.0\")] // slot is not a number [InlineData(\"equip 25 0 262\")] // group with one part [InlineData(\"equip 25 0 0.262.5.2.0.0.0 2.x.0.0.0.0.0\")] // vnum is not a number [InlineData(\"equip 25 0 0.262.5.2.0.0.0 -3.221.0.0.0.0.0\")] // negative slot [InlineData(\"eq 3443217 0 0 1 2 1 25 0 100\")] // no dotted group [InlineData(\"eq 3443217\")] // group field absent public void A_malformed_equipment_packet_is_refused_whole(string line)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 150,
+    "kind": "method_declaration",
+    "name": "An_equip_before_cond_is_refused_not_attributed_to_nobody",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[Fact] public void An_equip_before_cond_is_refused_not_attributed_to_nobody()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 166,
+    "kind": "method_declaration",
+    "name": "The_recording_yields_six_eq_and_six_equip_readings_all_named_3443217",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[RecordedCaptureFact(\"equip_test.noscap\")] public void The_recording_yields_six_eq_and_six_equip_readings_all_named_3443217()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 171,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 172,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 176,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 177,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 178,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 187,
+    "kind": "method_declaration",
+    "name": "Each_vnum_appears_in_both_equip_and_ivn_and_not_in_every_equip_reading",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[RecordedCaptureTheory(\"equip_test.noscap\")] [InlineData(309)] [InlineData(518)] [InlineData(284)] public void Each_vnum_appears_in_both_equip_and_ivn_and_not_in_every_equip_reading(int vnum)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 196,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 199,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 199,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "s =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 200,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "i =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 201,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "r =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 201,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "s =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 208,
+    "kind": "method_declaration",
+    "name": "The_combat_recording_yields_no_equipment_and_its_census_is_unchanged",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "[RecordedCaptureFact(\"nostale_combat.noscap\")] public void The_combat_recording_yields_no_equipment_and_its_census_is_unchanged()",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 217,
+    "kind": "lambda_expression",
+    "name": "<anonymous/accessor>",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "o =>",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 226,
+    "kind": "method_declaration",
+    "name": "ReadEquipmentReadings",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "private static List<WornEquipment> ReadEquipmentReadings(string recording)",
+    "category": "test"
+  },
+  {
+    "path": "tests/NosAi.Runtime.Tests/WornEquipmentFromWireTests.cs",
+    "line": 248,
+    "kind": "method_declaration",
+    "name": "ReadInventoryReadings",
+    "scope": "WornEquipmentFromWireTests",
+    "signature": "private static List<InventorySlotReading> ReadInventoryReadings(string recording)",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_wire_protocol.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "test_frame_round_trip",
+    "scope": "",
+    "signature": "def test_frame_round_trip():",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_wire_protocol.py",
+    "line": 10,
+    "kind": "function_definition",
+    "name": "test_invalid_magic",
+    "scope": "",
+    "signature": "def test_invalid_magic():",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_wire_protocol.py",
+    "line": 15,
+    "kind": "function_definition",
+    "name": "test_decode_rejects_wire_version_one",
+    "scope": "",
+    "signature": "def test_decode_rejects_wire_version_one(): # Version 1 cannot prove the runtime to the phone. Accepting it would reopen # the hole version 2 closed.",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_wire_protocol.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "test_sequence_guard_is_strictly_monotonic",
+    "scope": "",
+    "signature": "def test_sequence_guard_is_strictly_monotonic():",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_worldstate_delta.py",
+    "line": 4,
+    "kind": "function_definition",
+    "name": "test_worldstate_delta_roundtrip",
+    "scope": "",
+    "signature": "def test_worldstate_delta_roundtrip():",
+    "category": "test"
+  },
+  {
+    "path": "tests/network/test_worldstate_delta.py",
+    "line": 11,
+    "kind": "function_definition",
+    "name": "test_worldstate_delta_is_deterministic",
+    "scope": "",
+    "signature": "def test_worldstate_delta_is_deterministic():",
+    "category": "test"
+  },
+  {
+    "path": "tests/storage/test_paths.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_canonical_layout",
+    "scope": "",
+    "signature": "def test_canonical_layout(tmp_path: Path) -> None:",
+    "category": "test"
+  },
+  {
+    "path": "tests/storage/test_sqlite_policy.py",
+    "line": 7,
+    "kind": "function_definition",
+    "name": "test_default_sqlite_policy_configures_wal_and_full",
+    "scope": "",
+    "signature": "def test_default_sqlite_policy_configures_wal_and_full(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/storage/test_sqlite_policy.py",
+    "line": 28,
+    "kind": "function_definition",
+    "name": "test_sqlite_policy_is_configurable",
+    "scope": "",
+    "signature": "def test_sqlite_policy_is_configurable(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_adaptive_throttling.py",
+    "line": 6,
+    "kind": "function_definition",
+    "name": "test_normal_plan",
+    "scope": "",
+    "signature": "def test_normal_plan():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_adaptive_throttling.py",
+    "line": 13,
+    "kind": "function_definition",
+    "name": "test_cooling_plan",
+    "scope": "",
+    "signature": "def test_cooling_plan():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_adaptive_throttling.py",
+    "line": 19,
+    "kind": "function_definition",
+    "name": "test_stopped_on_lan_disconnect",
+    "scope": "",
+    "signature": "def test_stopped_on_lan_disconnect():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_adaptive_throttling.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_invalid_memory_ratio",
+    "scope": "",
+    "signature": "def test_invalid_memory_ratio():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_advanced_telemetry.py",
+    "line": 5,
+    "kind": "function_definition",
+    "name": "test_mastery_formula_is_bounded",
+    "scope": "",
+    "signature": "def test_mastery_formula_is_bounded():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_advanced_telemetry.py",
+    "line": 10,
+    "kind": "function_definition",
+    "name": "test_collector_average_and_snapshot",
+    "scope": "",
+    "signature": "def test_collector_average_and_snapshot():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_agent_runtime.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "__init__",
+    "scope": "StubProvider",
+    "signature": "def __init__(self, provider_id: str, local: bool):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_agent_runtime.py",
+    "line": 12,
+    "kind": "function_definition",
+    "name": "decide",
+    "scope": "StubProvider",
+    "signature": "def decide(self, world_state, goal):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_agent_runtime.py",
+    "line": 16,
+    "kind": "function_definition",
+    "name": "world",
+    "scope": "",
+    "signature": "def world():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_agent_runtime.py",
+    "line": 20,
+    "kind": "function_definition",
+    "name": "test_local_first_for_local_only_context",
+    "scope": "",
+    "signature": "def test_local_first_for_local_only_context():",
+    "category": "test"
+  },
+  {
     "path": "tests/test_agent_runtime.py",
     "line": 29,
     "kind": "function_definition",
@@ -567,6 +1944,168 @@
     "category": "test"
   },
   {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 174,
+    "kind": "function_definition",
+    "name": "test_intervalli_funzioni_csharp_trova_metodi_dentro_un_namespace",
+    "scope": "",
+    "signature": "def test_intervalli_funzioni_csharp_trova_metodi_dentro_un_namespace():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 205,
+    "kind": "function_definition",
+    "name": "test_intervalli_funzioni_csharp_non_confonde_il_tipo_di_ritorno_col_nome",
+    "scope": "",
+    "signature": "def test_intervalli_funzioni_csharp_non_confonde_il_tipo_di_ritorno_col_nome():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 211,
+    "kind": "function_definition",
+    "name": "test_innesta_funzioni_csharp_sostituisce_un_metodo_e_conserva_gli_altri",
+    "scope": "",
+    "signature": "def test_innesta_funzioni_csharp_sostituisce_un_metodo_e_conserva_gli_altri():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 219,
+    "kind": "function_definition",
+    "name": "test_innesta_funzioni_csharp_nome_assente_dalla_risposta_solleva",
+    "scope": "",
+    "signature": "def test_innesta_funzioni_csharp_nome_assente_dalla_risposta_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 225,
+    "kind": "function_definition",
+    "name": "test_innesta_funzioni_csharp_nome_assente_dallo_scheletro_solleva",
+    "scope": "",
+    "signature": "def test_innesta_funzioni_csharp_nome_assente_dallo_scheletro_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 232,
+    "kind": "function_definition",
+    "name": "test_innesta_funzioni_csharp_sintassi_rotta_solleva",
+    "scope": "",
+    "signature": "def test_innesta_funzioni_csharp_sintassi_rotta_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 237,
+    "kind": "function_definition",
+    "name": "test_intervalli_funzioni_csharp_metodo_ambiguo_fra_due_classi_solleva",
+    "scope": "",
+    "signature": "def test_intervalli_funzioni_csharp_metodo_ambiguo_fra_due_classi_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 243,
+    "kind": "function_definition",
+    "name": "test_run_con_solo_funzioni_su_file_csharp_non_fallisce_piu_per_innesto",
+    "scope": "",
+    "signature": "def test_run_con_solo_funzioni_su_file_csharp_non_fallisce_piu_per_innesto(monkeypatch, tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale.py",
+    "line": 271,
+    "kind": "function_definition",
+    "name": "test_run_non_eredita_l_errore_di_un_tentativo_precedente",
+    "scope": "",
+    "signature": "def test_run_non_eredita_l_errore_di_un_tentativo_precedente(monkeypatch, tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 103,
+    "kind": "function_definition",
+    "name": "test_un_metodo_dentro_una_classe_compare_fra_gli_intervalli",
+    "scope": "",
+    "signature": "def test_un_metodo_dentro_una_classe_compare_fra_gli_intervalli():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 113,
+    "kind": "function_definition",
+    "name": "test_un_metodo_decorato_parte_dalla_riga_del_decoratore",
+    "scope": "",
+    "signature": "def test_un_metodo_decorato_parte_dalla_riga_del_decoratore():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 119,
+    "kind": "function_definition",
+    "name": "test_le_funzioni_di_primo_livello_restano_visibili",
+    "scope": "",
+    "signature": "def test_le_funzioni_di_primo_livello_restano_visibili():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 128,
+    "kind": "function_definition",
+    "name": "test_la_funzione_di_modulo_vince_sul_metodo_omonimo",
+    "scope": "",
+    "signature": "def test_la_funzione_di_modulo_vince_sul_metodo_omonimo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 135,
+    "kind": "function_definition",
+    "name": "test_lo_stesso_metodo_in_due_classi_solleva",
+    "scope": "",
+    "signature": "def test_lo_stesso_metodo_in_due_classi_solleva():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 142,
+    "kind": "function_definition",
+    "name": "test_una_chiusura_dentro_una_funzione_non_compare",
+    "scope": "",
+    "signature": "def test_una_chiusura_dentro_una_funzione_non_compare():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 149,
+    "kind": "function_definition",
+    "name": "test_innesta_il_corpo_di_un_metodo_e_conserva_il_resto",
+    "scope": "",
+    "signature": "def test_innesta_il_corpo_di_un_metodo_e_conserva_il_resto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 161,
+    "kind": "function_definition",
+    "name": "test_una_sorgente_rotta_continua_a_sollevare_syntaxerror",
+    "scope": "",
+    "signature": "def test_una_sorgente_rotta_continua_a_sollevare_syntaxerror():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_code_agent_parziale_metodi.py",
+    "line": 166,
+    "kind": "function_definition",
+    "name": "test_un_metodo_reso_alla_base_sbagliata_viene_reindentato",
+    "scope": "",
+    "signature": "def test_un_metodo_reso_alla_base_sbagliata_viene_reindentato():",
+    "category": "test"
+  },
+  {
     "path": "tests/test_code_agent_provider.py",
     "line": 22,
     "kind": "function_definition",
@@ -882,6 +2421,51 @@
     "category": "test"
   },
   {
+    "path": "tests/test_contract_ledger.py",
+    "line": 165,
+    "kind": "function_definition",
+    "name": "test_roadmap_riporta_verbatim_una_domanda_aperta",
+    "scope": "",
+    "signature": "def test_roadmap_riporta_verbatim_una_domanda_aperta(ledger_env):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_ledger.py",
+    "line": 177,
+    "kind": "function_definition",
+    "name": "test_roadmap_non_riporta_domande_aperte_assenti",
+    "scope": "",
+    "signature": "def test_roadmap_non_riporta_domande_aperte_assenti(ledger_env):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_ledger.py",
+    "line": 184,
+    "kind": "function_definition",
+    "name": "test_roadmap_elenca_ogni_contratto_del_gate_con_stato",
+    "scope": "",
+    "signature": "def test_roadmap_elenca_ogni_contratto_del_gate_con_stato(ledger_env):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_ledger.py",
+    "line": 207,
+    "kind": "function_definition",
+    "name": "test_roadmap_non_solleva_eccezioni_su_ledger_minimale",
+    "scope": "",
+    "signature": "def test_roadmap_non_solleva_eccezioni_su_ledger_minimale(ledger_env):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_ledger.py",
+    "line": 213,
+    "kind": "function_definition",
+    "name": "test_update_contract_state_scrive_la_roadmap_dal_ledger_reale",
+    "scope": "",
+    "signature": "def test_update_contract_state_scrive_la_roadmap_dal_ledger_reale(tmp_path, monkeypatch):",
+    "category": "test"
+  },
+  {
     "path": "tests/test_contract_verifier.py",
     "line": 7,
     "kind": "function_definition",
@@ -906,6 +2490,33 @@
     "name": "test_verify_rejects_resolved_placeholder_and_missing_link",
     "scope": "",
     "signature": "def test_verify_rejects_resolved_placeholder_and_missing_link(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_verifier.py",
+    "line": 56,
+    "kind": "function_definition",
+    "name": "_messaggio_valido",
+    "scope": "",
+    "signature": "def _messaggio_valido(task_id: str) -> dict:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_verifier.py",
+    "line": 64,
+    "kind": "function_definition",
+    "name": "test_verify_accepts_conformant_ai_task_packets",
+    "scope": "",
+    "signature": "def test_verify_accepts_conformant_ai_task_packets(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_contract_verifier.py",
+    "line": 74,
+    "kind": "function_definition",
+    "name": "test_verify_rejects_malformed_ai_task_packet",
+    "scope": "",
+    "signature": "def test_verify_rejects_malformed_ai_task_packet(tmp_path):",
     "category": "test"
   },
   {
@@ -1113,6 +2724,132 @@
     "name": "test_busy_dashboard_port_is_reported_not_shared",
     "scope": "",
     "signature": "def test_busy_dashboard_port_is_reported_not_shared(): # Two dashboards on one port would split requests between them and neither # would look wrong enough to notice, so the second bind must fail loudly.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 23,
+    "kind": "function_definition",
+    "name": "test_autorizza_incarico_blocca_senza_employee_id",
+    "scope": "",
+    "signature": "def test_autorizza_incarico_blocca_senza_employee_id():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 28,
+    "kind": "function_definition",
+    "name": "test_autorizza_incarico_blocca_employee_id_vuoto",
+    "scope": "",
+    "signature": "def test_autorizza_incarico_blocca_employee_id_vuoto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "test_autorizza_incarico_permette_capability_giusta",
+    "scope": "",
+    "signature": "def test_autorizza_incarico_permette_capability_giusta(): # employee.documentation ha \"documentation\" fra le proprie capability.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_autorizza_incarico_permette_scaffold_su_python",
+    "scope": "",
+    "signature": "def test_autorizza_incarico_permette_scaffold_su_python(): # \"scaffold\" e' stato aggiunto a employee.documentation ed employee.coding in bdb6f5f.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 43,
+    "kind": "function_definition",
+    "name": "test_autorizza_incarico_blocca_capability_mancante",
+    "scope": "",
+    "signature": "def test_autorizza_incarico_blocca_capability_mancante(): # employee.security ha solo security/audit/policy: niente scaffold per un incarico Python.",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 49,
+    "kind": "function_definition",
+    "name": "test_run_blocca_senza_employee_id_senza_chiamare_il_modello",
+    "scope": "",
+    "signature": "def test_run_blocca_senza_employee_id_senza_chiamare_il_modello(monkeypatch, tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 50,
+    "kind": "function_definition",
+    "name": "_non_deve_essere_chiamato",
+    "scope": "test_run_blocca_senza_employee_id_senza_chiamare_il_modello",
+    "signature": "def _non_deve_essere_chiamato(prompt):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 65,
+    "kind": "function_definition",
+    "name": "test_run_blocca_su_ruolo_senza_capability_senza_chiamare_il_modello",
+    "scope": "",
+    "signature": "def test_run_blocca_su_ruolo_senza_capability_senza_chiamare_il_modello(monkeypatch, tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 66,
+    "kind": "function_definition",
+    "name": "_non_deve_essere_chiamato",
+    "scope": "test_run_blocca_su_ruolo_senza_capability_senza_chiamare_il_modello",
+    "signature": "def _non_deve_essere_chiamato(prompt):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 85,
+    "kind": "function_definition",
+    "name": "_tools_dichiarati",
+    "scope": "",
+    "signature": "def _tools_dichiarati(agent_md_path: Path) -> str:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 92,
+    "kind": "function_definition",
+    "name": "test_revisore_ha_il_tool_preflight_per_il_proprio_ruolo",
+    "scope": "",
+    "signature": "def test_revisore_ha_il_tool_preflight_per_il_proprio_ruolo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_authorization.py",
+    "line": 97,
+    "kind": "function_definition",
+    "name": "test_verificatore_ha_il_tool_diagnostics_per_il_proprio_ruolo",
+    "scope": "",
+    "signature": "def test_verificatore_ha_il_tool_diagnostics_per_il_proprio_ruolo():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_local_result.py",
+    "line": 25,
+    "kind": "function_definition",
+    "name": "test_run_produce_un_risultato_conforme_allo_schema",
+    "scope": "",
+    "signature": "def test_run_produce_un_risultato_conforme_allo_schema(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_doc_agent_local_result.py",
+    "line": 33,
+    "kind": "function_definition",
+    "name": "test_run_degrada_a_blocked_se_lo_schema_non_e_rispettato",
+    "scope": "",
+    "signature": "def test_run_degrada_a_blocked_se_lo_schema_non_e_rispettato(monkeypatch):",
     "category": "test"
   },
   {
@@ -2025,6 +3762,42 @@
     "category": "test"
   },
   {
+    "path": "tests/test_generate_claude_agents.py",
+    "line": 9,
+    "kind": "function_definition",
+    "name": "test_generate_writes_exactly_the_specced_agents",
+    "scope": "",
+    "signature": "def test_generate_writes_exactly_the_specced_agents(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_generate_claude_agents.py",
+    "line": 17,
+    "kind": "function_definition",
+    "name": "test_type_b_agents_never_grant_write_or_edit",
+    "scope": "",
+    "signature": "def test_type_b_agents_never_grant_write_or_edit(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_generate_claude_agents.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "test_each_generated_agent_names_its_stable_employee_id",
+    "scope": "",
+    "signature": "def test_each_generated_agent_names_its_stable_employee_id(tmp_path):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_generate_claude_agents.py",
+    "line": 38,
+    "kind": "function_definition",
+    "name": "test_mcp_chief_cannot_promote_or_rollback_bindings",
+    "scope": "",
+    "signature": "def test_mcp_chief_cannot_promote_or_rollback_bindings(tmp_path):",
+    "category": "test"
+  },
+  {
     "path": "tests/test_guard_protocol.py",
     "line": 4,
     "kind": "function_definition",
@@ -2274,6 +4047,114 @@
     "name": "test_snapshot_is_serializable_wire_shaped_dict_regardless_of_deps",
     "scope": "",
     "signature": "def test_snapshot_is_serializable_wire_shaped_dict_regardless_of_deps(monkeypatch):",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 11,
+    "kind": "function_definition",
+    "name": "risultato_di_prova",
+    "scope": "",
+    "signature": "def risultato_di_prova() -> dict:",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 30,
+    "kind": "function_definition",
+    "name": "test_risultato_conforme_non_ha_difetti",
+    "scope": "",
+    "signature": "def test_risultato_conforme_non_ha_difetti():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 34,
+    "kind": "function_definition",
+    "name": "test_non_dict_e_un_difetto",
+    "scope": "",
+    "signature": "def test_non_dict_e_un_difetto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 39,
+    "kind": "function_definition",
+    "name": "test_campo_obbligatorio_assente",
+    "scope": "",
+    "signature": "def test_campo_obbligatorio_assente():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 45,
+    "kind": "function_definition",
+    "name": "test_campo_non_previsto",
+    "scope": "",
+    "signature": "def test_campo_non_previsto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 51,
+    "kind": "function_definition",
+    "name": "test_status_non_ammesso",
+    "scope": "",
+    "signature": "def test_status_non_ammesso():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 57,
+    "kind": "function_definition",
+    "name": "test_checks_deve_essere_oggetto",
+    "scope": "",
+    "signature": "def test_checks_deve_essere_oggetto():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 63,
+    "kind": "function_definition",
+    "name": "test_checks_campo_mancante",
+    "scope": "",
+    "signature": "def test_checks_campo_mancante():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 69,
+    "kind": "function_definition",
+    "name": "test_checks_valore_non_booleano",
+    "scope": "",
+    "signature": "def test_checks_valore_non_booleano():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 75,
+    "kind": "function_definition",
+    "name": "test_confidence_fuori_scala",
+    "scope": "",
+    "signature": "def test_confidence_fuori_scala():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 81,
+    "kind": "function_definition",
+    "name": "test_confidence_booleano_e_rifiutato",
+    "scope": "",
+    "signature": "def test_confidence_booleano_e_rifiutato():",
+    "category": "test"
+  },
+  {
+    "path": "tests/test_local_result.py",
+    "line": 87,
+    "kind": "function_definition",
+    "name": "test_risultato_conforme_allo_schema_del_repo",
+    "scope": "",
+    "signature": "def test_risultato_conforme_allo_schema_del_repo():",
     "category": "test"
   },
   {
@@ -2616,1887 +4497,6 @@
     "name": "test_chief_requires_independent_evidence_before_promoting_binding",
     "scope": "",
     "signature": "def test_chief_requires_independent_evidence_before_promoting_binding(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_evidence.py",
-    "line": 8,
-    "kind": "function_definition",
-    "name": "_record",
-    "scope": "",
-    "signature": "def _record(authority, *, kind=\"tests\", executor=\"worker.tests\", observed_at=None):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_evidence.py",
-    "line": 23,
-    "kind": "function_definition",
-    "name": "test_signed_evidence_round_trip_and_tamper_detection",
-    "scope": "",
-    "signature": "def test_signed_evidence_round_trip_and_tamper_detection(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_evidence.py",
-    "line": 32,
-    "kind": "function_definition",
-    "name": "test_stale_evidence_is_rejected",
-    "scope": "",
-    "signature": "def test_stale_evidence_is_rejected(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_evidence.py",
-    "line": 52,
-    "kind": "function_definition",
-    "name": "test_candidate_digest_mismatch_is_rejected",
-    "scope": "",
-    "signature": "def test_candidate_digest_mismatch_is_rejected(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_evidence.py",
-    "line": 61,
-    "kind": "function_definition",
-    "name": "test_secret_like_result_fields_are_rejected",
-    "scope": "",
-    "signature": "def test_secret_like_result_fields_are_rejected(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_health.py",
-    "line": 5,
-    "kind": "function_definition",
-    "name": "test_missing_provider_observation_is_unknown",
-    "scope": "",
-    "signature": "def test_missing_provider_observation_is_unknown(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_health.py",
-    "line": 11,
-    "kind": "function_definition",
-    "name": "test_expired_observation_becomes_unknown",
-    "scope": "",
-    "signature": "def test_expired_observation_becomes_unknown(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_health.py",
-    "line": 23,
-    "kind": "function_definition",
-    "name": "test_observations_persist_across_supervisor_restart",
-    "scope": "",
-    "signature": "def test_observations_persist_across_supervisor_restart(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_audit.py",
-    "line": 4,
-    "kind": "function_definition",
-    "name": "test_audit_redacts_token_like_values",
-    "scope": "",
-    "signature": "def test_audit_redacts_token_like_values(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 57,
-    "kind": "function_definition",
-    "name": "test_provider_config_accetta_i_campi_della_misura",
-    "scope": "",
-    "signature": "def test_provider_config_accetta_i_campi_della_misura():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 75,
-    "kind": "function_definition",
-    "name": "test_provider_config_conserva_la_costruzione_minima",
-    "scope": "",
-    "signature": "def test_provider_config_conserva_la_costruzione_minima():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 86,
-    "kind": "function_definition",
-    "name": "router",
-    "scope": "",
-    "signature": "def router() -> ModelRouter:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 91,
-    "kind": "function_definition",
-    "name": "_voci",
-    "scope": "",
-    "signature": "def _voci(router: ModelRouter) -> list:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 95,
-    "kind": "function_definition",
-    "name": "_per_modello",
-    "scope": "",
-    "signature": "def _per_modello(router: ModelRouter, model_id: str):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 101,
-    "kind": "function_definition",
-    "name": "test_ogni_dipendente_risolve_senza_eccezione",
-    "scope": "",
-    "signature": "def test_ogni_dipendente_risolve_senza_eccezione(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 112,
-    "kind": "function_definition",
-    "name": "test_primario_instradabile_vince_sul_ripiego",
-    "scope": "",
-    "signature": "def test_primario_instradabile_vince_sul_ripiego(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 124,
-    "kind": "function_definition",
-    "name": "test_perception_riceve_un_modello_che_vede",
-    "scope": "",
-    "signature": "def test_perception_riceve_un_modello_che_vede(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 133,
-    "kind": "function_definition",
-    "name": "test_nessun_dipendente_risolve_su_una_voce_non_instradabile",
-    "scope": "",
-    "signature": "def test_nessun_dipendente_risolve_su_una_voce_non_instradabile(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 141,
-    "kind": "function_definition",
-    "name": "test_primario_non_instradabile_passa_al_ripiego",
-    "scope": "",
-    "signature": "def test_primario_non_instradabile_passa_al_ripiego(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 149,
-    "kind": "function_definition",
-    "name": "test_un_alias_risolve_sulla_sua_voce",
-    "scope": "",
-    "signature": "def test_un_alias_risolve_sulla_sua_voce(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 161,
-    "kind": "function_definition",
-    "name": "test_ogni_voce_porta_l_evidenza_della_misura",
-    "scope": "",
-    "signature": "def test_ogni_voce_porta_l_evidenza_della_misura(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 169,
-    "kind": "function_definition",
-    "name": "test_ogni_voce_dichiara_le_proprie_capacita",
-    "scope": "",
-    "signature": "def test_ogni_voce_dichiara_le_proprie_capacita(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 175,
-    "kind": "function_definition",
-    "name": "test_i_pagati_stanno_sopra_i_gratuiti",
-    "scope": "",
-    "signature": "def test_i_pagati_stanno_sopra_i_gratuiti(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 183,
-    "kind": "function_definition",
-    "name": "test_una_sola_fonte_per_il_catalogo",
-    "scope": "",
-    "signature": "def test_una_sola_fonte_per_il_catalogo():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 197,
-    "kind": "function_definition",
-    "name": "test_il_catalogo_non_e_piu_un_set_minimo",
-    "scope": "",
-    "signature": "def test_il_catalogo_non_e_piu_un_set_minimo():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 205,
-    "kind": "function_definition",
-    "name": "test_il_catalogo_contiene_ogni_modello_citato_dai_binding",
-    "scope": "",
-    "signature": "def test_il_catalogo_contiene_ogni_modello_citato_dai_binding(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 219,
-    "kind": "function_definition",
-    "name": "test_esiste_il_dipendente_guardiano",
-    "scope": "",
-    "signature": "def test_esiste_il_dipendente_guardiano():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 225,
-    "kind": "function_definition",
-    "name": "test_il_guardiano_non_puo_promuovere",
-    "scope": "",
-    "signature": "def test_il_guardiano_non_puo_promuovere():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 232,
-    "kind": "function_definition",
-    "name": "test_il_guardiano_non_costa",
-    "scope": "",
-    "signature": "def test_il_guardiano_non_costa(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 255,
-    "kind": "function_definition",
-    "name": "_pagato",
-    "scope": "",
-    "signature": "def _pagato(model_id: str) -> bool:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 259,
-    "kind": "function_definition",
-    "name": "test_il_pagato_si_attiva_solo_col_consenso",
-    "scope": "",
-    "signature": "def test_il_pagato_si_attiva_solo_col_consenso():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 288,
-    "kind": "function_definition",
-    "name": "test_ogni_dipendente_prova_prima_il_gratuito",
-    "scope": "",
-    "signature": "def test_ogni_dipendente_prova_prima_il_gratuito(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 306,
-    "kind": "function_definition",
-    "name": "test_il_pagato_resta_come_rete",
-    "scope": "",
-    "signature": "def test_il_pagato_resta_come_rete(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 320,
-    "kind": "function_definition",
-    "name": "test_perception_resta_su_un_modello_che_vede",
-    "scope": "",
-    "signature": "def test_perception_resta_su_un_modello_che_vede(router):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_catalog.py",
-    "line": 328,
-    "kind": "function_definition",
-    "name": "test_un_gratuito_nel_binding_e_sempre_validato_dal_banco",
-    "scope": "",
-    "signature": "def test_un_gratuito_nel_binding_e_sempre_validato_dal_banco():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_contracts.py",
-    "line": 10,
-    "kind": "function_definition",
-    "name": "test_activation_request_defaults_network_off",
-    "scope": "",
-    "signature": "def test_activation_request_defaults_network_off():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_contracts.py",
-    "line": 17,
-    "kind": "function_definition",
-    "name": "test_simulation_request_round_trips_without_unknown_fields",
-    "scope": "",
-    "signature": "def test_simulation_request_round_trips_without_unknown_fields():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 20,
-    "kind": "function_definition",
-    "name": "_chief",
-    "scope": "",
-    "signature": "def _chief(tmp_path: Path) -> McpChief:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 24,
-    "kind": "function_definition",
-    "name": "_record_proposal",
-    "scope": "",
-    "signature": "def _record_proposal(audit: AuditLog, proposal: dict) -> None: # Stessa sequenza di nosai/mcp/server.py:mcp_propose_change.",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 29,
-    "kind": "function_definition",
-    "name": "_record_verdict",
-    "scope": "",
-    "signature": "def _record_verdict(audit: AuditLog, verdict: dict) -> None: # Stessa sequenza di nosai/mcp/server.py:mcp_audit_change.",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 34,
-    "kind": "function_definition",
-    "name": "test_veto_path_is_recorded_as_real_audit_evidence",
-    "scope": "",
-    "signature": "def test_veto_path_is_recorded_as_real_audit_evidence(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 54,
-    "kind": "function_definition",
-    "name": "test_approved_path_is_a_valid_handoff_with_no_veto",
-    "scope": "",
-    "signature": "def test_approved_path_is_a_valid_handoff_with_no_veto(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 72,
-    "kind": "function_definition",
-    "name": "test_director_refuses_a_protected_path_before_the_auditor_ever_sees_it",
-    "scope": "",
-    "signature": "def test_director_refuses_a_protected_path_before_the_auditor_ever_sees_it(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 84,
-    "kind": "function_definition",
-    "name": "test_auditor_independently_vetoes_a_protected_path_even_if_somehow_proposed",
-    "scope": "",
-    "signature": "def test_auditor_independently_vetoes_a_protected_path_even_if_somehow_proposed(tmp_path): # L'Auditor \"non si fida mai dello stato del Direttore\" (nosai/mcp/auditor.py): # lo stesso controllo sui percorsi protetti va rifatto qui, non ereditato.",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 99,
-    "kind": "function_definition",
-    "name": "test_simulation_replay_is_deterministic_given_the_same_scenario_and_seed",
-    "scope": "",
-    "signature": "def test_simulation_replay_is_deterministic_given_the_same_scenario_and_seed():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 109,
-    "kind": "function_definition",
-    "name": "test_simulation_replay_is_recorded_as_real_audit_evidence",
-    "scope": "",
-    "signature": "def test_simulation_replay_is_recorded_as_real_audit_evidence(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_director_auditor_e2e.py",
-    "line": 123,
-    "kind": "function_definition",
-    "name": "test_a_different_seed_changes_the_simulated_outcome",
-    "scope": "",
-    "signature": "def test_a_different_seed_changes_the_simulated_outcome():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_governance.py",
-    "line": 6,
-    "kind": "function_definition",
-    "name": "test_director_cannot_target_protected_paths",
-    "scope": "",
-    "signature": "def test_director_cannot_target_protected_paths(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_governance.py",
-    "line": 16,
-    "kind": "function_definition",
-    "name": "test_auditor_vetoes_missing_safety_check",
-    "scope": "",
-    "signature": "def test_auditor_vetoes_missing_safety_check(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_governance.py",
-    "line": 23,
-    "kind": "function_definition",
-    "name": "test_role_architect_requires_director_and_auditor",
-    "scope": "",
-    "signature": "def test_role_architect_requires_director_and_auditor():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_inference.py",
-    "line": 6,
-    "kind": "function_definition",
-    "name": "test_inference_cannot_call_network_provider_when_offline",
-    "scope": "",
-    "signature": "def test_inference_cannot_call_network_provider_when_offline():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_learning.py",
-    "line": 4,
-    "kind": "function_definition",
-    "name": "test_learning_candidate_requires_observed_evidence_before_promotion",
-    "scope": "",
-    "signature": "def test_learning_candidate_requires_observed_evidence_before_promotion(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_learning.py",
-    "line": 17,
-    "kind": "function_definition",
-    "name": "test_validated_candidate_is_exported_as_offline_skill",
-    "scope": "",
-    "signature": "def test_validated_candidate_is_exported_as_offline_skill(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_policy.py",
-    "line": 5,
-    "kind": "function_definition",
-    "name": "test_network_is_disabled_by_default",
-    "scope": "",
-    "signature": "def test_network_is_disabled_by_default():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_policy.py",
-    "line": 11,
-    "kind": "function_definition",
-    "name": "test_network_activation_requires_operator_confirmation",
-    "scope": "",
-    "signature": "def test_network_activation_requires_operator_confirmation():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_policy.py",
-    "line": 21,
-    "kind": "function_definition",
-    "name": "test_privileged_and_secret_export_tools_are_always_denied",
-    "scope": "",
-    "signature": "def test_privileged_and_secret_export_tools_are_always_denied():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_secrets.py",
-    "line": 6,
-    "kind": "function_definition",
-    "name": "test_secret_store_returns_metadata_not_plaintext",
-    "scope": "",
-    "signature": "def test_secret_store_returns_metadata_not_plaintext(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_secrets.py",
-    "line": 16,
-    "kind": "function_definition",
-    "name": "test_secret_store_rejects_blank_provider_id",
-    "scope": "",
-    "signature": "def test_secret_store_rejects_blank_provider_id(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_server.py",
-    "line": 8,
-    "kind": "function_definition",
-    "name": "test_config_cannot_enable_network_without_operator_action",
-    "scope": "",
-    "signature": "def test_config_cannot_enable_network_without_operator_action(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_worker_ring_e2e.py",
-    "line": 37,
-    "kind": "function_definition",
-    "name": "_ollama_reachable",
-    "scope": "",
-    "signature": "def _ollama_reachable() -> bool:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_worker_ring_e2e.py",
-    "line": 51,
-    "kind": "function_definition",
-    "name": "_server_wiring",
-    "scope": "",
-    "signature": "def _server_wiring(tmp_path: Path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_worker_ring_e2e.py",
-    "line": 65,
-    "kind": "function_definition",
-    "name": "test_documentation_capability_routes_to_the_free_local_provider",
-    "scope": "",
-    "signature": "def test_documentation_capability_routes_to_the_free_local_provider(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_hub_worker_ring_e2e.py",
-    "line": 76,
-    "kind": "function_definition",
-    "name": "test_the_worker_ring_runs_a_real_model_after_director_and_auditor_approve",
-    "scope": "",
-    "signature": "def test_the_worker_ring_runs_a_real_model_after_director_and_auditor_approve(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 7,
-    "kind": "function_definition",
-    "name": "_evidence_ids",
-    "scope": "",
-    "signature": "def _evidence_ids(registry, candidate_digest, author_id=\"operator\"):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 25,
-    "kind": "function_definition",
-    "name": "test_proposal_is_shadow_and_does_not_change_active_binding",
-    "scope": "",
-    "signature": "def test_proposal_is_shadow_and_does_not_change_active_binding(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 34,
-    "kind": "function_definition",
-    "name": "test_promotion_requires_operator_and_signed_independent_evidence",
-    "scope": "",
-    "signature": "def test_promotion_requires_operator_and_signed_independent_evidence(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 47,
-    "kind": "function_definition",
-    "name": "test_legacy_boolean_checks_are_rejected",
-    "scope": "",
-    "signature": "def test_legacy_boolean_checks_are_rejected(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 58,
-    "kind": "function_definition",
-    "name": "test_rollback_restores_previous_binding",
-    "scope": "",
-    "signature": "def test_rollback_restores_previous_binding(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_role_bindings.py",
-    "line": 68,
-    "kind": "function_definition",
-    "name": "test_role_router_prefers_promoted_binding",
-    "scope": "",
-    "signature": "def test_role_router_prefers_promoted_binding(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_roles.py",
-    "line": 4,
-    "kind": "function_definition",
-    "name": "test_employee_catalog_has_unique_stable_roles_and_bindings",
-    "scope": "",
-    "signature": "def test_employee_catalog_has_unique_stable_roles_and_bindings():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_roles.py",
-    "line": 10,
-    "kind": "function_definition",
-    "name": "test_governance_roles_remain_valid",
-    "scope": "",
-    "signature": "def test_governance_roles_remain_valid():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 18,
-    "kind": "function_definition",
-    "name": "test_rileva_csharp_dalla_chiave_file",
-    "scope": "",
-    "signature": "def test_rileva_csharp_dalla_chiave_file():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 27,
-    "kind": "function_definition",
-    "name": "test_rileva_cpp_dalla_chiave_target_file",
-    "scope": "",
-    "signature": "def test_rileva_cpp_dalla_chiave_target_file():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 32,
-    "kind": "function_definition",
-    "name": "test_rileva_python_dalla_chiave_file_bersaglio",
-    "scope": "",
-    "signature": "def test_rileva_python_dalla_chiave_file_bersaglio():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 37,
-    "kind": "function_definition",
-    "name": "test_rileva_dal_testo_grezzo_quando_il_json_non_e_valido",
-    "scope": "",
-    "signature": "def test_rileva_dal_testo_grezzo_quando_il_json_non_e_valido():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 42,
-    "kind": "function_definition",
-    "name": "test_nessuna_estensione_riconoscibile_restituisce_none",
-    "scope": "",
-    "signature": "def test_nessuna_estensione_riconoscibile_restituisce_none():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 47,
-    "kind": "function_definition",
-    "name": "test_nessuna_chiave_nota_e_nessun_percorso_nel_testo_restituisce_none",
-    "scope": "",
-    "signature": "def test_nessuna_chiave_nota_e_nessun_percorso_nel_testo_restituisce_none():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 52,
-    "kind": "function_definition",
-    "name": "test_prompt_csharp_menziona_notimplementedexception_non_lo_scheletro_python",
-    "scope": "",
-    "signature": "def test_prompt_csharp_menziona_notimplementedexception_non_lo_scheletro_python():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 59,
-    "kind": "function_definition",
-    "name": "test_prompt_python_menziona_raise_notimplementederror",
-    "scope": "",
-    "signature": "def test_prompt_python_menziona_raise_notimplementederror():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_server_skeleton.py",
-    "line": 66,
-    "kind": "function_definition",
-    "name": "test_prompt_senza_linguaggio_determinabile_chiede_di_fermarsi_invece_di_indovinare",
-    "scope": "",
-    "signature": "def test_prompt_senza_linguaggio_determinabile_chiede_di_fermarsi_invece_di_indovinare():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 8,
-    "kind": "function_definition",
-    "name": "_proposal",
-    "scope": "",
-    "signature": "def _proposal():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 21,
-    "kind": "function_definition",
-    "name": "test_two_store_instances_observe_one_monotonic_revision",
-    "scope": "",
-    "signature": "def test_two_store_instances_observe_one_monotonic_revision(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 32,
-    "kind": "function_definition",
-    "name": "test_stale_stage_is_rejected_without_partial_write",
-    "scope": "",
-    "signature": "def test_stale_stage_is_rejected_without_partial_write(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 44,
-    "kind": "function_definition",
-    "name": "test_promotion_is_atomic_and_idempotent",
-    "scope": "",
-    "signature": "def test_promotion_is_atomic_and_idempotent(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 71,
-    "kind": "function_definition",
-    "name": "test_json_migration_creates_backup_and_survives_restart",
-    "scope": "",
-    "signature": "def test_json_migration_creates_backup_and_survives_restart(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_mcp_state.py",
-    "line": 99,
-    "kind": "function_definition",
-    "name": "test_expired_lease_is_fenced_and_new_worker_gets_token",
-    "scope": "",
-    "signature": "def test_expired_lease_is_fenced_and_new_worker_gets_token(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_miniland.py",
-    "line": 5,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "FakeAdapter",
-    "signature": "def __init__(self):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_miniland.py",
-    "line": 8,
-    "kind": "function_definition",
-    "name": "send_command",
-    "scope": "FakeAdapter",
-    "signature": "def send_command(self, command):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_miniland.py",
-    "line": 12,
-    "kind": "function_definition",
-    "name": "read_result",
-    "scope": "FakeAdapter",
-    "signature": "def read_result(self):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_miniland.py",
-    "line": 16,
-    "kind": "function_definition",
-    "name": "test_fishing_cycle_uses_adapter_only",
-    "scope": "",
-    "signature": "def test_fishing_cycle_uses_adapter_only():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_miniland.py",
-    "line": 24,
-    "kind": "function_definition",
-    "name": "test_command_requires_started_runtime",
-    "scope": "",
-    "signature": "def test_command_requires_started_runtime():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 18,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "FakeResponse",
-    "signature": "def __init__(self, payload):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 21,
-    "kind": "function_definition",
-    "name": "raise_for_status",
-    "scope": "FakeResponse",
-    "signature": "def raise_for_status(self):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 24,
-    "kind": "function_definition",
-    "name": "json",
-    "scope": "FakeResponse",
-    "signature": "def json(self):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 32,
-    "kind": "function_definition",
-    "name": "test_openrouter_rifiuta_qualunque_modello_deepseek",
-    "scope": "",
-    "signature": "def test_openrouter_rifiuta_qualunque_modello_deepseek(model_id, monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 33,
-    "kind": "function_definition",
-    "name": "esplodi",
-    "scope": "test_openrouter_rifiuta_qualunque_modello_deepseek",
-    "signature": "def esplodi(*a, **k):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 42,
-    "kind": "function_definition",
-    "name": "test_openrouter_lascia_passare_gli_altri_modelli",
-    "scope": "",
-    "signature": "def test_openrouter_lascia_passare_gli_altri_modelli(monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 45,
-    "kind": "function_definition",
-    "name": "finta_post",
-    "scope": "test_openrouter_lascia_passare_gli_altri_modelli",
-    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 56,
-    "kind": "function_definition",
-    "name": "test_call_deepseek_va_sull_endpoint_nativo",
-    "scope": "",
-    "signature": "def test_call_deepseek_va_sull_endpoint_nativo(monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 59,
-    "kind": "function_definition",
-    "name": "finta_post",
-    "scope": "test_call_deepseek_va_sull_endpoint_nativo",
-    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 74,
-    "kind": "function_definition",
-    "name": "test_call_deepseek_senza_chiave_fallisce_chiuso",
-    "scope": "",
-    "signature": "def test_call_deepseek_senza_chiave_fallisce_chiuso(monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 77,
-    "kind": "function_definition",
-    "name": "esplodi",
-    "scope": "test_call_deepseek_senza_chiave_fallisce_chiuso",
-    "signature": "def esplodi(*a, **k):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 86,
-    "kind": "function_definition",
-    "name": "test_auditor_e_un_modello_nativo_non_un_percorso_openrouter",
-    "scope": "",
-    "signature": "def test_auditor_e_un_modello_nativo_non_un_percorso_openrouter():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 95,
-    "kind": "function_definition",
-    "name": "test_nessun_modello_deepseek_resta_nel_roster_openrouter",
-    "scope": "",
-    "signature": "def test_nessun_modello_deepseek_resta_nel_roster_openrouter():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 101,
-    "kind": "function_definition",
-    "name": "test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce",
-    "scope": "",
-    "signature": "def test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce(monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_routing.py",
-    "line": 105,
-    "kind": "function_definition",
-    "name": "finta_post",
-    "scope": "test_contenuto_vuoto_da_un_modello_di_ragionamento_fallisce",
-    "signature": "def finta_post(url, headers=None, json=None, timeout=None):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 24,
-    "kind": "function_definition",
-    "name": "_modello",
-    "scope": "",
-    "signature": "def _modello(mid, prompt, completion, ctx=100000, modalities=None):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 32,
-    "kind": "function_definition",
-    "name": "_scrivi_roster",
-    "scope": "",
-    "signature": "def _scrivi_roster(cartella: Path, validati, scartati) -> Path:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 44,
-    "kind": "function_definition",
-    "name": "test_fetch_catalog_restituisce_data",
-    "scope": "",
-    "signature": "def test_fetch_catalog_restituisce_data():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 51,
-    "kind": "function_definition",
-    "name": "test_fetch_catalog_errore_http",
-    "scope": "",
-    "signature": "def test_fetch_catalog_errore_http():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 59,
-    "kind": "function_definition",
-    "name": "test_is_free",
-    "scope": "",
-    "signature": "def test_is_free():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 65,
-    "kind": "function_definition",
-    "name": "test_cost_per_mtok",
-    "scope": "",
-    "signature": "def test_cost_per_mtok():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 73,
-    "kind": "function_definition",
-    "name": "test_prezzo_negativo_e_sentinella",
-    "scope": "",
-    "signature": "def test_prezzo_negativo_e_sentinella():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 81,
-    "kind": "function_definition",
-    "name": "test_cost_per_mtok_rifiuta_la_sentinella",
-    "scope": "",
-    "signature": "def test_cost_per_mtok_rifiuta_la_sentinella():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 86,
-    "kind": "function_definition",
-    "name": "test_sentinella_fuori_dai_candidati_a_pagamento",
-    "scope": "",
-    "signature": "def test_sentinella_fuori_dai_candidati_a_pagamento():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 97,
-    "kind": "function_definition",
-    "name": "test_ogni_candidato_a_pagamento_richiede_consenso",
-    "scope": "",
-    "signature": "def test_ogni_candidato_a_pagamento_richiede_consenso():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 104,
-    "kind": "function_definition",
-    "name": "test_il_modello_in_uso_non_e_candidato_di_se_stesso",
-    "scope": "",
-    "signature": "def test_il_modello_in_uso_non_e_candidato_di_se_stesso():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 120,
-    "kind": "function_definition",
-    "name": "test_scopo_escluso_non_e_text_capable",
-    "scope": "",
-    "signature": "def test_scopo_escluso_non_e_text_capable(mid):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 125,
-    "kind": "function_definition",
-    "name": "test_modello_di_testo_e_capable",
-    "scope": "",
-    "signature": "def test_modello_di_testo_e_capable():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 129,
-    "kind": "function_definition",
-    "name": "test_modalita_di_uscita_senza_testo_esclude",
-    "scope": "",
-    "signature": "def test_modalita_di_uscita_senza_testo_esclude():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 134,
-    "kind": "function_definition",
-    "name": "test_campo_modalita_assente_non_esclude",
-    "scope": "",
-    "signature": "def test_campo_modalita_assente_non_esclude():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 140,
-    "kind": "function_definition",
-    "name": "test_load_roster_legge_validati_e_scartati",
-    "scope": "",
-    "signature": "def test_load_roster_legge_validati_e_scartati(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 152,
-    "kind": "function_definition",
-    "name": "test_load_roster_senza_file_solleva",
-    "scope": "",
-    "signature": "def test_load_roster_senza_file_solleva(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 158,
-    "kind": "function_definition",
-    "name": "test_roster_id_normalizza_il_prefisso_del_fornitore",
-    "scope": "",
-    "signature": "def test_roster_id_normalizza_il_prefisso_del_fornitore():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 167,
-    "kind": "function_definition",
-    "name": "test_scartato_non_e_adottabile",
-    "scope": "",
-    "signature": "def test_scartato_non_e_adottabile():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 177,
-    "kind": "function_definition",
-    "name": "test_validato_non_e_nuovo",
-    "scope": "",
-    "signature": "def test_validato_non_e_nuovo():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 185,
-    "kind": "function_definition",
-    "name": "test_gratuito_ignoto_e_da_provare_non_adottabile",
-    "scope": "",
-    "signature": "def test_gratuito_ignoto_e_da_provare_non_adottabile():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 192,
-    "kind": "function_definition",
-    "name": "test_lo_scarto_vince_sulla_validazione",
-    "scope": "",
-    "signature": "def test_lo_scarto_vince_sulla_validazione():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 201,
-    "kind": "function_definition",
-    "name": "test_sentinella_classificata_come_tale",
-    "scope": "",
-    "signature": "def test_sentinella_classificata_come_tale():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 208,
-    "kind": "function_definition",
-    "name": "test_non_pertinente_classificato_come_tale",
-    "scope": "",
-    "signature": "def test_non_pertinente_classificato_come_tale():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 217,
-    "kind": "function_definition",
-    "name": "test_snapshot_scritto_e_riletto",
-    "scope": "",
-    "signature": "def test_snapshot_scritto_e_riletto(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 226,
-    "kind": "function_definition",
-    "name": "test_snapshot_di_oggi_non_altera_quello_di_ieri",
-    "scope": "",
-    "signature": "def test_snapshot_di_oggi_non_altera_quello_di_ieri(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 234,
-    "kind": "function_definition",
-    "name": "test_load_last_snapshot_prende_il_precedente",
-    "scope": "",
-    "signature": "def test_load_last_snapshot_prende_il_precedente(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 241,
-    "kind": "function_definition",
-    "name": "test_load_last_snapshot_vuoto_al_primo_giro",
-    "scope": "",
-    "signature": "def test_load_last_snapshot_vuoto_al_primo_giro(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 245,
-    "kind": "function_definition",
-    "name": "test_diventato_gratuito_riconosciuto",
-    "scope": "",
-    "signature": "def test_diventato_gratuito_riconosciuto():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 251,
-    "kind": "function_definition",
-    "name": "test_nuovo_non_e_diventato_gratuito",
-    "scope": "",
-    "signature": "def test_nuovo_non_e_diventato_gratuito():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 255,
-    "kind": "function_definition",
-    "name": "test_gratuito_ieri_e_gratuito_oggi_non_e_una_novita",
-    "scope": "",
-    "signature": "def test_gratuito_ieri_e_gratuito_oggi_non_e_una_novita():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 262,
-    "kind": "function_definition",
-    "name": "test_render_report_ha_tutte_le_sezioni",
-    "scope": "",
-    "signature": "def test_render_report_ha_tutte_le_sezioni():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 271,
-    "kind": "function_definition",
-    "name": "test_report_non_dichiara_adottabile_uno_scartato",
-    "scope": "",
-    "signature": "def test_report_non_dichiara_adottabile_uno_scartato():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 283,
-    "kind": "function_definition",
-    "name": "test_scrivi_proposte_marca_il_consenso",
-    "scope": "",
-    "signature": "def test_scrivi_proposte_marca_il_consenso(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 294,
-    "kind": "function_definition",
-    "name": "test_compare_to_roster_non_si_schianta_sui_sentinella",
-    "scope": "",
-    "signature": "def test_compare_to_roster_non_si_schianta_sui_sentinella():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 313,
-    "kind": "function_definition",
-    "name": "test_main_regge_il_catalogo_reale",
-    "scope": "",
-    "signature": "def test_main_regge_il_catalogo_reale(tmp_path, monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 331,
-    "kind": "function_definition",
-    "name": "_ids",
-    "scope": "",
-    "signature": "def _ids(voci):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 336,
-    "kind": "function_definition",
-    "name": "proposte_reali",
-    "scope": "",
-    "signature": "def proposte_reali(tmp_path, monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 354,
-    "kind": "function_definition",
-    "name": "test_adottabili_e_da_provare_sono_disgiunti",
-    "scope": "",
-    "signature": "def test_adottabili_e_da_provare_sono_disgiunti(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 361,
-    "kind": "function_definition",
-    "name": "test_adottabile_solo_se_validato_dal_banco",
-    "scope": "",
-    "signature": "def test_adottabile_solo_se_validato_dal_banco(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 369,
-    "kind": "function_definition",
-    "name": "test_un_bocciato_non_e_mai_adottabile",
-    "scope": "",
-    "signature": "def test_un_bocciato_non_e_mai_adottabile(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 375,
-    "kind": "function_definition",
-    "name": "test_il_gratuito_ignoto_finisce_fra_i_da_provare",
-    "scope": "",
-    "signature": "def test_il_gratuito_ignoto_finisce_fra_i_da_provare(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 380,
-    "kind": "function_definition",
-    "name": "test_un_gratuito_mai_provato_non_esce_dal_radar",
-    "scope": "",
-    "signature": "def test_un_gratuito_mai_provato_non_esce_dal_radar(tmp_path, monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 407,
-    "kind": "function_definition",
-    "name": "test_diventato_gratuito_non_e_un_modello_nuovo",
-    "scope": "",
-    "signature": "def test_diventato_gratuito_non_e_un_modello_nuovo(tmp_path, monkeypatch):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 423,
-    "kind": "function_definition",
-    "name": "test_il_validato_finisce_fra_gli_adottabili",
-    "scope": "",
-    "signature": "def test_il_validato_finisce_fra_gli_adottabili(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_model_scout.py",
-    "line": 427,
-    "kind": "function_definition",
-    "name": "test_sentinella_e_non_pertinenti_fuori_da_ogni_proposta",
-    "scope": "",
-    "signature": "def test_sentinella_e_non_pertinenti_fuori_da_ogni_proposta(proposte_reali):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 21,
-    "kind": "function_definition",
-    "name": "esegui",
-    "scope": "",
-    "signature": "def esegui(coro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 26,
-    "kind": "function_definition",
-    "name": "filtro",
-    "scope": "",
-    "signature": "def filtro():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 30,
-    "kind": "function_definition",
-    "name": "test_riconosce_i_gratuiti",
-    "scope": "",
-    "signature": "def test_riconosce_i_gratuiti(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 38,
-    "kind": "function_definition",
-    "name": "test_gratuito_riceve_lucchetto_e_cascata",
-    "scope": "",
-    "signature": "def test_gratuito_riceve_lucchetto_e_cascata(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 47,
-    "kind": "function_definition",
-    "name": "test_il_pagamento_non_viene_mai_bloccato",
-    "scope": "",
-    "signature": "def test_il_pagamento_non_viene_mai_bloccato(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 56,
-    "kind": "function_definition",
-    "name": "test_valvola_spenta_non_tocca_nulla",
-    "scope": "",
-    "signature": "def test_valvola_spenta_non_tocca_nulla(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 63,
-    "kind": "function_definition",
-    "name": "test_i_messaggi_restano_intatti",
-    "scope": "",
-    "signature": "def test_i_messaggi_restano_intatti(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 70,
-    "kind": "function_definition",
-    "name": "test_modello_mancante_non_rompe",
-    "scope": "",
-    "signature": "def test_modello_mancante_non_rompe(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 76,
-    "kind": "function_definition",
-    "name": "test_outlet_non_altera_la_risposta",
-    "scope": "",
-    "signature": "def test_outlet_non_altera_la_risposta(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_openwebui_filter.py",
-    "line": 81,
-    "kind": "function_definition",
-    "name": "test_il_lucchetto_si_puo_disattivare",
-    "scope": "",
-    "signature": "def test_il_lucchetto_si_puo_disattivare(filtro):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 31,
-    "kind": "function_definition",
-    "name": "record_di_prova",
-    "scope": "",
-    "signature": "def record_di_prova(task_id: str = \"T-1\", calls: int = 1, costo: float = 0.0) -> TaskRecord:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 43,
-    "kind": "function_definition",
-    "name": "messaggio_di_prova",
-    "scope": "",
-    "signature": "def messaggio_di_prova() -> AgentMessage:",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 64,
-    "kind": "function_definition",
-    "name": "test_route_task_copre_tutti_i_kind",
-    "scope": "",
-    "signature": "def test_route_task_copre_tutti_i_kind(kind):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 72,
-    "kind": "function_definition",
-    "name": "test_route_task_deterministica",
-    "scope": "",
-    "signature": "def test_route_task_deterministica(kind):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 77,
-    "kind": "function_definition",
-    "name": "test_escalate_non_abbassa_il_costo",
-    "scope": "",
-    "signature": "def test_escalate_non_abbassa_il_costo(kind):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 104,
-    "kind": "function_definition",
-    "name": "test_routing_rispetta_la_politica",
-    "scope": "",
-    "signature": "def test_routing_rispetta_la_politica(kind, atteso):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 111,
-    "kind": "function_definition",
-    "name": "test_classi_di_costo_coerenti_col_listino",
-    "scope": "",
-    "signature": "def test_classi_di_costo_coerenti_col_listino(kind):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 120,
-    "kind": "function_definition",
-    "name": "test_escalate_da_claude_solleva",
-    "scope": "",
-    "signature": "def test_escalate_da_claude_solleva():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 131,
-    "kind": "function_definition",
-    "name": "test_append_e_read_all",
-    "scope": "",
-    "signature": "def test_append_e_read_all(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 138,
-    "kind": "function_definition",
-    "name": "test_append_non_riscrive_le_righe_esistenti",
-    "scope": "",
-    "signature": "def test_append_non_riscrive_le_righe_esistenti(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 145,
-    "kind": "function_definition",
-    "name": "test_read_all_su_file_assente",
-    "scope": "",
-    "signature": "def test_read_all_su_file_assente(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 149,
-    "kind": "function_definition",
-    "name": "test_read_all_salta_riga_malformata",
-    "scope": "",
-    "signature": "def test_read_all_salta_riga_malformata(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 178,
-    "kind": "function_definition",
-    "name": "test_read_all_salta_riga_con_campi_errati",
-    "scope": "",
-    "signature": "def test_read_all_salta_riga_con_campi_errati(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 202,
-    "kind": "function_definition",
-    "name": "test_append_crea_la_directory_padre",
-    "scope": "",
-    "signature": "def test_append_crea_la_directory_padre(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 209,
-    "kind": "function_definition",
-    "name": "test_append_conserva_i_caratteri_accentati",
-    "scope": "",
-    "signature": "def test_append_conserva_i_caratteri_accentati(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 228,
-    "kind": "function_definition",
-    "name": "test_append_rifiuta_record_non_valido",
-    "scope": "",
-    "signature": "def test_append_rifiuta_record_non_valido(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 236,
-    "kind": "function_definition",
-    "name": "test_riga_conforme_allo_schema",
-    "scope": "",
-    "signature": "def test_riga_conforme_allo_schema(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 246,
-    "kind": "function_definition",
-    "name": "test_summary_by_model",
-    "scope": "",
-    "signature": "def test_summary_by_model(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 258,
-    "kind": "function_definition",
-    "name": "test_total_estimated_cost",
-    "scope": "",
-    "signature": "def test_total_estimated_cost(tmp_path):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 268,
-    "kind": "function_definition",
-    "name": "test_validate_message_accetta_messaggio_conforme",
-    "scope": "",
-    "signature": "def test_validate_message_accetta_messaggio_conforme():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 272,
-    "kind": "function_definition",
-    "name": "test_validate_message_rifiuta_campo_mancante",
-    "scope": "",
-    "signature": "def test_validate_message_rifiuta_campo_mancante():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 280,
-    "kind": "function_definition",
-    "name": "test_validate_message_non_solleva_su_payload_assurdo",
-    "scope": "",
-    "signature": "def test_validate_message_non_solleva_su_payload_assurdo():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 285,
-    "kind": "function_definition",
-    "name": "test_validate_message_rifiuta_stato_non_ammesso",
-    "scope": "",
-    "signature": "def test_validate_message_rifiuta_stato_non_ammesso():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 291,
-    "kind": "function_definition",
-    "name": "test_validate_message_rifiuta_confidence_fuori_scala",
-    "scope": "",
-    "signature": "def test_validate_message_rifiuta_confidence_fuori_scala():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 297,
-    "kind": "function_definition",
-    "name": "test_to_dict_e_from_dict_sono_inversi",
-    "scope": "",
-    "signature": "def test_to_dict_e_from_dict_sono_inversi():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 302,
-    "kind": "function_definition",
-    "name": "test_from_dict_su_payload_non_conforme_solleva",
-    "scope": "",
-    "signature": "def test_from_dict_su_payload_non_conforme_solleva():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestration.py",
-    "line": 309,
-    "kind": "function_definition",
-    "name": "test_messaggio_conforme_allo_schema_del_repo",
-    "scope": "",
-    "signature": "def test_messaggio_conforme_allo_schema_del_repo():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator.py",
-    "line": 6,
-    "kind": "function_definition",
-    "name": "test_orchestrator_approves_safe_rule_decision",
-    "scope": "",
-    "signature": "def test_orchestrator_approves_safe_rule_decision():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator.py",
-    "line": 14,
-    "kind": "function_definition",
-    "name": "test_orchestrator_blocks_unsafe_provider_output",
-    "scope": "",
-    "signature": "def test_orchestrator_blocks_unsafe_provider_output():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator.py",
-    "line": 16,
-    "kind": "function_definition",
-    "name": "decide",
-    "scope": "test_orchestrator_blocks_unsafe_provider_output.UnsafeProvider",
-    "signature": "def decide(self, world_state, goal):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator_party.py",
-    "line": 9,
-    "kind": "function_definition",
-    "name": "test_orchestrator_integrates_party_candidates_after_safety",
-    "scope": "",
-    "signature": "def test_orchestrator_integrates_party_candidates_after_safety():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator_party.py",
-    "line": 26,
-    "kind": "function_definition",
-    "name": "test_orchestrator_preserves_safety_on_blocked_primary_action",
-    "scope": "",
-    "signature": "def test_orchestrator_preserves_safety_on_blocked_primary_action():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_orchestrator_ranking.py",
-    "line": 10,
-    "kind": "function_definition",
-    "name": "test_orchestrator_ranks_party_candidates",
-    "scope": "",
-    "signature": "def test_orchestrator_ranks_party_candidates():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 7,
-    "kind": "function_definition",
-    "name": "test_partner_affinity_and_relationship_tier",
-    "scope": "",
-    "signature": "def test_partner_affinity_and_relationship_tier():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 13,
-    "kind": "function_definition",
-    "name": "test_partner_tactical_thresholds",
-    "scope": "",
-    "signature": "def test_partner_tactical_thresholds():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 21,
-    "kind": "function_definition",
-    "name": "test_partner_sp_skill_cooldown",
-    "scope": "",
-    "signature": "def test_partner_sp_skill_cooldown():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 31,
-    "kind": "function_definition",
-    "name": "test_partner_memory_consolidation_and_decay",
-    "scope": "",
-    "signature": "def test_partner_memory_consolidation_and_decay():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 41,
-    "kind": "function_definition",
-    "name": "test_consolidated_memory_leaves_short_term_store",
-    "scope": "",
-    "signature": "def test_consolidated_memory_leaves_short_term_store():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_party.py",
-    "line": 48,
-    "kind": "function_definition",
-    "name": "test_pet_is_independent_from_partner",
-    "scope": "",
-    "signature": "def test_pet_is_independent_from_partner():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_runtime_optimizations.py",
-    "line": 5,
-    "kind": "function_definition",
-    "name": "__init__",
-    "scope": "Probe",
-    "signature": "def __init__(self, telemetry):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_runtime_optimizations.py",
-    "line": 6,
-    "kind": "function_definition",
-    "name": "read",
-    "scope": "Probe",
-    "signature": "def read(self):",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_runtime_optimizations.py",
-    "line": 8,
-    "kind": "function_definition",
-    "name": "test_context_slimming_is_bounded_and_structured",
-    "scope": "",
-    "signature": "def test_context_slimming_is_bounded_and_structured():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_runtime_optimizations.py",
-    "line": 14,
-    "kind": "function_definition",
-    "name": "test_watchdog_trips_on_thermal_limit",
-    "scope": "",
-    "signature": "def test_watchdog_trips_on_thermal_limit():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_session_cipher.py",
-    "line": 49,
-    "kind": "function_definition",
-    "name": "_fixed_keys",
-    "scope": "",
-    "signature": "def _fixed_keys():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_session_cipher.py",
-    "line": 56,
-    "kind": "function_definition",
-    "name": "_fixed_material",
-    "scope": "",
-    "signature": "def _fixed_material():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_session_cipher.py",
-    "line": 64,
-    "kind": "function_definition",
-    "name": "test_the_fixed_keys_encode_to_the_pinned_public_points",
-    "scope": "",
-    "signature": "def test_the_fixed_keys_encode_to_the_pinned_public_points():",
-    "category": "test"
-  },
-  {
-    "path": "tests/test_session_cipher.py",
-    "line": 70,
-    "kind": "function_definition",
-    "name": "test_both_sides_derive_the_same_pinned_material",
-    "scope": "",
-    "signature": "def test_both_sides_derive_the_same_pinned_material():",
     "category": "test"
   }
 ]
