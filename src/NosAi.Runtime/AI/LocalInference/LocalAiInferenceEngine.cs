@@ -23,6 +23,9 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using LLama;
+using LLama.Common;
+using LLama.Sampling;
 
 namespace NosAi.AI.LocalInference
 {
@@ -100,18 +103,140 @@ namespace NosAi.AI.LocalInference
     public sealed class LocalAiInferenceEngine : IAsyncDisposable
     {
         private readonly LocalModelConfig _config; private readonly StructuredJsonOutputValidator _validator; private readonly ContextRingBuffer _contextBuffer; private readonly SandboxedToolRegistry _toolRegistry; private bool _isModelLoadedInVram; private long _totalInferencesExecuted; private readonly object _stateLock = new();
+        private LLamaWeights? _weights;
+        private StatelessExecutor? _executor;
+        private readonly SemaphoreSlim _loadSemaphore = new(1, 1);
         public bool IsLoaded => _isModelLoadedInVram; public long TotalInferences => Interlocked.Read(ref _totalInferencesExecuted);
-        public LocalAiInferenceEngine(LocalModelConfig? config = null) { _config = config ?? new("Phi-3-Mini-4k-Instruct-GGUF", "data/models/phi-3-mini-q4_k_m.gguf", ModelQuantization.Q4_K_M, HardwareComputeDevice.DirectML_NvidiaGpu, 2048, 6, 0.1f, 0.9f, 1800); _validator = new(); _contextBuffer = new(6); _toolRegistry = new(); }
-        public async Task<bool> LoadModelToVramAsync(CancellationToken token = default) { lock (_stateLock) { if (_isModelLoadedInVram) return true; } await Task.Delay(35, token).ConfigureAwait(false); lock (_stateLock) _isModelLoadedInVram = true; return true; }
-        public async Task<AiInferenceResult> GenerateDecisionIntentAsync(string systemObjective, string currentObservedState, double currentGpuTemperatureCelsius = 68.0, CancellationToken token = default) { var sw = Stopwatch.StartNew(); var id = Guid.NewGuid(); if (currentGpuTemperatureCelsius >= 80.0) return GenerateDeterministicFallback(id, "CIRCUIT BREAKER TERMICO: Temperatura GPU >= 80°C. Fallback euristico immediato per raffreddamento.", sw.ElapsedMilliseconds); if (CapBacPromptSanitizer.ContainsActiveInjection(currentObservedState)) return GenerateDeterministicFallback(id, "BLOCCO SICUREZZA CAPBAC: Rilevato pattern di iniezione malevola nel contesto osservato.", sw.ElapsedMilliseconds); if (!_isModelLoadedInVram) await LoadModelToVramAsync(token).ConfigureAwait(false); _ = _contextBuffer.BuildFormattedPromptContext(systemObjective, currentObservedState); await Task.Delay(20, token).ConfigureAwait(false); string output = "{\"ActionType\":\"UseSkill\",\"TargetEntityId\":\"MOB_101\",\"TargetX\":125,\"TargetY\":85,\"SkillOrItemId\":201,\"ConfidenceScore\":0.94,\"TacticalRationale\":\"Bersaglio isolato Dander: ingaggio rapido con skill a basso costo MP.\"}"; if (!_validator.TryParseAndValidate(output, out var intent, out var error)) return GenerateDeterministicFallback(id, $"FALLBACK DI VALIDAZIONE: Schema JSON non conforme ({error}).", sw.ElapsedMilliseconds); sw.Stop(); Interlocked.Increment(ref _totalInferencesExecuted); _contextBuffer.AddEntry(1, "AI_Model", $"Azione: {intent!.ActionType} su {intent.TargetEntityId}"); return new(id, _config.ModelName, true, intent, sw.ElapsedMilliseconds, 180, 45, false, "Inferenza locale eseguita con successo entro lo SLA di latenza."); }
+        public LocalAiInferenceEngine(LocalModelConfig? config = null) { _config = config ?? new("Phi-3-Mini-4k-Instruct-GGUF", "data/models/phi-3-mini-q4_k_m.gguf", ModelQuantization.Q4_K_M, HardwareComputeDevice.DirectML_NvidiaGpu, 2048, 6, 0.1f, 0.9f, 3200); _validator = new(); _contextBuffer = new(6); _toolRegistry = new(); }
+        public async Task<bool> LoadModelToVramAsync(CancellationToken token = default)
+        {
+            lock (_stateLock)
+            {
+                if (_isModelLoadedInVram) return true;
+            }
+
+            if (!File.Exists(_config.ModelFilePath))
+            {
+                return false;
+            }
+
+            if (_config.ComputeDevice == HardwareComputeDevice.NpuRyzenAi)
+            {
+                return false;
+            }
+
+            await _loadSemaphore.WaitAsync(token).ConfigureAwait(false);
+            try
+            {
+                lock (_stateLock)
+                {
+                    if (_isModelLoadedInVram) return true;
+                }
+
+                var modelParams = new ModelParams(_config.ModelFilePath)
+                {
+                    ContextSize = (uint)_config.MaxContextTokens,
+                    Threads = _config.ThreadsCount,
+                    GpuLayerCount = _config.ComputeDevice switch
+                    {
+                        HardwareComputeDevice.DirectML_NvidiaGpu => 999,
+                        HardwareComputeDevice.CpuAmdRyzenAvx512 => 0,
+                        _ => 0
+                    }
+                };
+
+                var loadedWeights = await LLamaWeights.LoadFromFileAsync(modelParams).ConfigureAwait(false);
+                var loadedExecutor = new StatelessExecutor(loadedWeights, modelParams);
+
+                lock (_stateLock)
+                {
+                    _weights = loadedWeights;
+                    _executor = loadedExecutor;
+                    _isModelLoadedInVram = true;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                _loadSemaphore.Release();
+            }
+        }
+        public async Task<AiInferenceResult> GenerateDecisionIntentAsync(string systemObjective, string currentObservedState, double currentGpuTemperatureCelsius = 68.0, CancellationToken token = default)
+        {
+            var sw = Stopwatch.StartNew();
+            var id = Guid.NewGuid();
+
+            if (currentGpuTemperatureCelsius >= 80.0)
+                return GenerateDeterministicFallback(id, "CIRCUIT BREAKER TERMICO: Temperatura GPU >= 80°C. Fallback euristico immediato per raffreddamento.", sw.ElapsedMilliseconds);
+
+            if (CapBacPromptSanitizer.ContainsActiveInjection(currentObservedState))
+                return GenerateDeterministicFallback(id, "BLOCCO SICUREZZA CAPBAC: Rilevato pattern di iniezione malevola nel contesto osservato.", sw.ElapsedMilliseconds);
+
+            if (!_isModelLoadedInVram)
+            {
+                bool loaded = await LoadModelToVramAsync(token).ConfigureAwait(false);
+                if (!loaded)
+                {
+                    return GenerateDeterministicFallback(id, $"MODELLO GGUF NON DISPONIBILE: impossibile caricare '{_config.ModelFilePath}'. Fallback euristico.", sw.ElapsedMilliseconds);
+                }
+            }
+
+            var prompt = _contextBuffer.BuildFormattedPromptContext(systemObjective, currentObservedState);
+            var inferenceParams = new InferenceParams
+            {
+                MaxTokens = 220,
+                AntiPrompts = new List<string> { "[FINE]" },
+                SamplingPipeline = new DefaultSamplingPipeline
+                {
+                    Temperature = _config.Temperature,
+                    TopP = _config.TopP
+                }
+            };
+
+            var sb = new StringBuilder();
+            int completionFragments = 0;
+            await foreach (var fragment in _executor!.InferAsync(prompt, inferenceParams, token).ConfigureAwait(false))
+            {
+                sb.Append(fragment);
+                completionFragments++;
+            }
+
+            string output = sb.ToString();
+            if (!_validator.TryParseAndValidate(output, out var intent, out var error))
+            {
+                return GenerateDeterministicFallback(id, $"FALLBACK DI VALIDAZIONE: Schema JSON non conforme ({error}).", sw.ElapsedMilliseconds);
+            }
+
+            sw.Stop();
+            Interlocked.Increment(ref _totalInferencesExecuted);
+            _contextBuffer.AddEntry(1, "AI_Model", $"Azione: {intent!.ActionType} su {intent.TargetEntityId}");
+
+            var promptTokensCount = _weights!.Tokenize(prompt, false, false, Encoding.UTF8).Length;
+            return new(id, _config.ModelName, true, intent, sw.ElapsedMilliseconds, promptTokensCount, completionFragments, false, "Inferenza locale eseguita con successo.");
+        }
         private static AiInferenceResult GenerateDeterministicFallback(Guid id, string reason, long latencyMs) => new(id, "DeterministicHeuristicFallback", false, new("UseBasicAttack", "NEAREST_THREAT", 0, 0, 0, 0.70f, "Fallback deterministico euristico di sicurezza."), latencyMs, 0, 0, true, reason);
-        public Task UnloadModelFromVramAsync() { lock (_stateLock) _isModelLoadedInVram = false; return Task.CompletedTask; }
+        public Task UnloadModelFromVramAsync()
+        {
+            lock (_stateLock)
+            {
+                _isModelLoadedInVram = false;
+                _weights?.Dispose();
+                _executor = null;
+                _weights = null;
+            }
+            return Task.CompletedTask;
+        }
         public async ValueTask DisposeAsync() { await UnloadModelFromVramAsync().ConfigureAwait(false); _contextBuffer.Clear(); }
     }
 
     public static class LocalAiInferenceTestRunner
     {
-        public static async Task<bool> RunAllTestsAsync() { Console.WriteLine("=== Local inference checks ==="); bool allPassed = true; allPassed &= RunTest("Test 1: Sanificazione Prompt & Neutralizzazione Injection", TestPromptSanitizationAndInjectionBlock); allPassed &= RunTest("Test 2: Validazione Strutturata Output JSON Schema", TestStructuredJsonOutputValidation); allPassed &= RunTest("Test 3: Ring-Buffer Contesto & Token Trimming", TestContextRingBufferTrimming); allPassed &= RunTest("Test 4: Interrogazione Sandboxed Tool di Sola Lettura", TestSandboxedToolQuery); allPassed &= await RunTestAsync("Test 5: Circuit Breaker Termico e Fallback Euristico", TestThermalCircuitBreakerFallbackAsync); allPassed &= RunTest("Test 6: Invariante Architetturale (AI Non-Executable)", TestLocalAiSecurityInvariant); Console.WriteLine(allPassed ? "=== Local inference checks passed. Local only. ===" : "=== Local inference checks FAILED. See the lines marked FAIL above. ==="); return allPassed; }
+        public static async Task<bool> RunAllTestsAsync() { Console.WriteLine("=== Local inference checks ==="); bool allPassed = true; allPassed &= RunTest("Test 1: Sanificazione Prompt & Neutralizzazione Injection", TestPromptSanitizationAndInjectionBlock); allPassed &= RunTest("Test 2: Validazione Strutturata Output JSON Schema", TestStructuredJsonOutputValidation); allPassed &= RunTest("Test 3: Ring-Buffer Contesto & Token Trimming", TestContextRingBufferTrimming); allPassed &= RunTest("Test 4: Interrogazione Sandboxed Tool di Sola Lettura", TestSandboxedToolQuery); allPassed &= await RunTestAsync("Test 5: Circuit Breaker Termico e Fallback Euristico", TestThermalCircuitBreakerFallbackAsync); allPassed &= RunTest("Test 6: Invariante Architetturale (AI Non-Executable)", TestLocalAiSecurityInvariant); allPassed &= await RunTestAsync("Test 7: Fail-Closed su File GGUF Assente", TestLoadModelFailsClosedWhenFileMissingAsync); allPassed &= await RunTestAsync("Test 8: Fail-Closed su Hardware NPU Non Supportato", TestLoadModelFailsClosedForUnsupportedNpuAsync); Console.WriteLine(allPassed ? "=== Local inference checks passed. Local only. ===" : "=== Local inference checks FAILED. See the lines marked FAIL above. ==="); return allPassed; }
         private static bool RunTest(string name, Func<bool> f)
         {
             try { return Report(name, f(), null); }
@@ -146,5 +271,19 @@ namespace NosAi.AI.LocalInference
         private static bool TestSandboxedToolQuery() { var r = new SandboxedToolRegistry(); return r.TryExecuteTool("QueryPlayerStatus", "{}", out _, out _); }
         private static async Task<bool> TestThermalCircuitBreakerFallbackAsync() { await using var e = new LocalAiInferenceEngine(); var r = await e.GenerateDecisionIntentAsync("x", "y", 85); return r.WasFallbackUsed; }
         private static bool TestLocalAiSecurityInvariant() => typeof(LocalAiInferenceEngine).GetMethod(nameof(LocalAiInferenceEngine.GenerateDecisionIntentAsync)) != null;
+        private static async Task<bool> TestLoadModelFailsClosedWhenFileMissingAsync()
+        {
+            var config = new LocalModelConfig("Test", "data/models/NON_ESISTE_MAI.gguf", ModelQuantization.Q4_K_M, HardwareComputeDevice.DirectML_NvidiaGpu, 2048, 6, 0.1f, 0.9f, 3200);
+            await using var e = new LocalAiInferenceEngine(config);
+            bool loaded = await e.LoadModelToVramAsync();
+            return !loaded && !e.IsLoaded;
+        }
+        private static async Task<bool> TestLoadModelFailsClosedForUnsupportedNpuAsync()
+        {
+            var config = new LocalModelConfig("Test", "data/models/phi-3-mini-q4_k_m.gguf", ModelQuantization.Q4_K_M, HardwareComputeDevice.NpuRyzenAi, 2048, 6, 0.1f, 0.9f, 3200);
+            await using var e = new LocalAiInferenceEngine(config);
+            bool loaded = await e.LoadModelToVramAsync();
+            return !loaded && !e.IsLoaded;
+        }
     }
 }

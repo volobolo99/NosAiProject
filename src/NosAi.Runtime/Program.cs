@@ -335,7 +335,8 @@ public static class Program
                 ? parsedEngageRounds
                 : 1;
 
-            return NosAi.Runtime.Tactical.EngageCommand.Run(targetEntityId, skillId, engageRounds);
+            bool engageArmInput = args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.EngageCommand.ArmInputOption, StringComparison.OrdinalIgnoreCase));
+            return NosAi.Runtime.Tactical.EngageCommand.RunArmed(targetEntityId, skillId, engageRounds, engageArmInput);
         }
 
         // One click on an established target (AP-05 "click the target"): assess,

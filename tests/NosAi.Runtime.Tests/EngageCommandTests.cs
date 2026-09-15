@@ -375,6 +375,44 @@ public sealed class EngageCommandTests
         Assert.Contains(EngageCommand.InvalidArgumentsReason, captured.ToString(), StringComparison.Ordinal);
     }
 
+    // ------------------------------------------ RunArmed(...) argument validation
+
+    /// <summary>
+    /// <see cref="EngageCommand.RunArmed"/> repeats <c>Run</c>'s argument guard
+    /// before it ever composes a <c>RuntimeComponents</c> or arms a switch, so
+    /// a blank id or a non-positive round count is refused on the same
+    /// <c>[REFUSED]</c> boundary -- with the same reason and the same exit
+    /// code -- regardless of the <c>armInput</c> request. Testable without a
+    /// desktop or a client: the refusal happens strictly before the Windows
+    /// check and before any attach attempt.
+    /// </summary>
+    [Theory]
+    [InlineData("   ", "201", 1, false)]
+    [InlineData("mob-1", "", 1, false)]
+    [InlineData("mob-1", "201", 0, false)]
+    [InlineData("", "", 0, true)]
+    [InlineData("   ", "201", 1, true)]
+    [InlineData("mob-1", "", 1, true)]
+    [InlineData("mob-1", "201", 0, true)]
+    public void RunArmed_WithUnusableArguments_RefusesForThatReason_BeforeReachingTheClient(
+        string targetEntityId, string skillId, int rounds, bool armInput)
+    {
+        TextWriter original = Console.Out;
+        var captured = new StringWriter();
+        Console.SetOut(captured);
+        int exitCode;
+        try
+        {
+            exitCode = EngageCommand.RunArmed(targetEntityId, skillId, rounds, armInput);
+        }
+        finally
+        {
+            Console.SetOut(original);
+        }
+
+        Assert.Equal(NosAi.Runtime.Navigation.WalkCommand.ExitAbandoned, exitCode);
+        Assert.Contains(EngageCommand.InvalidArgumentsReason, captured.ToString(), StringComparison.Ordinal);
+    }
 
     // ------------------------------------------------------------ wiring
 
