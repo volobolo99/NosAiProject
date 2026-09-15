@@ -143,7 +143,7 @@ def test_il_budget_di_groq_sta_dentro_la_quota_al_minuto():
     """Groq rifiuta in partenza una richiesta che da sola supera i 6000 token
     al minuto: max_tokens va tenuto sotto quella soglia, prompt compreso."""
     assert code_agent.budget_token("groq:openai/gpt-oss-120b") <= 3500
-    assert code_agent.budget_token("qwen/qwen3-coder-30b-a3b-instruct") == 8192
+    assert code_agent.budget_token("qwen/qwen3-coder-30b-a3b-instruct") == 20000
     assert code_agent.budget_token("deepseek-v4-flash") == 16000
 
 

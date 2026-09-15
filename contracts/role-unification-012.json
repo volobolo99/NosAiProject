@@ -1,0 +1,20 @@
+{
+  "contract_id": "role-unification-012",
+  "file": "nosai/mcp/roles.py",
+  "scopo": "Unificare employee.product_manager ed employee.game_ai_architect in un unico ruolo apicale employee.product_architect: Claude decide (requisiti, priorita', confini architetturali), il modello locale scrive materialmente i documenti su incarico.",
+  "autorizzazione": "Consenso esplicito dell'operatore raccolto in sessione il 2026-09-11: primary_model=claude su questo dipendente e' l'unico caso di binding gratuito->pagato autorizzato in questa passata. claude non e' instradabile a runtime (il gateway passa sempre al fallback) e non e' mai stato in MODELLI_A_PAGAMENTO, quindi non attiva nessuna spesa nuova.",
+  "vincoli_di_governo": [
+    "DEFAULT_EMPLOYEE_ROLES passa da 16 a 15 voci: le due voci employee.product_manager ed employee.game_ai_architect sono rimosse e sostituite da una sola employee.product_architect",
+    "fallback_models del nuovo ruolo ripete quello di employee.game_ai_architect (gpt-oss-120b, qwen3-coder-30b), gia' qualificato al banco",
+    "nessun altro employee_id, capability o forbidden esistente viene toccato",
+    "tests/test_mcp_hub_catalog.py: CITA_UN_PAGATO_MAX aggiornato per sostituire employee.game_ai_architect con employee.product_architect"
+  ],
+  "test_obbligatori": {
+    "file": "tests/test_mcp_hub_catalog.py",
+    "casi": [
+      "ogni dipendente risolve senza eccezione",
+      "il lucchetto sul consenso non segnala spesa attivata senza consenso"
+    ]
+  },
+  "stato": "implementato_e_verificato_in_sessione"
+}

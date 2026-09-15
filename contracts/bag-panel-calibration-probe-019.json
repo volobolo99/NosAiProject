@@ -1,0 +1,35 @@
+{
+  "contract_id": "C-313",
+  "file": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs",
+  "companion_files": [
+    "src/NosAi.Runtime/Perception/HudCropWriter.cs",
+    "src/NosAi.Runtime/Program.cs",
+    "tests/NosAi.Runtime.Tests/BagPanelCalibrationProbeTests.cs"
+  ],
+  "depends_on": "InventoryPanelCalibrationProbe.cs (template esatto per lo schema del probe: cattura -> preview -> istruzioni -> il secondo invocare scrive); BagPanelRoiCalibration.cs (C-312, gia' MERGED: Confirmed/Load/Save/Resolve, chiave int, non tutto-o-niente); Program.cs:144-181 (wiring esatto di --calibrate-inventory-panel, da replicare).",
+  "purpose": "L'operatore ha chiesto di procedere con la calibrazione reale bag-panel-roi quando sara' al client (come gia' fatto per l'equipaggiamento, T-12, 2026-09-06). Verificato che lo strumento per farlo non esiste: C-312 ha costruito solo il formato del file di calibrazione (BagPanelRoiCalibration.Confirmed/Load/Save/Resolve), non il comando interattivo che cattura lo schermo e scrive il file da quello che l'operatore legge. Senza questo contratto la calibrazione richiesta non e' eseguibile.",
+  "changes": {
+    "HudCropWriter": "src/NosAi.Runtime/Perception/HudCropWriter.cs -- aggiunge (non altera l'esistente): public const string BagPanelPreviewFileName = \"bag_panel_latest.bmp\"; e public static string? TrySaveBagPanelPreview(string? repoRoot, CaptureFrame frame, PixelRect panelArea), stesso corpo di TrySavePanelPreview ma con BagPanelPreviewFileName al posto di PanelPreviewFileName. File separato dalla preview dell'equipaggiamento: i due pannelli non vanno confusi ne' sovrascritti a vicenda.",
+    "BagPanelCalibrationProbe": "src/NosAi.Runtime/Perception/BagPanelCalibrationProbe.cs -- nuovo file, speculare a InventoryPanelCalibrationProbe.cs con queste differenze dovute a BagPanelRoiCalibration non essere tutto-o-niente (la borsa scorre, C-312): (1) TryParseSlots(IReadOnlyList<string> tokens, out IReadOnlyDictionary<int, InventorySlotRoi> rois, out string? failureReason) accetta un numero VARIABILE di token, ciascuno '<slotIndex>:<x>,<y>,<w>,<h>' (slotIndex intero >= 0, invece del nome di un EquipmentSlot dichiarato) -- richiede ALMENO un token (zero token per interrogare lo stato, come per l'inventario, ma un invocazione con token deve averne almeno uno, non un conteggio fisso). Nessun controllo 'expected_exactly_N', solo 'no_slot_tokens_given' quando la lista e' vuota E non era una interrogazione di stato (il chiamante lo sa gia' dal conteggio degli argomenti, stesso schema del sito di chiamata in Program.cs per --calibrate-inventory-panel). (2) Run(string? repoRoot, string processName, IReadOnlyDictionary<int, InventorySlotRoi>? slots) -- stesso schema di InventoryPanelCalibrationProbe.Run: trova la finestra client (HudProbe.FindClientWindow), apre DxgiDesktopDuplicationSource, acquisisce un frame, scrive la preview con HudCropWriter.TrySaveBagPanelPreview (MAI TrySavePanelPreview, sarebbe la preview sbagliata), stampa le istruzioni (senza elencare un enum dichiarato: dice solo 'apri la borsa, leggi la frazione di ciascuno slot visibile che vuoi calibrare, es. 0:<x>,<y>,<w>,<h> 1:<x>,<y>,<w>,<h> ...'), poi chiama BagPanelRoiCalibration.Confirmed(slots, area.Width, area.Height, DateTime.UtcNow) e Save quando slots non e' null, altrimenti riporta lo stato esistente via BagPanelRoiCalibration.Load. (3) TryParseOne analogo a quello dell'inventario ma il primo campo prima dei due punti e' un int.Parse (>= 0), non un Enum.TryParse<EquipmentSlot>.",
+    "Program_wiring": "src/NosAi.Runtime/Program.cs -- aggiunge un blocco per '--calibrate-bag-panel', posizionato subito dopo il blocco esistente di '--calibrate-inventory-panel' (righe 144-181), stesso schema: zero token -> BagPanelCalibrationProbe.Run(slots: null) per il solo stato; token presenti -> BagPanelCalibrationProbe.TryParseSlots poi Run(slots: ...); nessun token e nessun conteggio fisso da rispettare (a differenza dell'equipaggiamento). Aggiunge anche '--calibrate-bag-panel' alla lista dei flag riconosciuti (vicino a '--calibrate-inventory-panel')."
+  },
+  "constraints": [
+    "Non alterare le firme pubbliche esistenti di InventoryPanelCalibrationProbe, HudCropWriter.TrySavePanelPreview/PanelPreviewFileName, BagPanelRoiCalibration, HudProbe, DxgiDesktopDuplicationSource.",
+    "Nessun click, nessun equip/unequip: questo probe cattura solo pixel e scrive un file di calibrazione, esattamente come InventoryPanelCalibrationProbe.",
+    "La preview del bag panel va in un file DIVERSO da quello dell'inventario (bag_panel_latest.bmp, non inventory_panel_latest.bmp): un operatore che calibra entrambi i pannelli nella stessa sessione non deve vedere l'uno sovrascrivere l'altro.",
+    "Nessun conteggio fisso di slot richiesti: a differenza di InventoryPanelCalibrationProbe (18 EquipmentSlot, tutto o niente), qui un numero qualunque di token >= 1 e' una calibrazione valida (coerente con BagPanelRoiCalibration.Confirmed di C-312, gia' non tutto-o-niente).",
+    "Se BagPanelRoiCalibration.Confirmed rifiuta (slot negativo, area senza estensione, crop fuori dall'area) il probe stampa il rifiuto e non scrive nulla, stesso comportamento di ReportCalibrationState per l'inventario."
+  ],
+  "tests_required": [
+    "TryParseSlots: un singolo token valido '0:0.1,0.1,0.05,0.05' viene accettato. Nessun token e nessuna richiesta di sola-lettura (il chiamante in Program.cs decide se e' una interrogazione di stato guardando il conteggio degli argomenti, non TryParseSlots).",
+    "TryParseSlots: un token con slotIndex negativo e' rifiutato con una reason esplicita (mai silenziosamente scartato).",
+    "TryParseSlots: un token malformato (mancano due punti, o meno di 4 frazioni) e' rifiutato con una reason esplicita.",
+    "TryParseSlots: due token che nominano lo stesso slotIndex sono rifiutati (stesso principio di InventoryPanelCalibrationProbe: uno slot due volte e' un errore dell'operatore, non l'ultimo vince)."
+  ],
+  "postconditions": [
+    "dotnet build sulla solution e' verde.",
+    "dotnet test su NosAi.Runtime.Tests e' verde per i test aggiunti.",
+    "Nessuna firma pubblica esistente e' cambiata (verificabile con preflight_contract_check).",
+    "Il probe stesso (cattura reale dello schermo, scrittura del file di calibrazione) resta non eseguibile senza un client reale e l'operatore al computer: questo contratto costruisce lo strumento, non esegue la calibrazione. La calibrazione vera e propria resta il passo successivo, quando l'operatore e' al client."
+  ]
+}

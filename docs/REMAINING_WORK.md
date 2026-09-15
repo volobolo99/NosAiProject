@@ -30,10 +30,10 @@
 | R-202 | ~~Decidere se una FSM sostituisce o affianca Planner/Orchestrator~~ — **chiuso 2026-09-11** | C-304 | [ADR-0031](adr/ADR-0031-no-explicit-fsm.md): nessuna FSM esplicita, Planner/Orchestrator (HTN/GOAP) non sono nel percorso di esecuzione (ADR-0028); si riapre con un caso nominato |
 | R-203 | ~~Decidere l’eventuale hook memoria/DLL~~ — **chiuso 2026-09-11** | C-105 | [ADR-0032](adr/ADR-0032-no-memory-hook-yet.md): nessun hook/DLL injection ora, il canale resta rete + lettura esterna via DllImport; si riapre con un caso nominato |
 | R-204 | ~~Aggiungere fuzzing ai parser di input~~ — **chiuso 2026-09-11** | C-402 | `src/NosAi.Runtime/Testing/WireProtocolFuzzTestRunner.cs`: harness deterministico per `WireHeader.TryRead`, sei controlli (lunghezze troncate, round-trip su tutti i 256 `MessageType`, valori limite di `PayloadLength`/`SequenceNumber`, 34 magic sbagliati, 255 versioni sbagliate, 50000 buffer seed=1337). La preflight aveva approvato il codice di Qwen3 Coder 30B, ma il collaudo reale ha trovato 3 controlli su 6 falliti (logica invertita in tre metodi); `deep_reasoner_solve_crash` (DeepSeek) ha diagnosticato la causa sull'evidenza reale ed corretto. Collegato a `--wire-fuzz-test` e a un Fact xUnit dedicato. `contracts/ledger.json`: C-402 `TEST_VERIFIED`, gate 4 → 100% |
-| R-205 | Completare la cascata free-first del MCP | `scripts/free_first.py`, docs/mcp | test provider, fallback, quote, timeout e funzionamento reale |
+| R-205 | ~~Completare la cascata free-first del MCP~~ — **chiuso 2026-09-12** | `scripts/free_first.py`, docs/mcp | `scripts/free_first.py:1-281` implementato integralmente, nessun `NotImplementedError`; `tests/test_free_first.py` 21/21 verdi (fallback fra gruppi, quota 429 e `Pausa` con Retry-After, budget esaurito, giudizio di qualità) |
 | R-206 | ~~Consolidare o formalizzare i due entrypoint MCP~~ — **chiuso 2026-09-11** | `scripts/mcp_server.py` vs `scripts/mcp_hub_server.py` | [ADR-0033](adr/ADR-0033-two-mcp-entrypoints-stay-separate.md): restano separati, responsabilità disgiunte documentate (produzione a 5 fasi vs governance runtime provider) |
 | R-207 | ~~Generare un catalogo machine-readable di tutte le funzioni pubbliche~~ — **rigenerazione e call graph limitato chiusi 2026-09-11**, indice statico gia' presente da prima | `docs/INDICE_REPO.md` oggi è principalmente type/file-level | ORCH-002: `.github/workflows/function-index-check.yml` rigenera l'indice a ogni push/PR e fallisce se `docs/function-index/` diverge (drift-check reale, non solo dichiarato); ORCH-003: `result["calls"]` (schema v3) aggiunge edges di chiamata testuali per C# e Python, risolti solo su omonimia nello stesso file — non e' un call graph semantico (nessuna risoluzione di import/overload), dichiarato esplicitamente in `limitations`. Verificato con `tests/test_function_index.py` e collaudo end-to-end manuale su fixture C#/Python |
-| R-208 | Eseguire watchdog periodico del MCP Chief in ambiente operativo e collegarlo a metriche provider/latency | MCP Chief, observability | report di health tick e raccomandazioni su replay reali, senza auto-mutazioni non autorizzate |
+| R-208 | Eseguire watchdog periodico del MCP Chief — **parte osservativa chiusa 2026-09-12, scheduler collegato 2026-09-12** | MCP Chief, observability | `contracts/mcp-chief-watchdog-023.json` (C-316): `nosai/mcp/chief_watchdog.py` (`run_health_tick`/`read_recent_ticks`) + `scripts/mcp_chief_watchdog.py` (CLI, `--tail N`) — tick ripetibile su log JSONL append-only, mai una mutazione (verificato con un chief fittizio i cui metodi mutanti sollevano se chiamati), 15 test verdi. Scheduler reale collegato il 2026-09-12: task `mcp-chief-watchdog-tick`, cron `0 * * * *` (ogni ora), esegue `scripts/mcp_chief_watchdog.py` e appende un record a `data/mcp/chief_watchdog.jsonl`. **Resta aperto:** `provider_health` riporta solo lo stato operational/non-operational, non una latenza misurata |
 
 ## Ordine consigliato
 
@@ -59,6 +59,7 @@ Se l’evidenza dipende da un client Windows, provider online, GPU o hardware no
 
 ## Collegamenti
 
+- Sequenza operativa unica per ruolo (fino al 100%): `docs/GUIDA_COMPLETAMENTO_100.md`
 - Mappa contratti: `docs/CONTRACT_MAP.md`
 - Mappa sistema: `docs/SYSTEM_MAP.md`
 - Coordinamento agenti: `docs/AGENT_COORDINATION.md`
@@ -71,8 +72,10 @@ Fonte: docs/mcp/RESEARCH_LAB_SPEC.md; contratto: contracts/mcp-research-lab-001.
 LAB-01 (evidenze firmate), LAB-02 (stato SQLite con migrazione JSON, revisioni,
 idempotenza e lease), il supervisore health e il verifier contratti sono presenti su
 `main`. Restano LAB-03..LAB-07: supervisione end-to-end, worker pool, esperimenti,
-rilasci a mandato e certificazione del pannello. R-208 è coperto solo a livello di
-API: serve ancora il watchdog operativo e la raccolta di metriche reali.
+rilasci a mandato e certificazione del pannello. R-208 ha ora anche il tick
+osservativo ripetibile (C-316, `nosai/mcp/chief_watchdog.py`); serve ancora
+collegarlo a uno scheduler reale e a una raccolta di latenza misurata, non
+solo stato operational/non-operational.
 Il laboratorio non è attivo finché prove e integrazione end-to-end non sono completate.
 
 ## Indice funzioni e audit verificato

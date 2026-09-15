@@ -31,6 +31,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
     private readonly LiveHardwareTelemetry _hardware;
     private readonly Gate1RuntimeSnapshotProvider _snapshot;
     private readonly Gate1ObservationChannel _observation;
+    private readonly TargetMemorySource _targetMemory = new();
 
     /// <summary>
     /// The Gate 3 decision loop, or null when the operator did not ask for it.
@@ -178,7 +179,11 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
         }
         var world = new NosAi.Runtime.WorldModel.WorldModel();
         _observation = _options.ObserveGame is { } endpoint
-            ? Gate1ObservationChannel.TryOpenLive(endpoint, _logger)
+            ? Gate1ObservationChannel.TryOpenLive(
+                endpoint,
+                _logger,
+                targetMemory: () => _targetMemory.Read(_client.AttachedProcessId),
+                targetMemoryFailureReason: () => _targetMemory.FailureReason())
             : Gate1ObservationChannel.None();
         _snapshot = new Gate1RuntimeSnapshotProvider(
             runtime,
@@ -810,6 +815,7 @@ public sealed class Gate1BootstrapHost : IAsyncDisposable
             await _dashboard.DisposeAsync().ConfigureAwait(false);
         await _client.DisposeAsync().ConfigureAwait(false);
         _observation.Dispose();
+        _targetMemory.Dispose();
         _auth.Dispose();
         _runtimeIdentity.Dispose();
         if (_runtime.HumanInput is IDisposable humanInput)

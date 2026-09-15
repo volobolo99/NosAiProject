@@ -1,15 +1,6 @@
 {
   "mcpServers": {
-    "orchestrator": {
-      "command": "C:/Users/volob/AppData/Local/Python/bin/python.exe",
-      "args": [
-        "scripts/mcp_server.py"
-      ],
-      "env": {
-        "PYTHONUNBUFFERED": "1"
-      }
-    },
-    "nosai-mcp-hub": {
+    "nosai-mcp-unified": {
       "command": "C:/Users/volob/AppData/Local/Python/bin/python.exe",
       "args": [
         "scripts/mcp_hub_server.py"

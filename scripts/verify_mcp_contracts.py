@@ -15,6 +15,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from nosai.orchestration.messages import validate_message
 
 _PLACEHOLDER = re.compile(r"\b(da definire|da confermare|vedi il file|unknown|tbd)\b", re.IGNORECASE)
 _PATH_LIKE = re.compile(r"^(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+(?:\.[A-Za-z0-9_.-]+)?/?$")
@@ -136,6 +141,20 @@ def verify(root: Path | str) -> dict[str, Any]:
             continue
         for path in sorted(directory.glob(pattern)):
             _load_json(path, errors)
+
+    # AI_TASK_PACKETS.json is the one place where AgentMessage-shaped data
+    # touches disk: validate it against the same schema every agent reads,
+    # so a drifted field is caught here instead of by an agent that trusts it.
+    packets_path = root / "docs" / "mcp" / "AI_TASK_PACKETS.json"
+    if packets_path.exists():
+        packets = _load_json(packets_path, errors)
+        if isinstance(packets, list):
+            for index, packet in enumerate(packets):
+                task_id = packet.get("task_id", f"index {index}") if isinstance(packet, dict) else f"index {index}"
+                for defect in validate_message(packet):
+                    errors.append(f"AI_TASK_PACKETS.json [{task_id}]: {defect}")
+        elif packets is not None:
+            errors.append("docs/mcp/AI_TASK_PACKETS.json: expected a JSON array of messages")
 
     return {
         "schema_version": "nosai.mcp.contract_verification.v1",

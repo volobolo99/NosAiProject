@@ -1,0 +1,175 @@
+{
+  "cid": "C-022",
+  "title": "Unified MCP server: merge + P0-P2 improvements",
+  "file": "nosai/mcp/unified_server.py",
+  "purpose": "Single FastMCP server 'nosai-mcp-unified' that replaces both scripts/mcp_server.py and nosai/mcp/server.py. Adds P0: CircuitBreaker + TokenStore; P1: TaskRegistry + ObservabilityEmitter + ExactMatchCache; P2: ToolDefinition registry + vMCP bundle scoping.",
+  "server_name": "nosai-mcp-unified",
+  "constraints": [
+    "No circular imports: unified_server imports from nosai.mcp.* submodules, never vice-versa",
+    "All existing orchestrator tool signatures identical to scripts/mcp_server.py (employee_id param kept)",
+    "All existing hub tool signatures identical to nosai/mcp/server.py",
+    "_STATO_CHIAMATA remains threading.local for backward compat with tests",
+    "DeepSeek chiamato solo su api.deepseek.com via call_deepseek, mai OpenRouter",
+    "CircuitBreaker wraps: cloud_infill_implementation, deep_reasoner_solve_crash, preflight_contract_check",
+    "ObservabilityEmitter.emit() chiamato in ogni tool che chiama un modello remoto",
+    "TokenStore legge env vars a ogni chiamata (non all avvio) per supportare rotazione senza restart",
+    "ExactMatchCache applicata a preflight_contract_check (payload hash SHA256, TTL 24h, SQLite)"
+  ],
+  "new_classes": [
+    {
+      "name": "CBState",
+      "type": "enum.Enum",
+      "values": ["CLOSED", "OPEN", "HALF_OPEN"],
+      "doc": "Stati del circuit breaker."
+    },
+    {
+      "name": "CircuitBreaker",
+      "doc": "Circuit breaker a tre stati per tool cloud. Thread-safe. Default thresholds: cloud_infill=3 failures/60s, deep_reasoner=2/30s, preflight=5/20s.",
+      "fields": [
+        "_states: dict[str, CBState]",
+        "_failures: dict[str, int]",
+        "_last_open: dict[str, float]",
+        "_lock: threading.RLock",
+        "_thresholds: dict[str, int]",
+        "_cooldowns: dict[str, float]"
+      ],
+      "methods": [
+        "def __init__(self, thresholds: dict[str, int] | None = None, cooldowns: dict[str, float] | None = None) -> None",
+        "def state(self, tool: str) -> CBState",
+        "def call(self, tool: str, fn: Callable[[], Any]) -> Any  # raises RuntimeError se OPEN",
+        "def _record_failure(self, tool: str) -> None  # incrementa contatore, apre se >= soglia",
+        "def _record_success(self, tool: str) -> None  # azzera fallimenti, chiude"
+      ]
+    },
+    {
+      "name": "TaskStatus",
+      "type": "enum.Enum",
+      "values": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"]
+    },
+    {
+      "name": "TaskRegistry",
+      "doc": "Registry in-memory di task asincroni. submit restituisce task_id. Thread-safe.",
+      "fields": [
+        "_tasks: dict[str, dict]",
+        "_lock: threading.RLock"
+      ],
+      "methods": [
+        "def submit(self, tool_name: str, args: dict) -> str  # restituisce task_id uuid",
+        "def get(self, task_id: str) -> dict  # KeyError se non esiste",
+        "def update(self, task_id: str, progress: int, message: str = '') -> dict",
+        "def complete(self, task_id: str, result: str) -> dict",
+        "def fail(self, task_id: str, error: str) -> dict",
+        "def cancel(self, task_id: str) -> dict"
+      ]
+    },
+    {
+      "name": "ObservabilityEmitter",
+      "doc": "Emette log strutturato JSON con trace_id e span_id per ogni chiamata modello.",
+      "fields": [
+        "_logger: logging.Logger",
+        "_local: threading.local  # tiene trace_id per thread"
+      ],
+      "methods": [
+        "def begin_trace(self) -> str  # genera uuid4, lo salva in _local.trace_id, lo restituisce",
+        "def emit(self, tool: str, model: str, duration_ms: float, tokens_in: int, tokens_out: int, cost_usd: float, status: str, **extra: Any) -> None  # scrive JSON su logger.info",
+        "def current_trace_id(self) -> str  # restituisce _local.trace_id o stringa vuota"
+      ]
+    },
+    {
+      "name": "ExactMatchCache",
+      "doc": "Cache L1 exact-match SQLite. Chiave = SHA256 hex del payload. TTL default 86400s.",
+      "fields": [
+        "_path: Path",
+        "_ttl: int",
+        "_lock: threading.RLock"
+      ],
+      "methods": [
+        "def __init__(self, db_path: Path, ttl_seconds: int = 86400) -> None  # crea tabella se non esiste",
+        "def get(self, payload: str) -> str | None  # None se assente o scaduto",
+        "def put(self, payload: str, result: str) -> None",
+        "def _key(self, payload: str) -> str  # hashlib.sha256(payload.encode()).hexdigest()"
+      ]
+    },
+    {
+      "name": "ToolDefinition",
+      "type": "dataclass",
+      "fields": [
+        "name: str",
+        "description: str",
+        "risk: ToolRisk",
+        "allowed_roles: list[str]",
+        "circuit_breaker: bool = False",
+        "cacheable: bool = False"
+      ]
+    }
+  ],
+  "module_constants": {
+    "PROJECT_ROOT": "Path(__file__).resolve().parent.parent.parent",
+    "ROSTER": {
+      "worker": "qwen/qwen3-coder-30b-a3b-instruct",
+      "auditor": "deepseek-v4-flash",
+      "preflight": "google/gemini-2.5-flash-lite",
+      "local_scaffold": "qwen2.5-coder:7b"
+    },
+    "VALID_STATES": ["DRAFT","SKELETON_OK","INFILLED","PREFLIGHT_OK","VERIFIED","ASAN_VERIFIED","TEST_VERIFIED","MERGED","BLOCKED","DROPPED"],
+    "DONE_STATES": ["VERIFIED","ASAN_VERIFIED","TEST_VERIFIED","MERGED"],
+    "TOOL_REQUIRED_CAPABILITY": {
+      "local_generate_skeleton": "scaffold",
+      "cloud_infill_implementation": "coding",
+      "preflight_contract_check": "contracts",
+      "deep_reasoner_solve_crash": "diagnostics",
+      "local_update_documentation": "documentation"
+    },
+    "CB_THRESHOLDS": {"cloud_infill_implementation": 3, "deep_reasoner_solve_crash": 2, "preflight_contract_check": 5},
+    "CB_COOLDOWNS": {"cloud_infill_implementation": 60.0, "deep_reasoner_solve_crash": 30.0, "preflight_contract_check": 20.0},
+    "VCAMP_BUNDLES": {
+      "local_doc": ["local_generate_skeleton","local_update_documentation"],
+      "coding": ["local_generate_skeleton","cloud_infill_implementation","preflight_contract_check","update_contract_state"],
+      "testing": ["preflight_contract_check","deep_reasoner_solve_crash"],
+      "mcp_chief": ["mcp_chief_health","mcp_chief_observe_health","mcp_chief_recommendations","mcp_verify_roles"],
+      "orchestrator_cto": ["*"]
+    }
+  },
+  "module_functions_preserved_from_mcp_server": [
+    "record(entry: dict) -> None",
+    "_costo_reale_usd(model_id: str) -> float",
+    "_autorizza(tool_name: str, employee_id: str) -> None",
+    "render_roadmap_markdown(ledger: dict) -> str",
+    "call_openrouter(model_id, prompt, system_prompt, temperature=0.1, max_tokens=4096) -> str",
+    "call_deepseek(model_id, prompt, system_prompt, temperature=0.1, max_tokens=4096) -> str",
+    "chiama_groq(modello, messaggi, max_tokens, temperatura) -> tuple[str,str]",
+    "chiama_openrouter(gruppo, messaggi, max_tokens, temperatura) -> tuple[str,str]",
+    "chiama_gruppo(gruppo, messaggi, max_tokens, temperatura) -> tuple[str,str]",
+    "controlla_quota(risposta) -> None",
+    "modelli_gratuiti() -> list[str]",
+    "giudizio_infill(scheletro_e_contratto: str) -> Callable[[str], list[str]]",
+    "giudizio_preflight(risposta: str) -> list[str]",
+    "_rileva_linguaggio_bersaglio(specifications_json: str) -> str | None",
+    "_prompt_scheletro(specifications_json: str) -> str"
+  ],
+  "entry_points": [
+    "create_unified_server(config_path: Path | str | None = None) -> FastMCP",
+    "run(config_path: Path | str | None = None) -> None"
+  ],
+  "tools_all": {
+    "orchestrator": ["local_generate_skeleton","cloud_infill_implementation","preflight_contract_check","deep_reasoner_solve_crash","local_update_documentation","update_contract_state"],
+    "hub": ["mcp_status","mcp_activate_network","mcp_provider_catalog","mcp_choose_provider","mcp_infer","mcp_run_simulation","mcp_learning_candidate","mcp_validate_learning","mcp_propose_change","mcp_audit_change","mcp_role_catalog","mcp_record_evidence","mcp_role_propose_binding","mcp_role_promote_binding","mcp_role_rollback_binding","mcp_chief_health","mcp_chief_observe_health","mcp_chief_recommendations","mcp_verify_roles"],
+    "tasks": ["tasks_get","tasks_update","tasks_cancel"],
+    "resources": ["nosai://mcp/policy"]
+  },
+  "companion_files": [
+    {
+      "file": "scripts/mcp_server.py",
+      "action": "replace with backward-compat shim",
+      "must_export": ["mcp","record","_costo_reale_usd","_autorizza","render_roadmap_markdown","call_openrouter","call_deepseek","chiama_groq","chiama_openrouter","chiama_gruppo","controlla_quota","modelli_gratuiti","giudizio_infill","giudizio_preflight","_rileva_linguaggio_bersaglio","_prompt_scheletro","ROSTER","VALID_STATES","DONE_STATES","TOOL_REQUIRED_CAPABILITY","_STATO_CHIAMATA","PAUSA","POLITICHE"]
+    },
+    {
+      "file": "scripts/mcp_hub_server.py",
+      "action": "update import to use unified_server.run()"
+    },
+    {
+      "file": ".mcp.json",
+      "action": "replace two server entries with one entry for nosai-mcp-unified via scripts/mcp_hub_server.py"
+    }
+  ]
+}

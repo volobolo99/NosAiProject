@@ -26,11 +26,16 @@ public sealed class ScreenTargetFrameSourceTests
         }
     }
 
-    /// <summary>A frame with a solid bar across the whole calibrated region.</summary>
+    /// <summary>
+    /// A frame with a solid bar filling the calibrated region, border rows left dark
+    /// (ADR-0018 follow-up, 2026-09-12): TargetFrameReader now requires a dark top/bottom
+    /// border before trusting a full-hue crop as Present, since a warm background alone
+    /// clears the same hue test a full bar does.
+    /// </summary>
     private static CaptureFrame FrameWithBar(int width, int height, PixelRect bar)
     {
         var bgra = new byte[width * height * 4];
-        for (int y = bar.Y; y < bar.Y + bar.Height; y++)
+        for (int y = bar.Y + 1; y < bar.Y + bar.Height - 1; y++)
         {
             for (int x = bar.X; x < bar.X + bar.Width; x++)
             {

@@ -1,0 +1,47 @@
+{
+  "contract_id": "C-308",
+  "file": "src/NosAi.Runtime/Tactical/AutoplayCommand.cs",
+  "companion_files": [
+    "tests/NosAi.Runtime.Tests/AutoplayCommandTests.cs",
+    "tests/NosAi.Runtime.Tests/AutoplayRecoveryDispatchTests.cs"
+  ],
+  "depends_on": "C-307 (StrategicGoalKind.Collect, StrategyPlanner.AssessCollectUrgency)",
+  "purpose": "Collegare StrategicGoalKind.Collect al dispatch reale in AutoplayCommand.ExecuteOneCycle, seguendo lo stesso schema di C-306 (Farming/Engage): oggi il case cade nel default e torna AutoplayDispatch.NotDispatchable perche' non esiste ne' un modo di osservare i drop nel ciclo ne' un dispatch verso CollectCommand.",
+  "changes": {
+    "enum_AutoplayDispatch_add_values": [
+      "Collected = 8  // Dispatched to CollectCommand.ExecuteOneRound.",
+      "CollectSkippedNoTarget = 9  // Collect was selected, but no drop with a known position was observed, or the current gameplay observation was unavailable."
+    ],
+    "new_private_method_ObserveDrops": "private static EquatableArray<Drop> ObserveDrops(GameplayObservation? observation, EntityId playerId, long cycle, DateTime nowUtc) -- gemello di ObserveMobs gia' esistente, legge .Drops invece di .Mobs da GameplayObservationProjector.Project(observation, playerId, cycle, nowUtc) (senza classifyVnum, non serve per i drop). EquatableArray<Drop>.Empty quando observation e' null.",
+    "ExecuteOneCycle_signature_extended_with": "EntityId playerId, EquatableArray<Drop> drops, GameplayObservation? gameplay -- aggiunti in coda alla firma esistente per non alterare l'ordine dei parametri gia' presenti.",
+    "switch_case_add": "case StrategicGoalKind.Collect: return DispatchCollect(drops, playerPosition, playerId, gameplay, in grid, view, controller, chain, executor, readPosition, in authority, nowUtc, footprint, plan); -- prima del default esistente.",
+    "new_private_method_DispatchCollect_body_contract": [
+      "1. Se 'gameplay' e' null: return AutoplayCycleResult(CollectSkippedNoTarget, plan, null, null, footprint) -- prima di ogni altra cosa.",
+      "2. Trovare il Drop con distanza euclidea minima da playerPosition fra quelli con Position.HasValue == true (ciclo semplice, nessun LINQ pesante).",
+      "3. Se nessun drop ha posizione nota: return AutoplayCycleResult(CollectSkippedNoTarget, plan, null, null, footprint).",
+      "4. destination = MapPoint dal drop scelto, origin = MapPoint da playerPosition (cast a int).",
+      "5. Chiamare CollectCommand.ExecuteOneRound(destination, origin, drop.Item, in grid, view, controller, chain, executor, in authority, readPosition, before: gameplay, after: gameplay, playerId, nowUtc) -- before e after sono DELIBERATAMENTE la stessa 'gameplay': questo ciclo legge una volta sola, non prima/dopo come fa il comando standalone --collect. Il conteggio non avanza in questo stesso ciclo; il ciclo successivo lo osservera' con una nuova lettura.",
+      "6. Console.Write(walk.Text), poi return AutoplayCycleResult(Collected, plan, null, null, footprint) -- CombatExecutionEvidence resta null, non applicabile qui."
+    ],
+    "RunWindowsCore_wiring": [
+      "EquatableArray<Drop> cycleDrops = ObserveDrops(gameplay, entityPlayerId, cycle, now); -- subito dopo cycleMobs, stessa gameplay gia' catturata una volta per ciclo.",
+      "StrategicSignal? collect = StrategyPlanner.AssessCollectUrgency(playerFacts, cycleDrops); -- aggiunto ai signals subito dopo farming, prima di optimization (stessa priorita' relativa di farming).",
+      "La chiamata a ExecuteOneCycle passa in coda: entityPlayerId, cycleDrops, gameplay."
+    ]
+  },
+  "constraints": [
+    "Non alterare le firme pubbliche esistenti di StrategyPlanner, TargetSelector, EngageCommand, CollectCommand, CombatActionCandidate, StrategicGoalKind, AutoplayCycleResult.",
+    "I 3 nuovi parametri di ExecuteOneCycle vanno in coda, mai in mezzo, per minimizzare l'impatto sui chiamanti posizionali esistenti (test compresi).",
+    "Nessun modulo 'LootPlanner' separato: la selezione del drop piu' vicino resta un ciclo semplice dentro DispatchCollect, coerente con la scelta gia' fatta in C-307 di non creare un intero planner per la raccolta.",
+    "Ogni chiamante esistente a ExecuteOneCycle (produzione e test) va aggiornato per la nuova firma, incluso qualunque test in altri file che la chiami direttamente."
+  ],
+  "tests_required": [
+    "Un test che verifichi: nessuna gameplay observation -> CollectSkippedNoTarget, input mai toccato.",
+    "Un test che verifichi: un drop con posizione nota e una gameplay observation reale -> Collected."
+  ],
+  "postconditions": [
+    "dotnet build sulla solution e' verde.",
+    "dotnet test su NosAi.Runtime.Tests e' verde per i test aggiunti/modificati (unico fallimento ammesso: Gate1SuitePasses, flaky preesistente per collisione porte, verificato passare isolato).",
+    "Nessuna firma pubblica esistente e' cambiata al di fuori dell'estensione dichiarata di ExecuteOneCycle (verificabile con preflight_contract_check)."
+  ]
+}

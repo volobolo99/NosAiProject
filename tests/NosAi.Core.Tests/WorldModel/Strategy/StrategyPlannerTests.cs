@@ -11,7 +11,7 @@ public sealed class StrategyPlannerTests
     private static readonly DateTime Now = DateTime.UnixEpoch;
     private static readonly MapId TestMapId = new("map-1");
 
-    private static Player BuildPlayer(double? currentHp = null, double? maxHp = null)
+    private static Player BuildPlayer(double? currentHp = null, double? maxHp = null, WorldPosition? position = null)
     {
         EquatableArray<Resource> resources = currentHp is { } current && maxHp is { } max
             ? EquatableArray<Resource>.From(new[]
@@ -22,7 +22,7 @@ public sealed class StrategyPlannerTests
 
         return new Player(
             new EntityId("player-1"),
-            WorldFact<WorldPosition>.Unknown("r", Now),
+            position is { } p ? WorldFact<WorldPosition>.Live(p, 1d, Now) : WorldFact<WorldPosition>.Unknown("r", Now),
             WorldFact<float>.Unknown("r", Now),
             WorldFact<bool>.Live(true, 1d, Now),
             WorldFact<MapId>.Live(TestMapId, 1d, Now),
@@ -276,5 +276,67 @@ public sealed class StrategyPlannerTests
         StrategicPlan plan = StrategyPlanner.SelectStrategicPlan(new[] { first, second }, Now);
 
         Assert.Equal(StrategicGoalKind.Survival, plan.SelectedKind);
+    }
+
+    // ---- AssessCollectUrgency ----
+
+    private static Drop BuildDrop(WorldPosition? position) => new(
+        new EntityId("drop-1"),
+        new ItemId("1"),
+        position is { } p ? WorldFact<WorldPosition>.Live(p, 1d, Now) : WorldFact<WorldPosition>.Unknown("r", Now),
+        WorldFact<int>.Live(1, 1d, Now));
+
+    [Fact]
+    public void AssessCollectUrgency_UnknownPlayerPosition_ReturnsNull()
+    {
+        Player player = BuildPlayer();
+
+        StrategicSignal? signal = StrategyPlanner.AssessCollectUrgency(
+            player,
+            EquatableArray<Drop>.From(new[] { BuildDrop(new WorldPosition(1f, 0f)) }));
+
+        Assert.Null(signal);
+    }
+
+    [Fact]
+    public void AssessCollectUrgency_NoDropEverPositioned_ReportsNoViableDrop()
+    {
+        Player player = BuildPlayer(position: new WorldPosition(0f, 0f));
+
+        StrategicSignal? signal = StrategyPlanner.AssessCollectUrgency(
+            player,
+            EquatableArray<Drop>.From(new[] { BuildDrop(position: null) }));
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.0, signal!.Urgency);
+        Assert.Equal("no_viable_drop", signal.Reason);
+    }
+
+    [Fact]
+    public void AssessCollectUrgency_DropInRange_ScoresFull()
+    {
+        Player player = BuildPlayer(position: new WorldPosition(0f, 0f));
+
+        StrategicSignal? signal = StrategyPlanner.AssessCollectUrgency(
+            player,
+            EquatableArray<Drop>.From(new[] { BuildDrop(new WorldPosition(1f, 0f)) }));
+
+        Assert.NotNull(signal);
+        Assert.Equal(1.0, signal!.Urgency);
+        Assert.Equal("drop_in_reach", signal.Reason);
+    }
+
+    [Fact]
+    public void AssessCollectUrgency_DropOutOfRange_ScoresHalfRatherThanNothing()
+    {
+        Player player = BuildPlayer(position: new WorldPosition(0f, 0f));
+
+        StrategicSignal? signal = StrategyPlanner.AssessCollectUrgency(
+            player,
+            EquatableArray<Drop>.From(new[] { BuildDrop(new WorldPosition(50f, 0f)) }));
+
+        Assert.NotNull(signal);
+        Assert.Equal(0.5, signal!.Urgency);
+        Assert.Equal("drop_out_of_reach", signal.Reason);
     }
 }

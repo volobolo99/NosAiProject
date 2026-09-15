@@ -55,20 +55,12 @@ DEFAULT_EMPLOYEE_ROLES = (
         ("direct_game_execution", "policy_override", "audit_override", "secret_export", "privileged_state"),
     ),
     EmployeeRole(
-        "employee.product_manager", "Product Manager",
-        "product requirements and release scope",
-        ("requirements", "roadmap", "acceptance criteria"),
-        "qwen2.5-coder:7b", ("claude",),
-        ("documentation", "requirements", "planning"),
-        ("code_execution", "policy_override"),
-    ),
-    EmployeeRole(
-        "employee.game_ai_architect", "Game AI Architect",
-        "cognitive-layer boundaries and invariants",
-        ("architecture", "ADR", "invariant review"),
+        "employee.product_architect", "Product & Architecture Lead",
+        "product requirements, release scope and cognitive-layer architectural boundaries",
+        ("requirements", "roadmap", "acceptance criteria", "architecture", "ADR", "invariant review"),
         "claude", ("gpt-oss-120b", "qwen3-coder-30b"),
-        ("architecture", "contracts", "review"),
-        ("direct_game_execution", "secret_export"),
+        ("architecture", "contracts", "review", "requirements", "planning"),
+        ("code_execution", "policy_override", "direct_game_execution", "secret_export"),
     ),
     EmployeeRole(
         "employee.perception", "Perception Agent",
@@ -123,7 +115,7 @@ DEFAULT_EMPLOYEE_ROLES = (
         "implementation inside an assigned ownership set",
         ("implementation", "refactoring", "unit tests"),
         "gpt-oss-120b", ("qwen3-coder-30b", "deepseek-v4-flash"),
-        ("coding", "testing", "debugging"),
+        ("coding", "testing", "debugging", "scaffold"),
         ("architecture_override", "protected_path_write"),
     ),
     EmployeeRole(
@@ -155,7 +147,7 @@ DEFAULT_EMPLOYEE_ROLES = (
         "canonical documentation and routing indexes",
         ("docs", "changelog", "contract map", "summaries"),
         "qwen2.5-coder:7b", ("nex-n2.5-mini", "deepseek-v4-flash"),
-        ("documentation", "indexing", "provenance"),
+        ("documentation", "indexing", "provenance", "scaffold"),
         ("code_execution", "secret_export"),
     ),
     EmployeeRole(

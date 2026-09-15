@@ -318,4 +318,42 @@ public sealed class Gate1ObservationTests
         Assert.Equal(DataSourceKind.Cached, snapshot.GameObservation.LastHp.Source);
         Assert.True(snapshot.GameObservation.LastVitalsAtUtc.HasValue);
     }
+
+    [Fact]
+    public void FromPackets_with_targetMemory_derives_HasTarget_from_the_memory_reading()
+    {
+        var packets = new InMemoryPacketSource(
+            Server,
+            ServerPort,
+            [new CapturedPacket(new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc), TcpInbound(1000, Array.Empty<byte>()))]);
+
+        using var observation = Gate1ObservationChannel.FromPackets(
+            packets,
+            Endpoint,
+            DataSourceKind.Live,
+            targetMemory: () => new TargetPointerReading(new IntPtr(1), new IntPtr(2), null, null));
+
+        Assert.NotNull(observation.Provider);
+        GameplayObservation gameplay = observation.Provider!.Observe();
+
+        Assert.True(gameplay.HasTarget.HasValue);
+        Assert.True(gameplay.HasTarget.Value);
+        Assert.Equal(DataSourceKind.Derived, gameplay.HasTarget.Source);
+    }
+
+    [Fact]
+    public void FromPackets_without_targetMemory_leaves_HasTarget_unknown()
+    {
+        var packets = new InMemoryPacketSource(
+            Server,
+            ServerPort,
+            [new CapturedPacket(new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc), TcpInbound(1000, Array.Empty<byte>()))]);
+
+        using var observation = Gate1ObservationChannel.FromPackets(packets, Endpoint, DataSourceKind.Live);
+
+        Assert.NotNull(observation.Provider);
+        GameplayObservation gameplay = observation.Provider!.Observe();
+
+        Assert.False(gameplay.HasTarget.HasValue);
+    }
 }

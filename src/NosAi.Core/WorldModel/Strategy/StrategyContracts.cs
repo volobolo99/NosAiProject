@@ -18,7 +18,10 @@ public enum StrategicGoalKind
     Progression = 3,
     Farming = 4,
     Exploration = 5,
-    Optimization = 6
+    Optimization = 6,
+
+    /// <summary>A drop was observed with a known position, reachable or nearby.</summary>
+    Collect = 7
 }
 
 /// <summary>One <see cref="Goal"/> (AP-01, unchanged) paired with the strategic context AP-08 adds.</summary>

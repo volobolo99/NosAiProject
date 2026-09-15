@@ -1,8 +1,10 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Runtime.Versioning;
 using NosAi.Core.Memory;
 using NosAi.Core.WorldModel;
 using NosAi.Core.WorldModel.Combat;
+using NosAi.Core.WorldModel.Loadout;
 using NosAi.Core.WorldModel.Exploration;
 using NosAi.Core.WorldModel.Reconstruction;
 using NosAi.Core.WorldModel.Strategy;
@@ -14,6 +16,7 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Testing;
 using NosAi.Runtime.WorldModel.Fusion;
 using NosAi.Storage;
@@ -121,7 +124,43 @@ public static class AutoplayCommand
         NotDispatchable = 4,
 
         /// <summary>Recovery was selected, but no recovery slot was configured.</summary>
-        RecoverySkippedNoSlot = 5
+        RecoverySkippedNoSlot = 5,
+
+        /// <summary>Dispatched to <see cref="EngageCommand.ExecuteOneRound"/>.</summary>
+        Engaged = 6,
+
+        /// <summary>Farming was selected, but <see cref="NosAi.Runtime.Autonomy.TargetSelector"/> found no attackable target in range.</summary>
+        FarmingSkippedNoTarget = 7,
+
+        /// <summary>Dispatched to <see cref="CollectCommand.ExecuteOneRound"/>.</summary>
+        Collected = 8,
+
+        /// <summary>Collect was selected, but no drop with a known position was observed, or the current gameplay observation was unavailable.</summary>
+        CollectSkippedNoTarget = 9,
+
+        /// <summary>
+        /// Superseded by C-312: a candidate used to stop here, decision made but no click emitted (see
+        /// C-310's declared limitation, resolved once <see cref="GameplayObservation.Equipment"/> was
+        /// recognised as already carrying everything <see cref="EquipExecutor.Equip"/> needs, without a
+        /// second <c>GameTrafficObserver</c>). Production code no longer returns this value -- kept only
+        /// so the enum's numbering never shifts under an already-published member.
+        /// </summary>
+        OptimizationCandidateReady = 10,
+
+        /// <summary>No <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> was available, or the candidate's item is not currently in <see cref="Player.Inventory"/>, or its bag slot falls outside the calibrated range.</summary>
+        OptimizationSkippedNoCandidate = 11,
+
+        /// <summary>The click was emitted and confirmed: <see cref="EquipExecutor.Verify"/> saw the expected vnum in the target slot within the verification window.</summary>
+        Optimized = 12,
+
+        /// <summary>The click was emitted, but the verification window elapsed without the expected vnum appearing in the target slot.</summary>
+        OptimizationNotConfirmed = 13,
+
+        /// <summary><see cref="EquipExecutor.Equip"/> refused before or without emitting a click (calibration missing, bag slot out of the calibrated range, geometry or session window unavailable).</summary>
+        OptimizationRefused = 14,
+
+        /// <summary>A candidate was ready, but no <c>--optimization-gesture</c> was configured: no click is emitted on a guessed gesture. Same principle as <see cref="SurvivalSkippedNoSlot"/>/<see cref="RecoverySkippedNoSlot"/> for a missing <c>--recover-slot</c>.</summary>
+        OptimizationSkippedNoGesture = 15
     }
 
     /// <summary>What happened on one autoplay cycle.</summary>
@@ -200,7 +239,16 @@ public static class AutoplayCommand
         Func<PositionReading?> readPosition,
         Action<MovementExecutionEvidence>? onEvidence,
         in ActuationAuthority authority,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        EntityId playerId,
+        EquatableArray<Drop> drops,
+        GameplayObservation? gameplay,
+        Player playerFacts,
+        Func<ItemId, EquipmentSlot?> resolveSlot,
+        EquipExecutor equipExecutor,
+        BagPanelRoiCalibration calibration,
+        EquipGesture? optimizationGesture,
+        Func<WornEquipmentReading?> readLatestEquip)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -246,9 +294,24 @@ public static class AutoplayCommand
                     recoverSlot, keybinds, input, readVitals, verificationDelay,
                     in authority, nowUtc, footprint, plan, AutoplayDispatch.RecoverySkippedNoSlot);
 
+            case StrategicGoalKind.Farming:
+                return DispatchFarming(
+                    mobs, playerPosition, keybinds, input, readVitals, verificationDelay,
+                    in authority, nowUtc, footprint, plan);
+
+            case StrategicGoalKind.Collect:
+                return DispatchCollect(
+                    drops, playerPosition, playerId, gameplay, in grid, view, controller, chain, executor,
+                    readPosition, in authority, nowUtc, footprint, plan);
+
+            case StrategicGoalKind.Optimization:
+                return DispatchOptimization(
+                    playerFacts, resolveSlot, equipExecutor, calibration, optimizationGesture,
+                    readLatestEquip, in authority, footprint, plan);
+
             default:
-                // QuestUrgency/Progression/Farming/Optimization: named, never
-                // silently ignored, never substituted.
+                // QuestUrgency/Progression: named, never silently ignored,
+                // never substituted.
                 return new AutoplayCycleResult(AutoplayDispatch.NotDispatchable, plan, null, null, footprint);
         }
     }
@@ -298,10 +361,200 @@ public static class AutoplayCommand
     }
 
     /// <summary>
-    /// Console entry for <c>--autoplay [--cycles &lt;n&gt;]
-    /// [--recover-slot &lt;slot&gt;]</c>.
+    /// Sceglie un bersaglio con <see cref="NosAi.Runtime.Autonomy.TargetSelector.TrySelect"/> fra i
+    /// mobs osservati ed esegue un attacco base via <see cref="EngageCommand.ExecuteOneRound"/>;
+    /// <see cref="AutoplayDispatch.FarmingSkippedNoTarget"/> se nessun bersaglio valido.
     /// </summary>
-    public static int Run(int cycles = 1, int? recoverSlot = null)
+    private static AutoplayCycleResult DispatchFarming(
+        EquatableArray<Mob> mobs,
+        WorldPosition playerPosition,
+        KeybindMap keybinds,
+        IInputBackend input,
+        Func<PlayerVitalsReading?> readVitals,
+        Action verificationDelay,
+        in ActuationAuthority authority,
+        DateTime nowUtc,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        var observed = new List<NosAi.Runtime.Autonomy.SelectableEntity>();
+        foreach (var mob in mobs)
+        {
+            if (mob.Position.HasValue && mob.IsAlive.HasValue && mob.IsAlive.Value)
+            {
+                observed.Add(new NosAi.Runtime.Autonomy.SelectableEntity(
+                    EntityId: long.Parse(mob.Id.Value, System.Globalization.CultureInfo.InvariantCulture),
+                    At: new MapPoint((int)mob.Position.Value.X, (int)mob.Position.Value.Y),
+                    HpRatio: null,
+                    ObservedAtUtc: nowUtc));
+            }
+        }
+
+        var playerPositionClassified = NosAi.Runtime.Contracts.ClassifiedValue<MapPoint>.Live(new MapPoint((int)playerPosition.X, (int)playerPosition.Y));
+        if (!NosAi.Runtime.Autonomy.TargetSelector.TrySelect(observed, playerPositionClassified, nowUtc, NosAi.Runtime.Autonomy.TargetSelectionPolicy.Default, out var choice, out _, isAttackable: null))
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.FarmingSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        var candidate = new CombatActionCandidate(
+            CombatActionKind.BasicAttack,
+            target: new EntityId(choice!.Entity.EntityId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+        CombatExecutionEvidence evidence = EngageCommand.ExecuteOneRound(candidate, keybinds, input, readVitals, verificationDelay, in authority, nowUtc);
+
+        return new AutoplayCycleResult(AutoplayDispatch.Engaged, plan, null, evidence, footprint);
+    }
+
+    /// <summary>
+    /// Walks to the nearest drop with a known position and reports the item count observed
+    /// immediately before and after (both from this cycle's single gameplay observation, since
+    /// this loop reads once per cycle rather than around the walk the way the standalone
+    /// <c>--collect</c> command does): <see cref="AutoplayDispatch.CollectSkippedNoTarget"/> when
+    /// no drop has a known position or the gameplay observation is unavailable.
+    /// </summary>
+    private static AutoplayCycleResult DispatchCollect(
+        EquatableArray<Drop> drops,
+        WorldPosition playerPosition,
+        EntityId playerId,
+        GameplayObservation? gameplay,
+        in MapGrid grid,
+        OccupancyView view,
+        PathWalkController controller,
+        StepGuardChain chain,
+        SingleStepExecutor executor,
+        Func<PositionReading?> readPosition,
+        in ActuationAuthority authority,
+        DateTime nowUtc,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        if (gameplay is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.CollectSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        Drop? nearestDrop = null;
+        double minDistance = double.MaxValue;
+
+        foreach (var drop in drops)
+        {
+            if (drop.Position.HasValue)
+            {
+                double dx = drop.Position.Value.X - playerPosition.X;
+                double dy = drop.Position.Value.Y - playerPosition.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearestDrop = drop;
+                }
+            }
+        }
+
+        if (nearestDrop is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.CollectSkippedNoTarget, plan, null, null, footprint);
+        }
+
+        MapPoint destination = new MapPoint((int)nearestDrop.Position.Value.X, (int)nearestDrop.Position.Value.Y);
+        MapPoint origin = new MapPoint((int)playerPosition.X, (int)playerPosition.Y);
+
+        (WalkRun walk, WorldFact<int> beforeCount, WorldFact<int> afterCount) = CollectCommand.ExecuteOneRound(
+            destination,
+            origin,
+            nearestDrop.Item,
+            in grid,
+            view,
+            controller,
+            chain,
+            executor,
+            in authority,
+            readPosition,
+            gameplay,
+            gameplay,
+            playerId,
+            nowUtc);
+
+        Console.Write(walk.Text);
+        return new AutoplayCycleResult(AutoplayDispatch.Collected, plan, null, null, footprint);
+    }
+
+    /// <summary>
+    /// <see cref="StrategicGoalKind.Optimization"/>'s full dispatch (C-312): picks the
+    /// <see cref="NosAi.Core.WorldModel.Loadout.LoadoutActionCandidate"/> to act on, resolves its item
+    /// to a current bag slot in <see cref="Player.Inventory"/>, and -- when <paramref name="optimizationGesture"/>
+    /// is configured -- clicks it via <see cref="EquipExecutor.Equip"/> and reports the verified outcome.
+    /// <see cref="AutoplayDispatch.OptimizationSkippedNoCandidate"/> when there is no candidate or its item
+    /// is not currently observed in inventory; <see cref="AutoplayDispatch.OptimizationSkippedNoGesture"/>
+    /// when a candidate is ready but no gesture was configured.
+    /// </summary>
+    private static AutoplayCycleResult DispatchOptimization(
+        Player playerFacts,
+        Func<ItemId, EquipmentSlot?> resolveSlot,
+        EquipExecutor equipExecutor,
+        BagPanelRoiCalibration calibration,
+        EquipGesture? optimizationGesture,
+        Func<WornEquipmentReading?> readLatestEquip,
+        in ActuationAuthority authority,
+        ExplorationFootprint footprint,
+        StrategicPlan plan)
+    {
+        var candidates = LoadoutPlanner.GenerateEmptySlotCandidates(playerFacts, resolveSlot);
+        if (candidates.Count == 0)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        var candidate = candidates[0];
+        if (!playerFacts.Inventory.HasValue)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        InventoryItem? matched = null;
+        foreach (InventoryItem stack in playerFacts.Inventory.Value)
+        {
+            if (stack.Id == candidate.Item)
+            {
+                matched = stack;
+                break;
+            }
+        }
+
+        if (matched is null)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        if (!matched.SlotIndex.HasValue)
+        {
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoCandidate, plan, null, null, footprint);
+        }
+
+        int bagSlotIndex = matched.SlotIndex.Value;
+
+        if (optimizationGesture is not { } gesture)
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationSkippedNoGesture, plan, null, null, footprint);
+
+        var request = new EquipRequest(candidate.Item!.Value, candidate.Slot!.Value, bagSlotIndex, gesture);
+        EquipReport report = equipExecutor.Equip(request, calibration, in authority, readLatestEquip);
+
+        if (!report.Emitted)
+            return new AutoplayCycleResult(AutoplayDispatch.OptimizationRefused, plan, null, null, footprint);
+
+        return report.Verification.Outcome switch
+        {
+            EquipOutcome.Confirmed => new AutoplayCycleResult(AutoplayDispatch.Optimized, plan, null, null, footprint),
+            EquipOutcome.NotConfirmed => new AutoplayCycleResult(AutoplayDispatch.OptimizationNotConfirmed, plan, null, null, footprint),
+            _ => new AutoplayCycleResult(AutoplayDispatch.OptimizationRefused, plan, null, null, footprint)
+        };
+    }
+
+    /// <summary>
+    /// Console entry for <c>--autoplay [--cycles &lt;n&gt;]
+    /// [--recover-slot &lt;slot&gt;] [--optimization-gesture single|double]</c>.
+    /// </summary>
+    public static int Run(int cycles = 1, int? recoverSlot = null, EquipGesture? optimizationGesture = null)
     {
         // A requested cycle count above MaxCycles is refused cleanly, never
         // silently clamped -- the operator must ask again with a smaller
@@ -320,7 +573,7 @@ public static class AutoplayCommand
             return WalkCommand.ExitAbandoned;
         }
 
-        return RunWindows(cycles, recoverSlot);
+        return RunWindows(cycles, recoverSlot, optimizationGesture);
     }
 
     /// <summary>
@@ -361,6 +614,25 @@ public static class AutoplayCommand
     }
 
     /// <summary>
+    /// This cycle's known drops, projected the same way <see cref="ObserveMobs"/> projects
+    /// mobs -- empty (not Unknown) when no gameplay observation is available this cycle.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private static EquatableArray<Drop> ObserveDrops(
+        GameplayObservation? observation,
+        EntityId playerId,
+        long cycle,
+        DateTime nowUtc)
+    {
+        if (observation is null)
+            return EquatableArray<Drop>.Empty;
+
+        return GameplayObservationProjector
+            .Project(observation, playerId, cycle, nowUtc)
+            .Drops;
+    }
+
+    /// <summary>
     /// The live composition, mirroring <see cref="ScoutCommand"/>'s and
     /// <see cref="RecoverCommand"/>'s own <c>RunWindows</c>: one shared
     /// composition for the whole invocation -- attach the client once, build
@@ -368,7 +640,7 @@ public static class AutoplayCommand
     /// keybinds once -- then loop cycles, reading live facts and dispatching.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    private static int RunWindows(int cycles, int? recoverSlot)
+    private static int RunWindows(int cycles, int? recoverSlot, EquipGesture? optimizationGesture)
     {
         RuntimeComponents components = RuntimeComposition.CreateSafe();
         if (components.InputBackend is not GatedInputBackend gated)
@@ -404,6 +676,15 @@ public static class AutoplayCommand
                           ?? Directory.GetCurrentDirectory();
             ScreenProjectionCalibration calibration = ScreenProjectionCalibration.Load(
                 Path.Combine(repo, ScreenProjectionCalibration.RelativePath), out _);
+
+            // Loaded once for the whole invocation, same lifetime as `calibration`
+            // above: the bag panel does not move between cycles any more than the
+            // screen projection does. Uncalibrated (file absent) is not a refusal
+            // here -- EquipExecutor itself refuses per-request against it, the same
+            // fail-closed shape InventoryPanelRoiCalibration already uses.
+            BagPanelRoiCalibration bagCalibration = BagPanelRoiCalibration.Load(
+                Path.Combine(repo, BagPanelRoiCalibration.RelativePath), out _);
+            var equipExecutor = new EquipExecutor(gated, () => window.Handle);
 
             ClientMemorySession attached = session!;
             var projection = new CalibratedScreenProjection(
@@ -469,6 +750,20 @@ public static class AutoplayCommand
                 LiveObservationScope.TryOpen(processId, out string? entityFeedFailure);
             if (entityFeed is null)
                 Console.WriteLine($"[WARN] entity_feed_unavailable:{entityFeedFailure} -- il ranker delle frontiere resta cieco al rischio");
+
+            // EquipExecutor.Verify's own polling source: it re-reads this same
+            // shared entityFeed on every poll during its verification window,
+            // exactly like the per-cycle `gameplay` capture above -- never a
+            // second GameTrafficObserver (C-312's resolved_limitation). Null
+            // when there is no entity feed at all, which Verify treats as
+            // "nothing observed", not as a crash.
+            Func<WornEquipmentReading?> readLatestEquip = () =>
+            {
+                if (entityFeed is null)
+                    return null;
+                ClassifiedValue<WornEquipmentReading> reading = entityFeed.Gateway.Capture().Gameplay.Equipment;
+                return reading.HasValue ? reading.Value : null;
+            };
 
             // Without the catalogue nothing is established as a monster and the
             // projection yields no mobs, so opening it is only worth attempting
@@ -551,6 +846,7 @@ public static class AutoplayCommand
                 // differently, describing a character that never existed in either instant.
                 GameplayObservation? gameplay = entityFeed?.Gateway.Capture().Gameplay;
                 EquatableArray<Mob> cycleMobs = ObserveMobs(gameplay, entityClassifier, entityPlayerId, cycle, now);
+                EquatableArray<Drop> cycleDrops = ObserveDrops(gameplay, entityPlayerId, cycle, now);
 
                 var healthResource = new Resource(
                     ResourceKind.Health,
@@ -597,6 +893,11 @@ public static class AutoplayCommand
                 // instead of deciding blind and meeting the mobs afterwards.
                 StrategicSignal? farming = StrategyPlanner.AssessFarmingUrgency(playerFacts, cycleMobs);
 
+                // Same reasoning as farming above: observed before the plan, from the same
+                // per-cycle reading, so the goal is chosen knowing whether there is anything
+                // to pick up.
+                StrategicSignal? collect = StrategyPlanner.AssessCollectUrgency(playerFacts, cycleDrops);
+
                 // The slot an item would occupy is a catalogue fact, not a wire one, so the
                 // lookup is the real Item.dat reader when the catalogue opened and a lookup
                 // that answers "unknown" when it did not — never a guessed slot.
@@ -626,6 +927,10 @@ public static class AutoplayCommand
                 // Last on purpose: ties are broken by list order, and adding farming must not
                 // take a goal away from the three signals that already decided this loop.
                 if (farming is not null) signals.Add(farming);
+
+                // Right after farming, same reasoning: it must not outrank Recovery/Survival/
+                // Exploration, but it can compete with farming on equal footing.
+                if (collect is not null) signals.Add(collect);
 
                 // Last of all: it scores lowest by design, and it must never take a tie from a
                 // goal measuring a real deficit.
@@ -702,7 +1007,16 @@ public static class AutoplayCommand
                             recordedAtUtc: now);
                     },
                     in authority,
-                    now);
+                    now,
+                    entityPlayerId,
+                    cycleDrops,
+                    gameplay,
+                    playerFacts,
+                    resolveSlot,
+                    equipExecutor,
+                    bagCalibration,
+                    optimizationGesture,
+                    readLatestEquip);
 
                 // Carry this cycle's footprint forward regardless of what was
                 // dispatched -- only the Exploration branch actually changes it,
@@ -725,6 +1039,10 @@ public static class AutoplayCommand
 
                     case AutoplayDispatch.RecoverySkippedNoSlot:
                         Console.WriteLine($"[WARN] recovery urgent but no --recover-slot configured, skipping this cycle");
+                        break;
+
+                    case AutoplayDispatch.OptimizationSkippedNoGesture:
+                        Console.WriteLine($"[WARN] optimization candidate ready but no --optimization-gesture configured, skipping this cycle");
                         break;
 
                     case AutoplayDispatch.NotDispatchable:

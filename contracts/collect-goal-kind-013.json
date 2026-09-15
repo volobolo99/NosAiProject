@@ -1,0 +1,38 @@
+{
+  "contract_id": "C-307",
+  "file": "src/NosAi.Core/WorldModel/Strategy/StrategyPlanner.cs",
+  "companion_file": "src/NosAi.Core/WorldModel/Strategy/StrategyContracts.cs",
+  "purpose": "Aggiungere un nuovo StrategicGoalKind.Collect e un assessor AssessCollectUrgency, cosi' l'autoplay possa un giorno scegliere di raccogliere un drop -- oggi nessun goal kind ne assessor esiste per la raccolta (verificato: solo Survival/Recovery/QuestUrgency/Progression/Farming/Exploration/Optimization esistono).",
+  "changes": {
+    "enum_StrategicGoalKind_add_value": "Collect  // Un drop osservato con posizione nota e' raggiungibile o vicino. Aggiungere come ultimo valore, non alterare i valori esistenti (i loro numeri interi non vanno rinumerati).",
+    "new_method_signature": "public static StrategicSignal? AssessCollectUrgency(Player player, EquatableArray<Drop> drops, double maxRangeTiles = 12.0)",
+    "new_method_body_contract": [
+      "Deliberatamente semplice, senza un intero modulo 'planner' separato (a differenza di CombatPlanner/LoadoutPlanner): la domanda e' solo 'c'e' un drop osservato raggiungibile', non un valore economico del loot, che nessuna fonte del progetto fornisce onestamente oggi.",
+      "1. ArgumentNullException.ThrowIfNull(player).",
+      "2. Se player.Position non ha valore (player.Position.HasValue == false): return null -- senza la posizione del player ogni distanza sarebbe una supposizione (stesso principio di AssessFarmingUrgency).",
+      "3. Iterare 'drops': per ogni Drop il cui campo Position (WorldFact<WorldPosition>) ha un valore (HasValue == true), calcolare la distanza euclidea fra drop.Position.Value e player.Position.Value (entrambi WorldPosition con campi float X,Y). Tenere traccia se ALMENO un drop e' noto (posizione osservata) e se ALMENO uno e' entro maxRangeTiles.",
+      "4. Se nessun drop ha mai una posizione nota: urgency 0.0, reason 'no_viable_drop'.",
+      "5. Se almeno un drop e' entro maxRangeTiles: urgency 1.0, reason 'drop_in_reach'.",
+      "6. Se almeno un drop e' noto ma nessuno e' entro raggio: urgency 0.5, reason 'drop_out_of_reach' (stesso principio di AssessFarmingUrgency: 'fuori portata' non e' zero, e' 'c'e' ma richiede spostarsi').",
+      "7. return new StrategicSignal(StrategicGoalKind.Collect, urgency, reason)."
+    ]
+  },
+  "constraints": [
+    "Non alterare le firme pubbliche esistenti di StrategyPlanner (nessun altro Assess* va toccato), StrategicGoalKind (solo aggiungere un valore, non rinumerare gli esistenti), Player, Drop, WorldFact<T>, WorldPosition.",
+    "Non creare un nuovo file/modulo 'LootPlanner' o simile: la logica sta interamente nel nuovo metodo, seguendo lo stile gia' visto in AssessSurvivalUrgency/AssessProgressionUrgency (pattern matching su una tupla (urgency, reason), mai un'eccezione per un dato mancante che non sia null sull'input stesso).",
+    "Nessun uso di LINQ pesante se un ciclo semplice basta, coerente con lo stile del file.",
+    "Documentare il metodo con un commento XML <summary>/<param>/<returns> nello stesso stile degli altri Assess* del file (vedi AssessFarmingUrgency subito sopra come modello diretto).",
+    "Zero dipendenze esterne nuove."
+  ],
+  "tests_required": [
+    "Un test nel progetto NosAi.Core.Tests (segui la posizione/stile dei test esistenti per StrategyPlanner) che verifichi: player.Position sconosciuta -> null.",
+    "Un test che verifichi: nessun drop con posizione nota -> urgency 0.0, reason 'no_viable_drop'.",
+    "Un test che verifichi: un drop entro il raggio di default -> urgency 1.0, reason 'drop_in_reach'.",
+    "Un test che verifichi: un drop noto ma fuori dal raggio di default -> urgency 0.5, reason 'drop_out_of_reach'."
+  ],
+  "postconditions": [
+    "dotnet build sulla solution e' verde.",
+    "dotnet test su NosAi.Core.Tests e' verde, incluso i nuovi test.",
+    "Nessuna firma pubblica esistente e' cambiata (verificabile con preflight_contract_check)."
+  ]
+}

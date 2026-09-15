@@ -67,21 +67,21 @@
           </Border>
         </StackPanel>
         <StackPanel Margin="4,8,4,8">
-          <Button x:Name="NavOverview" Style="{StaticResource NavButtonActive}" Content="Panoramica" Click="OnNav"/>
-          <Button x:Name="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
-          <Button x:Name="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
-          <Button x:Name="NavAround" Style="{StaticResource NavButton}" Content="Attorno" Click="OnNav"/>
-          <Button x:Name="NavTarget" Style="{StaticResource NavButton}" Content="Bersaglio" Click="OnNav"/>
-          <Button x:Name="NavEquip" Style="{StaticResource NavButton}" Content="Equipaggiamento" Click="OnNav"/>
-          <Button x:Name="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
-          <Button x:Name="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
-          <Button x:Name="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
-          <Button x:Name="NavDecision" Style="{StaticResource NavButton}" Content="Decisione" Click="OnNav"/>
-          <Button x:Name="NavSecurity" Style="{StaticResource NavButton}" Content="Sicurezza" Click="OnNav"/>
-          <Button x:Name="NavSuites" Style="{StaticResource NavButton}" Content="Certificazione" Click="OnNav"/>
-          <Button x:Name="NavHealth" Style="{StaticResource NavButton}" Content="Ronda di avvio" Click="OnNav"/>
-          <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Content="Impostazioni" Click="OnNav"/>
-          <Button x:Name="NavLog" Style="{StaticResource NavButton}" Content="Diario" Click="OnNav"/>
+          <Button x:Name="NavOverview" AutomationProperties.AutomationId="NavOverview" Style="{StaticResource NavButtonActive}" Content="Panoramica" Click="OnNav"/>
+          <Button x:Name="NavClient" AutomationProperties.AutomationId="NavClient" Style="{StaticResource NavButton}" Content="Client NosTale" Click="OnNav"/>
+          <Button x:Name="NavMap" AutomationProperties.AutomationId="NavMap" Style="{StaticResource NavButton}" Content="Mappa" Click="OnNav"/>
+          <Button x:Name="NavAround" AutomationProperties.AutomationId="NavAround" Style="{StaticResource NavButton}" Content="Attorno" Click="OnNav"/>
+          <Button x:Name="NavTarget" AutomationProperties.AutomationId="NavTarget" Style="{StaticResource NavButton}" Content="Bersaglio" Click="OnNav"/>
+          <Button x:Name="NavEquip" AutomationProperties.AutomationId="NavEquip" Style="{StaticResource NavButton}" Content="Equipaggiamento" Click="OnNav"/>
+          <Button x:Name="NavPhone" AutomationProperties.AutomationId="NavPhone" Style="{StaticResource NavButton}" Content="Telefono Guard AI" Click="OnNav"/>
+          <Button x:Name="NavPerception" AutomationProperties.AutomationId="NavPerception" Style="{StaticResource NavButton}" Content="Percezione" Click="OnNav"/>
+          <Button x:Name="NavNetwork" AutomationProperties.AutomationId="NavNetwork" Style="{StaticResource NavButton}" Content="Rete" Click="OnNav"/>
+          <Button x:Name="NavDecision" AutomationProperties.AutomationId="NavDecision" Style="{StaticResource NavButton}" Content="Decisione" Click="OnNav"/>
+          <Button x:Name="NavSecurity" AutomationProperties.AutomationId="NavSecurity" Style="{StaticResource NavButton}" Content="Sicurezza" Click="OnNav"/>
+          <Button x:Name="NavSuites" AutomationProperties.AutomationId="NavSuites" Style="{StaticResource NavButton}" Content="Certificazione" Click="OnNav"/>
+          <Button x:Name="NavHealth" AutomationProperties.AutomationId="NavHealth" Style="{StaticResource NavButton}" Content="Ronda di avvio" Click="OnNav"/>
+          <Button x:Name="NavSettings" AutomationProperties.AutomationId="NavSettings" Style="{StaticResource NavButton}" Content="Impostazioni" Click="OnNav"/>
+          <Button x:Name="NavLog" AutomationProperties.AutomationId="NavLog" Style="{StaticResource NavButton}" Content="Diario" Click="OnNav"/>
         </StackPanel>
       </DockPanel>
     </Border>
@@ -104,7 +104,7 @@
         </StackPanel>
         <StackPanel>
           <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}">CONSOLE OPERATORE</TextBlock>
-          <TextBlock x:Name="PageTitle" FontSize="26" FontWeight="SemiBold" Margin="0,2,0,0">Panoramica</TextBlock>
+          <TextBlock x:Name="PageTitle" AutomationProperties.AutomationId="PageTitle" FontSize="26" FontWeight="SemiBold" Margin="0,2,0,0">Panoramica</TextBlock>
         </StackPanel>
       </DockPanel>
 

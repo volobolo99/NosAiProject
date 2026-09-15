@@ -7,6 +7,7 @@ import urllib.request
 from dataclasses import dataclass
 
 from .contracts import RouteDecision
+from .enforcement import require_capability
 from .router import ModelRouter
 from .secrets import SecretStore
 
@@ -19,6 +20,7 @@ class InferenceGateway:
     def infer(self, prompt: str, capability: str | None = None, timeout: float = 30.0, role_id: str | None = None) -> dict:
         if not prompt.strip():
             raise ValueError("prompt is required")
+        require_capability(role_id, capability)
         decision: RouteDecision = self.router.choose(capability, role_id=role_id)
         if decision.provider_id == "ollama-local":
             endpoint = os.getenv("NOSAI_OLLAMA_URL", "http://127.0.0.1:11434/api/generate")

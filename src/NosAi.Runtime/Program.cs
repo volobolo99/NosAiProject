@@ -180,6 +180,39 @@ public static class Program
             return NosAi.Runtime.Perception.InventoryPanelCalibrationProbe.Run(slots: panelRois);
         }
 
+        // C-313: the bag scrolls, so BagPanelRoiCalibration is never all-or-
+        // nothing like the equipment panel above -- any number of slot tokens
+        // (at least one) is a valid calibration, or none at all to report the
+        // current state.
+        if (args.Any(a => string.Equals(a, "--calibrate-bag-panel", StringComparison.OrdinalIgnoreCase)))
+        {
+            int bagPanelFlag = Array.FindIndex(args, a =>
+                string.Equals(a, "--calibrate-bag-panel", StringComparison.OrdinalIgnoreCase));
+            int bagPanelTokenCount = args.Length - (bagPanelFlag + 1);
+
+            var bagPanelTokens = new string[bagPanelTokenCount];
+            for (int i = 0; i < bagPanelTokenCount; i++)
+                bagPanelTokens[i] = args[bagPanelFlag + 1 + i];
+
+            if (bagPanelTokenCount == 0)
+            {
+                // Zero tokens: only report the current calibration state.
+                return NosAi.Runtime.Perception.BagPanelCalibrationProbe.Run(slots: null);
+            }
+
+            if (!NosAi.Runtime.Perception.BagPanelCalibrationProbe.TryParseSlots(
+                    bagPanelTokens, out IReadOnlyDictionary<int,
+                        NosAi.Runtime.Perception.InventorySlotRoi>? bagPanelRois, out string? bagPanelReason))
+            {
+                Console.Error.WriteLine($"[REFUSED] {bagPanelReason}");
+                Console.Error.WriteLine("  --calibrate-bag-panel requires at least one slot token, each "
+                    + "'<slotIndex>:<x>,<y>,<w>,<h>' as fractions of the client area.");
+                return 1;
+            }
+
+            return NosAi.Runtime.Perception.BagPanelCalibrationProbe.Run(slots: bagPanelRois);
+        }
+
         // Physical client rect, window DPI, monitor handle, epoch, the process's
         // actual awareness mode, and whether the stored calibration can be applied
         // under that regime. Non-zero when it cannot.
@@ -322,6 +355,14 @@ public static class Program
         if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.UnequipCommand.Flag, StringComparison.OrdinalIgnoreCase)))
             return NosAi.Runtime.Tactical.UnequipCommand.Run(args);
 
+        // The opposite click (C-312): move a bagged item into an equipment slot,
+        // verify on the wire (`equip`) that the slot now carries the item's own
+        // vnum. Same shape as --unequip: an operator-declared --gesture (no
+        // --right here, Equip never uses it), --arm-input required, one click
+        // per invocation.
+        if (args.Any(a => string.Equals(a, NosAi.Runtime.Tactical.EquipCommand.Flag, StringComparison.OrdinalIgnoreCase)))
+            return NosAi.Runtime.Tactical.EquipCommand.Run(args);
+
         // One collect round (or --watch <n> rounds): walk to an operator-named
         // position and verify one Collect objective by reading the player's own
         // inventory count of the named vnum before and after the walk (wire ivn
@@ -406,7 +447,21 @@ public static class Program
                 ? parsedSlot
                 : null;
 
-            return NosAi.Runtime.Tactical.AutoplayCommand.Run(cycles, recoverSlot);
+            // No default: a guessed gesture is a blind click on an item nobody
+            // has verified equips with it (same principle as --gesture on the
+            // standalone --equip command). Unset means Optimization is skipped,
+            // never attempted on a guess.
+            int gestureFlag = Array.FindIndex(args, a => string.Equals(a, "--optimization-gesture", StringComparison.OrdinalIgnoreCase));
+            NosAi.Runtime.Tactical.EquipGesture? optimizationGesture = gestureFlag >= 0 && gestureFlag + 1 < args.Length
+                ? args[gestureFlag + 1].ToLowerInvariant() switch
+                {
+                    "single" => NosAi.Runtime.Tactical.EquipGesture.Single,
+                    "double" => NosAi.Runtime.Tactical.EquipGesture.Double,
+                    _ => (NosAi.Runtime.Tactical.EquipGesture?)null
+                }
+                : null;
+
+            return NosAi.Runtime.Tactical.AutoplayCommand.Run(cycles, recoverSlot, optimizationGesture);
         }
 
         // Which intents the operator bound, and which the runtime can ask for
@@ -681,6 +736,25 @@ public static class Program
             }
 
             return NosAi.LiveIntegration.PlayerVitalsCalibrator.Run(endpoint, roundSeconds);
+        }
+
+        // Same idea as --calibrate-vitals, for the equipment array instead of a
+        // single (max, current) pair: the wire's own `equip` packet is the truth
+        // to search memory for, because the packet arrives only on a real change
+        // and never on request (UnequipExecutor documents the same limit).
+        if (args.Any(a => string.Equals(a, NosAi.LiveIntegration.EquipmentOffsetCalibrator.Flag, StringComparison.OrdinalIgnoreCase)))
+        {
+            var equipmentRoundSeconds = 20;
+            int equipmentWatchAt = Array.FindIndex(args, a => string.Equals(a, "--watch", StringComparison.OrdinalIgnoreCase));
+            if (equipmentWatchAt >= 0
+                && equipmentWatchAt + 1 < args.Length
+                && int.TryParse(args[equipmentWatchAt + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int equipmentPerRound)
+                && equipmentPerRound > 0)
+            {
+                equipmentRoundSeconds = equipmentPerRound;
+            }
+
+            return NosAi.LiveIntegration.EquipmentOffsetCalibrator.Run(equipmentRoundSeconds);
         }
 
         // What points at an address, so a calibrated heap address can become a
@@ -1213,9 +1287,9 @@ public static class Program
         new(StringComparer.OrdinalIgnoreCase)
         {
             "--dxgi-probe", "--input-probe", "--memory-scan", "--memory-narrow", "--memory-dump",
-            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
+            "--hud-probe", "--window-probe", "--target-chain", "--input-guards", "--input-authority", "--step", "--walk", "--dry-run", "--keybinds-check", "--halt", "--event-log-report", "--decide-replay", "--player-probe", "--entity-names", "--player-vitals", "--skill-cooldowns", "--sweep-cooldown", "--record-wire", "--await-client-capture", "--live-decode", "--calibrate-vitals", "--calibrate-equipment", "--anchor-hunt", "--world-replay", "--reference-info", "--client-updates",
             "--screen-sample", "--screen-calibrate", "--screen-samples-clear", "--screen-watch",
-            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--route", "--calibrate-inventory-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
+            "--screen-autocalibrate", "--arm-input", "--scout", "--engage", "--click-target", "--unequip", "--equip", "--collect", "--recover", "--autoplay", "--cycles", "--recover-slot", "--optimization-gesture", "--route", "--calibrate-inventory-panel", "--calibrate-bag-panel", "--loadout-report", "--combat-report", "--certification-report", "--wire-inspect", "--outcome-report", "--learning-report", "--skill-report", "--monster-report"
         };
 
     private static int RunDxgiProbe()

@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
 import time
 from pathlib import Path
 
@@ -86,8 +87,10 @@ LINGUAGGI = {".py": "python", ".cs": "c_sharp"}
 NON_IMPLEMENTATO_CS = re.compile(r"throw\s+new\s+NotImplementedException")
 
 # Letterali stringa Python, per escluderli dalla ricerca dei segnaposto: un
-# TODO dentro una stringa non e' un promemoria lasciato a meta', ed e' cosi'
-# che questo file bocciava se stesso quando lo si dava in pasto alla catena.
+# segnaposto scritto dentro una stringa non e' un promemoria lasciato a meta',
+# ed e' cosi' che questo file bocciava se stesso quando lo si dava in pasto
+# alla catena (il commento stesso, non uno spuntato dal modello, cadeva sotto
+# FORBIDDEN perche' un commento non e' una stringa e non viene ripulito).
 STRINGHE = re.compile(r"(?:[rbuRBU]{0,2})('''|\"\"\"|'|\")(?:\\.|(?!\1).)*\1", re.S)
 
 SYSTEM_PROMPT = (
@@ -202,12 +205,19 @@ def budget_token(model: str) -> int:
     DeepSeek ragiona prima di rispondere e serve un budget piu' largo del solo
     output. Groq applica un limite di 6000 token al minuto e rifiuta in partenza
     una richiesta il cui max_tokens, sommato al prompt, lo supererebbe.
+
+    Il ripiano generico era 8192: su C-315 (scripts/code_agent.py, 812 righe)
+    Qwen3 Coder 30B ha ignorato "restituisci solo questa funzione" e riscritto
+    il file intero, troncando a "unterminated string literal" proprio a quella
+    soglia. Verificato con max_tokens=20000 che il modello completa senza
+    troncare: il tetto non costa di piu' se il modello non lo usa tutto, quindi
+    resta alto per ogni fornitore che non ha un limite al minuto da rispettare.
     """
     if model.startswith(GROQ_PREFISSO):
         return 3500
     if model.startswith("deepseek"):
         return 16000
-    return 8192
+    return 20000
 
 
 def cost_of(model: str, usage: dict) -> float:
@@ -265,18 +275,50 @@ def dataclass_fields(source: str) -> dict:
     return found
 
 
-def _intervalli_funzioni(source: str):
-    """Per ogni funzione di primo livello, le righe che occupa, decoratori inclusi."""
-    albero = ast.parse(source)
-    intervalli = {}
+def _intervalli_funzioni(source: str) -> dict[str, tuple[int, int]]:
+    """Per ogni funzione di primo livello e metodo dentro una classe, le righe
+    che occupa, decoratori inclusi.
+
+    Un nome che esiste sia come funzione di modulo sia come metodo di una
+    classe risolve sulla funzione di modulo: non e' un'ambiguita'. Lo stesso
+    nome di metodo su due classi diverse lo e', e solleva ValueError. Le
+    chiusure (funzioni dentro un'altra funzione) non si raccolgono: si
+    cammina solo dentro le ClassDef, mai dentro il body di una funzione.
+    """
+    testo = source
+    prima_riga_non_vuota = next((riga for riga in testo.splitlines() if riga.strip()), "")
+    if prima_riga_non_vuota[:1] in (" ", "\t"):
+        testo = textwrap.dedent(testo)
+
+    albero = ast.parse(testo)
+    di_modulo: dict[str, tuple[int, int]] = {}
+    di_metodo: dict[str, tuple[int, int]] = {}
+    classe_del_metodo: dict[str, str] = {}
+
+    def cammina_classe(nodo_classe: ast.ClassDef, nome_classe: str) -> None:
+        for figlio in nodo_classe.body:
+            if isinstance(figlio, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                vista_su = classe_del_metodo.get(figlio.name)
+                if vista_su is not None and vista_su != nome_classe:
+                    raise ValueError(
+                        "Nome di metodo ambiguo fra piu' classi: " + figlio.name)
+                classe_del_metodo[figlio.name] = nome_classe
+                inizio = min([figlio.lineno] + [d.lineno for d in figlio.decorator_list])
+                di_metodo[figlio.name] = (inizio, figlio.end_lineno)
+            elif isinstance(figlio, ast.ClassDef):
+                cammina_classe(figlio, figlio.name)
+
     for nodo in albero.body:
         if isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef)):
             inizio = min([nodo.lineno] + [d.lineno for d in nodo.decorator_list])
-            intervalli[nodo.name] = (inizio, nodo.end_lineno)
-    return intervalli
+            di_modulo[nodo.name] = (inizio, nodo.end_lineno)
+        elif isinstance(nodo, ast.ClassDef):
+            cammina_classe(nodo, nodo.name)
+
+    return {**di_metodo, **di_modulo}
 
 
-def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
+def innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = "python") -> str:
     """Lo scheletro con le sole funzioni dichiarate sostituite da quelle della risposta.
 
     Serve per i file troppo grandi da riemettere interi: su model_scout.py, 26.693
@@ -286,12 +328,17 @@ def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
     Il perimetro e' l'incarico: cio' che il modello manda e non era dichiarato viene
     ignorato. Il file risultante viene poi validato per intero come sempre, quindi
     le garanzie non cambiano.
+
+    ``linguaggio`` sceglie quale rilevatore di intervalli usare: "python" (default,
+    ast.parse) o "c_sharp" (tree_sitter, _intervalli_funzioni_csharp). Il default
+    mantiene invariata ogni chiamata esistente, incluse quelle nei test.
     """
     if not nomi:
         return skeleton
 
-    nuove = _intervalli_funzioni(risposta)   # solleva SyntaxError se la risposta e' rotta
-    vecchie = _intervalli_funzioni(skeleton)
+    rileva = _intervalli_funzioni_csharp if linguaggio == "c_sharp" else _intervalli_funzioni
+    nuove = rileva(risposta)   # solleva SyntaxError se la risposta e' rotta
+    vecchie = rileva(skeleton)
 
     assenti_risposta = [n for n in nomi if n not in nuove]
     if assenti_risposta:
@@ -317,9 +364,26 @@ def innesta_funzioni(skeleton: str, risposta: str, nomi) -> str:
         blocco = righe_nuove[nda - 1:na]
         if blocco and not blocco[-1].endswith("\n"):
             blocco[-1] += "\n"
+        # Un metodo di classe e una funzione di modulo hanno basi di
+        # indentazione diverse (4 spazi contro 0): il modello a volte
+        # restituisce il corpo alla base sbagliata, valido in isolamento ma
+        # rotto una volta innestato. Si riallinea alla base dello scheletro,
+        # non a quella dichiarata dal modello: dedent toglie l'indentazione
+        # comune (preservando la struttura relativa interna), indent
+        # riapplica quella del bersaglio.
+        if blocco:
+            indent_atteso = righe_vecchie[da - 1][:_lunghezza_indentazione(righe_vecchie[da - 1])]
+            indent_ricevuto = blocco[0][:_lunghezza_indentazione(blocco[0])]
+            if indent_ricevuto != indent_atteso:
+                blocco = textwrap.indent(textwrap.dedent("".join(blocco)), indent_atteso).splitlines(keepends=True)
         righe_vecchie[da - 1:a] = blocco
 
     return "".join(righe_vecchie)
+
+
+def _lunghezza_indentazione(riga: str) -> int:
+    """Quanti spazi iniziali precedono il primo carattere non di spaziatura."""
+    return len(riga) - len(riga.lstrip(" "))
 
 
 def prompt_parziale(contract: str, nome_file: str, skeleton: str, nomi) -> str:
@@ -350,8 +414,9 @@ def linguaggio_del_file(target: Path) -> str:
 def _senza_stringhe(code: str) -> str:
     """Il codice con i letterali stringa svuotati, per cercare i segnaposto.
 
-    Un TODO scritto dentro una stringa non e' un promemoria lasciato a meta': e'
-    dato. I commenti restano, quindi un vero "# TODO" viene ancora bocciato.
+    Un segnaposto scritto dentro una stringa non e' un promemoria lasciato a
+    meta': e' dato. I commenti restano, quindi un vero segnaposto scritto
+    come commento viene ancora bocciato.
     """
     return STRINGHE.sub('""', code)
 
@@ -410,6 +475,70 @@ def _firme_csharp(source: str):
                 visita(figlio, proprio)
             elif figlio.type == "method_declaration" and contenitore is not None:
                 risultato[contenitore].append(firma_metodo(figlio))
+                visita(figlio, contenitore)
+            else:
+                visita(figlio, contenitore)
+
+    visita(albero.root_node)
+    return risultato
+
+
+def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]]:
+    """Per ogni method_declaration dentro un contenitore C# (classe/struct/interface/record),
+    ovunque si trovi nell'albero (dentro un namespace, annidato), il nome del metodo mappato
+    alle righe 1-based (start_line, end_line) che occupa. Equivalente C# di _intervalli_funzioni
+    (Python, ast.parse), usato da innesta_funzioni quando il linguaggio bersaglio e' C#."""
+    import tree_sitter_c_sharp
+    from tree_sitter import Language, Parser
+
+    dati = source.encode("utf-8")
+    albero = Parser(Language(tree_sitter_c_sharp.language())).parse(dati)
+    if albero.root_node.has_error:
+        raise SyntaxError("C#: l'albero contiene nodi ERROR o mancanti")
+
+    def testo(nodo):
+        return dati[nodo.start_byte:nodo.end_byte].decode("utf-8", "replace")
+
+    def nome_di(nodo):
+        for figlio in nodo.children:
+            if figlio.type == "identifier":
+                return testo(figlio)
+        return "?"
+
+    def nome_metodo(nodo):
+        """Il nome del metodo e' l'identificatore seguito dalla lista parametri
+        (stessa regola di _firme_csharp.firma_metodo): il primo identifier di un
+        method_declaration e' spesso il TIPO DI RITORNO, non il nome, quando quel
+        tipo non e' primitivo (es. "AutoplayCycleResult ExecuteOneCycle(...)")."""
+        figli = list(nodo.children)
+        for indice, figlio in enumerate(figli):
+            successivo = figli[indice + 1] if indice + 1 < len(figli) else None
+            if figlio.type == "identifier" and successivo is not None and successivo.type == "parameter_list":
+                return testo(figlio)
+        return nome_di(nodo)
+
+    CONTENITORI = ("class_declaration", "struct_declaration", "interface_declaration", "record_declaration")
+    risultato: dict[str, tuple[int, int]] = {}
+
+    # Un frammento restituito senza la classe che lo racchiude (lo stesso
+    # perimetro gia' concesso in Python, dove "solo la funzione" e' legale a
+    # livello di modulo) non e' sintassi C# valida di per se': tree_sitter lo
+    # analizza come local_function_statement invece di method_declaration.
+    # Lo si accetta comunque, con lo stesso trattamento: il controllo di
+    # ambiguita' sotto resta la stessa rete di sicurezza in entrambi i casi.
+    METODI = ("method_declaration", "local_function_statement")
+
+    def visita(nodo, contenitore=None):
+        for figlio in nodo.children:
+            if figlio.type in CONTENITORI:
+                visita(figlio, nome_di(figlio))
+            elif figlio.type in METODI:
+                nome = nome_metodo(figlio)
+                inizio = figlio.start_point.row + 1
+                fine = figlio.end_point.row + 1
+                if nome in risultato:
+                    raise ValueError("metodo ambiguo, presente in piu' di un contenitore: " + nome)
+                risultato[nome] = (inizio, fine)
                 visita(figlio, contenitore)
             else:
                 visita(figlio, contenitore)
@@ -627,6 +756,17 @@ def run(task: dict, do_preflight: bool) -> dict:
             prompt += "\n".join("- " + e for e in errors)
             prompt += "\n\nCodice rifiutato:\n" + code
 
+        # Azzerato solo ORA, dopo essere stato letto per il feedback del prompt:
+        # un tentativo il cui innesto riesce non deve ereditare l'errore del
+        # tentativo precedente. Prima di questa riga, un innesto riuscito al
+        # tentativo N saltava validate_implementation (riga sotto: "if not (solo
+        # and errors)") perche' errors era ancora quello, non azzerato, del
+        # tentativo N-1 -- osservato su C-310: il tentativo 2 rispondeva con
+        # prosa invece di codice (rifiutato per sintassi), il tentativo 3
+        # produceva codice valido, ma l'esito finale restava quello del
+        # tentativo 2.
+        errors = []
+
         budget = budget_token(model)
         sistema = SYSTEM_PROMPT_CSHARP \
             if linguaggio_del_file(ROOT / task["file"]) == "c_sharp" else SYSTEM_PROMPT
@@ -636,7 +776,7 @@ def run(task: dict, do_preflight: bool) -> dict:
         code = extract_code(testo)
         if solo:
             try:
-                code = innesta_funzioni(skeleton, code, solo)
+                code = innesta_funzioni(skeleton, code, solo, linguaggio_del_file(ROOT / task["file"]))
             except (SyntaxError, ValueError) as exc:
                 errors = ["Innesto parziale rifiutato: {}".format(exc)]
                 code = ""

@@ -116,6 +116,29 @@ public static class HudCropWriter
         return directory;
     }
 
+    /// <summary>The bag-panel preview bitmap's name (C-313) -- a separate file from
+    /// <see cref="PanelPreviewFileName"/> so calibrating one panel never overwrites
+    /// the other's evidence.</summary>
+    public const string BagPanelPreviewFileName = "bag_panel_latest.bmp";
+
+    /// <summary>
+    /// Writes the whole-client-area preview the bag-panel calibration is read off
+    /// (<c>bag_panel_latest.bmp</c>), and returns the directory, or null when there
+    /// was nothing to write. Same recipe as <see cref="TrySavePanelPreview"/>, kept
+    /// as its own method because the two panels are calibrated independently
+    /// (<c>BagPanelRoiCalibration</c>, C-312) and must never share a preview file.
+    /// </summary>
+    public static string? TrySaveBagPanelPreview(string? repoRoot, CaptureFrame frame, PixelRect panelArea)
+    {
+        if (string.IsNullOrWhiteSpace(repoRoot) || !frame.HasPixels)
+            return null;
+
+        string directory = Path.Combine(repoRoot, RelativeDirectory);
+        Directory.CreateDirectory(directory);
+        WriteBmp(Path.Combine(directory, BagPanelPreviewFileName), frame, panelArea);
+        return directory;
+    }
+
     /// <summary>
     /// Writes one crop as a 32-bit BMP.
     /// </summary>

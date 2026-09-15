@@ -275,12 +275,22 @@ public sealed class TargetRoiAutoCalibratorTests
         return new CaptureFrame(width, height, bgra, DataSourceKind.Live, at);
     }
 
+    /// <summary>
+    /// Border rows are a dark grey distinct from the black background (ADR-0018 follow-up,
+    /// 2026-09-12): TargetFrameReader now requires a dark top/bottom border before trusting a
+    /// full-hue crop as Present, and the group-derivation step only proposes a rectangle from
+    /// pixels whose mean luminance actually differs between groups -- a border identical to the
+    /// background would never be picked up by that diff.
+    /// </summary>
     private static CaptureFrame TargetFrame(DateTime at, bool noisy)
     {
         byte[] bgra = EmptyBackground(FrameWidth, FrameHeight);
+        WriteBorderRow(bgra, TargetY);
+        WriteBorderRow(bgra, TargetY + TargetHeight - 1);
+
         for (int x = TargetX; x < TargetX + TargetWidth; x++)
         {
-            for (int y = TargetY; y < TargetY + TargetHeight; y++)
+            for (int y = TargetY + 1; y < TargetY + TargetHeight - 1; y++)
             {
                 if (noisy && (x + y) % 2 != 0)
                 {
@@ -296,6 +306,18 @@ public sealed class TargetRoiAutoCalibratorTests
         }
 
         return new CaptureFrame(FrameWidth, FrameHeight, bgra, DataSourceKind.Live, at);
+    }
+
+    private static void WriteBorderRow(byte[] bgra, int y)
+    {
+        for (int x = TargetX; x < TargetX + TargetWidth; x++)
+        {
+            int index = (y * FrameWidth + x) * 4;
+            bgra[index] = 30;
+            bgra[index + 1] = 30;
+            bgra[index + 2] = 30;
+            bgra[index + 3] = 255;
+        }
     }
 
     private static byte[] EmptyBackground(int width, int height)

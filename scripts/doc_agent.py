@@ -25,6 +25,12 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from nosai.orchestration.local_result import validate_local_result
+from nosai.mcp.enforcement import require_capability, RoleEnforcementError
+
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 LOCAL_MODEL = os.getenv("NOSAI_LOCAL_MODEL", "qwen2.5-coder:7b")
 LEDGER = ROOT / "data" / "ai_task_ledger.jsonl"
@@ -256,12 +262,53 @@ def record(entry: dict) -> None:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+def _autorizza_incarico(task: dict) -> None:
+    """Fail-closed sull'incarico: nessun employee_id dichiarato o nessuna
+    capability posseduta bloccano l'incarico prima di ogni chiamata al modello
+    locale."""
+    if not task.get("employee_id"):
+        raise PermissionError("employee_id mancante nell'incarico")
+
+    capability_richiesta = "scaffold" if task.get("format") in ("python", "python_test") else "documentation"
+    require_capability(task["employee_id"], capability_richiesta)
+
+
 def run(task: dict, dry_run: bool) -> dict:
     errors = []
     warnings = []
     checks = {}
     content = ""
     attempts = 0
+
+    try:
+        _autorizza_incarico(task)
+    except (PermissionError, RoleEnforcementError) as exc:
+        result = {
+            "status": "blocked",
+            "file": task["file"],
+            "purpose": task["purpose"],
+            "requirements_satisfied": [],
+            "warnings": [],
+            "missing_items": [str(exc)],
+            "checks": {
+                "format_valid": False,
+                "references_valid": False,
+                "placeholders_resolved": False,
+                "requirements_covered": False,
+                "contradictions_found": False,
+            },
+            "confidence": 0.0,
+        }
+        record({
+            "task_id": task.get("task_id", task["file"]),
+            "model": "n/a",
+            "calls": 0,
+            "estimated_cost_usd": 0.0,
+            "status": "blocked",
+            "file": task["file"],
+            "words": 0,
+        })
+        return result
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         attempts = attempt
@@ -292,13 +339,17 @@ def run(task: dict, dry_run: bool) -> dict:
         "checks": checks,
         "confidence": round(max(0.0, 1.0 - 0.25 * (attempts - 1) - 0.5 * bool(errors)), 2),
     }
+    schema_defects = validate_local_result(result)
+    if schema_defects:
+        result["status"] = "blocked"
+        result["missing_items"] = result["missing_items"] + schema_defects
     record(
         {
             "task_id": task.get("task_id", task["file"]),
             "model": LOCAL_MODEL,
             "calls": attempts,
             "estimated_cost_usd": 0.0,
-            "status": status,
+            "status": result["status"],
             "file": task["file"],
             "words": len(content.split()),
         }

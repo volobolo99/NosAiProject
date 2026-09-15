@@ -119,6 +119,27 @@ public sealed class RefusalReasonRegisterTests
 
             // --- ciclo autoplay ----------------------------------------------------
             ["autoplay_cycles_exceeds_max"] = "richiede un ciclo autoplay oltre il massimo configurato",
+
+            // --- EquipCommand (C-312): implementato, ma questi due rami di --------------
+            // --- RunWindows richiedono un processo client reale e una connessione di ---
+            // --- gioco/WinDivert aperta, esattamente come i loro omonimi di Unequip -----
+            ["equip_input_backend_not_gated"] =
+                "irraggiungibile: ramo privato RunWindows, CreateSafe restituisce sempre un backend gated (stesso motivo di unequip_input_backend_not_gated)",
+            ["equip_equip_feed_unavailable"] =
+                "richiede il processo client reale e il filo aperto: ramo RunWindows, connessione di gioco o WinDivert non disponibili (stesso motivo di unequip_equip_feed_unavailable)",
+            ["equip_item_not_in_inventory"] =
+                "richiede il processo client reale: EquipCommand.RunWindows risolve il BagSlotIndex leggendo InventorySlots dal filo",
+            ["bag_slot_index_not_in_calibrated_range"] =
+                "mai prodotto: BagPanelRoiCalibration.Resolve omette lo slot mancante dal dizionario invece di restituire questa costante",
+
+            // --- EquipmentOffsetCalibrator (C-009): le funzioni pure sono testate, ---
+            // --- ma Run() richiede un client reale e un vero cambiamento di --------
+            // --- equipaggiamento dentro la finestra di ascolto: non riproducibile ---
+            // --- in modo deterministico da un unit test -----------------------------
+            ["calibrate_equipment_no_equip_reading"] =
+                "richiede un client reale e un vero cambiamento di equipaggiamento entro la finestra di ascolto (ramo Run, EquipmentOffsetCalibrator)",
+            ["calibrate_equipment_feed_unavailable"] =
+                "richiede il processo client reale e il filo aperto: ramo Run, connessione di gioco o WinDivert non disponibili (stesso motivo di unequip_equip_feed_unavailable)",
         };
 
     /// <summary>

@@ -10,6 +10,7 @@ using NosAi.Runtime.LowLevel;
 using NosAi.Runtime.Navigation;
 using NosAi.Runtime.Orchestration;
 using NosAi.Runtime.Perception;
+using NosAi.Runtime.Perception.Network;
 using NosAi.Runtime.Safety;
 using NosAi.Runtime.Tactical;
 using Xunit;
@@ -99,13 +100,24 @@ public sealed class AutoplayCommandTests
             WorldFact<bool>.Derived(true, confidence: 1d, Now),
             Now);
 
+    private static readonly EntityId TestPlayerId = new("test-player");
+
     private static AutoplayCommand.AutoplayCycleResult RunCycle(
         StrategicPlan plan,
         int? recoverSlot = RecoverSlot,
         RecordingInput? input = null,
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
-        PlayerVitalsReading? after = null)
+        PlayerVitalsReading? after = null,
+        EquatableArray<Mob>? mobs = null,
+        EquatableArray<Drop>? drops = null,
+        GameplayObservation? gameplay = null,
+        Player? playerFacts = null,
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null,
+        EquipExecutor? equipExecutor = null,
+        BagPanelRoiCalibration? calibration = null,
+        EquipGesture? optimizationGesture = null,
+        Func<WornEquipmentReading?>? readLatestEquip = null)
     {
         ExplorationFootprint footprint = FullyExploredFootprint();
         return RunCycleWithMap(
@@ -116,8 +128,33 @@ public sealed class AutoplayCommandTests
             input,
             keybinds,
             before,
-            after);
+            after,
+            mobs,
+            drops,
+            gameplay,
+            playerFacts,
+            resolveSlot,
+            equipExecutor,
+            calibration,
+            optimizationGesture,
+            readLatestEquip);
     }
+
+    /// <summary>A <see cref="Player"/> with no facts observed, for tests whose
+    /// selected goal never reaches <see cref="StrategicGoalKind.Optimization"/>'s
+    /// dispatch and so never inspects it.</summary>
+    private static Player EmptyPlayerFacts() =>
+        new(
+            TestPlayerId,
+            WorldFact<WorldPosition>.Unknown("test_player_not_read", Now),
+            WorldFact<float>.Unknown("test_player_not_read", Now),
+            WorldFact<bool>.Unknown("test_player_not_read", Now),
+            WorldFact<MapId>.Unknown("test_player_not_read", Now),
+            CombatantStatus.Empty,
+            WorldFact<EquatableArray<Skill>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<InventoryItem>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Unknown("test_player_not_read", Now));
 
     private static AutoplayCommand.AutoplayCycleResult RunCycleWithMap(
         StrategicPlan plan,
@@ -127,7 +164,16 @@ public sealed class AutoplayCommandTests
         RecordingInput? input = null,
         KeybindMap? keybinds = null,
         PlayerVitalsReading? before = null,
-        PlayerVitalsReading? after = null)
+        PlayerVitalsReading? after = null,
+        EquatableArray<Mob>? mobs = null,
+        EquatableArray<Drop>? drops = null,
+        GameplayObservation? gameplay = null,
+        Player? playerFacts = null,
+        Func<ItemId, EquipmentSlot?>? resolveSlot = null,
+        EquipExecutor? equipExecutor = null,
+        BagPanelRoiCalibration? calibration = null,
+        EquipGesture? optimizationGesture = null,
+        Func<WornEquipmentReading?>? readLatestEquip = null)
     {
         RecordingInput recording = input ?? new RecordingInput();
         var reads = new Queue<PlayerVitalsReading?>(new[] { before, after });
@@ -142,7 +188,7 @@ public sealed class AutoplayCommandTests
             map,
             footprint,
             playerPosition: new WorldPosition(0f, 0f),
-            EquatableArray<Mob>.Empty,
+            mobs ?? EquatableArray<Mob>.Empty,
             origin: new MapPoint(0, 0),
             grid: default,
             view: new OccupancyView(null, Now),
@@ -152,7 +198,18 @@ public sealed class AutoplayCommandTests
             readPosition: () => null,
             onEvidence: null,
             in AutoplayAuthority,
-            Now);
+            Now,
+            TestPlayerId,
+            drops ?? EquatableArray<Drop>.Empty,
+            gameplay,
+            playerFacts ?? EmptyPlayerFacts(),
+            resolveSlot ?? (_ => null),
+            equipExecutor ?? new EquipExecutor(
+                new GatedInputBackend(recording, () => RuntimeSafetyPolicy.SafeDefault with { LiveInputEnabled = true }),
+                () => IntPtr.Zero),
+            calibration ?? BagPanelRoiCalibration.Uncalibrated,
+            optimizationGesture,
+            readLatestEquip ?? (() => null));
     }
 
     // ------------------------------------------------------------- Idle
@@ -319,10 +376,11 @@ public sealed class AutoplayCommandTests
     [Fact]
     public void AnyOtherSelectedKind_IsNotDispatchable_AndNeverTouchesInputOrTheWalkController()
     {
-        // QuestUrgency is the only other kind StrategyPlanner can select
-        // today; Recovery/Progression/Farming/Optimization have no assessor at
-        // all. Whatever the kind, dispatch must name it -- never substitute a
-        // different act for the one the plan selected.
+        // QuestUrgency is the only kind here with no assessor and no dispatch
+        // at all; Progression/Optimization have no assessor either, and
+        // Farming (which does, see the Farming branch tests below) is
+        // covered separately. Whatever the kind, dispatch must name it --
+        // never substitute a different act for the one the plan selected.
         StrategicPlan plan = new(
             StrategicGoalKind.QuestUrgency,
             WorldFact<bool>.Derived(true, confidence: 1d, Now),
@@ -340,8 +398,6 @@ public sealed class AutoplayCommandTests
 
     [Theory]
     [InlineData(StrategicGoalKind.Progression)]
-    [InlineData(StrategicGoalKind.Farming)]
-    [InlineData(StrategicGoalKind.Optimization)]
     public void EveryUndispatchedGoalKind_IsNotDispatchable_ByName_NeverSubstituted(StrategicGoalKind kind)
     {
         StrategicPlan plan = new(kind, WorldFact<bool>.Derived(true, confidence: 1d, Now), Now);
@@ -351,6 +407,229 @@ public sealed class AutoplayCommandTests
 
         Assert.Equal(AutoplayCommand.AutoplayDispatch.NotDispatchable, result.Dispatch);
         Assert.Equal(kind, result.Plan.SelectedKind);
+        Assert.Empty(input.Presses);
+    }
+
+    // ------------------------------------------------------------ Farming branch
+
+    private static Mob AttackableMob(string id, float x, float y) => new(
+        new EntityId(id),
+        WorldFact<WorldPosition>.Live(new WorldPosition(x, y), confidence: 1d, Now),
+        WorldFact<string>.Live("test-mob", confidence: 1d, Now),
+        WorldFact<bool>.Live(true, confidence: 1d, Now),
+        WorldFact<bool>.Live(true, confidence: 1d, Now),
+        CombatantStatus.Empty);
+
+    [Fact]
+    public void AFarmingPlan_WithNoObservedMobs_IsFarmingSkippedNoTarget_AndNeverTouchesInput()
+    {
+        StrategicPlan plan = new(
+            StrategicGoalKind.Farming,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.FarmingSkippedNoTarget, result.Dispatch);
+        Assert.Null(result.RecoverEvidence);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void AFarmingPlan_WithAnAttackableMobInRange_DispatchesToEngageCommand_UnderAutoplayAuthority()
+    {
+        // Player is at (0,0) (RunCycle's default); this mob sits well inside
+        // TargetSelectionPolicy.Default's 12-tile range and is alive/hostile,
+        // so TargetSelector.TrySelect must find it and Engage must fire.
+        StrategicPlan plan = new(
+            StrategicGoalKind.Farming,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+        EquatableArray<Mob> mobs = new(System.Collections.Immutable.ImmutableArray.Create(AttackableMob("777", x: 1f, y: 1f)));
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input, mobs: mobs);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Engaged, result.Dispatch);
+        Assert.NotNull(result.RecoverEvidence);
+    }
+
+    // ------------------------------------------------------------ Collect branch
+
+    [Fact]
+    public void ACollectPlan_WithNoGameplayObservation_IsCollectSkippedNoTarget_AndNeverTouchesInput()
+    {
+        StrategicPlan plan = new(
+            StrategicGoalKind.Collect,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+
+        // gameplay defaults to null: DispatchCollect cannot build before/after without it.
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.CollectSkippedNoTarget, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void ACollectPlan_WithADropInReach_DispatchesToCollectCommand_UnderAutoplayAuthority()
+    {
+        // Player is at (0,0) (RunCycle's default); this ground item sits a few
+        // tiles away and carries a real gameplay observation, so DispatchCollect
+        // has both a target and the observation it needs for before/after.
+        StrategicPlan plan = new(
+            StrategicGoalKind.Collect,
+            WorldFact<bool>.Derived(true, confidence: 1d, Now),
+            Now);
+        RecordingInput input = new();
+        GameplayObservation gameplay = GameplayObservation.Unobserved("test", Now) with
+        {
+            GroundItems = ClassifiedValue<IReadOnlyList<GroundItem>>.Live(
+                new[] { new GroundItem(Vnum: 42, DropId: 99, X: 3, Y: 4, Amount: 1, OwnerId: 0, Now, NosAi.Runtime.Contracts.DataSourceKind.Live) },
+                Now)
+        };
+        EquatableArray<Drop> drops = EquatableArray<Drop>.From(new[]
+        {
+            new Drop(
+                new EntityId("99"),
+                new ItemId("42"),
+                WorldFact<WorldPosition>.Live(new WorldPosition(3f, 4f), 1d, Now),
+                WorldFact<int>.Live(1, 1d, Now))
+        });
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(plan, input: input, gameplay: gameplay, drops: drops);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Collected, result.Dispatch);
+    }
+
+    // -------------------------------------------------------- Optimization branch
+
+    private static readonly StrategicPlan OptimizationPlan = new(
+        StrategicGoalKind.Optimization, WorldFact<bool>.Derived(true, confidence: 1d, Now), Now);
+
+    /// <summary>A <see cref="Player"/> whose inventory carries one item that
+    /// <paramref name="resolveSlot"/> (built alongside) maps to
+    /// <see cref="EquipmentSlot.Weapon"/>, with nothing currently equipped -- the
+    /// minimum <see cref="NosAi.Core.WorldModel.Loadout.LoadoutPlanner.GenerateEmptySlotCandidates"/>
+    /// needs to propose a candidate.</summary>
+    private static Player PlayerWithOneEquipCandidate(ItemId itemId, bool slotIndexKnown, int slotIndex = 5)
+    {
+        InventoryItem stack = new(
+            itemId,
+            WorldFact<string>.Unknown("item_name_catalog_not_available", Now),
+            WorldFact<int>.Live(1, 1d, Now),
+            slotIndexKnown
+                ? WorldFact<int>.Live(slotIndex, 1d, Now)
+                : WorldFact<int>.Unknown("test_bag_slot_not_read", Now));
+
+        return new Player(
+            TestPlayerId,
+            WorldFact<WorldPosition>.Live(new WorldPosition(0, 0), 1d, Now),
+            WorldFact<float>.Unknown("test_player_not_read", Now),
+            WorldFact<bool>.Unknown("test_player_not_read", Now),
+            WorldFact<MapId>.Unknown("test_player_not_read", Now),
+            CombatantStatus.Empty,
+            WorldFact<EquatableArray<Skill>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<Cooldown>>.Unknown("test_player_not_read", Now),
+            WorldFact<EquatableArray<InventoryItem>>.Live(EquatableArray<InventoryItem>.From(new[] { stack }), 1d, Now),
+            WorldFact<EquatableArray<EquipmentItem>>.Live(EquatableArray<EquipmentItem>.Empty, 1d, Now));
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithACandidateReady_ButNoGestureConfigured_IsOptimizationSkippedNoGesture()
+    {
+        // C-312: a candidate ready to click is not enough on its own -- nobody
+        // has verified which gesture equips an arbitrary item (same principle
+        // as UnequipCommand's own --gesture), so without --optimization-gesture
+        // configured no click is emitted on a guess.
+        ItemId itemId = new("1234");
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: true);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot,
+            optimizationGesture: null);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoGesture, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    /// <summary>A calibration covering exactly <paramref name="bagSlotIndex"/>, at the
+    /// same client size <paramref name="readGeometry"/> below states.</summary>
+    private static BagPanelRoiCalibration OneSlotCalibration(int bagSlotIndex, int width = 1024, int height = 768) =>
+        BagPanelRoiCalibration.Confirmed(
+            new Dictionary<int, InventorySlotRoi> { [bagSlotIndex] = new(0.5, 0.5, 0.02, 0.02) },
+            width, height, Now);
+
+    private static GeometryStamp StatedGeometry(IntPtr window, int width = 1024, int height = 768) => new(
+        new GeometryEpoch(window, new PixelRect(0, 0, width, height), 96, 0xABCD),
+        new DateTimeOffset(Now));
+
+    [Fact]
+    public void AnOptimizationPlan_WithAConfiguredGesture_ClicksAndReportsTheConfirmedOutcome()
+    {
+        ItemId itemId = new("1234");
+        const int bagSlotIndex = 5;
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: true, slotIndex: bagSlotIndex);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+
+        var recorder = new RecordingInputBackend();
+        var executor = new EquipExecutor(
+            new GatedInputBackend(recorder, () => RuntimeSafetyPolicy.SafeDefault with { LiveInputEnabled = true }),
+            () => (IntPtr)0x7300,
+            readGeometry: w => StatedGeometry(w),
+            verificationWindow: TimeSpan.FromMilliseconds(40),
+            pollInterval: TimeSpan.FromMilliseconds(2));
+
+        // Baseline is empty (nothing worn yet); after the click the wire shows
+        // the item's vnum in Weapon: this is what Confirmed asserts on.
+        var readings = new Queue<WornEquipmentReading?>(new WornEquipmentReading?[]
+        {
+            null,
+            new WornEquipmentReading(
+                new[] { new WornEquipmentSlot((int)EquipmentSlot.Weapon, 1234) }, EquipmentWireOpcode.Equip)
+        });
+
+        RecordingInput input = new();
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot,
+            optimizationGesture: EquipGesture.Single,
+            equipExecutor: executor,
+            calibration: OneSlotCalibration(bagSlotIndex),
+            readLatestEquip: () => readings.Count > 0 ? readings.Dequeue() : null);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.Optimized, result.Dispatch);
+        Assert.Contains("click:Left", recorder.Events);
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithNoResolvableCandidate_IsOptimizationSkippedNoCandidate()
+    {
+        // EmptyPlayerFacts() has Inventory Unknown: GenerateEmptySlotCandidates
+        // returns nothing to propose without a read inventory.
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(OptimizationPlan, input: input);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoCandidate, result.Dispatch);
+        Assert.Empty(input.Presses);
+    }
+
+    [Fact]
+    public void AnOptimizationPlan_WithACandidateWhoseBagSlotIsNotRead_IsOptimizationSkippedNoCandidate()
+    {
+        ItemId itemId = new("1234");
+        Player player = PlayerWithOneEquipCandidate(itemId, slotIndexKnown: false);
+        Func<ItemId, EquipmentSlot?> resolveSlot = id => id == itemId ? EquipmentSlot.Weapon : null;
+        RecordingInput input = new();
+
+        AutoplayCommand.AutoplayCycleResult result = RunCycle(
+            OptimizationPlan, input: input, playerFacts: player, resolveSlot: resolveSlot);
+
+        Assert.Equal(AutoplayCommand.AutoplayDispatch.OptimizationSkippedNoCandidate, result.Dispatch);
         Assert.Empty(input.Presses);
     }
 

@@ -157,6 +157,7 @@ public sealed class Gate1ObservationChannel : IDisposable
         ITargetFrameSource? targetFrames = null,
         TargetRoiCalibration? targetRoi = null,
         Func<TargetPointerReading?>? targetMemory = null,
+        Func<string?>? targetMemoryFailureReason = null,
         TimeProvider? clock = null)
     {
         ArgumentNullException.ThrowIfNull(packets);
@@ -171,7 +172,7 @@ public sealed class Gate1ObservationChannel : IDisposable
         IGameplayProvider provider = new NetworkGameplayProvider(feed, clock);
 
         if (targetMemory is not null)
-            provider = new MemoryTargetGameplayProvider(provider, targetMemory);
+            provider = new MemoryTargetGameplayProvider(provider, targetMemory, targetMemoryFailureReason);
 
         if (targetFrames is not null)
         {
@@ -193,7 +194,9 @@ public sealed class Gate1ObservationChannel : IDisposable
     public static Gate1ObservationChannel TryOpenLive(
         GameEndpoint endpoint,
         IRuntimeLogger logger,
-        TryOpenPacketSource? opener = null)
+        TryOpenPacketSource? opener = null,
+        Func<TargetPointerReading?>? targetMemory = null,
+        Func<string?>? targetMemoryFailureReason = null)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
         ArgumentNullException.ThrowIfNull(logger);
@@ -229,7 +232,7 @@ public sealed class Gate1ObservationChannel : IDisposable
             ["endpoint"] = $"{endpoint.Host}:{endpoint.Port}",
             ["source"] = DataSourceKind.Live.ToWire()
         });
-        return FromPackets(packets, endpoint, DataSourceKind.Live);
+        return FromPackets(packets, endpoint, DataSourceKind.Live, targetMemory: targetMemory, targetMemoryFailureReason: targetMemoryFailureReason);
     }
 
     public Gate1GameObservationView Describe(GameplayObservation gameplay)

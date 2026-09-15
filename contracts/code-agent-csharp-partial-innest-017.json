@@ -1,0 +1,35 @@
+{
+  "contract_id": "C-311",
+  "file": "scripts/code_agent.py",
+  "companion_files": [
+    "tests/test_code_agent_parziale.py"
+  ],
+  "depends_on": "C-310 (motivazione pratica: il wiring in AutoplayCommand.cs, quasi 1000 righe, ha bisogno di un innesto parziale reale per C#, non della riemissione del file intero). _firme_csharp/_valida_csharp gia' esistenti in scripts/code_agent.py usano tree_sitter_c_sharp per le firme: questo contratto riusa lo stesso approccio, non ne introduce uno nuovo.",
+  "purpose": "innesta_funzioni(skeleton, risposta, nomi) usa ast.parse -- Python puro -- per trovare dove inizia e finisce ogni funzione dichiarata in 'nomi'. Su un file .cs, ast.parse solleva sempre SyntaxError (il codice C# non e' Python valido), quindi solo_funzioni respinge ogni incarico C# con 'Innesto parziale rifiutato', anche quando il file e la funzione sono perfettamente validi. .claude/CLAUDE.md sezione 7 dichiara gia' che 'un incarico puo' dichiarare solo_funzioni per i file troppo grandi da riemettere interi' su entrambi i linguaggi: questo contratto chiude lo scarto fra quella dichiarazione e il codice reale, aggiungendo il ramo C# mancante.",
+  "changes": {
+    "nuova_funzione__intervalli_funzioni_csharp": "def _intervalli_funzioni_csharp(source: str) -> dict[str, tuple[int, int]] -- per ogni method_declaration dentro un contenitore (class_declaration, struct_declaration, interface_declaration, record_declaration -- stessa tupla CONTENITORI gia' definita in _firme_csharp), il nome del metodo (stesso helper nome_di gia' usato da _firme_csharp) mappato a (start_line, end_line) 1-based, ricavati da node.start_point.row + 1 e node.end_point.row + 1 di tree_sitter (decoratori/attributi non applicabili in C# come lo sono in Python, quindi start_line e' semplicemente la riga del method_declaration stesso, includendo pero' eventuali [Attribute]/modificatori che tree_sitter considera parte dello stesso nodo -- verificare a mano su un esempio reale con [SupportedOSPlatform] se l'attributo resta fuori dal nodo method_declaration, e in tal caso includerlo esplicitamente nel calcolo di start_line, sullo stesso principio con cui _intervalli_funzioni include i decoratori Python). Solleva SyntaxError se l'albero ha nodi ERROR o mancanti (stesso criterio di _firme_csharp). Se lo stesso nome di metodo compare in piu' di un contenitore nel file, solleva ValueError con il nome ambiguo elencato: nessuna scelta arbitraria fra omonimi.",
+    "innesta_funzioni_firma_estesa": "innesta_funzioni(skeleton: str, risposta: str, nomi, linguaggio: str = \"python\") -> str -- il quarto parametro e' opzionale con default \"python\", quindi ogni chiamata esistente (compresi tutti i test gia' in tests/test_code_agent_parziale.py) continua a funzionare senza modifiche. Se linguaggio == \"c_sharp\" usa _intervalli_funzioni_csharp al posto di _intervalli_funzioni per calcolare sia 'nuove' che 'vecchie'; il resto della funzione (assenti_risposta, assenti_scheletro, sostituzione riga per riga dal basso verso l'alto) resta identico, e' agnostico al linguaggio perche' opera solo su indici di riga.",
+    "run_wiring": "Nella funzione run(task, do_preflight) (riga ~598), la chiamata a innesta_funzioni (riga ~639, dentro 'if solo:') passa il quarto argomento: innesta_funzioni(skeleton, code, solo, linguaggio_del_file(ROOT / task[\"file\"])). linguaggio_del_file(ROOT / task[\"file\"]) e' gia' calcolato in run() per scegliere SYSTEM_PROMPT_CSHARP: si riusa la stessa chiamata, non se ne aggiunge una seconda con lo stesso risultato."
+  },
+  "constraints": [
+    "Non toccare _firme_csharp, _valida_csharp, _intervalli_funzioni (la versione Python esistente): si riusano le loro convenzioni (CONTENITORI, nome_di, criterio di errore su albero.root_node.has_error), non si duplicano con logica diversa.",
+    "Il default linguaggio=\"python\" e' obbligatorio: ogni test esistente in tests/test_code_agent_parziale.py deve restare verde senza essere modificato.",
+    "Nessuna nuova dipendenza: tree_sitter e tree_sitter_c_sharp sono gia' importati altrove in questo stesso file, si riusa lo stesso import locale dentro la funzione (stesso stile di _firme_csharp, che importa dentro il corpo, non in testa al modulo).",
+    "Un nome di metodo ambiguo (presente in piu' di una classe/struct/record dello stesso file) blocca con un errore esplicito: non si sceglie il primo trovato."
+  ],
+  "tests_required": [
+    "_intervalli_funzioni_csharp su una classe con due metodi trova entrambi con le righe corrette (confrontabili estraendo lo slice di testo dalle righe restituite e verificando che coincida col metodo atteso).",
+    "innesta_funzioni con linguaggio=\"c_sharp\" sostituisce un solo metodo dichiarato e conserva gli altri membri della classe (replica dello stesso schema di test_innesta_una_funzione_e_conserva_le_altre ma in C#).",
+    "innesta_funzioni con linguaggio=\"c_sharp\" e un nome di metodo dichiarato ma assente dalla risposta solleva ValueError (replica di test_una_funzione_dichiarata_e_assente_dalla_risposta_solleva in C#).",
+    "innesta_funzioni con linguaggio=\"c_sharp\" e un nome di metodo dichiarato ma assente dallo scheletro solleva ValueError (replica di test_una_funzione_dichiarata_e_assente_dallo_scheletro_solleva in C#).",
+    "innesta_funzioni con linguaggio=\"c_sharp\" e una risposta con sintassi C# rotta solleva SyntaxError.",
+    "Un nome di metodo presente in due classi diverse dello stesso file C# solleva ValueError che nomina il metodo ambiguo.",
+    "Chiamare innesta_funzioni senza il quarto argomento (comportamento di default) produce lo stesso risultato di prima su uno scheletro Python: nessuna delle chiamate gia' testate cambia esito.",
+    "Un test end-to-end reale: uno scheletro C# minimo con un metodo 'throw new NotImplementedException();' passato per intero a run() con solo_funzioni valorizzato e tier='local' non fallisce piu' con 'Innesto parziale rifiutato' per un SyntaxError non pertinente (puo' mockare call_model per restituire un corpo valido, verificando che l'esito sia diverso dal blocco per innesto)."
+  ],
+  "postconditions": [
+    "python -m pytest tests/ -q e' verde, inclusi i test nuovi e tutti quelli gia' esistenti in tests/test_code_agent_parziale.py invariati.",
+    "Nessuna firma pubblica esistente di scripts/code_agent.py e' cambiata al di fuori dell'aggiunta del quarto parametro opzionale di innesta_funzioni (verificabile con preflight_contract_check).",
+    "Una volta chiuso questo contratto, C-310 puo' proseguire con solo_funzioni: [\"DispatchOptimization\"] su AutoplayCommand.cs invece di dover riemettere l'intero file."
+  ]
+}
